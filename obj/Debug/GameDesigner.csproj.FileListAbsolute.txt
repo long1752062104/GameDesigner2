@@ -304,4 +304,11 @@ D:\GameDesigner\obj\Debug\GameDesigner.csproj.CoreCompileInputs.cache
 D:\GameDesigner\obj\Debug\GameDesigner.csproj.CopyComplete
 D:\GameDesigner\obj\Debug\GameDesigner.dll
 D:\GameDesigner\obj\Debug\GameDesigner.pdb
+D:\GameDesigner\bin\Debug\BouncyCastle.Crypto.dll
+D:\GameDesigner\bin\Debug\K4os.Compression.LZ4.dll
+D:\GameDesigner\bin\Debug\K4os.Compression.LZ4.Streams.dll
+D:\GameDesigner\bin\Debug\K4os.Hash.xxHash.dll
+D:\GameDesigner\bin\Debug\K4os.Compression.LZ4.xml
+D:\GameDesigner\bin\Debug\K4os.Compression.LZ4.Streams.xml
+D:\GameDesigner\bin\Debug\K4os.Hash.xxHash.xml
 D:\GameDesigner\obj\Debug\GameDesigner.csprojAssemblyReference.cache

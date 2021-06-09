@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ECS
 {
@@ -44,12 +45,33 @@ namespace ECS
             return com;
         }
 
+        public Component AddComponent(Component com)
+        {
+            com.entity = this;
+            components.Add(com);
+            com.Awake();
+            if (com is IUpdate update)
+                updates.Add(update);
+            inactive = updates.Count > 0;
+            return com;
+        }
+
         public T GetComponent<T>() where T : Component
         {
             for (int i = 0; i < components.Count; i++)
             {
                 if (components[i] is T t)
                     return t;
+            }
+            return null;
+        }
+
+        public Component GetComponent(Type comType)
+        {
+            for (int i = 0; i < components.Count; i++)
+            {
+                if (components[i].GetType() == comType)
+                    return components[i];
             }
             return null;
         }
@@ -61,6 +83,17 @@ namespace ECS
             {
                 if (components[i] is T t)
                     ts.Add(t);
+            }
+            return ts.ToArray();
+        }
+
+        public Component[] GetComponents(Type comType)
+        {
+            List<Component> ts = new List<Component>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                if (components[i].GetType() == comType)
+                    ts.Add(components[i]);
             }
             return ts.ToArray();
         }

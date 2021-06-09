@@ -359,7 +359,14 @@ namespace Net.Server
         /// </summary>
         /// <param name="remotePoint"></param>
         /// <returns></returns>
-        //public Player this[EndPoint remotePoint] => Clients[remotePoint];
+        public Player this[EndPoint remotePoint] => AllClients[remotePoint];
+
+        /// <summary>
+        /// uid索引
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        public Player this[int uid] => UIDClients[uid];
 
         /// <summary>
         /// 场景索引
@@ -374,16 +381,6 @@ namespace Net.Server
         /// <returns></returns>
         public List<Player> GetClients()
         {
-            return GetClients(this);
-        }
-
-        /// <summary>
-        /// 获得所有在线的客户端对象
-        /// </summary>
-        /// <returns></returns>
-        public List<Player> GetClients(IServerHandle<Player, Scene> server)
-        {
-            //return new List<Player>(server.Clients.Values);
             List<Player> players = new List<Player>();
             foreach (Player p in AllClients.Values)
                 if (p.login)
@@ -562,9 +559,9 @@ namespace Net.Server
             if (Instance == null)
                 Instance = this;
             OnAddRpcHandle(this, true);
-            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);//---UDP协议
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);//IP端口设置
-            Server.Bind(ip);//绑定UDP IP端口
+            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
+            Server.Bind(ip);
 #if !UNITY_ANDROID//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
             uint IOC_VENDOR = 0x18000000;
@@ -774,9 +771,6 @@ namespace Net.Server
             }
         }
 
-        /// <summary>
-        /// udp数据处理线程
-        /// </summary>
         protected virtual void DataHandle(Player client, Segment buffer, int index, int count)
         {
             int size = BitConverter.ToInt32(buffer, index + 0);
@@ -1133,14 +1127,14 @@ namespace Net.Server
 
         protected void InvokeRevdRTProgress(Player client, int currValue, int dataCount)
         {
-            float bfb = (1f - (currValue / (float)dataCount)) * 100f;
+            float bfb = currValue / (float)dataCount * 100f;
             RTProgress progress = new RTProgress(bfb, RTState.Sending);
             OnRevdRTProgressHandle(client, progress);
         }
 
         protected void InvokeSendRTProgress(Player client, int currValue, int dataCount)
         {
-            float bfb = (1f - (currValue / (float)dataCount)) * 100f;
+            float bfb = currValue / (float)dataCount * 100f;
             RTProgress progress = new RTProgress(bfb, RTState.Sending);
             OnSendRTProgressHandle(client, progress);
         }
@@ -1747,6 +1741,8 @@ namespace Net.Server
         /// <returns></returns>
         public bool RemoveScenePlayer(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
         {
+            if (string.IsNullOrEmpty(player.sceneID))
+                return false;
             if (Scenes.TryGetValue(player.sceneID, out Scene scene))
             {
                 scene.Remove(player);
@@ -2509,30 +2505,24 @@ namespace Net.Server
         }
 
         /// <summary>
-		/// 强制下线处理, 这将会断开client客户端的socket连接, 如果不想断开client的socket, 请使用SignOut方法, 退出登录即可
+		/// 强制下线处理, 将client客户端从在线字段clients和Players字段中移除
 		/// </summary>
 		/// <param name="client"></param>
 		public virtual void OfflineHandle(Player client)
         {
             SendDirect(client);
             RemoveClient(client);
+            Debug.Log("[" + client.playerID + "]被强制下线...!");
         }
 
         /// <summary>
-        /// 退出登录, 当退出登录后, 会将client客户端从在线字段clients和Players字段中移除, 并将client移入未知客户端unClients字段里
+        /// 退出登录, 将client客户端从在线字段clients和Players字段中移除
         /// </summary>
         /// <param name="client"></param>
         public virtual void SignOut(Player client)
         {
             SendDirect(client);
-            Players.TryRemove(client.playerID, out _);
-            UIDClients.TryRemove(client.UserID, out _);
-            OnRemoveClientHandle(client);
-            client.OnRemoveClient();
-            ExitScene(client, false, null);
-            if (client.login)
-                onlineNumber--;
-            client.login = false;
+            RemoveClient(client);
             Debug.Log("[" + client.playerID + "]退出登录...!");
         }
 

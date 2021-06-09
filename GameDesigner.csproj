@@ -15,6 +15,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,6 +39,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.5.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\BouncyCastle.1.8.5\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
     <Reference Include="DotNetty.Buffers, Version=0.6.0.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\DotNetty.Buffers.0.6.0\lib\net45\DotNetty.Buffers.dll</HintPath>
       <Private>True</Private>
@@ -61,6 +65,15 @@
     <Reference Include="DotNetty.Transport.Libuv, Version=0.6.0.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\DotNetty.Transport.Libuv.0.6.0\lib\net45\DotNetty.Transport.Libuv.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4, Version=1.1.11.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\K4os.Compression.LZ4.1.1.11\lib\net46\K4os.Compression.LZ4.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4.Streams, Version=1.1.11.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\K4os.Compression.LZ4.Streams.1.1.11\lib\net46\K4os.Compression.LZ4.Streams.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Hash.xxHash, Version=1.0.6.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
+      <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\K4os.Hash.xxHash.1.0.6\lib\net46\K4os.Hash.xxHash.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -86,7 +99,11 @@
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
     </Reference>
@@ -110,6 +127,7 @@
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -149,6 +167,7 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.Threading.Tasks.Extensions.4.5.1\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -177,7 +196,6 @@
     <None Include="GameDesigner\Blueprint\Blueprint.cs.meta" />
     <None Include="GameDesigner\Blueprint\BlueprintEditorManager.cs.meta" />
     <None Include="GameDesigner\Blueprint\BlueprintManager.cs.meta" />
-    <None Include="GameDesigner\Blueprint\BlueprintNode.cs.meta" />
     <None Include="GameDesigner\Blueprint\Constructor.cs.meta" />
     <None Include="GameDesigner\Blueprint\Control.meta" />
     <None Include="GameDesigner\Blueprint\Control\ArrayUtility.cs.meta" />
@@ -209,6 +227,7 @@
     <None Include="GameDesigner\Blueprint\Field.cs.meta" />
     <None Include="GameDesigner\Blueprint\FunBlockNode.cs.meta" />
     <None Include="GameDesigner\Blueprint\Method.cs.meta" />
+    <None Include="GameDesigner\Blueprint\Node.cs.meta" />
     <None Include="GameDesigner\Blueprint\NodeRun.cs.meta" />
     <None Include="GameDesigner\Blueprint\NodeStart.cs.meta" />
     <None Include="GameDesigner\Blueprint\ObjectModel.cs.meta" />
@@ -222,10 +241,11 @@
     <None Include="GameDesigner\Component\Client\ClientManager.cs.meta" />
     <None Include="GameDesigner\Component\Client\Login.cs.meta" />
     <None Include="GameDesigner\Component\Client\MessageBox.cs.meta" />
-    <None Include="GameDesigner\Component\Client\NetConvertFastProcess.cs.meta" />
     <None Include="GameDesigner\Component\Client\Register.cs.meta" />
+    <None Include="GameDesigner\Component\Client\SerializeAdapter.cs.meta" />
     <None Include="GameDesigner\Component\Client\SingleCase.cs.meta" />
     <None Include="GameDesigner\Component\Client\SingleCasePanel.cs.meta" />
+    <None Include="GameDesigner\Component\Client\TransformComponent.cs.meta" />
     <None Include="GameDesigner\Component\Client\UIPanelInit.cs.meta" />
     <None Include="GameDesigner\Component\Client\UnityThread.cs.meta" />
     <None Include="GameDesigner\Component\Clone.cs.meta" />
@@ -242,6 +262,7 @@
     <None Include="GameDesigner\ECS\GSystem.cs.meta" />
     <None Include="GameDesigner\ECS\HotfixComponent.cs.meta" />
     <None Include="GameDesigner\ECS\IUpdate.cs.meta" />
+    <None Include="GameDesigner\ECS\UpdateComponent.cs.meta" />
     <None Include="GameDesigner\Editor.meta" />
     <None Include="GameDesigner\Editor\AddBlueprintNode.cs.meta" />
     <None Include="GameDesigner\Editor\BlueprintEditor.cs.meta" />
@@ -252,7 +273,6 @@
     <None Include="GameDesigner\Editor\BlueprintSetting.cs.meta" />
     <None Include="GameDesigner\Editor\GraphEditor.cs.meta" />
     <None Include="GameDesigner\Editor\HelpEdit.cs.meta" />
-    <None Include="GameDesigner\Editor\NodeEdit.cs.meta" />
     <None Include="GameDesigner\Editor\PluginSettings.cs.meta" />
     <None Include="GameDesigner\Editor\Resources.meta" />
     <None Include="GameDesigner\Editor\Resources\11000503.png.meta" />
@@ -294,31 +314,7 @@
     <None Include="GameDesigner\Editor\StateMachineSetting.cs.meta" />
     <None Include="GameDesigner\Editor\StateMachineWindow.cs.meta" />
     <None Include="GameDesigner\Editor\StateManagerEditor.cs.meta" />
-    <None Include="GameDesigner\Editor\TransitionInspector.cs.meta" />
     <None Include="GameDesigner\Example.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\Actor.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\ARPGcamera.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\ComponentSync.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\Editor.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\Editor\ComponentSyncEdit.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\EnemyComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\PlayerComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\SceneManager.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\SkillCollider.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\SkillEffectAction.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\State.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\State\EnemyIdleState.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\State\EnemyMoveState.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\State\IdleState.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\State\MoveState.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Client\TransformComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server\DBComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server\PlayerComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server\SceneComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server\ServiceComponent.cs.meta" />
-    <None Include="GameDesigner\Example\MMORPG_Server\WebServiceComponent.cs.meta" />
     <None Include="GameDesigner\GameDesignerHelp.chm" />
     <None Include="GameDesigner\GameDesignerHelp.chm.meta" />
     <None Include="GameDesigner\ILRuntime.meta" />
@@ -335,6 +331,10 @@
     <None Include="GameDesigner\ILRuntime\CLR\TypeSystem\IType.cs.meta" />
     <None Include="GameDesigner\ILRuntime\CLR\Utils.meta" />
     <None Include="GameDesigner\ILRuntime\CLR\Utils\Extensions.cs.meta" />
+    <None Include="GameDesigner\ILRuntime\Editor.meta" />
+    <None Include="GameDesigner\ILRuntime\Editor\ILRuntimeCLRBinding.cs.meta" />
+    <None Include="GameDesigner\ILRuntime\Editor\ILRuntimeCrossBinding.cs.meta" />
+    <None Include="GameDesigner\ILRuntime\Editor\ILRuntimeMenu.cs.meta" />
     <None Include="GameDesigner\ILRuntime\Mono.Cecil.meta" />
     <None Include="GameDesigner\ILRuntime\Mono.Cecil\Mono.Cecil.Cil.meta" />
     <None Include="GameDesigner\ILRuntime\Mono.Cecil\Mono.Cecil.Cil\Code.cs.meta" />
@@ -612,139 +612,9 @@
     <None Include="GameDesigner\ILRuntime\Runtime\Stack\RuntimeStack.cs.meta" />
     <None Include="GameDesigner\ILRuntime\Runtime\Stack\StackFrame.cs.meta" />
     <None Include="GameDesigner\ILRuntime\Runtime\Stack\StackObject.cs.meta" />
-    <None Include="GameDesigner\LockStep.meta" />
-    <None Include="GameDesigner\LockStep\Client.meta" />
-    <None Include="GameDesigner\LockStep\Client\Actor.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\Component.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\DataProcess.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\Enemy.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\EventSystem.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\Game.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\GameMgr.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\GameSystem.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\ObjectView.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\Player.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\Player.prefab" />
-    <None Include="GameDesigner\LockStep\Client\Player.prefab.meta" />
-    <None Include="GameDesigner\LockStep\Client\scene.unity" />
-    <None Include="GameDesigner\LockStep\Client\scene.unity.meta" />
-    <None Include="GameDesigner\LockStep\Client\Time.cs.meta" />
-    <None Include="GameDesigner\LockStep\Client\UITest.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Collision.unity" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Collision.unity.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\CollisionCallback.unity" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\CollisionCallback.unity.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Controller.unity" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Controller.unity.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Cube %281%29.prefab" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Cube %281%29.prefab.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\demo.unity" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\demo.unity.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\PhysicsEngine.prefab" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\PhysicsEngine.prefab.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\CallbackTest.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\EngineStart.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\GGTest.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\Lockstepcheck.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\SimpleController.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Documentation.pdf" />
-    <None Include="GameDesigner\LockStep\GGPhys\Documentation.pdf.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Editor.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Editor\InspectorExtension.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Core.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Core\Matrix3.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Core\Matrix4.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Drawing.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Drawing\DebugExtension.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\F32.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\F64.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\Fixed32.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\Fixed64.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\FixedUtil.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\ClassObjectPool.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\DMapList.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\Singleton.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingBox.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingSphere.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingVolum.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\Grid.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\GridManager.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\Octree.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\OctreeNode.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionBox.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionCapsule.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionData.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionDetector.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionPrimitive.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionRay.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionSphere.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionTriangle.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollistionConvex.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\GJKDetecotor.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\IntersectionTests.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\CollisionConstraint.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidConstraint.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContact.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContactPotential.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContactSIResolver.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidForce.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidForceArea.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidGravityForce.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidSpringForce.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\RigidBody.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\RigidBodyEngine.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BBoxCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BCapsuleCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BConvexCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BMeshCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BRigidBody.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BSphereCollider.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\InspectorAttribute.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\RigidBodyCallBack.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Phys\Unity\RigidPhysicsEngine.cs.meta" />
-    <None Include="GameDesigner\LockStep\GGPhys\Readme.pdf" />
-    <None Include="GameDesigner\LockStep\GGPhys\Readme.pdf.meta" />
-    <None Include="GameDesigner\LockStep\Server.meta" />
-    <None Include="GameDesigner\LockStep\Server\Player.cs.meta" />
-    <None Include="GameDesigner\LockStep\Server\Scene.cs.meta" />
-    <None Include="GameDesigner\LockStep\Server\Service.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64AcosLut.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64SinLut.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64TanLut.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMath.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMatrix.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMatrix4x4.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSQuaternion.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSRandom.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSRect.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector2.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector3.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector4.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity\Editor.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSFPDrawer.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSVector2Drawer.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSVectorDrawer.cs.meta" />
-    <None Include="GameDesigner\LockStep\TrueSync\Unity\TSTransform.cs.meta" />
     <None Include="GameDesigner\MVC.meta" />
+    <None Include="GameDesigner\MVC\Control.meta" />
+    <None Include="GameDesigner\MVC\Control\GameInit.cs.meta" />
     <None Include="GameDesigner\MVC\View.meta" />
     <None Include="GameDesigner\MVC\View\Editor.meta" />
     <None Include="GameDesigner\MVC\View\Editor\AssetBundleWindow.cs.meta" />
@@ -902,6 +772,7 @@
     <None Include="GameDesigner\Network\gudp.meta" />
     <None Include="GameDesigner\Network\gudp\Client.meta" />
     <None Include="GameDesigner\Network\gudp\Client\NetworkClient.cs.meta" />
+    <None Include="GameDesigner\Network\gudp\Client\RawClient.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Client\TcpClient.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Client\UdpClient.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Helper.meta" />
@@ -909,6 +780,8 @@
     <None Include="GameDesigner\Network\gudp\Helper\GatewayServer.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Server.meta" />
     <None Include="GameDesigner\Network\gudp\Server\NetworkServer.cs.meta" />
+    <None Include="GameDesigner\Network\gudp\Server\RawPlayer.cs.meta" />
+    <None Include="GameDesigner\Network\gudp\Server\RawServer.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Server\TcpServer.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Server\TcpServerIOCP.cs.meta" />
     <None Include="GameDesigner\Network\gudp\Server\UdpServer.cs.meta" />
@@ -922,10 +795,8 @@
     <None Include="GameDesigner\Network\kcp\Plugins\Windows.meta" />
     <None Include="GameDesigner\Network\kcp\Plugins\Windows\x64.meta" />
     <None Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.dll.meta" />
-    <None Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.pdb.meta" />
     <None Include="GameDesigner\Network\kcp\Plugins\Windows\x86.meta" />
     <None Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.dll.meta" />
-    <None Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.pdb.meta" />
     <None Include="GameDesigner\Network\kcp\Server.meta" />
     <None Include="GameDesigner\Network\kcp\Server\KcpPlayer.cs.meta" />
     <None Include="GameDesigner\Network\kcp\Server\KcpServer.cs.meta" />
@@ -993,8 +864,7 @@
     <None Include="GameDesigner\Network\web\Server\WebPlayer.cs.meta" />
     <None Include="GameDesigner\Network\web\Server\WebServer.cs.meta" />
     <None Include="GameDesigner\Network\web\使用说明.txt.meta" />
-    <None Include="GameDesigner\README.md" />
-    <None Include="GameDesigner\README.md.meta" />
+    <None Include="GameDesigner\pay.jpg.meta" />
     <None Include="GameDesigner\Serialize.meta" />
     <None Include="GameDesigner\Serialize\Newtonsoft.Json.meta" />
     <None Include="GameDesigner\Serialize\Newtonsoft.Json\Bson.meta" />
@@ -1304,13 +1174,63 @@
     <None Include="GameDesigner\StateMachine\Transition.cs.meta" />
     <None Include="GameDesigner\StateMachine\TransitionBehaviour.cs.meta" />
     <None Include="GameDesigner\StateMachine\TransitionModel.cs.meta" />
+    <None Include="GameDesigner\删减说明.txt.meta" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="GameDesigner\Editor\Resources\11000503.png" />
+    <Content Include="GameDesigner\Editor\Resources\11000826.png" />
+    <Content Include="GameDesigner\Editor\Resources\1466603769212801.jpg" />
+    <Content Include="GameDesigner\Editor\Resources\55m58PICE49_1024.png" />
+    <Content Include="GameDesigner\Editor\Resources\6631355837747161596.png" />
+    <Content Include="GameDesigner\Editor\Resources\ai.png" />
+    <Content Include="GameDesigner\Editor\Resources\Foldout_BG.png" />
+    <Content Include="GameDesigner\Editor\Resources\hotfix.txt" />
+    <Content Include="GameDesigner\Editor\Resources\Icon_Csh.png" />
+    <Content Include="GameDesigner\Editor\Resources\InfoWindow.png" />
+    <Content Include="GameDesigner\Editor\Resources\new_Add.png" />
+    <Content Include="GameDesigner\Editor\Resources\RadioButton_Off.png" />
+    <Content Include="GameDesigner\Editor\Resources\SeqNode.png" />
+    <Content Include="GameDesigner\Editor\Resources\server_list_bg.png" />
+    <Content Include="GameDesigner\Editor\Resources\server_list_bg1.png" />
+    <Content Include="GameDesigner\Editor\Resources\state.jpg" />
+    <Content Include="GameDesigner\Editor\Resources\stateStyle.png" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Buffers.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Buffers.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Codecs.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Codecs.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Common.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Common.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Handlers.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Handlers.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.Libuv.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.Libuv.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.xml" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\System.Runtime.InteropServices.RuntimeInformation.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-arm\libuv.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-x64\libuv.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-x86\libuv.dll" />
+    <Content Include="GameDesigner\Network\dotNetty~\使用说明.txt" />
+    <Content Include="GameDesigner\Network\enet\Plugins\ENetX64.dll" />
+    <Content Include="GameDesigner\Network\enet\Plugins\ENetX86.dll" />
+    <Content Include="GameDesigner\Network\enet\Plugins\Windows\enet.dll" />
+    <Content Include="GameDesigner\Network\enet\使用说明.txt" />
+    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.dll" />
+    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.dll" />
+    <Content Include="GameDesigner\Network\kcp\使用说明.txt" />
+    <Content Include="GameDesigner\Network\udx\Plugins\Windows\FastUdxApi.dll" />
+    <Content Include="GameDesigner\Network\udx\使用说明.txt" />
+    <Content Include="GameDesigner\Network\web\Plugins\SuperSocket.ClientEngine.dll" />
+    <Content Include="GameDesigner\Network\web\Plugins\WebSocket4Net.dll" />
+    <Content Include="GameDesigner\Network\web\使用说明.txt" />
+    <Content Include="GameDesigner\pay.jpg" />
+    <Content Include="GameDesigner\删减说明.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameDesigner\Blueprint\Blueprint.cs" />
     <Compile Include="GameDesigner\Blueprint\BlueprintEditorManager.cs" />
     <Compile Include="GameDesigner\Blueprint\BlueprintManager.cs" />
-    <Compile Include="GameDesigner\Blueprint\BlueprintNode.cs" />
     <Compile Include="GameDesigner\Blueprint\Constructor.cs" />
     <Compile Include="GameDesigner\Blueprint\Control\ArrayUtility.cs" />
     <Compile Include="GameDesigner\Blueprint\Control\Branch.cs" />
@@ -1339,6 +1259,7 @@
     <Compile Include="GameDesigner\Blueprint\Field.cs" />
     <Compile Include="GameDesigner\Blueprint\FunBlockNode.cs" />
     <Compile Include="GameDesigner\Blueprint\Method.cs" />
+    <Compile Include="GameDesigner\Blueprint\Node.cs" />
     <Compile Include="GameDesigner\Blueprint\NodeRun.cs" />
     <Compile Include="GameDesigner\Blueprint\NodeStart.cs" />
     <Compile Include="GameDesigner\Blueprint\ObjectModel.cs" />
@@ -1350,10 +1271,11 @@
     <Compile Include="GameDesigner\Component\Client\ClientManager.cs" />
     <Compile Include="GameDesigner\Component\Client\Login.cs" />
     <Compile Include="GameDesigner\Component\Client\MessageBox.cs" />
-    <Compile Include="GameDesigner\Component\Client\NetConvertFastProcess.cs" />
     <Compile Include="GameDesigner\Component\Client\Register.cs" />
+    <Compile Include="GameDesigner\Component\Client\SerializeAdapter.cs" />
     <Compile Include="GameDesigner\Component\Client\SingleCase.cs" />
     <Compile Include="GameDesigner\Component\Client\SingleCasePanel.cs" />
+    <Compile Include="GameDesigner\Component\Client\TransformComponent.cs" />
     <Compile Include="GameDesigner\Component\Client\UIPanelInit.cs" />
     <Compile Include="GameDesigner\Component\Client\UnityThread.cs" />
     <Compile Include="GameDesigner\Component\Clone.cs" />
@@ -1369,6 +1291,7 @@
     <Compile Include="GameDesigner\ECS\GSystem.cs" />
     <Compile Include="GameDesigner\ECS\HotfixComponent.cs" />
     <Compile Include="GameDesigner\ECS\IUpdate.cs" />
+    <Compile Include="GameDesigner\ECS\UpdateComponent.cs" />
     <Compile Include="GameDesigner\Editor\AddBlueprintNode.cs" />
     <Compile Include="GameDesigner\Editor\BlueprintEditor.cs" />
     <Compile Include="GameDesigner\Editor\BlueprintEditorTools.cs" />
@@ -1378,7 +1301,6 @@
     <Compile Include="GameDesigner\Editor\BlueprintSetting.cs" />
     <Compile Include="GameDesigner\Editor\GraphEditor.cs" />
     <Compile Include="GameDesigner\Editor\HelpEdit.cs" />
-    <Compile Include="GameDesigner\Editor\NodeEdit.cs" />
     <Compile Include="GameDesigner\Editor\PluginSettings.cs" />
     <Compile Include="GameDesigner\Editor\ScriptTools.cs" />
     <Compile Include="GameDesigner\Editor\StateBehaviourInspector.cs" />
@@ -1386,26 +1308,6 @@
     <Compile Include="GameDesigner\Editor\StateMachineSetting.cs" />
     <Compile Include="GameDesigner\Editor\StateMachineWindow.cs" />
     <Compile Include="GameDesigner\Editor\StateManagerEditor.cs" />
-    <Compile Include="GameDesigner\Editor\TransitionInspector.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\Actor.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\ARPGcamera.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\ComponentSync.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\Editor\ComponentSyncEdit.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\EnemyComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\PlayerComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\SceneManager.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\SkillCollider.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\SkillEffectAction.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\State\EnemyIdleState.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\State\EnemyMoveState.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\State\IdleState.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\State\MoveState.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Client\TransformComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Server\DBComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Server\PlayerComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Server\SceneComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Server\ServiceComponent.cs" />
-    <Compile Include="GameDesigner\Example\MMORPG_Server\WebServiceComponent.cs" />
     <Compile Include="GameDesigner\ILRuntime\CLR\Method\CLRMethod.cs" />
     <Compile Include="GameDesigner\ILRuntime\CLR\Method\ExceptionHandler.cs" />
     <Compile Include="GameDesigner\ILRuntime\CLR\Method\ILMethod.cs" />
@@ -1415,6 +1317,9 @@
     <Compile Include="GameDesigner\ILRuntime\CLR\TypeSystem\ILType.cs" />
     <Compile Include="GameDesigner\ILRuntime\CLR\TypeSystem\IType.cs" />
     <Compile Include="GameDesigner\ILRuntime\CLR\Utils\Extensions.cs" />
+    <Compile Include="GameDesigner\ILRuntime\Editor\ILRuntimeCLRBinding.cs" />
+    <Compile Include="GameDesigner\ILRuntime\Editor\ILRuntimeCrossBinding.cs" />
+    <Compile Include="GameDesigner\ILRuntime\Editor\ILRuntimeMenu.cs" />
     <Compile Include="GameDesigner\ILRuntime\Mono.Cecil\Mono.Cecil.Cil\Code.cs" />
     <Compile Include="GameDesigner\ILRuntime\Mono.Cecil\Mono.Cecil.Cil\CodeReader.cs" />
     <Compile Include="GameDesigner\ILRuntime\Mono.Cecil\Mono.Cecil.Cil\CodeWriter.cs" />
@@ -1661,94 +1566,7 @@
     <Compile Include="GameDesigner\ILRuntime\Runtime\Stack\RuntimeStack.cs" />
     <Compile Include="GameDesigner\ILRuntime\Runtime\Stack\StackFrame.cs" />
     <Compile Include="GameDesigner\ILRuntime\Runtime\Stack\StackObject.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Actor.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Component.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\DataProcess.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Enemy.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\EventSystem.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Game.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\GameMgr.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\GameSystem.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\ObjectView.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Player.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\Time.cs" />
-    <Compile Include="GameDesigner\LockStep\Client\UITest.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\CallbackTest.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\EngineStart.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\GGTest.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\Lockstepcheck.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Demo\Scripts\SimpleController.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Editor\InspectorExtension.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Core\Matrix3.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Core\Matrix4.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Drawing\DebugExtension.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\F32.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\F64.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\Fixed32.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\Fixed64.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\FixedMath\FixedUtil.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\ClassObjectPool.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\DMapList.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Base\Singleton.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingBox.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingSphere.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\BoundingVolum.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\Grid.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\GridManager.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\Octree.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\BroadPhase\OctreeNode.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionBox.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionCapsule.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionData.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionDetector.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionPrimitive.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionRay.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionSphere.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollisionTriangle.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\CollistionConvex.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\GJKDetecotor.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Collisions\NarrowPhase\IntersectionTests.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\CollisionConstraint.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidConstraint.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContact.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContactPotential.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Constraints\RigidContactSIResolver.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidForce.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidForceArea.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidGravityForce.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\Forces\RigidSpringForce.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\RigidBody.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Rigid\RigidBodyEngine.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BBoxCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BCapsuleCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BConvexCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BMeshCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BRigidBody.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\BSphereCollider.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\InspectorAttribute.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\RigidBodyCallBack.cs" />
-    <Compile Include="GameDesigner\LockStep\GGPhys\Phys\Unity\RigidPhysicsEngine.cs" />
-    <Compile Include="GameDesigner\LockStep\Server\Player.cs" />
-    <Compile Include="GameDesigner\LockStep\Server\Scene.cs" />
-    <Compile Include="GameDesigner\LockStep\Server\Service.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64AcosLut.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64SinLut.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\Fix64TanLut.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMath.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMatrix.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSMatrix4x4.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSQuaternion.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSRandom.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSRect.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector2.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector3.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Engine\Math\TSVector4.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSFPDrawer.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSVector2Drawer.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Unity\Editor\TSVectorDrawer.cs" />
-    <Compile Include="GameDesigner\LockStep\TrueSync\Unity\TSTransform.cs" />
+    <Compile Include="GameDesigner\MVC\Control\GameInit.cs" />
     <Compile Include="GameDesigner\MVC\View\Editor\AssetBundleWindow.cs" />
     <Compile Include="GameDesigner\MVC\View\Editor\FieldCollectionEdit.cs" />
     <Compile Include="GameDesigner\MVC\View\FieldCollection.cs" />
@@ -1862,11 +1680,14 @@
     <Compile Include="GameDesigner\Network\enet\Server\ENetServer.cs" />
     <Compile Include="GameDesigner\Network\enet\Server\NetPeer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\NetworkClient.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Client\RawClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Helper\DCSHelper.cs" />
     <Compile Include="GameDesigner\Network\gudp\Helper\GatewayServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\NetworkServer.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Server\RawPlayer.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Server\RawServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServerIOCP.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\UdpServer.cs" />
@@ -2204,56 +2025,6 @@
     <Compile Include="GameDesigner\StateMachine\Transition.cs" />
     <Compile Include="GameDesigner\StateMachine\TransitionBehaviour.cs" />
     <Compile Include="GameDesigner\StateMachine\TransitionModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="GameDesigner\Editor\Resources\11000503.png" />
-    <Content Include="GameDesigner\Editor\Resources\11000826.png" />
-    <Content Include="GameDesigner\Editor\Resources\1466603769212801.jpg" />
-    <Content Include="GameDesigner\Editor\Resources\55m58PICE49_1024.png" />
-    <Content Include="GameDesigner\Editor\Resources\6631355837747161596.png" />
-    <Content Include="GameDesigner\Editor\Resources\ai.png" />
-    <Content Include="GameDesigner\Editor\Resources\Foldout_BG.png" />
-    <Content Include="GameDesigner\Editor\Resources\hotfix.txt" />
-    <Content Include="GameDesigner\Editor\Resources\Icon_Csh.png" />
-    <Content Include="GameDesigner\Editor\Resources\InfoWindow.png" />
-    <Content Include="GameDesigner\Editor\Resources\new_Add.png" />
-    <Content Include="GameDesigner\Editor\Resources\RadioButton_Off.png" />
-    <Content Include="GameDesigner\Editor\Resources\SeqNode.png" />
-    <Content Include="GameDesigner\Editor\Resources\server_list_bg.png" />
-    <Content Include="GameDesigner\Editor\Resources\server_list_bg1.png" />
-    <Content Include="GameDesigner\Editor\Resources\state.jpg" />
-    <Content Include="GameDesigner\Editor\Resources\stateStyle.png" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Buffers.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Buffers.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Codecs.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Codecs.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Common.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Common.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Handlers.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Handlers.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.Libuv.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.Libuv.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\DotNetty.Transport.xml" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\System.Runtime.InteropServices.RuntimeInformation.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-arm\libuv.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-x64\libuv.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\Plugins\Windows\win-x86\libuv.dll" />
-    <Content Include="GameDesigner\Network\dotNetty~\使用说明.txt" />
-    <Content Include="GameDesigner\Network\enet\Plugins\ENetX64.dll" />
-    <Content Include="GameDesigner\Network\enet\Plugins\ENetX86.dll" />
-    <Content Include="GameDesigner\Network\enet\Plugins\Windows\enet.dll" />
-    <Content Include="GameDesigner\Network\enet\使用说明.txt" />
-    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.dll" />
-    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.pdb" />
-    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.dll" />
-    <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.pdb" />
-    <Content Include="GameDesigner\Network\kcp\使用说明.txt" />
-    <Content Include="GameDesigner\Network\udx\Plugins\Windows\FastUdxApi.dll" />
-    <Content Include="GameDesigner\Network\udx\使用说明.txt" />
-    <Content Include="GameDesigner\Network\web\Plugins\SuperSocket.ClientEngine.dll" />
-    <Content Include="GameDesigner\Network\web\Plugins\WebSocket4Net.dll" />
-    <Content Include="GameDesigner\Network\web\使用说明.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
