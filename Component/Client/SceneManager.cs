@@ -1,9 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
-namespace Net.Example
+namespace Net.Component
 {
     using Net.Client;
-    using Net.Component;
-    using Net.Component.Client;
     using Net.Share;
     using UnityEngine;
 
@@ -51,7 +49,7 @@ namespace Net.Example
         {
         }
 
-        void TransformSync(Operation opt)
+        protected void TransformSync(Operation opt)
         {
             if (!transforms.TryGetValue(opt.index, out TransformComponent t))
             {
