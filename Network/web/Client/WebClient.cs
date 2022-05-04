@@ -94,7 +94,7 @@ namespace Net.Client
                     while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
                     if (Connected)
                         StartupThread();
-                    InvokeContext((arg) => { result(Connected); });
+                    InvokeContext(() => { result(Connected); });
                     return Connected;
                 });
             }
@@ -193,7 +193,7 @@ namespace Net.Client
             revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
-            Config.GlobalConfig.ThreadPoolRun = false;
+            Config.GlobalConfig.ThreadPoolRun --;
             NDebug.Log("客户端已关闭！");
         }
 

@@ -109,31 +109,37 @@ namespace Net.Server
                         lock (bootstrap)
                         {
                             IChannelPipeline pipeline = channel.Pipeline;
-                            TcpChannel client = channel as TcpChannel;
-                            Player unClient = new Player();
-                            unClient.channel = channel;
-                            unClient.LastTime = DateTime.Now.AddMinutes(5);
-                            unClient.TcpRemoteEndPoint = client.RemoteAddress;
-                            unClient.RemotePoint = client.RemoteAddress;
-                            pipeline.AddLast("echo", new EchoServerHandler(unClient));
+                            var tcpChannel = channel as TcpChannel;
+                            Player client = new Player();
+                            client.channel = channel;
+                            client.LastTime = DateTime.Now.AddMinutes(5);
+                            client.TcpRemoteEndPoint = tcpChannel.RemoteAddress;
+                            client.RemotePoint = tcpChannel.RemoteAddress;
+                            pipeline.AddLast("echo", new EchoServerHandler(client));
                             UserIDStack.TryPop(out int uid);
-                            unClient.UserID = uid;
-                            unClient.PlayerID = uid.ToString();
-                            unClient.Name = uid.ToString();
-                            unClient.stackStream = BufferStreamShare.Take();
-                            unClient.isDispose = false;
-                            unClient.CloseSend = false;
+                            client.UserID = uid;
+                            client.PlayerID = uid.ToString();
+                            client.Name = uid.ToString();
+                            client.stackStream = BufferStreamShare.Take();
+                            client.isDispose = false;
+                            client.CloseSend = false;
                             Interlocked.Increment(ref ignoranceNumber);
                             var buffer = BufferPool.Take(50);
-                            buffer.WriteValue(unClient.UserID);
-                            buffer.WriteValue(unClient.PlayerID);
-                            SendRT(unClient, NetCmd.Identify, buffer.ToArray(true));
-                            unClient.revdQueue = RevdQueues[threadNum];
-                            unClient.sendQueue = SendQueues[threadNum];
+                            buffer.Write(client.UserID);
+                            buffer.Write(client.PlayerID);
+                            SendRT(client, NetCmd.Identify, buffer.ToArray(true));
+                            client.revdQueue = RevdQueues[threadNum];
+                            client.sendQueue = SendQueues[threadNum];
                             if (++threadNum >= RevdQueues.Count)
                                 threadNum = 0;
-                            AllClients.TryAdd(client.RemoteAddress, unClient);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                            OnHasConnectHandle(unClient);
+                            AllClients.TryAdd(tcpChannel.RemoteAddress, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+                            OnHasConnectHandle(client);
+                            if (AllClients.Count > OnlineLimit)
+                            {
+                                QueueUp.Enqueue(client);
+                                client.QueueUpCount = QueueUp.Count;
+                                SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                            }
                         }
                     }));
                 bootstrap.BindAsync(port);

@@ -114,6 +114,8 @@
         internal MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
         internal List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
+        private byte[] addressBuffer;
+        public int QueueUpCount { get; internal set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>
@@ -265,7 +267,6 @@
             return false;
         }
 
-        private byte[] addressBuffer;
         internal byte[] RemoteAddressBuffer()
         {
             if (addressBuffer != null)

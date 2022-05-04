@@ -198,14 +198,6 @@ namespace Net.Client
         /// </summary>
         public event NetworkDataTraffic OnNetworkDataTraffic;
         /// <summary>
-        /// 当服务器连接人数溢出(未知客户端连接总数), 服务器忽略当前客户端的所有Rpc请求时调用
-        /// </summary>
-        public event Action OnExceededNumberHandle;
-        /// <summary>
-        /// 当服务器在线人数爆满, 服务器忽略当前客户端的所有Rpc请求时调用
-        /// </summary>
-        public event Action OnBlockConnectionHandle;
-        /// <summary>
         /// 当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
         /// </summary>
         public event Action<OperationList> OnOperationSync;
@@ -290,6 +282,14 @@ namespace Net.Client
         /// </summary>
         public Action<int, int> OnRegisterNetworkIdentity;
         /// <summary>
+        /// 当排队等待中
+        /// </summary>
+        public Action<int> OnWhenQueuing;
+        /// <summary>
+        /// 当排队解除调用
+        /// </summary>
+        public Action OnQueueCancellation;
+        /// <summary>
         /// 发送可靠传输缓冲
         /// </summary>
         protected ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>> sendRTList = new ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>>();
@@ -304,10 +304,6 @@ namespace Net.Client
         /// 可靠传输最大值
         /// </summary>
         protected int sendRTListCount;
-        ///// <summary>
-        ///// 可靠传输流文件名称
-        ///// </summary>
-        ////protected string fileStreamName;
         /// <summary>
         /// 可靠传输文件流对象
         /// </summary>
@@ -335,14 +331,9 @@ namespace Net.Client
         /// </summary>
         public int UID { get; protected set; }
         /// <summary>
-        /// 网络数据发送频率, 大概每秒发送1000个数据
-        /// </summary>
-        [Obsolete("已弃用, 发送频率固定为1ms!", false)]
-        public int SyncFrequency { get; set; } = 1;
-        /// <summary>
         /// 同步线程上下文任务队列
         /// </summary>
-        public QueueSafe<SendOrPostCallback> workerQueue = new QueueSafe<SendOrPostCallback>();
+        public QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
         /// <summary>
         /// 允许叠包缓存最大值 默认可发送5242880(5M)的数据包
         /// </summary>
@@ -684,7 +675,8 @@ namespace Net.Client
             OnReconnectHandle += network.OnReconnect;
             OnTryToConnectHandle += network.OnTryToConnect;
             OnCloseConnectHandle += network.OnCloseConnect;
-            OnBlockConnectionHandle += network.OnBlockConnection;
+            OnWhenQueuing += network.OnWhenQueuing;
+            OnQueueCancellation += network.OnQueueCancellation;
         }
 
         /// <summary>
@@ -700,7 +692,8 @@ namespace Net.Client
             OnReconnectHandle -= network.OnReconnect;
             OnTryToConnectHandle -= network.OnTryToConnect;
             OnCloseConnectHandle -= network.OnCloseConnect;
-            OnBlockConnectionHandle -= network.OnBlockConnection;
+            OnWhenQueuing -= network.OnWhenQueuing;
+            OnQueueCancellation -= network.OnQueueCancellation;
         }
 
         /// <summary>
@@ -843,12 +836,12 @@ namespace Net.Client
         /// </summary>
         public void NetworkEventUpdate()
         {
-            int count = workerQueue.Count;
+            int count = WorkerQueue.Count;
             for (int i = 0; i < count; i++)
             {
-                if (workerQueue.TryDequeue(out SendOrPostCallback callback))
+                if (WorkerQueue.TryDequeue(out var callback))
                 {
-                    callback(null);
+                    callback();
                 }
             }
             count = revdBuffers.Count;
@@ -924,12 +917,6 @@ namespace Net.Client
                     break;
                 case NetworkState.Reconnect:
                     OnReconnectHandle?.Invoke();
-                    break;
-                case NetworkState.ExceededNumber:
-                    OnExceededNumberHandle?.Invoke();
-                    break;
-                case NetworkState.BlockConnection:
-                    OnBlockConnectionHandle?.Invoke();
                     break;
             }
             networkState = NetworkState.None;
@@ -1069,26 +1056,10 @@ namespace Net.Client
                         int count = Client.Receive(buffer);
                         Client.ReceiveTimeout = 0;
                         isDone = true;
-                        if (buffer[3] == NetCmd.BlockConnection)
-                        {
-                            InvokeContext((arg) => {
-                                networkState = NetworkState.BlockConnection;
-                                StateHandle();
-                            });
-                            throw new Exception();
-                        }
-                        if (buffer[3] == NetCmd.ExceededNumber)
-                        {
-                            InvokeContext((arg) => {
-                                networkState = NetworkState.ExceededNumber;
-                                StateHandle();
-                            });
-                            throw new Exception();
-                        }
                         buffer.Dispose();
                         Connected = true;
                         StartupThread();
-                        InvokeContext((arg) => {
+                        InvokeContext(() => {
                             networkState = NetworkState.Connected;
                             result(true);
                         });
@@ -1100,7 +1071,7 @@ namespace Net.Client
                         Connected = false;
                         Client?.Close();
                         Client = null;
-                        InvokeContext((arg) => {
+                        InvokeContext(() => {
                             networkState = NetworkState.ConnectFailed;
                             result(false);
                         });
@@ -1117,9 +1088,9 @@ namespace Net.Client
             }
         }
 
-        protected void InvokeContext(SendOrPostCallback action, object arg = null)
+        protected void InvokeContext(Action action)
         {
-            workerQueue.Enqueue(action);
+            WorkerQueue.Enqueue(action);
         }
 
         /// <summary>
@@ -1162,14 +1133,14 @@ namespace Net.Client
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeContext((arg) => { result(true, ip); });
+                    InvokeContext(() => { result(true, ip); });
                 }
                 catch (Exception ex)
                 {
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeContext((arg) => { result(false, ex.ToString()); });
+                    InvokeContext(() => { result(false, ex.ToString()); });
                 }
             });
         }
@@ -1494,7 +1465,7 @@ namespace Net.Client
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
-                stream.WriteValue(rPCModel.buffer.Length);
+                stream.Write(rPCModel.buffer.Length);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
                 if (rPCModel.bigData | ++index >= PackageLength)
                     break;
@@ -1862,12 +1833,6 @@ namespace Net.Client
                     else
                         InvokeOnRevdBufferHandle(model);
                     break;
-                case NetCmd.ExceededNumber:
-                    networkState = NetworkState.ExceededNumber;
-                    break;
-                case NetCmd.BlockConnection:
-                    networkState = NetworkState.BlockConnection;
-                    break;
                 case NetCmd.ReliableTransport:
                     var pos1 = segment.Position;
                     ushort index = segment.ReadUInt16();
@@ -1986,7 +1951,7 @@ namespace Net.Client
                     break;
                 case NetCmd.SwitchPort:
                     Task.Run(() => {
-                        InvokeContext((arg) => {
+                        InvokeContext(() => {
                             if (OnSwitchPortHandle != null)
                                 OnSwitchPortHandle(model.pars[0].ToString(), (ushort)model.pars[1]);
                             else
@@ -2004,7 +1969,7 @@ namespace Net.Client
                     OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);
                     if (OnOperationSync == null)
                         return;
-                    InvokeContext((arg)=> { OnOperationSync(list); });
+                    InvokeContext(()=> { OnOperationSync(list); });
                     break;
                 case NetCmd.Ping:
                     rPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -2015,7 +1980,7 @@ namespace Net.Client
                     currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
                     if (OnPingCallback == null)
                         return;
-                    InvokeContext((arg) => { OnPingCallback((currRto - 100d) / 2); });
+                    InvokeContext(() => { OnPingCallback((currRto - 100d) / 2); });
                     break;
                 case NetCmd.P2P:
                     {
@@ -2025,7 +1990,7 @@ namespace Net.Client
                         IPEndPoint iPEndPoint = new IPEndPoint(address, port);
                         if (OnP2PCallback == null)
                             return;
-                        InvokeContext((arg) => { OnP2PCallback(iPEndPoint); });
+                        InvokeContext(() => { OnP2PCallback(iPEndPoint); });
                     }
                     break;
                 case NetCmd.SyncVar:
@@ -2068,7 +2033,7 @@ namespace Net.Client
                             ftpDic.Remove(key);
                             fileData.fileStream.Position = 0;
                             if (OnReceiveFileHandle != null)
-                                InvokeContext((arg) => {
+                                InvokeContext(() => {
                                     if (OnReceiveFileHandle(fileData))
                                     {
                                         fileData.fileStream.Close();
@@ -2076,15 +2041,15 @@ namespace Net.Client
                                     }
                                 });
                             if (OnRevdFileProgress != null)
-                                InvokeContext((arg) => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete)); });
+                                InvokeContext(() => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete)); });
                         }
                         else
                         {
                             segment1.Position = 0;
-                            segment1.WriteValue(key);
+                            segment1.Write(key);
                             SendRT(NetCmd.Download, segment1.ToArray());
                             if (OnRevdFileProgress != null)
-                                InvokeContext((arg) => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
+                                InvokeContext(() => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
                         }
                     }
                     break;
@@ -2094,6 +2059,21 @@ namespace Net.Client
                         var key = segment1.ReadValue<int>();
                         if (ftpDic.TryGetValue(key, out FileData fileData))
                             SendFile(key, fileData);
+                    }
+                    break;
+                case NetCmd.QueueUp:
+                    {
+                        if (OnWhenQueuing != null)
+                        {
+                            var queueUpCount = BitConverter.ToInt32(model.Buffer, 0);
+                            InvokeContext(() => { OnWhenQueuing(queueUpCount); });
+                        }
+                    }
+                    break;
+                case NetCmd.QueueCancellation:
+                    {
+                        if (OnQueueCancellation != null)
+                            InvokeContext(() => { OnQueueCancellation(); });
                     }
                     break;
                 default:
@@ -2114,7 +2094,7 @@ namespace Net.Client
             {
                 float bfb = currValue / (float)dataCount * 100f;
                 RTProgress progress = new RTProgress(bfb, RTState.Sending);
-                InvokeContext((arg) => { OnRevdRTProgress(progress); });
+                InvokeContext(() => { OnRevdRTProgress(progress); });
             }
         }
 
@@ -2124,7 +2104,7 @@ namespace Net.Client
             {
                 float bfb = currValue / (float)dataCount * 100f;
                 RTProgress progress = new RTProgress(bfb, RTState.Sending);
-                InvokeContext((arg) => { OnSendRTProgress(progress); });
+                InvokeContext(() => { OnSendRTProgress(progress); });
             }
         }
 
@@ -2302,7 +2282,7 @@ namespace Net.Client
             if (Instance == this) Instance = null;
             sendReliableFrame = 0;
             revdReliableFrame = 0;
-            Config.GlobalConfig.ThreadPoolRun = false;
+            Config.GlobalConfig.ThreadPoolRun--;
             NDebug.Log("客户端关闭成功!");
         }
 
@@ -2968,7 +2948,7 @@ namespace Net.Client
         {
             if (OnRevdBufferHandle == null)
                 return;
-            InvokeContext((arg)=> {
+            InvokeContext(()=> {
                 OnRevdBufferHandle(model);
             });
         }
@@ -3070,12 +3050,6 @@ namespace Net.Client
                 case NetworkState.Reconnect:
                     OnReconnectHandle += action;
                     break;
-                case NetworkState.BlockConnection:
-                    OnBlockConnectionHandle += action;
-                    break;
-                case NetworkState.ExceededNumber:
-                    OnExceededNumberHandle += action;
-                    break;
                 case NetworkState.ConnectClosed:
                     OnCloseConnectHandle += action;
                     break;
@@ -3084,6 +3058,12 @@ namespace Net.Client
                     break;
                 case NetworkState.TryToConnect:
                     OnTryToConnectHandle += action;
+                    break;
+                case NetworkState.OnWhenQueuing:
+
+                    break;
+                case NetworkState.OnQueueCancellation:
+                    OnQueueCancellation += action;
                     break;
             }
         }
@@ -3146,22 +3126,22 @@ namespace Net.Client
             byte[] buffer = new byte[bufferSize];
             fileStream.Read(buffer, 0, buffer.Length);
             var segment1 = BufferPool.Take((int)bufferSize + 50);
-            segment1.WriteValue(fileData.ID);
-            segment1.WriteValue(fileData.fileStream.Length);
-            segment1.WriteValue(fileData.fileName);
-            segment1.WriteArray(buffer);
+            segment1.Write(fileData.ID);
+            segment1.Write(fileData.fileStream.Length);
+            segment1.Write(fileData.fileName);
+            segment1.Write(buffer);
             SendRT(NetCmd.SendFile, segment1.ToArray(true));
             if (complete)
             {
                 if (OnSendFileProgress != null)
-                    InvokeContext((arg) => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)); });
+                    InvokeContext(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)); });
                 ftpDic.Remove(key);
                 fileData.fileStream.Close();
             }
             else 
             {
                 if (OnSendFileProgress != null)
-                    InvokeContext((arg) => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)); });
+                    InvokeContext(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)); });
             }
         }
 

@@ -2,6 +2,6 @@
 {
     public static class GlobalConfig
     {
-        public static bool ThreadPoolRun;
+        public static int ThreadPoolRun;
     }
 }

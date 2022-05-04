@@ -82,7 +82,7 @@
                     while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
                     if (Connected)
                         StartupThread();
-                    InvokeContext((arg) => {
+                    InvokeContext(() => {
                         networkState = Connected ? NetworkState.Connected : NetworkState.ConnectFailed;
                         result(Connected); 
                     });
@@ -219,7 +219,7 @@
                 UdxLib.UUnInit();
                 UdxLib.INIT = false;
             }
-            Config.GlobalConfig.ThreadPoolRun = false;
+            Config.GlobalConfig.ThreadPoolRun --;
             NDebug.Log("客户端已关闭！");
         }
 

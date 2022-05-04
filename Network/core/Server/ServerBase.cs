@@ -147,14 +147,6 @@ namespace Net.Server
         /// </summary>
         public int OnlineLimit { get; set; } = 2000;
         /// <summary>
-        /// 超出的排队人数，不处理的人数
-        /// </summary>
-        protected int exceededNumber;
-        /// <summary>
-        /// 服务器爆满, 阻止连接人数 与OnlineLimit属性有关
-        /// </summary>
-        protected int blockConnection;
-        /// <summary>
         /// 服务器主场景名称
         /// </summary>
         public string MainSceneName { get; protected set; } = "MainScene";
@@ -300,6 +292,10 @@ namespace Net.Server
         protected volatile int threadNum;
         protected List<QueueSafe<RevdDataBuffer>> RevdQueues = new List<QueueSafe<RevdDataBuffer>>();
         protected List<QueueSafe<SendDataBuffer>> SendQueues = new List<QueueSafe<SendDataBuffer>>();
+        /// <summary>
+        /// 排队队列
+        /// </summary>
+        protected ConcurrentQueue<Player> QueueUp = new ConcurrentQueue<Player>();
         #endregion
 
         #region 服务器事件处理
@@ -833,27 +829,7 @@ namespace Net.Server
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
             {
-                if (ignoranceNumber >= LineUp)//排队人数
-                {
-                    exceededNumber++;
-                    OnExceededNumber(null, remotePoint);
-                    BufferPool.Push(buffer);
-                    return;
-                }
-                if (onlineNumber >= OnlineLimit)//服务器最大在线人数
-                {
-                    blockConnection++;
-                    OnBlockConnection(null, remotePoint);
-                    BufferPool.Push(buffer);
-                    return;
-                }
-                exceededNumber = 0;
-                blockConnection = 0;
-                if (!UserIDStack.TryPop(out int uid)) 
-                {
-                    Debug.LogError("uid已用尽!");
-                    return;
-                }
+                UserIDStack.TryPop(out int uid);
                 client = new Player();
                 client.UserID = uid;
                 client.PlayerID = uid.ToString();
@@ -869,6 +845,12 @@ namespace Net.Server
                     threadNum = 0;
                 AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
                 OnHasConnectHandle(client);
+                if (AllClients.Count > OnlineLimit)
+                {
+                    QueueUp.Enqueue(client);
+                    client.QueueUpCount = QueueUp.Count;
+                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                }
             }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer,  tcp_udp = tcp_udp });
         }
@@ -1135,8 +1117,8 @@ namespace Net.Server
             client.AddRpc(client);
             OnAddClientHandle?.Invoke(client);
             var buffer = BufferPool.Take(50);
-            buffer.WriteValue(client.UserID);
-            buffer.WriteValue(client.PlayerID);
+            buffer.Write(client.UserID);
+            buffer.Write(client.PlayerID);
             SendRT(client, NetCmd.Identify, buffer.ToArray(true));
         }
 
@@ -1322,9 +1304,9 @@ namespace Net.Server
                         Segment segment1 = new Segment(new byte[10], 0, 10, false);
                         IPEndPoint iPEndPoint = player.RemotePoint as IPEndPoint;
 #pragma warning disable CS0618 // 类型或成员已过时
-                        segment1.WriteValue(iPEndPoint.Address.Address);
+                        segment1.Write(iPEndPoint.Address.Address);
 #pragma warning restore CS0618 // 类型或成员已过时
-                        segment1.WriteValue(iPEndPoint.Port);
+                        segment1.Write(iPEndPoint.Port);
                         SendRT(client, NetCmd.P2P, segment1.ToArray(false));
                     }
                     break;
@@ -1376,7 +1358,7 @@ namespace Net.Server
                         else
                         {
                             segment1.Position = 0;
-                            segment1.WriteValue(key);
+                            segment1.Write(key);
                             SendRT(client, NetCmd.Download, segment1.ToArray());
                             OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download));
                         }
@@ -1441,21 +1423,21 @@ namespace Net.Server
         /// 当服务器连接人数溢出时调用
         /// </summary>
         /// <param name="remotePoint"></param>
-        protected virtual void OnExceededNumber(Player client, EndPoint remotePoint)
-        {
-            Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-            Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.ExceededNumber, 0 }, 0, remotePoint);
-        }
+        //protected virtual void OnExceededNumber(Player client, EndPoint remotePoint)
+        //{
+        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
+        //    Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.ExceededNumber, 0 }, 0, remotePoint);
+        //}
 
         /// <summary>
         /// 当服务器爆满时调用
         /// </summary>
         /// <param name="remotePoint"></param>
-        protected virtual void OnBlockConnection(Player client, EndPoint remotePoint)
-        {
-            Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-            Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.BlockConnection, 0 }, 0, remotePoint);
-        }
+        //protected virtual void OnBlockConnection(Player client, EndPoint remotePoint)
+        //{
+        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
+        //    Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.BlockConnection, 0 }, 0, remotePoint);
+        //}
 
         protected virtual void SendDataHandle()//发送线程
         {
@@ -1619,7 +1601,7 @@ namespace Net.Server
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
-                stream.WriteValue(rPCModel.buffer.Length);
+                stream.Write(rPCModel.buffer.Length);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
                 if (rPCModel.bigData | ++index >= PackageLength)
                     break;
@@ -2080,6 +2062,20 @@ namespace Net.Server
             ExitScene(client, false);
             client.Dispose();
             UserIDStack.Push(client.UserID);
+        J: if (QueueUp.TryDequeue(out var client1))
+            {
+                if (client1.isDispose)
+                    goto J;
+                SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
+                int i = 1;
+                foreach (var item in QueueUp)
+                {
+                    if (item.isDispose)
+                        continue;
+                    item.QueueUpCount = i++;
+                    SendRT(item, NetCmd.QueueUp, BitConverter.GetBytes(item.QueueUpCount));
+                }
+            }
         }
 
         /// <summary>
@@ -3038,10 +3034,10 @@ namespace Net.Server
             byte[] buffer = new byte[bufferSize];
             fileStream.Read(buffer, 0, buffer.Length);
             var segment1 = BufferPool.Take((int)bufferSize + 50);
-            segment1.WriteValue(fileData.ID);
-            segment1.WriteValue(fileData.fileStream.Length);
-            segment1.WriteValue(fileData.fileName);
-            segment1.WriteArray(buffer);
+            segment1.Write(fileData.ID);
+            segment1.Write(fileData.fileStream.Length);
+            segment1.Write(fileData.fileName);
+            segment1.Write(buffer);
             SendRT(client, NetCmd.SendFile, segment1.ToArray(true));
             if (complete)
             {

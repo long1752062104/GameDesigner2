@@ -125,23 +125,29 @@
                         ip = ip.Replace("\0", "");
                         IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
                         UserIDStack.TryPop(out int uid);
-                        Player unClient = new Player();
-                        unClient.Udx = cli;
-                        unClient.UserID = uid;
-                        unClient.PlayerID = uid.ToString();
-                        unClient.Name = uid.ToString();
-                        unClient.RemotePoint = remotePoint;
-                        unClient.LastTime = DateTime.Now.AddMinutes(5);
-                        unClient.isDispose = false;
-                        unClient.CloseSend = false;
-                        peers.TryAdd(cli, unClient);
+                        Player client = new Player();
+                        client.Udx = cli;
+                        client.UserID = uid;
+                        client.PlayerID = uid.ToString();
+                        client.Name = uid.ToString();
+                        client.RemotePoint = remotePoint;
+                        client.LastTime = DateTime.Now.AddMinutes(5);
+                        client.isDispose = false;
+                        client.CloseSend = false;
+                        peers.TryAdd(cli, client);
                         Interlocked.Increment(ref ignoranceNumber);
-                        unClient.revdQueue = RevdQueues[threadNum];
-                        unClient.sendQueue = SendQueues[threadNum];
+                        client.revdQueue = RevdQueues[threadNum];
+                        client.sendQueue = SendQueues[threadNum];
                         if (++threadNum >= RevdQueues.Count)
                             threadNum = 0;
-                        AllClients.TryAdd(remotePoint, unClient);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                        OnHasConnectHandle(unClient);
+                        AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+                        OnHasConnectHandle(client);
+                        if (AllClients.Count > OnlineLimit)
+                        {
+                            QueueUp.Enqueue(client);
+                            client.QueueUpCount = QueueUp.Count;
+                            SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                        }
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         if (peers.TryRemove(cli, out Player client2))

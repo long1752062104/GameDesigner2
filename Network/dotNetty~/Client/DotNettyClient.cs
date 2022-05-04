@@ -82,7 +82,7 @@ namespace Net.Client
                         }));
                     bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port)).Wait(10000);
                     StartupThread();
-                    InvokeContext((arg) => { result(true); });
+                    InvokeContext(() => { result(true); });
                     return true;
                 }
                 catch (Exception)
@@ -90,7 +90,7 @@ namespace Net.Client
                     channel.CloseAsync();
                     group.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
                     Connected = false;
-                    InvokeContext((arg) => { result(false); });
+                    InvokeContext(() => { result(false); });
                     return false;
                 }
             });

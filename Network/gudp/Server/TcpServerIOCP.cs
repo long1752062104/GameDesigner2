@@ -113,45 +113,51 @@
 
         private void OnTCPIOCompleted(object sender, SocketAsyncEventArgs args)
         {
-            Socket client = null;
+            Socket clientSocket = null;
             SocketAsyncOperation socketOpt = args.LastOperation;
         RevdData: switch (socketOpt)
             {
                 case SocketAsyncOperation.Accept:
                     try
                     {
-                        client = args.AcceptSocket;
-                        if (client.RemoteEndPoint == null)
+                        clientSocket = args.AcceptSocket;
+                        if (clientSocket.RemoteEndPoint == null)
                             return;
-                        SocketAsyncEventArgs args1 = new SocketAsyncEventArgs();
+                        var args1 = new SocketAsyncEventArgs();
                         args1.Completed += OnTCPIOCompleted;
                         args1.SetBuffer(new byte[65507], 0, 65507);
-                        args1.UserToken = client;
-                        Player unClient = new Player();
-                        unClient.Client = client;
-                        unClient.LastTime = DateTime.Now.AddMinutes(5);
-                        unClient.RemotePoint = client.RemoteEndPoint;
-                        unClient.TcpRemoteEndPoint = client.RemoteEndPoint;
+                        args1.UserToken = clientSocket;
+                        Player client = new Player();
+                        client.Client = clientSocket;
+                        client.LastTime = DateTime.Now.AddMinutes(5);
+                        client.RemotePoint = clientSocket.RemoteEndPoint;
+                        client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
                         UserIDStack.TryPop(out int uid);
-                        unClient.UserID = uid;
-                        unClient.PlayerID = uid.ToString();
-                        unClient.Name = uid.ToString();
-                        unClient.stackStream = BufferStreamShare.Take();
-                        unClient.isDispose = false;
-                        unClient.CloseSend = false;
-                        unClient.SocketAsync = args1;
+                        client.UserID = uid;
+                        client.PlayerID = uid.ToString();
+                        client.Name = uid.ToString();
+                        client.stackStream = BufferStreamShare.Take();
+                        client.isDispose = false;
+                        client.CloseSend = false;
+                        client.SocketAsync = args1;
                         Interlocked.Increment(ref ignoranceNumber);
                         var buffer = BufferPool.Take(50);
-                        buffer.WriteValue(uid);
-                        buffer.WriteValue(unClient.PlayerID);
-                        SendRT(unClient, NetCmd.Identify, buffer.ToArray(true));
-                        unClient.revdQueue = RevdQueues[threadNum];
-                        unClient.sendQueue = SendQueues[threadNum];
+                        buffer.Write(uid);
+                        buffer.Write(client.PlayerID);
+                        SendRT(client, NetCmd.Identify, buffer.ToArray(true));
+                        client.revdQueue = RevdQueues[threadNum];
+                        client.sendQueue = SendQueues[threadNum];
                         if (++threadNum >= RevdQueues.Count)
                             threadNum = 0;
-                        AllClients.TryAdd(client.RemoteEndPoint, unClient);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                        OnHasConnectHandle(unClient);
-                        bool willRaiseEvent = client.ReceiveAsync(args1);
+                        AllClients.TryAdd(clientSocket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+                        OnHasConnectHandle(client);
+                        if (AllClients.Count > OnlineLimit)
+                        {
+                            QueueUp.Enqueue(client);
+                            client.QueueUpCount = QueueUp.Count;
+                            SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                        }
+                        bool willRaiseEvent = clientSocket.ReceiveAsync(args1);
                         if (!willRaiseEvent)
                         {
                             socketOpt = SocketAsyncOperation.Receive;
@@ -168,7 +174,7 @@
                     }
                     break;
                 case SocketAsyncOperation.Receive:
-                    client = args.UserToken as Socket;
+                    clientSocket = args.UserToken as Socket;
                     int count = args.BytesTransferred;
                     if (count > 0 & args.SocketError == SocketError.Success)
                     {
@@ -177,16 +183,16 @@
                         Buffer.BlockCopy(args.Buffer, args.Offset, buffer, 0, count);
                         receiveCount += count;
                         receiveAmount++;
-                        EndPoint remotePoint = client.RemoteEndPoint;
+                        EndPoint remotePoint = clientSocket.RemoteEndPoint;
                         if (AllClients.TryGetValue(remotePoint, out Player client1))//在线客户端  得到client对象
                             client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer, tcp_udp = true });
-                        if (!client.ReceiveAsync(args))
+                        if (!clientSocket.ReceiveAsync(args))
                             goto RevdData;
                     }
                     break;
                 case SocketAsyncOperation.Send:
-                    client = args.UserToken as Socket;
-                    bool willRaiseEvent1 = client.ReceiveAsync(args);
+                    clientSocket = args.UserToken as Socket;
+                    bool willRaiseEvent1 = clientSocket.ReceiveAsync(args);
                     if (!willRaiseEvent1)
                     {
                         socketOpt = SocketAsyncOperation.Receive;

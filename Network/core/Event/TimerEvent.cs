@@ -23,6 +23,7 @@ namespace Net.Event
             internal int eventId;
             internal bool async;
             internal bool complete = true;
+            internal bool isRemove;
 
             public override string ToString()
             {
@@ -165,35 +166,42 @@ namespace Net.Event
             time += interval;
             for (int i = 0; i < events.Count; i++)
             {
-                if (time > events[i].time)
+                var @event = events[i];
+                if (@event.isRemove)
                 {
-                    if (events[i].ptr1 != null)
+                    events.RemoveAt(i);
+                    if (i >= 0) i--;
+                    continue;
+                }
+                if (time > @event.time)
+                {
+                    if (@event.ptr1 != null)
                     {
-                        if (events[i].async)
-                            WorkExecute1(events[i]);
+                        if (@event.async)
+                            WorkExecute1(@event);
                         else
-                            events[i].ptr1(events[i].obj);
+                            @event.ptr1(@event.obj);
                     }
-                    else if (events[i].ptr2 != null)
+                    else if (@event.ptr2 != null)
                     {
-                        if (events[i].async)
+                        if (@event.async)
                         {
-                            WorkExecute2(events[i]);
+                            WorkExecute2(@event);
                             continue;
                         }
-                        if (events[i].ptr2(events[i].obj))
+                        if (@event.ptr2(@event.obj))
                             goto J;
                     }
-                    if (events[i].invokeNum == -1)
+                    if (@event.invokeNum == -1)
                         goto J;
-                    if (--events[i].invokeNum <= 0)
+                    if (--@event.invokeNum <= 0)
                     {
                         events.RemoveAt(i);
                         if (i >= 0) i--;
                         continue;//解决J:执行后索引超出异常
                     }
-                J: if(i > 0 & i < events.Count)
-                    events[i].time = time + events[i].timeMax;
+                J: if (i > 0 & i < events.Count)
+                        @event.time = time + @event.timeMax;
                 }
             }
         }
@@ -203,10 +211,10 @@ namespace Net.Event
             if (!@event.complete)
                 return;
             @event.complete = false;
-            await default(YieldAwaitable);
+            await Task.Yield();
             @event.ptr1(@event.obj);
             if (--@event.invokeNum <= 0)
-                events.Remove(@event);
+                @event.isRemove = true;
             else
                 @event.time = time + @event.timeMax;
             @event.complete = true;
@@ -222,7 +230,7 @@ namespace Net.Event
                 if (@event.ptr2(@event.obj))
                     @event.time = time + @event.timeMax;
                 else
-                    events.Remove(@event);
+                    @event.isRemove = true;
                 @event.complete = true;
             });
         }
@@ -233,7 +241,7 @@ namespace Net.Event
             {
                 if (events[i].eventId == eventId)
                 {
-                    events.Remove(events[i]);
+                    events[i].isRemove = true;
                     return;
                 }
             }
