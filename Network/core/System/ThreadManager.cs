@@ -24,7 +24,7 @@ namespace Net.System
 
         private static void Run()
         {
-            GlobalConfig.ThreadPoolRun ++;
+            GlobalConfig.ThreadPoolRun++;
             MainThread = new Thread(() =>
             {
                 while (GlobalConfig.ThreadPoolRun > 0)
