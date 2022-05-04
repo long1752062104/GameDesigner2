@@ -52,20 +52,6 @@
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
             {
-                if (ignoranceNumber >= LineUp)//排队人数
-                {
-                    exceededNumber++;
-                    OnExceededNumber(null, remotePoint);
-                    return;
-                }
-                if (onlineNumber >= OnlineLimit)//服务器最大在线人数
-                {
-                    blockConnection++;
-                    OnBlockConnection(null, remotePoint);
-                    return;
-                }
-                exceededNumber = 0;
-                blockConnection = 0;
                 UserIDStack.TryPop(out int uid);
                 client = new Player();
                 client.UserID = uid;
@@ -88,6 +74,12 @@
                     threadNum = 0;
                 AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
                 OnHasConnectHandle(client);
+                if (AllClients.Count > OnlineLimit)
+                {
+                    QueueUp.Enqueue(client);
+                    client.QueueUpCount = QueueUp.Count;
+                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                }
             }
             fixed (byte* p = &buffer.Buffer[0])
             {

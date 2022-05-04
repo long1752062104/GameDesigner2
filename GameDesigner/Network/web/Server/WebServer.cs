@@ -130,43 +130,35 @@
         private void AcceptConnect(IWebSocketConnection wsClient)
         {
             WebSocketConnection wsClient1 = wsClient as WebSocketConnection;
-            Socket client = ((SocketWrapper)wsClient1.Socket)._socket;
-            EndPoint remotePoint = client.RemoteEndPoint;
+            Socket clientSocket = ((SocketWrapper)wsClient1.Socket)._socket;
+            EndPoint remotePoint = clientSocket.RemoteEndPoint;
             wsClient1.OnOpen = () =>
             {
-                if (ignoranceNumber >= LineUp)//排队人数
-                {
-                    exceededNumber++;
-                    OnExceededNumber(wsClient1);
-                    return;
-                }
-                if (onlineNumber >= OnlineLimit)//服务器最大在线人数
-                {
-                    blockConnection++;
-                    OnBlockConnection(wsClient1);
-                    return;
-                }
-                exceededNumber = 0;
-                blockConnection = 0;
                 UserIDStack.TryPop(out int uid);
-                Player unClient = new Player();
-                unClient.Client = client;
-                unClient.TcpRemoteEndPoint = client.RemoteEndPoint;
-                unClient.WSClient = wsClient1;
-                unClient.RemotePoint = client.RemoteEndPoint;
-                unClient.LastTime = DateTime.Now.AddMinutes(5);
-                unClient.UserID = uid;
-                unClient.PlayerID = uid.ToString();
-                unClient.Name = uid.ToString();
-                unClient.isDispose = false;
-                unClient.CloseSend = false;
+                Player client = new Player();
+                client.Client = clientSocket;
+                client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
+                client.WSClient = wsClient1;
+                client.RemotePoint = clientSocket.RemoteEndPoint;
+                client.LastTime = DateTime.Now.AddMinutes(5);
+                client.UserID = uid;
+                client.PlayerID = uid.ToString();
+                client.Name = uid.ToString();
+                client.isDispose = false;
+                client.CloseSend = false;
                 Interlocked.Increment(ref ignoranceNumber);
-                unClient.revdQueue = RevdQueues[threadNum];
-                unClient.sendQueue = SendQueues[threadNum];
+                client.revdQueue = RevdQueues[threadNum];
+                client.sendQueue = SendQueues[threadNum];
                 if (++threadNum >= RevdQueues.Count)
                     threadNum = 0;
-                AllClients.TryAdd(client.RemoteEndPoint, unClient);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                OnHasConnectHandle(unClient);
+                AllClients.TryAdd(clientSocket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+                OnHasConnectHandle(client);
+                if (AllClients.Count > OnlineLimit)
+                {
+                    QueueUp.Enqueue(client);
+                    client.QueueUpCount = QueueUp.Count;
+                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                }
             };
             wsClient1.OnMessage = (buffer, message) => //utf-8解析
             {
@@ -220,25 +212,25 @@
             }
         }
 
-        /// <summary>
-        /// 当服务器连接人数溢出时调用
-        /// </summary>
-        /// <param name="client"></param>
-        private void OnExceededNumber(WebSocketConnection client)
-        {
-            Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-            client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.ExceededNumber, 0, 0, 0, 0 });
-        }
+        ///// <summary>
+        ///// 当服务器连接人数溢出时调用
+        ///// </summary>
+        ///// <param name="client"></param>
+        //private void OnExceededNumber(WebSocketConnection client)
+        //{
+        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
+        //    client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.ExceededNumber, 0, 0, 0, 0 });
+        //}
 
-        /// <summary>
-        /// 当服务器爆满时调用
-        /// </summary>
-        /// <param name="client"></param>
-        private void OnBlockConnection(WebSocketConnection client)
-        {
-            Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-            client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.BlockConnection, 0, 0, 0, 0 });
-        }
+        ///// <summary>
+        ///// 当服务器爆满时调用
+        ///// </summary>
+        ///// <param name="client"></param>
+        //private void OnBlockConnection(WebSocketConnection client)
+        //{
+        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
+        //    client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.BlockConnection, 0, 0, 0, 0 });
+        //}
 
         protected override void HeartHandle()
         {

@@ -78,7 +78,7 @@
                         if (DateTime.Now >= time)
                             throw new Exception("uid赋值失败!");
                     StackStream = BufferStreamShare.Take();
-                    InvokeContext((arg) => {
+                    InvokeContext(() => {
                         networkState = NetworkState.Connected;
                         result(true);
                     });
@@ -90,7 +90,7 @@
                     AbortedThread();
                     Client?.Close();
                     Client = null;
-                    InvokeContext((arg) => {
+                    InvokeContext(() => {
                         networkState = NetworkState.ConnectFailed;
                         result(false);
                     });
@@ -280,7 +280,7 @@
             revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
-            Config.GlobalConfig.ThreadPoolRun = false;
+            Config.GlobalConfig.ThreadPoolRun --;
             NDebug.Log("客户端已关闭！");
         }
 

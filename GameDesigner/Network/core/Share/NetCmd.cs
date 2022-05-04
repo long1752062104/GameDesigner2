@@ -65,11 +65,11 @@
         /// <summary>
         /// 服务器连接人数溢出, 新的客户端将不允许连接服务器, 可设置服务器的LineUp值调整
         /// </summary>
-        public const byte ExceededNumber = 13;
+        //public const byte ExceededNumber = 13;
         /// <summary>
         /// 服务器爆满, 阻止客户端连接命令, 仅限服务器回调给客户端使用的命令, 客户端可监听OnBlockConnection事件处理， 内部命令
         /// </summary>
-        public const byte BlockConnection = 14;
+        //public const byte BlockConnection = 14;
         /// <summary>
         /// 可靠传输接收指令. 内部命令
         /// </summary>
@@ -151,5 +151,13 @@
         /// 网关转发
         /// </summary>
         public const byte GatewayRelay = 34;
+        /// <summary>
+        /// 如果被排队，服务器会发此命令给客户端
+        /// </summary>
+        public const byte QueueUp = 35;
+        /// <summary>
+        /// 如果排队解除，服务器会发此命令给客户端
+        /// </summary>
+        public const byte QueueCancellation = 36;
     }
 }

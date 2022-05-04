@@ -153,7 +153,7 @@ namespace Net.Helper
                     syncVar.value = value;
                 if (segment == null)
                     segment = BufferPool.Take();
-                segment.WriteValue(syncVar.id);//(i);
+                segment.Write(syncVar.id);//(i);
                 if (syncVar.baseType)
                     segment.WriteValue(value);
                 else

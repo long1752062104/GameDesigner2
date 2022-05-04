@@ -34,8 +34,13 @@
         /// </summary>
         void OnCloseConnect();
         /// <summary>
-        /// 当服务器已爆满
+        /// 当排队时调用
         /// </summary>
-        void OnBlockConnection();
+        /// <param name="count"></param>
+        void OnWhenQueuing(int count);
+        /// <summary>
+        /// 当排队结束调用
+        /// </summary>
+        void OnQueueCancellation();
     }
 }

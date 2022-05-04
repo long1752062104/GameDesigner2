@@ -8,11 +8,6 @@ namespace Net.Adapter
     /// </summary>
     public class ListenerAdapter : INetworkEvtAdapter
     {
-        public void OnBlockConnection()
-        {
-            NDebug.LogError("服务器爆满了!");
-        }
-
         public void OnCloseConnect()
         {
             NDebug.Log("客户端关闭了连接");
@@ -46,6 +41,16 @@ namespace Net.Adapter
         public void OnTryToConnect()
         {
             NDebug.Log("尝试重新连接服务器!");
+        }
+
+        public void OnWhenQueuing(int count)
+        {
+            NDebug.Log("排队:" + count);
+        }
+
+        public void OnQueueCancellation()
+        {
+            NDebug.Log("排队结束");
         }
     }
 }

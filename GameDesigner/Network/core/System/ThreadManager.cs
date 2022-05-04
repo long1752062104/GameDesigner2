@@ -24,10 +24,10 @@ namespace Net.System
 
         private static void Run()
         {
-            GlobalConfig.ThreadPoolRun = true;
+            GlobalConfig.ThreadPoolRun ++;
             MainThread = new Thread(() =>
             {
-                while (GlobalConfig.ThreadPoolRun)
+                while (GlobalConfig.ThreadPoolRun > 0)
                 {
                     try
                     {

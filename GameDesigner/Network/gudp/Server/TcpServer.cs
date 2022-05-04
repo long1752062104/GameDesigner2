@@ -132,8 +132,8 @@
                     client.stackStream = BufferStreamShare.Take();
                     Interlocked.Increment(ref ignoranceNumber);
                     var buffer = BufferPool.Take(50);
-                    buffer.WriteValue(client.UserID);
-                    buffer.WriteValue(client.PlayerID);
+                    buffer.Write(client.UserID);
+                    buffer.Write(client.PlayerID);
                     SendRT(client, NetCmd.Identify, buffer.ToArray(true));
                     client.revdQueue = RevdQueues[threadNum];
                     client.sendQueue = SendQueues[threadNum];
@@ -141,6 +141,12 @@
                         threadNum = 0;
                     AllClients.TryAdd(socket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
                     OnHasConnectHandle(client);
+                    if (AllClients.Count > OnlineLimit)
+                    {
+                        QueueUp.Enqueue(client);
+                        client.QueueUpCount = QueueUp.Count;
+                        SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -342,20 +348,20 @@
             }
         }
 
-        protected override void OnExceededNumber(Player client, EndPoint remotePoint)
-        {
-            Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-            var segment = BufferPool.Take(50);
-            segment.WriteValue(exceededNumber);
-            SendRT(client, NetCmd.ExceededNumber, segment.ToArray(true));
-        }
+        //protected override void OnExceededNumber(Player client, EndPoint remotePoint)
+        //{
+        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
+        //    var segment = BufferPool.Take(50);
+        //    segment.Write(exceededNumber);
+        //    SendRT(client, NetCmd.ExceededNumber, segment.ToArray(true));
+        //}
 
-        protected override void OnBlockConnection(Player client, EndPoint remotePoint)
-        {
-            Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-            var segment = BufferPool.Take(50);
-            segment.WriteValue(blockConnection);
-            SendRT(client, NetCmd.BlockConnection, segment.ToArray(true));
-        }
+        //protected override void OnBlockConnection(Player client, EndPoint remotePoint)
+        //{
+        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
+        //    var segment = BufferPool.Take(50);
+        //    segment.Write(blockConnection);
+        //    SendRT(client, NetCmd.BlockConnection, segment.ToArray(true));
+        //}
     }
 }

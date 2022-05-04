@@ -29,7 +29,7 @@ namespace Net.System
             {
                 STACKS[i] = new StackSafe<Segment>();
             }
-            GlobalConfig.ThreadPoolRun = true;
+            GlobalConfig.ThreadPoolRun ++;
             ThreadManager.Invoke("BufferPool", 1f, ()=>
             {
                 try

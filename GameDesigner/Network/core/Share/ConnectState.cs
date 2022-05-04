@@ -42,12 +42,12 @@
         /// </summary>
         Reconnect,
         /// <summary>
-        /// 服务器连接人数溢出, 服务器忽略当前客户端的所有Rpc请求
+        /// 当进入排队时调用
         /// </summary>
-        ExceededNumber,
+        OnWhenQueuing,
         /// <summary>
-        /// 服务器爆满, 服务器忽略当前客户端的所有Rpc请求
+        /// 当排队结束时调用
         /// </summary>
-        BlockConnection,
+        OnQueueCancellation,
     }
 }
