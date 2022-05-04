@@ -29,14 +29,14 @@ namespace Net.System
             {
                 STACKS[i] = new StackSafe<Segment>();
             }
-            GlobalConfig.ThreadPoolRun ++;
+            GlobalConfig.ThreadPoolRun++;
             ThreadManager.Invoke("BufferPool", 1f, ()=>
             {
                 try
                 {
 #if UNITY_EDITOR
                     if (Client.ClientBase.Instance == null)
-                        GlobalConfig.ThreadPoolRun = false;
+                        GlobalConfig.ThreadPoolRun--;
 #endif
                     for (int i = 0; i < STACKS.Length; i++)
                     {

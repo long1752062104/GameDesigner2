@@ -280,7 +280,7 @@
             revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
-            Config.GlobalConfig.ThreadPoolRun --;
+            Config.GlobalConfig.ThreadPoolRun--;
             NDebug.Log("客户端已关闭！");
         }
 
