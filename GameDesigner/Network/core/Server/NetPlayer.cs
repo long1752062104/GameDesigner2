@@ -116,6 +116,10 @@
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
         public int QueueUpCount { get; internal set; }
+        /// <summary>
+        /// 是否属于排队状态
+        /// </summary>
+        public bool IsQueueUp => QueueUpCount > 0;
 
         #region 创建网络客户端(玩家)
         /// <summary>

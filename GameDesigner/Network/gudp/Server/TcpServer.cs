@@ -63,7 +63,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true);
+            AddRpcHandle(this, true, false);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);//---TCP协议
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);//IP端口设置
             Server.NoDelay = true;
@@ -145,7 +145,10 @@
                     {
                         QueueUp.Enqueue(client);
                         client.QueueUpCount = QueueUp.Count;
-                        SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                        var segment = BufferPool.Take(8);
+                        segment.Write(QueueUp.Count);
+                        segment.Write(client.QueueUpCount);
+                        SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                     }
                 }
                 catch (Exception ex)
@@ -347,21 +350,5 @@
                 SendRT(client.Value, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
             }
         }
-
-        //protected override void OnExceededNumber(Player client, EndPoint remotePoint)
-        //{
-        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-        //    var segment = BufferPool.Take(50);
-        //    segment.Write(exceededNumber);
-        //    SendRT(client, NetCmd.ExceededNumber, segment.ToArray(true));
-        //}
-
-        //protected override void OnBlockConnection(Player client, EndPoint remotePoint)
-        //{
-        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-        //    var segment = BufferPool.Take(50);
-        //    segment.Write(blockConnection);
-        //    SendRT(client, NetCmd.BlockConnection, segment.ToArray(true));
-        //}
     }
 }

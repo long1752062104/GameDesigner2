@@ -1,5 +1,4 @@
-﻿using Net.Config;
-using Net.Event;
+﻿using Net.Event;
 using System;
 using System.Threading;
 
@@ -15,7 +14,7 @@ namespace Net.System
         /// <summary>
         /// 时间计数间隔
         /// </summary>
-        public static int Interval { get; set; } = 2;
+        public static uint Interval { get; set; } = 2;
 
         static ThreadManager()
         {
@@ -24,10 +23,10 @@ namespace Net.System
 
         private static void Run()
         {
-            GlobalConfig.ThreadPoolRun++;
+#pragma warning disable IDE0017 // 简化对象初始化
             MainThread = new Thread(() =>
             {
-                while (GlobalConfig.ThreadPoolRun > 0)
+                while (true)
                 {
                     try
                     {
@@ -40,18 +39,11 @@ namespace Net.System
                     }
                 }
             });
+#pragma warning restore IDE0017 // 简化对象初始化
+            MainThread.Name = "网络主线程";
             MainThread.IsBackground = true;
             MainThread.Priority = ThreadPriority.Highest;
             MainThread.Start();
-        }
-
-        public static void PingRun()
-        {
-            string str = MainThread.ThreadState.ToString();
-            if (str.Contains("Abort") | str.Contains("Stop") | str.Contains("WaitSleepJoin"))
-            {
-                Run();
-            }
         }
 
         public static int Invoke(Func<bool> ptr, bool isAsync = false) 

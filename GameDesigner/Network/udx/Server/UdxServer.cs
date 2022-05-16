@@ -55,7 +55,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true);
+            AddRpcHandle(this, true, false);
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
             string path = AppDomain.CurrentDomain.BaseDirectory;
             if (!File.Exists(path + "\\FastUdxApi.dll"))
@@ -146,7 +146,10 @@
                         {
                             QueueUp.Enqueue(client);
                             client.QueueUpCount = QueueUp.Count;
-                            SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                            var segment = BufferPool.Take(8);
+                            segment.Write(QueueUp.Count);
+                            segment.Write(client.QueueUpCount);
+                            SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                         }
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
