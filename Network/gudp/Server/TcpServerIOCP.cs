@@ -48,7 +48,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true);
+            AddRpcHandle(this, true, false);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.NoDelay = true;
@@ -155,7 +155,10 @@
                         {
                             QueueUp.Enqueue(client);
                             client.QueueUpCount = QueueUp.Count;
-                            SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                            var segment = BufferPool.Take(8);
+                            segment.Write(QueueUp.Count);
+                            segment.Write(client.QueueUpCount);
+                            SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                         }
                         bool willRaiseEvent = clientSocket.ReceiveAsync(args1);
                         if (!willRaiseEvent)

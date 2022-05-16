@@ -14,12 +14,12 @@ namespace Net.Event
         public class Event
         {
             public string name;
-            public long time;
+            public ulong time;
             public Action<object> ptr1;
             public Func<object, bool> ptr2;
             public object obj;
             public int invokeNum;
-            internal long timeMax;
+            internal ulong timeMax;
             internal int eventId;
             internal bool async;
             internal bool complete = true;
@@ -33,7 +33,7 @@ namespace Net.Event
 
         public ListSafe<Event> events = new ListSafe<Event>();
         private int eventId = 1000;
-        private long time;
+        private ulong time;
 
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
@@ -47,7 +47,7 @@ namespace Net.Event
             var enentID = Interlocked.Increment(ref eventId);
             events.Add(new Event()
             {
-                time = (long)(this.time + (time * 1000)),
+                time = (ulong)(this.time + (time * 1000)),
                 ptr1 = (o) => { ptr(); },
                 eventId = enentID,
                 async = isAsync,
@@ -68,7 +68,7 @@ namespace Net.Event
             var enentID = Interlocked.Increment(ref eventId);
             events.Add(new Event()
             {
-                time = (long)(this.time + (time * 1000)),
+                time = (ulong)(this.time + (time * 1000)),
                 ptr1 = ptr,
                 obj = obj,
                 eventId = enentID,
@@ -91,11 +91,11 @@ namespace Net.Event
             var enentID = Interlocked.Increment(ref eventId);
             events.Add(new Event()
             {
-                time = (long)(this.time + (time * 1000)),
+                time = (ulong)(this.time + (time * 1000)),
                 ptr1 = ptr,
                 obj = obj,
                 invokeNum = invokeNum,
-                timeMax = (long)(time * 1000),
+                timeMax = (ulong)(time * 1000),
                 eventId = enentID,
                 async = isAsync,
             });
@@ -128,10 +128,10 @@ namespace Net.Event
             events.Add(new Event()
             {
                 name = name,
-                time = (long)(this.time + (time * 1000)),
+                time = (ulong)(this.time + (time * 1000)),
                 ptr2 = (o) => { return ptr(); },
                 eventId = enentID,
-                timeMax = (long)(time * 1000),
+                timeMax = (ulong)(time * 1000),
                 async = isAsync,
             });
             return enentID;
@@ -150,18 +150,18 @@ namespace Net.Event
             var enentID = Interlocked.Increment(ref eventId);
             events.Add(new Event()
             {
-                time = (long)(this.time + (time * 1000)),
+                time = (ulong)(this.time + (time * 1000)),
                 ptr2 = ptr,
                 obj = obj,
                 invokeNum = 1,
-                timeMax = (long)(time * 1000),
+                timeMax = (ulong)(time * 1000),
                 eventId = enentID,
                 async = isAsync,
             });
             return enentID;
         }
 
-        public void UpdateEvent(int interval = 33)
+        public void UpdateEvent(uint interval = 33)
         {
             time += interval;
             for (int i = 0; i < events.Count; i++)

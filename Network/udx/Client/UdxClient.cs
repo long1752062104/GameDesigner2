@@ -109,7 +109,6 @@
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
-            ThreadManager.PingRun();
         }
 
         protected void ProcessReceive(UDXEVENT_TYPE type, int erro, IntPtr cli, IntPtr pData, int len)//cb回调
@@ -219,7 +218,6 @@
                 UdxLib.UUnInit();
                 UdxLib.INIT = false;
             }
-            Config.GlobalConfig.ThreadPoolRun--;
             NDebug.Log("客户端已关闭！");
         }
 

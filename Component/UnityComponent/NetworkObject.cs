@@ -64,7 +64,7 @@ namespace Net.UnityComponent
 
         internal void InitSyncVar(object target)
         {
-            ClientManager.I.client.AddRpcHandle(target, false, (info) =>
+            ClientManager.I.client.AddRpcHandle(target, false, true, (info) =>
             {
                 info.id = (ushort)syncVarInfos.Count;
                 syncVarInfos.Add(info);

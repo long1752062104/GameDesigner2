@@ -37,7 +37,7 @@
         /// 当排队时调用
         /// </summary>
         /// <param name="count"></param>
-        void OnWhenQueuing(int count);
+        void OnWhenQueuing(int totalCount, int count);
         /// <summary>
         /// 当排队结束调用
         /// </summary>

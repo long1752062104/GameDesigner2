@@ -78,7 +78,10 @@
                 {
                     QueueUp.Enqueue(client);
                     client.QueueUpCount = QueueUp.Count;
-                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                    var segment = BufferPool.Take(8);
+                    segment.Write(QueueUp.Count);
+                    segment.Write(client.QueueUpCount);
+                    SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                 }
             }
             fixed (byte* p = &buffer.Buffer[0])

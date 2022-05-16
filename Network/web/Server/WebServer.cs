@@ -84,7 +84,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true);
+            AddRpcHandle(this, true, false);
             IPAddress ipAddress = IPAddress.Any;
             IPEndPoint ip = new IPEndPoint(ipAddress, port);//IP端口设置
             Server = new WebSocketServer($"ws://{ip}");
@@ -157,7 +157,10 @@
                 {
                     QueueUp.Enqueue(client);
                     client.QueueUpCount = QueueUp.Count;
-                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                    var segment = BufferPool.Take(8);
+                    segment.Write(QueueUp.Count);
+                    segment.Write(client.QueueUpCount);
+                    SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                 }
             };
             wsClient1.OnMessage = (buffer, message) => //utf-8解析

@@ -43,7 +43,7 @@ namespace Net.Adapter
             NDebug.Log("尝试重新连接服务器!");
         }
 
-        public void OnWhenQueuing(int count)
+        public void OnWhenQueuing(int totalCount, int count)
         {
             NDebug.Log("排队:" + count);
         }

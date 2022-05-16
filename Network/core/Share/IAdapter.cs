@@ -37,7 +37,7 @@ namespace Net.Share
     /// </summary>
     public interface IRPCAdapter : IAdapter
     {
-        void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect);
+        void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect);
 
         void OnRpcExecute(RPCModel model);
 
@@ -55,7 +55,7 @@ namespace Net.Share
     /// <typeparam name="Player"></typeparam>
     public interface IRPCAdapter<Player> : IAdapter where Player : NetPlayer
     {
-        void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect);
+        void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect);
 
         void OnRpcExecute(Player client, RPCModel model);
 

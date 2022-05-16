@@ -210,9 +210,9 @@ namespace Net.Client
         /// </summary>
         public event Action<RTProgress> OnSendRTProgress;
         /// <summary>
-        /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象， 参数2：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
+        /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>
-        public Action<object, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
+        public Action<object, bool, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
         /// <summary>
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
@@ -284,7 +284,7 @@ namespace Net.Client
         /// <summary>
         /// 当排队等待中
         /// </summary>
-        public Action<int> OnWhenQueuing;
+        public Action<int, int> OnWhenQueuing;
         /// <summary>
         /// 当排队解除调用
         /// </summary>
@@ -493,11 +493,26 @@ namespace Net.Client
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
+        /// <param name="async">是否异步收集rpc方法和同步字段和属性?</param>
+        public void AddRpcHandle(object target, bool append, bool async = true, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
                 OnAddRpcHandle = AddRpcInternal;
-            OnAddRpcHandle(target, append, onSyncVarCollect);
+            OnAddRpcHandle(target, append, async, onSyncVarCollect);
+        }
+
+        private void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect)
+        {
+            if (async)
+            {
+                Task.Run(() => {
+                    AddRpcInternal(target, append, onSyncVarCollect);
+                });
+            }
+            else
+            {
+                AddRpcInternal(target, append, onSyncVarCollect);
+            }
         }
 
         private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
@@ -1165,7 +1180,6 @@ namespace Net.Client
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
-            ThreadManager.PingRun();
         }
 
         /// <summary>
@@ -2065,8 +2079,9 @@ namespace Net.Client
                     {
                         if (OnWhenQueuing != null)
                         {
-                            var queueUpCount = BitConverter.ToInt32(model.Buffer, 0);
-                            InvokeContext(() => { OnWhenQueuing(queueUpCount); });
+                            var totalCount = segment.ReadInt32();
+                            var queueUpCount = segment.ReadInt32();
+                            InvokeContext(() => { OnWhenQueuing(totalCount, queueUpCount); });
                         }
                     }
                     break;
@@ -2282,7 +2297,6 @@ namespace Net.Client
             if (Instance == this) Instance = null;
             sendReliableFrame = 0;
             revdReliableFrame = 0;
-            Config.GlobalConfig.ThreadPoolRun--;
             NDebug.Log("客户端关闭成功!");
         }
 

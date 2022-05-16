@@ -352,9 +352,9 @@ namespace Net.Server
         /// </summary>
         public Action<Player, byte[], bool> OnSendErrorHandle;
         /// <summary>
-        /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象， 参数2：如果服务器的rpc中已经有了这个对象，还可以添加进去？
+        /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
         /// </summary>
-        public Action<object, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
+        public Action<object, bool, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
         /// <summary>
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
@@ -626,7 +626,7 @@ namespace Net.Server
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            OnAddRpcHandle(this, true, null);
+            OnAddRpcHandle(this, true, false, null);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);
@@ -849,7 +849,10 @@ namespace Net.Server
                 {
                     QueueUp.Enqueue(client);
                     client.QueueUpCount = QueueUp.Count;
-                    SendRT(client, NetCmd.QueueUp, BitConverter.GetBytes(client.QueueUpCount));
+                    var segment = BufferPool.Take(8);
+                    segment.Write(QueueUp.Count);
+                    segment.Write(client.QueueUpCount);
+                    SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                 }
             }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer,  tcp_udp = tcp_udp });
@@ -1080,9 +1083,13 @@ namespace Net.Server
                 case NetCmd.PingCallback:
                     return;
                 case NetCmd.EntityRpc:
+                    if (CheckIsQueueUp(client))
+                        return;
                     client.Login = client.OnUnClientRequest(model);
                     break;
                 default:
+                    if (CheckIsQueueUp(client))
+                        return;
                     client.Login = OnUnClientRequest(client, model);
                     break;
             }
@@ -1090,6 +1097,19 @@ namespace Net.Server
             {
                 LoginInternal(client);
             }
+        }
+
+        private bool CheckIsQueueUp(Player client) 
+        {
+            var isQueueUp = client.QueueUpCount > 0;
+            if (isQueueUp)
+            {
+                var segment1 = BufferPool.Take(8);
+                segment1.Write(QueueUp.Count);
+                segment1.Write(client.QueueUpCount);
+                SendRT(client, NetCmd.QueueUp, segment1.ToArray(true, true));
+            }
+            return isQueueUp;
         }
 
         /// <summary>
@@ -2066,15 +2086,21 @@ namespace Net.Server
             {
                 if (client1.isDispose)
                     goto J;
+                client1.QueueUpCount = 0;
                 SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
                 int i = 1;
-                foreach (var item in QueueUp)
+                var segment = BufferPool.Take(8);
+                foreach (var client2 in QueueUp)
                 {
-                    if (item.isDispose)
+                    if (client2.isDispose)
                         continue;
-                    item.QueueUpCount = i++;
-                    SendRT(item, NetCmd.QueueUp, BitConverter.GetBytes(item.QueueUpCount));
+                    client2.QueueUpCount = i++;
+                    segment.SetPositionLength(0);
+                    segment.Write(QueueUp.Count);
+                    segment.Write(client2.QueueUpCount);
+                    SendRT(client2, NetCmd.QueueUp, segment.ToArray(false, true));
                 }
+                BufferPool.Push(segment);
             }
         }
 
@@ -2704,7 +2730,7 @@ namespace Net.Server
         /// <param name="target">注册的对象实例</param>
         public void AddRpcHandle(object target)
         {
-            AddRpcHandle(target, false);
+            AddRpcHandle(target, false, false);
         }
 
         /// <summary>
@@ -2712,11 +2738,26 @@ namespace Net.Server
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
+        public void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
                 OnAddRpcHandle = AddRpcInternal;
-            OnAddRpcHandle(target, append, onSyncVarCollect);
+            OnAddRpcHandle(target, append, async, onSyncVarCollect);
+        }
+
+        protected void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect = null)
+        {
+            if (async)
+            {
+                Task.Run(() =>
+                {
+                    AddRpcInternal(target, append, onSyncVarCollect);
+                });
+            }
+            else 
+            {
+                AddRpcInternal(target, append, onSyncVarCollect);
+            }
         }
 
         protected void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)

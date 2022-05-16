@@ -46,7 +46,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true);
+            AddRpcHandle(this, true, false);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);

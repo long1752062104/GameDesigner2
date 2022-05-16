@@ -1,6 +1,4 @@
-﻿using Net.Config;
-
-namespace Net.System
+﻿namespace Net.System
 {
     /// <summary>
     /// 数据缓冲内存池
@@ -29,15 +27,10 @@ namespace Net.System
             {
                 STACKS[i] = new StackSafe<Segment>();
             }
-            GlobalConfig.ThreadPoolRun++;
             ThreadManager.Invoke("BufferPool", 1f, ()=>
             {
                 try
                 {
-#if UNITY_EDITOR
-                    if (Client.ClientBase.Instance == null)
-                        GlobalConfig.ThreadPoolRun--;
-#endif
                     for (int i = 0; i < STACKS.Length; i++)
                     {
                         var head = STACKS[i].m_head;
