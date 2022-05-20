@@ -1536,6 +1536,7 @@
     <Compile Include="GameDesigner\Network\core\System\ExceptionArgument.cs" />
     <Compile Include="GameDesigner\Network\core\System\ExceptionResource.cs" />
     <Compile Include="GameDesigner\Network\core\System\HashHelpers.cs" />
+    <Compile Include="GameDesigner\Network\core\System\HashSetSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\IWellKnownStringEqualityComparer.cs" />
     <Compile Include="GameDesigner\Network\core\System\ListSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\QueueSafe.cs" />

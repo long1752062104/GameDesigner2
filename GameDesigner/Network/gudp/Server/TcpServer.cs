@@ -81,8 +81,8 @@
             ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
             ThreadManager.Invoke("SingleHandler", SingleHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval / 1000f, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
+            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            for (int i = 0; i < MaxThread / 2; i++)
             {
                 QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
                 RevdQueues.Add(revdQueue);
@@ -120,7 +120,6 @@
                     Socket socket = Server.Accept();
                     Player client = new Player();
                     client.Client = socket;
-                    client.LastTime = DateTime.Now.AddMinutes(5);
                     client.TcpRemoteEndPoint = socket.RemoteEndPoint;
                     client.RemotePoint = socket.RemoteEndPoint;
                     client.isDispose = false;
@@ -335,16 +334,6 @@
                 client.Value.heart++;
                 if (RTOMode == RTOMode.Variable)
                     Ping(client.Value);
-                if (!client.Value.Login)
-                {
-                    if (DateTime.Now > client.Value.LastTime)
-                    {
-                        Debug.Log($"赖在服务器的客户端:{client.Key}被强制下线!");
-                        client.Value.RemotePoint = client.Key;//解决key偶尔不对导致一直移除不了问题
-                        RemoveClient(client.Value);
-                        continue;
-                    }
-                }
                 if (client.Value.heart <= HeartLimit)//有5次确认心跳包
                     continue;
                 SendRT(client.Value, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态

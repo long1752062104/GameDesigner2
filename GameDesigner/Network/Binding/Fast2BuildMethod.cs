@@ -450,11 +450,13 @@ public static class Fast2BuildMethod
         StringBuilder str = new StringBuilder();
         str.AppendLine("using System;");
         str.AppendLine("using System.Collections.Generic;");
+        str.AppendLine("using Net.Serialize;");
+        str.AppendLine("");
         str.AppendLine("namespace Binding");
         str.AppendLine("{");
-        str.AppendLine("    public static class BindingType");
+        str.AppendLine("    public class BindingType : IBindingType");
         str.AppendLine("    {");
-        str.AppendLine("        public static readonly Type[] TYPES = new Type[]");
+        str.AppendLine("        public Type[] TYPES { get; } = new Type[]");
         str.AppendLine("        {");
         foreach (var item in types)
         {

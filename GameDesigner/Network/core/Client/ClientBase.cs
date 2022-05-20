@@ -446,6 +446,10 @@ namespace Net.Client
         private readonly List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID;//事件id
+        /// <summary>
+        /// 断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
+        /// </summary>
+        public int ReconnectCount { get; set; } = 10;
 
         /// <summary>
         /// 构造函数
@@ -1176,7 +1180,7 @@ namespace Net.Client
             StartThread("ReceiveHandle", ReceiveHandle);
             checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval * 0.001f, HeartHandler);
+            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
@@ -1644,20 +1648,6 @@ namespace Net.Client
         /// <param name="buffer"></param>
         /// <returns></returns>
         protected internal virtual FuncData OnDeserializeRpcInternal(byte[] buffer, int index, int count) { return NetConvert.Deserialize(buffer, index, count); }
-
-        /// <summary>
-        /// 当处理CRC校验
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool OnCRC(int index, byte crcCode)
-        {
-            if (index < 0 | index > CRCHelper.CRCCode.Length)
-                goto JUMP;
-            if (CRCHelper.CRCCode[index] == crcCode)
-                return true;
-            JUMP: NDebug.LogError("CRC校验失败:");
-            return false;
-        }
 
         /// <summary>
         /// 后台线程接收数据
@@ -2184,7 +2174,7 @@ namespace Net.Client
                     return true;
                 if (!Connected)
                 {
-                    Reconnection(10);//尝试连接执行
+                    Reconnection(ReconnectCount);//尝试连接执行
                     return true;
                 }
                 if (heart < HeartLimit + 5)

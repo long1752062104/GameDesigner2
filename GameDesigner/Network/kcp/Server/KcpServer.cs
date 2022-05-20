@@ -58,7 +58,6 @@
                 client.PlayerID = uid.ToString();
                 client.Name = uid.ToString();
                 client.RemotePoint = remotePoint;
-                client.LastTime = DateTime.Now.AddMinutes(5);
                 client.isDispose = false;
                 client.CloseSend = false;
                 IntPtr kcp = ikcp_create(1400, (IntPtr)1);

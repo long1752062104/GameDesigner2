@@ -1,36 +1,57 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using System;
+using System.Threading.Tasks;
+using Net.System;
+using UnityEngine;
+
 namespace Net.Component
 {
-    using global::System;
-    using global::System.Threading;
-
     /// <summary>
     /// 提供对unity主线程的访问
     /// </summary>
+    [ExecuteInEditMode]
     public class UnityThread : SingleCase<UnityThread>
     {
-        /// <summary>
-        /// 在多线程调用unity主线程的上下文对象
-        /// </summary>
-        public static SynchronizationContext Context { get; private set; }
+        public static QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
 
-        // Start is called before the first frame update
-        void Start()
+        void Update()
         {
-            Context = SynchronizationContext.Current;
-        }
-
-        public static void Call(Action action)
-        {
-            Context.Post((act) =>
+            int count = WorkerQueue.Count;
+            for (int i = 0; i < count; i++)
             {
-                ((Action)act)();
-            }, action);
+                if (WorkerQueue.TryDequeue(out var callback))
+                {
+                    callback();
+                }
+            }
         }
 
-        public static void Call(SendOrPostCallback action, object par)
+        public static async Task<T> Call<T>(Func<T> func)
         {
-            Context.Post(action, par);
+            var isComplete = false;
+            T t = default;
+            WorkerQueue.Enqueue(()=> {
+                t = func();
+                isComplete = true;
+            });
+            while (!isComplete)
+            {
+                await Task.Yield();
+            }
+            return t;
+        }
+
+        public static async Task Call(Action action)
+        {
+            var isComplete = false;
+            WorkerQueue.Enqueue(() => {
+                action();
+                isComplete = true;
+            });
+            while (!isComplete)
+            {
+                await Task.Yield();
+            }
         }
     }
 }

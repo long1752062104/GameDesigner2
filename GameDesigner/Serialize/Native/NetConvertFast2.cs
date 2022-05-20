@@ -6,7 +6,6 @@
     using global::System.Reflection;
     using Net.System;
     using Net.Share;
-    using global::Binding;
 
     /// <summary>
     /// 快速序列化2接口--动态匹配
@@ -42,6 +41,17 @@
         /// </summary>
         /// <param name="stream"></param>
         T Read(Segment stream);
+    }
+
+    /// <summary>
+    /// 类型绑定查找收集接口
+    /// </summary>
+    public interface IBindingType
+    {
+        /// <summary>
+        /// 收集的绑定类型列表
+        /// </summary>
+        Type[] TYPES { get; }
     }
 
     /// <summary>
@@ -218,23 +228,29 @@
         public static void InitBindInterfaces()
         { 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Type[] bindTypes = null;
             foreach (Assembly assembly in assemblies)
             {
                 var types = assembly.GetTypes();
                 foreach (var type in types)
                 {
                     var serType = type.GetInterface(typeof(ISerialize<>).FullName);
-                    if (serType == null)
+                    if (serType != null)
+                    {
+                        var itemType = serType.GetGenericArguments()[0];
+                        BindTypes.Add(itemType, type);
                         continue;
-                    var itemType = serType.GetGenericArguments()[0];
-                    BindTypes.Add(itemType, type);
+                    }
+                    serType = type.GetInterface(typeof(IBindingType).FullName);
+                    if (serType != null)
+                    {
+                        var bindObj = (IBindingType)Activator.CreateInstance(type);
+                        bindTypes = bindObj.TYPES;
+                    }
                 }
             }
-        }
-
-        public static void AddSerializeTypeBind()
-        {
-            //BindTypes.Add(itemType, type);
+            if(bindTypes != null)
+                AddSerializeType3s(bindTypes);
         }
 
         /// <summary>

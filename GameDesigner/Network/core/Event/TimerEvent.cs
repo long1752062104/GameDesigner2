@@ -138,6 +138,29 @@ namespace Net.Event
         }
 
         /// <summary>
+        /// 添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="time"></param>
+        /// <param name="ptr"></param>
+        /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
+        /// <returns></returns>
+        public int AddEvent(string name, int time, Func<bool> ptr, bool isAsync = false)
+        {
+            var enentID = Interlocked.Increment(ref eventId);
+            events.Add(new Event()
+            {
+                name = name,
+                time = this.time + (ulong)time,
+                ptr2 = (o) => { return ptr(); },
+                eventId = enentID,
+                timeMax = (ulong)time,
+                async = isAsync,
+            });
+            return enentID;
+        }
+
+        /// <summary>
         /// 添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
         /// </summary>
         /// <param name="time"></param>
@@ -200,7 +223,7 @@ namespace Net.Event
                         if (i >= 0) i--;
                         continue;//解决J:执行后索引超出异常
                     }
-                J: if (i > 0 & i < events.Count)
+                J: if (i >= 0 & i < events.Count)
                         @event.time = time + @event.timeMax;
                 }
             }

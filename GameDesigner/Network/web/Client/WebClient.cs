@@ -113,7 +113,7 @@ namespace Net.Client
             StartThread("SendHandle", SendDataHandle);
             ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            ThreadManager.Invoke("HeartHandler", HeartInterval * 0.001f, HeartHandler);
+            ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 ThreadManager.Invoke("UpdateHandle", UpdateHandler);
@@ -129,7 +129,7 @@ namespace Net.Client
                 if (Connected)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else//尝试连接执行
-                    Reconnection(10);
+                    Reconnection(ReconnectCount);
             }
             catch { }
             return openClient & currFrequency < 10;

@@ -63,8 +63,8 @@
             ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
             ThreadManager.Invoke("SingleHandler", SingleHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval / 1000f, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
+            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            for (int i = 0; i < MaxThread / 2; i++)
             {
                 QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
                 RevdQueues.Add(revdQueue);
@@ -129,7 +129,6 @@
                         args1.UserToken = clientSocket;
                         Player client = new Player();
                         client.Client = clientSocket;
-                        client.LastTime = DateTime.Now.AddMinutes(5);
                         client.RemotePoint = clientSocket.RemoteEndPoint;
                         client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
                         UserIDStack.TryPop(out int uid);

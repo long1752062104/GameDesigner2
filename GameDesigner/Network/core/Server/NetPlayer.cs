@@ -53,11 +53,6 @@
         /// </summary>
         private readonly MyDictionary<ushort, RPCMethod> RpcMaskDic = new MyDictionary<ushort, RPCMethod>();
         /// <summary>
-        /// 临时客户端持续时间: (内核使用):
-        /// 未知客户端连接服务器, 长时间未登录账号, 未知客户端临时内存对此客户端回收, 并强行断开此客户端连接
-        /// </summary>
-        public DateTime LastTime { get; set; }
-        /// <summary>
         /// 跳动的心
         /// </summary>
         internal byte heart = 0;
