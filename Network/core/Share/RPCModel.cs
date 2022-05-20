@@ -57,6 +57,10 @@
         /// 标记此数据为大数据
         /// </summary>
         public bool bigData;
+        /// <summary>
+        /// 参数To或As调用一次+1
+        /// </summary>
+        private int parsIndex;
 
         /// <summary>
         /// 构造
@@ -75,6 +79,7 @@
             count = buffer.Length;
             methodHash = 0;
             bigData = false;
+            parsIndex = 0;
         }
 
         /// <summary>
@@ -95,6 +100,7 @@
             count = 0; 
             methodHash = 0;
             bigData = false;
+            parsIndex = 0;
         }
 
         public RPCModel(byte cmd, ushort methodHash, object[] pars)
@@ -109,6 +115,7 @@
             index = 0;
             count = 0; 
             bigData = false;
+            parsIndex = 0;
         }
 
         /// <summary>
@@ -129,6 +136,7 @@
             count = buffer.Length;
             methodHash = 0; 
             bigData = false;
+            parsIndex = 0;
         }
 
         public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size)
@@ -143,6 +151,7 @@
             serialize = false;
             methodHash = 0;
             bigData = false;
+            parsIndex = 0;
         }
 
         /// <summary>
@@ -164,6 +173,7 @@
             count = buffer.Length;
             methodHash = 0;
             bigData = false;
+            parsIndex = 0;
         }
 
         public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, ushort methodHash)
@@ -178,6 +188,7 @@
             count = buffer.Length;
             this.methodHash = methodHash; 
             bigData = false;
+            parsIndex = 0;
         }
 
         /// <summary>
@@ -200,6 +211,7 @@
             count = 0;
             methodHash = 0;
             bigData = false;
+            parsIndex = 0;
         }
 
         public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, ushort methodHash)
@@ -214,17 +226,32 @@
             count = 0;
             this.methodHash = methodHash; 
             bigData = false;
+            parsIndex = 0;
         }
 
-        public T To<T>(int index)
+        /// <summary>
+        /// 每次调用参数都会指向下一个参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T To<T>()
         {
-            return (T)pars[index];
+            return (T)pars[parsIndex++];
         }
 
-        public T As<T>(int index) where T : class
+        /// <summary>
+        /// 每次调用参数都会指向下一个参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T As<T>() where T : class
         {
-            return pars[index] as T;
+            return pars[parsIndex++] as T;
         }
+
+        public string AsString { get => As<string>(); }
+
+        public int AsInt32 { get => To<int>(); }
 
         /// <summary>
         /// 讲类转换字符串

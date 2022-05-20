@@ -98,8 +98,8 @@
             ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
             ThreadManager.Invoke("SingleHandler", SingleHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval / 1000f, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
+            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            for (int i = 0; i < MaxThread / 2; i++)
             {
                 QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
                 RevdQueues.Add(revdQueue);
@@ -140,7 +140,6 @@
                 client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
                 client.WSClient = wsClient1;
                 client.RemotePoint = clientSocket.RemoteEndPoint;
-                client.LastTime = DateTime.Now.AddMinutes(5);
                 client.UserID = uid;
                 client.PlayerID = uid.ToString();
                 client.Name = uid.ToString();
@@ -215,26 +214,6 @@
             }
         }
 
-        ///// <summary>
-        ///// 当服务器连接人数溢出时调用
-        ///// </summary>
-        ///// <param name="client"></param>
-        //private void OnExceededNumber(WebSocketConnection client)
-        //{
-        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-        //    client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.ExceededNumber, 0, 0, 0, 0 });
-        //}
-
-        ///// <summary>
-        ///// 当服务器爆满时调用
-        ///// </summary>
-        ///// <param name="client"></param>
-        //private void OnBlockConnection(WebSocketConnection client)
-        //{
-        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-        //    client.Send(new byte[] { frame, 0, 0, 0, 0, 0x2d, 74, NetCmd.BlockConnection, 0, 0, 0, 0 });
-        //}
-
         protected override void HeartHandle()
         {
             foreach (var client in AllClients)
@@ -242,16 +221,6 @@
                 if (client.Value == null)
                     continue;
                 client.Value.heart++;
-                if (!client.Value.Login)
-                {
-                    if (DateTime.Now > client.Value.LastTime)
-                    {
-                        Debug.Log($"赖在服务器的客户端:{client.Key}被强制下线!");
-                        client.Value.RemotePoint = client.Key;//解决key偶尔不对导致一直移除不了问题
-                        RemoveClient(client.Value);
-                        continue;
-                    }
-                }
                 if (client.Value.heart <= HeartLimit)//有5次确认心跳包
                     continue;
                 Send(client.Value, NetCmd.SendHeartbeat, new byte[0]);

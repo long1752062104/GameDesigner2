@@ -105,7 +105,7 @@
             StartThread("SendHandle", SendDataHandle);
             checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval * 0.001f, HeartHandler);
+            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
@@ -162,7 +162,7 @@
                 if (Connected & heart < HeartLimit + 5)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else if (!Connected)//尝试连接执行
-                    Reconnection(10);
+                    Reconnection(ReconnectCount);
             }
             catch { }
             return openClient & currFrequency < 10;

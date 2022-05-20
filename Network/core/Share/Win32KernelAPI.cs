@@ -33,5 +33,17 @@
 
         [DllImport("ws2_32.dll", SetLastError = true)]
         public unsafe static extern int send([In] IntPtr socketHandle, [In] byte* pinnedBuffer, [In] int len, [In] SocketFlags socketFlags);
+
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        internal static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] IntPtr nullTimeout);
+
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        internal static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] ref TimeValue timeout);
+    }
+
+    public struct TimeValue
+    {
+        public int Seconds;
+        public int Microseconds;
     }
 }

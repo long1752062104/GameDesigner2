@@ -70,5 +70,10 @@ namespace Net.System
         {
             return Event.AddEvent(name, time, ptr, isAsync);
         }
+
+        public static int Invoke(string name, int time, Func<bool> ptr, bool isAsync = false)
+        {
+            return Event.AddEvent(name, time, ptr, isAsync);
+        }
     }
 }

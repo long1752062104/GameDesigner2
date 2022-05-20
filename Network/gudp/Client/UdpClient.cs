@@ -149,14 +149,6 @@
 
         protected override void OnConnected(bool result) { }
 
-        protected override bool OnCRC(int index, byte crcCode)
-        {
-            if (index < 0 | index > CRCHelper.CRCCode.Length)
-                return false;
-            if (CRCHelper.CRCCode[index] == crcCode)
-                return true;
-            return false;
-        }
         protected override void ResolveBuffer(Segment buffer, bool isTcp)
         {
             receiveCount += buffer.Count;

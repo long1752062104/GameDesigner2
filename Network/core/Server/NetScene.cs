@@ -20,15 +20,10 @@
         /// 场景容纳人数
         /// </summary>
         public int sceneCapacity;
-        private HashSet<Player> _players = new HashSet<Player>();
         /// <summary>
         /// 当前网络场景的玩家
         /// </summary>
-        public HashSet<Player> Players
-        {
-            get { return _players; }
-            set { lock (_players) _players = value; }
-        }
+        public HashSetSafe<Player> Players { get; set; } = new HashSetSafe<Player>();
         /// <summary>
         /// 当前网络场景状态
         /// </summary>
@@ -148,24 +143,14 @@
         /// 获取场景内的玩家到一维集合里
         /// </summary>
         /// <returns></returns>
-        public List<Player> GetPlayers()
+        public ListSafe<Player> GetPlayers()
         {
             return Clients;
         }
-
-        private List<Player> players = new List<Player>();
         /// <summary>
         /// 获取场景的所有客户端玩家
         /// </summary>
-        public List<Player> Clients
-        {
-            get
-            {
-                if (Players.Count != players.Count)
-                    players = new List<Player>(Players);
-                return players;
-            }
-        }
+        public ListSafe<Player> Clients { get; set; } = new ListSafe<Player>();
 
         /// <summary>
         /// 添加玩家
@@ -175,11 +160,9 @@
         {
             client.SceneID = Name;
             client.Scene = this;
-            lock (Players)
-                Players.Add(client);
+            Players.Add(client);
             OnEnter(client);
             client.OnEnter();
-            players.Clear();
         }
 
         /// <summary>
@@ -257,7 +240,7 @@
             list.frame = frame;
             list.operations = opts;
             var buffer = onSerializeOptHandle(list);
-            handle.Multicast(players, SendOperationReliable, cmd, buffer, false, false);
+            handle.Multicast(Clients, SendOperationReliable, cmd, buffer, false, false);
             ObjectPool<OperationList>.Push(list);
             OnRecovery(opts);
         }
@@ -346,7 +329,6 @@
             player.OnExit();
             player.Scene = null;
             player.SceneID = "";
-            players.Clear();
         }
 
         /// <summary>
@@ -362,7 +344,6 @@
                 player.SceneID = "";
             }
             Players.Clear();
-            players.Clear();
         }
 
         /// <summary>

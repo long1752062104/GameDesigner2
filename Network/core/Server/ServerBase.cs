@@ -242,9 +242,9 @@ namespace Net.Server
         /// </summary>
         public int UnClientNumber { get { return ignoranceNumber; } }
         /// <summary>
-        /// 并发线程数量, 发送线程和接收处理线程数量
+        /// 并发线程数量, 发送线程和接收处理线程数量 / 2
         /// </summary>
-        public int MaxThread { get; set; } = 10;
+        public int MaxThread { get; set; } = 2;
         /// <summary>
         /// 在线客户端数量
         /// </summary>
@@ -645,8 +645,8 @@ namespace Net.Server
             ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
             ThreadManager.Invoke("SingleHandler", SingleHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval / 1000f, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
+            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            for (int i = 0; i < MaxThread / 2; i++)
             {
                 QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
                 RevdQueues.Add(revdQueue);
@@ -835,7 +835,6 @@ namespace Net.Server
                 client.PlayerID = uid.ToString();
                 client.Name = uid.ToString();
                 client.RemotePoint = remotePoint;
-                client.LastTime = DateTime.Now.AddMinutes(5);
                 client.isDispose = false;
                 client.CloseSend = false;
                 Interlocked.Increment(ref ignoranceNumber);
@@ -1439,26 +1438,6 @@ namespace Net.Server
             OnSendRTProgressHandle(client, progress);
         }
 
-        /// <summary>
-        /// 当服务器连接人数溢出时调用
-        /// </summary>
-        /// <param name="remotePoint"></param>
-        //protected virtual void OnExceededNumber(Player client, EndPoint remotePoint)
-        //{
-        //    Debug.Log("未知客户端排队爆满,阻止连接次数: " + exceededNumber);
-        //    Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.ExceededNumber, 0 }, 0, remotePoint);
-        //}
-
-        /// <summary>
-        /// 当服务器爆满时调用
-        /// </summary>
-        /// <param name="remotePoint"></param>
-        //protected virtual void OnBlockConnection(Player client, EndPoint remotePoint)
-        //{
-        //    Debug.Log("服务器爆满,阻止连接次数: " + blockConnection);
-        //    Server.SendTo(new byte[] { 0, 0x2d, 74, NetCmd.BlockConnection, 0 }, 0, remotePoint);
-        //}
-
         protected virtual void SendDataHandle()//发送线程
         {
             var allClients = new Player[0];
@@ -1839,16 +1818,6 @@ namespace Net.Server
                 client.Value.heart++;
                 if (RTOMode == RTOMode.Variable)
                     Ping(client.Value);
-                if (!client.Value.Login)
-                {
-                    if (DateTime.Now > client.Value.LastTime)
-                    {
-                        Debug.Log($"赖在服务器的客户端:{client.Key}被强制下线!");
-                        client.Value.RemotePoint = client.Key;//解决key偶尔不对导致一直移除不了问题
-                        RemoveClient(client.Value);
-                        continue;
-                    }
-                }
                 if (client.Value.heart <= HeartLimit)//有5次确认心跳包
                     continue;
                 if (client.Value.heart < HeartLimit * 2)

@@ -63,14 +63,6 @@
         /// </summary>
         public const byte OtherCmd = 12;
         /// <summary>
-        /// 服务器连接人数溢出, 新的客户端将不允许连接服务器, 可设置服务器的LineUp值调整
-        /// </summary>
-        //public const byte ExceededNumber = 13;
-        /// <summary>
-        /// 服务器爆满, 阻止客户端连接命令, 仅限服务器回调给客户端使用的命令, 客户端可监听OnBlockConnection事件处理， 内部命令
-        /// </summary>
-        //public const byte BlockConnection = 14;
-        /// <summary>
         /// 可靠传输接收指令. 内部命令
         /// </summary>
         public const byte ReliableTransport = 15;

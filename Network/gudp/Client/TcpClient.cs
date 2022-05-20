@@ -109,7 +109,7 @@
                 if (heart <= HeartLimit)
                     return true;
                 if (!Connected)
-                    Reconnection(10);
+                    Reconnection(ReconnectCount);
                 else
                     Send(NetCmd.SendHeartbeat, new byte[0]);
             }
@@ -127,7 +127,7 @@
             StartThread("ReceiveHandle", ReceiveHandle);
             checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval * 0.001f, HeartHandler);
+            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
@@ -349,8 +349,8 @@
                                         client.ResolveBuffer(buffer1, false);
                                         BufferPool.Push(buffer1);
                                     }
-                                    //client.Send(NetCmd.Local, buffer);
-                                    client.SendRT("Register", RandomHelper.Range(10000,9999999).ToString(), "123");
+                                    client.Send(NetCmd.Local, buffer);
+                                    //client.SendRT("Register", RandomHelper.Range(10000,9999999).ToString(), "123");
                                     client.SendDirect();
                                 }
                                 catch (Exception ex)
@@ -400,14 +400,6 @@
 
             protected override void OnConnected(bool result) { }
 
-            protected override bool OnCRC(int index, byte crcCode)
-            {
-                if (index < 0 | index > CRCHelper.CRCCode.Length)
-                    return false;
-                if (CRCHelper.CRCCode[index] == crcCode)
-                    return true;
-                return false;
-            }
             protected override void ResolveBuffer(Segment buffer, bool isTcp)
             {
                 receiveCount += buffer.Count;

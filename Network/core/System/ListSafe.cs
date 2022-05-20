@@ -178,9 +178,7 @@ namespace Net.System
             get
             {
                 if (_syncRoot == null)
-                {
                     Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
-                }
                 return _syncRoot;
             }
         }
@@ -236,7 +234,6 @@ namespace Net.System
                 }
             }
         }
-
 
         public void Add(T item)
         {
@@ -1046,6 +1043,8 @@ namespace Net.System
         private object _syncRoot;
 
         private static readonly T[] _emptyArray = new T[0];
+
+        public T[] Items { get { return _items; } set { _items = value; } }
 
         [Serializable]
         internal class SynchronizedList : IList<T>, ICollection<T>, IEnumerable<T>, IEnumerable
