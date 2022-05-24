@@ -1654,31 +1654,36 @@ namespace Net.Client
         /// </summary>
         protected virtual void ReceiveHandle()
         {
-            Segment segment = null;
             while (Connected)
             {
                 try
                 {
-                    if (Client.Poll(1, SelectMode.SelectRead))
-                    {
-                        segment = BufferPool.Take(65507);
-                        segment.Count = Client.Receive(segment);
-                        receiveCount += segment.Count;
-                        receiveAmount++;
-                        heart = 0;
-                        ResolveBuffer(segment, false);
-                        revdLoopNum++;
-                    }
+                    Receive();
                 }
                 catch (Exception ex)
                 {
-                    if (segment != null)
-                        segment.Dispose();
                     NetworkException(ex);
                 }
             }
-            if (segment != null)
-                segment.Dispose();
+        }
+
+        public void Receive()
+        {
+            if (Client.Poll(1, SelectMode.SelectRead))
+            {
+                var segment = BufferPool.Take(65507);
+                segment.Count = Client.Receive(segment);
+                receiveCount += segment.Count;
+                receiveAmount++;
+                heart = 0;
+                ResolveBuffer(segment, false);
+                revdLoopNum++;
+                BufferPool.Push(segment);
+            }
+            else
+            {
+                Thread.Sleep(1);
+            }
         }
 
         /// <summary>

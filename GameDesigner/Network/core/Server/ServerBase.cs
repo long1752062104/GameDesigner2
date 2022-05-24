@@ -139,9 +139,9 @@ namespace Net.Server
         /// </summary>
         public int SyncSceneTime { get; set; } = 33;
         /// <summary>
-        /// 获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队1000人
+        /// 获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队5000人
         /// </summary>
-        public int LineUp { get; set; } = 1000;
+        public int LineUp { get; set; } = 5000;
         /// <summary>
         /// 允许玩家在线人数最大值（玩家在线上限）默认2000人同时在线
         /// </summary>
@@ -653,11 +653,11 @@ namespace Net.Server
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                SendQueues.Add(sendDataBeProcessed);
-                Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                proSend.Start(sendDataBeProcessed);
-                threads.Add("ProcessSend" + i, proSend);
+                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
+                //SendQueues.Add(sendDataBeProcessed);
+                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
+                //proSend.Start(sendDataBeProcessed);
+                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -839,7 +839,7 @@ namespace Net.Server
                 client.CloseSend = false;
                 Interlocked.Increment(ref ignoranceNumber);
                 client.revdQueue = RevdQueues[threadNum];
-                client.sendQueue = SendQueues[threadNum];
+                //client.sendQueue = SendQueues[threadNum];
                 if (++threadNum >= RevdQueues.Count)
                     threadNum = 0;
                 AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
@@ -854,7 +854,7 @@ namespace Net.Server
                     SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
                 }
             }
-            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer,  tcp_udp = tcp_udp });
+            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
         }
 
         protected virtual void RevdDataHandle(object state)//处理线程
@@ -1655,20 +1655,28 @@ namespace Net.Server
 
         protected virtual void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
-            {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 发送缓冲列表已经超出限制!");
-                return;
-            }
+            //if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
+            //{
+            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 发送缓冲列表已经超出限制!");
+            //    return;
+            //}
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;
-            if (buffer.Length <= 65507)
-                client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
-            else
+            //if (buffer.Length <= 65507)
+            //    client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
+            //else
+            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+            if (buffer.Length >= 65507)
+            {
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                return;
+            }
+            Server.SendTo(buffer, 0, buffer.Length, SocketFlags.None, client.RemotePoint);
+            sendAmount++;
+            sendCount += buffer.Length;
         }
 
-        protected unsafe virtual void ProcessSend(object state)
+        /**protected unsafe virtual void ProcessSend(object state)
         {
             var sendQueue = state as QueueSafe<SendDataBuffer>;
             while (IsRunServer)
@@ -1702,21 +1710,7 @@ namespace Net.Server
                     Debug.LogError("发送异常:" + ex);
                 }
             }
-        }
-
-        /// <summary>
-        /// 当处理CRC校验
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool OnCRC(int index, byte crcCode)
-        {
-            if (index < 0 | index > CRCHelper.CRCCode.Length)
-                goto JUMP;
-            if (CRCHelper.CRCCode[index] == crcCode)
-                return true;
-            JUMP: Debug.LogError("CRC校验失败:");
-            return false;
-        }
+        }*/
 
         /// <summary>
         /// 当执行Rpc(远程过程调用函数)时, 如果想提供服务器效率, 可以重写此方法, 指定要调用的方法, 可以提高服务器性能 (默认反射调用)

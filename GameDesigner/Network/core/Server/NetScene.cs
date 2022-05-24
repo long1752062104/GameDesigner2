@@ -160,7 +160,8 @@
         {
             client.SceneID = Name;
             client.Scene = this;
-            Players.Add(client);
+            if(Players.Add(client))
+                Clients.Add(client);
             OnEnter(client);
             client.OnEnter();
         }
@@ -325,6 +326,7 @@
         public void Remove(Player player)
         {
             Players.Remove(player);
+            Clients.Remove(player);
             OnExit(player);
             player.OnExit();
             player.Scene = null;
@@ -337,12 +339,7 @@
         public void RemoveAll()
         {
             foreach (var player in Players)
-            {
-                OnExit(player);
-                player.OnExit();
-                player.Scene = null;
-                player.SceneID = "";
-            }
+                Remove(player);
             Players.Clear();
         }
 

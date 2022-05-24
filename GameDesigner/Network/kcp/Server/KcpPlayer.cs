@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Kcp;
 using System.Runtime.InteropServices;
 using Net.Share;
+using System.Net.Sockets;
 
 namespace Net.Server
 {
@@ -19,6 +20,7 @@ namespace Net.Server
         /// </summary>
         public IntPtr Kcp { get; set; }
         internal outputCallback output;
+        internal Socket Server;
 
         public KcpPlayer() 
         {
@@ -29,7 +31,8 @@ namespace Net.Server
         {
             byte[] buff = new byte[len];
             Marshal.Copy(new IntPtr(buf), buff, 0, len);
-            sendQueue.Enqueue(new SendDataBuffer(this, buff));
+            //sendQueue.Enqueue(new SendDataBuffer(this, buff));
+            Server.SendTo(buff, 0, buff.Length, SocketFlags.None, RemotePoint);
             return 0;
         }
 

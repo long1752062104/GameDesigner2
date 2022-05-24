@@ -24,6 +24,7 @@ namespace Net.System
             if (position > Length)
             {
                 NDebug.LogError($"数据缓存超出总长:{position}/{Length}, 如果是大数据请设置BufferStreamShare.Size");
+                return;
             }
             BufferStreamShare.Write(offset + position, buffer, index, count);
             position += count;
@@ -57,10 +58,12 @@ namespace Net.System
     public static class BufferStreamShare
     {
         private static readonly string filePath;
-        private static readonly FileStream stream;
+        private static readonly Stream stream;
         private static long Pos;
         public static long Size = 1024 * 1024;
         private static readonly Stack<BufferStream> Stack = new Stack<BufferStream>();
+
+        public static bool UseMemoryStream { get; set; } = false;
 
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
         [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -87,7 +90,11 @@ namespace Net.System
             foreach (var file in files)
                 try { File.Delete(file); } catch{ }//尝试删除没用的之前的共享文件流
             filePath = path + $"/{Process.GetCurrentProcess().Id}.stream";
-            stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            UseMemoryStream = Net.Config.NetConfig.Config.UseMemoryStream;
+            if (UseMemoryStream)
+                stream = new MemoryStream((int)Size);
+            else
+                stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
         }
 
         [NonSerialized]
@@ -115,6 +122,12 @@ namespace Net.System
                         Length = Size
                     };
                     Pos += Size;
+                    if (UseMemoryStream)
+                    {
+                        var stream1 = BufferStreamShare.stream as MemoryStream;
+                        if(Pos >= stream1.Capacity)
+                            stream1.Capacity = (int)Pos + ((int)Size * 10);
+                    }
                     return stream;
                 }
                 stream = Stack.Pop();

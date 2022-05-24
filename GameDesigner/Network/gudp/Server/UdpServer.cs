@@ -74,11 +74,11 @@
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                SendQueues.Add(sendDataBeProcessed);
-                Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                proSend.Start(sendDataBeProcessed);
-                threads.Add("ProcessSend" + i, proSend);
+                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
+                //SendQueues.Add(sendDataBeProcessed);
+                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
+                //proSend.Start(sendDataBeProcessed);
+                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("ProcessReceive", proRevd);
             threads.Add("SendDataHandle", send);

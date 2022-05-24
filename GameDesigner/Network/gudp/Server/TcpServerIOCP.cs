@@ -71,11 +71,11 @@
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                SendQueues.Add(sendDataBeProcessed);
-                Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                proSend.Start(sendDataBeProcessed);
-                threads.Add("ProcessSend" + i, proSend);
+                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
+                //SendQueues.Add(sendDataBeProcessed);
+                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
+                //proSend.Start(sendDataBeProcessed);
+                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -145,7 +145,7 @@
                         buffer.Write(client.PlayerID);
                         SendRT(client, NetCmd.Identify, buffer.ToArray(true));
                         client.revdQueue = RevdQueues[threadNum];
-                        client.sendQueue = SendQueues[threadNum];
+                        //client.sendQueue = SendQueues[threadNum];
                         if (++threadNum >= RevdQueues.Count)
                             threadNum = 0;
                         AllClients.TryAdd(clientSocket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露

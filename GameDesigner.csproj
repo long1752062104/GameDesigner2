@@ -1479,6 +1479,7 @@
     <Compile Include="GameDesigner\Network\core\Client\NetBehaviour.cs" />
     <Compile Include="GameDesigner\Network\core\Client\NetEvent.cs" />
     <Compile Include="GameDesigner\Network\core\Client\NetworkCondition.cs" />
+    <Compile Include="GameDesigner\Network\core\Config\NetConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Event\EventSystem.cs" />
     <Compile Include="GameDesigner\Network\core\Event\NDebug.cs" />
     <Compile Include="GameDesigner\Network\core\Event\TimerEvent.cs" />
@@ -1535,6 +1536,7 @@
     <Compile Include="GameDesigner\Network\core\System\Dictionary.cs" />
     <Compile Include="GameDesigner\Network\core\System\ExceptionArgument.cs" />
     <Compile Include="GameDesigner\Network\core\System\ExceptionResource.cs" />
+    <Compile Include="GameDesigner\Network\core\System\FastListSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\HashHelpers.cs" />
     <Compile Include="GameDesigner\Network\core\System\HashSetSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\IWellKnownStringEqualityComparer.cs" />

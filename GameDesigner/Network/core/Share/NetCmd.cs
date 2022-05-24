@@ -151,5 +151,9 @@
         /// 如果排队解除，服务器会发此命令给客户端
         /// </summary>
         public const byte QueueCancellation = 36;
+        /// <summary>
+        /// 服务器爆满状态
+        /// </summary>
+        public const byte ServerFull = 37;
     }
 }

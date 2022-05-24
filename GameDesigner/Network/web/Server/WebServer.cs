@@ -106,11 +106,11 @@
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                SendQueues.Add(sendDataBeProcessed);
-                Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                proSend.Start(sendDataBeProcessed);
-                threads.Add("ProcessSend" + i, proSend);
+                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
+                //SendQueues.Add(sendDataBeProcessed);
+                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
+                //proSend.Start(sendDataBeProcessed);
+                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -147,7 +147,7 @@
                 client.CloseSend = false;
                 Interlocked.Increment(ref ignoranceNumber);
                 client.revdQueue = RevdQueues[threadNum];
-                client.sendQueue = SendQueues[threadNum];
+                //client.sendQueue = SendQueues[threadNum];
                 if (++threadNum >= RevdQueues.Count)
                     threadNum = 0;
                 AllClients.TryAdd(clientSocket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
@@ -232,47 +232,19 @@
             SendDataHandle(client, rtRPCModels, true);
         }
 
-        protected override void ProcessSend(object state)
-        {
-            var sendQueue = state as QueueSafe<SendDataBuffer>;
-            while (IsRunServer)
-            {
-                try
-                {
-                    int count = sendQueue.Count;
-                    if (count <= 0)
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (sendQueue.TryDequeue(out SendDataBuffer sendData))
-                        {
-                            Player client = sendData.client as Player;
-                            client.WSClient.Send(sendData.buffer);
-                            sendAmount++;
-                            sendCount += sendData.buffer.Length;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("发送异常:" + ex);
-                }
-            }
-        }
-
         protected override void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
-            {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
-                return;
-            }
+            //if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
+            //{
+            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
+            //    return;
+            //}
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;
-            client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
+            //client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
+            client.WSClient.Send(buffer);
+            sendAmount++;
+            sendCount += buffer.Length;
         }
 
         protected override void SceneUpdateHandle()
