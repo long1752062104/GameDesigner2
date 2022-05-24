@@ -222,15 +222,14 @@ namespace Fleck
                 FleckLog.Debug("Sent " + bytes.Length + " bytes");
                 if (callback != null)
                     callback();
-            },
-                              e =>
-                              {
-                                  if (e is IOException)
-                                      FleckLog.Debug("Failed to send. Disconnecting.", e);
-                                  else
-                                      FleckLog.Info("Failed to send. Disconnecting.", e);
-                                  CloseSocket();
-                              });
+            }, e =>
+            {
+                if (e is IOException)
+                    FleckLog.Debug("Failed to send. Disconnecting.", e);
+                else
+                    FleckLog.Info("Failed to send. Disconnecting.", e);
+                CloseSocket();
+            });
         }
 
         private void CloseSocket()

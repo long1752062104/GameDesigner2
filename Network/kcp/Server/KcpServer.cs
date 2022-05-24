@@ -60,6 +60,7 @@
                 client.RemotePoint = remotePoint;
                 client.isDispose = false;
                 client.CloseSend = false;
+                client.Server = Server;
                 IntPtr kcp = ikcp_create(1400, (IntPtr)1);
                 IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
                 ikcp_setoutput(kcp, output);
@@ -68,7 +69,7 @@
                 client.Kcp = kcp;
                 Interlocked.Increment(ref ignoranceNumber);
                 client.revdQueue = RevdQueues[threadNum];
-                client.sendQueue = SendQueues[threadNum];
+                //client.sendQueue = SendQueues[threadNum];
                 if (++threadNum >= RevdQueues.Count)
                     threadNum = 0;
                 AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露

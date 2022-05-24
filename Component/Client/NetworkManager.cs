@@ -19,7 +19,6 @@ namespace Net.Component
         public int port = 6666;
         public bool throwException;
         public bool debugRpc = true;
-        public int frameRate = 60;
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;

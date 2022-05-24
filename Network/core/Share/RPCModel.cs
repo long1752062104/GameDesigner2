@@ -251,7 +251,11 @@
 
         public string AsString { get => As<string>(); }
 
+        public bool AsBoolen { get => To<bool>(); }
+
         public int AsInt32 { get => To<int>(); }
+
+        public object Obj { get { return pars[parsIndex++]; } }
 
         /// <summary>
         /// 讲类转换字符串

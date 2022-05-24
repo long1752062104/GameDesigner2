@@ -95,7 +95,7 @@
         internal Dictionary<uint, FrameList> revdFrames = new Dictionary<uint, FrameList>();
         internal long fileStreamCurrPos;
         internal QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
-        internal QueueSafe<SendDataBuffer> sendQueue = new QueueSafe<SendDataBuffer>();
+        //internal QueueSafe<SendDataBuffer> sendQueue = new QueueSafe<SendDataBuffer>();
         public bool Login { get; internal set; }
         internal bool isDispose;
         /// <summary>
