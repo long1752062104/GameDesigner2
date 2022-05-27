@@ -31,7 +31,7 @@ namespace Net.Event
             }
         }
 
-        public ListSafe<Event> events = new ListSafe<Event>();
+        public FastListSafe<Event> events = new FastListSafe<Event>();
         private int eventId = 1000;
         private ulong time;
 
@@ -41,7 +41,7 @@ namespace Net.Event
         /// <param name="time"></param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action ptr, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -62,7 +62,7 @@ namespace Net.Event
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action<object> ptr, object obj, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -85,7 +85,7 @@ namespace Net.Event
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -108,7 +108,7 @@ namespace Net.Event
         /// <param name="time"></param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<bool> ptr, bool isAsync = false)
         {
             return AddEvent("", time, ptr, isAsync);
@@ -121,7 +121,7 @@ namespace Net.Event
         /// <param name="time"></param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, float time, Func<bool> ptr, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -144,7 +144,7 @@ namespace Net.Event
         /// <param name="time"></param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, int time, Func<bool> ptr, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -167,7 +167,7 @@ namespace Net.Event
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns></returns>
+        /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
         {
             var enentID = Interlocked.Increment(ref eventId);
@@ -258,6 +258,10 @@ namespace Net.Event
             });
         }
 
+        /// <summary>
+        /// 移除事件
+        /// </summary>
+        /// <param name="eventId"></param>
         public void RemoveEvent(int eventId)
         {
             for (int i = 0; i < events.Count; i++)

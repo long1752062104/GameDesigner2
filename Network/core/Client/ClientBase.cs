@@ -290,6 +290,10 @@ namespace Net.Client
         /// </summary>
         public Action OnQueueCancellation;
         /// <summary>
+        /// 当服务器爆满，服务器积极拒绝客户端请求
+        /// </summary>
+        public Action OnServerFull;
+        /// <summary>
         /// 发送可靠传输缓冲
         /// </summary>
         protected ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>> sendRTList = new ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>>();
@@ -696,6 +700,7 @@ namespace Net.Client
             OnCloseConnectHandle += network.OnCloseConnect;
             OnWhenQueuing += network.OnWhenQueuing;
             OnQueueCancellation += network.OnQueueCancellation;
+            OnServerFull += network.OnServerFull;
         }
 
         /// <summary>
@@ -713,6 +718,7 @@ namespace Net.Client
             OnCloseConnectHandle -= network.OnCloseConnect;
             OnWhenQueuing -= network.OnWhenQueuing;
             OnQueueCancellation -= network.OnQueueCancellation;
+            OnServerFull -= network.OnServerFull;
         }
 
         /// <summary>
@@ -1242,7 +1248,7 @@ namespace Net.Client
             return Connected;
         }
 
-        private FieldInfo[] fieldEvents;
+        /**private FieldInfo[] fieldEvents;
 
         protected void InitFieldEvents()
         {
@@ -1253,7 +1259,7 @@ namespace Net.Client
                 if (fields[i].FieldType.IsSubclassOf(typeof(Delegate)))
                     fields1.Add(fields[i]);
             fieldEvents = fields1.ToArray();
-        }
+        }*/
 
         /// <summary>
         /// rpc检查处理线程
@@ -1262,9 +1268,9 @@ namespace Net.Client
         {
             try
             {
-                if (fieldEvents == null)
-                    InitFieldEvents();
-                CheckEventsUpdate(fieldEvents);
+                //if (fieldEvents == null)
+                //    InitFieldEvents();
+                //CheckEventsUpdate(fieldEvents);
                 if (OnCheckRpcUpdate == null)
                     OnCheckRpcUpdate = CheckRpcUpdate;
                 OnCheckRpcUpdate();
@@ -1331,7 +1337,7 @@ namespace Net.Client
         }
 
         //检测事件委托函数
-        private void CheckEventsUpdate(FieldInfo[] fields)
+        /**private void CheckEventsUpdate(FieldInfo[] fields)
         {
             var ds = new List<Delegate>();
             for (int i = 0; i < fields.Length; i++)
@@ -1370,7 +1376,7 @@ namespace Net.Client
                 if (oldCount != ds.Count)
                     fields[i].SetValue(this, Delegate.Combine(ds.ToArray()));
             }
-        }
+        }*/
 
         /// <summary>
         /// 发包线程
@@ -2084,6 +2090,12 @@ namespace Net.Client
                     {
                         if (OnQueueCancellation != null)
                             InvokeContext(() => { OnQueueCancellation(); });
+                    }
+                    break;
+                case NetCmd.ServerFull:
+                    {
+                        if (OnServerFull != null)
+                            InvokeContext(() => { OnServerFull(); });
                     }
                     break;
                 default:

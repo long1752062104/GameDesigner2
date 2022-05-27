@@ -1655,17 +1655,8 @@ namespace Net.Server
 
         protected virtual void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            //if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
-            //{
-            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 发送缓冲列表已经超出限制!");
-            //    return;
-            //}
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;
-            //if (buffer.Length <= 65507)
-            //    client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
-            //else
-            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
             if (buffer.Length >= 65507)
             {
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
@@ -1675,42 +1666,6 @@ namespace Net.Server
             sendAmount++;
             sendCount += buffer.Length;
         }
-
-        /**protected unsafe virtual void ProcessSend(object state)
-        {
-            var sendQueue = state as QueueSafe<SendDataBuffer>;
-            while (IsRunServer)
-            {
-                try
-                {
-                    int count = sendQueue.Count;
-                    if (count <= 0)
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (sendQueue.TryDequeue(out SendDataBuffer sendData))
-                        {
-                            Player client = sendData.client as Player;
-#if WINDOWS
-                            fixed (byte* ptr = sendData.buffer)
-                                Win32KernelAPI.sendto(Server.Handle, ptr, sendData.buffer.Length, SocketFlags.None, client.RemoteAddressBuffer(), 16);
-#else
-                            Server.SendTo(sendData.buffer, 0, sendData.buffer.Length, SocketFlags.None, client.RemotePoint);
-#endif
-                            sendAmount++;
-                            sendCount += sendData.buffer.Length;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("发送异常:" + ex);
-                }
-            }
-        }*/
 
         /// <summary>
         /// 当执行Rpc(远程过程调用函数)时, 如果想提供服务器效率, 可以重写此方法, 指定要调用的方法, 可以提高服务器性能 (默认反射调用)

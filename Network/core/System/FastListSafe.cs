@@ -8,7 +8,7 @@ using System.Threading;
 namespace Net.System
 {
     /// <summary>
-    /// 线程安全的List类, 无序的
+    /// 线程安全的List类, 无序的, 极速的
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [DebuggerTypeProxy(typeof(Mscorlib_CollectionDebugView<>))]
@@ -605,11 +605,7 @@ namespace Net.System
                 T[] list = new T[count];
                 Array.Copy(_items, index, list, 0, count);
                 //移除
-                _size -= count;
-                if (index < _size)
-                    Array.Copy(_items, index + count, _items, index, _size - index);
-                //Array.Clear(_items, _size, count);
-                _version++;
+                RemoveRange(index, count);
                 return list;
             }
         }
@@ -787,7 +783,6 @@ namespace Net.System
                     _size--;
                     if (index < _size)
                     {
-                        //Array.Copy(_items, index + 1, _items, index, _size - index);
                         _items[index] = _items[_size];
                     }
                     _items[_size] = default;
@@ -854,7 +849,6 @@ namespace Net.System
                 _size--;
                 if (index < _size)
                 {
-                    //Array.Copy(_items, index + 1, _items, index, _size - index);
                     _items[index] = _items[_size];
                 }
                 _items[_size] = default;
@@ -875,10 +869,26 @@ namespace Net.System
                 }
                 if (count > 0)
                 {
+                    int size = _size;
+                    int size1 = index + count;
                     _size -= count;
                     if (index < _size)
                     {
-                        Array.Copy(_items, index + count, _items, index, _size - index);
+                        int start = size;
+                        var size2 = _size + size1;
+                        if (_size >= size1)//如果数据充足，则从数据长度-移除长度开始复制
+                        {
+                            start = _size;
+                        }
+                        else if (size2 >= size)//如果后续填充不够，需要则从移除位置+长度开始复制
+                        {
+                            start = size1;
+                        }
+                        for (int i = start; i < size; i++)
+                        {
+                            _items[index] = _items[i];
+                            index++;
+                        }
                     }
                     Array.Clear(_items, _size, count);
                     _version++;

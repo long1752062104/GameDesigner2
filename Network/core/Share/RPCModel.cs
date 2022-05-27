@@ -236,7 +236,9 @@
         /// <returns></returns>
         public T To<T>()
         {
-            return (T)pars[parsIndex++];
+            var t = (T)pars[parsIndex];
+            parsIndex++;
+            return t;
         }
 
         /// <summary>
@@ -246,7 +248,9 @@
         /// <returns></returns>
         public T As<T>() where T : class
         {
-            return pars[parsIndex++] as T;
+            var t = pars[parsIndex] as T;
+            parsIndex++;
+            return t;
         }
 
         public string AsString { get => As<string>(); }
@@ -255,7 +259,15 @@
 
         public int AsInt32 { get => To<int>(); }
 
-        public object Obj { get { return pars[parsIndex++]; } }
+        public object Obj
+        {
+            get
+            {
+                var obj = pars[parsIndex];
+                parsIndex++;
+                return obj;
+            }
+        }
 
         /// <summary>
         /// 讲类转换字符串

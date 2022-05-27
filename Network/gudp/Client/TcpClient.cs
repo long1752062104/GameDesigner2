@@ -75,8 +75,11 @@
                     StartupThread();
                     DateTime time = DateTime.Now.AddSeconds(5);
                     while (UID == 0)
+                    {
+                        Thread.Sleep(1);
                         if (DateTime.Now >= time)
                             throw new Exception("uid赋值失败!");
+                    }
                     StackStream = BufferStreamShare.Take();
                     InvokeContext(() => {
                         networkState = NetworkState.Connected;
@@ -116,7 +119,7 @@
             catch
             {
             }
-            return openClient & currFrequency < 10;
+            return openClient & currFrequency < ReconnectCount;
         }
 
         protected override void StartupThread()

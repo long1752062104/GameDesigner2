@@ -42,7 +42,6 @@ namespace Net.System
 #pragma warning restore IDE0017 // 简化对象初始化
             MainThread.Name = "网络主线程";
             MainThread.IsBackground = true;
-            MainThread.Priority = ThreadPriority.Highest;
             MainThread.Start();
         }
 

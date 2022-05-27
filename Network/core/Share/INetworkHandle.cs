@@ -42,5 +42,9 @@
         /// 当排队结束调用
         /// </summary>
         void OnQueueCancellation();
+        /// <summary>
+        /// 当服务器爆炸，积极拒绝客户端连接
+        /// </summary>
+        void OnServerFull();
     }
 }

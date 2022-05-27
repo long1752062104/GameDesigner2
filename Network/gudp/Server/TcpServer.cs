@@ -89,11 +89,6 @@
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                //SendQueues.Add(sendDataBeProcessed);
-                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                //proSend.Start(sendDataBeProcessed);
-                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("ProcessAcceptConnect", proAcc);
             threads.Add("ProcessReceiveFrom", proRevd);
@@ -118,19 +113,6 @@
                 try
                 {
                     Socket socket = Server.Accept();
-                    if (AllClients.Count >= OnlineLimit + LineUp)
-                    {
-                        using (var stream = BufferPool.Take(256))
-                        {
-                            stream.WriteByte((byte)(74));
-                            stream.WriteByte(NetCmd.ServerFull);
-                            stream.Write(0);
-                            byte[] buffer1 = PackData(stream);
-                            int count1 = socket.Send(buffer1, 0, buffer1.Length, SocketFlags.None, out SocketError error);
-                            socket.Close();
-                        }
-                        continue;
-                    }
                     Player client = new Player();
                     client.Client = socket;
                     client.TcpRemoteEndPoint = socket.RemoteEndPoint;
@@ -148,12 +130,18 @@
                     buffer.Write(client.PlayerID);
                     SendRT(client, NetCmd.Identify, buffer.ToArray(true));
                     client.revdQueue = RevdQueues[threadNum];
-                    //client.sendQueue = SendQueues[threadNum];
                     if (++threadNum >= RevdQueues.Count)
                         threadNum = 0;
                     AllClients.TryAdd(socket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
                     OnHasConnectHandle(client);
-                    if (AllClients.Count > OnlineLimit)
+                    if (AllClients.Count >= OnlineLimit + LineUp)
+                    {
+                        SendRT(client, NetCmd.ServerFull, new byte[0]);
+                        Invoke(1f, () => {
+                            client.Client.Close();
+                        });
+                    }
+                    else if (AllClients.Count > OnlineLimit)
                     {
                         QueueUp.Enqueue(client);
                         client.QueueUpCount = QueueUp.Count;
@@ -290,14 +278,8 @@
         {
             if (!client.Client.Connected)
                 return;
-            //if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
-            //{
-            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
-            //    return;
-            //}
-            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+            if (buffer.Length <= frame)//解决长度==6的问题(没有数据)
                 return;
-            //client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
             if (client.Client.Poll(1, SelectMode.SelectWrite))
             {
                 int count1 = client.Client.Send(buffer, 0, buffer.Length, SocketFlags.None, out SocketError error);
@@ -309,7 +291,7 @@
                 sendAmount++;
                 sendCount += buffer.Length;
             }
-            else 
+            else
             {
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
             }
