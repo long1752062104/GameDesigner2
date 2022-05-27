@@ -52,5 +52,10 @@ namespace Net.Adapter
         {
             NDebug.Log("排队结束");
         }
+
+        public void OnServerFull()
+        {
+            NDebug.Log("服务器爆炸了!");
+        }
     }
 }
