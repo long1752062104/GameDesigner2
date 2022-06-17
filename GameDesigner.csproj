@@ -133,6 +133,7 @@
     <None Include="GameDesigner\Component\InspectorAttribute.cs.meta" />
     <None Include="GameDesigner\Component\MySqlHelper.cs.meta" />
     <None Include="GameDesigner\Component\NTransform.cs.meta" />
+    <None Include="GameDesigner\Component\OtherExt\SystemBaseExt.cs.meta" />
     <None Include="GameDesigner\Component\RoomData.cs.meta" />
     <None Include="GameDesigner\Component\SqlServerHelper.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent.meta" />
@@ -1145,6 +1146,7 @@
     <Compile Include="GameDesigner\Component\InspectorAttribute.cs" />
     <Compile Include="GameDesigner\Component\MySqlHelper.cs" />
     <Compile Include="GameDesigner\Component\NTransform.cs" />
+    <Compile Include="GameDesigner\Component\OtherExt\SystemBaseExt.cs" />
     <Compile Include="GameDesigner\Component\RoomData.cs" />
     <Compile Include="GameDesigner\Component\SqlServerHelper.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\BuildComponentTools.cs" />

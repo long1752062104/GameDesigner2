@@ -184,15 +184,17 @@ namespace Net.Event
             return enentID;
         }
 
-        public void UpdateEvent(uint interval = 33)
+        public void UpdateEvent(uint interval = 17)//60帧
         {
             time += interval;
-            for (int i = 0; i < events.Count; i++)
+            var count = events.Count;
+            for (int i = 0; i < count; i++)
             {
-                var @event = events[i];
+                var @event = events._items[i];
                 if (@event.isRemove)
                 {
                     events.RemoveAt(i);
+                    count = events.Count;
                     if (i >= 0) i--;
                     continue;
                 }
@@ -220,10 +222,11 @@ namespace Net.Event
                     if (--@event.invokeNum <= 0)
                     {
                         events.RemoveAt(i);
+                        count = events.Count;
                         if (i >= 0) i--;
                         continue;//解决J:执行后索引超出异常
                     }
-                J: if (i >= 0 & i < events.Count)
+                J: if (i >= 0 & i < count)
                         @event.time = time + @event.timeMax;
                 }
             }

@@ -356,4 +356,9 @@
             onSerializeOptHandle = null;
         }
     }
+
+    /// <summary>
+    /// 默认网络场景，当不需要场景时直接继承
+    /// </summary>
+    public class DefaultScene : NetScene<NetPlayer> { }
 }

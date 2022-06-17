@@ -1,5 +1,6 @@
 ﻿using Net.Event;
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Net.System
@@ -15,23 +16,59 @@ namespace Net.System
         /// 时间计数间隔
         /// </summary>
         public static uint Interval { get; set; } = 2;
+        private static bool IsRuning;
 
         static ThreadManager()
         {
+            Init();
             Run();
+        }
+
+        private static async void Init()
+        {
+            IsRuning = true;
+#if UNITY_EDITOR
+            while (UnityEditor.EditorApplication.isPlaying)
+            {
+                await global::System.Threading.Tasks.Task.Yield();
+            }
+            IsRuning = false;
+#endif
         }
 
         private static void Run()
         {
-#pragma warning disable IDE0017 // 简化对象初始化
             MainThread = new Thread(() =>
             {
-                while (true)
+                int frame = 0;//一秒60次
+                var nextTime = DateTime.Now.AddSeconds(1);
+                var stopwatch = Stopwatch.StartNew();
+                while (IsRuning)
                 {
                     try
                     {
-                        Thread.Sleep(1);
-                        Event.UpdateEvent(Interval);
+                        var frameRate = 1000 / Interval;
+                        var now = DateTime.Now;
+                        if (now >= nextTime)
+                        {
+                            if (frame < frameRate)
+                            {
+                                var step = (frameRate - frame) * Interval;
+                                Event.UpdateEvent((uint)step);
+                            }
+                            nextTime = DateTime.Now.AddSeconds(1);
+                            frame = 0;
+                            stopwatch.Restart();
+                        }
+                        else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * Interval)
+                        {
+                            Event.UpdateEvent(Interval);
+                            frame++;
+                        }
+                        else
+                        {
+                            Thread.Sleep(1);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -39,7 +76,6 @@ namespace Net.System
                     }
                 }
             });
-#pragma warning restore IDE0017 // 简化对象初始化
             MainThread.Name = "网络主线程";
             MainThread.IsBackground = true;
             MainThread.Start();

@@ -35,6 +35,7 @@
                     frame = 5;
             }
         }
+        public override byte HeartLimit { get; set; } = 60;//tcp 2分钟检测一次
 
         public override void Start(ushort port = 6666)
         {
@@ -315,12 +316,19 @@
                     continue;
                 }
                 client.Value.heart++;
-                if (RTOMode == RTOMode.Variable)
+                if (RTOMode == RTOMode.Variable & OnPingCallback != null)
                     Ping(client.Value);
-                if (client.Value.heart <= HeartLimit)//有5次确认心跳包
+                if (client.Value.heart <= HeartLimit)//确认心跳包
                     continue;
                 SendRT(client.Value, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
             }
         }
+    }
+
+    /// <summary>
+    /// 默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class TcpServer : TcpServer<NetPlayer, DefaultScene>
+    {
     }
 }
