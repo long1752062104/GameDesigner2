@@ -1,4 +1,6 @@
-﻿public static class SystemBaseExt
+﻿using System;
+
+public static class SystemBaseExt
 {
     public static string FormatCoin(this int self)
     {
@@ -7,39 +9,103 @@
 
     public static string FormatCoin(this long self)
     {
+        //double value = self;
+        //if (value < 1000)
+        //{
+        //    return value.ToString("f0");// + "$";
+        //}
+        //value /= 1000d;
+        //if (value < 1000)
+        //{
+        //    var str = value.ToString("#.##");
+        //    return str + "K";
+        //}
+        //value /= 1000d;
+        //if (value < 1000)
+        //{
+        //    var str = value.ToString("#.##");
+        //    return str + "B";
+        //}
+        //value /= 1000d;
+        //if (value < 1000)
+        //{
+        //    var str = value.ToString("#.##");
+        //    return str + "T";
+        //}
+        //value /= 1000d;
+        //if (value < 1000)
+        //{
+        //    var str = value.ToString("#.##");
+        //    return str + "q";
+        //}
+        //value /= 1000d;
+        //{
+        //    var str = value.ToString("#.##");
+        //    return str + "Q";
+        //}
+        double size = self;
+        string[] units = new string[] { "B", "K", "M", "G", "T", "P" };
+        double mod = 1000;
+        int i = 0;
+        while (size >= mod)
+        {
+            size /= mod;
+            i++;
+        }
+        return Math.Round(size, 2) + units[i];
+    }
+
+    public static string FormatRMB(this int self)
+    {
+        return FormatRMB((long)self);
+    }
+
+    public static string FormatRMB(this long self)
+    {
         double value = self;
-        if (value < 1000)
+        if (value < 1000d)
         {
             return value.ToString("f0");// + "$";
         }
-        value /= 1000d;
-        if (value < 1000)
+        if (value < 10000d)
         {
-            var str = value.ToString("#.##");
-            return str + "K";
+            value /= 1000d;
+            var str = value.ToString("0.##");
+            return str + "千";
         }
-        value /= 1000d;
-        if (value < 1000)
+
+        if (value < 100000000d)//1w-1e显示为0.n万
         {
-            var str = value.ToString("#.##");
-            return str + "B";
+            value /= 10000d;
+            var str = value.ToString("0.##");
+            return str + "万";
         }
-        value /= 1000d;
-        if (value < 1000)
+
+        if (value < 1000000000000d)//1e-1m显示为0.n亿
         {
-            var str = value.ToString("#.##");
-            return str + "T";
+            value /= 100000000d;
+            var str = value.ToString("0.##");
+            return str + "亿";
         }
-        value /= 1000d;
-        if (value < 1000)
+
+        if (value < 10000000000000000d)//1m-1g显示为0.n兆
         {
-            var str = value.ToString("#.##");
-            return str + "q";
+            value /= 1000000000000d;
+            var str = value.ToString("0.##");
+            return str + "兆";
         }
-        value /= 1000d;
+
+        if (value < 100000000000000000000d)//1g-1t显示为0.n京
         {
-            var str = value.ToString("#.##");
-            return str + "Q";
+            value /= 10000000000000000d;
+            var str = value.ToString("0.##");
+            return str + "京";
+        }
+
+        {
+            value /= 100000000000000000000d;
+            var str = value.ToString("0.##");
+            return str + "稊";
         }
     }
 }

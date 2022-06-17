@@ -1020,7 +1020,7 @@ namespace Net.System
             return new SynchronizedList(list);
         }
 
-        private T[] _items;
+        internal T[] _items;
 
         private int _size;
 

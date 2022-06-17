@@ -248,7 +248,7 @@ namespace Net.Client
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
-        public event Action<double> OnPingCallback;
+        public Action<double> OnPingCallback;
         /// <summary>
         /// 当socket发送失败调用. 参数1:发送的字节数组, 参数2:发送标志(可靠和不可靠)  ->可通过SendByteData方法重新发送
         /// </summary>
@@ -320,12 +320,12 @@ namespace Net.Client
         /// 心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
         /// </summary>
-        public int HeartInterval { get; set; } = 1000;
+        public virtual int HeartInterval { get; set; } = 1000;
         /// <summary>
         /// <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
         /// <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
         /// </summary>
-        public byte HeartLimit { get; set; } = 5;
+        public virtual byte HeartLimit { get; set; } = 5;
         /// <summary>
         /// 客户端唯一标识, 当登录游戏后, 服务器下发下来的唯一标识, 这个标识就是你的玩家名称, 是<see cref="Server.NetPlayer.PlayerID"/>值
         /// </summary>

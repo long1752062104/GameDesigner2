@@ -36,9 +36,10 @@
                     frame = 5;
             }
         }
+        public override byte HeartLimit { get; set; } = 60;//tcp 2分钟检测一次
 
         /// <summary>
-        /// 构造不可靠传输客户端
+        /// 构造可靠传输客户端
         /// </summary>
         public TcpClient()
         {
@@ -106,7 +107,7 @@
         {
             try
             {
-                if (RTOMode == RTOMode.Variable)
+                if (RTOMode == RTOMode.Variable & OnPingCallback != null)
                     Ping();
                 heart++;
                 if (heart <= HeartLimit)

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
-
+#endif
 public static class ArrayExtend
 {
-    #region 数组扩展
     public static void For<T>(this T[] self, Action<T> action)
     {
         for (int i = 0; i < self.Length; i++)
@@ -58,6 +59,7 @@ public static class ArrayExtend
         return self[Net.Share.RandomHelper.Range(0, self.Length)];
     }
 
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
     public static void ClearObjects<T>(this T[] self) where T : Object
     {
         for (int i = 0; i < self.Length; i++)
@@ -117,6 +119,22 @@ public static class ArrayExtend
         }
     }
 
+    public static void SetSprites(this Image[] self, Sprite sprite)
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            self[i].sprite = sprite;
+        }
+    }
+
+    public static void SetSprites(this List<Image> self, Sprite sprite)
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            self[i].sprite = sprite;
+        }
+    }
+
     public static void ClearObjects<T>(this List<T> self) where T : Component
     {
         for (int i = 0; i < self.Count; i++)
@@ -126,7 +144,7 @@ public static class ArrayExtend
         }
         self.Clear();
     }
-    #endregion
+#endif
 
     public static void For<T>(this HashSet<T> self, Action<T> action)
     {

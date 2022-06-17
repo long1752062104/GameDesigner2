@@ -194,12 +194,12 @@ namespace Net.Server
         /// 心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 但发送的数据也会增加. [开发调式时尽量把心跳值设置高点]
         /// </summary>
-        public int HeartInterval { get; set; } = 500;
+        public virtual int HeartInterval { get; set; } = 2000;
         /// <summary>
         /// <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
         /// <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
         /// </summary>
-        public byte HeartLimit { get; set; } = 5;
+        public virtual byte HeartLimit { get; set; } = 5;
         /// <summary>
         /// 由于随机数失灵导致死循环, 所以用计数来标记用户标识 (从10000开始标记)
         /// </summary>

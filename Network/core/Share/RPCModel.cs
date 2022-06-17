@@ -253,11 +253,19 @@
             return t;
         }
 
-        public string AsString { get => As<string>(); }
-
+        public byte AsByte { get => To<byte>(); }
+        public sbyte AsSbyte { get => To<sbyte>(); }
         public bool AsBoolen { get => To<bool>(); }
-
-        public int AsInt32 { get => To<int>(); }
+        public short AsShort { get => To<short>(); }
+        public ushort AsUshort { get => To<ushort>(); }
+        public char AsChar { get => To<char>(); }
+        public int AsInt { get => To<int>(); }
+        public uint AsUint { get => To<uint>(); }
+        public float AsFloat { get => To<float>(); }
+        public long AsLong { get => To<long>(); }
+        public ulong AsUlong { get => To<ulong>(); }
+        public double AsDouble { get => To<double>(); }
+        public string AsString { get => As<string>(); }
 
         public object Obj
         {

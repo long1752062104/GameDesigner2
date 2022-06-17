@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 
@@ -6,6 +7,15 @@ public interface IDataRow
 {
     DataRowState RowState { get; set; }
     void Init(DataRow row);
+}
+
+public class DataColumnEntity
+{
+    public int referenceCount;
+    public object value;
+    public bool IsStringOrDateTime;
+    public bool IsBuffer;
+    public bool updateData;
 }
 
 public class DataRowEntity
@@ -17,19 +27,32 @@ public class DataRowEntity
     public object columnValue;
     public string primaryKey;
     public object primaryValue;
-    public Dictionary<string, object> columns = new Dictionary<string, object>();
-    
+    public ConcurrentDictionary<string, DataColumnEntity> columns = new ConcurrentDictionary<string, DataColumnEntity>();
+    public int referenceCount;
+    public bool updateData;
+
     public DataRowEntity() { }
 
-    public DataRowEntity(string tableName, DataRowState state, string columnName, object columnValue, IDataRow row, string primaryKey, object primaryValue)
+    public DataRowEntity Update(string tableName, DataRowState state, string columnName, object columnValue, IDataRow row, string primaryKey, object primaryValue)
     {
         this.tableName = tableName;
-        this.state = state; 
+        if(this.state != DataRowState.Added)
+            this.state = state;
         this.Row = row;
         this.columnName = columnName;
         this.columnValue = columnValue;
         this.primaryKey = primaryKey;
         this.primaryValue = primaryValue;
+        if (!columns.TryGetValue(columnName, out var column))
+            columns.TryAdd(columnName, column = new DataColumnEntity() { IsBuffer = columnValue is byte[], IsStringOrDateTime = columnValue is string | columnValue is DateTime });;
+        if (column.referenceCount < 100)
+            column.referenceCount++;
+        column.updateData = true;
+        column.value = columnValue;
+        if (referenceCount < 100)
+            referenceCount++;
+        updateData = true;
+        return this;
     }
 }
 
