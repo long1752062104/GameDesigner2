@@ -2,11 +2,19 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Text;
 
 public interface IDataRow 
 {
     DataRowState RowState { get; set; }
+
     void Init(DataRow row);
+
+    void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count);
+
+    void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count);
+
+    void DeletedSql(StringBuilder sb);
 }
 
 public class DataColumnEntity

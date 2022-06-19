@@ -198,7 +198,7 @@ namespace Net.Event
                     if (i >= 0) i--;
                     continue;
                 }
-                if (time > @event.time)
+                if (time >= @event.time)
                 {
                     if (@event.ptr1 != null)
                     {

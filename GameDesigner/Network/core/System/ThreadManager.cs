@@ -16,12 +16,15 @@ namespace Net.System
         /// 时间计数间隔
         /// </summary>
         public static uint Interval { get; set; } = 2;
-        private static bool IsRuning;
+        /// <summary>
+        /// 运行中?
+        /// </summary>
+        public static bool IsRuning { get; set; }
 
         static ThreadManager()
         {
             Init();
-            Run();
+            Start();
         }
 
         private static async void Init()
@@ -36,49 +39,65 @@ namespace Net.System
 #endif
         }
 
-        private static void Run()
+        private static void Start()
         {
-            MainThread = new Thread(() =>
-            {
-                int frame = 0;//一秒60次
-                var nextTime = DateTime.Now.AddSeconds(1);
-                var stopwatch = Stopwatch.StartNew();
-                while (IsRuning)
-                {
-                    try
-                    {
-                        var frameRate = 1000 / Interval;
-                        var now = DateTime.Now;
-                        if (now >= nextTime)
-                        {
-                            if (frame < frameRate)
-                            {
-                                var step = (frameRate - frame) * Interval;
-                                Event.UpdateEvent((uint)step);
-                            }
-                            nextTime = DateTime.Now.AddSeconds(1);
-                            frame = 0;
-                            stopwatch.Restart();
-                        }
-                        else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * Interval)
-                        {
-                            Event.UpdateEvent(Interval);
-                            frame++;
-                        }
-                        else
-                        {
-                            Thread.Sleep(1);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        NDebug.LogError("主线程异常:" + ex);
-                    }
-                }
-            });
+            MainThread = new Thread(Execute);
             MainThread.Name = "网络主线程";
             MainThread.IsBackground = true;
             MainThread.Start();
+        }
+
+        public static void Run()
+        {
+            if (MainThread != null) 
+            {
+                MainThread.Abort();
+                MainThread = null;
+            }
+            Execute();
+        }
+
+        public static void Execute()
+        {
+            int frame = 0;//一秒60次
+            var nextTime = DateTime.Now.AddSeconds(1);
+            var stopwatch = Stopwatch.StartNew();
+            while (IsRuning)
+            {
+                try
+                {
+                    var frameRate = 1000 / Interval;
+                    var now = DateTime.Now;
+                    if (now >= nextTime)
+                    {
+                        if (frame < frameRate)
+                        {
+                            var step = (frameRate - frame) * Interval;
+                            Event.UpdateEvent((uint)step);
+                        }
+                        nextTime = DateTime.Now.AddSeconds(1);
+                        frame = 0;
+                        stopwatch.Restart();
+                    }
+                    else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * Interval)
+                    {
+                        Event.UpdateEvent(Interval);
+                        frame++;
+                    }
+                    else
+                    {
+                        Thread.Sleep(1);
+                    }
+                }
+                catch (ThreadAbortException ex)
+                {
+                    NDebug.LogWarning("主线程:" + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    NDebug.LogError("主线程异常:" + ex);
+                }
+            }
         }
 
         public static int Invoke(Func<bool> ptr, bool isAsync = false) 
