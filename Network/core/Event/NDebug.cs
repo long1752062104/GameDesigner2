@@ -41,11 +41,10 @@
 #if SERVICE
         static NDebug()
         {
-            ToLogHandle();
-            CheckEventsHandle();
+            Handler();
         }
 
-        private static void ToLogHandle()
+        private static void Handler()
         {
             ThreadManager.Invoke("Debug-Log", ()=> 
             {
@@ -67,54 +66,6 @@
                 catch (Exception ex)
                 {
                     errorQueue.Enqueue(ex.Message);
-                }
-                return true;
-            });
-        }
-
-        //检测事件委托函数
-        private static void CheckEventsHandle()
-        {
-            Type type = typeof(NDebug);
-            EventInfo[] es = type.GetEvents(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
-            ThreadManager.Invoke("Debug-CheckEvents", () =>
-            {
-                try
-                {
-                    for (int i = 0; i < es.Length; i++)
-                    {
-                        FieldInfo f = type.GetField(es[i].Name, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
-                        if (f == null)
-                            continue;
-                        object value = f.GetValue(null);
-                        if (value == null)
-                            continue;
-                        Delegate dele = (Delegate)value;
-                        Delegate[] ds = dele.GetInvocationList();
-                        for (int a = 0; a < ds.Length; a++)
-                        {
-                            if (ds[a].Method == null)
-                            {
-                                es[i].RemoveEventHandler(null, ds[a]);
-                                continue;
-                            }
-                            if (ds[a].Method.IsStatic)//静态方法不需要判断对象是否为空
-                                continue;
-                            if (ds[a].Target == null)
-                            {
-                                es[i].RemoveEventHandler(null, ds[a]);
-                                continue;
-                            }
-                            if (ds[a].Target.Equals(null) | ds[a].Method.Equals(null))
-                            {
-                                es[i].RemoveEventHandler(null, ds[a]);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex);
                 }
                 return true;
             });
