@@ -281,13 +281,18 @@
         /// <param name="target">移除的rpc对象</param>
         public void RemoveRpc(object target)
         {
-            RPCMethod[] rpcs = new RPCMethod[Rpcs.Count];
-            Rpcs.Values.CopyTo(rpcs, 0);
-            foreach (RPCMethod rpc in rpcs)
+            foreach (var rpc in Rpcs)
             {
-                if (rpc.target == target | rpc.target.Equals(target) | rpc.target.Equals(null) | rpc.method.Equals(null))
+                if (rpc.Value.target == target | rpc.Value.target.Equals(target) | rpc.Value.target.Equals(null) | rpc.Value.method.Equals(null))
                 {
-                    Rpcs.Remove(rpc.method.Name);
+                    Rpcs.Remove(rpc.Key);
+                }
+            }
+            foreach (var rpc in RpcMaskDic)
+            {
+                if (rpc.Value.target == target | rpc.Value.target.Equals(target) | rpc.Value.target.Equals(null) | rpc.Value.method.Equals(null))
+                {
+                    RpcMaskDic.Remove(rpc.Key);
                 }
             }
         }

@@ -84,6 +84,10 @@ namespace Net.System
                         Event.UpdateEvent(Interval);
                         frame++;
                     }
+                    else if ((nextTime - now).TotalSeconds > 60d)//当系统时间被改很长后问题
+                    {
+                        nextTime = DateTime.Now.AddSeconds(1);
+                    }
                     else
                     {
                         Thread.Sleep(1);
