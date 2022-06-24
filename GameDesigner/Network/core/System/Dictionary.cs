@@ -865,10 +865,10 @@ namespace Net.System
 
             public bool MoveNext()
             {
-                if (version != dictionary.version)
-                {
-                    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                }
+                //if (version != dictionary.version)
+                //{
+                //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                //}
                 while (index < dictionary.count)
                 {
                     if (dictionary.entries[index].hashCode >= 0)
@@ -905,10 +905,10 @@ namespace Net.System
 
                 get
                 {
-                    if (index == 0 || index == dictionary.count + 1)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    }
+                    //if (index == 0 || index == dictionary.count + 1)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                    //}
                     if (getEnumeratorRetType == 1)
                     {
                         return new DictionaryEntry(current.Key, current.Value);
@@ -920,10 +920,10 @@ namespace Net.System
 
             void IEnumerator.Reset()
             {
-                if (version != dictionary.version)
-                {
-                    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                }
+                //if (version != dictionary.version)
+                //{
+                //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                //}
                 index = 0;
                 current = default;
             }
@@ -934,10 +934,10 @@ namespace Net.System
 
                 get
                 {
-                    if (index == 0 || index == dictionary.count + 1)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    }
+                    //if (index == 0 || index == dictionary.count + 1)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                    //}
                     return new DictionaryEntry(current.Key, current.Value);
                 }
             }
@@ -948,10 +948,10 @@ namespace Net.System
 
                 get
                 {
-                    if (index == 0 || index == dictionary.count + 1)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    }
+                    //if (index == 0 || index == dictionary.count + 1)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                    //}
                     return current.Key;
                 }
             }
@@ -962,10 +962,10 @@ namespace Net.System
 
                 get
                 {
-                    if (index == 0 || index == dictionary.count + 1)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    }
+                    //if (index == 0 || index == dictionary.count + 1)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                    //}
                     return current.Value;
                 }
             }
@@ -1183,10 +1183,10 @@ namespace Net.System
 
                 public bool MoveNext()
                 {
-                    if (version != dictionary.version)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    }
+                    //if (version != dictionary.version)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                    //}
                     while (index < dictionary.count)
                     {
                         if (dictionary.entries[index].hashCode >= 0)
@@ -1218,10 +1218,10 @@ namespace Net.System
 
                     get
                     {
-                        if (index == 0 || index == dictionary.count + 1)
-                        {
-                            ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                        }
+                        //if (index == 0 || index == dictionary.count + 1)
+                        //{
+                        //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                        //}
                         return currentKey;
                     }
                 }
@@ -1229,10 +1229,10 @@ namespace Net.System
 
                 void IEnumerator.Reset()
                 {
-                    if (version != dictionary.version)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    }
+                    //if (version != dictionary.version)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                    //}
                     index = 0;
                     currentKey = default;
                 }
@@ -1445,10 +1445,10 @@ namespace Net.System
 
                 public bool MoveNext()
                 {
-                    if (version != dictionary.version)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    }
+                    //if (version != dictionary.version)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                    //}
                     while (index < dictionary.count)
                     {
                         if (dictionary.entries[index].hashCode >= 0)
@@ -1480,10 +1480,10 @@ namespace Net.System
 
                     get
                     {
-                        if (index == 0 || index == dictionary.count + 1)
-                        {
-                            ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                        }
+                        //if (index == 0 || index == dictionary.count + 1)
+                        //{
+                        //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
+                        //}
                         return currentValue;
                     }
                 }
@@ -1491,10 +1491,10 @@ namespace Net.System
 
                 void IEnumerator.Reset()
                 {
-                    if (version != dictionary.version)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    }
+                    //if (version != dictionary.version)
+                    //{
+                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
+                    //}
                     index = 0;
                     currentValue = default;
                 }
