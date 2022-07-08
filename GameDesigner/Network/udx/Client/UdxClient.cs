@@ -141,7 +141,7 @@
                         Marshal.Copy(pData, buffer, 0, len);
                         receiveCount += len;
                         receiveAmount++;
-                        ResolveBuffer(buffer, false);
+                        ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);
                         break;
                 }

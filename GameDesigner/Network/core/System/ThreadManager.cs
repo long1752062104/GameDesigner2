@@ -1,6 +1,5 @@
 ﻿using Net.Event;
 using System;
-using System.Diagnostics;
 using System.Threading;
 
 namespace Net.System
@@ -47,51 +46,40 @@ namespace Net.System
             MainThread.Start();
         }
 
+        /// <summary>
+        /// 控制台死循环线程
+        /// </summary>
         public static void Run()
         {
-            if (MainThread != null) 
+            Stop();
+            Execute();
+        }
+
+        /// <summary>
+        /// unity update每帧调用
+        /// </summary>
+        public static void Run(uint interval)
+        {
+            Stop();
+            Event.UpdateEventFixed(interval, false);
+        }
+
+        public static void Stop()
+        {
+            if (MainThread != null)
             {
                 MainThread.Abort();
                 MainThread = null;
             }
-            Execute();
         }
 
         public static void Execute()
         {
-            int frame = 0;//一秒60次
-            var nextTime = DateTime.Now.AddSeconds(1);
-            var stopwatch = Stopwatch.StartNew();
             while (IsRuning)
             {
                 try
                 {
-                    var frameRate = 1000 / Interval;
-                    var now = DateTime.Now;
-                    if (now >= nextTime)
-                    {
-                        if (frame < frameRate)
-                        {
-                            var step = (frameRate - frame) * Interval;
-                            Event.UpdateEvent((uint)step);
-                        }
-                        nextTime = DateTime.Now.AddSeconds(1);
-                        frame = 0;
-                        stopwatch.Restart();
-                    }
-                    else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * Interval)
-                    {
-                        Event.UpdateEvent(Interval);
-                        frame++;
-                    }
-                    else if ((nextTime - now).TotalSeconds > 60d)//当系统时间被改很长后问题
-                    {
-                        nextTime = DateTime.Now.AddSeconds(1);
-                    }
-                    else
-                    {
-                        Thread.Sleep(1);
-                    }
+                    Event.UpdateEventFixed(Interval, true);
                 }
                 catch (ThreadAbortException ex)
                 {

@@ -200,14 +200,14 @@ public class Fast2BuildTools2 : EditorWindow
                     Debug.Log($"类型:{type1.name}已不存在!");
                     continue;
                 }
-                Fast2BuildMethod.Build(type, true, savePath, serField, serProperty, type1.fields.ConvertAll((item)=> !item.serialize ? item.name : ""));
-                Fast2BuildMethod.BuildArray(type, true, savePath);
-                Fast2BuildMethod.BuildGeneric(type, true, savePath);
+                Fast2BuildMethod.Build(type, savePath, serField, serProperty, type1.fields.ConvertAll((item)=> !item.serialize ? item.name : ""));
+                Fast2BuildMethod.BuildArray(type, savePath);
+                Fast2BuildMethod.BuildGeneric(type, savePath);
                 if (!string.IsNullOrEmpty(savePath1)) 
                 {
-                    Fast2BuildMethod.Build(type, true, savePath1, serField, serProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""));
-                    Fast2BuildMethod.BuildArray(type, true, savePath1);
-                    Fast2BuildMethod.BuildGeneric(type, true, savePath1);
+                    Fast2BuildMethod.Build(type, savePath1, serField, serProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""));
+                    Fast2BuildMethod.BuildArray(type, savePath1);
+                    Fast2BuildMethod.BuildGeneric(type, savePath1);
                 }
                 types.Add(type);
             }
@@ -219,20 +219,26 @@ public class Fast2BuildTools2 : EditorWindow
                     if (type.IsGenericType)
                     {
                         var args = type.GenericTypeArguments;
-                        var text = Fast2BuildMethod.BuildDictionary(type);
-                        var className1 = $"Dictionary_{args[0].FullName.Replace(".", "").Replace("+", "")}_{args[1].FullName.Replace(".", "").Replace("+", "")}_Bind";
-                        File.WriteAllText(savePath + $"//{className1}.cs", text);
+                        if (args.Length == 1)
+                        {
+                            //TODO
+                        }
+                        else if (args.Length == 2)
+                        {
+                            var text = Fast2BuildMethod.BuildDictionary(type, out var className1);
+                            File.WriteAllText(savePath + $"//{className1}.cs", text);
+                        }
                     }
                     else 
                     {
-                        Fast2BuildMethod.Build(type, true, savePath, serField, serProperty, new List<string>());
-                        Fast2BuildMethod.BuildArray(type, true, savePath);
-                        Fast2BuildMethod.BuildGeneric(type, true, savePath);
+                        Fast2BuildMethod.Build(type, savePath, serField, serProperty, new List<string>());
+                        Fast2BuildMethod.BuildArray(type, savePath);
+                        Fast2BuildMethod.BuildGeneric(type, savePath);
                         if (!string.IsNullOrEmpty(savePath1))
                         {
-                            Fast2BuildMethod.Build(type, true, savePath1, serField, serProperty, new List<string>());
-                            Fast2BuildMethod.BuildArray(type, true, savePath1);
-                            Fast2BuildMethod.BuildGeneric(type, true, savePath1);
+                            Fast2BuildMethod.Build(type, savePath1, serField, serProperty, new List<string>());
+                            Fast2BuildMethod.BuildArray(type, savePath1);
+                            Fast2BuildMethod.BuildGeneric(type, savePath1);
                         }
                     }
                     types.Add(type);

@@ -1573,6 +1573,7 @@
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServer.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Server\TcpServerEPoll.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServerIOCP.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\UdpServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\UdpServerIOCP.cs" />

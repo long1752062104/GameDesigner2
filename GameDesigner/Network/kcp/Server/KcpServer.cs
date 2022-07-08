@@ -52,7 +52,8 @@
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
             {
-                UserIDStack.TryPop(out int uid);
+                if (!UserIDStack.TryPop(out int uid))
+                    uid = GetCurrUserID();
                 client = new Player();
                 client.UserID = uid;
                 client.PlayerID = uid.ToString();

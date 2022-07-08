@@ -1,4 +1,5 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using Net.Share;
 using Net.UnityComponent;
@@ -76,7 +77,7 @@ namespace BuildComponent
                 if (type1 == value)
                     return;
                 type1 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 0,
@@ -96,7 +97,7 @@ namespace BuildComponent
                 if (shape2 == value)
                     return;
                 shape2 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 1,
@@ -116,7 +117,7 @@ namespace BuildComponent
                 if (spotAngle3 == value)
                     return;
                 spotAngle3 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 2,
@@ -136,7 +137,7 @@ namespace BuildComponent
                 if (innerSpotAngle4 == value)
                     return;
                 innerSpotAngle4 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 3,
@@ -156,7 +157,7 @@ namespace BuildComponent
                 if (color5 == value)
                     return;
                 color5 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 4,
@@ -176,7 +177,7 @@ namespace BuildComponent
                 if (colorTemperature6 == value)
                     return;
                 colorTemperature6 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 5,
@@ -196,7 +197,7 @@ namespace BuildComponent
                 if (useColorTemperature7 == value)
                     return;
                 useColorTemperature7 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 6,
@@ -216,7 +217,7 @@ namespace BuildComponent
                 if (intensity8 == value)
                     return;
                 intensity8 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 7,
@@ -236,7 +237,7 @@ namespace BuildComponent
                 if (bounceIntensity9 == value)
                     return;
                 bounceIntensity9 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 8,
@@ -256,7 +257,7 @@ namespace BuildComponent
                 if (useBoundingSphereOverride10 == value)
                     return;
                 useBoundingSphereOverride10 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 9,
@@ -276,7 +277,7 @@ namespace BuildComponent
                 if (boundingSphereOverride11 == value)
                     return;
                 boundingSphereOverride11 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 10,
@@ -296,7 +297,7 @@ namespace BuildComponent
                 if (shadowCustomResolution12 == value)
                     return;
                 shadowCustomResolution12 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 11,
@@ -316,7 +317,7 @@ namespace BuildComponent
                 if (shadowBias13 == value)
                     return;
                 shadowBias13 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 12,
@@ -336,7 +337,7 @@ namespace BuildComponent
                 if (shadowNormalBias14 == value)
                     return;
                 shadowNormalBias14 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 13,
@@ -356,7 +357,7 @@ namespace BuildComponent
                 if (shadowNearPlane15 == value)
                     return;
                 shadowNearPlane15 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 14,
@@ -376,7 +377,7 @@ namespace BuildComponent
                 if (useShadowMatrixOverride16 == value)
                     return;
                 useShadowMatrixOverride16 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 15,
@@ -396,7 +397,7 @@ namespace BuildComponent
                 if (range17 == value)
                     return;
                 range17 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 17,
@@ -416,7 +417,7 @@ namespace BuildComponent
                 if (cullingMask18 == value)
                     return;
                 cullingMask18 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 20,
@@ -436,7 +437,7 @@ namespace BuildComponent
                 if (renderingLayerMask19 == value)
                     return;
                 renderingLayerMask19 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 21,
@@ -456,7 +457,7 @@ namespace BuildComponent
                 if (lightShadowCasterMode20 == value)
                     return;
                 lightShadowCasterMode20 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 22,
@@ -480,7 +481,7 @@ namespace BuildComponent
                 if (shadowRadius21 == value)
                     return;
                 shadowRadius21 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 23,
@@ -505,7 +506,7 @@ namespace BuildComponent
                 if (shadowAngle22 == value)
                     return;
                 shadowAngle22 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 24,
@@ -525,7 +526,7 @@ namespace BuildComponent
                 if (shadows23 == value)
                     return;
                 shadows23 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 25,
@@ -545,7 +546,7 @@ namespace BuildComponent
                 if (shadowStrength24 == value)
                     return;
                 shadowStrength24 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 26,
@@ -565,7 +566,7 @@ namespace BuildComponent
                 if (shadowResolution25 == value)
                     return;
                 shadowResolution25 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 27,
@@ -585,7 +586,7 @@ namespace BuildComponent
                 if (cookieSize26 == value)
                     return;
                 cookieSize26 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 31,
@@ -610,7 +611,7 @@ namespace BuildComponent
                 if (renderMode27 == value)
                     return;
                 renderMode27 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 33,
@@ -635,7 +636,7 @@ namespace BuildComponent
                 if (areaSize28 == value)
                     return;
                 areaSize28 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 35,
@@ -659,7 +660,7 @@ namespace BuildComponent
                 if (lightmapBakeType29 == value)
                     return;
                 lightmapBakeType29 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 36,
@@ -679,7 +680,7 @@ namespace BuildComponent
                 if (enabled30 == value)
                     return;
                 enabled30 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 44,
@@ -699,7 +700,7 @@ namespace BuildComponent
                 if (tag31 == value)
                     return;
                 tag31 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 48,
@@ -719,7 +720,7 @@ namespace BuildComponent
                 if (name32 == value)
                     return;
                 name32 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 62,
@@ -739,7 +740,7 @@ namespace BuildComponent
                 if (hideFlags33 == value)
                     return;
                 hideFlags33 = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 63,
@@ -753,7 +754,7 @@ namespace BuildComponent
             if (tag == tag1 & !always) return;
             tag1 = tag;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { tag } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 193,
@@ -765,7 +766,7 @@ namespace BuildComponent
             if (methodName == methodName2 & !always) return;
             methodName2 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 196,
@@ -778,7 +779,7 @@ namespace BuildComponent
             methodName3 = methodName;
             options4 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 197,
@@ -790,7 +791,7 @@ namespace BuildComponent
             if (methodName == methodName5 & !always) return;
             methodName5 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 199,
@@ -803,7 +804,7 @@ namespace BuildComponent
             methodName6 = methodName;
             options7 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 201,
@@ -815,7 +816,7 @@ namespace BuildComponent
             if (methodName == methodName8 & !always) return;
             methodName8 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 204,
@@ -828,7 +829,7 @@ namespace BuildComponent
             methodName9 = methodName;
             options10 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 205,
@@ -838,7 +839,7 @@ namespace BuildComponent
         public void GetInstanceID(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 219,
@@ -848,7 +849,7 @@ namespace BuildComponent
         public void GetHashCode(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 220,
@@ -858,7 +859,7 @@ namespace BuildComponent
         public void ToString(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 226,

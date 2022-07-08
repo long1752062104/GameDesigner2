@@ -1,4 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
@@ -13,24 +14,24 @@ namespace Example1
         // Start is called before the first frame update
         void Start()
         {
-            if (ClientManager.I.client.Connected)
+            if (ClientBase.Instance.Connected)
                 OnConnectedHandle();
             else
-                ClientManager.I.client.OnConnectedHandle += OnConnectedHandle;
+                ClientBase.Instance.OnConnectedHandle += OnConnectedHandle;
         }
 
         private void OnConnectedHandle()
         {
             var offset = new Vector3(Random.Range(offsetX.x, offsetX.y), 0, Random.Range(offsetZ.x, offsetZ.y));
             var player1 = Instantiate(playerPrefab, transform.position + offset, transform.rotation);
-            player1.GetComponent<NetworkObject>().m_identity = ClientManager.UID;
+            player1.GetComponent<NetworkObject>().m_identity = ClientBase.Instance.UID;
             player1.GetComponent<PlayerController>().isLocalPlayer = true;
             Camera.main.GetComponent<ARPGcamera>().target = player1.transform;
         }
 
         private void OnDestroy()
         {
-            ClientManager.I.client.OnConnectedHandle -= OnConnectedHandle;
+            ClientBase.Instance.OnConnectedHandle -= OnConnectedHandle;
         }
     }
 }

@@ -4,10 +4,88 @@ using Net.System;
 
 namespace Binding
 {
-	/// <summary>
-	/// 字典绑定
-	/// </summary>
-	public struct DictionaryBind<TKey, TValue>
+    /// <summary>
+    /// 基础类型绑定
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct BaseBind<T> : ISerialize<T>, ISerialize
+    {
+        public void Write(T value, Segment stream)
+        {
+            stream.WriteValue(value);
+        }
+        public T Read(Segment stream)
+        {
+            return stream.ReadValue<T>();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.WriteValue(value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadValue<T>();
+        }
+    }
+
+    /// <summary>
+    /// 基础类型数组绑定
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct BaseArrayBind<T> : ISerialize<T[]>, ISerialize
+    {
+        public void Write(T[] value, Segment stream)
+        {
+            stream.WriteArray(value);
+        }
+        public T[] Read(Segment stream)
+        {
+            return stream.ReadArray<T>();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.WriteArray(value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadArray<T>();
+        }
+    }
+
+    /// <summary>
+    /// 基础类型泛型绑定
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct BaseListBind<T> : ISerialize<List<T>>, ISerialize
+    {
+        public void Write(List<T> value, Segment stream)
+        {
+            stream.WriteList(value);
+        }
+        public List<T> Read(Segment stream)
+        {
+            return stream.ReadList<T>();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.WriteList(value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadList<T>();
+        }
+    }
+
+    /// <summary>
+    /// 字典绑定
+    /// </summary>
+    public struct DictionaryBind<TKey, TValue>
 	{
 		public void Write(Dictionary<TKey, TValue> value, Segment stream, ISerialize<TValue> bind)
 		{

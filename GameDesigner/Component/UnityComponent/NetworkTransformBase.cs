@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 namespace Net.UnityComponent
 {
+    using Net.Client;
     using Net.Component;
     using Net.Share;
     using UnityEngine;
@@ -86,11 +87,11 @@ namespace Net.UnityComponent
 
         public virtual void StartSyncTransformState()
         {
-            ClientManager.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)mode,
                 index = netObj.registerObjectIndex,
-                uid = ClientManager.UID
+                uid = ClientBase.Instance.UID
             });
         }
 
@@ -144,7 +145,7 @@ namespace Net.UnityComponent
 
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (ClientManager.UID == opt.uid | opt.cmd != Command.Transform)
+            if (ClientBase.Instance.UID == opt.uid | opt.cmd != Command.Transform)
                 return;
             sendTime = Time.time + interval;
             netPosition = opt.position;

@@ -82,7 +82,7 @@
                         {
                             int kcnt = ikcp_recv(kcp, p1, buffer1.Length);
                             if (kcnt > 0) 
-                                ResolveBuffer(buffer1, false);
+                                ResolveBuffer(ref buffer1, false);
                         }
                         BufferPool.Push(buffer1);
                     }

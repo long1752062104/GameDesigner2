@@ -149,11 +149,11 @@
 
         protected override void OnConnected(bool result) { }
 
-        protected override void ResolveBuffer(Segment buffer, bool isTcp)
+        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         {
             receiveCount += buffer.Count;
             receiveAmount++;
-            base.ResolveBuffer(buffer, isTcp);
+            base.ResolveBuffer(ref buffer, isTcp);
         }
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {
@@ -185,7 +185,7 @@
             {
                 var buffer1 = BufferPool.Take(65536);
                 buffer1.Count = Client.Receive(buffer1);
-                ResolveBuffer(buffer1, false);
+                ResolveBuffer(ref buffer1, false);
                 BufferPool.Push(buffer1);
             }
             SendDirect();

@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using ECS;
 using GGPhysUnity;
+using Net.Client;
 using Net.Component;
 using Net.Share;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace LockStep.Client
                 actor.objectView.anim = actor.gameObject.GetComponent<Animation>();
                 //actor.transform = actor.gameObject.GetComponent<TSTransform>();
                 actor.rigidBody = actor.gameObject.GetComponent<BRigidBody>();
-                if (opt.identity == ClientManager.UID)
+                if (opt.identity == ClientBase.Instance.UID)
                     FindObjectOfType<ARPGcamera>().target = actor.gameObject.transform;
                 return actor;
             };
@@ -43,8 +44,8 @@ namespace LockStep.Client
                 logicFrame = 0;
                 snapshots.Clear();
             };
-            ClientManager.Instance.client.OnOperationSync += OnOperationSync;
-            ClientManager.I.client.AddRpcHandle(gameSystem);
+            ClientBase.Instance.OnOperationSync += OnOperationSync;
+            ClientBase.Instance.AddRpcHandle(gameSystem);
         }
 
         private void OnOperationSync(OperationList list)
@@ -56,7 +57,7 @@ namespace LockStep.Client
             }
             frame++;
             snapshots.Add(list);
-            ClientManager.AddOperation(new Operation(Command.Input, ClientManager.UID, direction));
+            ClientBase.Instance.AddOperation(new Operation(Command.Input, ClientBase.Instance.UID, direction));
         }
 
         // Update is called once per frame
@@ -76,7 +77,7 @@ namespace LockStep.Client
 
         private void OnDestroy()
         {
-            ClientManager.Instance.client.OnOperationSync -= OnOperationSync;
+            ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
     }
 }

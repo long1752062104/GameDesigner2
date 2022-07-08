@@ -13,6 +13,18 @@ namespace Net.Component
     public class UnityThread : SingleCase<UnityThread>
     {
         public static QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
+        public static Event.TimerEvent Event;
+
+        private void Awake()
+        {
+            if (instance != null)
+            {
+                Destroy(this);
+                return;
+            }
+            instance = this;
+            Event = ThreadManager.Event;
+        }
 
         void Update()
         {
@@ -24,6 +36,7 @@ namespace Net.Component
                     callback();
                 }
             }
+            ThreadManager.Run(17);
         }
 
         public static async Task<T> Call<T>(Func<T> func)

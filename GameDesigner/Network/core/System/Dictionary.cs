@@ -350,6 +350,8 @@ namespace Net.System
 
         private int FindEntry(TKey key)
         {
+            if (key == null)
+                return -1;
             int num = key.GetHashCode() & int.MaxValue;
             for (int i = buckets[num % buckets.Length]; i >= 0; i = entries[i].next)
             {

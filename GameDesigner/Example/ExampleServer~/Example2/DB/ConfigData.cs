@@ -1,279 +1,438 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
+using Net.System;
+using System.Collections.Generic;
+using System.Text;
+#if SERVER
+using System.Data.SQLite;
+#endif
 
 /// <summary>
 /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请定义一个扩展类进行处理
 /// MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能
 /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
 /// </summary>
-public partial class ConfigData
+public partial class ConfigData : IDataRow
 {
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public DataRow Row { get; set; }
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public DataRowState RowState { get; set; }
+    private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
 
-private System.Int64 id;
-public System.Int64 Id
-{
-    get { return id; }
-    set
+    private System.Int64 id;
+    /// <summary>{KEYNOTE}</summary>
+    public System.Int64 Id
     {
-        if (id == value)
-            return;
-        id = value;
+        get { return id; }
+        set { this.id = value; }
+    }
+
+
+    private System.String name;
+    /// <summary>{NOTE}</summary>
+    public System.String Name
+    {
+        get { return name; }
+        set
+        {
+            if (this.name == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.name = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "id", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(1);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        IdCall();
+            NameCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncId
-{
-    get { return id; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncName
     {
-        if (id == value)
-            return;
-        id = value;
-        IdCall();
+        get { return name; }
+        set
+        {
+            if (this.name == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.name = value;
+            NameCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncIDId
-{
-    get { return id; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncIDName
     {
-        if (id == value)
-            return;
-        id = value;
-        SyncIdCall();
+        get { return name; }
+        set
+        {
+            if (this.name == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.name = value;
+            SyncNameCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void IdCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ID, id);
-}
-
-public void SyncIdCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ID, (int)id, id);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.ID)]
-private void IdCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
-{
-    Id = value;
-    OnId?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnId;
-
-private System.String name;
-public System.String Name
-{
-    get { return name; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void NameCall()
     {
-        if (name == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        name = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, name);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncNameCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, id, name);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.NAME)]
+    private void NameCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
+    {
+        Name = value;
+        OnName?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnName;
+
+    private System.Int64 number;
+    /// <summary>{NOTE}</summary>
+    public System.Int64 Number
+    {
+        get { return number; }
+        set
+        {
+            if (this.number == value)
+                return;
+            
+            this.number = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "name", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(2);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        NameCall();
+            NumberCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncName
-{
-    get { return name; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncNumber
     {
-        if (name == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        name = value;
-        NameCall();
+        get { return number; }
+        set
+        {
+            if (this.number == value)
+                return;
+            
+            this.number = value;
+            NumberCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncIDName
-{
-    get { return name; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncIDNumber
     {
-        if (name == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        name = value;
-        SyncNameCall();
+        get { return number; }
+        set
+        {
+            if (this.number == value)
+                return;
+            
+            this.number = value;
+            SyncNumberCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void NameCall()
-{
-    if (name == null)
-        name = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.NAME, name);
-}
-
-public void SyncNameCall()
-{
-    if (name == null)
-        name = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.NAME, (int)id, name);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.NAME)]
-private void NameCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
-{
-    Name = value;
-    OnName?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnName;
-
-private System.Int64 number;
-public System.Int64 Number
-{
-    get { return number; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void NumberCall()
     {
-        if (number == value)
-            return;
-        number = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, number);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncNumberCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, id, number);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.NUMBER)]
+    private void NumberCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
+    {
+        Number = value;
+        OnNumber?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnNumber;
+
+
+    public ConfigData() { }
+
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "number", value = value, Row = Row });
-#elif CLIENT
-        NumberCall();
+    public ConfigData(params object[] parms)
+    {
+        NewTableRow(parms);
+    }
+    public void NewTableRow()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            var obj = this[i];
+            if (obj == null)
+                continue;
+            var defaultVal = GetDefaultValue(obj.GetType());
+            if (obj.Equals(defaultVal))
+                continue;
+            columns.Add(i);
+        }
+        RowState = DataRowState.Added;
+        Example2DB.I.Update(this);
+    }
+    public object GetDefaultValue(Type type)
+    {
+        return type.IsValueType ? Activator.CreateInstance(type) : null;
+    }
+    public void NewTableRow(params object[] parms)
+    {
+        if (parms == null)
+            return;
+        if (parms.Length == 0)
+            return;
+        for (int i = 0; i < parms.Length; i++)
+        {
+            this[i] = parms[i];
+            columns.Add(i);
+        }
+        RowState = DataRowState.Added;
+        Example2DB.I.Update(this);
+    }
+    public string GetCellName(int index)
+    {
+        switch (index)
+        {
+
+            case 0:
+                return "id";
+
+            case 1:
+                return "name";
+
+            case 2:
+                return "number";
+
+        }
+        throw new Exception("错误");
+    }
+    public object this[int index]
+    {
+        get
+        {
+            switch (index)
+            {
+
+                case 0:
+                    return this.id;
+
+                case 1:
+                    return this.name;
+
+                case 2:
+                    return this.number;
+
+            }
+            throw new Exception("错误");
+        }
+        set
+        {
+            switch (index)
+            {
+
+                case 0:
+                    this.id = (System.Int64)value;
+                    break;
+
+                case 1:
+                    this.name = (System.String)value;
+                    break;
+
+                case 2:
+                    this.number = (System.Int64)value;
+                    break;
+
+            }
+        }
+    }
+
+    public void Delete()
+    {
+        RowState = DataRowState.Detached;
+        Example2DB.I.Update(this);
+    }
+
+    /// <summary>
+    /// 查询1: Query("`id`=1");
+    /// <para></para>
+    /// 查询2: Query("`id`=1 and `index`=1");
+    /// <para></para>
+    /// 查询3: Query("`id`=1 or `index`=1");
+    /// </summary>
+    /// <param name="filterExpression"></param>
+    /// <returns></returns>
+    public static ConfigData Query(string filterExpression)
+    {
+        var cmdText = $"select * from config where {filterExpression}; ";
+        var data = Example2DB.ExecuteQuery<ConfigData>(cmdText);
+        return data;
+    }
+    /// <summary>
+    /// 查询1: Query("`id`=1");
+    /// <para></para>
+    /// 查询2: Query("`id`=1 and `index`=1");
+    /// <para></para>
+    /// 查询3: Query("`id`=1 or `index`=1");
+    /// </summary>
+    /// <param name="filterExpression"></param>
+    /// <returns></returns>
+    public static async Task<ConfigData> QueryAsync(string filterExpression)
+    {
+        var cmdText = $"select * from config where {filterExpression}; ";
+        var data = await Example2DB.ExecuteQueryAsync<ConfigData>(cmdText);
+        return data;
+    }
+    public static ConfigData[] QueryList(string filterExpression)
+    {
+        var cmdText = $"select * from config where {filterExpression}; ";
+        var datas = Example2DB.ExecuteQueryList<ConfigData>(cmdText);
+        return datas;
+    }
+    public static async Task<ConfigData[]> QueryListAsync(string filterExpression)
+    {
+        var cmdText = $"select * from config where {filterExpression}; ";
+        var datas = await Example2DB.ExecuteQueryListAsync<ConfigData>(cmdText);
+        return datas;
+    }
+    public void Update()
+    {
+        if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
+
+        for (int i = 0; i < 3; i++)
+        {
+            columns.Add(i);
+        }
+        RowState = DataRowState.Modified;
+        Example2DB.I.Update(this);
+
+    }
 #endif
-    }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncNumber
-{
-    get { return number; }
-    set
+    public void Init(DataRow row)
     {
-        if (number == value)
-            return;
-        number = value;
-        NumberCall();
-    }
-}
+        RowState = DataRowState.Unchanged;
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncIDNumber
-{
-    get { return number; }
-    set
+        if (row[0] is System.Int64 id)
+            this.id = id;
+
+        if (row[1] is System.String name)
+            this.name = name;
+
+        if (row[2] is System.Int64 number)
+            this.number = number;
+
+    }
+
+    public void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
     {
-        if (number == value)
-            return;
-        number = value;
-        SyncNumberCall();
-    }
-}
-
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void NumberCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.NUMBER, number);
-}
-
-public void SyncNumberCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.NUMBER, (int)id, number);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.NUMBER)]
-private void NumberCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
-{
-    Number = value;
-    OnNumber?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnNumber;
-
-public ConfigData(params object[] parms)
-{
-    if (parms == null)
-        return;
-    if (parms.Length == 0)
-        return;
-    var row = Example2DB.I.AddConfigNewRow(parms);
-    Init(row);
-}
-
-public void Delete()
-{
-    Example2DB.I.ConfigTable.DeleteRow(Row);
-}
-
-public void Init(DataRow row)
-{
-    Row = row;
-    if (row[0] is System.Int64 id)
-        this.id = id;
-    if (row[1] is System.String name)
-        this.name = name;
-    if (row[2] is System.Int64 number)
-        this.number = number;
-}
 #if SERVER
-public void Update()
-{
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "name", name, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "number", number, Row));
-}
-public void UpdateDataRow()
-{
-    Row[1] = name;
-    Row[2] = number;
-}
+        string cmdText = "REPLACE INTO config SET ";
+        foreach (var column in columns)
+        {
+            var name = GetCellName(column);
+            var value = this[column];
+            if (value is string | value is DateTime)
+                cmdText += $"`{name}`='{value}',";
+            else if (value is byte[] buffer)
+            {
+                cmdText += $"`{name}`=@buffer{count},";
+                parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
+                parmsLen += buffer.Length;
+                count++;
+            }
+            else cmdText += $"`{name}`={value},";
+            columns.Remove(column);
+        }
+        cmdText = cmdText.TrimEnd(',');
+        cmdText += "; ";
+        sb.Append(cmdText);
+        count++;
+        RowState = DataRowState.Unchanged;
 #endif
+    }
+
+    public void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
+    {
+#if SERVER
+        if (RowState == DataRowState.Detached | RowState == DataRowState.Deleted | RowState == DataRowState.Added | RowState == 0)
+            return;
+        string cmdText = $"UPDATE config SET ";
+        foreach (var column in columns)
+        {
+            var name = GetCellName(column);
+            var value = this[column];
+            if (value is string | value is DateTime)
+                cmdText += $"`{name}`='{value}',";
+            else if (value is byte[] buffer)
+            {
+                cmdText += $"`{name}`=@buffer{count},";
+                parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
+                parmsLen += buffer.Length;
+                count++;
+            }
+            else cmdText += $"`{name}`={value},";
+            columns.Remove(column);
+        }
+        cmdText = cmdText.TrimEnd(',');
+        cmdText += $" WHERE `id`={id}; ";
+        sb.Append(cmdText);
+        count++;
+        RowState = DataRowState.Unchanged;
+#endif
+    }
+
+    public void DeletedSql(StringBuilder sb)
+    {
+#if SERVER
+        if (RowState == DataRowState.Deleted)
+            return;
+        string cmdText = $"DELETE FROM config WHERE `id` = {id}";
+        sb.Append(cmdText);
+        RowState = DataRowState.Deleted;
+#endif
+    }
 }

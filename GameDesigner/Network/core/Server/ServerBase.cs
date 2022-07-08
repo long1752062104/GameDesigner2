@@ -205,9 +205,9 @@ namespace Net.Server
         /// </summary>
         public int BeginUserID { get; set; } = 10000;
         /// <summary>
-        /// 用户唯一标识最大计数值, 如果自增的uid>=EndUserID, 则回到BeginUserID重新开始计数
+        /// 当前玩家唯一标识计数
         /// </summary>
-        public int EndUserID { get; set; } = 99999;
+        public int CurrUserID { get; set; }
         /// <summary>
         /// 玩家唯一标识栈
         /// </summary>
@@ -296,6 +296,10 @@ namespace Net.Server
         /// 排队队列
         /// </summary>
         protected ConcurrentQueue<Player> QueueUp = new ConcurrentQueue<Player>();
+        /// <summary>
+        /// 同步锁对象
+        /// </summary>
+        protected readonly object SyncRoot = new object();
         #endregion
 
         #region 服务器事件处理
@@ -653,11 +657,6 @@ namespace Net.Server
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                //SendQueues.Add(sendDataBeProcessed);
-                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                //proSend.Start(sendDataBeProcessed);
-                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -679,8 +678,7 @@ namespace Net.Server
         protected void InitUserID()
         {
             UserIDStack.Clear();
-            for (int uid = EndUserID; uid >= BeginUserID; uid--)
-                UserIDStack.Push(uid);
+            CurrUserID = BeginUserID;
         }
 
         /// <summary>
@@ -825,11 +823,20 @@ namespace Net.Server
             }
         }
 
+        protected int GetCurrUserID()
+        {
+            lock (SyncRoot) 
+            {
+                return CurrUserID++;
+            }
+        }
+
         protected virtual void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
             {
-                UserIDStack.TryPop(out int uid);
+                if (!UserIDStack.TryPop(out int uid))
+                    uid = GetCurrUserID();
                 client = new Player();
                 client.UserID = uid;
                 client.PlayerID = uid.ToString();
@@ -839,7 +846,6 @@ namespace Net.Server
                 client.CloseSend = false;
                 Interlocked.Increment(ref ignoranceNumber);
                 client.revdQueue = RevdQueues[threadNum];
-                //client.sendQueue = SendQueues[threadNum];
                 if (++threadNum >= RevdQueues.Count)
                     threadNum = 0;
                 AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
@@ -856,6 +862,17 @@ namespace Net.Server
             }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
         }
+
+#if TEST1
+        internal void ReceiveTest(byte[] buffer)//本机测试
+        {
+            var client = UIDClients[10000];
+            var segment = new Segment(buffer, false);
+            receiveCount += segment.Count;
+            receiveAmount++;
+            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = segment, tcp_udp = true });
+        }
+#endif
 
         protected virtual void RevdDataHandle(object state)//处理线程
         {
@@ -937,13 +954,13 @@ namespace Net.Server
                 {
                     FuncData func = OnDeserializeRpc(buffer, buffer.Position, dataCount);
                     if (func.error)
-                        break;
+                        goto J;
                     rpc.func = func.name;
                     rpc.pars = func.pars;
-                    rpc.methodHash = func.mask;
+                    rpc.methodHash = func.hash;
                 }
                 DataHandle(client, rpc, buffer);//解析协议完成
-                buffer.Position += dataCount;
+                J: buffer.Position += dataCount;
             }
         }
 

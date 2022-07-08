@@ -69,7 +69,7 @@ namespace GameDesigner
         /// 状态动作集合
         /// </summary>
 		public List<StateAction> actions = new List<StateAction>();
-        
+
         public State() { }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace GameDesigner
                 if (behaviour.Active)
                     behaviour.OnEnter(Action);
             if (animPlayMode == AnimPlayMode.Random)
-                actionIndex = Random.Range(0, actions.Count); 
+                actionIndex = Random.Range(0, actions.Count);
             else
                 actionIndex = (actionIndex < actions.Count - 1) ? actionIndex + 1 : 0;
             Action.eventEnter = false;
@@ -187,7 +187,8 @@ namespace GameDesigner
                                 go.transform.SetParent(null);
                                 SetPosition(stateManager, go);
                                 active = true;
-                                StateEvent.AddEvent(Action.spwanTime, () => {
+                                StateEvent.AddEvent(Action.spwanTime, () =>
+                                {
                                     go.SetActive(false);
                                 });
                                 break;
@@ -197,7 +198,8 @@ namespace GameDesigner
                         {
                             GameObject go = InstantiateSpwan(stateManager);
                             Action.activeObjs.Add(go);
-                            StateEvent.AddEvent(Action.spwanTime, ()=> {
+                            StateEvent.AddEvent(Action.spwanTime, () =>
+                            {
                                 go.SetActive(false);
                             });
                         }
@@ -262,7 +264,7 @@ namespace GameDesigner
                     go.transform.SetParent(Action.parent);
                     go.transform.position = Action.parent.TransformPoint(Action.effectPostion);
                     go.transform.eulerAngles = Action.parent.eulerAngles + Action.effectEulerAngles;
-                    go.transform.parent = null;
+                    go.transform.SetParent(null);
                     break;
             }
             foreach (ActionBehaviour behaviour in Action.behaviours) // 当实例化技能物体调用

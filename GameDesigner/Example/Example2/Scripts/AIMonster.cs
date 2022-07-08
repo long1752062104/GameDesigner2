@@ -1,6 +1,7 @@
 ﻿namespace Example2
 {
     using GameDesigner;
+    using Net.Client;
     using Net.Component;
     using Net.Share;
     using UnityEngine;
@@ -29,15 +30,15 @@
 
         private void Update()
         {
-            if (target != null & targetID == ClientManager.UID)
+            if (target != null & targetID == ClientBase.Instance.UID)
             {
                 if (NetworkTime.CanSent)
-                    ClientManager.AddOperation(new Operation(Command.EnemySync, id, transform.position, transform.rotation));
+                    ClientBase.Instance.AddOperation(new Operation(Command.EnemySync, id, transform.position, transform.rotation));
             }
-            else if (state == 1 & targetID == ClientManager.UID)
+            else if (state == 1 & targetID == ClientBase.Instance.UID)
             {
                 if (NetworkTime.CanSent)
-                    ClientManager.AddOperation(new Operation(Command.EnemySwitchState, id) { cmd1 = 0, cmd2 = 0 });
+                    ClientBase.Instance.AddOperation(new Operation(Command.EnemySwitchState, id) { cmd1 = 0, cmd2 = 0 });
             }
         }
 
@@ -64,7 +65,7 @@
 
         public override void OnUpdate()
         {
-            if (self.target != null & self.targetID == ClientManager.UID & number == 0)
+            if (self.target != null & self.targetID == ClientBase.Instance.UID & number == 0)
             {
                 var pos = self.target.transform.position;
                 transform.LookAt(new Vector3(pos.x, transform.position.y, pos.z));
@@ -83,7 +84,7 @@
                 {
                     state1 = 2;
                 }
-                ClientManager.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
+                ClientBase.Instance.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
                 number++;
             }
         }
@@ -106,7 +107,7 @@
 
         public override void OnUpdate()
         {
-            if (self.target != null & self.targetID == ClientManager.UID & number == 0)
+            if (self.target != null & self.targetID == ClientBase.Instance.UID & number == 0)
             {
                 var pos = self.target.transform.position;
                 transform.LookAt(new Vector3(pos.x, transform.position.y, pos.z));
@@ -115,13 +116,13 @@
                 if (dis > 15f)
                 {
                     state1 = 0;
-                    ClientManager.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
+                    ClientBase.Instance.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
                     number++;
                 }
                 else if (dis < 1.5f)
                 {
                     state1 = 3;
-                    ClientManager.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
+                    ClientBase.Instance.AddOperation(new Operation(Command.EnemySwitchState, self.id) { cmd1 = 1, cmd2 = state1 });
                     number++;
                 }
                 else
@@ -156,8 +157,8 @@
                 {
                     var effect = Object.Instantiate(damageEffect, p.transform.position, p.transform.rotation);
                     Object.Destroy(effect, 1f);
-                    if(self.targetID == ClientManager.UID)
-                        ClientManager.AddOperation(new Operation(Command.AIAttack, (int)damage));
+                    if(self.targetID == ClientBase.Instance.UID)
+                        ClientBase.Instance.AddOperation(new Operation(Command.AIAttack, (int)damage));
                 }
             }
             if (self.target != null)

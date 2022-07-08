@@ -77,11 +77,11 @@ namespace LockStep.Server
                 return;
             client.readyBattle = true;
             int readyCount = 0;
-            scene.Players.For(p =>
+            foreach (var p in scene.Clients)
             {
                 if (p.readyBattle)
                     readyCount++;
-            });
+            }
             NDebug.Log($"准备:{readyCount}/{scene.Count}");
             if (readyCount == scene.Count)
             {

@@ -1,4 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using UnityEngine;
 namespace Example2
@@ -51,7 +52,7 @@ namespace Example2
             }
             if (fire | Input.GetMouseButtonDown(0))
             {
-                ClientManager.AddOperation(new Net.Share.Operation(Command.Fire, ClientManager.UID));
+                ClientBase.Instance.AddOperation(new Net.Share.Operation(Command.Fire, ClientBase.Instance.UID));
                 fire = false;
             }
         }

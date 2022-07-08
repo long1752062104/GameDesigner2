@@ -19,7 +19,7 @@
         /// <summary>
         /// 方法哈希
         /// </summary>
-        public ushort mask;
+        public ushort hash;
         /// <summary>
         /// 参数数组
         /// </summary>
@@ -38,7 +38,7 @@
         {
             error = false;
             name = func;
-            mask = 0;
+            hash = 0;
             this.pars = pars;
         }
 

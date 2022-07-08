@@ -5,6 +5,7 @@ namespace Net.UnityComponent
     using Net.Share;
     using global::System;
     using UnityEngine;
+    using Net.Client;
 
     /// <summary>
     /// 网络Transform同步组件基类
@@ -46,17 +47,17 @@ namespace Net.UnityComponent
 
         public override void StartSyncTransformState()
         {
-            ClientManager.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)mode,
                 index = netObj.registerObjectIndex,
-                uid = ClientManager.UID
+                uid = ClientBase.Instance.UID
             });
         }
 
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (ClientManager.UID == opt.uid | opt.cmd != Command.Transform)
+            if (ClientBase.Instance.UID == opt.uid | opt.cmd != Command.Transform)
                 return;
             sendTime = Time.time + interval;
             if (opt.index1 == 0)
@@ -111,10 +112,10 @@ namespace Net.UnityComponent
                 position = transform.localPosition;
                 rotation = transform.localRotation;
                 localScale = transform.localScale;
-                ClientManager.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+                ClientBase.Instance.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
                 {
                     cmd1 = (byte)mode,
-                    uid = ClientManager.UID,
+                    uid = ClientBase.Instance.UID,
                     index = index,
                     index1 = this.identity
                 });

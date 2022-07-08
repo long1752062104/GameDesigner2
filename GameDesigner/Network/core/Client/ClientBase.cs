@@ -454,6 +454,7 @@ namespace Net.Client
         /// 断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
         /// </summary>
         public int ReconnectCount { get; set; } = 10;
+        protected readonly object syncRoot = new object();
 
         /// <summary>
         /// 构造函数
@@ -607,14 +608,17 @@ namespace Net.Client
 
         private void RemoveRpcInternal(object target)
         {
-            if (target is string key)
+            lock (syncRoot)//checkRpc方法和此方法并行时索引溢出
             {
-                if (RpcDic.ContainsKey(key))
-                    RpcDic.Remove(key);
-                return;
+                if (target is string key)
+                {
+                    if (RpcDic.ContainsKey(key))
+                        RpcDic.Remove(key);
+                    return;
+                }
+                RemoveRpcInternal(RpcDic, target, true);
+                RemoveRpcInternal(RpcHashDic, target, false);
             }
-            RemoveRpcInternal(RpcDic, target, true);
-            RemoveRpcInternal(RpcHashDic, target, false);
         }
 
         private void RemoveRpcInternal<K, List>(MyDictionary<K, List> dic, object target, bool update) where List : List<RPCMethod>
@@ -1285,8 +1289,11 @@ namespace Net.Client
         //检查rpc函数
         private void CheckRpcUpdate()
         {
-            CheckRpcUpdate(RpcDic, true);
-            CheckRpcUpdate(RpcHashDic, false);
+            lock (syncRoot)//RemoveRpc方法和内部线程并行时索引溢出
+            {
+                CheckRpcUpdate(RpcDic, true);
+                CheckRpcUpdate(RpcHashDic, false);
+            }
         }
 
         private void CheckRpcUpdate<K, List>(MyDictionary<K, List> dic, bool update) where List : List<RPCMethod>
@@ -1294,7 +1301,7 @@ namespace Net.Client
             var entries = dic.entries;
             bool isUpdate = false;
             for (int i = 0; i < entries.Length; i++)
-            {
+            { 
                 if (entries[i].hashCode == -1)
                     continue;
                 var rpcs1 = entries[i].value;
@@ -1678,11 +1685,21 @@ namespace Net.Client
             if (Client.Poll(1, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(65507);
-                segment.Count = Client.Receive(segment);
+                segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                if (error != SocketError.Success)
+                {
+                    BufferPool.Push(segment);
+                    return;
+                }
+                if (segment.Count == 0)
+                {
+                    BufferPool.Push(segment);
+                    return;
+                }
                 receiveCount += segment.Count;
                 receiveAmount++;
                 heart = 0;
-                ResolveBuffer(segment, false);
+                ResolveBuffer(ref segment, false);
                 revdLoopNum++;
                 BufferPool.Push(segment);
             }
@@ -1691,6 +1708,19 @@ namespace Net.Client
                 Thread.Sleep(1);
             }
         }
+
+#if TEST1
+        internal void ReceiveTest(byte[] buffer)//本机测试
+        {
+            var segment = new Segment(buffer, false);
+            receiveCount += segment.Count;
+            receiveAmount++;
+            heart = 0;
+            ResolveBuffer(segment, false);
+            revdLoopNum++;
+            BufferPool.Push(segment);
+        }
+#endif
 
         /// <summary>
         /// 网络异常处理
@@ -1724,12 +1754,12 @@ namespace Net.Client
         }
 
 #if TEST
-        public void TestResolveBuffer(Segment buffer) => ResolveBuffer(buffer, false);
+        public void TestResolveBuffer(Segment buffer) => ResolveBuffer(ref buffer, false);
 #endif
         /// <summary>
         /// 解析网络数据包
         /// </summary>
-        protected virtual void ResolveBuffer(Segment buffer, bool isTcp)
+        protected virtual void ResolveBuffer(ref Segment buffer, bool isTcp)
         {
             if (MD5CRC)
             {
@@ -1779,13 +1809,13 @@ namespace Net.Client
                 {
                     FuncData func = OnDeserializeRPC(buffer, buffer.Position, dataCount);
                     if (func.error)
-                        break;
+                        goto J;
                     rpc.func = func.name;
                     rpc.pars = func.pars;
-                    rpc.methodHash = func.mask;
+                    rpc.methodHash = func.hash;
                 }
                 RPCDataHandle(rpc, buffer);//解析协议完成
-                buffer.Position += dataCount;
+                J: buffer.Position += dataCount;
             }
         }
 
@@ -1975,10 +2005,10 @@ namespace Net.Client
                     });
                     break;
                 case NetCmd.Identify:
-                    var pos = segment.Position;
-                    UID = segment.ReadValue<int>();
-                    Identify = segment.ReadValue<string>();
-                    segment.Position = pos;
+                    //var pos = segment.Position;
+                    UID = segment.ReadInt32();
+                    Identify = segment.ReadString();
+                    //segment.Position = pos;
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);
