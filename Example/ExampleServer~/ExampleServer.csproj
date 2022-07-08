@@ -51,6 +51,7 @@
     <Compile Include="Example2\DBExt\Example2DBExt.cs" />
     <Compile Include="Example2\DB\ConfigData.cs" />
     <Compile Include="Example2\DB\Example2DB.cs" />
+    <Compile Include="Example2\DB\Example2HashProto.cs" />
     <Compile Include="Example2\DB\Example2RpcMaskType.cs" />
     <Compile Include="Example2\DB\UserinfoData.cs" />
     <Compile Include="Example2\Player.cs" />
@@ -164,6 +165,7 @@
       <HintPath>..\..\..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Example2\数据库使用的包.txt" />

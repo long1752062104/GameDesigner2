@@ -51,7 +51,7 @@ namespace ExampleServer
             server.MTPS = 2048;
             server.SetHeartTime(10,200);
             server.OnNetworkDataTraffic += (a, b, c, d, e1, f, g) => {//当统计网络性能,数据传输量
-                toolStripStatusLabel1.Text = $"发送数量:{a} 发送字节:{ByteHelper.HumanReadableFilesize(b)} 接收数量:{c} 接收字节:{ByteHelper.HumanReadableFilesize(d)} 发送fps:{f} 接收fps:{g} 解析数量:{e1}";
+                toolStripStatusLabel1.Text = $"发送数量:{a} 发送字节:{ByteHelper.ToString(b)} 接收数量:{c} 接收字节:{ByteHelper.ToString(d)} 发送fps:{f} 接收fps:{g} 解析数量:{e1}";
                 label2.Text = "当前在线人数:" + server.OnlinePlayers + " 未知客户端:" + server.UnClientNumber;
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter3());
@@ -61,7 +61,6 @@ namespace ExampleServer
             button1.Text = "关闭";
             Example2DB.connStr = $"Data Source='{AppDomain.CurrentDomain.BaseDirectory}/Data/example2.db';";
             Example2DB.I.Init(Example2DB.I.OnInit, 1);
-            ThreadManager.Invoke(Example2DB.I.ExecutedContext, true);//每帧检查调用mysql线程调用中心
             ThreadManager.Invoke(1f, Example2DB.I.Executed, true);//每秒检查有没有数据需要往mysql数据库更新
             //Task.Run(() =>
             //{

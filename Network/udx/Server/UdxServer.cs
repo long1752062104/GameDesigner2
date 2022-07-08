@@ -124,7 +124,8 @@
                         string ip = Encoding.ASCII.GetString(ipbytes, 0, 128);
                         ip = ip.Replace("\0", "");
                         IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
-                        UserIDStack.TryPop(out int uid);
+                        if (!UserIDStack.TryPop(out int uid))
+                            uid = GetCurrUserID();
                         Player client = new Player();
                         client.Udx = cli;
                         client.UserID = uid;

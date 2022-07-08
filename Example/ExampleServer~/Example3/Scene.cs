@@ -21,7 +21,7 @@ namespace LockStep.Server
         {
             if (!battle)
                 return;
-            List<Player> players = GetPlayers();
+            var players = Clients;
             if (players.Count <= 0)
             {
                 frame = 0;

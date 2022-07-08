@@ -1,4 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using Net.Share;
 using UnityEngine;
@@ -14,22 +15,22 @@ public class UITest : SingleCase<UITest>
     void Start()
     {
         cr.onClick.AddListener(()=> {
-            ClientManager.Instance.SendRT("CreateRoom", cri.text);
+            ClientBase.Instance.SendRT("CreateRoom", cri.text);
         });
         jr.onClick.AddListener(() => {
-            ClientManager.Instance.SendRT("JoinRoom", cri.text);
+            ClientBase.Instance.SendRT("JoinRoom", cri.text);
         });
         er.onClick.AddListener(() => {
-            ClientManager.Instance.SendRT("ExitRoom");
+            ClientBase.Instance.SendRT("ExitRoom");
         });
         rb.onClick.AddListener(() => {
-            ClientManager.Instance.SendRT("StartBattle");
+            ClientBase.Instance.SendRT("StartBattle");
         });
         eb.onClick.AddListener(() => {
-            ClientManager.Instance.SendRT("ExitBattle");
+            ClientBase.Instance.SendRT("ExitBattle");
         });
-        ClientManager.Instance.client.AddRpcHandle(this);
-        ClientManager.Instance.client.OnPingCallback += (delay) => {
+        ClientBase.Instance.AddRpcHandle(this);
+        ClientBase.Instance.OnPingCallback += (delay) => {
             text.text = "网络延迟:" + delay;
         };
     }

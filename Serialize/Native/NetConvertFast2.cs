@@ -520,12 +520,12 @@
             }
             catch (Exception ex)
             {
-                NDebug.LogError("序列化:" + model.func + "方法出错 详细信息:" + ex);
+                NDebug.LogError($"序列化func:[{model.func}]hash:[{model.methodHash}]出错 详细信息:" + ex);
             }
             return buffer1;
         }
 
-        public static FuncData DeserializeModel(Segment segment)
+        public static FuncData DeserializeModel(Segment segment, bool isPush = true)
         {
             FuncData obj = default;
             try
@@ -533,23 +533,24 @@
                 byte head = segment.ReadByte();
                 bool hasFunc = GetBit(head, 1);
                 bool hasMask = GetBit(head, 2);
-                if (hasFunc) obj.name = segment.ReadValue<string>();
-                if (hasMask) obj.mask = segment.ReadValue<ushort>();
-                List<object> list = new List<object>();
+                if (hasFunc) obj.name = segment.ReadString();
+                if (hasMask) obj.hash = segment.ReadUInt16();
+                var list = new List<object>();
                 int count = segment.Offset + segment.Count;
                 while (segment.Position < count)
                 {
-                    ushort typeIndex = segment.ReadValue<ushort>();
+                    ushort typeIndex = segment.ReadUInt16();
                     Type type = IndexToType(typeIndex);
                     var obj1 = DeserializeObject(type, segment, false);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
-                BufferPool.Push(segment);
+                if(isPush)
+                    BufferPool.Push(segment);
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"解析[{obj.name}]出错 详细信息:" + ex);
+                NDebug.LogError($"解析func:[{obj.name}]hash:[{obj.hash}]出错 详细信息:" + ex);
                 obj.error = true;
             }
             return obj;

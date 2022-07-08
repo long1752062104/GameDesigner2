@@ -98,18 +98,15 @@
         /// </summary>
         private void Register(Player unClient, string acc, string pwd)
         {
-            Example2DB.I.Invoke(()=>
+            if (Example2DB.I.UserinfoDatas.TryGetValue(acc, out var data))
             {
-                if (Example2DB.I.UserinfoDatas.TryGetValue(acc, out var data))
-                {
-                    SendRT(unClient, "RegisterCallback", "账号已经存在!");
-                    return;
-                }
-                int id = GetConfigID(1);//请使用Navicat可视化工具或SQLite可视化工具查看config表
-                data = new UserinfoData(id, acc, pwd, null, null, null, 100, 100);
-                Example2DB.I.UserinfoDatas.TryAdd(acc, data);
-                SendRT(unClient, "RegisterCallback", "注册成功！");
-            });
+                SendRT(unClient, "RegisterCallback", "账号已经存在!");
+                return;
+            }
+            int id = GetConfigID(1);//请使用Navicat可视化工具或SQLite可视化工具查看config表
+            data = new UserinfoData(id, acc, pwd, null, null, null, 100, 100);
+            Example2DB.I.UserinfoDatas.TryAdd(acc, data);
+            SendRT(unClient, "RegisterCallback", "注册成功！");
         }
 
         /// <summary>

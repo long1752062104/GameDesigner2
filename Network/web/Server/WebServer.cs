@@ -134,7 +134,8 @@
             EndPoint remotePoint = clientSocket.RemoteEndPoint;
             wsClient1.OnOpen = () =>
             {
-                UserIDStack.TryPop(out int uid);
+                if (!UserIDStack.TryPop(out int uid))
+                    uid = GetCurrUserID();
                 Player client = new Player();
                 client.Client = clientSocket;
                 client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;

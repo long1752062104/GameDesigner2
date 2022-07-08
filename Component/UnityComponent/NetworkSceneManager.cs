@@ -2,6 +2,7 @@
 namespace Net.UnityComponent
 {
     using global::System.Collections.Generic;
+    using Net.Client;
     using Net.Component;
     using Net.Share;
     using Net.System;
@@ -16,7 +17,7 @@ namespace Net.UnityComponent
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
 
-        private void OnConnectedHandle()
+        public virtual void OnConnectedHandle()
         {
             NetworkObject.Init(5000);
         }
@@ -24,13 +25,13 @@ namespace Net.UnityComponent
         // Start is called before the first frame update
         public virtual void Start()
         {
-            if (ClientManager.I == null)
+            if (ClientBase.Instance == null)
                 return;
-            if (ClientManager.I.client.Connected)
+            if (ClientBase.Instance.Connected)
                 OnConnectedHandle();
             else
-                ClientManager.I.client.OnConnectedHandle += OnConnectedHandle;
-            ClientManager.I.client.OnOperationSync += OperationSync;
+                ClientBase.Instance.OnConnectedHandle += OnConnectedHandle;
+            ClientBase.Instance.OnOperationSync += OperationSync;
         }
 
         public virtual void Update() 
@@ -159,10 +160,10 @@ namespace Net.UnityComponent
 
         public virtual void OnDestroy()
         {
-            if (ClientManager.I == null)
+            if (ClientBase.Instance == null)
                 return;
-            ClientManager.I.client.OnConnectedHandle -= OnConnectedHandle;
-            ClientManager.I.client.OnOperationSync -= OperationSync;
+            ClientBase.Instance.OnConnectedHandle -= OnConnectedHandle;
+            ClientBase.Instance.OnOperationSync -= OperationSync;
         }
     }
 }

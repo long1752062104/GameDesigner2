@@ -1,5 +1,6 @@
 ﻿namespace Example2
 {
+    using Net.Client;
     using Net.Component;
     using UnityEngine;
 
@@ -21,7 +22,7 @@
                 Destroy(explosion, 1f);
                 monster.target = target;
                 if (target.IsLocal)
-                    ClientManager.AddOperation(new Net.Share.Operation(Command.Attack, monster.id) { index1 = damage });
+                    ClientBase.Instance.AddOperation(new Net.Share.Operation(Command.Attack, monster.id) { index1 = damage });
                 Destroy(gameObject);
             }
             else if (actor is Player player)
@@ -34,7 +35,7 @@
                 var explosion = Instantiate(explosionPrefab, pos, rot);
                 Destroy(explosion, 1f);
                 if (target.IsLocal)
-                    ClientManager.AddOperation(new Net.Share.Operation(Command.AttackPlayer, player.id) { index1 = damage });
+                    ClientBase.Instance.AddOperation(new Net.Share.Operation(Command.AttackPlayer, player.id) { index1 = damage });
                 Destroy(gameObject);
             }
         }

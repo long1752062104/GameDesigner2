@@ -1,5 +1,6 @@
 ﻿using Net.System;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -182,6 +183,47 @@ namespace Net.Event
                 async = isAsync,
             });
             return enentID;
+        }
+
+        private int frame;
+        private DateTime nextTime;
+        private readonly Stopwatch stopwatch;
+
+        public TimerEvent() 
+        {
+            frame = 0;//一秒60次
+            nextTime = DateTime.Now.AddSeconds(1);
+            stopwatch = Stopwatch.StartNew();
+        }
+
+        public void UpdateEventFixed(uint interval = 17, bool sleep = false)//60帧
+        {
+            var frameRate = 1000 / interval;
+            var now = DateTime.Now;
+            if (now >= nextTime)
+            {
+                if (frame < frameRate)
+                {
+                    var step = (frameRate - frame) * interval;
+                    UpdateEvent((uint)step);
+                }
+                nextTime = DateTime.Now.AddSeconds(1);
+                frame = 0;
+                stopwatch.Restart();
+            }
+            else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * interval)
+            {
+                UpdateEvent(interval);
+                frame++;
+            }
+            else if ((nextTime - now).TotalSeconds > 60d)//当系统时间被改很长后问题
+            {
+                nextTime = DateTime.Now.AddSeconds(1);
+            }
+            else if(sleep)
+            {
+                Thread.Sleep(1);
+            }
         }
 
         public void UpdateEvent(uint interval = 17)//60帧

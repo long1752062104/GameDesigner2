@@ -1,4 +1,5 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using Net.Share;
 using Net.UnityComponent;
@@ -62,12 +63,12 @@ namespace BuildComponent
                     return;
                 layer1 = value;
                 self.layer = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 1,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -84,12 +85,12 @@ namespace BuildComponent
                     return;
                 isStatic2 = value;
                 self.isStatic = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 5,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -106,12 +107,12 @@ namespace BuildComponent
                     return;
                 tag3 = value;
                 self.tag = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 6,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -128,12 +129,12 @@ namespace BuildComponent
                     return;
                 name4 = value;
                 self.name = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 23,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -150,12 +151,12 @@ namespace BuildComponent
                     return;
                 hideFlags5 = value;
                 self.hideFlags = value;
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 24,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -172,12 +173,12 @@ namespace BuildComponent
                     return;
                 activeSelf11 = value;
                 self.SetActive(value);
-                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = 25,
                     buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientManager.UID
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
@@ -187,7 +188,7 @@ namespace BuildComponent
             if (type == type1 & !always) return;
             type1 = type;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { type } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 27,
@@ -200,7 +201,7 @@ namespace BuildComponent
             methodName2 = methodName;
             options3 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 53,
@@ -213,7 +214,7 @@ namespace BuildComponent
             methodName4 = methodName;
             options5 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 54,
@@ -226,7 +227,7 @@ namespace BuildComponent
             methodName6 = methodName;
             options7 = options;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 55,
@@ -238,7 +239,7 @@ namespace BuildComponent
             if (methodName == methodName8 & !always) return;
             methodName8 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 74,
@@ -250,7 +251,7 @@ namespace BuildComponent
             if (methodName == methodName9 & !always) return;
             methodName9 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 77,
@@ -262,7 +263,7 @@ namespace BuildComponent
             if (methodName == methodName10 & !always) return;
             methodName10 = methodName;
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 80,
@@ -272,7 +273,7 @@ namespace BuildComponent
         public void GetInstanceID(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 101,
@@ -282,7 +283,7 @@ namespace BuildComponent
         public void GetHashCode(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 102,
@@ -292,7 +293,7 @@ namespace BuildComponent
         public void ToString(bool always = false)
         {
             var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = 108,
@@ -318,37 +319,37 @@ namespace BuildComponent
             switch (opt.index1)
             {
                 case 1:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     layer1 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Int32>(new Net.System.Segment(opt.buffer, false));
                     self.layer = layer1;
                     break;
                 case 5:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     isStatic2 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
                     self.isStatic = isStatic2;
                     break;
                 case 6:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     tag3 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
                     self.tag = tag3;
                     break;
                 case 23:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     name4 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
                     self.name = name4;
                     break;
                 case 24:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     hideFlags5 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.HideFlags>(new Net.System.Segment(opt.buffer, false));
                     self.hideFlags = hideFlags5;
                     break;
                 case 25:
-                    if (opt.uid == ClientManager.UID)
+                    if (opt.uid == ClientBase.Instance.UID)
                         return;
                     activeSelf11 = Net.Serialize.NetConvertFast2.DeserializeObject<bool>(new Net.System.Segment(opt.buffer, false));
                     self.SetActive(activeSelf11);

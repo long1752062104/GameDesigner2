@@ -40,6 +40,9 @@
         [DllImport("ws2_32.dll", SetLastError = true)]
         internal static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] ref TimeValue timeout);
 
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        internal unsafe static extern int recv([In] IntPtr socketHandle, [In] byte* pinnedBuffer, [In] int len, [In] SocketFlags socketFlags);
+
         [DllImport("Kernel32.dll")]
         private static extern Boolean SetSystemTime([In, Out] SystemTime st);
 

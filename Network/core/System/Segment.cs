@@ -213,7 +213,7 @@ namespace Net.System
                     value = ReadSByte();
                     break;
                 case TypeCode.Boolean:
-                    value = ReadBool();
+                    value = ReadBoolean();
                     break;
                 case TypeCode.Int16:
                     value = ReadUInt16();
@@ -288,11 +288,9 @@ namespace Net.System
             switch (value)
             {
                 case byte[] array1:
-                    Write(array1.Length);
                     Write(array1);
                     break;
                 case sbyte[] array1:
-                    Write(array1.Length);
                     Write(array1);
                     break;
                 case bool[] array1:
@@ -412,7 +410,7 @@ namespace Net.System
             Position = length;
             Count = length;
         }
-        
+
         #region Write
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(byte value)
@@ -598,9 +596,16 @@ namespace Net.System
             }
         }
 
+        /// <summary>
+        /// 写入字节数组
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(byte[] value)
+        public void Write(byte[] value, bool recordLength = true)
         {
+            if (recordLength)
+                Write(value.Length);
             global::System.Buffer.BlockCopy(value, 0, Buffer, Position, value.Length);
             Position += value.Length;
         }
@@ -612,9 +617,16 @@ namespace Net.System
             Position += count;
         }
 
+        /// <summary>
+        /// 写入字节数组
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(sbyte[] value)
+        public void Write(sbyte[] value, bool recordLength = true)
         {
+            if (recordLength)
+                Write(value.Length);
             global::System.Buffer.BlockCopy(value, 0, Buffer, Position, value.Length);
             Position += value.Length;
         }
@@ -748,6 +760,33 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(List<byte> value)
+        {
+            Write(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                Write(value[i]);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(List<sbyte> value)
+        {
+            Write(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                Write(value[i]);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(List<bool> value)
+        {
+            Write(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                Write(value[i]);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(List<short> value)
         {
             Write(value.Count);
@@ -838,6 +877,24 @@ namespace Net.System
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(List<double> value)
+        {
+            Write(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                Write(value[i]);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(List<decimal> value)
+        {
+            Write(value.Count);
+            for (int i = 0; i < value.Count; i++)
+            {
+                Write(value[i]);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(List<string> value)
         {
             Write(value.Count);
@@ -862,7 +919,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadBool()
+        public bool ReadBoolean()
         {
             return Buffer[Position++] == 1;
         }
@@ -922,6 +979,12 @@ namespace Net.System
         {
             uint value = ReadUInt32();
             return *(float*)&value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe float ReadSingle()
+        {
+            return ReadFloat();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1028,6 +1091,17 @@ namespace Net.System
             return value;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe bool[] ReadBooleanArray()
+        {
+            var count = ReadInt32();
+            var value = new bool[count];
+            for (int i = 0; i < count; i++)
+            {
+                value[i] = ReadBoolean();
+            }
+            return value;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe short[] ReadInt16Array()
         {
             var count = ReadInt32();
@@ -1092,6 +1166,11 @@ namespace Net.System
                 value[i] = ReadFloat();
             }
             return value;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe float[] ReadSingleArray()
+        {
+            return ReadFloatArray();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe long[] ReadInt64Array()
@@ -1183,6 +1262,28 @@ namespace Net.System
             return value;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe List<sbyte> ReadSByteList()
+        {
+            var count = ReadInt32();
+            var value = new List<sbyte>();
+            for (int i = 0; i < count; i++)
+            {
+                value[i] = ReadSByte();
+            }
+            return value;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe List<bool> ReadBooleanList()
+        {
+            var count = ReadInt32();
+            var value = new List<bool>();
+            for (int i = 0; i < count; i++)
+            {
+                value[i] = ReadBoolean();
+            }
+            return value;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe List<short> ReadInt16List()
         {
             var count = ReadInt32();
@@ -1249,6 +1350,11 @@ namespace Net.System
             return value;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe List<float> ReadSingleList()
+        {
+            return ReadFloatList();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe List<long> ReadInt64List()
         {
             var count = ReadInt32();
@@ -1300,6 +1406,17 @@ namespace Net.System
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadTimeSpan());
+            }
+            return value;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe List<decimal> ReadDecimalList()
+        {
+            var count = ReadInt32();
+            var value = new List<decimal>();
+            for (int i = 0; i < count; i++)
+            {
+                value.Add(ReadDecimal());
             }
             return value;
         }

@@ -120,7 +120,8 @@
                     client.RemotePoint = socket.RemoteEndPoint;
                     client.isDispose = false;
                     client.CloseSend = false;
-                    UserIDStack.TryPop(out int uid);
+                    if (!UserIDStack.TryPop(out int uid))
+                        uid = GetCurrUserID();
                     client.UserID = uid;
                     client.PlayerID = uid.ToString();
                     client.Name = uid.ToString();
@@ -134,6 +135,9 @@
                     if (++threadNum >= RevdQueues.Count)
                         threadNum = 0;
                     AllClients.TryAdd(socket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+#if TEST1
+                    UIDClients.TryAdd(uid, client);//测试
+#endif
                     OnHasConnectHandle(client);
                     if (AllClients.Count >= OnlineLimit + LineUp)
                     {
@@ -274,7 +278,9 @@
         {
             SendDataHandle(client, rtRPCModels, true);
         }
-
+#if TEST1
+        ListSafe<byte> list = new ListSafe<byte>();
+#endif
         protected override void SendByteData(Player client, byte[] buffer, bool reliable)
         {
             if (!client.Client.Connected)
@@ -283,14 +289,26 @@
                 return;
             if (client.Client.Poll(1, SelectMode.SelectWrite))
             {
+#if TEST1
+                list.AddRange(buffer);
+                do 
+                {
+                    var buffer1 = list.GetRemoveRange(0, RandomHelper.Range(0, buffer.Length));
+                    Net.Client.ClientBase.Instance.ReceiveTest(buffer1);
+                }
+                while (client.tcpRPCModels.Count == 0 & list.Count > 0);
+#else
                 int count1 = client.Client.Send(buffer, 0, buffer.Length, SocketFlags.None, out SocketError error);
                 if (error != SocketError.Success | count1 <= 0)
                 {
                     OnSendErrorHandle?.Invoke(client, buffer, true);
                     return;
                 }
+                else if (count1 != buffer.Length)
+                    Debug.Log($"发送了{buffer.Length - count1}个字节失败!");
                 sendAmount++;
                 sendCount += buffer.Length;
+#endif
             }
             else
             {

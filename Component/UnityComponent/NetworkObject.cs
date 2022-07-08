@@ -2,6 +2,7 @@
 namespace Net.UnityComponent
 {
     using global::System.Collections.Generic;
+    using Net.Client;
     using Net.Component;
     using Net.Helper;
     using Net.Share;
@@ -64,7 +65,7 @@ namespace Net.UnityComponent
 
         internal void InitSyncVar(object target)
         {
-            ClientManager.I.client.AddRpcHandle(target, false, true, (info) =>
+            ClientBase.Instance.AddRpcHandle(target, false, true, (info) =>
             {
                 info.id = (ushort)syncVarInfos.Count;
                 syncVarInfos.Add(info);
@@ -75,9 +76,9 @@ namespace Net.UnityComponent
         {
             SyncVarHelper.CheckSyncVar(isOtherCreate, syncVarInfos, (buffer)=> 
             {
-                ClientManager.AddOperation(new Operation(NetCmd.SyncVar, m_identity)
+                ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVar, m_identity)
                 {
-                    uid = ClientManager.UID,
+                    uid = ClientBase.Instance.UID,
                     index = registerObjectIndex,
                     buffer = buffer
                 });
@@ -86,7 +87,7 @@ namespace Net.UnityComponent
 
         internal void SyncVarHandler(Operation opt)
         {
-            if (opt.cmd != NetCmd.SyncVar | opt.uid == ClientManager.UID)
+            if (opt.cmd != NetCmd.SyncVar | opt.uid == ClientBase.Instance.UID)
                 return;
             SyncVarHelper.SyncVarHandler(syncVarInfos, opt.buffer);
         }
@@ -116,9 +117,9 @@ namespace Net.UnityComponent
             if (isOtherCreate | m_identity < 10000)//identity < 10000则是自定义唯一标识
                 return;
             IDENTITY_POOL.Enqueue(m_identity);
-            if (ClientManager.I == null)
+            if (ClientBase.Instance == null)
                 return;
-            ClientManager.AddOperation(new Operation(Command.Destroy, m_identity));
+            ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
         /// <summary>
@@ -131,7 +132,7 @@ namespace Net.UnityComponent
                 return;
             isInit = true;
             Capacity = capacity;
-            Identity = 10000 + ((ClientManager.UID + 1 - 10000) * capacity);
+            Identity = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
             for (int i = Identity; i < Identity + capacity; i++)
                 IDENTITY_POOL.Enqueue(i);
         }

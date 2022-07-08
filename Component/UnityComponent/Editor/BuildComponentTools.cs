@@ -262,23 +262,23 @@ public class BuildComponentTools : EditorWindow
             {
                 str.AppendLine($"               if (!NetworkResources.I.TryGetValue({fieldName}, out ObjectRecord objectRecord))");
                 str.AppendLine($"                   return;");
-                str.AppendLine($"               ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
+                str.AppendLine($"               ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
                 str.AppendLine("               {");
                 str.AppendLine($"                   index = netObj.registerObjectIndex,");
                 str.AppendLine($"                   index1 = {i},");
                 str.AppendLine($"                   index2 = objectRecord.ID,");
                 str.AppendLine($"                   name = objectRecord.path,");
-                str.AppendLine("                    uid = ClientManager.UID");
+                str.AppendLine("                    uid = ClientBase.Instance.UID");
                 str.AppendLine("               });");
             }
             else 
             {
-                str.AppendLine("                ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
+                str.AppendLine("                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
                 str.AppendLine("                {");
                 str.AppendLine($"                    index = netObj.registerObjectIndex,");
                 str.AppendLine($"                    index1 = {i},");
                 str.AppendLine("                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),");
-                str.AppendLine("                    uid = ClientManager.UID");
+                str.AppendLine("                    uid = ClientBase.Instance.UID");
                 str.AppendLine("                });");
             }
             str.AppendLine("          }");
@@ -339,7 +339,7 @@ public class BuildComponentTools : EditorWindow
                 value += item.Name + ",";
             value = value.TrimEnd(',');
             str.AppendLine($"   var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() {{ pars = new object[] {{ {value} }} }});");
-            str.AppendLine("    ClientManager.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
+            str.AppendLine("    ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
             str.AppendLine("    {");
             str.AppendLine($"       index = netObj.registerObjectIndex,");
             str.AppendLine($"       index1 = {properties.Length + i},");
@@ -385,7 +385,7 @@ public class BuildComponentTools : EditorWindow
             if (ptype != typeof(Object) & ptype.IsSubclassOf(typeof(Object)))
             {
                 str.AppendLine($"             case {i}:");
-                str.AppendLine("                if (opt.uid == ClientManager.UID)");
+                str.AppendLine("                if (opt.uid == ClientBase.Instance.UID)");
                 str.AppendLine("                    return;");
                 str.AppendLine($"                 {fieldName} = NetworkResources.I.GetObject<{ptype.FullName}>(opt.index2, opt.name);");
                 str.AppendLine($"                 self.{item.Name} = {fieldName};");
@@ -394,7 +394,7 @@ public class BuildComponentTools : EditorWindow
             else
             {
                 str.AppendLine($"             case {i}:");
-                str.AppendLine("                if (opt.uid == ClientManager.UID)");
+                str.AppendLine("                if (opt.uid == ClientBase.Instance.UID)");
                 str.AppendLine("                    return;");
                 str.AppendLine($"                 {fieldName} = Net.Serialize.NetConvertFast2.DeserializeObject<{ptype.FullName}>(new Net.System.Segment(opt.buffer, false));");
                 str.AppendLine($"                 self.{item.Name} = {fieldName};");

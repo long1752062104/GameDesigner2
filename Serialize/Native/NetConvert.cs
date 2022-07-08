@@ -279,7 +279,7 @@
             }
             if (hasMask)
             {
-                fdata.mask = BitConverter.ToUInt16(buffer, index);
+                fdata.hash = BitConverter.ToUInt16(buffer, index);
                 index += 2;
                 count -= 2;
             }

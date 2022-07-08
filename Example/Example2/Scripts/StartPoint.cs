@@ -1,4 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
 using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
@@ -18,9 +19,9 @@ namespace Example2
             Camera.main.GetComponent<ARPGcamera>().target = player1.transform;
             var p = player1.GetComponent<Player>();
             GameManager.I.players.Add(p);
-            p.id = ClientManager.UID;
+            p.id = ClientBase.Instance.UID;
             p.IsLocal = true;
-            p.GetComponent<NetworkObject>().identity = ClientManager.UID;
+            p.GetComponent<NetworkObject>().identity = ClientBase.Instance.UID;
             InputJoystick.OnJoystickMoving += (dir) =>
             {
                 pc.moveDirection = new Vector3(dir.x, 0, dir.y);

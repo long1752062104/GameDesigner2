@@ -2629,16 +2629,6 @@
             当统计网络流量时触发
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnExceededNumberHandle">
-            <summary>
-            当服务器连接人数溢出(未知客户端连接总数), 服务器忽略当前客户端的所有Rpc请求时调用
-            </summary>
-        </member>
-        <member name="E:Net.Client.ClientBase.OnBlockConnectionHandle">
-            <summary>
-            当服务器在线人数爆满, 服务器忽略当前客户端的所有Rpc请求时调用
-            </summary>
-        </member>
         <member name="E:Net.Client.ClientBase.OnOperationSync">
             <summary>
             当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
@@ -2656,7 +2646,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.OnAddRpcHandle">
             <summary>
-            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象， 参数2：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
+            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.OnRemoveRpc">
@@ -2699,7 +2689,7 @@
             当可等待的rpc方法被注册, 用于Rpc适配器上
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnPingCallback">
+        <member name="F:Net.Client.ClientBase.OnPingCallback">
             <summary>
             ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
             </summary>
@@ -2742,6 +2732,21 @@
         <member name="F:Net.Client.ClientBase.OnRegisterNetworkIdentity">
             <summary>
             当注册网络物体唯一标识
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.OnWhenQueuing">
+            <summary>
+            当排队等待中
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.OnQueueCancellation">
+            <summary>
+            当排队解除调用
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.OnServerFull">
+            <summary>
+            当服务器爆满，服务器积极拒绝客户端请求
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.sendRTList">
@@ -2791,12 +2796,7 @@
             用户唯一标识, 对应服务器的<see cref="P:Net.Server.NetPlayer.UserID"/>
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.SyncFrequency">
-            <summary>
-            网络数据发送频率, 大概每秒发送1000个数据
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.workerQueue">
+        <member name="F:Net.Client.ClientBase.WorkerQueue">
             <summary>
             同步线程上下文任务队列
             </summary>
@@ -2912,6 +2912,11 @@
             限制发送队列长度
             </summary>
         </member>
+        <member name="P:Net.Client.ClientBase.ReconnectCount">
+            <summary>
+            断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
+            </summary>
+        </member>
         <member name="M:Net.Client.ClientBase.#ctor">
             <summary>
             构造函数
@@ -2933,12 +2938,13 @@
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
             添加网络Rpc
             </summary>
             <param name="target">注册的对象实例</param>
             <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+            <param name="async">是否异步收集rpc方法和同步字段和属性?</param>
         </member>
         <member name="M:Net.Client.ClientBase.RemoveRpc(System.Object)">
             <summary>
@@ -3098,16 +3104,8 @@
             调式输出网络流量信息
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.CheckRpcHandle">
-            <summary>
-            rpc检查处理线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendDataHandle">
-            <summary>
-            发包线程
-            </summary>
-        </member>
+        <!-- Badly formed XML comment ignored for member "M:Net.Client.ClientBase.CheckRpcHandle" -->
+        <!-- Badly formed XML comment ignored for member "M:Net.Client.ClientBase.SendDataHandle" -->
         <member name="M:Net.Client.ClientBase.OnOptPacket(System.Int32)">
             <summary>
             当游戏操作行为封包数据时调用
@@ -3147,12 +3145,6 @@
             当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
             </summary>
             <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnCRC(System.Int32,System.Byte)">
-            <summary>
-            当处理CRC校验
-            </summary>
             <returns></returns>
         </member>
         <member name="M:Net.Client.ClientBase.ReceiveHandle">
@@ -3591,12 +3583,12 @@
         </member>
         <member name="M:Net.Client.ClientBase.Ping">
             <summary>
-            ping测试网络延迟, 通过<see cref="E:Net.Client.ClientBase.OnPingCallback"/>事件回调
+            ping测试网络延迟, 通过<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件回调
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.Ping(System.Action{System.Double})">
             <summary>
-            ping测试网络延迟, 此方法帮你监听<see cref="E:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
+            ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
             </summary>
             <param name="callback"></param>
         </member>
@@ -3785,46 +3777,6 @@
             显示FPS和网络延迟 参数1:FPS和延迟字符串 参数2:帧率 参数2:网络延迟
             </summary>
         </member>
-        <member name="T:Net.Client.DotNettyClient">
-            <summary>
-            dotNetty客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.DotNettyClient.Testing(System.String,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            dotnetty压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
-        <member name="T:Net.Client.ENetClient">
-            <summary>
-            ENet客户端类型 
-            第三版本 2020.9.14
-            </summary>
-        </member>
-        <member name="M:Net.Client.ENetClient.#ctor">
-            <summary>
-            构造客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.ENetClient.#ctor(System.Boolean)">
-            <summary>
-            构造客户端
-            </summary>
-            <param name="useUnityThread">使用unity多线程?</param>
-        </member>
-        <member name="M:Net.Client.ENetClient.Testing(System.String,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            udp压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
         <member name="T:Net.Client.TcpClient">
             <summary>
             TCP客户端类型 
@@ -3838,7 +3790,7 @@
         </member>
         <member name="M:Net.Client.TcpClient.#ctor">
             <summary>
-            构造不可靠传输客户端
+            构造可靠传输客户端
             </summary>
         </member>
         <member name="M:Net.Client.TcpClient.#ctor(System.Boolean)">
@@ -4063,7 +4015,7 @@
             <param name="time"></param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
         </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.Single,System.Action{System.Object},System.Object,System.Boolean)">
             <summary>
@@ -4073,7 +4025,7 @@
             <param name="ptr"></param>
             <param name="obj"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
         </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.Single,System.Int32,System.Action{System.Object},System.Object,System.Boolean)">
             <summary>
@@ -4084,7 +4036,7 @@
             <param name="ptr"></param>
             <param name="obj"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
         </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.Single,System.Func{System.Boolean},System.Boolean)">
             <summary>
@@ -4093,7 +4045,7 @@
             <param name="time"></param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
         </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.String,System.Single,System.Func{System.Boolean},System.Boolean)">
             <summary>
@@ -4103,7 +4055,17 @@
             <param name="time"></param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
+        </member>
+        <member name="M:Net.Event.TimerEvent.AddEvent(System.String,System.Int32,System.Func{System.Boolean},System.Boolean)">
+            <summary>
+            添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
+            </summary>
+            <param name="name"></param>
+            <param name="time"></param>
+            <param name="ptr"></param>
+            <param name="isAsync">如果是耗时任务, 需要设置true</param>
+            <returns>可用于结束事件的id</returns>
         </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.Single,System.Func{System.Object,System.Boolean},System.Object,System.Boolean)">
             <summary>
@@ -4113,7 +4075,13 @@
             <param name="ptr"></param>
             <param name="obj"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns></returns>
+            <returns>可用于结束事件的id</returns>
+        </member>
+        <member name="M:Net.Event.TimerEvent.RemoveEvent(System.Int32)">
+            <summary>
+            移除事件
+            </summary>
+            <param name="eventId"></param>
         </member>
         <member name="F:Net.Helper.CRCHelper.CRCCode">
             <summary>
@@ -4171,44 +4139,6 @@
             <param name="text">要解密的字符串</param> 
             <returns>解密后的字符串</returns>   
         </member>
-        <member name="T:Net.Server.NetBehaviour`2">
-            <summary>
-            服务器网络行为
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetBehaviour`2.#ctor">
-            <summary>
-            构造网络行为函数
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetBehaviour`2.AddRpcs(System.Object)">
-            <summary>
-            添加所有带有RPCFun特性的方法
-            </summary>
-            <param name="target">要收集RPCFun特性的对象</param>
-        </member>
-        <member name="M:Net.Server.NetBehaviour`2.AddRpcs(Net.Server.ServerBase{`0,`1},System.Object,System.Boolean)">
-            <summary>
-            添加所有带有RPCFun特性的方法
-            </summary>
-            <param name="server"></param>
-            <param name="target"></param>
-            <param name="append">追加rpc，如果target类型已经存在还可以追加到rpcs？</param>
-        </member>
-        <member name="M:Net.Server.NetBehaviour`2.GetRpcs(System.Object)">
-            <summary>
-            获取带有RPCFun特性的所有方法
-            </summary>
-            <param name="target">要获取RPCFun特性的对象</param>
-            <returns>返回获取到带有RPCFun特性的所有公开方法</returns>
-        </member>
-        <member name="M:Net.Server.NetBehaviour`2.RemoveRpc(Net.Server.ServerBase{`0,`1},System.Object)">
-            <summary>
-            移除网络远程过程调用函数
-            </summary>
-            <param name="server">指定的服务器rpcs</param>
-            <param name="target">移除的rpc对象</param>
-        </member>
         <member name="T:Net.Server.NetPlayer">
             <summary>
             网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -4260,12 +4190,6 @@
             远程方法哈希
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.LastTime">
-            <summary>
-            临时客户端持续时间: (内核使用):
-            未知客户端连接服务器, 长时间未登录账号, 未知客户端临时内存对此客户端回收, 并强行断开此客户端连接
-            </summary>
-        </member>
         <member name="F:Net.Server.NetPlayer.heart">
             <summary>
             跳动的心
@@ -4314,6 +4238,11 @@
         <member name="P:Net.Server.NetPlayer.TcpRemoteEndPoint">
             <summary>
             tcp远程端口, 由于socket被关闭后无法访问RemoteEndPoint的问题
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.IsQueueUp">
+            <summary>
+            是否属于排队状态
             </summary>
         </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
@@ -4694,6 +4623,11 @@
             移除场景所有玩家操作
             </summary>
         </member>
+        <member name="T:Net.Server.DefaultScene">
+            <summary>
+            默认网络场景，当不需要场景时直接继承
+            </summary>
+        </member>
         <member name="T:Net.Server.ServerBase`2">
             <summary>
             网络服务器核心基类 2019.11.22
@@ -4798,22 +4732,12 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.LineUp">
             <summary>
-            获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队1000人
+            获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队5000人
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnlineLimit">
             <summary>
             允许玩家在线人数最大值（玩家在线上限）默认2000人同时在线
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`2.exceededNumber">
-            <summary>
-            超出的排队人数，不处理的人数
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`2.blockConnection">
-            <summary>
-            服务器爆满, 阻止连接人数 与OnlineLimit属性有关
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.MainSceneName">
@@ -4934,7 +4858,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.MaxThread">
             <summary>
-            并发线程数量, 发送线程和接收处理线程数量
+            并发线程数量, 发送线程和接收处理线程数量 / 2
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.onlineNumber">
@@ -4975,6 +4899,11 @@
         <member name="P:Net.Server.ServerBase`2.SingleCallQueue">
             <summary>
             单线程调用队列
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`2.QueueUp">
+            <summary>
+            排队队列
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnStartingHandle">
@@ -5044,7 +4973,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.OnAddRpcHandle">
             <summary>
-            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象， 参数2：如果服务器的rpc中已经有了这个对象，还可以添加进去？
+            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnRemoveRpc">
@@ -5313,18 +5242,6 @@
             </summary>
             <param name="client"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.OnExceededNumber(`0,System.Net.EndPoint)">
-            <summary>
-            当服务器连接人数溢出时调用
-            </summary>
-            <param name="remotePoint"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnBlockConnection(`0,System.Net.EndPoint)">
-            <summary>
-            当服务器爆满时调用
-            </summary>
-            <param name="remotePoint"></param>
-        </member>
         <member name="M:Net.Server.ServerBase`2.SendDirect(`0)">
             <summary>
             立刻发送, 不需要等待内核时间 (当你要强制把客户端下线时,你还希望客户端先发送完数据后,再强制客户端退出游戏用到)
@@ -5336,12 +5253,6 @@
             重置头部数据大小, 在小数据达到<see cref="P:Net.Server.ServerBase`2.PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
             </summary>
             <param name="stream"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnCRC(System.Int32,System.Byte)">
-            <summary>
-            当处理CRC校验
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Net.Server.ServerBase`2.OnRpcExecute(`0,Net.Share.RPCModel)">
             <summary>
@@ -5690,7 +5601,7 @@
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
             添加网络Rpc(注册远程方法)
             </summary>
@@ -5794,51 +5705,6 @@
             </summary>
             <returns>是否可发送数据</returns>
         </member>
-        <member name="T:Net.Server.DNPlayer">
-            <summary>
-            dotNetty客户端玩家对象
-            </summary>
-        </member>
-        <member name="F:Net.Server.DNPlayer.channel">
-            <summary>
-            此客户端的网络通道
-            </summary>
-        </member>
-        <member name="T:Net.Server.DotNettyServer`2">
-            <summary>
-            dotNetty服务器类
-            </summary>
-            <typeparam name="Player"></typeparam>
-            <typeparam name="Scene"></typeparam>
-        </member>
-        <member name="T:Net.Server.ENetServer`2">
-            <summary>
-            ENet服务器类型
-            第三版本 2020.9.14
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="F:Net.Server.ENetServer`2.Server">
-            <summary>
-            enet服务器对象
-            </summary>
-        </member>
-        <member name="T:Net.Server.NetPeer">
-            <summary>
-            enet客户端对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPeer.EClient">
-            <summary>
-            ENet客户端对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPeer.ChannelID">
-            <summary>
-            ENet网络通道ID
-            </summary>
-        </member>
         <member name="T:Net.Server.TcpServer`2">
             <summary>
             TCP服务器类型
@@ -5850,6 +5716,11 @@
         <member name="P:Net.Server.TcpServer`2.frame">
             <summary>
             tcp数据长度(4) + 1CRC协议 = 5
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServer">
+            <summary>
+            默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
         </member>
         <member name="T:Net.Server.TcpServerIOCP`2">
@@ -5975,18 +5846,6 @@
             </summary>
             <param name="port">端口</param>
         </member>
-        <member name="M:Net.Server.WebServer`2.OnExceededNumber(Fleck.WebSocketConnection)">
-            <summary>
-            当服务器连接人数溢出时调用
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.WebServer`2.OnBlockConnection(Fleck.WebSocketConnection)">
-            <summary>
-            当服务器爆满时调用
-            </summary>
-            <param name="client"></param>
-        </member>
         <member name="T:Net.Share.NetworkState">
             <summary>
             网络状态
@@ -6037,14 +5896,14 @@
             断线重连成功
             </summary>
         </member>
-        <member name="F:Net.Share.NetworkState.ExceededNumber">
+        <member name="F:Net.Share.NetworkState.OnWhenQueuing">
             <summary>
-            服务器连接人数溢出, 服务器忽略当前客户端的所有Rpc请求
+            当进入排队时调用
             </summary>
         </member>
-        <member name="F:Net.Share.NetworkState.BlockConnection">
+        <member name="F:Net.Share.NetworkState.OnQueueCancellation">
             <summary>
-            服务器爆满, 服务器忽略当前客户端的所有Rpc请求
+            当排队结束时调用
             </summary>
         </member>
         <member name="T:Net.Share.Constituency">
@@ -6286,9 +6145,20 @@
             当关闭连接
             </summary>
         </member>
-        <member name="M:Net.Share.INetworkHandle.OnBlockConnection">
+        <member name="M:Net.Share.INetworkHandle.OnWhenQueuing(System.Int32,System.Int32)">
             <summary>
-            当服务器已爆满
+            当排队时调用
+            </summary>
+            <param name="count"></param>
+        </member>
+        <member name="M:Net.Share.INetworkHandle.OnQueueCancellation">
+            <summary>
+            当排队结束调用
+            </summary>
+        </member>
+        <member name="M:Net.Share.INetworkHandle.OnServerFull">
+            <summary>
+            当服务器爆炸，积极拒绝客户端连接
             </summary>
         </member>
         <member name="T:Net.Share.INetworkSceneHandle`2">
@@ -7010,16 +6880,6 @@
             其他命令或用户自定义命令
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.ExceededNumber">
-            <summary>
-            服务器连接人数溢出, 新的客户端将不允许连接服务器, 可设置服务器的LineUp值调整
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.BlockConnection">
-            <summary>
-            服务器爆满, 阻止客户端连接命令, 仅限服务器回调给客户端使用的命令, 客户端可监听OnBlockConnection事件处理， 内部命令
-            </summary>
-        </member>
         <member name="F:Net.Share.NetCmd.ReliableTransport">
             <summary>
             可靠传输接收指令. 内部命令
@@ -7116,6 +6976,21 @@
         <member name="F:Net.Share.NetCmd.GatewayRelay">
             <summary>
             网关转发
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.QueueUp">
+            <summary>
+            如果被排队，服务器会发此命令给客户端
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.QueueCancellation">
+            <summary>
+            如果排队解除，服务器会发此命令给客户端
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.ServerFull">
+            <summary>
+            服务器爆满状态
             </summary>
         </member>
         <member name="T:Net.Share.RPCMethod">
@@ -7820,6 +7695,11 @@
             标记此数据为大数据
             </summary>
         </member>
+        <member name="F:Net.Share.RPCModel.parsIndex">
+            <summary>
+            参数To或As调用一次+1
+            </summary>
+        </member>
         <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[])">
             <summary>
             构造
@@ -7861,6 +7741,20 @@
             <param name="pars"></param>
             <param name="kernel"></param>
             <param name="serialize"></param>
+        </member>
+        <member name="M:Net.Share.RPCModel.To``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.RPCModel.As``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
         </member>
         <member name="M:Net.Share.RPCModel.ToString">
             <summary>
@@ -8032,7 +7926,14 @@
             <param name="uMilliseconds"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.ByteHelper.HumanReadableFilesize(System.Double)">
+        <member name="M:Net.Share.Win32KernelAPI.SetSysTime(System.DateTime)">
+            <summary>
+            设置系统时间
+            </summary>
+            <param name="newdatetime">新时间</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.ByteHelper.ToString(System.Double)">
             <summary>
             转换方法
             </summary>
@@ -8087,6 +7988,55 @@
             <summary>
             共享文件流类
             </summary>
+        </member>
+        <member name="T:Net.System.FastListSafe`1">
+            <summary>
+            线程安全的List类, 无序的, 极速的
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.System.FastListSafe`1.GetRemoveRange(System.Int32,System.Int32)">
+            <summary>
+            获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
+            </summary>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.BitHelper.#ctor(System.Int32*,System.Int32)">
+            <summary>
+            Instantiates a BitHelper with a heap alloc'd array of ints
+            </summary>
+            <param name="bitArray">int array to hold bits</param>
+            <param name="length">length of int array</param>
+        </member>
+        <member name="M:Net.System.BitHelper.#ctor(System.Int32[],System.Int32)">
+            <summary>
+            Instantiates a BitHelper with a heap alloc'd array of ints
+            </summary>
+            <param name="bitArray">int array to hold bits</param>
+            <param name="length">length of int array</param>
+        </member>
+        <member name="M:Net.System.BitHelper.MarkBit(System.Int32)">
+            <summary>
+            Mark bit at specified position
+            </summary>
+            <param name="bitPosition"></param>
+        </member>
+        <member name="M:Net.System.BitHelper.IsMarked(System.Int32)">
+            <summary>
+            Is bit at specified position marked?
+            </summary>
+            <param name="bitPosition"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.BitHelper.ToIntArrayLength(System.Int32)">
+            <summary>
+            How many ints must be allocated to represent n bits. Returns (n+31)/32, but 
+            avoids overflow
+            </summary>
+            <param name="n"></param>
+            <returns></returns>
         </member>
         <member name="T:Net.System.ListSafe`1">
             <summary>
@@ -8533,6 +8483,20 @@
             <param name="recovery">复制数据后立即回收此分片?</param>
             <returns></returns>
         </member>
+        <member name="M:Net.System.Segment.Write(System.Byte[],System.Boolean)">
+            <summary>
+            写入字节数组
+            </summary>
+            <param name="value"></param>
+            <param name="recordLength">是否记录此次写入的字节长度?</param>
+        </member>
+        <member name="M:Net.System.Segment.Write(System.SByte[],System.Boolean)">
+            <summary>
+            写入字节数组
+            </summary>
+            <param name="value"></param>
+            <param name="recordLength">是否记录此次写入的字节长度?</param>
+        </member>
         <member name="F:Net.System.Segment2.offset">
             <summary>
             片的开始位置
@@ -8556,6 +8520,26 @@
         <member name="T:Net.System.ThreadManager">
             <summary>
             主线程管理中心
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.Interval">
+            <summary>
+            时间计数间隔
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.IsRuning">
+            <summary>
+            运行中?
+            </summary>
+        </member>
+        <member name="M:Net.System.ThreadManager.Run">
+            <summary>
+            控制台死循环线程
+            </summary>
+        </member>
+        <member name="M:Net.System.ThreadManager.Run(System.UInt32)">
+            <summary>
+            unity update每帧调用
             </summary>
         </member>
         <member name="T:Net.Matrix3x3">
@@ -8928,6 +8912,16 @@
             </summary>
             <param name="stream"></param>
         </member>
+        <member name="T:Net.Serialize.IBindingType">
+            <summary>
+            类型绑定查找收集接口
+            </summary>
+        </member>
+        <member name="P:Net.Serialize.IBindingType.TYPES">
+            <summary>
+            收集的绑定类型列表
+            </summary>
+        </member>
         <member name="T:Net.Serialize.NetConvertFast2">
             <summary>
             极速序列化2版本
@@ -9002,7 +8996,7 @@
             函数名称
             </summary>
         </member>
-        <member name="F:Net.Serialize.FuncData.mask">
+        <member name="F:Net.Serialize.FuncData.hash">
             <summary>
             方法哈希
             </summary>
@@ -10703,14 +10697,27 @@
             Source link data information.
             </summary>
         </member>
-        <member name="T:Binding.Dictionary_String_List1__Bind">
+        <member name="T:Binding.BaseBind`1">
             <summary>
-            这是要开发者自己写的绑定代码, 生成工具目前还没能生成这样的代码
+            基础类型绑定
             </summary>
+            <typeparam name="T"></typeparam>
         </member>
-        <member name="T:Binding.Dictionary_Int32_Boolean__Bind">
+        <member name="T:Binding.BaseArrayBind`1">
             <summary>
-            这是要开发者自己写的绑定代码, 生成工具目前还没能生成这样的代码
+            基础类型数组绑定
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Binding.BaseListBind`1">
+            <summary>
+            基础类型泛型绑定
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Binding.DictionaryBind`2">
+            <summary>
+            字典绑定
             </summary>
         </member>
         <member name="M:Fast2BuildMethod.DynamicBuild(System.Type[])">

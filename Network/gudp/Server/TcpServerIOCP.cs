@@ -126,7 +126,8 @@
                         client.Client = clientSocket;
                         client.RemotePoint = clientSocket.RemoteEndPoint;
                         client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
-                        UserIDStack.TryPop(out int uid);
+                        if (!UserIDStack.TryPop(out int uid))
+                            uid = GetCurrUserID();
                         client.UserID = uid;
                         client.PlayerID = uid.ToString();
                         client.Name = uid.ToString();

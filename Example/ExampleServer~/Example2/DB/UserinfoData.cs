@@ -1,770 +1,1002 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
+using Net.System;
+using System.Collections.Generic;
+using System.Text;
+#if SERVER
+using System.Data.SQLite;
+#endif
 
 /// <summary>
 /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请定义一个扩展类进行处理
 /// MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能
 /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
 /// </summary>
-public partial class UserinfoData
+public partial class UserinfoData : IDataRow
 {
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public DataRow Row { get; set; }
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public DataRowState RowState { get; set; }
+    private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
 
-private System.Int64 id;
-public System.Int64 Id
-{
-    get { return id; }
-    set
+    private System.Int64 id;
+    /// <summary>{KEYNOTE}</summary>
+    public System.Int64 Id
     {
-        if (id == value)
-            return;
-        id = value;
+        get { return id; }
+        set { this.id = value; }
+    }
+
+
+    private System.String account;
+    /// <summary>{NOTE}</summary>
+    public System.String Account
+    {
+        get { return account; }
+        set
+        {
+            if (this.account == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.account = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "id", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(1);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        IdCall();
+            AccountCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncId
-{
-    get { return id; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncAccount
     {
-        if (id == value)
-            return;
-        id = value;
-        IdCall();
+        get { return account; }
+        set
+        {
+            if (this.account == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.account = value;
+            AccountCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncIDId
-{
-    get { return id; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncIDAccount
     {
-        if (id == value)
-            return;
-        id = value;
-        SyncIdCall();
+        get { return account; }
+        set
+        {
+            if (this.account == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.account = value;
+            SyncAccountCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void IdCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ID1, id);
-}
-
-public void SyncIdCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ID1, (int)id, id);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.ID1)]
-private void IdCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Id = value;
-    OnId?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnId;
-
-private System.String account;
-public System.String Account
-{
-    get { return account; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void AccountCall()
     {
-        if (account == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        account = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, account);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncAccountCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, id, account);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.ACCOUNT)]
+    private void AccountCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        Account = value;
+        OnAccount?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnAccount;
+
+    private System.String password;
+    /// <summary>{NOTE}</summary>
+    public System.String Password
+    {
+        get { return password; }
+        set
+        {
+            if (this.password == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.password = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "account", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(2);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        AccountCall();
+            PasswordCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncAccount
-{
-    get { return account; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncPassword
     {
-        if (account == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        account = value;
-        AccountCall();
+        get { return password; }
+        set
+        {
+            if (this.password == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.password = value;
+            PasswordCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncIDAccount
-{
-    get { return account; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncIDPassword
     {
-        if (account == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        account = value;
-        SyncAccountCall();
+        get { return password; }
+        set
+        {
+            if (this.password == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.password = value;
+            SyncPasswordCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void AccountCall()
-{
-    if (account == null)
-        account = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ACCOUNT, account);
-}
-
-public void SyncAccountCall()
-{
-    if (account == null)
-        account = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ACCOUNT, (int)id, account);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.ACCOUNT)]
-private void AccountCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Account = value;
-    OnAccount?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnAccount;
-
-private System.String password;
-public System.String Password
-{
-    get { return password; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void PasswordCall()
     {
-        if (password == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        password = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, password);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncPasswordCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, id, password);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.PASSWORD)]
+    private void PasswordCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        Password = value;
+        OnPassword?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnPassword;
+
+    private System.Double moveSpeed;
+    /// <summary>{NOTE}</summary>
+    public System.Double MoveSpeed
+    {
+        get { return moveSpeed; }
+        set
+        {
+            if (this.moveSpeed == value)
+                return;
+            
+            this.moveSpeed = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "password", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(3);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        PasswordCall();
+            MoveSpeedCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncPassword
-{
-    get { return password; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Double SyncMoveSpeed
     {
-        if (password == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        password = value;
-        PasswordCall();
+        get { return moveSpeed; }
+        set
+        {
+            if (this.moveSpeed == value)
+                return;
+            
+            this.moveSpeed = value;
+            MoveSpeedCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncIDPassword
-{
-    get { return password; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Double SyncIDMoveSpeed
     {
-        if (password == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        password = value;
-        SyncPasswordCall();
+        get { return moveSpeed; }
+        set
+        {
+            if (this.moveSpeed == value)
+                return;
+            
+            this.moveSpeed = value;
+            SyncMoveSpeedCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void PasswordCall()
-{
-    if (password == null)
-        password = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.PASSWORD, password);
-}
-
-public void SyncPasswordCall()
-{
-    if (password == null)
-        password = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.PASSWORD, (int)id, password);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.PASSWORD)]
-private void PasswordCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Password = value;
-    OnPassword?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnPassword;
-
-private System.Double moveSpeed;
-public System.Double MoveSpeed
-{
-    get { return moveSpeed; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void MoveSpeedCall()
     {
-        if (moveSpeed == value)
-            return;
-        moveSpeed = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, moveSpeed);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncMoveSpeedCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, id, moveSpeed);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.MOVESPEED)]
+    private void MoveSpeedCall(System.Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        MoveSpeed = value;
+        OnMoveSpeed?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnMoveSpeed;
+
+    private System.String position;
+    /// <summary>{NOTE}</summary>
+    public System.String Position
+    {
+        get { return position; }
+        set
+        {
+            if (this.position == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.position = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "moveSpeed", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(4);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        MoveSpeedCall();
+            PositionCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Double SyncMoveSpeed
-{
-    get { return moveSpeed; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncPosition
     {
-        if (moveSpeed == value)
-            return;
-        moveSpeed = value;
-        MoveSpeedCall();
+        get { return position; }
+        set
+        {
+            if (this.position == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.position = value;
+            PositionCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Double SyncIDMoveSpeed
-{
-    get { return moveSpeed; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncIDPosition
     {
-        if (moveSpeed == value)
-            return;
-        moveSpeed = value;
-        SyncMoveSpeedCall();
+        get { return position; }
+        set
+        {
+            if (this.position == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.position = value;
+            SyncPositionCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void MoveSpeedCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.MOVESPEED, moveSpeed);
-}
-
-public void SyncMoveSpeedCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.MOVESPEED, (int)id, moveSpeed);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.MOVESPEED)]
-private void MoveSpeedCall(System.Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    MoveSpeed = value;
-    OnMoveSpeed?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnMoveSpeed;
-
-private System.String position;
-public System.String Position
-{
-    get { return position; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void PositionCall()
     {
-        if (position == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        position = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, position);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncPositionCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, id, position);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.POSITION)]
+    private void PositionCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        Position = value;
+        OnPosition?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnPosition;
+
+    private System.String rotation;
+    /// <summary>{NOTE}</summary>
+    public System.String Rotation
+    {
+        get { return rotation; }
+        set
+        {
+            if (this.rotation == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.rotation = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "position", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(5);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        PositionCall();
+            RotationCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncPosition
-{
-    get { return position; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncRotation
     {
-        if (position == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        position = value;
-        PositionCall();
+        get { return rotation; }
+        set
+        {
+            if (this.rotation == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.rotation = value;
+            RotationCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncIDPosition
-{
-    get { return position; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.String SyncIDRotation
     {
-        if (position == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        position = value;
-        SyncPositionCall();
+        get { return rotation; }
+        set
+        {
+            if (this.rotation == value)
+                return;
+            if(value==null) value = string.Empty;
+            this.rotation = value;
+            SyncRotationCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void PositionCall()
-{
-    if (position == null)
-        position = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.POSITION, position);
-}
-
-public void SyncPositionCall()
-{
-    if (position == null)
-        position = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.POSITION, (int)id, position);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.POSITION)]
-private void PositionCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Position = value;
-    OnPosition?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnPosition;
-
-private System.String rotation;
-public System.String Rotation
-{
-    get { return rotation; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void RotationCall()
     {
-        if (rotation == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        rotation = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, rotation);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncRotationCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, id, rotation);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.ROTATION)]
+    private void RotationCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        Rotation = value;
+        OnRotation?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnRotation;
+
+    private System.Int64 health;
+    /// <summary>{NOTE}</summary>
+    public System.Int64 Health
+    {
+        get { return health; }
+        set
+        {
+            if (this.health == value)
+                return;
+            
+            this.health = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "rotation", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(6);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        RotationCall();
+            HealthCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncRotation
-{
-    get { return rotation; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncHealth
     {
-        if (rotation == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        rotation = value;
-        RotationCall();
+        get { return health; }
+        set
+        {
+            if (this.health == value)
+                return;
+            
+            this.health = value;
+            HealthCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.String SyncIDRotation
-{
-    get { return rotation; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncIDHealth
     {
-        if (rotation == value)
-            return;
-        if (value == null)
-            value = string.Empty;
-        rotation = value;
-        SyncRotationCall();
+        get { return health; }
+        set
+        {
+            if (this.health == value)
+                return;
+            
+            this.health = value;
+            SyncHealthCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void RotationCall()
-{
-    if (rotation == null)
-        rotation = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ROTATION, rotation);
-}
-
-public void SyncRotationCall()
-{
-    if (rotation == null)
-        rotation = string.Empty;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.ROTATION, (int)id, rotation);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.ROTATION)]
-private void RotationCall(System.String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Rotation = value;
-    OnRotation?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnRotation;
-
-private System.Int64 health;
-public System.Int64 Health
-{
-    get { return health; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void HealthCall()
     {
-        if (health == value)
-            return;
-        health = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, health);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncHealthCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, id, health);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTH)]
+    private void HealthCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        Health = value;
+        OnHealth?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnHealth;
+
+    private System.Int64 healthMax;
+    /// <summary>{NOTE}</summary>
+    public System.Int64 HealthMax
+    {
+        get { return healthMax; }
+        set
+        {
+            if (this.healthMax == value)
+                return;
+            
+            this.healthMax = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "health", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(7);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        HealthCall();
+            HealthMaxCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncHealth
-{
-    get { return health; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncHealthMax
     {
-        if (health == value)
-            return;
-        health = value;
-        HealthCall();
+        get { return healthMax; }
+        set
+        {
+            if (this.healthMax == value)
+                return;
+            
+            this.healthMax = value;
+            HealthMaxCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncIDHealth
-{
-    get { return health; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Int64 SyncIDHealthMax
     {
-        if (health == value)
-            return;
-        health = value;
-        SyncHealthCall();
+        get { return healthMax; }
+        set
+        {
+            if (this.healthMax == value)
+                return;
+            
+            this.healthMax = value;
+            SyncHealthMaxCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void HealthCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.HEALTH, health);
-}
-
-public void SyncHealthCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.HEALTH, (int)id, health);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.HEALTH)]
-private void HealthCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    Health = value;
-    OnHealth?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnHealth;
-
-private System.Int64 healthMax;
-public System.Int64 HealthMax
-{
-    get { return healthMax; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void HealthMaxCall()
     {
-        if (healthMax == value)
-            return;
-        healthMax = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, healthMax);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncHealthMaxCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, id, healthMax);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTHMAX)]
+    private void HealthMaxCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        HealthMax = value;
+        OnHealthMax?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnHealthMax;
+
+    private System.Byte[] buffer;
+    /// <summary>{NOTE}</summary>
+    internal System.Byte[] BufferBytes
+    {
+        get { return buffer; }
+        set
+        {
+            if (this.buffer == value)
+                return;
+            if(value==null) value = new byte[0];
+            this.buffer = value;
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "healthMax", value = value, Row = Row });
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            columns.Add(8);
+            if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
 #elif CLIENT
-        HealthMaxCall();
+            BufferBytesCall();
 #endif
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncHealthMax
-{
-    get { return healthMax; }
-    set
+    /// <summary>{NOTE1}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Byte[] SyncBufferBytes
     {
-        if (healthMax == value)
-            return;
-        healthMax = value;
-        HealthMaxCall();
+        get { return buffer; }
+        set
+        {
+            if (this.buffer == value)
+                return;
+            if(value==null) value = new byte[0];
+            this.buffer = value;
+            BufferBytesCall();
+        }
     }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Int64 SyncIDHealthMax
-{
-    get { return healthMax; }
-    set
+    /// <summary>{NOTE2}</summary>
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public System.Byte[] SyncIDBufferBytes
     {
-        if (healthMax == value)
-            return;
-        healthMax = value;
-        SyncHealthMaxCall();
+        get { return buffer; }
+        set
+        {
+            if (this.buffer == value)
+                return;
+            if(value==null) value = new byte[0];
+            this.buffer = value;
+            SyncBufferBytesCall();
+        }
     }
-}
 
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void HealthMaxCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.HEALTHMAX, healthMax);
-}
-
-public void SyncHealthMaxCall()
-{
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.HEALTHMAX, (int)id, healthMax);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.HEALTHMAX)]
-private void HealthMaxCall(System.Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    HealthMax = value;
-    OnHealthMax?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnHealthMax;
-
-private System.Byte[] buffer;
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Byte[] BufferBytes
-{
-    get { return buffer; }
-    set
+    /// <summary>{NOTE3}</summary>
+    public void BufferBytesCall()
     {
-        if (buffer == value)
-            return;
-        buffer = value;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, buffer);
+    }
+
+	/// <summary>{NOTE4}</summary>
+    public void SyncBufferBytesCall()
+    {
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, id, buffer);
+    }
+
+    [Net.Share.Rpc(hash = (ushort)Example2HashProto.BUFFER)]
+    private void BufferBytesCall(System.Byte[] value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+    {
+        BufferBytes = value;
+        OnBufferBytes?.Invoke();
+    }
+
+    [Net.Serialize.NonSerialized]
+    [Newtonsoft_X.Json.JsonIgnore]
+    [ProtoBuf.ProtoIgnore]
+    public Action OnBufferBytes;
+
+
+    public UserinfoData() { }
+
 #if SERVER
-        Example2DB.I.Update(new DataRowEntity() { state = DataRowState.Modified, key = "buffer", value = value, Row = Row });
-#elif CLIENT
-        BufferBytesCall();
+    public UserinfoData(params object[] parms)
+    {
+        NewTableRow(parms);
+    }
+    public void NewTableRow()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            var obj = this[i];
+            if (obj == null)
+                continue;
+            var defaultVal = GetDefaultValue(obj.GetType());
+            if (obj.Equals(defaultVal))
+                continue;
+            columns.Add(i);
+        }
+        RowState = DataRowState.Added;
+        Example2DB.I.Update(this);
+    }
+    public object GetDefaultValue(Type type)
+    {
+        return type.IsValueType ? Activator.CreateInstance(type) : null;
+    }
+    public void NewTableRow(params object[] parms)
+    {
+        if (parms == null)
+            return;
+        if (parms.Length == 0)
+            return;
+        for (int i = 0; i < parms.Length; i++)
+        {
+            this[i] = parms[i];
+            columns.Add(i);
+        }
+        RowState = DataRowState.Added;
+        Example2DB.I.Update(this);
+    }
+    public string GetCellName(int index)
+    {
+        switch (index)
+        {
+
+            case 0:
+                return "id";
+
+            case 1:
+                return "account";
+
+            case 2:
+                return "password";
+
+            case 3:
+                return "moveSpeed";
+
+            case 4:
+                return "position";
+
+            case 5:
+                return "rotation";
+
+            case 6:
+                return "health";
+
+            case 7:
+                return "healthMax";
+
+            case 8:
+                return "buffer";
+
+        }
+        throw new Exception("错误");
+    }
+    public object this[int index]
+    {
+        get
+        {
+            switch (index)
+            {
+
+                case 0:
+                    return this.id;
+
+                case 1:
+                    return this.account;
+
+                case 2:
+                    return this.password;
+
+                case 3:
+                    return this.moveSpeed;
+
+                case 4:
+                    return this.position;
+
+                case 5:
+                    return this.rotation;
+
+                case 6:
+                    return this.health;
+
+                case 7:
+                    return this.healthMax;
+
+                case 8:
+                    return this.buffer;
+
+            }
+            throw new Exception("错误");
+        }
+        set
+        {
+            switch (index)
+            {
+
+                case 0:
+                    this.id = (System.Int64)value;
+                    break;
+
+                case 1:
+                    this.account = (System.String)value;
+                    break;
+
+                case 2:
+                    this.password = (System.String)value;
+                    break;
+
+                case 3:
+                    this.moveSpeed = (System.Double)value;
+                    break;
+
+                case 4:
+                    this.position = (System.String)value;
+                    break;
+
+                case 5:
+                    this.rotation = (System.String)value;
+                    break;
+
+                case 6:
+                    this.health = (System.Int64)value;
+                    break;
+
+                case 7:
+                    this.healthMax = (System.Int64)value;
+                    break;
+
+                case 8:
+                    this.buffer = (System.Byte[])value;
+                    break;
+
+            }
+        }
+    }
+
+    public void Delete()
+    {
+        RowState = DataRowState.Detached;
+        Example2DB.I.Update(this);
+    }
+
+    /// <summary>
+    /// 查询1: Query("`id`=1");
+    /// <para></para>
+    /// 查询2: Query("`id`=1 and `index`=1");
+    /// <para></para>
+    /// 查询3: Query("`id`=1 or `index`=1");
+    /// </summary>
+    /// <param name="filterExpression"></param>
+    /// <returns></returns>
+    public static UserinfoData Query(string filterExpression)
+    {
+        var cmdText = $"select * from userinfo where {filterExpression}; ";
+        var data = Example2DB.ExecuteQuery<UserinfoData>(cmdText);
+        return data;
+    }
+    /// <summary>
+    /// 查询1: Query("`id`=1");
+    /// <para></para>
+    /// 查询2: Query("`id`=1 and `index`=1");
+    /// <para></para>
+    /// 查询3: Query("`id`=1 or `index`=1");
+    /// </summary>
+    /// <param name="filterExpression"></param>
+    /// <returns></returns>
+    public static async Task<UserinfoData> QueryAsync(string filterExpression)
+    {
+        var cmdText = $"select * from userinfo where {filterExpression}; ";
+        var data = await Example2DB.ExecuteQueryAsync<UserinfoData>(cmdText);
+        return data;
+    }
+    public static UserinfoData[] QueryList(string filterExpression)
+    {
+        var cmdText = $"select * from userinfo where {filterExpression}; ";
+        var datas = Example2DB.ExecuteQueryList<UserinfoData>(cmdText);
+        return datas;
+    }
+    public static async Task<UserinfoData[]> QueryListAsync(string filterExpression)
+    {
+        var cmdText = $"select * from userinfo where {filterExpression}; ";
+        var datas = await Example2DB.ExecuteQueryListAsync<UserinfoData>(cmdText);
+        return datas;
+    }
+    public void Update()
+    {
+        if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
+
+        for (int i = 0; i < 9; i++)
+        {
+            columns.Add(i);
+        }
+        RowState = DataRowState.Modified;
+        Example2DB.I.Update(this);
+
+    }
 #endif
-    }
-}
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Byte[] SyncBufferBytes
-{
-    get { return buffer; }
-    set
+    public void Init(DataRow row)
     {
-        if (buffer == value)
-            return;
-        buffer = value;
-        BufferBytesCall();
-    }
-}
+        RowState = DataRowState.Unchanged;
 
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public System.Byte[] SyncIDBufferBytes
-{
-    get { return buffer; }
-    set
+        if (row[0] is System.Int64 id)
+            this.id = id;
+
+        if (row[1] is System.String account)
+            this.account = account;
+
+        if (row[2] is System.String password)
+            this.password = password;
+
+        if (row[3] is System.Double moveSpeed)
+            this.moveSpeed = moveSpeed;
+
+        if (row[4] is System.String position)
+            this.position = position;
+
+        if (row[5] is System.String rotation)
+            this.rotation = rotation;
+
+        if (row[6] is System.Int64 health)
+            this.health = health;
+
+        if (row[7] is System.Int64 healthMax)
+            this.healthMax = healthMax;
+
+        if (row[8] is System.Byte[] buffer)
+            this.buffer = buffer;
+
+    }
+
+    public void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
     {
-        if (buffer == value)
-            return;
-        buffer = value;
-        SyncBufferBytesCall();
-    }
-}
-
-/// <summary>
-/// 同步变量到MySql数据库
-/// </summary>
-public void BufferBytesCall()
-{
-    object array = buffer;
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.BUFFER, array);
-}
-
-public void SyncBufferBytesCall()
-{
-    object array = new object[]{ (int)id, buffer };
-    Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2RpcMaskType.BUFFER, array);
-}
-
-[Net.Share.Rpc(hash = (ushort)Example2RpcMaskType.BUFFER)]
-private void BufferBytesCall(System.Byte[] value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
-{
-    BufferBytes = value;
-    OnBufferBytes?.Invoke();
-}
-
-[Net.Serialize.NonSerialized]
-[Newtonsoft_X.Json.JsonIgnore]
-[ProtoBuf.ProtoIgnore]
-public Action OnBufferBytes;
-
-public UserinfoData(params object[] parms)
-{
-    if (parms == null)
-        return;
-    if (parms.Length == 0)
-        return;
-    var row = Example2DB.I.AddUserinfoNewRow(parms);
-    Init(row);
-}
-
-public void Delete()
-{
-    Example2DB.I.UserinfoTable.DeleteRow(Row);
-}
-
-public void Init(DataRow row)
-{
-    Row = row;
-    if (row[0] is System.Int64 id)
-        this.id = id;
-    if (row[1] is System.String account)
-        this.account = account;
-    if (row[2] is System.String password)
-        this.password = password;
-    if (row[3] is System.Double moveSpeed)
-        this.moveSpeed = moveSpeed;
-    if (row[4] is System.String position)
-        this.position = position;
-    if (row[5] is System.String rotation)
-        this.rotation = rotation;
-    if (row[6] is System.Int64 health)
-        this.health = health;
-    if (row[7] is System.Int64 healthMax)
-        this.healthMax = healthMax;
-    if (row[8] is System.Byte[] buffer)
-        this.buffer = buffer;
-}
 #if SERVER
-public void Update()
-{
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "account", account, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "password", password, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "moveSpeed", moveSpeed, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "position", position, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "rotation", rotation, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "health", health, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "healthMax", healthMax, Row));
-    Example2DB.I.Update(new DataRowEntity(DataRowState.Modified, "buffer", buffer, Row));
-}
-public void UpdateDataRow()
-{
-    Row[1] = account;
-    Row[2] = password;
-    Row[3] = moveSpeed;
-    Row[4] = position;
-    Row[5] = rotation;
-    Row[6] = health;
-    Row[7] = healthMax;
-    Row[8] = buffer;
-}
+        string cmdText = "REPLACE INTO userinfo SET ";
+        foreach (var column in columns)
+        {
+            var name = GetCellName(column);
+            var value = this[column];
+            if (value is string | value is DateTime)
+                cmdText += $"`{name}`='{value}',";
+            else if (value is byte[] buffer)
+            {
+                cmdText += $"`{name}`=@buffer{count},";
+                parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
+                parmsLen += buffer.Length;
+                count++;
+            }
+            else cmdText += $"`{name}`={value},";
+            columns.Remove(column);
+        }
+        cmdText = cmdText.TrimEnd(',');
+        cmdText += "; ";
+        sb.Append(cmdText);
+        count++;
+        RowState = DataRowState.Unchanged;
 #endif
+    }
+
+    public void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
+    {
+#if SERVER
+        if (RowState == DataRowState.Detached | RowState == DataRowState.Deleted | RowState == DataRowState.Added | RowState == 0)
+            return;
+        string cmdText = $"UPDATE userinfo SET ";
+        foreach (var column in columns)
+        {
+            var name = GetCellName(column);
+            var value = this[column];
+            if (value is string | value is DateTime)
+                cmdText += $"`{name}`='{value}',";
+            else if (value is byte[] buffer)
+            {
+                cmdText += $"`{name}`=@buffer{count},";
+                parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
+                parmsLen += buffer.Length;
+                count++;
+            }
+            else cmdText += $"`{name}`={value},";
+            columns.Remove(column);
+        }
+        cmdText = cmdText.TrimEnd(',');
+        cmdText += $" WHERE `id`={id}; ";
+        sb.Append(cmdText);
+        count++;
+        RowState = DataRowState.Unchanged;
+#endif
+    }
+
+    public void DeletedSql(StringBuilder sb)
+    {
+#if SERVER
+        if (RowState == DataRowState.Deleted)
+            return;
+        string cmdText = $"DELETE FROM userinfo WHERE `id` = {id}";
+        sb.Append(cmdText);
+        RowState = DataRowState.Deleted;
+#endif
+    }
 }

@@ -1429,7 +1429,7 @@
                 bool hasFunc = GetBit(head, 1);
                 bool hasMask = GetBit(head, 2);
                 if(hasFunc) obj.name = (string)ReadValue(TypeCode.String, buffer, ref index);
-                if(hasMask) obj.mask = (ushort)ReadValue(TypeCode.UInt16, buffer, ref index);
+                if(hasMask) obj.hash = (ushort)ReadValue(TypeCode.UInt16, buffer, ref index);
                 List<object> list = new List<object>();
                 while (index < count)
                 {

@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 namespace Example2
 {
+    using Net.Client;
     using Net.Component;
     using Net.Share;
     using Net.System;
@@ -78,7 +79,7 @@ namespace Example2
                     monster1.state1 = opt.cmd2;
                     monster1.health = opt.index1;
                     monster1.targetID = opt.index2;
-                    if (monster1.targetID != ClientManager.UID)
+                    if (monster1.targetID != ClientBase.Instance.UID)
                     {
                         monster1.transform.position = opt.position;
                         monster1.transform.rotation = opt.rotation;

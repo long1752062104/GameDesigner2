@@ -84,7 +84,7 @@ namespace Net.Client
                     var buffer = BufferPool.Take(e.Data.Length);
                     Buffer.BlockCopy(e.Data, 0, buffer, 0, e.Data.Length);
                     buffer.Count = e.Data.Length;
-                    ResolveBuffer(buffer, false);
+                    ResolveBuffer(ref buffer, false);
                     BufferPool.Push(buffer);
                 };
                 WSClient.Open();

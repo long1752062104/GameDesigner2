@@ -172,18 +172,43 @@
             }
             return stream.ToArray();
         }
-
+#if TEST1
+        ListSafe<byte> list = new ListSafe<byte>();
+#endif
         protected override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
             sendAmount++;
-            int count = Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
-            if (count <= 0)
-                OnSendErrorHandle?.Invoke(buffer, reliable);
+            if (Client.Poll(1, SelectMode.SelectWrite))
+            {
+#if TEST1
+                list.AddRange(buffer);
+                do
+                {
+                    var buffer1 = list.GetRemoveRange(0, RandomHelper.Range(0, buffer.Length));
+                    Net.Server.TcpServer.Instance.ReceiveTest(buffer1);
+                }
+                while (rtRPCModels.Count == 0 & list.Count > 0);
+#else
+                int count = Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+                if (count <= 0)
+                    OnSendErrorHandle?.Invoke(buffer, reliable);
+                else if (count != buffer.Length)
+                    NDebug.Log($"发送了{buffer.Length - count}个字节失败!");
+#endif
+            }
+            else
+            {
+                NDebug.Log("缓冲区已满,等待接收中!");
+            }
         }
 
-        protected override void ResolveBuffer(Segment buffer, bool isTcp)
+        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         {
+#if TEST1
+            if (StackStream == null)
+                StackStream = BufferStreamShare.Take();
+#endif
             heart = 0;
             if (stack > StackNumberMax)//不能一直叠包
             {
@@ -246,7 +271,7 @@
                     stack = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
                     buffer.Count = buffer.Position + value + size;//需要指定一个完整的数据长度给内部解析
-                    base.ResolveBuffer(buffer, true);
+                    base.ResolveBuffer(ref buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
                 else
@@ -350,7 +375,7 @@
                                     {
                                         var buffer1 = BufferPool.Take(65536);
                                         buffer1.Count = client.Client.Receive(buffer1);
-                                        client.ResolveBuffer(buffer1, false);
+                                        client.ResolveBuffer(ref buffer1, false);
                                         BufferPool.Push(buffer1);
                                     }
                                     client.Send(NetCmd.Local, buffer);
@@ -404,11 +429,11 @@
 
             protected override void OnConnected(bool result) { }
 
-            protected override void ResolveBuffer(Segment buffer, bool isTcp)
+            protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
             {
                 receiveCount += buffer.Count;
                 receiveAmount++;
-                base.ResolveBuffer(buffer, isTcp);
+                base.ResolveBuffer(ref buffer, isTcp);
             }
             protected unsafe override void SendByteData(byte[] buffer, bool reliable)
             {
