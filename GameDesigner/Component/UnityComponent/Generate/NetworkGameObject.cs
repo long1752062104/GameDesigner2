@@ -1,9 +1,11 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Client;
-using Net.Component;
 using Net.Share;
+using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
+using Net.System;
+using static Net.Serialize.NetConvertFast2;
 
 namespace BuildComponent
 {
@@ -15,41 +17,23 @@ namespace BuildComponent
     {
         private UnityEngine.GameObject self;
         public bool autoCheck;
-        private System.Int32 layer1;
-        private System.Boolean isStatic2;
-        private System.String tag3;
-        private System.String name4;
-        private UnityEngine.HideFlags hideFlags5;
-        private System.String type1;
-        private System.String methodName2;
-        private UnityEngine.SendMessageOptions options3;
-        private System.String methodName4;
-        private UnityEngine.SendMessageOptions options5;
-        private System.String methodName6;
-        private UnityEngine.SendMessageOptions options7;
-        private System.String methodName8;
-        private System.String methodName9;
-        private System.String methodName10;
-        private bool activeSelf11;
-
+        private object[] fields;
+		private int[] eventsId;
+		
         public override void Awake()
         {
             base.Awake();
-            self = gameObject;
-            layer1 = self.layer;
-            isStatic2 = self.isStatic;
-            tag3 = self.tag;
-            name4 = self.name;
-            hideFlags5 = self.hideFlags;
-            activeSelf11 = self.activeSelf;
+            self = GetComponent<UnityEngine.GameObject>();
+			fields = new object[22];
+			eventsId = new int[22];
+            fields[1] = self.layer;
+            fields[2] = self.isStatic;
+            fields[3] = self.tag;
+            fields[4] = self.name;
+            fields[5] = self.hideFlags;
         }
 
         void Start() { }//让监视面板能显示启动勾选
-
-        public override bool CheckEnabled()
-        {
-            return true;
-        }
 
         public System.Int32 layer
         {
@@ -59,20 +43,20 @@ namespace BuildComponent
             }
             set
             {
-                if (layer1 == value)
+                if (value.Equals(fields[1]))
                     return;
-                layer1 = value;
+                fields[1] = value;
                 self.layer = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 1,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 1,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean isStatic
         {
             get
@@ -81,20 +65,20 @@ namespace BuildComponent
             }
             set
             {
-                if (isStatic2 == value)
+                if (value.Equals(fields[2]))
                     return;
-                isStatic2 = value;
+                fields[2] = value;
                 self.isStatic = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 5,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 2,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.String tag
         {
             get
@@ -103,20 +87,20 @@ namespace BuildComponent
             }
             set
             {
-                if (tag3 == value)
+                if (value.Equals(fields[3]))
                     return;
-                tag3 = value;
+                fields[3] = value;
                 self.tag = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 6,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 3,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.String name
         {
             get
@@ -125,20 +109,20 @@ namespace BuildComponent
             }
             set
             {
-                if (name4 == value)
+                if (value.Equals(fields[4]))
                     return;
-                name4 = value;
+                fields[4] = value;
                 self.name = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 23,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 4,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.HideFlags hideFlags
         {
             get
@@ -147,294 +131,284 @@ namespace BuildComponent
             }
             set
             {
-                if (hideFlags5 == value)
+                if (value.Equals(fields[5]))
                     return;
-                hideFlags5 = value;
+                fields[5] = value;
                 self.hideFlags = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 24,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 5,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
-        }
-
-        public bool activeSelf
-        {
-            get
-            {
-                return self.activeSelf;
-            }
-            set
-            {
-                if (activeSelf11 == value)
-                    return;
-                activeSelf11 = value;
-                self.SetActive(value);
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 25,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public void GetComponent(System.String type, bool always = false)
-        {
-            if (type == type1 & !always) return;
-            type1 = type;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { type } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 27,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName2 & options == options3 & !always) return;
-            methodName2 = methodName;
-            options3 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 53,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName4 & options == options5 & !always) return;
-            methodName4 = methodName;
-            options5 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 54,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName6 & options == options7 & !always) return;
-            methodName6 = methodName;
-            options7 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 55,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName8 & !always) return;
-            methodName8 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 74,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName9 & !always) return;
-            methodName9 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 77,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName10 & !always) return;
-            methodName10 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 80,
-                buffer = buffer
-            });
-        }
-        public void GetInstanceID(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 101,
-                buffer = buffer
-            });
-        }
-        public void GetHashCode(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 102,
-                buffer = buffer
-            });
-        }
-        public void ToString(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 108,
-                buffer = buffer
-            });
         }
         public override void OnPropertyAutoCheck()
         {
             if (!autoCheck)
                 return;
+
             layer = layer;
             isStatic = isStatic;
             tag = tag;
             name = name;
             hideFlags = hideFlags;
-            activeSelf = activeSelf;
         }
 
+        public void GetComponent(System.String type, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (type.Equals(fields[7]) &  !always) return;
+			fields[7] = type;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { type, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 6,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[6]);
+                eventsId[6] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    GetComponent(type, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SendMessageUpwards(System.String methodName,UnityEngine.SendMessageOptions options, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[9]) & options.Equals(fields[10]) &  !always) return;
+			fields[9] = methodName;
+			fields[10] = options;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName,options, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 8,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[8]);
+                eventsId[8] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SendMessageUpwards(methodName,options, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SendMessage(System.String methodName,UnityEngine.SendMessageOptions options, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[12]) & options.Equals(fields[13]) &  !always) return;
+			fields[12] = methodName;
+			fields[13] = options;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName,options, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 11,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[11]);
+                eventsId[11] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SendMessage(methodName,options, true, 0, 0);
+                }, null);
+            }
+        }
+        public void BroadcastMessage(System.String methodName,UnityEngine.SendMessageOptions options, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[15]) & options.Equals(fields[16]) &  !always) return;
+			fields[15] = methodName;
+			fields[16] = options;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName,options, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 14,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[14]);
+                eventsId[14] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    BroadcastMessage(methodName,options, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SendMessageUpwards(System.String methodName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[18]) &  !always) return;
+			fields[18] = methodName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 17,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[17]);
+                eventsId[17] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SendMessageUpwards(methodName, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SendMessage(System.String methodName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[20]) &  !always) return;
+			fields[20] = methodName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 19,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[19]);
+                eventsId[19] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SendMessage(methodName, true, 0, 0);
+                }, null);
+            }
+        }
+        public void BroadcastMessage(System.String methodName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (methodName.Equals(fields[22]) &  !always) return;
+			fields[22] = methodName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { methodName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 21,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[21]);
+                eventsId[21] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    BroadcastMessage(methodName, true, 0, 0);
+                }, null);
+            }
+        }
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (opt.cmd != Command.BuildComponent)
-                return;
-            switch (opt.index1)
+            switch (opt.index2)
             {
+
                 case 1:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    layer1 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Int32>(new Net.System.Segment(opt.buffer, false));
-                    self.layer = layer1;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var layer = DeserializeObject<System.Int32>(new Segment(opt.buffer, false));
+						fields[1] = layer;
+						self.layer = layer;
+					}
+                    break;
+                case 2:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var isStatic = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[2] = isStatic;
+						self.isStatic = isStatic;
+					}
+                    break;
+                case 3:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var tag = DeserializeObject<System.String>(new Segment(opt.buffer, false));
+						fields[3] = tag;
+						self.tag = tag;
+					}
+                    break;
+                case 4:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var name = DeserializeObject<System.String>(new Segment(opt.buffer, false));
+						fields[4] = name;
+						self.name = name;
+					}
                     break;
                 case 5:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    isStatic2 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.isStatic = isStatic2;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var hideFlags = DeserializeObject<UnityEngine.HideFlags>(new Segment(opt.buffer, false));
+						fields[5] = hideFlags;
+						self.hideFlags = hideFlags;
+					}
                     break;
                 case 6:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    tag3 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.tag = tag3;
-                    break;
-                case 23:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    name4 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.name = name4;
-                    break;
-                case 24:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    hideFlags5 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.HideFlags>(new Net.System.Segment(opt.buffer, false));
-                    self.hideFlags = hideFlags5;
-                    break;
-                case 25:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    activeSelf11 = Net.Serialize.NetConvertFast2.DeserializeObject<bool>(new Net.System.Segment(opt.buffer, false));
-                    self.SetActive(activeSelf11);
-                    break;
-                case 27:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var type = data.pars[0] as System.String;
-                        self.GetComponent(type);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var type = (System.String)(fields[7] = data.Obj);
+						self.GetComponent(type);
+					}
                     break;
-                case 53:
+                case 8:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessageUpwards(methodName, options);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[9] = data.Obj);
+						var options = (UnityEngine.SendMessageOptions)(fields[10] = data.Obj);
+						self.SendMessageUpwards(methodName,options);
+					}
                     break;
-                case 54:
+                case 11:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessage(methodName, options);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[12] = data.Obj);
+						var options = (UnityEngine.SendMessageOptions)(fields[13] = data.Obj);
+						self.SendMessage(methodName,options);
+					}
                     break;
-                case 55:
+                case 14:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.BroadcastMessage(methodName, options);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[15] = data.Obj);
+						var options = (UnityEngine.SendMessageOptions)(fields[16] = data.Obj);
+						self.BroadcastMessage(methodName,options);
+					}
                     break;
-                case 74:
+                case 17:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessageUpwards(methodName);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[18] = data.Obj);
+						self.SendMessageUpwards(methodName);
+					}
                     break;
-                case 77:
+                case 19:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessage(methodName);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[20] = data.Obj);
+						self.SendMessage(methodName);
+					}
                     break;
-                case 80:
+                case 21:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.BroadcastMessage(methodName);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var methodName = (System.String)(fields[22] = data.Obj);
+						self.BroadcastMessage(methodName);
+					}
                     break;
-                case 101:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetInstanceID();
-                    }
-                    break;
-                case 102:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetHashCode();
-                    }
-                    break;
-                case 108:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.ToString();
-                    }
-                    break;
-
             }
         }
     }

@@ -1,9 +1,11 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Client;
-using Net.Component;
 using Net.Share;
+using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
+using Net.System;
+using static Net.Serialize.NetConvertFast2;
 
 namespace BuildComponent
 {
@@ -15,205 +17,38 @@ namespace BuildComponent
     {
         private UnityEngine.Animator self;
         public bool autoCheck;
-        private UnityEngine.Vector3 rootPosition1;
-        private UnityEngine.Quaternion rootRotation2;
-        private System.Boolean applyRootMotion3;
-        private UnityEngine.AnimatorUpdateMode updateMode4;
-        private UnityEngine.Vector3 bodyPosition5;
-        private UnityEngine.Quaternion bodyRotation6;
-        private System.Boolean stabilizeFeet7;
-        private System.Single feetPivotActive8;
-        private System.Single speed9;
-        private UnityEngine.AnimatorCullingMode cullingMode10;
-        private System.Single playbackTime11;
-        private System.Single recorderStartTime12;
-        private System.Single recorderStopTime13;
-        private UnityEngine.RuntimeAnimatorController runtimeAnimatorController14;
-        private UnityEngine.Avatar avatar15;
-        private System.Boolean layersAffectMassCenter16;
-        private System.Boolean logWarnings17;
-        private System.Boolean fireEvents18;
-        private System.Boolean keepAnimatorControllerStateOnDisable19;
-        private System.Boolean enabled20;
-        private System.String name1;
-        private System.Int32 id2;
-        private System.String name3;
-        private System.Single value4;
-        private System.String name5;
-        private System.Single value6;
-        private System.Single dampTime7;
-        private System.Single deltaTime8;
-        private System.Int32 id9;
-        private System.Single value10;
-        private System.Int32 id11;
-        private System.Single value12;
-        private System.Single dampTime13;
-        private System.Single deltaTime14;
-        private System.String name15;
-        private System.Int32 id16;
-        private System.String name17;
-        private System.Boolean value18;
-        private System.Int32 id19;
-        private System.Boolean value20;
-        private System.String name21;
-        private System.Int32 id22;
-        private System.String name23;
-        private System.Int32 value24;
-        private System.Int32 id25;
-        private System.Int32 value26;
-        private System.String name27;
-        private System.Int32 id28;
-        private System.String name29;
-        private System.Int32 id30;
-        private System.String name31;
-        private System.Int32 id32;
-        private UnityEngine.AvatarIKGoal goal33;
-        private UnityEngine.AvatarIKGoal goal34;
-        private UnityEngine.Vector3 goalPosition35;
-        private UnityEngine.AvatarIKGoal goal36;
-        private UnityEngine.AvatarIKGoal goal37;
-        private UnityEngine.Quaternion goalRotation38;
-        private UnityEngine.AvatarIKGoal goal39;
-        private UnityEngine.AvatarIKGoal goal40;
-        private System.Single value41;
-        private UnityEngine.AvatarIKGoal goal42;
-        private UnityEngine.AvatarIKGoal goal43;
-        private System.Single value44;
-        private UnityEngine.AvatarIKHint hint45;
-        private UnityEngine.AvatarIKHint hint46;
-        private UnityEngine.Vector3 hintPosition47;
-        private UnityEngine.AvatarIKHint hint48;
-        private UnityEngine.AvatarIKHint hint49;
-        private System.Single value50;
-        private UnityEngine.Vector3 lookAtPosition51;
-        private System.Single weight52;
-        private System.Single weight53;
-        private System.Single bodyWeight54;
-        private System.Single weight55;
-        private System.Single bodyWeight56;
-        private System.Single headWeight57;
-        private System.Single weight58;
-        private System.Single bodyWeight59;
-        private System.Single headWeight60;
-        private System.Single eyesWeight61;
-        private System.Single weight62;
-        private System.Single bodyWeight63;
-        private System.Single headWeight64;
-        private System.Single eyesWeight65;
-        private System.Single clampWeight66;
-        private UnityEngine.HumanBodyBones humanBoneId67;
-        private UnityEngine.Quaternion rotation68;
-        private System.Int32 fullPathHash69;
-        private System.Int32 layerIndex70;
-        private System.Int32 layerIndex71;
-        private System.Int32 layerIndex72;
-        private System.Int32 layerIndex73;
-        private System.Int32 layerIndex74;
-        private System.Int32 layerIndex75;
-        private System.Int32 index76;
-        private System.String stateName77;
-        private System.Single fixedTransitionDuration78;
-        private System.String stateName79;
-        private System.Single fixedTransitionDuration80;
-        private System.Int32 layer81;
-        private System.String stateName82;
-        private System.Single fixedTransitionDuration83;
-        private System.Int32 layer84;
-        private System.Single fixedTimeOffset85;
-        private System.String stateName86;
-        private System.Single fixedTransitionDuration87;
-        private System.Int32 layer88;
-        private System.Single fixedTimeOffset89;
-        private System.Single normalizedTransitionTime90;
-        private System.Int32 stateHashName91;
-        private System.Single fixedTransitionDuration92;
-        private System.Int32 layer93;
-        private System.Single fixedTimeOffset94;
-        private System.Int32 stateHashName95;
-        private System.Single fixedTransitionDuration96;
-        private System.Int32 layer97;
-        private System.Int32 stateHashName98;
-        private System.Single fixedTransitionDuration99;
-        private System.String stateName100;
-        private System.Single normalizedTransitionDuration101;
-        private System.Int32 layer102;
-        private System.Single normalizedTimeOffset103;
-        private System.String stateName104;
-        private System.Single normalizedTransitionDuration105;
-        private System.Int32 layer106;
-        private System.String stateName107;
-        private System.Single normalizedTransitionDuration108;
-        private System.String stateName109;
-        private System.Single normalizedTransitionDuration110;
-        private System.Int32 layer111;
-        private System.Single normalizedTimeOffset112;
-        private System.Single normalizedTransitionTime113;
-        private System.Int32 stateHashName114;
-        private System.Single normalizedTransitionDuration115;
-        private System.Int32 layer116;
-        private System.Single normalizedTimeOffset117;
-        private System.Int32 stateHashName118;
-        private System.Single normalizedTransitionDuration119;
-        private System.Int32 layer120;
-        private System.Int32 stateHashName121;
-        private System.Single normalizedTransitionDuration122;
-        private System.String stateName123;
-        private System.Int32 layer124;
-        private System.String stateName125;
-        private System.String stateName126;
-        private System.Int32 layer127;
-        private System.Single fixedTime128;
-        private System.Int32 stateNameHash129;
-        private System.Int32 layer130;
-        private System.Int32 stateNameHash131;
-        private System.String stateName132;
-        private System.Int32 layer133;
-        private System.String stateName134;
-        private System.String stateName135;
-        private System.Int32 layer136;
-        private System.Single normalizedTime137;
-        private System.Int32 stateNameHash138;
-        private System.Int32 layer139;
-        private System.Int32 stateNameHash140;
-        private UnityEngine.HumanBodyBones humanBoneId141;
-        private System.String tag142;
-        private System.String methodName143;
-        private System.String methodName144;
-        private UnityEngine.SendMessageOptions options145;
-        private System.String methodName146;
-        private System.String methodName147;
-        private UnityEngine.SendMessageOptions options148;
-        private System.String methodName149;
-        private System.String methodName150;
-        private UnityEngine.SendMessageOptions options151;
-
+        private object[] fields;
+		private int[] eventsId;
+		
         public override void Awake()
         {
             base.Awake();
             self = GetComponent<UnityEngine.Animator>();
-            rootPosition1 = self.rootPosition;
-            rootRotation2 = self.rootRotation;
-            applyRootMotion3 = self.applyRootMotion;
-            updateMode4 = self.updateMode;
-            bodyPosition5 = self.bodyPosition;
-            bodyRotation6 = self.bodyRotation;
-            stabilizeFeet7 = self.stabilizeFeet;
-            feetPivotActive8 = self.feetPivotActive;
-            speed9 = self.speed;
-            cullingMode10 = self.cullingMode;
-            playbackTime11 = self.playbackTime;
-            recorderStartTime12 = self.recorderStartTime;
-            recorderStopTime13 = self.recorderStopTime;
-            runtimeAnimatorController14 = self.runtimeAnimatorController;
-            avatar15 = self.avatar;
-            layersAffectMassCenter16 = self.layersAffectMassCenter;
-            logWarnings17 = self.logWarnings;
-            fireEvents18 = self.fireEvents;
-            keepAnimatorControllerStateOnDisable19 = self.keepAnimatorControllerStateOnDisable;
-            enabled20 = self.enabled;
+			fields = new object[188];
+			eventsId = new int[188];
+            fields[1] = self.rootPosition;
+            fields[2] = self.rootRotation;
+            fields[3] = self.applyRootMotion;
+            fields[4] = self.updateMode;
+            fields[5] = self.bodyPosition;
+            fields[6] = self.bodyRotation;
+            fields[7] = self.stabilizeFeet;
+            fields[8] = self.feetPivotActive;
+            fields[9] = self.speed;
+            fields[10] = self.cullingMode;
+            fields[11] = self.playbackTime;
+            fields[12] = self.recorderStartTime;
+            fields[13] = self.recorderStopTime;
+            fields[14] = self.runtimeAnimatorController;
+            fields[15] = self.avatar;
+            fields[16] = self.layersAffectMassCenter;
+            fields[17] = self.logWarnings;
+            fields[18] = self.fireEvents;
+            fields[19] = self.keepAnimatorControllerStateOnDisable;
         }
 
         void Start() { }//让监视面板能显示启动勾选
+
         public UnityEngine.Vector3 rootPosition
         {
             get
@@ -222,20 +57,20 @@ namespace BuildComponent
             }
             set
             {
-                if (rootPosition1 == value)
+                if (value.Equals(fields[1]))
                     return;
-                rootPosition1 = value;
+                fields[1] = value;
                 self.rootPosition = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 9,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 1,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Quaternion rootRotation
         {
             get
@@ -244,20 +79,20 @@ namespace BuildComponent
             }
             set
             {
-                if (rootRotation2 == value)
+                if (value.Equals(fields[2]))
                     return;
-                rootRotation2 = value;
+                fields[2] = value;
                 self.rootRotation = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 10,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 2,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean applyRootMotion
         {
             get
@@ -266,20 +101,20 @@ namespace BuildComponent
             }
             set
             {
-                if (applyRootMotion3 == value)
+                if (value.Equals(fields[3]))
                     return;
-                applyRootMotion3 = value;
+                fields[3] = value;
                 self.applyRootMotion = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 11,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 3,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.AnimatorUpdateMode updateMode
         {
             get
@@ -288,20 +123,20 @@ namespace BuildComponent
             }
             set
             {
-                if (updateMode4 == value)
+                if (value.Equals(fields[4]))
                     return;
-                updateMode4 = value;
+                fields[4] = value;
                 self.updateMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 14,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 4,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Vector3 bodyPosition
         {
             get
@@ -310,20 +145,20 @@ namespace BuildComponent
             }
             set
             {
-                if (bodyPosition5 == value)
+                if (value.Equals(fields[5]))
                     return;
-                bodyPosition5 = value;
+                fields[5] = value;
                 self.bodyPosition = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 17,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 5,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Quaternion bodyRotation
         {
             get
@@ -332,20 +167,20 @@ namespace BuildComponent
             }
             set
             {
-                if (bodyRotation6 == value)
+                if (value.Equals(fields[6]))
                     return;
-                bodyRotation6 = value;
+                fields[6] = value;
                 self.bodyRotation = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 18,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 6,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean stabilizeFeet
         {
             get
@@ -354,20 +189,20 @@ namespace BuildComponent
             }
             set
             {
-                if (stabilizeFeet7 == value)
+                if (value.Equals(fields[7]))
                     return;
-                stabilizeFeet7 = value;
+                fields[7] = value;
                 self.stabilizeFeet = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 19,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 7,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single feetPivotActive
         {
             get
@@ -376,20 +211,20 @@ namespace BuildComponent
             }
             set
             {
-                if (feetPivotActive8 == value)
+                if (value.Equals(fields[8]))
                     return;
-                feetPivotActive8 = value;
+                fields[8] = value;
                 self.feetPivotActive = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 23,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 8,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single speed
         {
             get
@@ -398,20 +233,20 @@ namespace BuildComponent
             }
             set
             {
-                if (speed9 == value)
+                if (value.Equals(fields[9]))
                     return;
-                speed9 = value;
+                fields[9] = value;
                 self.speed = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 27,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 9,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.AnimatorCullingMode cullingMode
         {
             get
@@ -420,20 +255,20 @@ namespace BuildComponent
             }
             set
             {
-                if (cullingMode10 == value)
+                if (value.Equals(fields[10]))
                     return;
-                cullingMode10 = value;
+                fields[10] = value;
                 self.cullingMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 30,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 10,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single playbackTime
         {
             get
@@ -442,20 +277,20 @@ namespace BuildComponent
             }
             set
             {
-                if (playbackTime11 == value)
+                if (value.Equals(fields[11]))
                     return;
-                playbackTime11 = value;
+                fields[11] = value;
                 self.playbackTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 31,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 11,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single recorderStartTime
         {
             get
@@ -464,20 +299,20 @@ namespace BuildComponent
             }
             set
             {
-                if (recorderStartTime12 == value)
+                if (value.Equals(fields[12]))
                     return;
-                recorderStartTime12 = value;
+                fields[12] = value;
                 self.recorderStartTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 32,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 12,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single recorderStopTime
         {
             get
@@ -486,20 +321,20 @@ namespace BuildComponent
             }
             set
             {
-                if (recorderStopTime13 == value)
+                if (value.Equals(fields[13]))
                     return;
-                recorderStopTime13 = value;
+                fields[13] = value;
                 self.recorderStopTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 33,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 13,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.RuntimeAnimatorController runtimeAnimatorController
         {
             get
@@ -508,23 +343,20 @@ namespace BuildComponent
             }
             set
             {
-                if (runtimeAnimatorController14 == value)
+                if (value.Equals(fields[14]))
                     return;
-                runtimeAnimatorController14 = value;
+                fields[14] = value;
                 self.runtimeAnimatorController = value;
-                if (!NetworkResources.I.TryGetValue(runtimeAnimatorController14, out ObjectRecord objectRecord))
-                    return;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 35,
-                    index2 = objectRecord.ID,
-                    name = objectRecord.path,
+                    index1 = Index,
+                    index2 = 14,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Avatar avatar
         {
             get
@@ -533,23 +365,20 @@ namespace BuildComponent
             }
             set
             {
-                if (avatar15 == value)
+                if (value.Equals(fields[15]))
                     return;
-                avatar15 = value;
+                fields[15] = value;
                 self.avatar = value;
-                if (!NetworkResources.I.TryGetValue(avatar15, out ObjectRecord objectRecord))
-                    return;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 37,
-                    index2 = objectRecord.ID,
-                    name = objectRecord.path,
+                    index1 = Index,
+                    index2 = 15,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean layersAffectMassCenter
         {
             get
@@ -558,20 +387,20 @@ namespace BuildComponent
             }
             set
             {
-                if (layersAffectMassCenter16 == value)
+                if (value.Equals(fields[16]))
                     return;
-                layersAffectMassCenter16 = value;
+                fields[16] = value;
                 self.layersAffectMassCenter = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 39,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 16,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean logWarnings
         {
             get
@@ -580,20 +409,20 @@ namespace BuildComponent
             }
             set
             {
-                if (logWarnings17 == value)
+                if (value.Equals(fields[17]))
                     return;
-                logWarnings17 = value;
+                fields[17] = value;
                 self.logWarnings = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 42,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 17,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean fireEvents
         {
             get
@@ -602,20 +431,20 @@ namespace BuildComponent
             }
             set
             {
-                if (fireEvents18 == value)
+                if (value.Equals(fields[18]))
                     return;
-                fireEvents18 = value;
+                fields[18] = value;
                 self.fireEvents = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 43,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 18,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean keepAnimatorControllerStateOnDisable
         {
             get
@@ -624,1105 +453,25 @@ namespace BuildComponent
             }
             set
             {
-                if (keepAnimatorControllerStateOnDisable19 == value)
+                if (value.Equals(fields[19]))
                     return;
-                keepAnimatorControllerStateOnDisable19 = value;
+                fields[19] = value;
                 self.keepAnimatorControllerStateOnDisable = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 44,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 19,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
-        }
-
-        public System.Boolean enabled
-        {
-            get
-            {
-                return self.enabled;
-            }
-            set
-            {
-                if (enabled20 == value)
-                    return;
-                enabled20 = value;
-                self.enabled = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 45,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public void GetFloat(System.String name, bool always = false)
-        {
-            if (name == name1 & !always) return;
-            name1 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 73,
-                buffer = buffer
-            });
-        }
-        public void GetFloat(System.Int32 id, bool always = false)
-        {
-            if (id == id2 & !always) return;
-            id2 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 74,
-                buffer = buffer
-            });
-        }
-        public void SetFloat(System.String name, System.Single value, bool always = false)
-        {
-            if (name == name3 & value == value4 & !always) return;
-            name3 = name;
-            value4 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 75,
-                buffer = buffer
-            });
-        }
-        public void SetFloat(System.String name, System.Single value, System.Single dampTime, System.Single deltaTime, bool always = false)
-        {
-            if (name == name5 & value == value6 & dampTime == dampTime7 & deltaTime == deltaTime8 & !always) return;
-            name5 = name;
-            value6 = value;
-            dampTime7 = dampTime;
-            deltaTime8 = deltaTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name, value, dampTime, deltaTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 76,
-                buffer = buffer
-            });
-        }
-        public void SetFloat(System.Int32 id, System.Single value, bool always = false)
-        {
-            if (id == id9 & value == value10 & !always) return;
-            id9 = id;
-            value10 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 77,
-                buffer = buffer
-            });
-        }
-        public void SetFloat(System.Int32 id, System.Single value, System.Single dampTime, System.Single deltaTime, bool always = false)
-        {
-            if (id == id11 & value == value12 & dampTime == dampTime13 & deltaTime == deltaTime14 & !always) return;
-            id11 = id;
-            value12 = value;
-            dampTime13 = dampTime;
-            deltaTime14 = deltaTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id, value, dampTime, deltaTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 78,
-                buffer = buffer
-            });
-        }
-        public void GetBool(System.String name, bool always = false)
-        {
-            if (name == name15 & !always) return;
-            name15 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 79,
-                buffer = buffer
-            });
-        }
-        public void GetBool(System.Int32 id, bool always = false)
-        {
-            if (id == id16 & !always) return;
-            id16 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 80,
-                buffer = buffer
-            });
-        }
-        public void SetBool(System.String name, System.Boolean value, bool always = false)
-        {
-            if (name == name17 & value == value18 & !always) return;
-            name17 = name;
-            value18 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 81,
-                buffer = buffer
-            });
-        }
-        public void SetBool(System.Int32 id, System.Boolean value, bool always = false)
-        {
-            if (id == id19 & value == value20 & !always) return;
-            id19 = id;
-            value20 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 82,
-                buffer = buffer
-            });
-        }
-        public void GetInteger(System.String name, bool always = false)
-        {
-            if (name == name21 & !always) return;
-            name21 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 83,
-                buffer = buffer
-            });
-        }
-        public void GetInteger(System.Int32 id, bool always = false)
-        {
-            if (id == id22 & !always) return;
-            id22 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 84,
-                buffer = buffer
-            });
-        }
-        public void SetInteger(System.String name, System.Int32 value, bool always = false)
-        {
-            if (name == name23 & value == value24 & !always) return;
-            name23 = name;
-            value24 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 85,
-                buffer = buffer
-            });
-        }
-        public void SetInteger(System.Int32 id, System.Int32 value, bool always = false)
-        {
-            if (id == id25 & value == value26 & !always) return;
-            id25 = id;
-            value26 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 86,
-                buffer = buffer
-            });
-        }
-        public void SetTrigger(System.String name, bool always = false)
-        {
-            if (name == name27 & !always) return;
-            name27 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 87,
-                buffer = buffer
-            });
-        }
-        public void SetTrigger(System.Int32 id, bool always = false)
-        {
-            if (id == id28 & !always) return;
-            id28 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 88,
-                buffer = buffer
-            });
-        }
-        public void ResetTrigger(System.String name, bool always = false)
-        {
-            if (name == name29 & !always) return;
-            name29 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 89,
-                buffer = buffer
-            });
-        }
-        public void ResetTrigger(System.Int32 id, bool always = false)
-        {
-            if (id == id30 & !always) return;
-            id30 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 90,
-                buffer = buffer
-            });
-        }
-        public void IsParameterControlledByCurve(System.String name, bool always = false)
-        {
-            if (name == name31 & !always) return;
-            name31 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 91,
-                buffer = buffer
-            });
-        }
-        public void IsParameterControlledByCurve(System.Int32 id, bool always = false)
-        {
-            if (id == id32 & !always) return;
-            id32 = id;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { id } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 92,
-                buffer = buffer
-            });
-        }
-        public void GetIKPosition(UnityEngine.AvatarIKGoal goal, bool always = false)
-        {
-            if (goal == goal33 & !always) return;
-            goal33 = goal;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 115,
-                buffer = buffer
-            });
-        }
-        public void SetIKPosition(UnityEngine.AvatarIKGoal goal, UnityEngine.Vector3 goalPosition, bool always = false)
-        {
-            if (goal == goal34 & goalPosition == goalPosition35 & !always) return;
-            goal34 = goal;
-            goalPosition35 = goalPosition;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal, goalPosition } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 116,
-                buffer = buffer
-            });
-        }
-        public void GetIKRotation(UnityEngine.AvatarIKGoal goal, bool always = false)
-        {
-            if (goal == goal36 & !always) return;
-            goal36 = goal;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 117,
-                buffer = buffer
-            });
-        }
-        public void SetIKRotation(UnityEngine.AvatarIKGoal goal, UnityEngine.Quaternion goalRotation, bool always = false)
-        {
-            if (goal == goal37 & goalRotation == goalRotation38 & !always) return;
-            goal37 = goal;
-            goalRotation38 = goalRotation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal, goalRotation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 118,
-                buffer = buffer
-            });
-        }
-        public void GetIKPositionWeight(UnityEngine.AvatarIKGoal goal, bool always = false)
-        {
-            if (goal == goal39 & !always) return;
-            goal39 = goal;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 119,
-                buffer = buffer
-            });
-        }
-        public void SetIKPositionWeight(UnityEngine.AvatarIKGoal goal, System.Single value, bool always = false)
-        {
-            if (goal == goal40 & value == value41 & !always) return;
-            goal40 = goal;
-            value41 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 120,
-                buffer = buffer
-            });
-        }
-        public void GetIKRotationWeight(UnityEngine.AvatarIKGoal goal, bool always = false)
-        {
-            if (goal == goal42 & !always) return;
-            goal42 = goal;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 121,
-                buffer = buffer
-            });
-        }
-        public void SetIKRotationWeight(UnityEngine.AvatarIKGoal goal, System.Single value, bool always = false)
-        {
-            if (goal == goal43 & value == value44 & !always) return;
-            goal43 = goal;
-            value44 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { goal, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 122,
-                buffer = buffer
-            });
-        }
-        public void GetIKHintPosition(UnityEngine.AvatarIKHint hint, bool always = false)
-        {
-            if (hint == hint45 & !always) return;
-            hint45 = hint;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { hint } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 123,
-                buffer = buffer
-            });
-        }
-        public void SetIKHintPosition(UnityEngine.AvatarIKHint hint, UnityEngine.Vector3 hintPosition, bool always = false)
-        {
-            if (hint == hint46 & hintPosition == hintPosition47 & !always) return;
-            hint46 = hint;
-            hintPosition47 = hintPosition;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { hint, hintPosition } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 124,
-                buffer = buffer
-            });
-        }
-        public void GetIKHintPositionWeight(UnityEngine.AvatarIKHint hint, bool always = false)
-        {
-            if (hint == hint48 & !always) return;
-            hint48 = hint;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { hint } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 125,
-                buffer = buffer
-            });
-        }
-        public void SetIKHintPositionWeight(UnityEngine.AvatarIKHint hint, System.Single value, bool always = false)
-        {
-            if (hint == hint49 & value == value50 & !always) return;
-            hint49 = hint;
-            value50 = value;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { hint, value } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 126,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtPosition(UnityEngine.Vector3 lookAtPosition, bool always = false)
-        {
-            if (lookAtPosition == lookAtPosition51 & !always) return;
-            lookAtPosition51 = lookAtPosition;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { lookAtPosition } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 127,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtWeight(System.Single weight, bool always = false)
-        {
-            if (weight == weight52 & !always) return;
-            weight52 = weight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { weight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 128,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtWeight(System.Single weight, System.Single bodyWeight, bool always = false)
-        {
-            if (weight == weight53 & bodyWeight == bodyWeight54 & !always) return;
-            weight53 = weight;
-            bodyWeight54 = bodyWeight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { weight, bodyWeight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 129,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtWeight(System.Single weight, System.Single bodyWeight, System.Single headWeight, bool always = false)
-        {
-            if (weight == weight55 & bodyWeight == bodyWeight56 & headWeight == headWeight57 & !always) return;
-            weight55 = weight;
-            bodyWeight56 = bodyWeight;
-            headWeight57 = headWeight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { weight, bodyWeight, headWeight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 130,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtWeight(System.Single weight, System.Single bodyWeight, System.Single headWeight, System.Single eyesWeight, bool always = false)
-        {
-            if (weight == weight58 & bodyWeight == bodyWeight59 & headWeight == headWeight60 & eyesWeight == eyesWeight61 & !always) return;
-            weight58 = weight;
-            bodyWeight59 = bodyWeight;
-            headWeight60 = headWeight;
-            eyesWeight61 = eyesWeight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { weight, bodyWeight, headWeight, eyesWeight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 131,
-                buffer = buffer
-            });
-        }
-        public void SetLookAtWeight(System.Single weight, System.Single bodyWeight, System.Single headWeight, System.Single eyesWeight, System.Single clampWeight, bool always = false)
-        {
-            if (weight == weight62 & bodyWeight == bodyWeight63 & headWeight == headWeight64 & eyesWeight == eyesWeight65 & clampWeight == clampWeight66 & !always) return;
-            weight62 = weight;
-            bodyWeight63 = bodyWeight;
-            headWeight64 = headWeight;
-            eyesWeight65 = eyesWeight;
-            clampWeight66 = clampWeight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { weight, bodyWeight, headWeight, eyesWeight, clampWeight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 132,
-                buffer = buffer
-            });
-        }
-        public void SetBoneLocalRotation(UnityEngine.HumanBodyBones humanBoneId, UnityEngine.Quaternion rotation, bool always = false)
-        {
-            if (humanBoneId == humanBoneId67 & rotation == rotation68 & !always) return;
-            humanBoneId67 = humanBoneId;
-            rotation68 = rotation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { humanBoneId, rotation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 133,
-                buffer = buffer
-            });
-        }
-        public void GetBehaviours(System.Int32 fullPathHash, System.Int32 layerIndex, bool always = false)
-        {
-            if (fullPathHash == fullPathHash69 & layerIndex == layerIndex70 & !always) return;
-            fullPathHash69 = fullPathHash;
-            layerIndex70 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { fullPathHash, layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 136,
-                buffer = buffer
-            });
-        }
-        public void GetCurrentAnimatorStateInfo(System.Int32 layerIndex, bool always = false)
-        {
-            if (layerIndex == layerIndex71 & !always) return;
-            layerIndex71 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 144,
-                buffer = buffer
-            });
-        }
-        public void GetNextAnimatorStateInfo(System.Int32 layerIndex, bool always = false)
-        {
-            if (layerIndex == layerIndex72 & !always) return;
-            layerIndex72 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 145,
-                buffer = buffer
-            });
-        }
-        public void GetAnimatorTransitionInfo(System.Int32 layerIndex, bool always = false)
-        {
-            if (layerIndex == layerIndex73 & !always) return;
-            layerIndex73 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 146,
-                buffer = buffer
-            });
-        }
-        public void GetCurrentAnimatorClipInfoCount(System.Int32 layerIndex, bool always = false)
-        {
-            if (layerIndex == layerIndex74 & !always) return;
-            layerIndex74 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 147,
-                buffer = buffer
-            });
-        }
-        public void GetNextAnimatorClipInfoCount(System.Int32 layerIndex, bool always = false)
-        {
-            if (layerIndex == layerIndex75 & !always) return;
-            layerIndex75 = layerIndex;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layerIndex } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 148,
-                buffer = buffer
-            });
-        }
-        public void GetParameter(System.Int32 index, bool always = false)
-        {
-            if (index == index76 & !always) return;
-            index76 = index;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { index } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 156,
-                buffer = buffer
-            });
-        }
-        public void InterruptMatchTarget(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 164,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.String stateName, System.Single fixedTransitionDuration, bool always = false)
-        {
-            if (stateName == stateName77 & fixedTransitionDuration == fixedTransitionDuration78 & !always) return;
-            stateName77 = stateName;
-            fixedTransitionDuration78 = fixedTransitionDuration;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, fixedTransitionDuration } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 170,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.String stateName, System.Single fixedTransitionDuration, System.Int32 layer, bool always = false)
-        {
-            if (stateName == stateName79 & fixedTransitionDuration == fixedTransitionDuration80 & layer == layer81 & !always) return;
-            stateName79 = stateName;
-            fixedTransitionDuration80 = fixedTransitionDuration;
-            layer81 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, fixedTransitionDuration, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 171,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.String stateName, System.Single fixedTransitionDuration, System.Int32 layer, System.Single fixedTimeOffset, bool always = false)
-        {
-            if (stateName == stateName82 & fixedTransitionDuration == fixedTransitionDuration83 & layer == layer84 & fixedTimeOffset == fixedTimeOffset85 & !always) return;
-            stateName82 = stateName;
-            fixedTransitionDuration83 = fixedTransitionDuration;
-            layer84 = layer;
-            fixedTimeOffset85 = fixedTimeOffset;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, fixedTransitionDuration, layer, fixedTimeOffset } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 172,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.String stateName, System.Single fixedTransitionDuration, System.Int32 layer, System.Single fixedTimeOffset, System.Single normalizedTransitionTime, bool always = false)
-        {
-            if (stateName == stateName86 & fixedTransitionDuration == fixedTransitionDuration87 & layer == layer88 & fixedTimeOffset == fixedTimeOffset89 & normalizedTransitionTime == normalizedTransitionTime90 & !always) return;
-            stateName86 = stateName;
-            fixedTransitionDuration87 = fixedTransitionDuration;
-            layer88 = layer;
-            fixedTimeOffset89 = fixedTimeOffset;
-            normalizedTransitionTime90 = normalizedTransitionTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 173,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.Int32 stateHashName, System.Single fixedTransitionDuration, System.Int32 layer, System.Single fixedTimeOffset, bool always = false)
-        {
-            if (stateHashName == stateHashName91 & fixedTransitionDuration == fixedTransitionDuration92 & layer == layer93 & fixedTimeOffset == fixedTimeOffset94 & !always) return;
-            stateHashName91 = stateHashName;
-            fixedTransitionDuration92 = fixedTransitionDuration;
-            layer93 = layer;
-            fixedTimeOffset94 = fixedTimeOffset;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, fixedTransitionDuration, layer, fixedTimeOffset } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 174,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.Int32 stateHashName, System.Single fixedTransitionDuration, System.Int32 layer, bool always = false)
-        {
-            if (stateHashName == stateHashName95 & fixedTransitionDuration == fixedTransitionDuration96 & layer == layer97 & !always) return;
-            stateHashName95 = stateHashName;
-            fixedTransitionDuration96 = fixedTransitionDuration;
-            layer97 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, fixedTransitionDuration, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 175,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeInFixedTime(System.Int32 stateHashName, System.Single fixedTransitionDuration, bool always = false)
-        {
-            if (stateHashName == stateHashName98 & fixedTransitionDuration == fixedTransitionDuration99 & !always) return;
-            stateHashName98 = stateHashName;
-            fixedTransitionDuration99 = fixedTransitionDuration;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, fixedTransitionDuration } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 176,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String stateName, System.Single normalizedTransitionDuration, System.Int32 layer, System.Single normalizedTimeOffset, bool always = false)
-        {
-            if (stateName == stateName100 & normalizedTransitionDuration == normalizedTransitionDuration101 & layer == layer102 & normalizedTimeOffset == normalizedTimeOffset103 & !always) return;
-            stateName100 = stateName;
-            normalizedTransitionDuration101 = normalizedTransitionDuration;
-            layer102 = layer;
-            normalizedTimeOffset103 = normalizedTimeOffset;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, normalizedTransitionDuration, layer, normalizedTimeOffset } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 179,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String stateName, System.Single normalizedTransitionDuration, System.Int32 layer, bool always = false)
-        {
-            if (stateName == stateName104 & normalizedTransitionDuration == normalizedTransitionDuration105 & layer == layer106 & !always) return;
-            stateName104 = stateName;
-            normalizedTransitionDuration105 = normalizedTransitionDuration;
-            layer106 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, normalizedTransitionDuration, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 180,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String stateName, System.Single normalizedTransitionDuration, bool always = false)
-        {
-            if (stateName == stateName107 & normalizedTransitionDuration == normalizedTransitionDuration108 & !always) return;
-            stateName107 = stateName;
-            normalizedTransitionDuration108 = normalizedTransitionDuration;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, normalizedTransitionDuration } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 181,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String stateName, System.Single normalizedTransitionDuration, System.Int32 layer, System.Single normalizedTimeOffset, System.Single normalizedTransitionTime, bool always = false)
-        {
-            if (stateName == stateName109 & normalizedTransitionDuration == normalizedTransitionDuration110 & layer == layer111 & normalizedTimeOffset == normalizedTimeOffset112 & normalizedTransitionTime == normalizedTransitionTime113 & !always) return;
-            stateName109 = stateName;
-            normalizedTransitionDuration110 = normalizedTransitionDuration;
-            layer111 = layer;
-            normalizedTimeOffset112 = normalizedTimeOffset;
-            normalizedTransitionTime113 = normalizedTransitionTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 182,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.Int32 stateHashName, System.Single normalizedTransitionDuration, System.Int32 layer, System.Single normalizedTimeOffset, bool always = false)
-        {
-            if (stateHashName == stateHashName114 & normalizedTransitionDuration == normalizedTransitionDuration115 & layer == layer116 & normalizedTimeOffset == normalizedTimeOffset117 & !always) return;
-            stateHashName114 = stateHashName;
-            normalizedTransitionDuration115 = normalizedTransitionDuration;
-            layer116 = layer;
-            normalizedTimeOffset117 = normalizedTimeOffset;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 184,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.Int32 stateHashName, System.Single normalizedTransitionDuration, System.Int32 layer, bool always = false)
-        {
-            if (stateHashName == stateHashName118 & normalizedTransitionDuration == normalizedTransitionDuration119 & layer == layer120 & !always) return;
-            stateHashName118 = stateHashName;
-            normalizedTransitionDuration119 = normalizedTransitionDuration;
-            layer120 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, normalizedTransitionDuration, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 185,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.Int32 stateHashName, System.Single normalizedTransitionDuration, bool always = false)
-        {
-            if (stateHashName == stateHashName121 & normalizedTransitionDuration == normalizedTransitionDuration122 & !always) return;
-            stateHashName121 = stateHashName;
-            normalizedTransitionDuration122 = normalizedTransitionDuration;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateHashName, normalizedTransitionDuration } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 186,
-                buffer = buffer
-            });
-        }
-        public void PlayInFixedTime(System.String stateName, System.Int32 layer, bool always = false)
-        {
-            if (stateName == stateName123 & layer == layer124 & !always) return;
-            stateName123 = stateName;
-            layer124 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 187,
-                buffer = buffer
-            });
-        }
-        public void PlayInFixedTime(System.String stateName, bool always = false)
-        {
-            if (stateName == stateName125 & !always) return;
-            stateName125 = stateName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 188,
-                buffer = buffer
-            });
-        }
-        public void PlayInFixedTime(System.String stateName, System.Int32 layer, System.Single fixedTime, bool always = false)
-        {
-            if (stateName == stateName126 & layer == layer127 & fixedTime == fixedTime128 & !always) return;
-            stateName126 = stateName;
-            layer127 = layer;
-            fixedTime128 = fixedTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, layer, fixedTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 189,
-                buffer = buffer
-            });
-        }
-        public void PlayInFixedTime(System.Int32 stateNameHash, System.Int32 layer, bool always = false)
-        {
-            if (stateNameHash == stateNameHash129 & layer == layer130 & !always) return;
-            stateNameHash129 = stateNameHash;
-            layer130 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 191,
-                buffer = buffer
-            });
-        }
-        public void PlayInFixedTime(System.Int32 stateNameHash, bool always = false)
-        {
-            if (stateNameHash == stateNameHash131 & !always) return;
-            stateNameHash131 = stateNameHash;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateNameHash } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 192,
-                buffer = buffer
-            });
-        }
-        public void Play(System.String stateName, System.Int32 layer, bool always = false)
-        {
-            if (stateName == stateName132 & layer == layer133 & !always) return;
-            stateName132 = stateName;
-            layer133 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 193,
-                buffer = buffer
-            });
-        }
-        public void Play(System.String stateName, bool always = false)
-        {
-            if (stateName == stateName134 & !always) return;
-            stateName134 = stateName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 194,
-                buffer = buffer
-            });
-        }
-        public void Play(System.String stateName, System.Int32 layer, System.Single normalizedTime, bool always = false)
-        {
-            if (stateName == stateName135 & layer == layer136 & normalizedTime == normalizedTime137 & !always) return;
-            stateName135 = stateName;
-            layer136 = layer;
-            normalizedTime137 = normalizedTime;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateName, layer, normalizedTime } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 195,
-                buffer = buffer
-            });
-        }
-        public void Play(System.Int32 stateNameHash, System.Int32 layer, bool always = false)
-        {
-            if (stateNameHash == stateNameHash138 & layer == layer139 & !always) return;
-            stateNameHash138 = stateNameHash;
-            layer139 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 197,
-                buffer = buffer
-            });
-        }
-        public void Play(System.Int32 stateNameHash, bool always = false)
-        {
-            if (stateNameHash == stateNameHash140 & !always) return;
-            stateNameHash140 = stateNameHash;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { stateNameHash } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 198,
-                buffer = buffer
-            });
-        }
-        public void GetBoneTransform(UnityEngine.HumanBodyBones humanBoneId, bool always = false)
-        {
-            if (humanBoneId == humanBoneId141 & !always) return;
-            humanBoneId141 = humanBoneId;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { humanBoneId } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 203,
-                buffer = buffer
-            });
-        }
-        public void Rebind(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 229,
-                buffer = buffer
-            });
-        }
-        public void CompareTag(System.String tag, bool always = false)
-        {
-            if (tag == tag142 & !always) return;
-            tag142 = tag;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { tag } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 278,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName143 & !always) return;
-            methodName143 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 281,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName144 & options == options145 & !always) return;
-            methodName144 = methodName;
-            options145 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 282,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName146 & !always) return;
-            methodName146 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 284,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName147 & options == options148 & !always) return;
-            methodName147 = methodName;
-            options148 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 286,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName149 & !always) return;
-            methodName149 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 289,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName150 & options == options151 & !always) return;
-            methodName150 = methodName;
-            options151 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 290,
-                buffer = buffer
-            });
-        }
-        public void GetInstanceID(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 304,
-                buffer = buffer
-            });
-        }
-        public void GetHashCode(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 305,
-                buffer = buffer
-            });
-        }
-        public void ToString(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 311,
-                buffer = buffer
-            });
         }
         public override void OnPropertyAutoCheck()
         {
             if (!autoCheck)
                 return;
+
             rootPosition = rootPosition;
             rootRotation = rootRotation;
             applyRootMotion = applyRootMotion;
@@ -1742,868 +491,1832 @@ namespace BuildComponent
             logWarnings = logWarnings;
             fireEvents = fireEvents;
             keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable;
-            enabled = enabled;
         }
 
+		public System.Single GetFloat(System.String name)
+        {
+            return self.GetFloat(name);
+        }
+		public System.Single GetFloat(System.Int32 id)
+        {
+            return self.GetFloat(id);
+        }
+        public void SetFloat(System.String name,System.Single value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[21]) & value.Equals(fields[22]) &  !always) return;
+			fields[21] = name;
+			fields[22] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 20,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[20]);
+                eventsId[20] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetFloat(name,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetFloat(System.String name,System.Single value,System.Single dampTime,System.Single deltaTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[24]) & value.Equals(fields[25]) & dampTime.Equals(fields[26]) & deltaTime.Equals(fields[27]) &  !always) return;
+			fields[24] = name;
+			fields[25] = value;
+			fields[26] = dampTime;
+			fields[27] = deltaTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value,dampTime,deltaTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 23,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[23]);
+                eventsId[23] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetFloat(name,value,dampTime,deltaTime, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetFloat(System.Int32 id,System.Single value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[29]) & value.Equals(fields[30]) &  !always) return;
+			fields[29] = id;
+			fields[30] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 28,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[28]);
+                eventsId[28] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetFloat(id,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetFloat(System.Int32 id,System.Single value,System.Single dampTime,System.Single deltaTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[32]) & value.Equals(fields[33]) & dampTime.Equals(fields[34]) & deltaTime.Equals(fields[35]) &  !always) return;
+			fields[32] = id;
+			fields[33] = value;
+			fields[34] = dampTime;
+			fields[35] = deltaTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value,dampTime,deltaTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 31,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[31]);
+                eventsId[31] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetFloat(id,value,dampTime,deltaTime, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Boolean GetBool(System.String name)
+        {
+            return self.GetBool(name);
+        }
+		public System.Boolean GetBool(System.Int32 id)
+        {
+            return self.GetBool(id);
+        }
+        public void SetBool(System.String name,System.Boolean value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[37]) & value.Equals(fields[38]) &  !always) return;
+			fields[37] = name;
+			fields[38] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 36,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[36]);
+                eventsId[36] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetBool(name,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetBool(System.Int32 id,System.Boolean value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[40]) & value.Equals(fields[41]) &  !always) return;
+			fields[40] = id;
+			fields[41] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 39,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[39]);
+                eventsId[39] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetBool(id,value, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Int32 GetInteger(System.String name)
+        {
+            return self.GetInteger(name);
+        }
+		public System.Int32 GetInteger(System.Int32 id)
+        {
+            return self.GetInteger(id);
+        }
+        public void SetInteger(System.String name,System.Int32 value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[43]) & value.Equals(fields[44]) &  !always) return;
+			fields[43] = name;
+			fields[44] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 42,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[42]);
+                eventsId[42] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetInteger(name,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetInteger(System.Int32 id,System.Int32 value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[46]) & value.Equals(fields[47]) &  !always) return;
+			fields[46] = id;
+			fields[47] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 45,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[45]);
+                eventsId[45] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetInteger(id,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetTrigger(System.String name, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[49]) &  !always) return;
+			fields[49] = name;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 48,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[48]);
+                eventsId[48] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetTrigger(name, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetTrigger(System.Int32 id, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[51]) &  !always) return;
+			fields[51] = id;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 50,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[50]);
+                eventsId[50] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetTrigger(id, true, 0, 0);
+                }, null);
+            }
+        }
+        public void ResetTrigger(System.String name, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[53]) &  !always) return;
+			fields[53] = name;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 52,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[52]);
+                eventsId[52] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    ResetTrigger(name, true, 0, 0);
+                }, null);
+            }
+        }
+        public void ResetTrigger(System.Int32 id, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (id.Equals(fields[55]) &  !always) return;
+			fields[55] = id;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { id, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 54,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[54]);
+                eventsId[54] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    ResetTrigger(id, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Boolean IsParameterControlledByCurve(System.String name)
+        {
+            return self.IsParameterControlledByCurve(name);
+        }
+		public System.Boolean IsParameterControlledByCurve(System.Int32 id)
+        {
+            return self.IsParameterControlledByCurve(id);
+        }
+		public UnityEngine.Vector3 GetIKPosition(UnityEngine.AvatarIKGoal goal)
+        {
+            return self.GetIKPosition(goal);
+        }
+        public void SetIKPosition(UnityEngine.AvatarIKGoal goal,UnityEngine.Vector3 goalPosition, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (goal.Equals(fields[57]) & goalPosition.Equals(fields[58]) &  !always) return;
+			fields[57] = goal;
+			fields[58] = goalPosition;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,goalPosition, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 56,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[56]);
+                eventsId[56] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKPosition(goal,goalPosition, true, 0, 0);
+                }, null);
+            }
+        }
+		public UnityEngine.Quaternion GetIKRotation(UnityEngine.AvatarIKGoal goal)
+        {
+            return self.GetIKRotation(goal);
+        }
+        public void SetIKRotation(UnityEngine.AvatarIKGoal goal,UnityEngine.Quaternion goalRotation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (goal.Equals(fields[60]) & goalRotation.Equals(fields[61]) &  !always) return;
+			fields[60] = goal;
+			fields[61] = goalRotation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,goalRotation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 59,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[59]);
+                eventsId[59] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKRotation(goal,goalRotation, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Single GetIKPositionWeight(UnityEngine.AvatarIKGoal goal)
+        {
+            return self.GetIKPositionWeight(goal);
+        }
+        public void SetIKPositionWeight(UnityEngine.AvatarIKGoal goal,System.Single value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (goal.Equals(fields[63]) & value.Equals(fields[64]) &  !always) return;
+			fields[63] = goal;
+			fields[64] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 62,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[62]);
+                eventsId[62] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKPositionWeight(goal,value, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Single GetIKRotationWeight(UnityEngine.AvatarIKGoal goal)
+        {
+            return self.GetIKRotationWeight(goal);
+        }
+        public void SetIKRotationWeight(UnityEngine.AvatarIKGoal goal,System.Single value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (goal.Equals(fields[66]) & value.Equals(fields[67]) &  !always) return;
+			fields[66] = goal;
+			fields[67] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 65,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[65]);
+                eventsId[65] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKRotationWeight(goal,value, true, 0, 0);
+                }, null);
+            }
+        }
+		public UnityEngine.Vector3 GetIKHintPosition(UnityEngine.AvatarIKHint hint)
+        {
+            return self.GetIKHintPosition(hint);
+        }
+        public void SetIKHintPosition(UnityEngine.AvatarIKHint hint,UnityEngine.Vector3 hintPosition, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (hint.Equals(fields[69]) & hintPosition.Equals(fields[70]) &  !always) return;
+			fields[69] = hint;
+			fields[70] = hintPosition;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { hint,hintPosition, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 68,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[68]);
+                eventsId[68] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKHintPosition(hint,hintPosition, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Single GetIKHintPositionWeight(UnityEngine.AvatarIKHint hint)
+        {
+            return self.GetIKHintPositionWeight(hint);
+        }
+        public void SetIKHintPositionWeight(UnityEngine.AvatarIKHint hint,System.Single value, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (hint.Equals(fields[72]) & value.Equals(fields[73]) &  !always) return;
+			fields[72] = hint;
+			fields[73] = value;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { hint,value, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 71,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[71]);
+                eventsId[71] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetIKHintPositionWeight(hint,value, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtPosition(UnityEngine.Vector3 lookAtPosition, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (lookAtPosition.Equals(fields[75]) &  !always) return;
+			fields[75] = lookAtPosition;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { lookAtPosition, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 74,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[74]);
+                eventsId[74] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtPosition(lookAtPosition, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtWeight(System.Single weight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (weight.Equals(fields[77]) &  !always) return;
+			fields[77] = weight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 76,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[76]);
+                eventsId[76] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtWeight(weight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtWeight(System.Single weight,System.Single bodyWeight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (weight.Equals(fields[79]) & bodyWeight.Equals(fields[80]) &  !always) return;
+			fields[79] = weight;
+			fields[80] = bodyWeight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 78,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[78]);
+                eventsId[78] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtWeight(weight,bodyWeight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtWeight(System.Single weight,System.Single bodyWeight,System.Single headWeight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (weight.Equals(fields[82]) & bodyWeight.Equals(fields[83]) & headWeight.Equals(fields[84]) &  !always) return;
+			fields[82] = weight;
+			fields[83] = bodyWeight;
+			fields[84] = headWeight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 81,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[81]);
+                eventsId[81] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtWeight(weight,bodyWeight,headWeight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtWeight(System.Single weight,System.Single bodyWeight,System.Single headWeight,System.Single eyesWeight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (weight.Equals(fields[86]) & bodyWeight.Equals(fields[87]) & headWeight.Equals(fields[88]) & eyesWeight.Equals(fields[89]) &  !always) return;
+			fields[86] = weight;
+			fields[87] = bodyWeight;
+			fields[88] = headWeight;
+			fields[89] = eyesWeight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight,eyesWeight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 85,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[85]);
+                eventsId[85] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtWeight(weight,bodyWeight,headWeight,eyesWeight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetLookAtWeight(System.Single weight,System.Single bodyWeight,System.Single headWeight,System.Single eyesWeight,System.Single clampWeight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (weight.Equals(fields[91]) & bodyWeight.Equals(fields[92]) & headWeight.Equals(fields[93]) & eyesWeight.Equals(fields[94]) & clampWeight.Equals(fields[95]) &  !always) return;
+			fields[91] = weight;
+			fields[92] = bodyWeight;
+			fields[93] = headWeight;
+			fields[94] = eyesWeight;
+			fields[95] = clampWeight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight,eyesWeight,clampWeight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 90,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[90]);
+                eventsId[90] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetLookAtWeight(weight,bodyWeight,headWeight,eyesWeight,clampWeight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void SetBoneLocalRotation(UnityEngine.HumanBodyBones humanBoneId,UnityEngine.Quaternion rotation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (humanBoneId.Equals(fields[97]) & rotation.Equals(fields[98]) &  !always) return;
+			fields[97] = humanBoneId;
+			fields[98] = rotation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { humanBoneId,rotation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 96,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[96]);
+                eventsId[96] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    SetBoneLocalRotation(humanBoneId,rotation, true, 0, 0);
+                }, null);
+            }
+        }
+		public UnityEngine.StateMachineBehaviour[] GetBehaviours(System.Int32 fullPathHash,System.Int32 layerIndex)
+        {
+            return self.GetBehaviours(fullPathHash,layerIndex);
+        }
+		public UnityEngine.AnimatorStateInfo GetCurrentAnimatorStateInfo(System.Int32 layerIndex)
+        {
+            return self.GetCurrentAnimatorStateInfo(layerIndex);
+        }
+		public UnityEngine.AnimatorStateInfo GetNextAnimatorStateInfo(System.Int32 layerIndex)
+        {
+            return self.GetNextAnimatorStateInfo(layerIndex);
+        }
+		public UnityEngine.AnimatorTransitionInfo GetAnimatorTransitionInfo(System.Int32 layerIndex)
+        {
+            return self.GetAnimatorTransitionInfo(layerIndex);
+        }
+		public System.Int32 GetCurrentAnimatorClipInfoCount(System.Int32 layerIndex)
+        {
+            return self.GetCurrentAnimatorClipInfoCount(layerIndex);
+        }
+		public System.Int32 GetNextAnimatorClipInfoCount(System.Int32 layerIndex)
+        {
+            return self.GetNextAnimatorClipInfoCount(layerIndex);
+        }
+		public UnityEngine.AnimatorControllerParameter GetParameter(System.Int32 index)
+        {
+            return self.GetParameter(index);
+        }
+        public void InterruptMatchTarget( bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if ( !always) return;
+			
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] {  } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 99,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[99]);
+                eventsId[99] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    InterruptMatchTarget( true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.String stateName,System.Single fixedTransitionDuration, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[101]) & fixedTransitionDuration.Equals(fields[102]) &  !always) return;
+			fields[101] = stateName;
+			fields[102] = fixedTransitionDuration;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 100,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[100]);
+                eventsId[100] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateName,fixedTransitionDuration, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.String stateName,System.Single fixedTransitionDuration,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[104]) & fixedTransitionDuration.Equals(fields[105]) & layer.Equals(fields[106]) &  !always) return;
+			fields[104] = stateName;
+			fields[105] = fixedTransitionDuration;
+			fields[106] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 103,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[103]);
+                eventsId[103] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.String stateName,System.Single fixedTransitionDuration,System.Int32 layer,System.Single fixedTimeOffset, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[108]) & fixedTransitionDuration.Equals(fields[109]) & layer.Equals(fields[110]) & fixedTimeOffset.Equals(fields[111]) &  !always) return;
+			fields[108] = stateName;
+			fields[109] = fixedTransitionDuration;
+			fields[110] = layer;
+			fields[111] = fixedTimeOffset;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer,fixedTimeOffset, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 107,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[107]);
+                eventsId[107] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer,fixedTimeOffset, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.String stateName,System.Single fixedTransitionDuration,System.Int32 layer,System.Single fixedTimeOffset,System.Single normalizedTransitionTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[113]) & fixedTransitionDuration.Equals(fields[114]) & layer.Equals(fields[115]) & fixedTimeOffset.Equals(fields[116]) & normalizedTransitionTime.Equals(fields[117]) &  !always) return;
+			fields[113] = stateName;
+			fields[114] = fixedTransitionDuration;
+			fields[115] = layer;
+			fields[116] = fixedTimeOffset;
+			fields[117] = normalizedTransitionTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer,fixedTimeOffset,normalizedTransitionTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 112,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[112]);
+                eventsId[112] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer,fixedTimeOffset,normalizedTransitionTime, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.Int32 stateHashName,System.Single fixedTransitionDuration,System.Int32 layer,System.Single fixedTimeOffset, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[119]) & fixedTransitionDuration.Equals(fields[120]) & layer.Equals(fields[121]) & fixedTimeOffset.Equals(fields[122]) &  !always) return;
+			fields[119] = stateHashName;
+			fields[120] = fixedTransitionDuration;
+			fields[121] = layer;
+			fields[122] = fixedTimeOffset;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration,layer,fixedTimeOffset, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 118,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[118]);
+                eventsId[118] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateHashName,fixedTransitionDuration,layer,fixedTimeOffset, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.Int32 stateHashName,System.Single fixedTransitionDuration,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[124]) & fixedTransitionDuration.Equals(fields[125]) & layer.Equals(fields[126]) &  !always) return;
+			fields[124] = stateHashName;
+			fields[125] = fixedTransitionDuration;
+			fields[126] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 123,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[123]);
+                eventsId[123] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateHashName,fixedTransitionDuration,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeInFixedTime(System.Int32 stateHashName,System.Single fixedTransitionDuration, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[128]) & fixedTransitionDuration.Equals(fields[129]) &  !always) return;
+			fields[128] = stateHashName;
+			fields[129] = fixedTransitionDuration;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 127,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[127]);
+                eventsId[127] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeInFixedTime(stateHashName,fixedTransitionDuration, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String stateName,System.Single normalizedTransitionDuration,System.Int32 layer,System.Single normalizedTimeOffset, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[131]) & normalizedTransitionDuration.Equals(fields[132]) & layer.Equals(fields[133]) & normalizedTimeOffset.Equals(fields[134]) &  !always) return;
+			fields[131] = stateName;
+			fields[132] = normalizedTransitionDuration;
+			fields[133] = layer;
+			fields[134] = normalizedTimeOffset;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer,normalizedTimeOffset, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 130,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[130]);
+                eventsId[130] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateName,normalizedTransitionDuration,layer,normalizedTimeOffset, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String stateName,System.Single normalizedTransitionDuration,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[136]) & normalizedTransitionDuration.Equals(fields[137]) & layer.Equals(fields[138]) &  !always) return;
+			fields[136] = stateName;
+			fields[137] = normalizedTransitionDuration;
+			fields[138] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 135,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[135]);
+                eventsId[135] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateName,normalizedTransitionDuration,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String stateName,System.Single normalizedTransitionDuration, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[140]) & normalizedTransitionDuration.Equals(fields[141]) &  !always) return;
+			fields[140] = stateName;
+			fields[141] = normalizedTransitionDuration;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 139,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[139]);
+                eventsId[139] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateName,normalizedTransitionDuration, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String stateName,System.Single normalizedTransitionDuration,System.Int32 layer,System.Single normalizedTimeOffset,System.Single normalizedTransitionTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[143]) & normalizedTransitionDuration.Equals(fields[144]) & layer.Equals(fields[145]) & normalizedTimeOffset.Equals(fields[146]) & normalizedTransitionTime.Equals(fields[147]) &  !always) return;
+			fields[143] = stateName;
+			fields[144] = normalizedTransitionDuration;
+			fields[145] = layer;
+			fields[146] = normalizedTimeOffset;
+			fields[147] = normalizedTransitionTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer,normalizedTimeOffset,normalizedTransitionTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 142,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[142]);
+                eventsId[142] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateName,normalizedTransitionDuration,layer,normalizedTimeOffset,normalizedTransitionTime, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.Int32 stateHashName,System.Single normalizedTransitionDuration,System.Int32 layer,System.Single normalizedTimeOffset, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[149]) & normalizedTransitionDuration.Equals(fields[150]) & layer.Equals(fields[151]) & normalizedTimeOffset.Equals(fields[152]) &  !always) return;
+			fields[149] = stateHashName;
+			fields[150] = normalizedTransitionDuration;
+			fields[151] = layer;
+			fields[152] = normalizedTimeOffset;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration,layer,normalizedTimeOffset, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 148,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[148]);
+                eventsId[148] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateHashName,normalizedTransitionDuration,layer,normalizedTimeOffset, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.Int32 stateHashName,System.Single normalizedTransitionDuration,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[154]) & normalizedTransitionDuration.Equals(fields[155]) & layer.Equals(fields[156]) &  !always) return;
+			fields[154] = stateHashName;
+			fields[155] = normalizedTransitionDuration;
+			fields[156] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 153,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[153]);
+                eventsId[153] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateHashName,normalizedTransitionDuration,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.Int32 stateHashName,System.Single normalizedTransitionDuration, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateHashName.Equals(fields[158]) & normalizedTransitionDuration.Equals(fields[159]) &  !always) return;
+			fields[158] = stateHashName;
+			fields[159] = normalizedTransitionDuration;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 157,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[157]);
+                eventsId[157] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(stateHashName,normalizedTransitionDuration, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayInFixedTime(System.String stateName,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[161]) & layer.Equals(fields[162]) &  !always) return;
+			fields[161] = stateName;
+			fields[162] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 160,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[160]);
+                eventsId[160] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayInFixedTime(stateName,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayInFixedTime(System.String stateName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[164]) &  !always) return;
+			fields[164] = stateName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 163,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[163]);
+                eventsId[163] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayInFixedTime(stateName, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayInFixedTime(System.String stateName,System.Int32 layer,System.Single fixedTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[166]) & layer.Equals(fields[167]) & fixedTime.Equals(fields[168]) &  !always) return;
+			fields[166] = stateName;
+			fields[167] = layer;
+			fields[168] = fixedTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer,fixedTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 165,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[165]);
+                eventsId[165] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayInFixedTime(stateName,layer,fixedTime, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayInFixedTime(System.Int32 stateNameHash,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateNameHash.Equals(fields[170]) & layer.Equals(fields[171]) &  !always) return;
+			fields[170] = stateNameHash;
+			fields[171] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 169,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[169]);
+                eventsId[169] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayInFixedTime(stateNameHash,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayInFixedTime(System.Int32 stateNameHash, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateNameHash.Equals(fields[173]) &  !always) return;
+			fields[173] = stateNameHash;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 172,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[172]);
+                eventsId[172] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayInFixedTime(stateNameHash, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.String stateName,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[175]) & layer.Equals(fields[176]) &  !always) return;
+			fields[175] = stateName;
+			fields[176] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 174,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[174]);
+                eventsId[174] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(stateName,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.String stateName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[178]) &  !always) return;
+			fields[178] = stateName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 177,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[177]);
+                eventsId[177] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(stateName, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.String stateName,System.Int32 layer,System.Single normalizedTime, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateName.Equals(fields[180]) & layer.Equals(fields[181]) & normalizedTime.Equals(fields[182]) &  !always) return;
+			fields[180] = stateName;
+			fields[181] = layer;
+			fields[182] = normalizedTime;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer,normalizedTime, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 179,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[179]);
+                eventsId[179] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(stateName,layer,normalizedTime, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.Int32 stateNameHash,System.Int32 layer, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateNameHash.Equals(fields[184]) & layer.Equals(fields[185]) &  !always) return;
+			fields[184] = stateNameHash;
+			fields[185] = layer;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash,layer, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 183,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[183]);
+                eventsId[183] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(stateNameHash,layer, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.Int32 stateNameHash, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (stateNameHash.Equals(fields[187]) &  !always) return;
+			fields[187] = stateNameHash;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 186,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[186]);
+                eventsId[186] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(stateNameHash, true, 0, 0);
+                }, null);
+            }
+        }
+		public UnityEngine.Transform GetBoneTransform(UnityEngine.HumanBodyBones humanBoneId)
+        {
+            return self.GetBoneTransform(humanBoneId);
+        }
+        public void Rebind( bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if ( !always) return;
+			
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] {  } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 188,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[188]);
+                eventsId[188] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Rebind( true, 0, 0);
+                }, null);
+            }
+        }
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (opt.cmd != Command.BuildComponent)
-                return;
-            switch (opt.index1)
+            switch (opt.index2)
             {
+
+                case 1:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var rootPosition = DeserializeObject<UnityEngine.Vector3>(new Segment(opt.buffer, false));
+						fields[1] = rootPosition;
+						self.rootPosition = rootPosition;
+					}
+                    break;
+                case 2:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var rootRotation = DeserializeObject<UnityEngine.Quaternion>(new Segment(opt.buffer, false));
+						fields[2] = rootRotation;
+						self.rootRotation = rootRotation;
+					}
+                    break;
+                case 3:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var applyRootMotion = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[3] = applyRootMotion;
+						self.applyRootMotion = applyRootMotion;
+					}
+                    break;
+                case 4:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var updateMode = DeserializeObject<UnityEngine.AnimatorUpdateMode>(new Segment(opt.buffer, false));
+						fields[4] = updateMode;
+						self.updateMode = updateMode;
+					}
+                    break;
+                case 5:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var bodyPosition = DeserializeObject<UnityEngine.Vector3>(new Segment(opt.buffer, false));
+						fields[5] = bodyPosition;
+						self.bodyPosition = bodyPosition;
+					}
+                    break;
+                case 6:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var bodyRotation = DeserializeObject<UnityEngine.Quaternion>(new Segment(opt.buffer, false));
+						fields[6] = bodyRotation;
+						self.bodyRotation = bodyRotation;
+					}
+                    break;
+                case 7:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var stabilizeFeet = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[7] = stabilizeFeet;
+						self.stabilizeFeet = stabilizeFeet;
+					}
+                    break;
+                case 8:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var feetPivotActive = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[8] = feetPivotActive;
+						self.feetPivotActive = feetPivotActive;
+					}
+                    break;
                 case 9:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    rootPosition1 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Vector3>(new Net.System.Segment(opt.buffer, false));
-                    self.rootPosition = rootPosition1;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var speed = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[9] = speed;
+						self.speed = speed;
+					}
                     break;
                 case 10:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    rootRotation2 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Quaternion>(new Net.System.Segment(opt.buffer, false));
-                    self.rootRotation = rootRotation2;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var cullingMode = DeserializeObject<UnityEngine.AnimatorCullingMode>(new Segment(opt.buffer, false));
+						fields[10] = cullingMode;
+						self.cullingMode = cullingMode;
+					}
                     break;
                 case 11:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    applyRootMotion3 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.applyRootMotion = applyRootMotion3;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var playbackTime = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[11] = playbackTime;
+						self.playbackTime = playbackTime;
+					}
+                    break;
+                case 12:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var recorderStartTime = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[12] = recorderStartTime;
+						self.recorderStartTime = recorderStartTime;
+					}
+                    break;
+                case 13:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var recorderStopTime = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[13] = recorderStopTime;
+						self.recorderStopTime = recorderStopTime;
+					}
                     break;
                 case 14:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    updateMode4 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.AnimatorUpdateMode>(new Net.System.Segment(opt.buffer, false));
-                    self.updateMode = updateMode4;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var runtimeAnimatorController = DeserializeObject<UnityEngine.RuntimeAnimatorController>(new Segment(opt.buffer, false));
+						fields[14] = runtimeAnimatorController;
+						self.runtimeAnimatorController = runtimeAnimatorController;
+					}
+                    break;
+                case 15:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var avatar = DeserializeObject<UnityEngine.Avatar>(new Segment(opt.buffer, false));
+						fields[15] = avatar;
+						self.avatar = avatar;
+					}
+                    break;
+                case 16:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var layersAffectMassCenter = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[16] = layersAffectMassCenter;
+						self.layersAffectMassCenter = layersAffectMassCenter;
+					}
                     break;
                 case 17:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    bodyPosition5 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Vector3>(new Net.System.Segment(opt.buffer, false));
-                    self.bodyPosition = bodyPosition5;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var logWarnings = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[17] = logWarnings;
+						self.logWarnings = logWarnings;
+					}
                     break;
                 case 18:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    bodyRotation6 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Quaternion>(new Net.System.Segment(opt.buffer, false));
-                    self.bodyRotation = bodyRotation6;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var fireEvents = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[18] = fireEvents;
+						self.fireEvents = fireEvents;
+					}
                     break;
                 case 19:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    stabilizeFeet7 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.stabilizeFeet = stabilizeFeet7;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var keepAnimatorControllerStateOnDisable = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[19] = keepAnimatorControllerStateOnDisable;
+						self.keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable;
+					}
+                    break;
+                case 20:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[21] = data.Obj);
+						var value = (System.Single)(fields[22] = data.Obj);
+						self.SetFloat(name,value);
+					}
                     break;
                 case 23:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    feetPivotActive8 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.feetPivotActive = feetPivotActive8;
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[24] = data.Obj);
+						var value = (System.Single)(fields[25] = data.Obj);
+						var dampTime = (System.Single)(fields[26] = data.Obj);
+						var deltaTime = (System.Single)(fields[27] = data.Obj);
+						self.SetFloat(name,value,dampTime,deltaTime);
+					}
                     break;
-                case 27:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    speed9 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.speed = speed9;
-                    break;
-                case 30:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    cullingMode10 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.AnimatorCullingMode>(new Net.System.Segment(opt.buffer, false));
-                    self.cullingMode = cullingMode10;
+                case 28:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[29] = data.Obj);
+						var value = (System.Single)(fields[30] = data.Obj);
+						self.SetFloat(id,value);
+					}
                     break;
                 case 31:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    playbackTime11 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.playbackTime = playbackTime11;
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[32] = data.Obj);
+						var value = (System.Single)(fields[33] = data.Obj);
+						var dampTime = (System.Single)(fields[34] = data.Obj);
+						var deltaTime = (System.Single)(fields[35] = data.Obj);
+						self.SetFloat(id,value,dampTime,deltaTime);
+					}
                     break;
-                case 32:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    recorderStartTime12 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.recorderStartTime = recorderStartTime12;
-                    break;
-                case 33:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    recorderStopTime13 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.recorderStopTime = recorderStopTime13;
-                    break;
-                case 35:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    runtimeAnimatorController14 = NetworkResources.I.GetObject<UnityEngine.RuntimeAnimatorController>(opt.index2, opt.name);
-                    self.runtimeAnimatorController = runtimeAnimatorController14;
-                    break;
-                case 37:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    avatar15 = NetworkResources.I.GetObject<UnityEngine.Avatar>(opt.index2, opt.name);
-                    self.avatar = avatar15;
+                case 36:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[37] = data.Obj);
+						var value = (System.Boolean)(fields[38] = data.Obj);
+						self.SetBool(name,value);
+					}
                     break;
                 case 39:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    layersAffectMassCenter16 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.layersAffectMassCenter = layersAffectMassCenter16;
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[40] = data.Obj);
+						var value = (System.Boolean)(fields[41] = data.Obj);
+						self.SetBool(id,value);
+					}
                     break;
                 case 42:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    logWarnings17 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.logWarnings = logWarnings17;
-                    break;
-                case 43:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    fireEvents18 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.fireEvents = fireEvents18;
-                    break;
-                case 44:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    keepAnimatorControllerStateOnDisable19 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable19;
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[43] = data.Obj);
+						var value = (System.Int32)(fields[44] = data.Obj);
+						self.SetInteger(name,value);
+					}
                     break;
                 case 45:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    enabled20 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.enabled = enabled20;
-                    break;
-                case 73:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.GetFloat(name);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[46] = data.Obj);
+						var value = (System.Int32)(fields[47] = data.Obj);
+						self.SetInteger(id,value);
+					}
+                    break;
+                case 48:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[49] = data.Obj);
+						self.SetTrigger(name);
+					}
+                    break;
+                case 50:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[51] = data.Obj);
+						self.SetTrigger(id);
+					}
+                    break;
+                case 52:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[53] = data.Obj);
+						self.ResetTrigger(name);
+					}
+                    break;
+                case 54:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var id = (System.Int32)(fields[55] = data.Obj);
+						self.ResetTrigger(id);
+					}
+                    break;
+                case 56:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var goal = (UnityEngine.AvatarIKGoal)(fields[57] = data.Obj);
+						var goalPosition = (UnityEngine.Vector3)(fields[58] = data.Obj);
+						self.SetIKPosition(goal,goalPosition);
+					}
+                    break;
+                case 59:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var goal = (UnityEngine.AvatarIKGoal)(fields[60] = data.Obj);
+						var goalRotation = (UnityEngine.Quaternion)(fields[61] = data.Obj);
+						self.SetIKRotation(goal,goalRotation);
+					}
+                    break;
+                case 62:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var goal = (UnityEngine.AvatarIKGoal)(fields[63] = data.Obj);
+						var value = (System.Single)(fields[64] = data.Obj);
+						self.SetIKPositionWeight(goal,value);
+					}
+                    break;
+                case 65:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var goal = (UnityEngine.AvatarIKGoal)(fields[66] = data.Obj);
+						var value = (System.Single)(fields[67] = data.Obj);
+						self.SetIKRotationWeight(goal,value);
+					}
+                    break;
+                case 68:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var hint = (UnityEngine.AvatarIKHint)(fields[69] = data.Obj);
+						var hintPosition = (UnityEngine.Vector3)(fields[70] = data.Obj);
+						self.SetIKHintPosition(hint,hintPosition);
+					}
+                    break;
+                case 71:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var hint = (UnityEngine.AvatarIKHint)(fields[72] = data.Obj);
+						var value = (System.Single)(fields[73] = data.Obj);
+						self.SetIKHintPositionWeight(hint,value);
+					}
                     break;
                 case 74:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.GetFloat(id);
-                    }
-                    break;
-                case 75:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        var value = (System.Single)data.pars[1];
-                        self.SetFloat(name, value);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var lookAtPosition = (UnityEngine.Vector3)(fields[75] = data.Obj);
+						self.SetLookAtPosition(lookAtPosition);
+					}
                     break;
                 case 76:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        var value = (System.Single)data.pars[1];
-                        var dampTime = (System.Single)data.pars[2];
-                        var deltaTime = (System.Single)data.pars[3];
-                        self.SetFloat(name, value, dampTime, deltaTime);
-                    }
-                    break;
-                case 77:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        var value = (System.Single)data.pars[1];
-                        self.SetFloat(id, value);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var weight = (System.Single)(fields[77] = data.Obj);
+						self.SetLookAtWeight(weight);
+					}
                     break;
                 case 78:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        var value = (System.Single)data.pars[1];
-                        var dampTime = (System.Single)data.pars[2];
-                        var deltaTime = (System.Single)data.pars[3];
-                        self.SetFloat(id, value, dampTime, deltaTime);
-                    }
-                    break;
-                case 79:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.GetBool(name);
-                    }
-                    break;
-                case 80:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.GetBool(id);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var weight = (System.Single)(fields[79] = data.Obj);
+						var bodyWeight = (System.Single)(fields[80] = data.Obj);
+						self.SetLookAtWeight(weight,bodyWeight);
+					}
                     break;
                 case 81:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        var value = (System.Boolean)data.pars[1];
-                        self.SetBool(name, value);
-                    }
-                    break;
-                case 82:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        var value = (System.Boolean)data.pars[1];
-                        self.SetBool(id, value);
-                    }
-                    break;
-                case 83:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.GetInteger(name);
-                    }
-                    break;
-                case 84:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.GetInteger(id);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var weight = (System.Single)(fields[82] = data.Obj);
+						var bodyWeight = (System.Single)(fields[83] = data.Obj);
+						var headWeight = (System.Single)(fields[84] = data.Obj);
+						self.SetLookAtWeight(weight,bodyWeight,headWeight);
+					}
                     break;
                 case 85:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        var value = (System.Int32)data.pars[1];
-                        self.SetInteger(name, value);
-                    }
-                    break;
-                case 86:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        var value = (System.Int32)data.pars[1];
-                        self.SetInteger(id, value);
-                    }
-                    break;
-                case 87:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.SetTrigger(name);
-                    }
-                    break;
-                case 88:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.SetTrigger(id);
-                    }
-                    break;
-                case 89:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.ResetTrigger(name);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var weight = (System.Single)(fields[86] = data.Obj);
+						var bodyWeight = (System.Single)(fields[87] = data.Obj);
+						var headWeight = (System.Single)(fields[88] = data.Obj);
+						var eyesWeight = (System.Single)(fields[89] = data.Obj);
+						self.SetLookAtWeight(weight,bodyWeight,headWeight,eyesWeight);
+					}
                     break;
                 case 90:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.ResetTrigger(id);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var weight = (System.Single)(fields[91] = data.Obj);
+						var bodyWeight = (System.Single)(fields[92] = data.Obj);
+						var headWeight = (System.Single)(fields[93] = data.Obj);
+						var eyesWeight = (System.Single)(fields[94] = data.Obj);
+						var clampWeight = (System.Single)(fields[95] = data.Obj);
+						self.SetLookAtWeight(weight,bodyWeight,headWeight,eyesWeight,clampWeight);
+					}
                     break;
-                case 91:
+                case 96:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.IsParameterControlledByCurve(name);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var humanBoneId = (UnityEngine.HumanBodyBones)(fields[97] = data.Obj);
+						var rotation = (UnityEngine.Quaternion)(fields[98] = data.Obj);
+						self.SetBoneLocalRotation(humanBoneId,rotation);
+					}
                     break;
-                case 92:
+                case 99:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var id = (System.Int32)data.pars[0];
-                        self.IsParameterControlledByCurve(id);
-                    }
+						self.InterruptMatchTarget();
+					}
                     break;
-                case 115:
+                case 100:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        self.GetIKPosition(goal);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[101] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[102] = data.Obj);
+						self.CrossFadeInFixedTime(stateName,fixedTransitionDuration);
+					}
                     break;
-                case 116:
+                case 103:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        var goalPosition = (UnityEngine.Vector3)data.pars[1];
-                        self.SetIKPosition(goal, goalPosition);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[104] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[105] = data.Obj);
+						var layer = (System.Int32)(fields[106] = data.Obj);
+						self.CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer);
+					}
                     break;
-                case 117:
+                case 107:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        self.GetIKRotation(goal);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[108] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[109] = data.Obj);
+						var layer = (System.Int32)(fields[110] = data.Obj);
+						var fixedTimeOffset = (System.Single)(fields[111] = data.Obj);
+						self.CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer,fixedTimeOffset);
+					}
+                    break;
+                case 112:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[113] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[114] = data.Obj);
+						var layer = (System.Int32)(fields[115] = data.Obj);
+						var fixedTimeOffset = (System.Single)(fields[116] = data.Obj);
+						var normalizedTransitionTime = (System.Single)(fields[117] = data.Obj);
+						self.CrossFadeInFixedTime(stateName,fixedTransitionDuration,layer,fixedTimeOffset,normalizedTransitionTime);
+					}
                     break;
                 case 118:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        var goalRotation = (UnityEngine.Quaternion)data.pars[1];
-                        self.SetIKRotation(goal, goalRotation);
-                    }
-                    break;
-                case 119:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        self.GetIKPositionWeight(goal);
-                    }
-                    break;
-                case 120:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        var value = (System.Single)data.pars[1];
-                        self.SetIKPositionWeight(goal, value);
-                    }
-                    break;
-                case 121:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        self.GetIKRotationWeight(goal);
-                    }
-                    break;
-                case 122:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var goal = (UnityEngine.AvatarIKGoal)data.pars[0];
-                        var value = (System.Single)data.pars[1];
-                        self.SetIKRotationWeight(goal, value);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[119] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[120] = data.Obj);
+						var layer = (System.Int32)(fields[121] = data.Obj);
+						var fixedTimeOffset = (System.Single)(fields[122] = data.Obj);
+						self.CrossFadeInFixedTime(stateHashName,fixedTransitionDuration,layer,fixedTimeOffset);
+					}
                     break;
                 case 123:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var hint = (UnityEngine.AvatarIKHint)data.pars[0];
-                        self.GetIKHintPosition(hint);
-                    }
-                    break;
-                case 124:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var hint = (UnityEngine.AvatarIKHint)data.pars[0];
-                        var hintPosition = (UnityEngine.Vector3)data.pars[1];
-                        self.SetIKHintPosition(hint, hintPosition);
-                    }
-                    break;
-                case 125:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var hint = (UnityEngine.AvatarIKHint)data.pars[0];
-                        self.GetIKHintPositionWeight(hint);
-                    }
-                    break;
-                case 126:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var hint = (UnityEngine.AvatarIKHint)data.pars[0];
-                        var value = (System.Single)data.pars[1];
-                        self.SetIKHintPositionWeight(hint, value);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[124] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[125] = data.Obj);
+						var layer = (System.Int32)(fields[126] = data.Obj);
+						self.CrossFadeInFixedTime(stateHashName,fixedTransitionDuration,layer);
+					}
                     break;
                 case 127:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var lookAtPosition = (UnityEngine.Vector3)data.pars[0];
-                        self.SetLookAtPosition(lookAtPosition);
-                    }
-                    break;
-                case 128:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var weight = (System.Single)data.pars[0];
-                        self.SetLookAtWeight(weight);
-                    }
-                    break;
-                case 129:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var weight = (System.Single)data.pars[0];
-                        var bodyWeight = (System.Single)data.pars[1];
-                        self.SetLookAtWeight(weight, bodyWeight);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[128] = data.Obj);
+						var fixedTransitionDuration = (System.Single)(fields[129] = data.Obj);
+						self.CrossFadeInFixedTime(stateHashName,fixedTransitionDuration);
+					}
                     break;
                 case 130:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var weight = (System.Single)data.pars[0];
-                        var bodyWeight = (System.Single)data.pars[1];
-                        var headWeight = (System.Single)data.pars[2];
-                        self.SetLookAtWeight(weight, bodyWeight, headWeight);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[131] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[132] = data.Obj);
+						var layer = (System.Int32)(fields[133] = data.Obj);
+						var normalizedTimeOffset = (System.Single)(fields[134] = data.Obj);
+						self.CrossFade(stateName,normalizedTransitionDuration,layer,normalizedTimeOffset);
+					}
                     break;
-                case 131:
+                case 135:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var weight = (System.Single)data.pars[0];
-                        var bodyWeight = (System.Single)data.pars[1];
-                        var headWeight = (System.Single)data.pars[2];
-                        var eyesWeight = (System.Single)data.pars[3];
-                        self.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[136] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[137] = data.Obj);
+						var layer = (System.Int32)(fields[138] = data.Obj);
+						self.CrossFade(stateName,normalizedTransitionDuration,layer);
+					}
                     break;
-                case 132:
+                case 139:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var weight = (System.Single)data.pars[0];
-                        var bodyWeight = (System.Single)data.pars[1];
-                        var headWeight = (System.Single)data.pars[2];
-                        var eyesWeight = (System.Single)data.pars[3];
-                        var clampWeight = (System.Single)data.pars[4];
-                        self.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[140] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[141] = data.Obj);
+						self.CrossFade(stateName,normalizedTransitionDuration);
+					}
                     break;
-                case 133:
+                case 142:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var humanBoneId = (UnityEngine.HumanBodyBones)data.pars[0];
-                        var rotation = (UnityEngine.Quaternion)data.pars[1];
-                        self.SetBoneLocalRotation(humanBoneId, rotation);
-                    }
-                    break;
-                case 136:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var fullPathHash = (System.Int32)data.pars[0];
-                        var layerIndex = (System.Int32)data.pars[1];
-                        self.GetBehaviours(fullPathHash, layerIndex);
-                    }
-                    break;
-                case 144:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layerIndex = (System.Int32)data.pars[0];
-                        self.GetCurrentAnimatorStateInfo(layerIndex);
-                    }
-                    break;
-                case 145:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layerIndex = (System.Int32)data.pars[0];
-                        self.GetNextAnimatorStateInfo(layerIndex);
-                    }
-                    break;
-                case 146:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layerIndex = (System.Int32)data.pars[0];
-                        self.GetAnimatorTransitionInfo(layerIndex);
-                    }
-                    break;
-                case 147:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layerIndex = (System.Int32)data.pars[0];
-                        self.GetCurrentAnimatorClipInfoCount(layerIndex);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[143] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[144] = data.Obj);
+						var layer = (System.Int32)(fields[145] = data.Obj);
+						var normalizedTimeOffset = (System.Single)(fields[146] = data.Obj);
+						var normalizedTransitionTime = (System.Single)(fields[147] = data.Obj);
+						self.CrossFade(stateName,normalizedTransitionDuration,layer,normalizedTimeOffset,normalizedTransitionTime);
+					}
                     break;
                 case 148:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layerIndex = (System.Int32)data.pars[0];
-                        self.GetNextAnimatorClipInfoCount(layerIndex);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[149] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[150] = data.Obj);
+						var layer = (System.Int32)(fields[151] = data.Obj);
+						var normalizedTimeOffset = (System.Single)(fields[152] = data.Obj);
+						self.CrossFade(stateHashName,normalizedTransitionDuration,layer,normalizedTimeOffset);
+					}
                     break;
-                case 156:
+                case 153:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var index = (System.Int32)data.pars[0];
-                        self.GetParameter(index);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[154] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[155] = data.Obj);
+						var layer = (System.Int32)(fields[156] = data.Obj);
+						self.CrossFade(stateHashName,normalizedTransitionDuration,layer);
+					}
                     break;
-                case 164:
+                case 157:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.InterruptMatchTarget();
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateHashName = (System.Int32)(fields[158] = data.Obj);
+						var normalizedTransitionDuration = (System.Single)(fields[159] = data.Obj);
+						self.CrossFade(stateHashName,normalizedTransitionDuration);
+					}
                     break;
-                case 170:
+                case 160:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        self.CrossFadeInFixedTime(stateName, fixedTransitionDuration);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[161] = data.Obj);
+						var layer = (System.Int32)(fields[162] = data.Obj);
+						self.PlayInFixedTime(stateName,layer);
+					}
                     break;
-                case 171:
+                case 163:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        self.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[164] = data.Obj);
+						self.PlayInFixedTime(stateName);
+					}
+                    break;
+                case 165:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[166] = data.Obj);
+						var layer = (System.Int32)(fields[167] = data.Obj);
+						var fixedTime = (System.Single)(fields[168] = data.Obj);
+						self.PlayInFixedTime(stateName,layer,fixedTime);
+					}
+                    break;
+                case 169:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateNameHash = (System.Int32)(fields[170] = data.Obj);
+						var layer = (System.Int32)(fields[171] = data.Obj);
+						self.PlayInFixedTime(stateNameHash,layer);
+					}
                     break;
                 case 172:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var fixedTimeOffset = (System.Single)data.pars[3];
-                        self.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer, fixedTimeOffset);
-                    }
-                    break;
-                case 173:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var fixedTimeOffset = (System.Single)data.pars[3];
-                        var normalizedTransitionTime = (System.Single)data.pars[4];
-                        self.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateNameHash = (System.Int32)(fields[173] = data.Obj);
+						self.PlayInFixedTime(stateNameHash);
+					}
                     break;
                 case 174:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var fixedTimeOffset = (System.Single)data.pars[3];
-                        self.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[175] = data.Obj);
+						var layer = (System.Int32)(fields[176] = data.Obj);
+						self.Play(stateName,layer);
+					}
                     break;
-                case 175:
+                case 177:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        self.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer);
-                    }
-                    break;
-                case 176:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var fixedTransitionDuration = (System.Single)data.pars[1];
-                        self.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[178] = data.Obj);
+						self.Play(stateName);
+					}
                     break;
                 case 179:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var normalizedTimeOffset = (System.Single)data.pars[3];
-                        self.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateName = (System.String)(fields[180] = data.Obj);
+						var layer = (System.Int32)(fields[181] = data.Obj);
+						var normalizedTime = (System.Single)(fields[182] = data.Obj);
+						self.Play(stateName,layer,normalizedTime);
+					}
                     break;
-                case 180:
+                case 183:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        self.CrossFade(stateName, normalizedTransitionDuration, layer);
-                    }
-                    break;
-                case 181:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        self.CrossFade(stateName, normalizedTransitionDuration);
-                    }
-                    break;
-                case 182:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var normalizedTimeOffset = (System.Single)data.pars[3];
-                        var normalizedTransitionTime = (System.Single)data.pars[4];
-                        self.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
-                    }
-                    break;
-                case 184:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        var normalizedTimeOffset = (System.Single)data.pars[3];
-                        self.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset);
-                    }
-                    break;
-                case 185:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        var layer = (System.Int32)data.pars[2];
-                        self.CrossFade(stateHashName, normalizedTransitionDuration, layer);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateNameHash = (System.Int32)(fields[184] = data.Obj);
+						var layer = (System.Int32)(fields[185] = data.Obj);
+						self.Play(stateNameHash,layer);
+					}
                     break;
                 case 186:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateHashName = (System.Int32)data.pars[0];
-                        var normalizedTransitionDuration = (System.Single)data.pars[1];
-                        self.CrossFade(stateHashName, normalizedTransitionDuration);
-                    }
-                    break;
-                case 187:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var layer = (System.Int32)data.pars[1];
-                        self.PlayInFixedTime(stateName, layer);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var stateNameHash = (System.Int32)(fields[187] = data.Obj);
+						self.Play(stateNameHash);
+					}
                     break;
                 case 188:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        self.PlayInFixedTime(stateName);
-                    }
+						self.Rebind();
+					}
                     break;
-                case 189:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var layer = (System.Int32)data.pars[1];
-                        var fixedTime = (System.Single)data.pars[2];
-                        self.PlayInFixedTime(stateName, layer, fixedTime);
-                    }
-                    break;
-                case 191:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateNameHash = (System.Int32)data.pars[0];
-                        var layer = (System.Int32)data.pars[1];
-                        self.PlayInFixedTime(stateNameHash, layer);
-                    }
-                    break;
-                case 192:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateNameHash = (System.Int32)data.pars[0];
-                        self.PlayInFixedTime(stateNameHash);
-                    }
-                    break;
-                case 193:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var layer = (System.Int32)data.pars[1];
-                        self.Play(stateName, layer);
-                    }
-                    break;
-                case 194:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        self.Play(stateName);
-                    }
-                    break;
-                case 195:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateName = data.pars[0] as System.String;
-                        var layer = (System.Int32)data.pars[1];
-                        var normalizedTime = (System.Single)data.pars[2];
-                        self.Play(stateName, layer, normalizedTime);
-                    }
-                    break;
-                case 197:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateNameHash = (System.Int32)data.pars[0];
-                        var layer = (System.Int32)data.pars[1];
-                        self.Play(stateNameHash, layer);
-                    }
-                    break;
-                case 198:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var stateNameHash = (System.Int32)data.pars[0];
-                        self.Play(stateNameHash);
-                    }
-                    break;
-                case 203:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var humanBoneId = (UnityEngine.HumanBodyBones)data.pars[0];
-                        self.GetBoneTransform(humanBoneId);
-                    }
-                    break;
-                case 229:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.Rebind();
-                    }
-                    break;
-                case 278:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var tag = data.pars[0] as System.String;
-                        self.CompareTag(tag);
-                    }
-                    break;
-                case 281:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessageUpwards(methodName);
-                    }
-                    break;
-                case 282:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessageUpwards(methodName, options);
-                    }
-                    break;
-                case 284:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessage(methodName);
-                    }
-                    break;
-                case 286:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessage(methodName, options);
-                    }
-                    break;
-                case 289:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.BroadcastMessage(methodName);
-                    }
-                    break;
-                case 290:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.BroadcastMessage(methodName, options);
-                    }
-                    break;
-                case 304:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetInstanceID();
-                    }
-                    break;
-                case 305:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetHashCode();
-                    }
-                    break;
-                case 311:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.ToString();
-                    }
-                    break;
-
             }
         }
     }

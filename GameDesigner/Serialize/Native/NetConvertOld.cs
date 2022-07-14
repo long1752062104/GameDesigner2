@@ -28,6 +28,7 @@
         /// 序列化是否错误?
         /// </summary>
         public bool error;
+        public int parsIndex;
 
         /// <summary>
         /// 构造函数
@@ -40,6 +41,7 @@
             name = func;
             hash = 0;
             this.pars = pars;
+            parsIndex = 0;
         }
 
         /// <summary>
@@ -52,6 +54,54 @@
             get
             {
                 return pars[index];
+            }
+        }
+
+        /// <summary>
+        /// 每次调用参数都会指向下一个参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T To<T>()
+        {
+            var t = (T)pars[parsIndex];
+            parsIndex++;
+            return t;
+        }
+
+        /// <summary>
+        /// 每次调用参数都会指向下一个参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T As<T>() where T : class
+        {
+            var t = pars[parsIndex] as T;
+            parsIndex++;
+            return t;
+        }
+
+        public byte AsByte { get => To<byte>(); }
+        public sbyte AsSbyte { get => To<sbyte>(); }
+        public bool AsBoolen { get => To<bool>(); }
+        public short AsShort { get => To<short>(); }
+        public ushort AsUshort { get => To<ushort>(); }
+        public char AsChar { get => To<char>(); }
+        public int AsInt { get => To<int>(); }
+        public uint AsUint { get => To<uint>(); }
+        public float AsFloat { get => To<float>(); }
+        public long AsLong { get => To<long>(); }
+        public ulong AsUlong { get => To<ulong>(); }
+        public double AsDouble { get => To<double>(); }
+        public string AsString { get => As<string>(); }
+
+        public object Obj
+        {
+            get
+            {
+                var obj = pars[parsIndex];
+                parsIndex++;
+                return obj;
             }
         }
 

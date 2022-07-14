@@ -24,7 +24,7 @@ namespace Net.UnityComponent
 
         public override void Update()
         {
-            if (netObj.m_identity == -1)
+            if (netObj.Identity == -1)
                 return;
             if (mode == SyncMode.Synchronized)
             {
@@ -39,7 +39,7 @@ namespace Net.UnityComponent
                 Check();
                 for (int i = 0; i < childs.Length; i++)
                 {
-                    childs[i].Check(netObj.m_identity, netObj.registerObjectIndex);
+                    childs[i].Check(netObj.Identity, netObj.registerObjectIndex, Index);
                 }
                 sendTime = Time.time + (1f / rate);
             }
@@ -47,10 +47,11 @@ namespace Net.UnityComponent
 
         public override void StartSyncTransformState()
         {
-            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)mode,
                 index = netObj.registerObjectIndex,
+                index1 = Index,
                 uid = ClientBase.Instance.UID
             });
         }
@@ -60,7 +61,7 @@ namespace Net.UnityComponent
             if (ClientBase.Instance.UID == opt.uid | opt.cmd != Command.Transform)
                 return;
             sendTime = Time.time + interval;
-            if (opt.index1 == 0)
+            if (opt.index2 == 0)
             {
                 netPosition = opt.position;
                 netRotation = opt.rotation;
@@ -70,7 +71,7 @@ namespace Net.UnityComponent
             }
             else
             {
-                var child = childs[opt.index1 - 1];
+                var child = childs[opt.index2 - 1];
                 child.netPosition = opt.position;
                 child.netRotation = opt.rotation;
                 child.netLocalScale = opt.direction;
@@ -105,7 +106,7 @@ namespace Net.UnityComponent
             localScale = transform.localScale;
         }
 
-        internal void Check(int identity, int index)
+        internal void Check(int identity, int index, int netIndex)
         {
             if (transform.localPosition != position | transform.localRotation != rotation | transform.localScale != localScale)
             {
@@ -117,7 +118,8 @@ namespace Net.UnityComponent
                     cmd1 = (byte)mode,
                     uid = ClientBase.Instance.UID,
                     index = index,
-                    index1 = this.identity
+                    index1 = netIndex,
+                    index2 = this.identity
                 });
             }
         }

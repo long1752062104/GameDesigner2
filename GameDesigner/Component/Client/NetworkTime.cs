@@ -9,11 +9,11 @@ namespace Net.Component
     public class NetworkTime : SingleCase<NetworkTime>
     {
         private float time;
-        private bool canSent;
+        private static bool canSent;
         /// <summary>
         /// 当前是否可以发送数据? 这里可以控制发送次数, 一秒30帧数据左右
         /// </summary>
-        public static bool CanSent { get { return Instance.canSent; } }
+        public static bool CanSent { get { return canSent; } }
         /// <summary>
         /// 设置可发送时间 默认30次/秒
         /// </summary>
@@ -27,7 +27,7 @@ namespace Net.Component
                 time = Time.time + CanSentTime;
                 canSent = true;
             }
-            else 
+            else
             {
                 canSent = false;
             }

@@ -60,7 +60,7 @@ namespace Net.UnityComponent
         // Update is called once per frame
         public virtual void Update()
         {
-            if (netObj.m_identity == -1)
+            if (netObj.Identity == -1)
                 return;
             if (mode == SyncMode.Synchronized)
             {
@@ -87,10 +87,11 @@ namespace Net.UnityComponent
 
         public virtual void StartSyncTransformState()
         {
-            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.m_identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)mode,
                 index = netObj.registerObjectIndex,
+                index1 = Index,
                 uid = ClientBase.Instance.UID
             });
         }

@@ -63,15 +63,16 @@ namespace Net.UnityComponent
                         if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
                         {
                             identity = Instantiate(registerObjects[opt.index]);
-                            identity.m_identity = opt.identity;
+                            identity.Identity = opt.identity;
                             identity.isOtherCreate = true;
+                            identity.isInit = true;
                             identitys.Add(opt.identity, identity);
                             OnNetworkObjectCreate(opt, identity);
                             foreach (var item in identity.networkBehaviours)
                                 item.OnNetworkObjectCreate(opt);
                         }
-                        foreach (var item in identity.networkBehaviours)
-                            item.OnNetworkOperationHandler(opt);
+                        var nb = identity.networkBehaviours[opt.index1];
+                        nb.OnNetworkOperationHandler(opt);
                     }
                     break;
                 case Command.BuildComponent:
@@ -79,14 +80,15 @@ namespace Net.UnityComponent
                         if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
                         {
                             identity = Instantiate(registerObjects[opt.index]);
-                            identity.m_identity = opt.identity;
+                            identity.Identity = opt.identity;
                             identity.isOtherCreate = true;
+                            identity.isInit = true;
                             identitys.Add(opt.identity, identity);
                             foreach (var item in identity.networkBehaviours)
                                 item.OnNetworkObjectCreate(opt);
                         }
-                        foreach (var item in identity.networkBehaviours)
-                            item.OnNetworkOperationHandler(opt);
+                        var nb = identity.networkBehaviours[opt.index1];
+                        nb.OnNetworkOperationHandler(opt);
                     }
                     break;
                 case Command.Destroy:
@@ -121,13 +123,14 @@ namespace Net.UnityComponent
                         }
                     }
                     break;
-                case Command.SyncVar:
+                case NetCmd.SyncVar:
                     {
                         if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
                         {
                             identity = Instantiate(registerObjects[opt.index]);
-                            identity.m_identity = opt.identity;
+                            identity.Identity = opt.identity;
                             identity.isOtherCreate = true;
+                            identity.isInit = true;
                             identitys.Add(opt.identity, identity);
                             foreach (var item in identity.networkBehaviours)
                                 item.OnNetworkObjectCreate(opt);

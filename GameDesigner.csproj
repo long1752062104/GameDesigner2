@@ -143,7 +143,6 @@
     <None Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformMultiEdit.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkAnimation.cs.meta" />
-    <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkBoxCollider.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkCamera.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkGameObject.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkImage.cs.meta" />
@@ -1153,7 +1152,6 @@
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\NetworkSceneManagerEdit.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformMultiEdit.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkAnimation.cs" />
-    <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkBoxCollider.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkCamera.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkGameObject.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkImage.cs" />
@@ -1573,7 +1571,7 @@
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServer.cs" />
-    <Compile Include="GameDesigner\Network\gudp\Server\TcpServerEPoll.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Server\TcpServerEpoll.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServerIOCP.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\UdpServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\UdpServerIOCP.cs" />
