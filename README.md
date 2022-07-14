@@ -232,12 +232,13 @@ class Program
     {
         NDebug.BindLogAll(Console.WriteLine);
 
+        NetConfig.Config.UseMemoryStream = true;//使用运行内存作为数据缓冲区
         BufferStreamShare.Size = 1024 * 1024 * 100;//服务器每个客户端可以缓存的数据大小
 
         //此处是服务器部分, 可以复制到另外一个控制台项目
-        var server = new TcpServer<NetPlayer,NetScene<NetPlayer>>();
+        var server = new TcpServer();
         server.LimitQueueCount = 10000000;//测试小数据的快速性能, 可以设置这里, 默认限制在65536
-        server.PackageLength = 1000000;//小数据包封包合包大小, 一次性能运送的小数据包数量
+        server.PackageLength = 10000000;//小数据包封包合包大小, 一次性能运送的小数据包数量
         server.StackBufferSize = 1024 * 1024 * 50;//接收缓存数据包的最大值, 如果超出则被丢弃
         server.StackNumberMax = 1000000;//允许叠包数据次数, 超出则被丢弃
         server.AddAdapter(new Net.Adapter.SerializeAdapter3());//采用极速序列化进行序列化rpc数据模型
@@ -247,7 +248,7 @@ class Program
         //此处是客户端部分, 可以复制到另外一个控制台项目
         var client = new TcpClient();
         client.LimitQueueCount = 10000000;
-        client.PackageLength = 1000000;
+        client.PackageLength = 10000000;
         client.StackBufferSize = 1024 * 1024 * 50;
         client.StackNumberMax = 1000000;
         client.AddAdapter(new Net.Adapter.SerializeAdapter3());
@@ -255,17 +256,22 @@ class Program
         client.AddRpcHandle(new Program());
         client.Connect().Wait();
 
+        client.SendRT(new byte[1]);//先进入服务器
+        Thread.Sleep(500);
+
         stopwatch = Stopwatch.StartNew();
 
         for (int i = 0; i < 1000000; i++)
         {
-            client.SendRT(NetCmd.Local, 1, i);
+            client.SendRT(NetCmd.LocalRT, 1, i);
+            if (i % 10000 == 0)
+                Thread.Sleep(50);
         }
 
         Console.ReadLine();
     }
 
-    [Rpc(mask = 1)]
+    [Rpc(hash = 1)]
     void test(int i)
     {
         if (i % 10000 == 0)
@@ -278,6 +284,10 @@ class Program
     }
 }
 ```
+## MMORPG多人游戏AOI九宫格同步
+提供aoi九宫格同步模块, 服务器,客户端都可使用(使用时请在unity可视化调整九宫格网格或大小视图后,再将值修改到服务器,解决了服务器没有可视化图形的问题), 当万人同步时, 如果全部同步的话,带宽直接爆炸! 为了解决带宽问题, 使用了九宫格同步法, 只同步在9个格子之间的玩家或怪物, 这样就可以解决带宽的大多数问题. 详情请看自带的aoi案例
+
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/aoi.png" width = "1036" height = "663" alt="图片名称" align=center />
 
 
 ## 常见问题总汇
