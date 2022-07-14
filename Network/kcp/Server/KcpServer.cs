@@ -54,13 +54,7 @@
             {
                 if (!UserIDStack.TryPop(out int uid))
                     uid = GetCurrUserID();
-                client = new Player();
-                client.UserID = uid;
-                client.PlayerID = uid.ToString();
-                client.Name = uid.ToString();
-                client.RemotePoint = remotePoint;
-                client.isDispose = false;
-                client.CloseSend = false;
+                client = AcceptHander(null, remotePoint);
                 client.Server = Server;
                 IntPtr kcp = ikcp_create(1400, (IntPtr)1);
                 IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
@@ -68,22 +62,6 @@
                 ikcp_wndsize(kcp, 1024, 1024);
                 ikcp_nodelay(kcp, 1, 10, 2, 1);
                 client.Kcp = kcp;
-                Interlocked.Increment(ref ignoranceNumber);
-                client.revdQueue = RevdQueues[threadNum];
-                //client.sendQueue = SendQueues[threadNum];
-                if (++threadNum >= RevdQueues.Count)
-                    threadNum = 0;
-                AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                OnHasConnectHandle(client);
-                if (AllClients.Count > OnlineLimit)
-                {
-                    QueueUp.Enqueue(client);
-                    client.QueueUpCount = QueueUp.Count;
-                    var segment = BufferPool.Take(8);
-                    segment.Write(QueueUp.Count);
-                    segment.Write(client.QueueUpCount);
-                    SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
-                }
             }
             fixed (byte* p = &buffer.Buffer[0])
             {

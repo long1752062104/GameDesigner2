@@ -11,12 +11,9 @@ namespace AOIExample
     {
         public GameObject player;
 
-        public void Start()
+        public override void OnConnected()
         {
-            FindObjectOfType<ClientManager>().client.AddStateHandler(NetworkState.Connected, Connected);
-        }
-        void Connected() 
-        {
+            base.OnConnected();
             var player1 = Instantiate(player, new Vector3(Random.Range(-20, 20), 1, Random.Range(-20, 20)), Quaternion.identity);
             player1.AddComponent<PlayerControl>();
             player1.name = ClientBase.Instance.Identify;
@@ -28,6 +25,12 @@ namespace AOIExample
         {
             var rigidbody = identity.GetComponent<Rigidbody>();
             Destroy(rigidbody);
+        }
+        public override void OnPlayerExit(Operation opt)
+        {
+            if (opt.identity == ClientBase.Instance.UID)//服务器延迟检测连接断开时,网络场景会将移除cmd插入同步队列, 当你再次进入如果uid是上次的uid, 则会发送下来,会删除刚生成的玩家对象
+                return;
+            base.OnPlayerExit(opt);
         }
     }
 }

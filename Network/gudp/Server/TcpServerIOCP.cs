@@ -122,38 +122,7 @@
                         args1.Completed += OnTCPIOCompleted;
                         args1.SetBuffer(new byte[65507], 0, 65507);
                         args1.UserToken = clientSocket;
-                        Player client = new Player();
-                        client.Client = clientSocket;
-                        client.RemotePoint = clientSocket.RemoteEndPoint;
-                        client.TcpRemoteEndPoint = clientSocket.RemoteEndPoint;
-                        if (!UserIDStack.TryPop(out int uid))
-                            uid = GetCurrUserID();
-                        client.UserID = uid;
-                        client.PlayerID = uid.ToString();
-                        client.Name = uid.ToString();
-                        client.stackStream = BufferStreamShare.Take();
-                        client.isDispose = false;
-                        client.CloseSend = false;
-                        client.SocketAsync = args1;
-                        Interlocked.Increment(ref ignoranceNumber);
-                        var buffer = BufferPool.Take(50);
-                        buffer.Write(uid);
-                        buffer.Write(client.PlayerID);
-                        SendRT(client, NetCmd.Identify, buffer.ToArray(true));
-                        client.revdQueue = RevdQueues[threadNum];
-                        if (++threadNum >= RevdQueues.Count)
-                            threadNum = 0;
-                        AllClients.TryAdd(clientSocket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                        OnHasConnectHandle(client);
-                        if (AllClients.Count > OnlineLimit)
-                        {
-                            QueueUp.Enqueue(client);
-                            client.QueueUpCount = QueueUp.Count;
-                            var segment = BufferPool.Take(8);
-                            segment.Write(QueueUp.Count);
-                            segment.Write(client.QueueUpCount);
-                            SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
-                        }
+                        var client = AcceptHander(clientSocket, clientSocket.RemoteEndPoint);
                         bool willRaiseEvent = clientSocket.ReceiveAsync(args1);
                         if (!willRaiseEvent)
                         {

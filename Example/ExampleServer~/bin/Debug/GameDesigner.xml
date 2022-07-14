@@ -2228,14 +2228,19 @@
             九宫格格子物体接口
             </summary>
         </member>
+        <member name="M:Net.AOI.IGridBody.OnBodyUpdate">
+            <summary>
+            当更新方法, 可以更新位置=unity的transform.position
+            </summary>
+        </member>
         <member name="M:Net.AOI.IGridBody.OnEnter(Net.AOI.IGridBody)">
             <summary>
-            当物体进入感兴趣区域
+            当body物体进入感兴趣区域
             </summary>
         </member>
         <member name="M:Net.AOI.IGridBody.OnExit(Net.AOI.IGridBody)">
             <summary>
-            当物体退出感兴趣区域
+            当body物体退出感兴趣区域
             </summary>
         </member>
         <member name="T:Net.Clone">
@@ -3158,7 +3163,7 @@
             </summary>
             <param name="ex"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.ResolveBuffer(Net.System.Segment,System.Boolean)">
+        <member name="M:Net.Client.ClientBase.ResolveBuffer(Net.System.Segment@,System.Boolean)">
             <summary>
             解析网络数据包
             </summary>
@@ -3914,6 +3919,12 @@
             <param name="port">服务器端口</param>
             <param name="clientLen">测试客户端数量</param>
             <param name="dataLen">每个客户端数据大小</param>
+        </member>
+        <member name="P:Net.Config.ConfigData.UseMemoryStream">
+            <summary>
+            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较少!
+            使用内存流缓存速度会比较快, 但运行内存占用比较大
+            </summary>
         </member>
         <member name="T:Net.Event.EventSystem">
             <summary>
@@ -4812,9 +4823,9 @@
             由于随机数失灵导致死循环, 所以用计数来标记用户标识 (从10000开始标记)
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.EndUserID">
+        <member name="P:Net.Server.ServerBase`2.CurrUserID">
             <summary>
-            用户唯一标识最大计数值, 如果自增的uid>=EndUserID, 则回到BeginUserID重新开始计数
+            当前玩家唯一标识计数
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.UserIDStack">
@@ -4904,6 +4915,11 @@
         <member name="F:Net.Server.ServerBase`2.QueueUp">
             <summary>
             排队队列
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`2.SyncRoot">
+            <summary>
+            同步锁对象
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnStartingHandle">
@@ -5719,6 +5735,24 @@
             </summary>
         </member>
         <member name="T:Net.Server.TcpServer">
+            <summary>
+            默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServerEpoll`2">
+            <summary>
+            TCP EPoll服务器类型
+            第三版本 2020.9.14
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.TcpServerEpoll`2.frame">
+            <summary>
+            tcp数据长度(4) + 1CRC协议 = 5
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServerEpoll">
             <summary>
             默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
@@ -7667,7 +7701,7 @@
         </member>
         <member name="P:Net.Share.RPCModel.Buffer">
             <summary>
-            数据缓冲器(正确的数据段)
+            数据缓存器(正确的数据段)
             </summary>
         </member>
         <member name="F:Net.Share.RPCModel.func">
@@ -9023,6 +9057,20 @@
             取出index的参数值
             </summary>
             <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.FuncData.To``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.FuncData.As``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
         <member name="T:Net.Serialize.NetConvertOld">

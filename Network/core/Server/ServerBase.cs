@@ -660,7 +660,7 @@ namespace Net.Server
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
-            KeyValuePair<string, Scene> scene = OnAddDefaultScene();
+            var scene = OnAddDefaultScene();
             MainSceneName = scene.Key;
             scene.Value.Name = scene.Key;
             Scenes.TryAdd(scene.Key, scene.Value);
@@ -835,32 +835,54 @@ namespace Net.Server
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
             {
-                if (!UserIDStack.TryPop(out int uid))
-                    uid = GetCurrUserID();
-                client = new Player();
-                client.UserID = uid;
-                client.PlayerID = uid.ToString();
-                client.Name = uid.ToString();
-                client.RemotePoint = remotePoint;
-                client.isDispose = false;
-                client.CloseSend = false;
-                Interlocked.Increment(ref ignoranceNumber);
-                client.revdQueue = RevdQueues[threadNum];
-                if (++threadNum >= RevdQueues.Count)
-                    threadNum = 0;
-                AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                OnHasConnectHandle(client);
-                if (AllClients.Count > OnlineLimit)
-                {
-                    QueueUp.Enqueue(client);
-                    client.QueueUpCount = QueueUp.Count;
-                    var segment = BufferPool.Take(8);
-                    segment.Write(QueueUp.Count);
-                    segment.Write(client.QueueUpCount);
-                    SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
-                }
+                client = AcceptHander(null, remotePoint);
             }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
+        }
+
+        protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
+        {
+            Player client = new Player();
+            client.Client = clientSocket;
+            client.RemotePoint = remotePoint;
+            client.isDispose = false;
+            client.CloseSend = false;
+            if (!UserIDStack.TryPop(out int uid))
+                uid = GetCurrUserID();
+            client.UserID = uid;
+            client.PlayerID = uid.ToString();
+            client.Name = uid.ToString();
+            client.stackStream = BufferStreamShare.Take();
+            Interlocked.Increment(ref ignoranceNumber);
+            var buffer = BufferPool.Take(50);
+            buffer.Write(client.UserID);
+            buffer.Write(client.PlayerID);
+            SendRT(client, NetCmd.Identify, buffer.ToArray(true));
+            client.revdQueue = RevdQueues[threadNum];
+            if (++threadNum >= RevdQueues.Count)
+                threadNum = 0;
+            AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
+#if TEST1
+            UIDClients.TryAdd(uid, client);//测试
+#endif
+            OnHasConnectHandle(client);
+            if (AllClients.Count >= OnlineLimit + LineUp)
+            {
+                SendRT(client, NetCmd.ServerFull, new byte[0]);
+                Invoke(1f, () => {
+                    client.Client.Close();
+                });
+            }
+            else if (AllClients.Count > OnlineLimit)
+            {
+                QueueUp.Enqueue(client);
+                client.QueueUpCount = QueueUp.Count;
+                var segment = BufferPool.Take(8);
+                segment.Write(QueueUp.Count);
+                segment.Write(client.QueueUpCount);
+                SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
+            }
+            return client;
         }
 
 #if TEST1

@@ -70,7 +70,7 @@ namespace Example2
                 if (count > 0)
                     OnPacket(handle, cmd, count);
             }
-            Event.UpdateEvent();
+            Event.UpdateEventFixed();
         }
 
         public override void OnOperationSync(Player client, OperationList list)
@@ -146,8 +146,7 @@ namespace Example2
                     monster.state1 = 0;
                 }
             }
-            AddOperation(new Operation(Command.Destroy, client.UserID));
-            AddOperation(new Operation(Command.OnPlayerExit) { uid = client.UserID });
+            AddOperation(new Operation(Command.OnPlayerExit, client.UserID));
         }
     }
 }

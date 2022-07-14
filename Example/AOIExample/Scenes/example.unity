@@ -43,7 +43,7 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 11
+  serializedVersion: 12
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 1
+  m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -118,6 +118,8 @@ NavMeshSettings:
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
@@ -133,6 +135,7 @@ GameObject:
   - component: {fileID: 715841550}
   - component: {fileID: 715841549}
   - component: {fileID: 715841552}
+  - component: {fileID: 715841553}
   m_Layer: 0
   m_Name: network
   m_TagString: Untagged
@@ -153,6 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 3
+  isEncrypt: 0
 --- !u!114 &715841550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,6 +177,7 @@ MonoBehaviour:
   frameRate: 60
   authorize: 0
   startConnect: 1
+  md5CRC: 0
   rpcs: []
 --- !u!4 &715841551
 Transform:
@@ -200,9 +205,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 647eea602588fa241826aed533a03bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabs:
-  - {fileID: 2647930119998586387, guid: 1c2e5388b3468234093d087d330af306, type: 3}
+  registerObjects:
+  - {fileID: -6769144568087404469, guid: 1c2e5388b3468234093d087d330af306, type: 3}
+  onExitDelectAll: 1
   player: {fileID: 4766264212541958773, guid: 1c2e5388b3468234093d087d330af306, type: 3}
+--- !u!114 &715841553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715841548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 389734cdb206f1348a427f53081667eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CanSentTime: 0.033333335
 --- !u!1 &782153279
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,7 +238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &782153280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,8 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 455acfeba23c38c46a3db7190eee5d9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnPrefab: {fileID: 8655616838243164515, guid: 9f4af39828052bc40892dea80c346a32,
-    type: 3}
+  spawnPrefab: {fileID: 8655616838243164515, guid: 9f4af39828052bc40892dea80c346a32, type: 3}
   spawnAmount: 10000
   interleave: 5
 --- !u!4 &782153281
@@ -326,6 +344,7 @@ Light:
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &1243669555
@@ -391,6 +410,7 @@ MonoBehaviour:
       m_YMin: -500
       m_Width: 1000
       m_Height: 1000
+    gridType: 0
   xPos: -500
   zPos: -500
   xMax: 20
@@ -398,6 +418,7 @@ MonoBehaviour:
   width: 50
   height: 50
   EditInit: 0
+  showText: 0
 --- !u!1 &2047265818
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,6 +467,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -470,6 +492,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &2047265821
 MeshFilter:
   m_ObjectHideFlags: 0

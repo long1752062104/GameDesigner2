@@ -102,10 +102,6 @@
         /// 关闭发送数据, 当关闭发送数据后, 数据将会停止发送, (允许接收客户端数据,但不能发送!)
         /// </summary>
         public bool CloseSend { get; set; }
-        /// <summary>
-        /// tcp远程端口, 由于socket被关闭后无法访问RemoteEndPoint的问题
-        /// </summary>
-        internal EndPoint TcpRemoteEndPoint { get; set; }
         internal MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
         internal List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();

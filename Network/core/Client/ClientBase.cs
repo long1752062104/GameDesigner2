@@ -1063,29 +1063,25 @@ namespace Net.Client
                 if (localPort != -1)
                     Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
                 Client.Connect(host, port);
-                bool isDone = false;
-                Task.Run(() =>
-                {
-                    while (!isDone)
-                    {
-                        if (Client != null)
-                        {
-                            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
-                            SendDirect();
-                        }
-                        Thread.Sleep(200);
-                    }
-                });
                 return Task.Run(() =>
                 {
                     try
                     {
-                        var buffer = BufferPool.Take(1024);
-                        Client.ReceiveTimeout = 5000;
-                        int count = Client.Receive(buffer);
-                        Client.ReceiveTimeout = 0;
-                        isDone = true;
-                        buffer.Dispose();
+                        DateTime time = DateTime.Now.AddSeconds(5);
+                        var time1 = DateTime.Now.AddMilliseconds(200);
+                        while (UID == 0)
+                        {
+                            Receive();
+                            Thread.Sleep(1);
+                            if (DateTime.Now >= time)
+                                throw new Exception("uid赋值失败!");
+                            if (DateTime.Now >= time1)
+                            {
+                                time1 = DateTime.Now.AddMilliseconds(200);
+                                rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+                                SendDirect();
+                            }
+                        }
                         Connected = true;
                         StartupThread();
                         InvokeContext(() => {
@@ -1096,7 +1092,6 @@ namespace Net.Client
                     }
                     catch
                     {
-                        isDone = true;
                         Connected = false;
                         Client?.Close();
                         Client = null;

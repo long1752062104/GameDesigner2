@@ -156,41 +156,7 @@
                         if (ptrs[i + 1] == Server.Handle)
                         {
                             Socket socket = Server.Accept();
-                            Player client = new Player();
-                            client.Client = socket;
-                            client.TcpRemoteEndPoint = socket.RemoteEndPoint;
-                            client.RemotePoint = socket.RemoteEndPoint;
-                            client.isDispose = false;
-                            client.CloseSend = false;
-                            if (!UserIDStack.TryPop(out int uid))
-                                uid = GetCurrUserID();
-                            client.UserID = uid;
-                            client.PlayerID = uid.ToString();
-                            client.Name = uid.ToString();
-                            client.stackStream = BufferStreamShare.Take();
-                            Interlocked.Increment(ref ignoranceNumber);
-                            var buffer = BufferPool.Take(50);
-                            buffer.Write(client.UserID);
-                            buffer.Write(client.PlayerID);
-                            SendRT(client, NetCmd.Identify, buffer.ToArray(true));
-                            AllClients.TryAdd(socket.RemoteEndPoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                            OnHasConnectHandle(client);
-                            if (AllClients.Count >= OnlineLimit + LineUp)
-                            {
-                                SendRT(client, NetCmd.ServerFull, new byte[0]);
-                                Invoke(1f, () => {
-                                    client.Client.Close();
-                                });
-                            }
-                            else if (AllClients.Count > OnlineLimit)
-                            {
-                                QueueUp.Enqueue(client);
-                                client.QueueUpCount = QueueUp.Count;
-                                var segment = BufferPool.Take(8);
-                                segment.Write(QueueUp.Count);
-                                segment.Write(client.QueueUpCount);
-                                SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
-                            }
+                            var client = AcceptHander(socket, socket.RemoteEndPoint);
                             online.Add(client);
                             ptrs.Add(socket.Handle);
                             clientDict[socket.Handle] = client;

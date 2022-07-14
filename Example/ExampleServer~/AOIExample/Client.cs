@@ -22,5 +22,9 @@ namespace AOIExample
         public void OnExit(IGridBody body)
         {
         }
+
+        public void OnBodyUpdate()
+        {
+        }
     }
 }

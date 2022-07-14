@@ -94,29 +94,29 @@
         /// </summary>
         public NetScene()
         {
-            Event.AddEvent(5f, () =>
-            {
-                var clients = Clients;
-                for (int i = 0; i < clients.Count; i++)
-                {
-                    if (clients[i] == null)
-                        continue;
-                    if (!clients[i].Login | clients[i].isDispose | clients[i].CloseSend)
-                    {
-                        Clients.Clear();
-                        break;
-                    }
-                    else if (clients[i].Client != null)
-                    {
-                        if (!clients[i].Client.Connected)
-                        {
-                            Clients.Clear();
-                            break;
-                        }
-                    }
-                }
-                return true;
-            });
+            //Event.AddEvent(5f, () =>
+            //{
+            //    var clients = Clients;
+            //    for (int i = 0; i < clients.Count; i++)
+            //    {
+            //        if (clients[i] == null)
+            //            continue;
+            //        if (!clients[i].Login | clients[i].isDispose | clients[i].CloseSend)
+            //        {
+            //            Clients.Remove(clients[i]);
+            //            break;
+            //        }
+            //        else if (clients[i].Client != null)
+            //        {
+            //            if (!clients[i].Client.Connected)
+            //            {
+            //                Clients.Remove(clients[i]);
+            //                break;
+            //            }
+            //        }
+            //    }
+            //    return true;
+            //});
         }
 
         /// <summary>
@@ -143,14 +143,14 @@
         /// 获取场景内的玩家到一维集合里
         /// </summary>
         /// <returns></returns>
-        public ListSafe<Player> GetPlayers()
+        public FastListSafe<Player> GetPlayers()
         {
             return Clients;
         }
         /// <summary>
         /// 获取场景的所有客户端玩家
         /// </summary>
-        public ListSafe<Player> Clients { get; set; } = new ListSafe<Player>();
+        public FastListSafe<Player> Clients { get; set; } = new FastListSafe<Player>();
 
         /// <summary>
         /// 添加玩家
@@ -225,7 +225,7 @@
                 if (count > 0)
                     OnPacket(handle, cmd, count);
             }
-            Event.UpdateEvent();
+            Event.UpdateEventFixed();
         }
 
         /// <summary>
@@ -341,6 +341,7 @@
             foreach (var player in Players)
                 Remove(player);
             Players.Clear();
+            Clients.Clear();
         }
 
         /// <summary>
