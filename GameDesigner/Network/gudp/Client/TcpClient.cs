@@ -73,15 +73,16 @@
                     if (localPort != -1)
                         Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
                     Client.Connect(host, port);
-                    StartupThread();
                     DateTime time = DateTime.Now.AddSeconds(5);
                     while (UID == 0)
                     {
+                        Receive();
                         Thread.Sleep(1);
                         if (DateTime.Now >= time)
                             throw new Exception("uid赋值失败!");
                     }
                     StackStream = BufferStreamShare.Take();
+                    StartupThread();
                     InvokeContext(() => {
                         networkState = NetworkState.Connected;
                         result(true);

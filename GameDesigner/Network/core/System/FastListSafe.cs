@@ -21,7 +21,6 @@ namespace Net.System
             _items = _emptyArray;
         }
 
-
         public FastListSafe(int capacity)
         {
             if (capacity < 0)
@@ -35,7 +34,6 @@ namespace Net.System
             }
             _items = new T[capacity];
         }
-
 
         public FastListSafe(IEnumerable<T> collection)
         {
@@ -63,7 +61,6 @@ namespace Net.System
             collection2.CopyTo(_items, 0);
             _size = count;
         }
-
 
         public int Capacity
         {
@@ -96,7 +93,6 @@ namespace Net.System
             }
         }
 
-
         public int Count
         {
 
@@ -105,7 +101,6 @@ namespace Net.System
                 return _size;
             }
         }
-
 
         bool IList.IsFixedSize
         {
@@ -116,7 +111,6 @@ namespace Net.System
             }
         }
 
-
         bool ICollection<T>.IsReadOnly
         {
 
@@ -125,7 +119,6 @@ namespace Net.System
                 return false;
             }
         }
-
 
         bool IList.IsReadOnly
         {
@@ -136,7 +129,6 @@ namespace Net.System
             }
         }
 
-
         bool ICollection.IsSynchronized
         {
 
@@ -145,7 +137,6 @@ namespace Net.System
                 return false;
             }
         }
-
 
         public object SyncRoot
         {
@@ -157,7 +148,6 @@ namespace Net.System
                 return _syncRoot;
             }
         }
-
 
         public T this[int index]
         {
@@ -186,7 +176,6 @@ namespace Net.System
         {
             return value is T || (value == null && default(T) == null);
         }
-
 
         object IList.this[int index]
         {
@@ -238,18 +227,15 @@ namespace Net.System
             return Count - 1;
         }
 
-
         public void AddRange(IEnumerable<T> collection)
         {
             InsertRange(_size, collection);
         }
 
-
         public ReadOnlyCollection<T> AsReadOnly()
         {
             return new ReadOnlyCollection<T>(this);
         }
-
 
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
@@ -268,29 +254,28 @@ namespace Net.System
             return Array.BinarySearch(_items, index, count, item, comparer);
         }
 
-
         public int BinarySearch(T item)
         {
             return BinarySearch(0, Count, item, null);
         }
-
 
         public int BinarySearch(T item, IComparer<T> comparer)
         {
             return BinarySearch(0, Count, item, comparer);
         }
 
-
         public void Clear()
         {
-            if (_size > 0)
+            lock (SyncRoot) 
             {
-                Array.Clear(_items, 0, _size);
-                _size = 0;
+                if (_size > 0)
+                {
+                    Array.Clear(_items, 0, _size);
+                    _size = 0;
+                }
+                _version++;
             }
-            _version++;
         }
-
 
         public bool Contains(T item)
         {

@@ -150,6 +150,8 @@ namespace Net.UnityComponent
                 return;
             IsInit = true;
             Capacity = capacity;
+            //服务器的记录uid从10000开始,所以这里uid+1-10000=1(网络物体记录从1开始, 而0则可以用作核心网络物体,比如玩家的网络物体), 这里 * 5000是每个客户端都可以实例化5000个networkObject网络物体组件
+            //并且保证唯一id都是正确的,如果一个客户端实例化超过5000个, 就会和uid=10001的玩家networkObject网络物体组件唯一id碰撞, 会出现鬼畜问题
             IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
             for (int i = IDENTITY; i < IDENTITY + capacity; i++)
                 IDENTITY_POOL.Enqueue(i);

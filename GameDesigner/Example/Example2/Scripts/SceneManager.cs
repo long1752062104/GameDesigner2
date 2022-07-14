@@ -2,7 +2,6 @@
 namespace Example2
 {
     using Net.Client;
-    using Net.Component;
     using Net.Share;
     using Net.System;
     using Net.UnityComponent;

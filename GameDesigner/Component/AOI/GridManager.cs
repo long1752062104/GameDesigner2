@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Net.System;
 
 namespace Net.AOI
 {
+    public enum GridType
+    {
+        Horizontal,
+        Vertical
+    }
+
     /// <summary>
     /// 九宫格网络同步管理器
     /// </summary>
@@ -10,8 +17,10 @@ namespace Net.AOI
     public class GridManager
     {
         public List<Grid> grids = new List<Grid>();
+        public HashSetSafe<IGridBody> gridBodies = new HashSetSafe<IGridBody>();
         public Rect worldSize;
-        private readonly List<GridData> handlerList = new List<GridData>();
+        public GridType gridType = GridType.Horizontal;
+
         /// <summary>
         /// 初始化九宫格
         /// </summary>
@@ -55,17 +64,33 @@ namespace Net.AOI
         /// <returns></returns>
         public bool Insert(IGridBody body)
         {
-            foreach (var item in grids)
+            foreach (var grid in grids)
             {
-                if (item.rect.ContainsXZ(body.Position))
+                if (Contains(grid, body))
                 {
-                    item.gridBodies.Add(body);
-                    body.Grid = item;
+                    grid.gridBodies.Add(body);
+                    body.Grid = grid;
+                    body.ID = gridBodies.Count;
+                    gridBodies.Add(body);
+                    foreach (var grid1 in grid.grids)
+                    {
+                        foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
+                        {
+                            item2.OnEnter(body);
+                        }
+                    }
                     return true;
                 }
             }
             return false;
         }
+        public bool Contains(Grid grid, IGridBody body) 
+        {
+            if (gridType == GridType.Horizontal)
+                return grid.rect.ContainsXZ(body.Position);
+            return grid.rect.Contains(body.Position);
+        }
+
         /// <summary>
         /// 获取物体的感兴趣九宫格区域
         /// </summary>
@@ -75,52 +100,73 @@ namespace Net.AOI
         {
         JMP: if (body.Grid == null)
             {
-                if (!worldSize.ContainsXZ(body.Position))
-                    goto J;
-                foreach(var item in grids)
+                if (gridType == GridType.Horizontal)
+                    if (!worldSize.ContainsXZ(body.Position))
+                        goto J;
+                else
+                    if (!worldSize.Contains(body.Position))
+                        goto J;
+                foreach(var grid in grids)
                 {
-                    if (item.rect.ContainsXZ(body.Position))
+                    if (Contains(grid, body))
                     {
-                        item.gridBodies.Add(body);
-                        body.Grid = item;
+                        grid.gridBodies.Add(body);
+                        body.Grid = grid;
+                        foreach (var grid1 in grid.grids)
+                        {
+                            foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
+                            {
+                                item2.OnEnter(body);
+                            }
+                        }
                         return body.Grid;
                     }
                 }
                 goto J;
             }
-            if (body.Grid.rect.ContainsXZ(body.Position))
+            if (Contains(body.Grid, body))
                 return body.Grid;
-            var grids1 = body.Grid.grids;
-            for (int i = 0; i < grids1.Count; i++)
+            var oldGrids = body.Grid.grids;
+            foreach (var grid in oldGrids)//遍历当前物体所在的九宫格
             {
-                if (grids1[i].rect.ContainsXZ(body.Position))
+                if (Contains(grid, body))//如果物体还在九宫格的其中一个格子
                 {
-                    foreach (var item in grids1)
+                    var newGrids = grid.grids;
+                    foreach (var grid1 in newGrids)//遍历当前所在的九宫格,如果是新进来的格子, 则通知新格子此物体进来了
                     {
-                        if (!grids1[i].grids.Contains(item))
+                        if (!oldGrids.Contains(grid1))//如果当前为新格子, 则通知
                         {
-                            foreach (var item2 in item.gridBodies)
-                            {
-                                item2.OnExit(body);
-                                body.OnExit(item2);
-                            }
-                        }
-                    }
-                    foreach (var item in grids1[i].grids)
-                    {
-                        if (!grids1.Contains(item))
-                        {
-                            foreach (var item2 in item.gridBodies)
+                            foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                             {
                                 item2.OnEnter(body);
-                                body.OnEnter(item2);
                             }
                         }
                     }
-                    handlerList.Add(new GridData() { oldGrid = body.Grid, newGrid = grids1[i], body = body });
+                    foreach (var grid1 in oldGrids)//遍历当前所在的九宫格,如果已经离开的九宫格则调用离开方法
+                    {
+                        if (!newGrids.Contains(grid1))//如果已经离开了旧的格子
+                        {
+                            foreach (var item2 in grid1.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                            {
+                                item2.OnExit(body);
+                            }
+                        }
+                    }
+                    //更新物体所在的格子
+                    body.Grid.gridBodies.Remove(body);
+                    grid.gridBodies.Add(body);
+                    body.Grid = grid;
                     return body.Grid;
                 }
             }
+            foreach (var grid in oldGrids)//拖拽瞬移过程
+            {
+                foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                {
+                    item2.OnExit(body);
+                }
+            }
+            body.Grid.gridBodies.Remove(body);
             body.Grid = null;
             goto JMP;
 #if UNITY_EDITOR
@@ -139,19 +185,18 @@ namespace Net.AOI
             if (body.Grid == null)
                 return;
             body.Grid.gridBodies.Remove(body);
+            gridBodies.Remove(body);
         }
         /// <summary>
         /// 更新感兴趣的移除和添加物体
         /// </summary>
         public void UpdateHandler()
         {
-            foreach (var item in handlerList) 
+            foreach (var body in gridBodies)
             {
-                item.oldGrid.gridBodies.Remove(item.body);
-                item.newGrid.gridBodies.Add(item.body);
-                item.body.Grid = item.newGrid;
+                body.OnBodyUpdate();
+                TryGetGrid(body);
             }
-            handlerList.Clear();
         }
     }
 }

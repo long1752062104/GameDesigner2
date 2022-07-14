@@ -8,7 +8,7 @@ namespace Example1
     {
         public override void OnExit(Client client)
         {
-            AddOperation(new Operation(Command.OnPlayerExit) { uid = client.UserID });
+            AddOperation(new Operation(Command.OnPlayerExit, client.UserID));
         }
     }
 }

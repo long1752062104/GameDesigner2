@@ -88,11 +88,6 @@
                 Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
                 revd.Start(revdQueue);
                 threads.Add("RevdDataHandle" + i, revd);
-                //QueueSafe<SendDataBuffer> sendDataBeProcessed = new QueueSafe<SendDataBuffer>();
-                //SendQueues.Add(sendDataBeProcessed);
-                //Thread proSend = new Thread(ProcessSend) { IsBackground = true, Name = "ProcessSend" + i };
-                //proSend.Start(sendDataBeProcessed);
-                //threads.Add("ProcessSend" + i, proSend);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -126,31 +121,9 @@
                         IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
                         if (!UserIDStack.TryPop(out int uid))
                             uid = GetCurrUserID();
-                        Player client = new Player();
+                        var client = AcceptHander(null, remotePoint);
                         client.Udx = cli;
-                        client.UserID = uid;
-                        client.PlayerID = uid.ToString();
-                        client.Name = uid.ToString();
-                        client.RemotePoint = remotePoint;
-                        client.isDispose = false;
-                        client.CloseSend = false;
                         peers.TryAdd(cli, client);
-                        Interlocked.Increment(ref ignoranceNumber);
-                        client.revdQueue = RevdQueues[threadNum];
-                        //client.sendQueue = SendQueues[threadNum];
-                        if (++threadNum >= RevdQueues.Count)
-                            threadNum = 0;
-                        AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-                        OnHasConnectHandle(client);
-                        if (AllClients.Count > OnlineLimit)
-                        {
-                            QueueUp.Enqueue(client);
-                            client.QueueUpCount = QueueUp.Count;
-                            var segment = BufferPool.Take(8);
-                            segment.Write(QueueUp.Count);
-                            segment.Write(client.QueueUpCount);
-                            SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
-                        }
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         if (peers.TryRemove(cli, out Player client2))

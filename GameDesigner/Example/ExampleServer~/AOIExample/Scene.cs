@@ -22,8 +22,7 @@ namespace AOIExample
         }
         public override void OnExit(Client client)
         {
-            AddOperation(new Operation(Command.Destroy, client.UserID));
-            AddOperation(new Operation(Command.OnPlayerExit) { uid = client.UserID });
+            AddOperation(new Operation(Command.OnPlayerExit, client.UserID));
             gridManager.Remove(client);
         }
         public override void OnOperationSync(Client client, OperationList list)
@@ -56,16 +55,18 @@ namespace AOIExample
                     continue;
                 player.OnUpdate();
                 List<Operation> opts = new List<Operation>();
-                var grid = gridManager.TryGetGrid(players[i]);
+                var grid = players[i].Grid;
                 if (grid == null)
                     continue;
-                var bodies = grid.GetGridBodiesAll();
-                foreach (var item in bodies)
+                foreach (var item in grid.grids)
                 {
-                    var player1 = item as Client;
-                    var opts1 = player1.operations.GetRange(0, player1.operations.Count);
-                    player1.getLen = opts1.Length;
-                    opts.AddRange(opts1);
+                    foreach (var item1 in item.gridBodies)
+                    {
+                        var player1 = item1 as Client;
+                        var opts1 = player1.operations.GetRange(0, player1.operations.Count);
+                        player1.getLen = opts1.Length;
+                        opts.AddRange(opts1);
+                    }
                 }
                 if (opts.Count == 0)
                     continue;
@@ -94,7 +95,7 @@ namespace AOIExample
                 players[i].operations.RemoveRange(0, players[i].getLen);
             }
             gridManager.UpdateHandler();
-            Event.UpdateEvent();
+            Event.UpdateEventFixed();
         }
     }
 }

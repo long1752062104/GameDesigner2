@@ -1,7 +1,9 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 namespace Net.UnityComponent
 {
+    using global::System;
     using global::System.Collections.Generic;
+    using global::System.Threading.Tasks;
     using Net.Client;
     using Net.Component;
     using Net.Share;
@@ -17,7 +19,7 @@ namespace Net.UnityComponent
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
 
-        public virtual void OnConnectedHandle()
+        public virtual void OnConnected()
         {
             NetworkObject.Init(5000);
         }
@@ -25,12 +27,27 @@ namespace Net.UnityComponent
         // Start is called before the first frame update
         public virtual void Start()
         {
-            if (ClientBase.Instance == null)
+            WaitConnecting();
+        }
+
+        public virtual async void WaitConnecting()
+        {
+            var outTime = DateTime.Now.AddSeconds(10);
+            while (DateTime.Now < outTime)
+            {
+                if (ClientBase.Instance == null)
+                    await Task.Yield();
+                if (!ClientBase.Instance.Connected)
+                    await Task.Yield();
+                else
+                    break;
+            }
+            if (DateTime.Now > outTime)
+            {
+                Debug.Log("连接超时!");
                 return;
-            if (ClientBase.Instance.Connected)
-                OnConnectedHandle();
-            else
-                ClientBase.Instance.OnConnectedHandle += OnConnectedHandle;
+            }
+            OnConnected();
             ClientBase.Instance.OnOperationSync += OperationSync;
         }
 
@@ -92,36 +109,10 @@ namespace Net.UnityComponent
                     }
                     break;
                 case Command.Destroy:
-                    {
-                        if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
-                        {
-                            OnOtherDestroy(identity);
-                        }
-                    }
+                    OnNetworkObjectDestroy(opt);
                     break;
                 case Command.OnPlayerExit:
-                    {
-                        if (onExitDelectAll)
-                        {
-                            var uid = 10000 + ((opt.uid + 1 - 10000) * NetworkObject.Capacity);
-                            var count = uid + NetworkObject.Capacity;
-                            foreach (var item in identitys)
-                            {
-                                if (item.Key >= uid & item.Key < count)
-                                {
-                                    OnOtherDestroy(item.Value);
-                                }
-                            }
-                        }
-                        else 
-                        {
-                            if (identitys.TryGetValue(opt.uid, out NetworkObject identity))
-                            {
-                                OnOtherExit(identity);
-                                OnOtherDestroy(identity);
-                            }
-                        }
-                    }
+                    OnPlayerExit(opt);
                     break;
                 case NetCmd.SyncVar:
                     {
@@ -141,6 +132,42 @@ namespace Net.UnityComponent
                 default:
                     OnOtherOperator(opt);
                     break;
+            }
+        }
+
+        public virtual void OnNetworkObjectDestroy(Operation opt) 
+        {
+            if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
+            {
+                identitys.Remove(opt.identity);
+                OnOtherDestroy(identity);
+            }
+        }
+
+        public virtual void OnPlayerExit(Operation opt)
+        {
+            if (onExitDelectAll)
+            {
+                var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
+                var count = uid + NetworkObject.Capacity;
+                foreach (var item in identitys)
+                {
+                    if (item.Key >= uid & item.Key < count)
+                    {
+                        identitys.Remove(item.Key);
+                        OnOtherExit(item.Value);
+                        OnOtherDestroy(item.Value);
+                    }
+                }
+            }
+            else
+            {
+                if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
+                {
+                    identitys.Remove(opt.identity);
+                    OnOtherExit(identity);
+                    OnOtherDestroy(identity);
+                }
             }
         }
 
@@ -165,7 +192,7 @@ namespace Net.UnityComponent
         {
             if (ClientBase.Instance == null)
                 return;
-            ClientBase.Instance.OnConnectedHandle -= OnConnectedHandle;
+            ClientBase.Instance.OnConnectedHandle -= OnConnected;
             ClientBase.Instance.OnOperationSync -= OperationSync;
         }
     }

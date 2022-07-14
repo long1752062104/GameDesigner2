@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 3284426629603138987}
   - component: {fileID: 3954306521787499296}
   - component: {fileID: 3207521669977713213}
-  - component: {fileID: 2647930119998586387}
   - component: {fileID: 6710717990687177662}
+  - component: {fileID: -6769144568087404469}
+  - component: {fileID: 8621190958925073884}
   m_Layer: 0
   m_Name: player
   m_TagString: Untagged
@@ -59,6 +60,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,6 +85,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &3954306521787499296
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -112,31 +115,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2647930119998586387
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4766264212541958773}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04d4bfd96a0d2af47909d28f56850b81, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
-  mode: 3
-  identity: -1
-  interval: 0.5
-  index: 0
-  m_identity: 0
-  rate: 30
-  lerpSpeed: 0.3
-  fixedSync: 1
-  fixedSendTime: 1
 --- !u!114 &6710717990687177662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,3 +128,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLocal: 0
+  ShowText: 1
+--- !u!114 &-6769144568087404469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766264212541958773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_identity: -1
+  identity: 0
+  registerObjectIndex: 0
+--- !u!114 &8621190958925073884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766264212541958773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0e2700785d520a4b835e70c87f3a81e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 0
+  mode: 3
+  interval: 0.5
+  rate: 30
+  lerpSpeed: 0.3
+  fixedSync: 1
+  fixedSendTime: 1
