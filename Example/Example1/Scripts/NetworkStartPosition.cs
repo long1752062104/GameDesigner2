@@ -24,7 +24,7 @@ namespace Example1
         {
             var offset = new Vector3(Random.Range(offsetX.x, offsetX.y), 0, Random.Range(offsetZ.x, offsetZ.y));
             var player1 = Instantiate(playerPrefab, transform.position + offset, transform.rotation);
-            player1.GetComponent<NetworkObject>().m_identity = ClientBase.Instance.UID;
+            player1.GetComponent<NetworkObject>().Identity = ClientBase.Instance.UID;
             player1.GetComponent<PlayerController>().isLocalPlayer = true;
             Camera.main.GetComponent<ARPGcamera>().target = player1.transform;
         }

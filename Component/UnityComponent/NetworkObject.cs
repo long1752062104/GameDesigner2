@@ -13,27 +13,46 @@ namespace Net.UnityComponent
     /// </summary>
     public class NetworkObject : MonoBehaviour
     {
-        private static bool isInit;
-        internal static int Identity;
+        private static bool IsInit;
+        internal static int IDENTITY;
         internal static Queue<int> IDENTITY_POOL = new Queue<int>();
         public static int Capacity { get; private set; }
-        [DisplayOnly] public int m_identity = -1;
+        [SerializeField] [DisplayOnly] private int m_identity = -1;
         [Tooltip("自定义唯一标识, 当值不为0后,可以不通过NetworkSceneManager的registerObjects去设置, 直接放在设计的场景里面, 不需要做成预制体")]
-        public int identity;//可以设置的id
+        [SerializeField] private int identity;//可以设置的id
         [Tooltip("注册的网络物体索引, registerObjectIndex要对应NetworkSceneManager的registerObjects数组索引, 如果设置了自定义唯一标识, 则此字段无效!")]
         public int registerObjectIndex;
         internal bool isOtherCreate;
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
         internal List<SyncVarInfo> syncVarInfos = new List<SyncVarInfo>();
+        internal bool isInit;
+        /// <summary>
+        /// 每个网络对象的唯一标识
+        /// </summary>
+        public int Identity
+        {
+            get{ return m_identity; }
+            set { m_identity = value; }
+        }
         public virtual void Start()
         {
-            if (isOtherCreate)
+            Init();
+        }
+        public void Init()
+        {
+            if (isInit)
                 return;
+            isInit = true;
             var sm = NetworkSceneManager.I;
             if (sm == null)
             {
                 Debug.Log("没有找到NetworkSceneManager组件！NetworkIdentity组件无效！");
                 Destroy(gameObject);
+                return;
+            }
+            if (isOtherCreate)
+            {
+                sm.identitys.Add(m_identity, this);
                 return;
             }
             if (m_identity > 0)
@@ -43,9 +62,9 @@ namespace Net.UnityComponent
                     item.OnNetworkObjectInit(m_identity);
                 return;
             }
-            if (identity > 0)
+            if (Identity > 0)
             {
-                m_identity = identity;
+                m_identity = Identity;
                 sm.identitys.Add(m_identity, this);
                 foreach (var item in networkBehaviours)
                     item.OnNetworkObjectInit(m_identity);
@@ -62,7 +81,6 @@ namespace Net.UnityComponent
             foreach (var item in networkBehaviours)
                 item.OnNetworkObjectInit(m_identity);
         }
-
         internal void InitSyncVar(object target)
         {
             ClientBase.Instance.AddRpcHandle(target, false, true, (info) =>
@@ -128,12 +146,12 @@ namespace Net.UnityComponent
         /// <param name="capacity">一个客户端可以用的唯一标识容量</param>
         public static void Init(int capacity = 5000) 
         {
-            if (isInit)
+            if (IsInit)
                 return;
-            isInit = true;
+            IsInit = true;
             Capacity = capacity;
-            Identity = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
-            for (int i = Identity; i < Identity + capacity; i++)
+            IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
+            for (int i = IDENTITY; i < IDENTITY + capacity; i++)
                 IDENTITY_POOL.Enqueue(i);
         }
     }

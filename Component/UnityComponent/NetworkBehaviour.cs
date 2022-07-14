@@ -12,6 +12,10 @@ namespace Net.UnityComponent
     {
         internal NetworkObject netObj;
         /// <summary>
+        /// 此组件是netobj的第几个组件
+        /// </summary>
+        internal int Index;
+        /// <summary>
         /// 这个物体是本机生成的?
         /// true:这个物体是从你本机实例化后, 同步给其他客户端的, 其他客户端的IsLocal为false
         /// false:这个物体是其他客户端实例化后,同步到本机客户端上, IsLocal为false
@@ -20,6 +24,7 @@ namespace Net.UnityComponent
         public virtual void Awake()
         {
             netObj = GetComponent<NetworkObject>();
+            Index = netObj.networkBehaviours.Count;
             netObj.networkBehaviours.Add(this); 
             netObj.InitSyncVar(this);
         }
@@ -50,7 +55,16 @@ namespace Net.UnityComponent
         public virtual void OnDestroy()
         {
             netObj.RemoveSyncVar(this);
-            netObj.networkBehaviours.Remove(this);
+            for (int i = 0; i < netObj.networkBehaviours.Count; i++)
+            {
+                var nb = netObj.networkBehaviours[i];
+                nb.Index = i;
+                if (nb == this)
+                {
+                    netObj.networkBehaviours.RemoveAt(i);
+                    if (i >= 0) i--;
+                }
+            }
         }
     }
 }

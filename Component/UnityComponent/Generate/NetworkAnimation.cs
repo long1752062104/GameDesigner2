@@ -1,68 +1,62 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Client;
-using Net.Component;
 using Net.Share;
+using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
+using Net.System;
+using static Net.Serialize.NetConvertFast2;
 
 namespace BuildComponent
 {
     /// <summary>
-    /// Animation同步组件, 此代码由BuildComponentTools工具生成
+    /// Animation同步组件, 此代码由BuildComponentTools工具生成, 如果同步发生相互影响的字段或属性, 请自行检查处理一下!
     /// </summary>
     [RequireComponent(typeof(UnityEngine.Animation))]
     public class NetworkAnimation : NetworkBehaviour
     {
-
         private UnityEngine.Animation self;
         public bool autoCheck;
-        private System.Boolean playAutomatically1;
-        private UnityEngine.WrapMode wrapMode2;
-        private System.Boolean animatePhysics3;
-        private UnityEngine.AnimationCullingType cullingType4;
-        private System.Boolean enabled5;
-        private System.String tag6;
-        private System.String name7;
-        private UnityEngine.HideFlags hideFlags8;
-        private System.String name1;
-        private System.String name2;
-        private UnityEngine.PlayMode mode3;
-        private System.String animation4;
-        private System.String animation5;
-        private System.Single fadeLength6;
-        private System.String animation7;
-        private System.String animation8;
-        private System.Single targetWeight9;
-        private System.String animation10;
-        private System.String animation11;
-        private System.Single fadeLength12;
-        private UnityEngine.QueueMode queue13;
-        private System.String animation14;
-        private System.Single fadeLength15;
-        private System.String animation16;
-        private System.String animation17;
-        private UnityEngine.QueueMode queue18;
-        private System.String animation19;
-        private System.String clipName20;
-        private System.Int32 layer21;
-        private System.String name22;
-        private System.String tag23;
-        private System.String methodName24;
-        private System.String methodName25;
-        private UnityEngine.SendMessageOptions options26;
-        private System.String methodName27;
-        private System.String methodName28;
-        private UnityEngine.SendMessageOptions options29;
-        private System.String methodName30;
-        private System.String methodName31;
-        private UnityEngine.SendMessageOptions options32;
-
+        private object[] fields;
+		private int[] eventsId;
+		
         public override void Awake()
         {
             base.Awake();
             self = GetComponent<UnityEngine.Animation>();
+			fields = new object[40];
+			eventsId = new int[40];
+            fields[1] = self.clip;
+            fields[2] = self.playAutomatically;
+            fields[3] = self.wrapMode;
+            fields[4] = self.animatePhysics;
+            fields[5] = self.cullingType;
         }
 
+        void Start() { }//让监视面板能显示启动勾选
+
+        public UnityEngine.AnimationClip clip
+        {
+            get
+            {
+                return self.clip;
+            }
+            set
+            {
+                if (value.Equals(fields[1]))
+                    return;
+                fields[1] = value;
+                self.clip = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                {
+                    index = netObj.registerObjectIndex,
+                    index1 = Index,
+                    index2 = 1,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
+                });
+            }
+        }
         public System.Boolean playAutomatically
         {
             get
@@ -71,18 +65,20 @@ namespace BuildComponent
             }
             set
             {
-                if (playAutomatically1 == value)
+                if (value.Equals(fields[2]))
                     return;
-                playAutomatically1 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                fields[2] = value;
+                self.playAutomatically = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 1,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
+                    index1 = Index,
+                    index2 = 2,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.WrapMode wrapMode
         {
             get
@@ -91,18 +87,20 @@ namespace BuildComponent
             }
             set
             {
-                if (wrapMode2 == value)
+                if (value.Equals(fields[3]))
                     return;
-                wrapMode2 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                fields[3] = value;
+                self.wrapMode = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 2,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
+                    index1 = Index,
+                    index2 = 3,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean animatePhysics
         {
             get
@@ -111,18 +109,20 @@ namespace BuildComponent
             }
             set
             {
-                if (animatePhysics3 == value)
+                if (value.Equals(fields[4]))
                     return;
-                animatePhysics3 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                fields[4] = value;
+                self.animatePhysics = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 5,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
+                    index1 = Index,
+                    index2 = 4,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.AnimationCullingType cullingType
         {
             get
@@ -131,765 +131,519 @@ namespace BuildComponent
             }
             set
             {
-                if (cullingType4 == value)
+                if (value.Equals(fields[5]))
                     return;
-                cullingType4 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                fields[5] = value;
+                self.cullingType = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 7,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
+                    index1 = Index,
+                    index2 = 5,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
                 });
             }
-        }
-
-        public System.Boolean enabled
-        {
-            get
-            {
-                return self.enabled;
-            }
-            set
-            {
-                if (enabled5 == value)
-                    return;
-                enabled5 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 9,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
-                });
-            }
-        }
-
-        public System.String tag
-        {
-            get
-            {
-                return self.tag;
-            }
-            set
-            {
-                if (tag6 == value)
-                    return;
-                tag6 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 13,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
-                });
-            }
-        }
-
-        public System.String name
-        {
-            get
-            {
-                return self.name;
-            }
-            set
-            {
-                if (name7 == value)
-                    return;
-                name7 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 27,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
-                });
-            }
-        }
-
-        public UnityEngine.HideFlags hideFlags
-        {
-            get
-            {
-                return self.hideFlags;
-            }
-            set
-            {
-                if (hideFlags8 == value)
-                    return;
-                hideFlags8 = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 28,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true)
-                });
-            }
-        }
-
-        public void Stop(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 35,
-                buffer = buffer
-            });
-        }
-        public void Stop(System.String name, bool always = false)
-        {
-            if (name == name1 & !always) return;
-            name1 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 36,
-                buffer = buffer
-            });
-        }
-        public void Rewind(System.String name, bool always = false)
-        {
-            if (name == name2 & !always) return;
-            name2 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 37,
-                buffer = buffer
-            });
-        }
-        public void Rewind(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 38,
-                buffer = buffer
-            });
-        }
-        public void Sample(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 39,
-                buffer = buffer
-            });
-        }
-        public void Play(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 43,
-                buffer = buffer
-            });
-        }
-        public void Play(UnityEngine.PlayMode mode, bool always = false)
-        {
-            if (mode == mode3 & !always) return;
-            mode3 = mode;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { mode } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 44,
-                buffer = buffer
-            });
-        }
-        public void Play(System.String animation, bool always = false)
-        {
-            if (animation == animation4 & !always) return;
-            animation4 = animation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 46,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String animation, System.Single fadeLength, bool always = false)
-        {
-            if (animation == animation5 & fadeLength == fadeLength6 & !always) return;
-            animation5 = animation;
-            fadeLength6 = fadeLength;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation, fadeLength } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 48,
-                buffer = buffer
-            });
-        }
-        public void CrossFade(System.String animation, bool always = false)
-        {
-            if (animation == animation7 & !always) return;
-            animation7 = animation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 49,
-                buffer = buffer
-            });
-        }
-        public void Blend(System.String animation, System.Single targetWeight, bool always = false)
-        {
-            if (animation == animation8 & targetWeight == targetWeight9 & !always) return;
-            animation8 = animation;
-            targetWeight9 = targetWeight;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation, targetWeight } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 51,
-                buffer = buffer
-            });
-        }
-        public void Blend(System.String animation, bool always = false)
-        {
-            if (animation == animation10 & !always) return;
-            animation10 = animation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 52,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeQueued(System.String animation, System.Single fadeLength, UnityEngine.QueueMode queue, bool always = false)
-        {
-            if (animation == animation11 & fadeLength == fadeLength12 & queue == queue13 & !always) return;
-            animation11 = animation;
-            fadeLength12 = fadeLength;
-            queue13 = queue;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation, fadeLength, queue } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 54,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeQueued(System.String animation, System.Single fadeLength, bool always = false)
-        {
-            if (animation == animation14 & fadeLength == fadeLength15 & !always) return;
-            animation14 = animation;
-            fadeLength15 = fadeLength;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation, fadeLength } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 55,
-                buffer = buffer
-            });
-        }
-        public void CrossFadeQueued(System.String animation, bool always = false)
-        {
-            if (animation == animation16 & !always) return;
-            animation16 = animation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 56,
-                buffer = buffer
-            });
-        }
-        public void PlayQueued(System.String animation, UnityEngine.QueueMode queue, bool always = false)
-        {
-            if (animation == animation17 & queue == queue18 & !always) return;
-            animation17 = animation;
-            queue18 = queue;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation, queue } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 58,
-                buffer = buffer
-            });
-        }
-        public void PlayQueued(System.String animation, bool always = false)
-        {
-            if (animation == animation19 & !always) return;
-            animation19 = animation;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { animation } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 59,
-                buffer = buffer
-            });
-        }
-        public void RemoveClip(System.String clipName, bool always = false)
-        {
-            if (clipName == clipName20 & !always) return;
-            clipName20 = clipName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { clipName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 64,
-                buffer = buffer
-            });
-        }
-        public void SyncLayer(System.Int32 layer, bool always = false)
-        {
-            if (layer == layer21 & !always) return;
-            layer21 = layer;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { layer } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 68,
-                buffer = buffer
-            });
-        }
-        public void GetEnumerator(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 69,
-                buffer = buffer
-            });
-        }
-        public void GetClip(System.String name, bool always = false)
-        {
-            if (name == name22 & !always) return;
-            name22 = name;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { name } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 70,
-                buffer = buffer
-            });
-        }
-        public void CompareTag(System.String tag, bool always = false)
-        {
-            if (tag == tag23 & !always) return;
-            tag23 = tag;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { tag } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 112,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName24 & !always) return;
-            methodName24 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 115,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName25 & options == options26 & !always) return;
-            methodName25 = methodName;
-            options26 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 116,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName27 & !always) return;
-            methodName27 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 118,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName28 & options == options29 & !always) return;
-            methodName28 = methodName;
-            options29 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 120,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName30 & !always) return;
-            methodName30 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 123,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName31 & options == options32 & !always) return;
-            methodName31 = methodName;
-            options32 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 124,
-                buffer = buffer
-            });
-        }
-        public void GetInstanceID(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 138,
-                buffer = buffer
-            });
-        }
-        public void GetHashCode(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 139,
-                buffer = buffer
-            });
-        }
-        public void ToString(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 145,
-                buffer = buffer
-            });
         }
         public override void OnPropertyAutoCheck()
         {
             if (!autoCheck)
                 return;
+
+            clip = clip;
             playAutomatically = playAutomatically;
             wrapMode = wrapMode;
             animatePhysics = animatePhysics;
             cullingType = cullingType;
-            enabled = enabled;
-            tag = tag;
-            name = name;
-            hideFlags = hideFlags;
         }
 
+        public void Stop(System.String name, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[7]) &  !always) return;
+			fields[7] = name;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 6,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[6]);
+                eventsId[6] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Stop(name, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Rewind(System.String name, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (name.Equals(fields[9]) &  !always) return;
+			fields[9] = name;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 8,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[8]);
+                eventsId[8] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Rewind(name, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play( bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if ( !always) return;
+			
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] {  } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 10,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[10]);
+                eventsId[10] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play( true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(UnityEngine.PlayMode mode, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (mode.Equals(fields[12]) &  !always) return;
+			fields[12] = mode;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { mode, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 11,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[11]);
+                eventsId[11] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(mode, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Play(System.String animation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[14]) &  !always) return;
+			fields[14] = animation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 13,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[13]);
+                eventsId[13] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Play(animation, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String animation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[16]) &  !always) return;
+			fields[16] = animation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 15,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[15]);
+                eventsId[15] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(animation, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFade(System.String animation,System.Single fadeLength, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[18]) & fadeLength.Equals(fields[19]) &  !always) return;
+			fields[18] = animation;
+			fields[19] = fadeLength;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation,fadeLength, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 17,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[17]);
+                eventsId[17] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFade(animation,fadeLength, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Blend(System.String animation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[21]) &  !always) return;
+			fields[21] = animation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 20,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[20]);
+                eventsId[20] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Blend(animation, true, 0, 0);
+                }, null);
+            }
+        }
+        public void Blend(System.String animation,System.Single targetWeight, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[23]) & targetWeight.Equals(fields[24]) &  !always) return;
+			fields[23] = animation;
+			fields[24] = targetWeight;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation,targetWeight, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 22,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[22]);
+                eventsId[22] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    Blend(animation,targetWeight, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeQueued(System.String animation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[26]) &  !always) return;
+			fields[26] = animation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 25,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[25]);
+                eventsId[25] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeQueued(animation, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeQueued(System.String animation,System.Single fadeLength, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[28]) & fadeLength.Equals(fields[29]) &  !always) return;
+			fields[28] = animation;
+			fields[29] = fadeLength;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation,fadeLength, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 27,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[27]);
+                eventsId[27] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeQueued(animation,fadeLength, true, 0, 0);
+                }, null);
+            }
+        }
+        public void CrossFadeQueued(System.String animation,System.Single fadeLength,UnityEngine.QueueMode queue, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[31]) & fadeLength.Equals(fields[32]) & queue.Equals(fields[33]) &  !always) return;
+			fields[31] = animation;
+			fields[32] = fadeLength;
+			fields[33] = queue;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation,fadeLength,queue, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 30,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[30]);
+                eventsId[30] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CrossFadeQueued(animation,fadeLength,queue, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayQueued(System.String animation, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[35]) &  !always) return;
+			fields[35] = animation;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 34,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[34]);
+                eventsId[34] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayQueued(animation, true, 0, 0);
+                }, null);
+            }
+        }
+        public void PlayQueued(System.String animation,UnityEngine.QueueMode queue, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (animation.Equals(fields[37]) & queue.Equals(fields[38]) &  !always) return;
+			fields[37] = animation;
+			fields[38] = queue;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { animation,queue, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 36,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[36]);
+                eventsId[36] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    PlayQueued(animation,queue, true, 0, 0);
+                }, null);
+            }
+        }
+        public void RemoveClip(System.String clipName, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (clipName.Equals(fields[40]) &  !always) return;
+			fields[40] = clipName;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { clipName, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 39,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[39]);
+                eventsId[39] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    RemoveClip(clipName, true, 0, 0);
+                }, null);
+            }
+        }
+		public System.Collections.IEnumerator GetEnumerator()
+        {
+            return self.GetEnumerator();
+        }
+		public UnityEngine.AnimationClip GetClip(System.String name)
+        {
+            return self.GetClip(name);
+        }
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (opt.cmd != Command.BuildComponent)
-                return;
-            switch (opt.index1)
+            switch (opt.index2)
             {
+
                 case 1:
-                    playAutomatically1 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.playAutomatically = playAutomatically1;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var clip = DeserializeObject<UnityEngine.AnimationClip>(new Segment(opt.buffer, false));
+						fields[1] = clip;
+						self.clip = clip;
+					}
                     break;
                 case 2:
-                    wrapMode2 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.WrapMode>(new Net.System.Segment(opt.buffer, false));
-                    self.wrapMode = wrapMode2;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var playAutomatically = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[2] = playAutomatically;
+						self.playAutomatically = playAutomatically;
+					}
+                    break;
+                case 3:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var wrapMode = DeserializeObject<UnityEngine.WrapMode>(new Segment(opt.buffer, false));
+						fields[3] = wrapMode;
+						self.wrapMode = wrapMode;
+					}
+                    break;
+                case 4:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var animatePhysics = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[4] = animatePhysics;
+						self.animatePhysics = animatePhysics;
+					}
                     break;
                 case 5:
-                    animatePhysics3 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.animatePhysics = animatePhysics3;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var cullingType = DeserializeObject<UnityEngine.AnimationCullingType>(new Segment(opt.buffer, false));
+						fields[5] = cullingType;
+						self.cullingType = cullingType;
+					}
                     break;
-                case 7:
-                    cullingType4 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.AnimationCullingType>(new Net.System.Segment(opt.buffer, false));
-                    self.cullingType = cullingType4;
+                case 6:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[7] = data.Obj);
+						self.Stop(name);
+					}
                     break;
-                case 9:
-                    enabled5 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.enabled = enabled5;
+                case 8:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var name = (System.String)(fields[9] = data.Obj);
+						self.Rewind(name);
+					}
+                    break;
+                case 10:
+                    {
+						self.Play();
+					}
+                    break;
+                case 11:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var mode = (UnityEngine.PlayMode)(fields[12] = data.Obj);
+						self.Play(mode);
+					}
                     break;
                 case 13:
-                    tag6 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.tag = tag6;
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[14] = data.Obj);
+						self.Play(animation);
+					}
+                    break;
+                case 15:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[16] = data.Obj);
+						self.CrossFade(animation);
+					}
+                    break;
+                case 17:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[18] = data.Obj);
+						var fadeLength = (System.Single)(fields[19] = data.Obj);
+						self.CrossFade(animation,fadeLength);
+					}
+                    break;
+                case 20:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[21] = data.Obj);
+						self.Blend(animation);
+					}
+                    break;
+                case 22:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[23] = data.Obj);
+						var targetWeight = (System.Single)(fields[24] = data.Obj);
+						self.Blend(animation,targetWeight);
+					}
+                    break;
+                case 25:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[26] = data.Obj);
+						self.CrossFadeQueued(animation);
+					}
                     break;
                 case 27:
-                    name7 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.name = name7;
-                    break;
-                case 28:
-                    hideFlags8 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.HideFlags>(new Net.System.Segment(opt.buffer, false));
-                    self.hideFlags = hideFlags8;
-                    break;
-                case 35:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.Stop();
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[28] = data.Obj);
+						var fadeLength = (System.Single)(fields[29] = data.Obj);
+						self.CrossFadeQueued(animation,fadeLength);
+					}
+                    break;
+                case 30:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[31] = data.Obj);
+						var fadeLength = (System.Single)(fields[32] = data.Obj);
+						var queue = (UnityEngine.QueueMode)(fields[33] = data.Obj);
+						self.CrossFadeQueued(animation,fadeLength,queue);
+					}
+                    break;
+                case 34:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[35] = data.Obj);
+						self.PlayQueued(animation);
+					}
                     break;
                 case 36:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.Stop(name);
-                    }
-                    break;
-                case 37:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.Rewind(name);
-                    }
-                    break;
-                case 38:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.Rewind();
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var animation = (System.String)(fields[37] = data.Obj);
+						var queue = (UnityEngine.QueueMode)(fields[38] = data.Obj);
+						self.PlayQueued(animation,queue);
+					}
                     break;
                 case 39:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.Sample();
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var clipName = (System.String)(fields[40] = data.Obj);
+						self.RemoveClip(clipName);
+					}
                     break;
-                case 43:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.Play();
-                    }
-                    break;
-                case 44:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var mode = (UnityEngine.PlayMode)data.pars[0];
-                        self.Play(mode);
-                    }
-                    break;
-                case 46:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        self.Play(animation);
-                    }
-                    break;
-                case 48:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        var fadeLength = (System.Single)data.pars[1];
-                        self.CrossFade(animation, fadeLength);
-                    }
-                    break;
-                case 49:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        self.CrossFade(animation);
-                    }
-                    break;
-                case 51:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        var targetWeight = (System.Single)data.pars[1];
-                        self.Blend(animation, targetWeight);
-                    }
-                    break;
-                case 52:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        self.Blend(animation);
-                    }
-                    break;
-                case 54:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        var fadeLength = (System.Single)data.pars[1];
-                        var queue = (UnityEngine.QueueMode)data.pars[2];
-                        self.CrossFadeQueued(animation, fadeLength, queue);
-                    }
-                    break;
-                case 55:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        var fadeLength = (System.Single)data.pars[1];
-                        self.CrossFadeQueued(animation, fadeLength);
-                    }
-                    break;
-                case 56:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        self.CrossFadeQueued(animation);
-                    }
-                    break;
-                case 58:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        var queue = (UnityEngine.QueueMode)data.pars[1];
-                        self.PlayQueued(animation, queue);
-                    }
-                    break;
-                case 59:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var animation = data.pars[0] as System.String;
-                        self.PlayQueued(animation);
-                    }
-                    break;
-                case 64:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var clipName = data.pars[0] as System.String;
-                        self.RemoveClip(clipName);
-                    }
-                    break;
-                case 68:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var layer = (System.Int32)data.pars[0];
-                        self.SyncLayer(layer);
-                    }
-                    break;
-                case 69:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetEnumerator();
-                    }
-                    break;
-                case 70:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var name = data.pars[0] as System.String;
-                        self.GetClip(name);
-                    }
-                    break;
-                case 112:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var tag = data.pars[0] as System.String;
-                        self.CompareTag(tag);
-                    }
-                    break;
-                case 115:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessageUpwards(methodName);
-                    }
-                    break;
-                case 116:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessageUpwards(methodName, options);
-                    }
-                    break;
-                case 118:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessage(methodName);
-                    }
-                    break;
-                case 120:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessage(methodName, options);
-                    }
-                    break;
-                case 123:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.BroadcastMessage(methodName);
-                    }
-                    break;
-                case 124:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.BroadcastMessage(methodName, options);
-                    }
-                    break;
-                case 138:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetInstanceID();
-                    }
-                    break;
-                case 139:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetHashCode();
-                    }
-                    break;
-                case 145:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.ToString();
-                    }
-                    break;
-
             }
         }
     }

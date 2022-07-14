@@ -345,6 +345,7 @@ public class Fast2BuildTools2 : EditorWindow
     {
         public string name;
         public bool serialize;
+        public int select;
     }
 
     internal class TypeData 

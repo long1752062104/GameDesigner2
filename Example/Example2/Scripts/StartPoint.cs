@@ -21,7 +21,7 @@ namespace Example2
             GameManager.I.players.Add(p);
             p.id = ClientBase.Instance.UID;
             p.IsLocal = true;
-            p.GetComponent<NetworkObject>().identity = ClientBase.Instance.UID;
+            p.GetComponent<NetworkObject>().Identity = ClientBase.Instance.UID;
             InputJoystick.OnJoystickMoving += (dir) =>
             {
                 pc.moveDirection = new Vector3(dir.x, 0, dir.y);

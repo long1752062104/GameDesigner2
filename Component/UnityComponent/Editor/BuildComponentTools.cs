@@ -37,6 +37,7 @@ public class BuildComponentTools : EditorWindow
                 var type = component.GetType();
                 //var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
                 var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
                 var fields1 = new List<FieldData>();
                 //foreach (var item in fields)
                 //{
@@ -58,7 +59,34 @@ public class BuildComponentTools : EditorWindow
                         & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
                         & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object)))
                         continue;
-                    fields1.Add(new FieldData() { name = item.Name, serialize = true });
+                    fields1.Add(new FieldData() { name = item.Name });
+                }
+                for (int i = 0; i < methods.Length; i++)
+                {
+                    var met = methods[i];
+                    if (met.MethodImplementationFlags == MethodImplAttributes.InternalCall | met.Name.Contains("get_") | met.Name.Contains("set_") |
+                        met.GetCustomAttribute<ObsoleteAttribute>() != null | met.IsGenericMethod)
+                        continue;
+                    var pars = met.GetParameters();
+                    bool not = false;
+                    foreach (var item in pars)
+                    {
+                        var ptype = item.ParameterType;
+                        var code = Type.GetTypeCode(ptype);
+                        if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
+                            ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
+                            & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
+                            & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
+                            & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) //& ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object))
+                            )
+                        {
+                            not = true;
+                            break;
+                        }
+                    }
+                    if (not)
+                        continue;
+                    fields1.Add(new FieldData() { name = met.ToString() });
                 }
                 foldout = new FoldoutData() { name = type.Name, fields = fields1, foldout = true };
             }
@@ -67,26 +95,58 @@ public class BuildComponentTools : EditorWindow
         {
             scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true);
             var rect = EditorGUILayout.GetControlRect();
-            foldout.foldout = EditorGUI.Foldout(rect, foldout.foldout, foldout.name, true);
+            foldout.foldout = EditorGUI.Foldout(rect, foldout.foldout, foldout.name + "", true);
             if (foldout.foldout)
             {
                 EditorGUI.indentLevel = 1;
                 for (int i = 0; i < foldout.fields.Count; i++)
                 {
-                    foldout.fields[i].serialize = EditorGUILayout.Toggle(foldout.fields[i].name, foldout.fields[i].serialize);
+                    var rect1 = EditorGUILayout.GetControlRect();
+                    rect1.x += 20;
+                    var width = rect1.width;
+                    rect1.width = 180;
+                    foldout.fields[i].select = GUI.Toolbar(rect1, foldout.fields[i].select, new string[] { "同步调用", "本地调用", "忽略" });
+                    rect1.x += 200;
+                    rect1.width = width - 200;
+                    GUIStyle titleStyle2 = new GUIStyle();
+                    switch (foldout.fields[i].select)
+                    {
+                        case 0:
+                            titleStyle2.normal.textColor = Color.white;
+                            break;
+                        case 1:
+                            titleStyle2.normal.textColor = Color.green;
+                            break;
+                        case 2:
+                            titleStyle2.normal.textColor = Color.red;
+                            break;
+                    }
+                    GUI.Label(rect1, foldout.fields[i].name, titleStyle2);
+                    
                 }
                 EditorGUI.indentLevel = 0;
             }
             if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("全部勾上"), false, () =>
+                menu.AddItem(new GUIContent("全部同步调用勾上"), false, () =>
                 {
-                    foldout.fields.ForEach(item => item.serialize = true);
+                    foldout.fields.ForEach(item => item.select = 0);
+                }); 
+                menu.AddItem(new GUIContent("全部本地调用勾上"), false, () =>
+                {
+                    foldout.fields.ForEach(item => item.select = 1);
+                });
+                menu.AddItem(new GUIContent("智能本地调用勾上"), false, () =>
+                {
+                    foldout.fields.ForEach(item => {
+                        if (item.name.Contains("Get") | item.name.Contains("Is"))
+                            item.select = 1;
+                    });
                 });
                 menu.AddItem(new GUIContent("全部取消"), false, () =>
                 {
-                    foldout.fields.ForEach(item => item.serialize = false);
+                    foldout.fields.ForEach(item => item.select = 2);
                 });
                 menu.ShowAsContext();
             }
@@ -113,39 +173,167 @@ public class BuildComponentTools : EditorWindow
                 return;
             }
             var type = component.GetType();
-            var str = Build(type, foldout.fields.ConvertAll((item) => !item.serialize ? item.name : ""));
+            var str = BuildNew(type, foldout.fields.ConvertAll((item) => item.select == 2 ? item.name : ""), foldout.fields.ConvertAll((item) => item.select == 1 ? item.name : ""));
             File.WriteAllText(savePath + $"//Network{type.Name}.cs", str.ToString());
             Debug.Log("生成脚本成功!"); 
             AssetDatabase.Refresh();
         }
     }
 
-    static StringBuilder Build(Type type, List<string> ignores)
+    static StringBuilder BuildNew(Type type, List<string> ignores, List<string> immediatelys) 
     {
+        var templateCode = @"#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+using Net.Client;
+using Net.Share;
+using Net.Component;
+using Net.UnityComponent;
+using UnityEngine;
+using Net.System;
+using static Net.Serialize.NetConvertFast2;
+
+namespace BuildComponent
+{
+    /// <summary>
+    /// {TypeName1}同步组件, 此代码由BuildComponentTools工具生成, 如果同步发生相互影响的字段或属性, 请自行检查处理一下!
+    /// </summary>
+    [RequireComponent(typeof({TypeName}))]
+    public class Network{TypeName1} : NetworkBehaviour
+    {
+        private {TypeName} self;
+        public bool autoCheck;
+        private object[] fields;
+		private int[] eventsId;
+		
+        public override void Awake()
+        {
+            base.Awake();
+            self = GetComponent<{TypeName}>();
+[Split]
+			fields = new object[{FieldSize}];
+			eventsId = new int[{FieldSize}];
+[Split]
+            fields[{FieldIndex}] = self.{TypeFieldName};
+[Split]
+        }
+
+        void Start() { }//让监视面板能显示启动勾选
+[Split]
+        public {PropertyType} {TypeFieldName}
+        {
+            get
+            {
+                return self.{TypeFieldName};
+            }
+            set
+            {
+                if (value.Equals({FieldName}))
+                    return;
+                {FieldName} = value;
+                self.{TypeFieldName} = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                {
+                    index = netObj.registerObjectIndex,
+                    index1 = Index,
+                    index2 = {FieldIndex},
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
+                });
+            }
+        }
+[Split]
+        public override void OnPropertyAutoCheck()
+        {
+            if (!autoCheck)
+                return;
+[Split]
+            {TypeFieldName} = {TypeFieldName};
+[Split]
+        }
+[Split]
+        public void {FuncName}({ParsString} bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if ({Condition} !always) return;
+			{SetPars}
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { {Params} } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = {FieldIndex},
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[{EIDIndex}]);
+                eventsId[{EIDIndex}] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    {FuncName}({Params} true, 0, 0);
+                }, null);
+            }
+        }
+[Split]
+		public {ReturnType} {FuncName}({ParsString})
+        {
+            {Return}self.{FuncName}({Params});
+        }
+[Split]
+        public override void OnNetworkOperationHandler(Operation opt)
+        {
+            switch (opt.index2)
+            {
+[Split]
+                case {FieldIndex1}:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var {TypeFieldName} = DeserializeObject<{FieldType1}>(new Segment(opt.buffer, false));
+						{FieldName} = {TypeFieldName};
+						self.{TypeFieldName} = {TypeFieldName};
+					}
+                    break;
+[Split]
+                case {FieldIndex1}:
+                    {
+						self.{FuncName}();
+					}
+                    break;
+[Split]
+                case {FieldIndex1}:
+                    {
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						{SetPars}
+						self.{FuncName}({Params});
+					}
+                    break;
+[Split]
+            }
+        }
+    }
+}
+" + @"#endif";
+
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
-        StringBuilder str = new StringBuilder();
-        str.AppendLine("#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA");
-        str.AppendLine("using Net.Component;");
-        str.AppendLine("using Net.Share;");
-        str.AppendLine("using Net.UnityComponent;");
-        str.AppendLine("using UnityEngine;");
-        str.AppendLine("");
-        str.AppendLine("namespace BuildComponent");
-        str.AppendLine("{");
-        str.AppendLine("    /// <summary>");
-        str.AppendLine($"    /// {type.Name}同步组件, 此代码由BuildComponentTools工具生成, 如果同步发生相互影响的字段或属性, 请自行检查处理一下!");
-        str.AppendLine("    /// </summary>");
-        str.AppendLine($"    [RequireComponent(typeof({type.FullName}))]");
-        str.AppendLine($"    public class Network{type.Name} : NetworkBehaviour");
-        str.AppendLine("    {");
-        str.AppendLine($"       private {type.FullName} self;");
-        str.AppendLine($"       public bool autoCheck;");
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb1 = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
+        StringBuilder sb3 = new StringBuilder();
+        StringBuilder sb4 = new StringBuilder();
+        StringBuilder sb5 = new StringBuilder();
+
+        templateCode = templateCode.Replace("{TypeName1}", $"{type.Name}");
+        templateCode = templateCode.Replace("{TypeName}", $"{type.FullName}");
+
+        var blockCodes = templateCode.Split(new string[] { "[Split]" }, 0);
+        blockCodes[0] = blockCodes[0].Remove(blockCodes[0].Length - 2, 2);
+        sb.Append(blockCodes[0]);
+
         int parNum = 0;
-        List<string> propertyCodes = new List<string>();
         for (int i = 0; i < properties.Length; i++)
         {
             var item = properties[i];
+            if (ignores.Contains(item.Name))
+                continue;
             if (!item.CanRead | !item.CanWrite | item.GetCustomAttribute<ObsoleteAttribute>() != null)
                 continue;
             var ptype = item.PropertyType;
@@ -154,20 +342,43 @@ public class BuildComponentTools : EditorWindow
                 ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
                 & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
                 & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object))
+                & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(UnityEngine.Object) & !ptype.IsSubclassOf(typeof(UnityEngine.Object))
                 )
                 continue;
-            if (ignores.Contains(item.Name))
-                continue;
             parNum++;
-            var fieldName = item.Name + parNum;
-            str.AppendLine($"       private {item.PropertyType.FullName} {fieldName};");
-            propertyCodes.Add($"                {item.Name} = {item.Name};");
+            var blockCode = blockCodes[2];
+            blockCode = blockCode.Replace("{FieldIndex}", $"{parNum}");
+            blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
+            blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+            sb1.Append(blockCode);
+
+            blockCode = blockCodes[4];
+            blockCode = blockCode.Replace("{PropertyType}", $"{item.PropertyType.FullName}");
+            blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
+            blockCode = blockCode.Replace("{FieldName}", $"fields[{parNum}]");
+            blockCode = blockCode.Replace("{FieldIndex}", $"{parNum}");
+            blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+            sb2.Append(blockCode);
+
+            blockCode = blockCodes[6];
+            blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
+            blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+            sb3.Append(blockCode);
+
+            blockCode = blockCodes[11];
+            blockCode = blockCode.Replace("{FieldIndex1}", $"{parNum}");
+            blockCode = blockCode.Replace("{FieldName}", $"fields[{parNum}]");
+            blockCode = blockCode.Replace("{FieldType1}", $"{item.PropertyType.FullName}");
+            blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
+            blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+            sb5.Append(blockCode);
         }
-        parNum = 0;
         for (int i = 0; i < methods.Length; i++)
         {
             var met = methods[i];
+            var metName = met.ToString();
+            if (ignores.Contains(metName))
+                continue;
             if (met.MethodImplementationFlags == MethodImplAttributes.InternalCall | met.Name.Contains("get_") | met.Name.Contains("set_") |
                 met.GetCustomAttribute<ObsoleteAttribute>() != null | met.IsGenericMethod)
                 continue;
@@ -190,267 +401,98 @@ public class BuildComponentTools : EditorWindow
             }
             if (not)
                 continue;
+            string blockCode;
+            var parsStr = "";
+            var conditionStr = "";
+            var setValueStr = "";
+            var paramsStr = "";
+            var setValueStr1 = "";
+            parNum++;
+            var metIndex = parNum;
             foreach (var item in pars)
             {
                 parNum++;
-                var fieldName = item.Name + parNum;
-                str.AppendLine($"       private {item.ParameterType.FullName} {fieldName};");
+                parsStr += $"{item.ParameterType.FullName} {item.Name},";
+                conditionStr += $"{item.Name}.Equals(fields[{parNum}]) & ";
+                setValueStr += $"fields[{parNum}] = {item.Name};\r\n\t\t\t";
+                paramsStr += $"{item.Name},";
+                setValueStr1 += $"var {item.Name} = ({item.ParameterType.FullName})(fields[{parNum}] = data.Obj);\r\n\t\t\t\t\t\t";
             }
-        }
-        str.AppendLine("");
-        str.AppendLine("       public override void Awake()");
-        str.AppendLine("      {");
-        str.AppendLine("          base.Awake();");
-        str.AppendLine($"          self = {(type == typeof(GameObject) ? "gameObject" : $"GetComponent<{type.FullName}>()")};");
+            if (setValueStr.Length > 0)
+                setValueStr = setValueStr.Remove(setValueStr.Length - 5, 5);
+            if (setValueStr1.Length > 0)
+                setValueStr1 = setValueStr1.Remove(setValueStr1.Length - 8, 8);
 
-        parNum = 0;
-        for (int i = 0; i < properties.Length; i++)
-        {
-            var item = properties[i];
-            if (!item.CanRead | !item.CanWrite | item.GetCustomAttribute<ObsoleteAttribute>() != null)
-                continue;
-            var ptype = item.PropertyType;
-            var code = Type.GetTypeCode(ptype);
-            if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
-                ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
-                & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
-                & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object))
-                )
-                continue;
-            if (ignores.Contains(item.Name))
-                continue;
-            parNum++;
-            var fieldName = item.Name + parNum;
-            str.AppendLine($"          {fieldName} = self.{item.Name};");
-        }
-        str.AppendLine("      }");
-        str.AppendLine("");
-        str.AppendLine("      void Start() { }//让监视面板能显示启动勾选");
-        parNum = 0;
-        for (int i = 0; i < properties.Length; i++)
-        {
-            var item = properties[i];
-            if (!item.CanRead | !item.CanWrite | item.GetCustomAttribute<ObsoleteAttribute>() != null)
-                continue;
-            var ptype = item.PropertyType;
-            var code = Type.GetTypeCode(ptype);
-            if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
-                ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
-                & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
-                & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object))
-                )
-                continue;
-            if (ignores.Contains(item.Name))
-                continue;
-            parNum++;
-            var fieldName = item.Name + parNum;
-            str.AppendLine($"      public {ptype.FullName} {item.Name}");
-            str.AppendLine("      {");
-            str.AppendLine("          get");
-            str.AppendLine("          {");
-            str.AppendLine($"              return self.{item.Name};");
-            str.AppendLine("          }");
-            str.AppendLine("          set");
-            str.AppendLine("          {");
-            str.AppendLine($"               if ({fieldName} == value)");
-            str.AppendLine("                    return;");
-            str.AppendLine($"               {fieldName} = value;");
-            str.AppendLine($"               self.{item.Name} = value;");
-            if (ptype == typeof(Object) | ptype.IsSubclassOf(typeof(Object)))
+            if (immediatelys.Contains(metName))
             {
-                str.AppendLine($"               if (!NetworkResources.I.TryGetValue({fieldName}, out ObjectRecord objectRecord))");
-                str.AppendLine($"                   return;");
-                str.AppendLine($"               ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
-                str.AppendLine("               {");
-                str.AppendLine($"                   index = netObj.registerObjectIndex,");
-                str.AppendLine($"                   index1 = {i},");
-                str.AppendLine($"                   index2 = objectRecord.ID,");
-                str.AppendLine($"                   name = objectRecord.path,");
-                str.AppendLine("                    uid = ClientBase.Instance.UID");
-                str.AppendLine("               });");
+                parsStr = parsStr.TrimEnd(',');
+                paramsStr = paramsStr.TrimEnd(',');
+                blockCode = blockCodes[9];
+                blockCode = blockCode.Replace("{FuncName}", $"{met.Name}");
+                blockCode = blockCode.Replace("{ParsString}", $"{parsStr}");
+                blockCode = blockCode.Replace("{ReturnType}", $"{(met.ReturnType == typeof(void) ? "void" : met.ReturnType.FullName)}");
+                blockCode = blockCode.Replace("{Return}", $"{(met.ReturnType == typeof(void) ? "" : "return ")}");
+                blockCode = blockCode.Replace("{Params}", $"{paramsStr}");
+                blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+                sb4.Append(blockCode);
+                parNum = metIndex - 1;
+                continue;
             }
-            else 
+
+            blockCode = blockCodes[8];
+            blockCode = blockCode.Replace("{FuncName}", $"{met.Name}");
+            blockCode = blockCode.Replace("{ParsString}", $"{parsStr}");
+            blockCode = blockCode.Replace("{Condition}", $"{conditionStr}");
+            blockCode = blockCode.Replace("{SetPars}", $"{setValueStr}");
+            blockCode = blockCode.Replace("{Params}", $"{paramsStr}");
+            blockCode = blockCode.Replace("{FieldIndex}", $"{metIndex}");
+
+            blockCode = blockCode.Replace("{EIDIndex}", $"{metIndex}");
+
+            blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+            sb4.Append(blockCode);
+
+            if (pars.Length == 0)
             {
-                str.AppendLine("                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
-                str.AppendLine("                {");
-                str.AppendLine($"                    index = netObj.registerObjectIndex,");
-                str.AppendLine($"                    index1 = {i},");
-                str.AppendLine("                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),");
-                str.AppendLine("                    uid = ClientBase.Instance.UID");
-                str.AppendLine("                });");
-            }
-            str.AppendLine("          }");
-            str.AppendLine("     }");
-            str.AppendLine("");
-        }
-        parNum = 0;
-        for (int i = 0; i < methods.Length; i++)
-        {
-            var met = methods[i];
-            if (met.MethodImplementationFlags == MethodImplAttributes.InternalCall | met.Name.Contains("get_") | met.Name.Contains("set_") |
-                met.GetCustomAttribute<ObsoleteAttribute>() != null | met.IsGenericMethod)
-                continue;
-            var pars = met.GetParameters();
-            bool not = false;
-            foreach (var item in pars)
-            {
-                var ptype = item.ParameterType;
-                var code = Type.GetTypeCode(ptype);
-                if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
-                    ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
-                    & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
-                    & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                    & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32)
-                    )
-                {
-                    not = true;
-                    break;
-                }
-            }
-            if (not)
-                continue;
-            var value = "";
-            foreach (var item in pars)
-                value += item.ParameterType.FullName + " " + item.Name + ",";
-            str.AppendLine($"public void {met.Name}({value} bool always = false)");
-            str.AppendLine("{");
-            if (pars.Length > 0)
-            {
-                value = "     if(";
-                var list = new List<string>();
-                foreach (var item in pars)
-                {
-                    parNum++;
-                    var fieldName = item.Name + parNum;
-                    value += $"{item.Name} == {fieldName} & ";
-                    list.Add($"     {fieldName} = {item.Name};");
-                }
-                value += "!always) return;";
-                str.AppendLine(value);
-                foreach (var item in list)
-                {
-                    str.AppendLine(item);
-                }
-            }
-            value = "";
-            foreach (var item in pars)
-                value += item.Name + ",";
-            value = value.TrimEnd(',');
-            str.AppendLine($"   var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() {{ pars = new object[] {{ {value} }} }});");
-            str.AppendLine("    ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.identity)");
-            str.AppendLine("    {");
-            str.AppendLine($"       index = netObj.registerObjectIndex,");
-            str.AppendLine($"       index1 = {properties.Length + i},");
-            str.AppendLine("        buffer = buffer");
-            str.AppendLine("    });");
-            str.AppendLine("}");
-        }
-        str.AppendLine("     public override void OnPropertyAutoCheck()");
-        str.AppendLine("     {");
-        str.AppendLine("     if (!autoCheck)");
-        str.AppendLine("         return;");
-        foreach (var item in propertyCodes)
-        {
-            str.AppendLine(item);
-        }
-        str.AppendLine("     }");
-        str.AppendLine("");
-        str.AppendLine("     public override void OnNetworkOperationHandler(Operation opt)");
-        str.AppendLine("     {");
-        str.AppendLine("         if (opt.cmd != Command.BuildComponent)");
-        str.AppendLine("             return;");
-        str.AppendLine("         switch (opt.index1)");
-        str.AppendLine("         {");
-        parNum = 0;
-        for (int i = 0; i < properties.Length; i++)
-        {
-            var item = properties[i];
-            if (!item.CanRead | !item.CanWrite | item.GetCustomAttribute<ObsoleteAttribute>() != null)
-                continue;
-            var ptype = item.PropertyType;
-            var code = Type.GetTypeCode(ptype);
-            if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
-                ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
-                & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
-                & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object))
-                )
-                continue;
-            if (ignores.Contains(item.Name))
-                continue;
-            parNum++;
-            var fieldName = item.Name + parNum;
-            if (ptype != typeof(Object) & ptype.IsSubclassOf(typeof(Object)))
-            {
-                str.AppendLine($"             case {i}:");
-                str.AppendLine("                if (opt.uid == ClientBase.Instance.UID)");
-                str.AppendLine("                    return;");
-                str.AppendLine($"                 {fieldName} = NetworkResources.I.GetObject<{ptype.FullName}>(opt.index2, opt.name);");
-                str.AppendLine($"                 self.{item.Name} = {fieldName};");
-                str.AppendLine("                break;");
+                blockCode = blockCodes[12];
+                blockCode = blockCode.Replace("{FieldIndex1}", $"{metIndex}");
+                blockCode = blockCode.Replace("{FuncName}", $"{met.Name}");
+                blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+                sb5.Append(blockCode);
             }
             else
             {
-                str.AppendLine($"             case {i}:");
-                str.AppendLine("                if (opt.uid == ClientBase.Instance.UID)");
-                str.AppendLine("                    return;");
-                str.AppendLine($"                 {fieldName} = Net.Serialize.NetConvertFast2.DeserializeObject<{ptype.FullName}>(new Net.System.Segment(opt.buffer, false));");
-                str.AppendLine($"                 self.{item.Name} = {fieldName};");
-                str.AppendLine("                break;");
+                paramsStr = paramsStr.TrimEnd(',');
+                blockCode = blockCodes[13];
+                blockCode = blockCode.Replace("{FieldIndex1}", $"{metIndex}");
+                blockCode = blockCode.Replace("{FuncName}", $"{met.Name}");
+                blockCode = blockCode.Replace("{Params}", $"{paramsStr}");
+                blockCode = blockCode.Replace("{SetPars}", $"{setValueStr1}");
+                blockCode = blockCode.Remove(blockCode.Length - 2, 2);
+                sb5.Append(blockCode);
             }
         }
-        for (int i = 0; i < methods.Length; i++)
-        {
-            var met = methods[i];
-            if (met.MethodImplementationFlags == MethodImplAttributes.InternalCall | met.Name.Contains("get_") | met.Name.Contains("set_") |
-                met.GetCustomAttribute<ObsoleteAttribute>() != null | met.IsGenericMethod)
-                continue;
-            var pars = met.GetParameters();
-            bool not = false;
-            foreach (var item in pars)
-            {
-                var ptype = item.ParameterType;
-                var code = Type.GetTypeCode(ptype);
-                if (code == TypeCode.Object & ptype != typeof(Vector2) & ptype != typeof(Vector3) & ptype != typeof(Vector4) &
-                    ptype != typeof(Rect) & ptype != typeof(Quaternion) & ptype != typeof(Color)
-                    & ptype != typeof(Color32) & ptype != typeof(Net.Vector2) & ptype != typeof(Net.Vector3)
-                    & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
-                    & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32)
-                    )
-                {
-                    not = true;
-                    break;
-                }
-            }
-            if (not)
-                continue;
-            str.AppendLine($"             case {properties.Length + i}:");
-            str.AppendLine("              {");
-            str.AppendLine("                    var segment = new Net.System.Segment(opt.buffer, false);");
-            str.AppendLine($"                   var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);");
-            string value = "";
-            for (int n = 0; n < pars.Length; n++)
-            {
-                if (pars[n].ParameterType.IsValueType)
-                    str.AppendLine($"           var {pars[n].Name} = ({pars[n].ParameterType.FullName})data.pars[{n}];");
-                else
-                    str.AppendLine($"           var {pars[n].Name} = data.pars[{n}] as {pars[n].ParameterType.FullName};");
-                value += pars[n].Name + ",";
-            }
-            value = value.TrimEnd(',');
-            str.AppendLine($"                   self.{met.Name}({value});");
-            str.AppendLine("              }");
-            str.AppendLine("                break;");
-        }
-        str.AppendLine("");
-        str.AppendLine("        }");
-        str.AppendLine("     }");
-        str.AppendLine("  }");
-        str.AppendLine("}");
-        str.AppendLine("#endif");
-        return str;
+
+        var blockCodeX = blockCodes[1];
+        blockCodeX = blockCodeX.Replace("{FieldSize}", $"{parNum}");
+        blockCodeX = blockCodeX.Remove(blockCodeX.Length - 2, 2);
+        sb.Append(blockCodeX);
+        sb.Append(sb1.ToString());
+        sb.Append(blockCodes[3]);
+
+        sb.Append(sb2.ToString());
+
+        sb.Append(blockCodes[5]);
+        sb.Append(sb3.ToString());
+        sb.Append(blockCodes[7]);
+
+        sb.Append(sb4.ToString());
+
+        sb.Append(blockCodes[10]);
+        sb.Append(sb5.ToString());
+        sb.Append(blockCodes[14]);
+
+        return sb;
     }
 
     void LoadData()

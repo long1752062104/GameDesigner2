@@ -20,7 +20,7 @@
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
     /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
     /// </summary>
-    public class TcpServerEPoll<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
+    public class TcpServerEpoll<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
         /// <summary>
         /// tcp数据长度(4) + 1CRC协议 = 5
@@ -75,7 +75,7 @@
             Server.Bind(ip);//绑定UDP IP端口
             Server.Listen(LineUp);
             IsRunServer = true;
-            Thread epoll = new Thread(EPollLoop) { IsBackground = true, Name = "EPollLoop" };
+            Thread epoll = new Thread(EpollLoop) { IsBackground = true, Name = "EPollLoop" };
             epoll.Start();
             Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
             suh.Start();
@@ -83,7 +83,7 @@
             ThreadManager.Invoke("SingleHandler", SingleHandler);
             ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            threads.Add("EPollLoop", epoll);
+            threads.Add("EpollLoop", epoll);
             threads.Add("SceneUpdateHandle", suh);
             var scene = OnAddDefaultScene();
             MainSceneName = scene.Key;
@@ -97,7 +97,7 @@
             InitUserID();
         }
 
-        protected unsafe void EPollLoop()
+        protected unsafe void EpollLoop()
         {
             var online = new FastListSafe<Player>();
             var ptrs = new FastListSafe<IntPtr>() { (IntPtr)1, Server.Handle };
@@ -302,5 +302,12 @@
         protected override void HeartHandle()
         {
         }
+    }
+
+    /// <summary>
+    /// 默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class TcpServerEpoll : TcpServerEpoll<NetPlayer, DefaultScene>
+    {
     }
 }

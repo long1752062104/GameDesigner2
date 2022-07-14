@@ -1,9 +1,11 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Client;
-using Net.Component;
 using Net.Share;
+using Net.Component;
 using Net.UnityComponent;
 using UnityEngine;
+using Net.System;
+using static Net.Serialize.NetConvertFast2;
 
 namespace BuildComponent
 {
@@ -15,128 +17,56 @@ namespace BuildComponent
     {
         private UnityEngine.Camera self;
         public bool autoCheck;
-        private System.Single nearClipPlane1;
-        private System.Single farClipPlane2;
-        private System.Single fieldOfView3;
-        private UnityEngine.RenderingPath renderingPath4;
-        private System.Boolean allowHDR5;
-        private System.Boolean allowMSAA6;
-        private System.Boolean allowDynamicResolution7;
-        private System.Boolean forceIntoRenderTexture8;
-        private System.Single orthographicSize9;
-        private System.Boolean orthographic10;
-        private UnityEngine.Rendering.OpaqueSortMode opaqueSortMode11;
-        private UnityEngine.TransparencySortMode transparencySortMode12;
-        private UnityEngine.Vector3 transparencySortAxis13;
-        private System.Single depth14;
-        private System.Single aspect15;
-        private System.Int32 cullingMask16;
-        private System.Int32 eventMask17;
-        private System.Boolean layerCullSpherical18;
-        private UnityEngine.CameraType cameraType19;
-        private System.UInt64 overrideSceneCullingMask20;
-        private System.Boolean useOcclusionCulling21;
-        private UnityEngine.Color backgroundColor22;
-        private UnityEngine.CameraClearFlags clearFlags23;
-        private UnityEngine.DepthTextureMode depthTextureMode24;
-        private System.Boolean clearStencilAfterLightingPass25;
-        private System.Boolean usePhysicalProperties26;
-        private UnityEngine.Vector2 sensorSize27;
-        private UnityEngine.Vector2 lensShift28;
-        private System.Single focalLength29;
-        private UnityEngine.Camera.GateFitMode gateFit30;
-        private UnityEngine.Rect rect31;
-        private UnityEngine.RenderTexture targetTexture33;
-        private System.Int32 targetDisplay34;
-        private System.Boolean useJitteredProjectionMatrixForTransparentRendering35;
-        private System.Single stereoSeparation36;
-        private System.Single stereoConvergence37;
-        private UnityEngine.StereoTargetEyeMask stereoTargetEye38;
-        private System.Boolean enabled39;
-        private System.String tag40;
-        private System.String name41;
-        private UnityEngine.HideFlags hideFlags42;
-        private UnityEngine.Vector4 clipPlane1;
-        private UnityEngine.Vector3 position2;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye3;
-        private UnityEngine.Vector3 position4;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye5;
-        private UnityEngine.Vector3 position6;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye7;
-        private UnityEngine.Vector3 position8;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye9;
-        private UnityEngine.Vector3 position10;
-        private UnityEngine.Vector3 position11;
-        private UnityEngine.Vector3 position12;
-        private UnityEngine.Vector3 position13;
-        private UnityEngine.Vector3 position14;
-        private UnityEngine.Vector3 position15;
-        private UnityEngine.Vector3 pos16;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye17;
-        private UnityEngine.Vector3 pos18;
-        private UnityEngine.Vector3 pos19;
-        private UnityEngine.Camera.MonoOrStereoscopicEye eye20;
-        private UnityEngine.Vector3 pos21;
-        private UnityEngine.Camera.StereoscopicEye eye22;
-        private UnityEngine.Camera.StereoscopicEye eye23;
-        private UnityEngine.Camera.StereoscopicEye eye24;
-        private System.String tag25;
-        private System.String methodName26;
-        private System.String methodName27;
-        private UnityEngine.SendMessageOptions options28;
-        private System.String methodName29;
-        private System.String methodName30;
-        private UnityEngine.SendMessageOptions options31;
-        private System.String methodName32;
-        private System.String methodName33;
-        private UnityEngine.SendMessageOptions options34;
-
+        private object[] fields;
+		private int[] eventsId;
+		
         public override void Awake()
         {
             base.Awake();
             self = GetComponent<UnityEngine.Camera>();
-            nearClipPlane1 = self.nearClipPlane;
-            farClipPlane2 = self.farClipPlane;
-            fieldOfView3 = self.fieldOfView;
-            renderingPath4 = self.renderingPath;
-            allowHDR5 = self.allowHDR;
-            allowMSAA6 = self.allowMSAA;
-            allowDynamicResolution7 = self.allowDynamicResolution;
-            forceIntoRenderTexture8 = self.forceIntoRenderTexture;
-            orthographicSize9 = self.orthographicSize;
-            orthographic10 = self.orthographic;
-            opaqueSortMode11 = self.opaqueSortMode;
-            transparencySortMode12 = self.transparencySortMode;
-            transparencySortAxis13 = self.transparencySortAxis;
-            depth14 = self.depth;
-            aspect15 = self.aspect;
-            cullingMask16 = self.cullingMask;
-            eventMask17 = self.eventMask;
-            layerCullSpherical18 = self.layerCullSpherical;
-            cameraType19 = self.cameraType;
-            overrideSceneCullingMask20 = self.overrideSceneCullingMask;
-            useOcclusionCulling21 = self.useOcclusionCulling;
-            backgroundColor22 = self.backgroundColor;
-            clearFlags23 = self.clearFlags;
-            depthTextureMode24 = self.depthTextureMode;
-            clearStencilAfterLightingPass25 = self.clearStencilAfterLightingPass;
-            usePhysicalProperties26 = self.usePhysicalProperties;
-            sensorSize27 = self.sensorSize;
-            lensShift28 = self.lensShift;
-            focalLength29 = self.focalLength;
-            gateFit30 = self.gateFit;
-            rect31 = self.rect;
-            targetTexture33 = self.targetTexture;
-            targetDisplay34 = self.targetDisplay;
-            useJitteredProjectionMatrixForTransparentRendering35 = self.useJitteredProjectionMatrixForTransparentRendering;
-            stereoSeparation36 = self.stereoSeparation;
-            stereoConvergence37 = self.stereoConvergence;
-            stereoTargetEye38 = self.stereoTargetEye;
-            enabled39 = self.enabled;
-            tag40 = self.tag;
-            name41 = self.name;
-            hideFlags42 = self.hideFlags;
+			fields = new object[40];
+			eventsId = new int[40];
+            fields[1] = self.nearClipPlane;
+            fields[2] = self.farClipPlane;
+            fields[3] = self.fieldOfView;
+            fields[4] = self.renderingPath;
+            fields[5] = self.allowHDR;
+            fields[6] = self.allowMSAA;
+            fields[7] = self.allowDynamicResolution;
+            fields[8] = self.forceIntoRenderTexture;
+            fields[9] = self.orthographicSize;
+            fields[10] = self.orthographic;
+            fields[11] = self.opaqueSortMode;
+            fields[12] = self.transparencySortMode;
+            fields[13] = self.transparencySortAxis;
+            fields[14] = self.depth;
+            fields[15] = self.aspect;
+            fields[16] = self.cullingMask;
+            fields[17] = self.eventMask;
+            fields[18] = self.layerCullSpherical;
+            fields[19] = self.cameraType;
+            fields[20] = self.overrideSceneCullingMask;
+            fields[21] = self.useOcclusionCulling;
+            fields[22] = self.backgroundColor;
+            fields[23] = self.clearFlags;
+            fields[24] = self.depthTextureMode;
+            fields[25] = self.clearStencilAfterLightingPass;
+            fields[26] = self.usePhysicalProperties;
+            fields[27] = self.sensorSize;
+            fields[28] = self.lensShift;
+            fields[29] = self.focalLength;
+            fields[30] = self.gateFit;
+            fields[31] = self.rect;
+            fields[32] = self.pixelRect;
+            fields[33] = self.targetTexture;
+            fields[34] = self.targetDisplay;
+            fields[35] = self.useJitteredProjectionMatrixForTransparentRendering;
+            fields[36] = self.stereoSeparation;
+            fields[37] = self.stereoConvergence;
+            fields[38] = self.stereoTargetEye;
         }
+
+        void Start() { }//让监视面板能显示启动勾选
 
         public System.Single nearClipPlane
         {
@@ -146,20 +76,20 @@ namespace BuildComponent
             }
             set
             {
-                if (nearClipPlane1 == value)
+                if (value.Equals(fields[1]))
                     return;
-                nearClipPlane1 = value;
+                fields[1] = value;
                 self.nearClipPlane = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 0,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 1,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single farClipPlane
         {
             get
@@ -168,20 +98,20 @@ namespace BuildComponent
             }
             set
             {
-                if (farClipPlane2 == value)
+                if (value.Equals(fields[2]))
                     return;
-                farClipPlane2 = value;
+                fields[2] = value;
                 self.farClipPlane = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 1,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 2,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single fieldOfView
         {
             get
@@ -190,20 +120,20 @@ namespace BuildComponent
             }
             set
             {
-                if (fieldOfView3 == value)
+                if (value.Equals(fields[3]))
                     return;
-                fieldOfView3 = value;
+                fields[3] = value;
                 self.fieldOfView = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 2,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 3,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.RenderingPath renderingPath
         {
             get
@@ -212,20 +142,20 @@ namespace BuildComponent
             }
             set
             {
-                if (renderingPath4 == value)
+                if (value.Equals(fields[4]))
                     return;
-                renderingPath4 = value;
+                fields[4] = value;
                 self.renderingPath = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 3,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 4,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean allowHDR
         {
             get
@@ -234,20 +164,20 @@ namespace BuildComponent
             }
             set
             {
-                if (allowHDR5 == value)
+                if (value.Equals(fields[5]))
                     return;
-                allowHDR5 = value;
+                fields[5] = value;
                 self.allowHDR = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 5,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 5,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean allowMSAA
         {
             get
@@ -256,20 +186,20 @@ namespace BuildComponent
             }
             set
             {
-                if (allowMSAA6 == value)
+                if (value.Equals(fields[6]))
                     return;
-                allowMSAA6 = value;
+                fields[6] = value;
                 self.allowMSAA = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 6,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 6,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean allowDynamicResolution
         {
             get
@@ -278,20 +208,20 @@ namespace BuildComponent
             }
             set
             {
-                if (allowDynamicResolution7 == value)
+                if (value.Equals(fields[7]))
                     return;
-                allowDynamicResolution7 = value;
+                fields[7] = value;
                 self.allowDynamicResolution = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 7,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 7,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean forceIntoRenderTexture
         {
             get
@@ -300,20 +230,20 @@ namespace BuildComponent
             }
             set
             {
-                if (forceIntoRenderTexture8 == value)
+                if (value.Equals(fields[8]))
                     return;
-                forceIntoRenderTexture8 = value;
+                fields[8] = value;
                 self.forceIntoRenderTexture = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 8,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 8,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single orthographicSize
         {
             get
@@ -322,20 +252,20 @@ namespace BuildComponent
             }
             set
             {
-                if (orthographicSize9 == value)
+                if (value.Equals(fields[9]))
                     return;
-                orthographicSize9 = value;
+                fields[9] = value;
                 self.orthographicSize = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 9,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 9,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean orthographic
         {
             get
@@ -344,20 +274,20 @@ namespace BuildComponent
             }
             set
             {
-                if (orthographic10 == value)
+                if (value.Equals(fields[10]))
                     return;
-                orthographic10 = value;
+                fields[10] = value;
                 self.orthographic = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 10,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 10,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Rendering.OpaqueSortMode opaqueSortMode
         {
             get
@@ -366,20 +296,20 @@ namespace BuildComponent
             }
             set
             {
-                if (opaqueSortMode11 == value)
+                if (value.Equals(fields[11]))
                     return;
-                opaqueSortMode11 = value;
+                fields[11] = value;
                 self.opaqueSortMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 11,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 11,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.TransparencySortMode transparencySortMode
         {
             get
@@ -388,20 +318,20 @@ namespace BuildComponent
             }
             set
             {
-                if (transparencySortMode12 == value)
+                if (value.Equals(fields[12]))
                     return;
-                transparencySortMode12 = value;
+                fields[12] = value;
                 self.transparencySortMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 12,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 12,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Vector3 transparencySortAxis
         {
             get
@@ -410,20 +340,20 @@ namespace BuildComponent
             }
             set
             {
-                if (transparencySortAxis13 == value)
+                if (value.Equals(fields[13]))
                     return;
-                transparencySortAxis13 = value;
+                fields[13] = value;
                 self.transparencySortAxis = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 13,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 13,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single depth
         {
             get
@@ -432,20 +362,20 @@ namespace BuildComponent
             }
             set
             {
-                if (depth14 == value)
+                if (value.Equals(fields[14]))
                     return;
-                depth14 = value;
+                fields[14] = value;
                 self.depth = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 14,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 14,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single aspect
         {
             get
@@ -454,20 +384,20 @@ namespace BuildComponent
             }
             set
             {
-                if (aspect15 == value)
+                if (value.Equals(fields[15]))
                     return;
-                aspect15 = value;
+                fields[15] = value;
                 self.aspect = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 15,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 15,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Int32 cullingMask
         {
             get
@@ -476,20 +406,20 @@ namespace BuildComponent
             }
             set
             {
-                if (cullingMask16 == value)
+                if (value.Equals(fields[16]))
                     return;
-                cullingMask16 = value;
+                fields[16] = value;
                 self.cullingMask = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 17,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 16,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Int32 eventMask
         {
             get
@@ -498,20 +428,20 @@ namespace BuildComponent
             }
             set
             {
-                if (eventMask17 == value)
+                if (value.Equals(fields[17]))
                     return;
-                eventMask17 = value;
+                fields[17] = value;
                 self.eventMask = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 18,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 17,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean layerCullSpherical
         {
             get
@@ -520,20 +450,20 @@ namespace BuildComponent
             }
             set
             {
-                if (layerCullSpherical18 == value)
+                if (value.Equals(fields[18]))
                     return;
-                layerCullSpherical18 = value;
+                fields[18] = value;
                 self.layerCullSpherical = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 19,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 18,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.CameraType cameraType
         {
             get
@@ -542,20 +472,20 @@ namespace BuildComponent
             }
             set
             {
-                if (cameraType19 == value)
+                if (value.Equals(fields[19]))
                     return;
-                cameraType19 = value;
+                fields[19] = value;
                 self.cameraType = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 20,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 19,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.UInt64 overrideSceneCullingMask
         {
             get
@@ -564,20 +494,20 @@ namespace BuildComponent
             }
             set
             {
-                if (overrideSceneCullingMask20 == value)
+                if (value.Equals(fields[20]))
                     return;
-                overrideSceneCullingMask20 = value;
+                fields[20] = value;
                 self.overrideSceneCullingMask = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 21,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 20,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean useOcclusionCulling
         {
             get
@@ -586,20 +516,20 @@ namespace BuildComponent
             }
             set
             {
-                if (useOcclusionCulling21 == value)
+                if (value.Equals(fields[21]))
                     return;
-                useOcclusionCulling21 = value;
+                fields[21] = value;
                 self.useOcclusionCulling = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 23,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 21,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Color backgroundColor
         {
             get
@@ -608,20 +538,20 @@ namespace BuildComponent
             }
             set
             {
-                if (backgroundColor22 == value)
+                if (value.Equals(fields[22]))
                     return;
-                backgroundColor22 = value;
+                fields[22] = value;
                 self.backgroundColor = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 25,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 22,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.CameraClearFlags clearFlags
         {
             get
@@ -630,20 +560,20 @@ namespace BuildComponent
             }
             set
             {
-                if (clearFlags23 == value)
+                if (value.Equals(fields[23]))
                     return;
-                clearFlags23 = value;
+                fields[23] = value;
                 self.clearFlags = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 26,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 23,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.DepthTextureMode depthTextureMode
         {
             get
@@ -652,20 +582,20 @@ namespace BuildComponent
             }
             set
             {
-                if (depthTextureMode24 == value)
+                if (value.Equals(fields[24]))
                     return;
-                depthTextureMode24 = value;
+                fields[24] = value;
                 self.depthTextureMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 27,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 24,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean clearStencilAfterLightingPass
         {
             get
@@ -674,20 +604,20 @@ namespace BuildComponent
             }
             set
             {
-                if (clearStencilAfterLightingPass25 == value)
+                if (value.Equals(fields[25]))
                     return;
-                clearStencilAfterLightingPass25 = value;
+                fields[25] = value;
                 self.clearStencilAfterLightingPass = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 28,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 25,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean usePhysicalProperties
         {
             get
@@ -696,20 +626,20 @@ namespace BuildComponent
             }
             set
             {
-                if (usePhysicalProperties26 == value)
+                if (value.Equals(fields[26]))
                     return;
-                usePhysicalProperties26 = value;
+                fields[26] = value;
                 self.usePhysicalProperties = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 29,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 26,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Vector2 sensorSize
         {
             get
@@ -718,20 +648,20 @@ namespace BuildComponent
             }
             set
             {
-                if (sensorSize27 == value)
+                if (value.Equals(fields[27]))
                     return;
-                sensorSize27 = value;
+                fields[27] = value;
                 self.sensorSize = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 30,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 27,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Vector2 lensShift
         {
             get
@@ -740,20 +670,20 @@ namespace BuildComponent
             }
             set
             {
-                if (lensShift28 == value)
+                if (value.Equals(fields[28]))
                     return;
-                lensShift28 = value;
+                fields[28] = value;
                 self.lensShift = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 31,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 28,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single focalLength
         {
             get
@@ -762,20 +692,20 @@ namespace BuildComponent
             }
             set
             {
-                if (focalLength29 == value)
+                if (value.Equals(fields[29]))
                     return;
-                focalLength29 = value;
+                fields[29] = value;
                 self.focalLength = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 32,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 29,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Camera.GateFitMode gateFit
         {
             get
@@ -784,20 +714,20 @@ namespace BuildComponent
             }
             set
             {
-                if (gateFit30 == value)
+                if (value.Equals(fields[30]))
                     return;
-                gateFit30 = value;
+                fields[30] = value;
                 self.gateFit = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 33,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 30,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.Rect rect
         {
             get
@@ -806,20 +736,42 @@ namespace BuildComponent
             }
             set
             {
-                if (rect31 == value)
+                if (value.Equals(fields[31]))
                     return;
-                rect31 = value;
+                fields[31] = value;
                 self.rect = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 34,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 31,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
+        public UnityEngine.Rect pixelRect
+        {
+            get
+            {
+                return self.pixelRect;
+            }
+            set
+            {
+                if (value.Equals(fields[32]))
+                    return;
+                fields[32] = value;
+                self.pixelRect = value;
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                {
+                    index = netObj.registerObjectIndex,
+                    index1 = Index,
+                    index2 = 32,
+                    buffer = SerializeObject(value).ToArray(true),
+                    uid = ClientBase.Instance.UID
+                });
+            }
+        }
         public UnityEngine.RenderTexture targetTexture
         {
             get
@@ -828,23 +780,20 @@ namespace BuildComponent
             }
             set
             {
-                if (targetTexture33 == value)
+                if (value.Equals(fields[33]))
                     return;
-                targetTexture33 = value;
+                fields[33] = value;
                 self.targetTexture = value;
-                if (!NetworkResources.I.TryGetValue(targetTexture33, out ObjectRecord objectRecord))
-                    return;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 40,
-                    index2 = objectRecord.ID,
-                    name = objectRecord.path,
+                    index1 = Index,
+                    index2 = 33,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Int32 targetDisplay
         {
             get
@@ -853,20 +802,20 @@ namespace BuildComponent
             }
             set
             {
-                if (targetDisplay34 == value)
+                if (value.Equals(fields[34]))
                     return;
-                targetDisplay34 = value;
+                fields[34] = value;
                 self.targetDisplay = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 42,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 34,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Boolean useJitteredProjectionMatrixForTransparentRendering
         {
             get
@@ -875,20 +824,20 @@ namespace BuildComponent
             }
             set
             {
-                if (useJitteredProjectionMatrixForTransparentRendering35 == value)
+                if (value.Equals(fields[35]))
                     return;
-                useJitteredProjectionMatrixForTransparentRendering35 = value;
+                fields[35] = value;
                 self.useJitteredProjectionMatrixForTransparentRendering = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 47,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 35,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single stereoSeparation
         {
             get
@@ -897,20 +846,20 @@ namespace BuildComponent
             }
             set
             {
-                if (stereoSeparation36 == value)
+                if (value.Equals(fields[36]))
                     return;
-                stereoSeparation36 = value;
+                fields[36] = value;
                 self.stereoSeparation = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 51,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 36,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public System.Single stereoConvergence
         {
             get
@@ -919,20 +868,20 @@ namespace BuildComponent
             }
             set
             {
-                if (stereoConvergence37 == value)
+                if (value.Equals(fields[37]))
                     return;
-                stereoConvergence37 = value;
+                fields[37] = value;
                 self.stereoConvergence = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 52,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 37,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
         }
-
         public UnityEngine.StereoTargetEyeMask stereoTargetEye
         {
             get
@@ -941,461 +890,25 @@ namespace BuildComponent
             }
             set
             {
-                if (stereoTargetEye38 == value)
+                if (value.Equals(fields[38]))
                     return;
-                stereoTargetEye38 = value;
+                fields[38] = value;
                 self.stereoTargetEye = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
+                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = 54,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
+                    index1 = Index,
+                    index2 = 38,
+                    buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
                 });
             }
-        }
-
-        public System.Boolean enabled
-        {
-            get
-            {
-                return self.enabled;
-            }
-            set
-            {
-                if (enabled39 == value)
-                    return;
-                enabled39 = value;
-                self.enabled = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 63,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public System.String tag
-        {
-            get
-            {
-                return self.tag;
-            }
-            set
-            {
-                if (tag40 == value)
-                    return;
-                tag40 = value;
-                self.tag = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 67,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public System.String name
-        {
-            get
-            {
-                return self.name;
-            }
-            set
-            {
-                if (name41 == value)
-                    return;
-                name41 = value;
-                self.name = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 81,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public UnityEngine.HideFlags hideFlags
-        {
-            get
-            {
-                return self.hideFlags;
-            }
-            set
-            {
-                if (hideFlags42 == value)
-                    return;
-                hideFlags42 = value;
-                self.hideFlags = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = 82,
-                    buffer = Net.Serialize.NetConvertFast2.SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
-
-        public void GetGateFittedLensShift(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 156,
-                buffer = buffer
-            });
-        }
-        public void CalculateObliqueMatrix(UnityEngine.Vector4 clipPlane, bool always = false)
-        {
-            if (clipPlane == clipPlane1 & !always) return;
-            clipPlane1 = clipPlane;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { clipPlane } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 184,
-                buffer = buffer
-            });
-        }
-        public void WorldToScreenPoint(UnityEngine.Vector3 position, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (position == position2 & eye == eye3 & !always) return;
-            position2 = position;
-            eye3 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 185,
-                buffer = buffer
-            });
-        }
-        public void WorldToViewportPoint(UnityEngine.Vector3 position, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (position == position4 & eye == eye5 & !always) return;
-            position4 = position;
-            eye5 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 186,
-                buffer = buffer
-            });
-        }
-        public void ViewportToWorldPoint(UnityEngine.Vector3 position, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (position == position6 & eye == eye7 & !always) return;
-            position6 = position;
-            eye7 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 187,
-                buffer = buffer
-            });
-        }
-        public void ScreenToWorldPoint(UnityEngine.Vector3 position, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (position == position8 & eye == eye9 & !always) return;
-            position8 = position;
-            eye9 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 188,
-                buffer = buffer
-            });
-        }
-        public void WorldToScreenPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position10 & !always) return;
-            position10 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 189,
-                buffer = buffer
-            });
-        }
-        public void WorldToViewportPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position11 & !always) return;
-            position11 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 190,
-                buffer = buffer
-            });
-        }
-        public void ViewportToWorldPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position12 & !always) return;
-            position12 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 191,
-                buffer = buffer
-            });
-        }
-        public void ScreenToWorldPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position13 & !always) return;
-            position13 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 192,
-                buffer = buffer
-            });
-        }
-        public void ScreenToViewportPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position14 & !always) return;
-            position14 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 193,
-                buffer = buffer
-            });
-        }
-        public void ViewportToScreenPoint(UnityEngine.Vector3 position, bool always = false)
-        {
-            if (position == position15 & !always) return;
-            position15 = position;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { position } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 194,
-                buffer = buffer
-            });
-        }
-        public void ViewportPointToRay(UnityEngine.Vector3 pos, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (pos == pos16 & eye == eye17 & !always) return;
-            pos16 = pos;
-            eye17 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { pos, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 195,
-                buffer = buffer
-            });
-        }
-        public void ViewportPointToRay(UnityEngine.Vector3 pos, bool always = false)
-        {
-            if (pos == pos18 & !always) return;
-            pos18 = pos;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { pos } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 196,
-                buffer = buffer
-            });
-        }
-        public void ScreenPointToRay(UnityEngine.Vector3 pos, UnityEngine.Camera.MonoOrStereoscopicEye eye, bool always = false)
-        {
-            if (pos == pos19 & eye == eye20 & !always) return;
-            pos19 = pos;
-            eye20 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { pos, eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 197,
-                buffer = buffer
-            });
-        }
-        public void ScreenPointToRay(UnityEngine.Vector3 pos, bool always = false)
-        {
-            if (pos == pos21 & !always) return;
-            pos21 = pos;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { pos } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 198,
-                buffer = buffer
-            });
-        }
-        public void GetStereoNonJitteredProjectionMatrix(UnityEngine.Camera.StereoscopicEye eye, bool always = false)
-        {
-            if (eye == eye22 & !always) return;
-            eye22 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 211,
-                buffer = buffer
-            });
-        }
-        public void GetStereoViewMatrix(UnityEngine.Camera.StereoscopicEye eye, bool always = false)
-        {
-            if (eye == eye23 & !always) return;
-            eye23 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 212,
-                buffer = buffer
-            });
-        }
-        public void GetStereoProjectionMatrix(UnityEngine.Camera.StereoscopicEye eye, bool always = false)
-        {
-            if (eye == eye24 & !always) return;
-            eye24 = eye;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { eye } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 214,
-                buffer = buffer
-            });
-        }
-        public void CompareTag(System.String tag, bool always = false)
-        {
-            if (tag == tag25 & !always) return;
-            tag25 = tag;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { tag } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 290,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName26 & !always) return;
-            methodName26 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 293,
-                buffer = buffer
-            });
-        }
-        public void SendMessageUpwards(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName27 & options == options28 & !always) return;
-            methodName27 = methodName;
-            options28 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 294,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName29 & !always) return;
-            methodName29 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 296,
-                buffer = buffer
-            });
-        }
-        public void SendMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName30 & options == options31 & !always) return;
-            methodName30 = methodName;
-            options31 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 298,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, bool always = false)
-        {
-            if (methodName == methodName32 & !always) return;
-            methodName32 = methodName;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 301,
-                buffer = buffer
-            });
-        }
-        public void BroadcastMessage(System.String methodName, UnityEngine.SendMessageOptions options, bool always = false)
-        {
-            if (methodName == methodName33 & options == options34 & !always) return;
-            methodName33 = methodName;
-            options34 = options;
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { methodName, options } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 302,
-                buffer = buffer
-            });
-        }
-        public void GetInstanceID(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 316,
-                buffer = buffer
-            });
-        }
-        public void GetHashCode(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 317,
-                buffer = buffer
-            });
-        }
-        public void ToString(bool always = false)
-        {
-            var buffer = Net.Serialize.NetConvertFast2.SerializeModel(new RPCModel() { pars = new object[] { } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.m_identity)
-            {
-                index = netObj.registerObjectIndex,
-                index1 = 323,
-                buffer = buffer
-            });
         }
         public override void OnPropertyAutoCheck()
         {
             if (!autoCheck)
                 return;
+
             nearClipPlane = nearClipPlane;
             farClipPlane = farClipPlane;
             fieldOfView = fieldOfView;
@@ -1427,508 +940,462 @@ namespace BuildComponent
             focalLength = focalLength;
             gateFit = gateFit;
             rect = rect;
+            pixelRect = pixelRect;
             targetTexture = targetTexture;
             targetDisplay = targetDisplay;
             useJitteredProjectionMatrixForTransparentRendering = useJitteredProjectionMatrixForTransparentRendering;
             stereoSeparation = stereoSeparation;
             stereoConvergence = stereoConvergence;
             stereoTargetEye = stereoTargetEye;
-            enabled = enabled;
-            tag = tag;
-            name = name;
-            hideFlags = hideFlags;
         }
 
+		public UnityEngine.Vector2 GetGateFittedLensShift()
+        {
+            return self.GetGateFittedLensShift();
+        }
+        public void CalculateObliqueMatrix(UnityEngine.Vector4 clipPlane, bool always = false, int executeNumber = 0, float time = 0)
+        {
+            if (clipPlane.Equals(fields[40]) &  !always) return;
+			fields[40] = clipPlane;
+            var buffer = SerializeModel(new RPCModel() { pars = new object[] { clipPlane, } });
+            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            {
+                index = netObj.registerObjectIndex,
+                index1 = Index,
+                index2 = 39,
+                buffer = buffer
+            });
+            if (executeNumber > 0)
+            {
+                ThreadManager.Event.RemoveEvent(eventsId[39]);
+                eventsId[39] = ThreadManager.Event.AddEvent(time, executeNumber, (obj)=> {
+                    CalculateObliqueMatrix(clipPlane, true, 0, 0);
+                }, null);
+            }
+        }
+		public UnityEngine.Vector3 WorldToScreenPoint(UnityEngine.Vector3 position,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.WorldToScreenPoint(position,eye);
+        }
+		public UnityEngine.Vector3 WorldToViewportPoint(UnityEngine.Vector3 position,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.WorldToViewportPoint(position,eye);
+        }
+		public UnityEngine.Vector3 ViewportToWorldPoint(UnityEngine.Vector3 position,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.ViewportToWorldPoint(position,eye);
+        }
+		public UnityEngine.Vector3 ScreenToWorldPoint(UnityEngine.Vector3 position,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.ScreenToWorldPoint(position,eye);
+        }
+		public UnityEngine.Vector3 WorldToScreenPoint(UnityEngine.Vector3 position)
+        {
+            return self.WorldToScreenPoint(position);
+        }
+		public UnityEngine.Vector3 WorldToViewportPoint(UnityEngine.Vector3 position)
+        {
+            return self.WorldToViewportPoint(position);
+        }
+		public UnityEngine.Vector3 ViewportToWorldPoint(UnityEngine.Vector3 position)
+        {
+            return self.ViewportToWorldPoint(position);
+        }
+		public UnityEngine.Vector3 ScreenToWorldPoint(UnityEngine.Vector3 position)
+        {
+            return self.ScreenToWorldPoint(position);
+        }
+		public UnityEngine.Vector3 ScreenToViewportPoint(UnityEngine.Vector3 position)
+        {
+            return self.ScreenToViewportPoint(position);
+        }
+		public UnityEngine.Vector3 ViewportToScreenPoint(UnityEngine.Vector3 position)
+        {
+            return self.ViewportToScreenPoint(position);
+        }
+		public UnityEngine.Ray ViewportPointToRay(UnityEngine.Vector3 pos,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.ViewportPointToRay(pos,eye);
+        }
+		public UnityEngine.Ray ViewportPointToRay(UnityEngine.Vector3 pos)
+        {
+            return self.ViewportPointToRay(pos);
+        }
+		public UnityEngine.Ray ScreenPointToRay(UnityEngine.Vector3 pos,UnityEngine.Camera.MonoOrStereoscopicEye eye)
+        {
+            return self.ScreenPointToRay(pos,eye);
+        }
+		public UnityEngine.Ray ScreenPointToRay(UnityEngine.Vector3 pos)
+        {
+            return self.ScreenPointToRay(pos);
+        }
+		public UnityEngine.Matrix4x4 GetStereoNonJitteredProjectionMatrix(UnityEngine.Camera.StereoscopicEye eye)
+        {
+            return self.GetStereoNonJitteredProjectionMatrix(eye);
+        }
+		public UnityEngine.Matrix4x4 GetStereoViewMatrix(UnityEngine.Camera.StereoscopicEye eye)
+        {
+            return self.GetStereoViewMatrix(eye);
+        }
+		public UnityEngine.Matrix4x4 GetStereoProjectionMatrix(UnityEngine.Camera.StereoscopicEye eye)
+        {
+            return self.GetStereoProjectionMatrix(eye);
+        }
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (opt.cmd != Command.BuildComponent)
-                return;
-            switch (opt.index1)
+            switch (opt.index2)
             {
-                case 0:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    nearClipPlane1 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.nearClipPlane = nearClipPlane1;
-                    break;
+
                 case 1:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    farClipPlane2 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.farClipPlane = farClipPlane2;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var nearClipPlane = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[1] = nearClipPlane;
+						self.nearClipPlane = nearClipPlane;
+					}
                     break;
                 case 2:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    fieldOfView3 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.fieldOfView = fieldOfView3;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var farClipPlane = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[2] = farClipPlane;
+						self.farClipPlane = farClipPlane;
+					}
                     break;
                 case 3:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    renderingPath4 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.RenderingPath>(new Net.System.Segment(opt.buffer, false));
-                    self.renderingPath = renderingPath4;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var fieldOfView = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[3] = fieldOfView;
+						self.fieldOfView = fieldOfView;
+					}
+                    break;
+                case 4:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var renderingPath = DeserializeObject<UnityEngine.RenderingPath>(new Segment(opt.buffer, false));
+						fields[4] = renderingPath;
+						self.renderingPath = renderingPath;
+					}
                     break;
                 case 5:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    allowHDR5 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.allowHDR = allowHDR5;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var allowHDR = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[5] = allowHDR;
+						self.allowHDR = allowHDR;
+					}
                     break;
                 case 6:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    allowMSAA6 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.allowMSAA = allowMSAA6;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var allowMSAA = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[6] = allowMSAA;
+						self.allowMSAA = allowMSAA;
+					}
                     break;
                 case 7:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    allowDynamicResolution7 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.allowDynamicResolution = allowDynamicResolution7;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var allowDynamicResolution = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[7] = allowDynamicResolution;
+						self.allowDynamicResolution = allowDynamicResolution;
+					}
                     break;
                 case 8:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    forceIntoRenderTexture8 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.forceIntoRenderTexture = forceIntoRenderTexture8;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var forceIntoRenderTexture = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[8] = forceIntoRenderTexture;
+						self.forceIntoRenderTexture = forceIntoRenderTexture;
+					}
                     break;
                 case 9:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    orthographicSize9 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.orthographicSize = orthographicSize9;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var orthographicSize = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[9] = orthographicSize;
+						self.orthographicSize = orthographicSize;
+					}
                     break;
                 case 10:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    orthographic10 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.orthographic = orthographic10;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var orthographic = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[10] = orthographic;
+						self.orthographic = orthographic;
+					}
                     break;
                 case 11:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    opaqueSortMode11 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Rendering.OpaqueSortMode>(new Net.System.Segment(opt.buffer, false));
-                    self.opaqueSortMode = opaqueSortMode11;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var opaqueSortMode = DeserializeObject<UnityEngine.Rendering.OpaqueSortMode>(new Segment(opt.buffer, false));
+						fields[11] = opaqueSortMode;
+						self.opaqueSortMode = opaqueSortMode;
+					}
                     break;
                 case 12:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    transparencySortMode12 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.TransparencySortMode>(new Net.System.Segment(opt.buffer, false));
-                    self.transparencySortMode = transparencySortMode12;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var transparencySortMode = DeserializeObject<UnityEngine.TransparencySortMode>(new Segment(opt.buffer, false));
+						fields[12] = transparencySortMode;
+						self.transparencySortMode = transparencySortMode;
+					}
                     break;
                 case 13:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    transparencySortAxis13 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Vector3>(new Net.System.Segment(opt.buffer, false));
-                    self.transparencySortAxis = transparencySortAxis13;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var transparencySortAxis = DeserializeObject<UnityEngine.Vector3>(new Segment(opt.buffer, false));
+						fields[13] = transparencySortAxis;
+						self.transparencySortAxis = transparencySortAxis;
+					}
                     break;
                 case 14:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    depth14 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.depth = depth14;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var depth = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[14] = depth;
+						self.depth = depth;
+					}
                     break;
                 case 15:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    aspect15 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.aspect = aspect15;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var aspect = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[15] = aspect;
+						self.aspect = aspect;
+					}
+                    break;
+                case 16:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var cullingMask = DeserializeObject<System.Int32>(new Segment(opt.buffer, false));
+						fields[16] = cullingMask;
+						self.cullingMask = cullingMask;
+					}
                     break;
                 case 17:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    cullingMask16 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Int32>(new Net.System.Segment(opt.buffer, false));
-                    self.cullingMask = cullingMask16;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var eventMask = DeserializeObject<System.Int32>(new Segment(opt.buffer, false));
+						fields[17] = eventMask;
+						self.eventMask = eventMask;
+					}
                     break;
                 case 18:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    eventMask17 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Int32>(new Net.System.Segment(opt.buffer, false));
-                    self.eventMask = eventMask17;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var layerCullSpherical = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[18] = layerCullSpherical;
+						self.layerCullSpherical = layerCullSpherical;
+					}
                     break;
                 case 19:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    layerCullSpherical18 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.layerCullSpherical = layerCullSpherical18;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var cameraType = DeserializeObject<UnityEngine.CameraType>(new Segment(opt.buffer, false));
+						fields[19] = cameraType;
+						self.cameraType = cameraType;
+					}
                     break;
                 case 20:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    cameraType19 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.CameraType>(new Net.System.Segment(opt.buffer, false));
-                    self.cameraType = cameraType19;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var overrideSceneCullingMask = DeserializeObject<System.UInt64>(new Segment(opt.buffer, false));
+						fields[20] = overrideSceneCullingMask;
+						self.overrideSceneCullingMask = overrideSceneCullingMask;
+					}
                     break;
                 case 21:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    overrideSceneCullingMask20 = Net.Serialize.NetConvertFast2.DeserializeObject<System.UInt64>(new Net.System.Segment(opt.buffer, false));
-                    self.overrideSceneCullingMask = overrideSceneCullingMask20;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var useOcclusionCulling = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[21] = useOcclusionCulling;
+						self.useOcclusionCulling = useOcclusionCulling;
+					}
+                    break;
+                case 22:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var backgroundColor = DeserializeObject<UnityEngine.Color>(new Segment(opt.buffer, false));
+						fields[22] = backgroundColor;
+						self.backgroundColor = backgroundColor;
+					}
                     break;
                 case 23:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    useOcclusionCulling21 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.useOcclusionCulling = useOcclusionCulling21;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var clearFlags = DeserializeObject<UnityEngine.CameraClearFlags>(new Segment(opt.buffer, false));
+						fields[23] = clearFlags;
+						self.clearFlags = clearFlags;
+					}
+                    break;
+                case 24:
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var depthTextureMode = DeserializeObject<UnityEngine.DepthTextureMode>(new Segment(opt.buffer, false));
+						fields[24] = depthTextureMode;
+						self.depthTextureMode = depthTextureMode;
+					}
                     break;
                 case 25:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    backgroundColor22 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Color>(new Net.System.Segment(opt.buffer, false));
-                    self.backgroundColor = backgroundColor22;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var clearStencilAfterLightingPass = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[25] = clearStencilAfterLightingPass;
+						self.clearStencilAfterLightingPass = clearStencilAfterLightingPass;
+					}
                     break;
                 case 26:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    clearFlags23 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.CameraClearFlags>(new Net.System.Segment(opt.buffer, false));
-                    self.clearFlags = clearFlags23;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var usePhysicalProperties = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[26] = usePhysicalProperties;
+						self.usePhysicalProperties = usePhysicalProperties;
+					}
                     break;
                 case 27:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    depthTextureMode24 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.DepthTextureMode>(new Net.System.Segment(opt.buffer, false));
-                    self.depthTextureMode = depthTextureMode24;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var sensorSize = DeserializeObject<UnityEngine.Vector2>(new Segment(opt.buffer, false));
+						fields[27] = sensorSize;
+						self.sensorSize = sensorSize;
+					}
                     break;
                 case 28:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    clearStencilAfterLightingPass25 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.clearStencilAfterLightingPass = clearStencilAfterLightingPass25;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var lensShift = DeserializeObject<UnityEngine.Vector2>(new Segment(opt.buffer, false));
+						fields[28] = lensShift;
+						self.lensShift = lensShift;
+					}
                     break;
                 case 29:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    usePhysicalProperties26 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.usePhysicalProperties = usePhysicalProperties26;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var focalLength = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[29] = focalLength;
+						self.focalLength = focalLength;
+					}
                     break;
                 case 30:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    sensorSize27 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Vector2>(new Net.System.Segment(opt.buffer, false));
-                    self.sensorSize = sensorSize27;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var gateFit = DeserializeObject<UnityEngine.Camera.GateFitMode>(new Segment(opt.buffer, false));
+						fields[30] = gateFit;
+						self.gateFit = gateFit;
+					}
                     break;
                 case 31:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    lensShift28 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Vector2>(new Net.System.Segment(opt.buffer, false));
-                    self.lensShift = lensShift28;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var rect = DeserializeObject<UnityEngine.Rect>(new Segment(opt.buffer, false));
+						fields[31] = rect;
+						self.rect = rect;
+					}
                     break;
                 case 32:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    focalLength29 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.focalLength = focalLength29;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var pixelRect = DeserializeObject<UnityEngine.Rect>(new Segment(opt.buffer, false));
+						fields[32] = pixelRect;
+						self.pixelRect = pixelRect;
+					}
                     break;
                 case 33:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    gateFit30 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Camera.GateFitMode>(new Net.System.Segment(opt.buffer, false));
-                    self.gateFit = gateFit30;
+                    {
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var targetTexture = DeserializeObject<UnityEngine.RenderTexture>(new Segment(opt.buffer, false));
+						fields[33] = targetTexture;
+						self.targetTexture = targetTexture;
+					}
                     break;
                 case 34:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    rect31 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.Rect>(new Net.System.Segment(opt.buffer, false));
-                    self.rect = rect31;
-                    break;
-                case 40:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    targetTexture33 = NetworkResources.I.GetObject<UnityEngine.RenderTexture>(opt.index2, opt.name);
-                    self.targetTexture = targetTexture33;
-                    break;
-                case 42:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    targetDisplay34 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Int32>(new Net.System.Segment(opt.buffer, false));
-                    self.targetDisplay = targetDisplay34;
-                    break;
-                case 47:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    useJitteredProjectionMatrixForTransparentRendering35 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.useJitteredProjectionMatrixForTransparentRendering = useJitteredProjectionMatrixForTransparentRendering35;
-                    break;
-                case 51:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    stereoSeparation36 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.stereoSeparation = stereoSeparation36;
-                    break;
-                case 52:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    stereoConvergence37 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Single>(new Net.System.Segment(opt.buffer, false));
-                    self.stereoConvergence = stereoConvergence37;
-                    break;
-                case 54:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    stereoTargetEye38 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.StereoTargetEyeMask>(new Net.System.Segment(opt.buffer, false));
-                    self.stereoTargetEye = stereoTargetEye38;
-                    break;
-                case 63:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    enabled39 = Net.Serialize.NetConvertFast2.DeserializeObject<System.Boolean>(new Net.System.Segment(opt.buffer, false));
-                    self.enabled = enabled39;
-                    break;
-                case 67:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    tag40 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.tag = tag40;
-                    break;
-                case 81:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    name41 = Net.Serialize.NetConvertFast2.DeserializeObject<System.String>(new Net.System.Segment(opt.buffer, false));
-                    self.name = name41;
-                    break;
-                case 82:
-                    if (opt.uid == ClientBase.Instance.UID)
-                        return;
-                    hideFlags42 = Net.Serialize.NetConvertFast2.DeserializeObject<UnityEngine.HideFlags>(new Net.System.Segment(opt.buffer, false));
-                    self.hideFlags = hideFlags42;
-                    break;
-                case 156:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetGateFittedLensShift();
-                    }
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var targetDisplay = DeserializeObject<System.Int32>(new Segment(opt.buffer, false));
+						fields[34] = targetDisplay;
+						self.targetDisplay = targetDisplay;
+					}
                     break;
-                case 184:
+                case 35:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var clipPlane = (UnityEngine.Vector4)data.pars[0];
-                        self.CalculateObliqueMatrix(clipPlane);
-                    }
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var useJitteredProjectionMatrixForTransparentRendering = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+						fields[35] = useJitteredProjectionMatrixForTransparentRendering;
+						self.useJitteredProjectionMatrixForTransparentRendering = useJitteredProjectionMatrixForTransparentRendering;
+					}
                     break;
-                case 185:
+                case 36:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.WorldToScreenPoint(position, eye);
-                    }
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var stereoSeparation = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[36] = stereoSeparation;
+						self.stereoSeparation = stereoSeparation;
+					}
                     break;
-                case 186:
+                case 37:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.WorldToViewportPoint(position, eye);
-                    }
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var stereoConvergence = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+						fields[37] = stereoConvergence;
+						self.stereoConvergence = stereoConvergence;
+					}
                     break;
-                case 187:
+                case 38:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.ViewportToWorldPoint(position, eye);
-                    }
+						if (opt.uid == ClientBase.Instance.UID)
+							return;
+						var stereoTargetEye = DeserializeObject<UnityEngine.StereoTargetEyeMask>(new Segment(opt.buffer, false));
+						fields[38] = stereoTargetEye;
+						self.stereoTargetEye = stereoTargetEye;
+					}
                     break;
-                case 188:
+                case 39:
                     {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.ScreenToWorldPoint(position, eye);
-                    }
+						var segment = new Segment(opt.buffer, false);
+						var data = DeserializeModel(segment);
+						var clipPlane = (UnityEngine.Vector4)(fields[40] = data.Obj);
+						self.CalculateObliqueMatrix(clipPlane);
+					}
                     break;
-                case 189:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.WorldToScreenPoint(position);
-                    }
-                    break;
-                case 190:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.WorldToViewportPoint(position);
-                    }
-                    break;
-                case 191:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.ViewportToWorldPoint(position);
-                    }
-                    break;
-                case 192:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.ScreenToWorldPoint(position);
-                    }
-                    break;
-                case 193:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.ScreenToViewportPoint(position);
-                    }
-                    break;
-                case 194:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var position = (UnityEngine.Vector3)data.pars[0];
-                        self.ViewportToScreenPoint(position);
-                    }
-                    break;
-                case 195:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var pos = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.ViewportPointToRay(pos, eye);
-                    }
-                    break;
-                case 196:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var pos = (UnityEngine.Vector3)data.pars[0];
-                        self.ViewportPointToRay(pos);
-                    }
-                    break;
-                case 197:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var pos = (UnityEngine.Vector3)data.pars[0];
-                        var eye = (UnityEngine.Camera.MonoOrStereoscopicEye)data.pars[1];
-                        self.ScreenPointToRay(pos, eye);
-                    }
-                    break;
-                case 198:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var pos = (UnityEngine.Vector3)data.pars[0];
-                        self.ScreenPointToRay(pos);
-                    }
-                    break;
-                case 211:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var eye = (UnityEngine.Camera.StereoscopicEye)data.pars[0];
-                        self.GetStereoNonJitteredProjectionMatrix(eye);
-                    }
-                    break;
-                case 212:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var eye = (UnityEngine.Camera.StereoscopicEye)data.pars[0];
-                        self.GetStereoViewMatrix(eye);
-                    }
-                    break;
-                case 214:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var eye = (UnityEngine.Camera.StereoscopicEye)data.pars[0];
-                        self.GetStereoProjectionMatrix(eye);
-                    }
-                    break;
-                case 290:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var tag = data.pars[0] as System.String;
-                        self.CompareTag(tag);
-                    }
-                    break;
-                case 293:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessageUpwards(methodName);
-                    }
-                    break;
-                case 294:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessageUpwards(methodName, options);
-                    }
-                    break;
-                case 296:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.SendMessage(methodName);
-                    }
-                    break;
-                case 298:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.SendMessage(methodName, options);
-                    }
-                    break;
-                case 301:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        self.BroadcastMessage(methodName);
-                    }
-                    break;
-                case 302:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        var methodName = data.pars[0] as System.String;
-                        var options = (UnityEngine.SendMessageOptions)data.pars[1];
-                        self.BroadcastMessage(methodName, options);
-                    }
-                    break;
-                case 316:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetInstanceID();
-                    }
-                    break;
-                case 317:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.GetHashCode();
-                    }
-                    break;
-                case 323:
-                    {
-                        var segment = new Net.System.Segment(opt.buffer, false);
-                        var data = Net.Serialize.NetConvertFast2.DeserializeModel(segment);
-                        self.ToString();
-                    }
-                    break;
-
             }
         }
     }
