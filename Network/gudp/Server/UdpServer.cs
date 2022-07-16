@@ -114,6 +114,33 @@
                 }
             }
         }
+
+        protected override Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
+        {
+            var client = base.AcceptHander(clientSocket, remotePoint);
+            client.Gcp = new Plugins.GcpKernel();
+            client.Gcp.MTU = (ushort)MTU;
+            client.Gcp.RTO = (uint)RTO;
+            client.Gcp.OnSender += (bytes) => {
+                Send(client, NetCmd.ReliableTransport, bytes);
+            };
+            return client;
+        }
+
+        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
+        {
+            int count = rtRPCModels.Count;
+            if (count <= 0)
+                goto J;
+            if (client.Gcp.HasSend())
+                goto J;
+            if (count > PackageLength)
+                count = PackageLength;
+            var stream = BufferPool.Take();
+            WriteDataBody(client, ref stream, rtRPCModels, count, true);
+            client.Gcp.Send(stream.ToArray(true));
+            J: client.Gcp.Update();
+        }
     }
 
     /// <summary>
@@ -121,5 +148,34 @@
     /// </summary>
     public class UdpServer : UdpServer<NetPlayer, DefaultScene>
     {
+#if UDPTEST
+        protected override void ProcessReceive()
+        {
+        }
+        internal void ReceiveTest(byte[] bytes, EndPoint remotePoint) 
+        {
+            var buffer = new Segment(bytes, false);
+            receiveCount += buffer.Count;
+            receiveAmount++;
+            ReceiveProcessed(remotePoint, buffer, false);
+        }
+        internal void DataHandlerTest(byte[] bytes, EndPoint remotePoint)
+        {
+            DataHandle(AllClients[remotePoint], bytes);
+        }
+        protected override void SendByteData(NetPlayer client, byte[] buffer, bool reliable)
+        {
+            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+                return;
+            if (buffer.Length >= 65507)
+            {
+                Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                return;
+            }
+            (Net.Client.UdpClient.Instance as Net.Client.UdpClient).ReceiveTest(buffer);
+            sendAmount++;
+            sendCount += buffer.Length;
+        }
+#endif
     }
 }

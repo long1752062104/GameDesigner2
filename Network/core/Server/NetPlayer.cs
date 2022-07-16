@@ -9,6 +9,7 @@
     using global::System.Reflection;
     using Net.System;
     using Net.Helper;
+    using Net.Plugins;
 
     /// <summary>
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -57,16 +58,6 @@
         /// </summary>
         internal byte heart = 0;
         /// <summary>
-        /// 发送可靠数据缓冲
-        /// </summary>
-        internal MyDictionary<uint, MyDictionary<ushort, RTBuffer>> sendRTList = new MyDictionary<uint, MyDictionary<ushort, RTBuffer>>();
-        /// <summary>
-        /// 接收可靠数据缓冲
-        /// </summary>
-        internal HashSet<int> revdRTList = new HashSet<int>();
-        internal QueueSafe<AckQueue> ackQueue = new QueueSafe<AckQueue>();
-        internal int sendRTListCount;
-        /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
         /// </summary>
         internal int stack = 0;
@@ -82,20 +73,7 @@
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> tcpRPCModels = new QueueSafe<RPCModel>();
         internal QueueSafe<RPCModel> udpRPCModels = new QueueSafe<RPCModel>();
-        internal DateTime rtTime;
-        /// <summary>
-        /// 当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (发送帧)
-        /// </summary>
-        internal uint sendReliableFrame;
-        /// <summary>
-        /// 当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (接收帧)
-        /// </summary>
-        internal uint revdReliableFrame;
-        public double currRto = 50;
-        internal Dictionary<uint, FrameList> revdFrames = new Dictionary<uint, FrameList>();
-        internal long fileStreamCurrPos;
         internal QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
-        //internal QueueSafe<SendDataBuffer> sendQueue = new QueueSafe<SendDataBuffer>();
         public bool Login { get; internal set; }
         internal bool isDispose;
         /// <summary>
@@ -111,6 +89,7 @@
         /// 是否属于排队状态
         /// </summary>
         public bool IsQueueUp => QueueUpCount > 0;
+        public GcpKernel Gcp { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>
@@ -161,15 +140,9 @@
             stack = 0;
             stackIndex = 0;
             stackCount = 0;
-            sendReliableFrame = 0;
-            revdReliableFrame = 0;
             CloseSend = true;
-            fileStreamCurrPos = 0;
             heart = 0;
-            revdFrames.Clear();
             Rpcs.Clear();
-            sendRTList.Clear();
-            revdRTList.Clear();
             tcpRPCModels = new QueueSafe<RPCModel>();//可能这个类并非真正释放, 而是在运行时数据库, 
             udpRPCModels = new QueueSafe<RPCModel>();//为了下次登录不出错,所以下线要清除在线时的发送数据
             Login = false;

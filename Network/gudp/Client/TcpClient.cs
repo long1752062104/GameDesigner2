@@ -108,8 +108,6 @@
         {
             try
             {
-                if (RTOMode == RTOMode.Variable & OnPingCallback != null)
-                    Ping();
                 heart++;
                 if (heart <= HeartLimit)
                     return true;
@@ -215,7 +213,6 @@
             {
                 stack = 0;
                 NDebug.LogError($"请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
-                SendRT(NetCmd.ReliableCallbackClear, new byte[0]);
                 return;
             }
             if (stack > 0)
@@ -298,15 +295,11 @@
             AbortedThread();
             Client?.Close();
             Client = null;
-            sendRTList.Clear();
-            revdRTList.Clear();
             StackStream?.Close();
             StackStream = null;
             stack = 0;
             stackIndex = 0;
             stackCount = 0;
-            revdRTStream?.Close();
-            revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
             NDebug.Log("客户端已关闭！");

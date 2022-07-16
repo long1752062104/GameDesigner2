@@ -34,6 +34,7 @@ namespace Net.Client
     using Net.Serialize;
     using Net.Helper;
     using global::System.Security.Cryptography;
+    using Net.Plugins;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -294,25 +295,6 @@ namespace Net.Client
         /// </summary>
         public Action OnServerFull;
         /// <summary>
-        /// 发送可靠传输缓冲
-        /// </summary>
-        protected ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>> sendRTList = new ConcurrentDictionary<uint, MyDictionary<ushort, RTBuffer>>();
-        /// <summary>
-        /// 接收可靠传输缓冲
-        /// </summary>
-        protected HashSet<int> revdRTList = new HashSet<int>();
-        protected internal QueueSafe<AckQueue> ackQueue = new QueueSafe<AckQueue>();
-        protected internal MyDictionary<int, RevdAck> revdAck = new MyDictionary<int, RevdAck>();
-        protected internal int revdRTStreamLen;
-        /// <summary>
-        /// 可靠传输最大值
-        /// </summary>
-        protected int sendRTListCount;
-        /// <summary>
-        /// 可靠传输文件流对象
-        /// </summary>
-        protected BufferStream revdRTStream;
-        /// <summary>
         /// 1CRC协议
         /// </summary>
         protected virtual int frame { get; set; } = 1;
@@ -357,10 +339,6 @@ namespace Net.Client
         /// </summary>
         protected BufferStream StackStream { get; set; }
         /// <summary>
-        /// 在多线程中调用OperationSync事件?
-        /// </summary>
-        public bool OperationSyncInThread { get; set; }
-        /// <summary>
         /// 玩家操作是以可靠传输进行发送的?     
         /// 服务器的对应属性SendOperationReliable在 NetScene类里面
         /// </summary>
@@ -377,42 +355,19 @@ namespace Net.Client
         /// <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
         /// <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="Server.ServerBase{Player, Scene}.MTU"/>
         /// </summary>
-        public int MTU { get; set; } = 1300;
+        public virtual int MTU { get; set; } = 1300;
         /// <summary>
         /// （Retransmission TimeOut）重传超时时间。 默认为20毫秒重传一次
         /// </summary>
-        public int RTO { get; set; } = 20;
-        /// <summary>
-        /// 超时重传模式 默认为可变重传
-        /// </summary>
-        public RTOMode RTOMode { get; set; }
-        public double currRto = 50;
+        public virtual int RTO { get; set; } = 200;
         /// <summary>
         /// (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
         /// </summary>
         public int MTPS { get; set; } = 1024 * 1024;
-
         /// <summary>
         /// 客户端端口
         /// </summary>
         protected int localPort;
-        /// <summary>
-        /// 当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (发送帧)
-        /// </summary>
-        internal uint sendReliableFrame;
-        /// <summary>
-        /// 当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (接收帧)
-        /// </summary>
-        internal uint revdReliableFrame;
-        /// <summary>
-        /// 使用字节压缩吗? 如果使用, 每次发送字节大于1000个后进行压缩处理
-        /// </summary>
-        [Obsolete("请自行压缩!", true)]
-        public bool ByteCompression { get; set; }
-        /// <summary>
-        /// 可靠传输是排队模式? 排队模式下, 可靠包是一个一个处理. 不排队模式: 可靠传输数据组成多列并发 ---> 默认是无排队模式
-        /// </summary>
-        public bool Seqencing { get; set; }
         /// <summary>
         /// 是以太网? 此属性控制组包发送时,执行一次能把n个数据包组合在一起, 然后一次发送, 全由数据包大小决定. 如果此属性是以太网(true), 则根据mut来判断, 否则是局域网, 固定值50000字节
         /// </summary>
@@ -444,8 +399,6 @@ namespace Net.Client
         /// 限制发送队列长度
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
-        private readonly MyDictionary<uint, FrameList> revdFrames = new MyDictionary<uint, FrameList>();
-        private long fileStreamCurrPos;
         private readonly MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
         private readonly List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
@@ -455,6 +408,7 @@ namespace Net.Client
         /// </summary>
         public int ReconnectCount { get; set; } = 10;
         protected readonly object syncRoot = new object();
+        public GcpKernel Gcp { get; set; }
 
         /// <summary>
         /// 构造函数
@@ -1549,89 +1503,17 @@ namespace Net.Client
 
         protected virtual void SendRTDataHandle()
         {
-            if (RTOMode == RTOMode.Fixed)
-                currRto = RTO;
-            int rtcount = sendRTList.Values.Count;
-            if ((rtcount > 0 & Seqencing) | (rtcount > 0 & sendRTListCount > 5) | rtcount > 100)
-                goto JUMP;
             int count = rtRPCModels.Count;
-            if (count == 0 & rtcount > 0)
-                goto JUMP;
-            if (count == 0)
-                return;
-            if (count > PackageLength)
+            if (count <= 0)
+                goto J;
+            if (Gcp.HasSend())
+                goto J;
+            if (count >= PackageLength)
                 count = PackageLength;
             var stream = BufferPool.Take();
             WriteDataBody(ref stream, rtRPCModels, count, true);
-            int len = stream.Position;
-            int index = 0;
-            ushort dataIndex = 0;
-            int mtu = IsEthernet ? MTU : 60000;
-            float dataCount = (float)len / mtu;
-            var rtDic = new MyDictionary<ushort, RTBuffer>();
-            sendRTList.TryAdd(sendReliableFrame, rtDic);
-            var stream1 = BufferPool.Take();
-            WriteDataHead(stream1);
-            stream1.WriteByte(74);
-            stream1.WriteByte(NetCmd.ReliableTransport);
-            var stream2 = BufferPool.Take();
-            while (index < len)
-            {
-                int count1 = mtu;
-                if (index + count1 >= len)
-                    count1 = len - index;
-                stream1.SetPositionLength(frame + 2);//这3个是头部数据
-                stream2.SetPositionLength(0);
-                stream2.Write(dataIndex);
-                stream2.Write((ushort)Math.Ceiling(dataCount));
-                stream2.Write(count1);
-                stream2.Write(len);
-                stream2.Write(sendReliableFrame);
-                stream2.Write(stream, index, count1);
-                stream2.Flush();
-                stream1.Write(stream2.Count);
-                stream1.Write(stream2, 0, stream2.Count);
-                byte[] buffer = PackData(stream1);
-                rtDic.Add(dataIndex, new RTBuffer(buffer));
-                index += mtu;
-                dataIndex++;
-            }
-            BufferPool.Push(stream);
-            BufferPool.Push(stream1);
-            BufferPool.Push(stream2);
-            sendRTListCount = rtDic.Count;
-            sendReliableFrame++;
-        JUMP:
-            count = ackQueue.Count;
-            for (int i = 0; i < count; i++)
-            {
-                if (!ackQueue.TryDequeue(out AckQueue ack))
-                    continue;
-                if (!sendRTList.ContainsKey(ack.frame))
-                    continue;
-                var rtlist = sendRTList[ack.frame];
-                if (!rtlist.ContainsKey(ack.index))
-                    continue;
-                rtlist.Remove(ack.index);
-                if (rtlist.Count == 0)
-                    sendRTList.TryRemove(ack.frame, out _);
-                InvokeSendRTProgress(sendRTListCount - rtlist.Count, sendRTListCount);
-            }
-            int bytesLen = 0;
-            foreach (var rtlist in sendRTList.Values)
-            {
-                foreach (var list in rtlist)
-                {
-                    RTBuffer rtb = list.Value;
-                    if (DateTime.Now < rtb.time)
-                        continue;
-                    rtb.time = DateTime.Now.AddMilliseconds(currRto);
-                    bytesLen += rtb.buffer.Length;
-                    SendByteData(rtb.buffer, true);
-                    if (bytesLen > MTPS / 0x3E8)//一秒最大发送1m数据, 这里会有可能每秒执行1000次
-                        return;
-                }
-            }
+            Gcp.Send(stream.ToArray(true));
+        J: Gcp.Update();
         }
 
         protected virtual void SendByteData(byte[] buffer, bool reliable)
@@ -1727,8 +1609,6 @@ namespace Net.Client
             {
                 Connected = false;
                 NetworkState = networkState = NetworkState.ConnectLost;
-                sendRTList.Clear();
-                revdRTList.Clear();
                 rtRPCModels = new QueueSafe<RPCModel>();
                 rPCModels = new QueueSafe<RPCModel>();
                 NDebug.LogError("连接中断!" + ex);
@@ -1874,117 +1754,13 @@ namespace Net.Client
                         InvokeOnRevdBufferHandle(model);
                     break;
                 case NetCmd.ReliableTransport:
-                    var pos1 = segment.Position;
-                    ushort index = segment.ReadUInt16();
-                    ushort entry = segment.ReadUInt16();
-                    int count = segment.ReadInt32();
-                    int dataCount = segment.ReadInt32();
-                    uint frame = segment.ReadUInt32();
-                    byte[] rtbuffer = new byte[6];
-                    if (revdReliableFrame > frame)
+                    Gcp.Input(model.Buffer);
+                    int count1 = Gcp.Receive(out var buffer1);
+                    if (count1 > 0)
                     {
-                        Buffer.BlockCopy(BitConverter.GetBytes(frame), 0, rtbuffer, 0, 4);
-                        Buffer.BlockCopy(BitConverter.GetBytes(index), 0, rtbuffer, 4, 2);
-                        Send(NetCmd.ReliableCallback, rtbuffer);//ack发送过程中丢失了, 需要补发
-                        segment.Position = pos1;
-                        return;
-                    }
-                    if (revdRTStream == null)
-                        revdRTStream = BufferStreamShare.Take();
-                    if (!revdFrames.TryGetValue(frame, out var revdFrame))
-                    {
-                        revdFrames.Add(frame, revdFrame = new FrameList(entry)
-                        {
-                            streamPos = fileStreamCurrPos,
-                            frameLen = entry,
-                            frame = frame,
-                            dataCount = dataCount
-                        });
-                        fileStreamCurrPos += dataCount;
-                        if (fileStreamCurrPos >= revdRTStream.Length)//如果文件大于总长度, 则从0开始记录
-                            fileStreamCurrPos = 0;
-                    }
-                    if (revdFrame.Add(index))
-                    {
-                        int mtu = IsEthernet ? MTU : 60000;
-                        revdRTStream.Seek(revdFrame.streamPos + (index * mtu), SeekOrigin.Begin);
-                        revdRTStream.Write(model.buffer, segment.Position, count);
-                        InvokeRevdRTProgress(revdFrame.Count, entry);
-                    }
-                    segment.Position = pos1;
-                    Buffer.BlockCopy(BitConverter.GetBytes(frame), 0, rtbuffer, 0, 4);
-                    Buffer.BlockCopy(BitConverter.GetBytes(index), 0, rtbuffer, 4, 2);
-                    Send(NetCmd.ReliableCallback, rtbuffer);
-                    if (!revdFrames.TryGetValue(revdReliableFrame, out revdFrame))//排序执行
-                    {
-                        rtbuffer = new byte[4];
-                        Buffer.BlockCopy(BitConverter.GetBytes(revdReliableFrame), 0, rtbuffer, 0, 4);
-                        Send(NetCmd.TakeFrameList, rtbuffer);//让客户端发送revdReliableFrame帧的所有帧数据
-                        return;
-                    }
-                    while (revdFrame.Count >= revdFrame.frameLen)
-                    {
-                        revdFrames.Remove(revdReliableFrame);
-                        revdReliableFrame++;
-                        var buffer = BufferPool.Take(revdFrame.dataCount);
-                        revdRTStream.Seek(revdFrame.streamPos, SeekOrigin.Begin);
-                        revdRTStream.Read(buffer, 0, revdFrame.dataCount);
-                        buffer.Count = revdFrame.dataCount;
+                        var buffer = new Segment(buffer1, false);
                         DataHandle(buffer);
-                        BufferPool.Push(buffer);
-                        if (revdFrames.ContainsKey(revdReliableFrame))
-                            revdFrame = revdFrames[revdReliableFrame];
-                        else break;//结束死循环
                     }
-                    for (ushort i = 0; i < revdFrame.frameLen; i++)
-                    {
-                        if (!revdFrame.ContainsKey(i))
-                        {
-                            if (DateTime.Now < revdFrame.time)
-                                continue;
-                            revdFrame.time = DateTime.Now.AddMilliseconds(currRto);
-                            rtbuffer = new byte[6];
-                            Buffer.BlockCopy(BitConverter.GetBytes(revdReliableFrame), 0, rtbuffer, 0, 4);
-                            Buffer.BlockCopy(BitConverter.GetBytes(i), 0, rtbuffer, 4, 2);
-                            Send(NetCmd.TakeFrame, rtbuffer);
-                        }
-                    }
-                    break;
-                case NetCmd.ReliableCallback:
-                    uint frame1 = BitConverter.ToUInt32(model.buffer, model.index + 0);
-                    ushort index1 = BitConverter.ToUInt16(model.buffer, model.index + 4);
-                    ackQueue.Enqueue(new AckQueue(frame1, index1));
-                    break;
-                case NetCmd.TakeFrame:
-                    uint frame2 = BitConverter.ToUInt32(model.buffer, model.index + 0);
-                    ushort index2 = BitConverter.ToUInt16(model.buffer, model.index + 4);
-                    if (sendRTList.TryGetValue(frame2, out MyDictionary<ushort, RTBuffer> rtbuffer1))
-                    {
-                        if (rtbuffer1.TryGetValue(index2, out RTBuffer buffer2))
-                        {
-                            buffer2.time = default;
-                        }
-                    }
-                    break;
-                case NetCmd.TakeFrameList:
-                    uint frame3 = BitConverter.ToUInt32(model.buffer, model.index + 0);
-                    if (sendRTList.TryGetValue(frame3, out MyDictionary<ushort, RTBuffer> rtbuffer2))
-                    {
-                        var entries = rtbuffer2.entries;
-                        for (int i = 0; i < entries.Length; i++)
-                        {
-                            if (entries[i].hashCode >= 0)
-                            {
-                                var buffer2 = entries[i].value;
-                                if (buffer2 == null)//出现null, 则为客户端已经被Dispose
-                                    continue;
-                                buffer2.time = default;
-                            }
-                        }
-                    }
-                    break;
-                case NetCmd.ReliableCallbackClear:
-                    NDebug.LogError("可靠传输被清洗, 有可能是你的StackBufferSize和StackNumberMax属性设置的太小, 而数据过大导致!");
                     break;
                 case NetCmd.Connect:
                     Connected = true;
@@ -2000,10 +1776,10 @@ namespace Net.Client
                     });
                     break;
                 case NetCmd.Identify:
-                    //var pos = segment.Position;
+                    var pos = segment.Position;
                     UID = segment.ReadInt32();
                     Identify = segment.ReadString();
-                    //segment.Position = pos;
+                    segment.Position = pos;
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);
@@ -2017,7 +1793,7 @@ namespace Net.Client
                 case NetCmd.PingCallback:
                     long ticks = BitConverter.ToInt64(model.buffer, model.index);
                     DateTime time = new DateTime(ticks);
-                    currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
+                    var currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
                     if (OnPingCallback == null)
                         return;
                     InvokeContext(() => { OnPingCallback((currRto - 100d) / 2); });
@@ -2209,8 +1985,6 @@ namespace Net.Client
         {
             try
             {
-                if (RTOMode == RTOMode.Variable)
-                    Ping();
                 heart++;
                 if (heart <= HeartLimit)
                     return true;
@@ -2226,8 +2000,6 @@ namespace Net.Client
                 else//连接中断事件执行
                 {
                     NetworkState = networkState = NetworkState.ConnectLost;
-                    sendRTList.Clear();
-                    revdRTList.Clear();
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
                     Connected = false;
@@ -2276,12 +2048,8 @@ namespace Net.Client
                     currFrequency = 0;
                     heart = 0;
                     NetworkState = networkState = NetworkState.Reconnect;
-                    sendRTList.Clear();
-                    revdRTList.Clear();
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
-                    sendReliableFrame = 0;
-                    revdReliableFrame = 0;
                     NDebug.Log("重连成功...");
                 }
                 else if (currFrequency >= maxFrequency)//尝试maxFrequency次重连，如果失败则退出线程
@@ -2317,18 +2085,12 @@ namespace Net.Client
             AbortedThread();
             Client?.Close();
             Client = null;
-            sendRTList.Clear();
-            revdRTList.Clear();
             rtRPCModels = new QueueSafe<RPCModel>();
             rPCModels = new QueueSafe<RPCModel>();
             StackStream?.Close();
             StackStream = null;
-            revdRTStream?.Close();
-            revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
-            sendReliableFrame = 0;
-            revdReliableFrame = 0;
             NDebug.Log("客户端关闭成功!");
         }
 

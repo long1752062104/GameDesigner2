@@ -294,8 +294,6 @@
                     continue;
                 }
                 client.Value.heart++;
-                if (RTOMode == RTOMode.Variable & OnPingCallback != null)
-                    Ping(client.Value);
                 if (client.Value.heart <= HeartLimit)//确认心跳包
                     continue;
                 SendRT(client.Value, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态

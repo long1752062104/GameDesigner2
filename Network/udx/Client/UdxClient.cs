@@ -129,8 +129,6 @@
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         Connected = false;
                         NetworkState = networkState = NetworkState.ConnectLost;
-                        sendRTList.Clear();
-                        revdRTList.Clear();
                         rtRPCModels = new QueueSafe<RPCModel>();
                         rPCModels = new QueueSafe<RPCModel>();
                         NDebug.Log("断开连接！");
@@ -194,8 +192,6 @@
             NetworkState = networkState = NetworkState.ConnectClosed;
             if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
             AbortedThread();
-            sendRTList.Clear();
-            revdRTList.Clear();
             StackStream?.Close();
             StackStream = null;
             stack = 0;
