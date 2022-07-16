@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GameDesigner</RootNamespace>
     <AssemblyName>GameDesigner</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -1570,6 +1570,7 @@
     <Compile Include="GameDesigner\Network\Editor\Fast2BuildTool.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
+    <Compile Include="GameDesigner\Network\gudp\Plugins\GcpKernel.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServer.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServerEpoll.cs" />
     <Compile Include="GameDesigner\Network\gudp\Server\TcpServerIOCP.cs" />

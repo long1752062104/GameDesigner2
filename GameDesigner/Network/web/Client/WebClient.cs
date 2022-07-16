@@ -63,8 +63,6 @@ namespace Net.Client
                 {
                     Connected = false;
                     NetworkState = networkState = NetworkState.ConnectLost;
-                    sendRTList.Clear();
-                    revdRTList.Clear();
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
                     NDebug.Log("断开连接！");
@@ -184,13 +182,9 @@ namespace Net.Client
                 WSClient.Close();
                 WSClient = null;
             }
-            sendRTList.Clear();
-            revdRTList.Clear();
             StackStream?.Close();
             StackStream = null;
             stack = 0;
-            revdRTStream?.Close();
-            revdRTStream = null;
             UID = 0;
             if (Instance == this) Instance = null;
             NDebug.Log("客户端已关闭！");

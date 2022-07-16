@@ -221,6 +221,11 @@ namespace Net.System
             Insert(key, value, true);
         }
 
+        public bool TryAdd(TKey key, TValue value)
+        {
+            return Insert(key, value, false);
+        }
+
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
         {
@@ -376,7 +381,7 @@ namespace Net.System
             freeList = -1;
         }
 
-        private void Insert(TKey key, TValue value, bool add)
+        private bool Insert(TKey key, TValue value, bool add)
         {
             int num = key.GetHashCode() & int.MaxValue;
             int num2 = num % buckets.Length;
@@ -389,7 +394,7 @@ namespace Net.System
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
                     entries[i].value = value;
                     version++;
-                    return;
+                    return false;
                 }
                 num3++;
             }
@@ -421,6 +426,7 @@ namespace Net.System
                 comparer = (IEqualityComparer<TKey>)HashHelpers.GetRandomizedEqualityComparer(comparer);
                 Resize(entries.Length, true);
             }
+            return true;
         }
 
         public virtual void OnDeserialization(object sender)

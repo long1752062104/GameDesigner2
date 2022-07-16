@@ -10,6 +10,9 @@
     using global::System.Threading.Tasks;
     using Net.System;
     using Net.Helper;
+    using Net.Plugins;
+    using global::System.Net;
+    using Net.Event;
 
     /// <summary>
     /// Udp网络客户端
@@ -22,10 +25,21 @@
     [Serializable]
     public class UdpClient : ClientBase
     {
+        public override int MTU { get => Gcp.MTU; set => Gcp.MTU = (ushort)value; }
+        public override int RTO { get => (int)Gcp.RTO; set => Gcp.RTO = (uint)value; }
+
         /// <summary>
         /// 构造udp可靠客户端
         /// </summary>
-        public UdpClient() { }
+        public UdpClient() 
+        {
+            Gcp = new GcpKernel();
+            Gcp.MTU = (ushort)MTU;
+            Gcp.RTO = (uint)RTO;
+            Gcp.OnSender += (bytes) => {
+                Send(NetCmd.ReliableTransport, bytes);
+            };
+        }
 
         /// <summary>
         /// 构造udp可靠客户端
@@ -44,6 +58,35 @@
         {
             SendRT(NetCmd.P2P, BitConverter.GetBytes(uid));
         }
+
+#if UDPTEST
+        protected override void StartupThread()
+        {
+            base.StartupThread();
+            Gcp.RemotePoint = Client.LocalEndPoint;
+        }
+        protected override void ReceiveHandle()
+        {
+        }
+        internal void ReceiveTest(byte[] buffer)//本机测试
+        {
+            var segment = new Segment(buffer, false);
+            receiveCount += segment.Count;
+            receiveAmount++;
+            heart = 0;
+            ResolveBuffer(ref segment, false);
+            revdLoopNum++;
+        }
+        protected override void SendByteData(byte[] buffer, bool reliable)
+        {
+            sendCount += buffer.Length;
+            sendAmount++;
+            if (buffer.Length <= 65507)
+                (Net.Server.UdpServer.Instance as Net.Server.UdpServer).ReceiveTest(buffer, Client.LocalEndPoint); //Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+            else
+                NDebug.LogError("数据过大, 请使用SendRT发送...");
+        }
+#endif
 
         /// <summary>
         /// udp压力测试

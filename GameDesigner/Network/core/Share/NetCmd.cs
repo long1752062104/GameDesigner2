@@ -63,13 +63,10 @@
         /// </summary>
         public const byte OtherCmd = 12;
         /// <summary>
-        /// 可靠传输接收指令. 内部命令
+        /// Gcp可靠传输协议指令. 内部命令
         /// </summary>
         public const byte ReliableTransport = 15;
-        /// <summary>
-        /// 可靠传输数据确认回调, 内部命令
-        /// </summary>
-        public const byte ReliableCallback = 16;
+        
         /// <summary>
         /// 当客户端连接主服务器(网关服)时, 主服务器检测分区服务器在线人数如果处于爆满状态, 
         /// 服务器发送切换端口让客户端连接新的服务器IP和端口. 内部命令
@@ -91,10 +88,7 @@
         /// 连接指令 (内部)
         /// </summary>
         public const byte Connect = 21;
-        /// <summary>
-        /// 可靠传输被清洗, 原因是接收缓存流设置过小 内部指令
-        /// </summary>
-        public const byte ReliableCallbackClear = 22;
+        
         /// <summary>
         /// 自身转发, 可靠传输
         /// </summary>
@@ -107,14 +101,7 @@
         /// ping回调 内部指令
         /// </summary>
         public const byte PingCallback = 25;
-        /// <summary>
-        /// 可靠传输取单帧 内部指令
-        /// </summary>
-        public const byte TakeFrame = 26;
-        /// <summary>
-        /// 可靠传输取帧列表 内部指令
-        /// </summary>
-        public const byte TakeFrameList = 27;
+        
 
         public const byte P2P = 28;
         /// <summary>
