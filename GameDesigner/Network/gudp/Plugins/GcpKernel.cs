@@ -12,10 +12,26 @@ namespace Net.Plugins
 {
     class Cmd
     {
-        internal const byte Ack = 2;
-        internal const byte Frame = 3;
-        internal const byte Finish = 6;
-        internal const byte FrameFinish = 7;
+        /// <summary>
+        /// 网络帧
+        /// </summary>
+        internal const byte Frame = 2;
+        /// <summary>
+        /// 网络帧确认
+        /// </summary>
+        internal const byte Ack = 4;
+        /// <summary>
+        /// 一段完整数据发送完成
+        /// </summary>
+        internal const byte FrameFinish = 6;
+        /// <summary>
+        /// 一段完整数据帧确认(结束发送方的重传计数)
+        /// </summary>
+        internal const byte Finish = 8;
+        /// <summary>
+        /// 一段完整数据帧确认(结束接收方的重传计数)
+        /// </summary>
+        internal const byte FinishAck = 10;
     }
 
     class RTODataFrame
@@ -24,22 +40,27 @@ namespace Net.Plugins
         internal byte[] buffer;
     }
 
+    /// <summary>
+    /// Gcp可靠协议核心类
+    /// </summary>
     public class GcpKernel : IDisposable
     {
+        private int senderFrameLocal = 0;
+        private int revderFrameLocal = 0;
         private int senderFrame = 0;
         private int revderFrame = 0;
         private readonly MemoryStream stream = new MemoryStream();
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
         public ushort MTU { get; set; } = 1300;
-
         public event Action<byte[]> OnSender;
         private readonly MyDictionary<int, RTODataFrame> senderDict = new MyDictionary<int, RTODataFrame>();
+        private readonly MyDictionary<int, RTODataFrame> revderDict = new MyDictionary<int, RTODataFrame>();
         private byte[] current;
         public EndPoint RemotePoint { get; set; }
         public int WinSize { get; set; } = ushort.MaxValue;
         public uint RTO = 250;
-        private readonly object SyncRoot = new object();
+        private readonly static object SyncRoot = new object();
         private uint tick;
         public void Update()
         {
@@ -53,6 +74,14 @@ namespace Net.Plugins
                     {
                         sender.tick = tick + RTO;
                         OnSender(sender.buffer);
+                    }
+                }
+                foreach (var revder in revderDict.Values)
+                {
+                    if (tick >= revder.tick)
+                    {
+                        revder.tick = tick + RTO;
+                        OnSender(revder.buffer);
                     }
                 }
             }
@@ -77,6 +106,20 @@ namespace Net.Plugins
                 senderQueue.Enqueue(buffer);
             }
         }
+        private void CheckNextSend()
+        {
+            if (senderQueue.Count > 0 & current == null)
+            {
+                current = senderQueue.Peek();
+                var segment = BufferPool.Take();
+                segment.WriteByte(MTU >= current.Length ? Cmd.FrameFinish : Cmd.Frame);
+                segment.Write(senderFrame);
+                segment.Write(current, 0, MTU >= current.Length ? current.Length : MTU);
+                var bytes = segment.ToArray(true);
+                senderFrame++;
+                senderDict.TryAdd(senderFrame, new RTODataFrame() { buffer = bytes });
+            }
+        }
         public void Input(byte[] buffer)
         {
             lock (SyncRoot)
@@ -85,72 +128,77 @@ namespace Net.Plugins
                 var flags = segment.ReadByte();
                 if (flags == Cmd.Ack)
                 {
+                    if (current == null)
+                        return;
                     var frame = segment.ReadInt32();
-                    var index = frame * MTU;
+                    if (frame < senderFrame)
+                        return;
+                    var frame1 = frame - senderFrameLocal;
+                    if (frame1 < 0)
+                        return;
+                    var index = frame1 * MTU;
+                    if (index >= current.Length)
+                        return;
                     segment = BufferPool.Take();
                     segment.WriteByte(index + MTU >= current.Length ? Cmd.FrameFinish : Cmd.Frame);
                     segment.Write(frame);
                     segment.Write(current, index, index + MTU >= current.Length ? current.Length - index : MTU);
                     var bytes = segment.ToArray(true);
-                    senderDict.Remove(frame);
-                    senderDict.TryAdd(frame + 1, new RTODataFrame() { buffer = bytes });
+                    if (senderDict.Remove(frame))
+                    {
+                        senderFrame++;
+                        frame = senderFrame;
+                    }
+                    senderDict.TryAdd(frame, new RTODataFrame() { buffer = bytes });
+                }
+                else if (flags == Cmd.Frame | flags == Cmd.FrameFinish)
+                {
+                    var frame = segment.ReadInt32();
+                    var cmd = Cmd.Ack;
+                    if (revderFrame == frame)
+                    {
+                        revderFrame++;
+                        var frame1 = frame - revderFrameLocal;
+                        frame = revderFrame;
+                        stream.Seek(frame1 * MTU, SeekOrigin.Begin);
+                        stream.Write(segment, segment.Position, segment.Count - segment.Position);
+                        if (flags == Cmd.FrameFinish)
+                        {
+                            revderFrameLocal = revderFrame;
+                            cmd = Cmd.Finish;
+                            revderQueue.Enqueue(stream.ToArray());
+                            stream.SetLength(0);
+                        }
+                    }
+                    segment = BufferPool.Take();
+                    segment.WriteByte(cmd);
+                    segment.Write(frame);
+                    var bytes = segment.ToArray(true);
+                    revderDict.Remove(frame);
+                    revderDict.TryAdd(frame, new RTODataFrame() { buffer = bytes });
                 }
                 else if (flags == Cmd.Finish)
                 {
                     var frame = segment.ReadInt32();
                     if (senderDict.Remove(frame))
                     {
+                        senderFrame = frame;
                         senderQueue.Dequeue();
                         current = null;
+                        senderFrameLocal = senderFrame;
                         CheckNextSend();
                     }
-                    else
-                    {
-                        Console.WriteLine(frame);
-                    }
-                }
-                else if (flags == Cmd.Frame | flags == Cmd.FrameFinish)
-                {
-                    var frame = segment.ReadInt32();
-                    if (revderFrame == frame)
-                    {
-                        revderFrame++;
-                        stream.Seek(frame * MTU, SeekOrigin.Begin);
-                        stream.Write(segment, segment.Position, segment.Count - segment.Position);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{revderFrame}-{frame}");
-                    }
-                    var cmd = Cmd.Ack;
-                    frame = revderFrame;
-                    if (flags == Cmd.FrameFinish)
-                    {
-                        revderFrame = 0;
-                        cmd = Cmd.Finish;
-                        revderQueue.Enqueue(stream.ToArray());
-                        stream.SetLength(0);
-                    }
                     segment = BufferPool.Take();
-                    segment.WriteByte(cmd);
+                    segment.WriteByte(Cmd.FinishAck);
                     segment.Write(frame);
                     var bytes = segment.ToArray(true);
                     OnSender(bytes);
                 }
-            }
-        }
-        private void CheckNextSend()
-        {
-            if (senderQueue.Count > 0 & current == null)
-            {
-                senderFrame = 0;
-                current = senderQueue.Peek();
-                var segment = BufferPool.Take();
-                segment.WriteByte(MTU >= current.Length ? Cmd.FrameFinish : Cmd.Frame);
-                segment.Write(senderFrame++);
-                segment.Write(current, 0, MTU >= current.Length ? current.Length : MTU);
-                var bytes = segment.ToArray(true);
-                senderDict.TryAdd(senderFrame, new RTODataFrame() { buffer = bytes });
+                else if (flags == Cmd.FinishAck)
+                {
+                    var frame = segment.ReadInt32();
+                    revderDict.Remove(frame);
+                }
             }
         }
         public bool HasSend() 

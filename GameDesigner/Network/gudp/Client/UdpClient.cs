@@ -77,6 +77,10 @@
             ResolveBuffer(ref segment, false);
             revdLoopNum++;
         }
+        internal void DataHandleTest(byte[] buffer)//本机测试
+        {
+            DataHandle(buffer);
+        }
         protected override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
