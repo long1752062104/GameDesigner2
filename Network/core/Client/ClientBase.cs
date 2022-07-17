@@ -1021,8 +1021,12 @@ namespace Net.Client
                 {
                     try
                     {
-                        DateTime time = DateTime.Now.AddSeconds(5);
-                        var time1 = DateTime.Now.AddMilliseconds(200);
+#if UDPTEST
+                        var time = DateTime.Now.AddSeconds(8000000);
+#else
+                        var time = DateTime.Now.AddSeconds(8);
+#endif
+                        var time1 = DateTime.Now;
                         while (UID == 0)
                         {
                             Receive();
@@ -1031,9 +1035,11 @@ namespace Net.Client
                                 throw new Exception("uid赋值失败!");
                             if (DateTime.Now >= time1)
                             {
-                                time1 = DateTime.Now.AddMilliseconds(200);
+                                time1 = DateTime.Now.AddMilliseconds(1000);
                                 rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
                                 SendDirect();
+                                if (Gcp != null)
+                                    Gcp.Update();
                             }
                         }
                         Connected = true;

@@ -121,6 +121,7 @@
             client.Gcp = new Plugins.GcpKernel();
             client.Gcp.MTU = (ushort)MTU;
             client.Gcp.RTO = (uint)RTO;
+            client.Gcp.RemotePoint = remotePoint;
             client.Gcp.OnSender += (bytes) => {
                 Send(client, NetCmd.ReliableTransport, bytes);
             };
