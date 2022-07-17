@@ -1038,9 +1038,9 @@ namespace Net.Client
                                 time1 = DateTime.Now.AddMilliseconds(1000);
                                 rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
                                 SendDirect();
-                                if (Gcp != null)
-                                    Gcp.Update();
                             }
+                            if (Gcp != null)
+                                Gcp.Update();
                         }
                         Connected = true;
                         StartupThread();

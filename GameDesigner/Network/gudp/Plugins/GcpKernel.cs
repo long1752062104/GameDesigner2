@@ -45,17 +45,17 @@ namespace Net.Plugins
     /// </summary>
     public class GcpKernel : IDisposable
     {
-        private int senderFrameLocal = 0;
-        private int revderFrameLocal = 0;
-        private int senderFrame = 0;
-        private int revderFrame = 0;
+        private uint senderFrameLocal;
+        private uint revderFrameLocal;
+        private uint senderFrame;
+        private uint revderFrame;
         private readonly MemoryStream stream = new MemoryStream();
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
         public ushort MTU { get; set; } = 1300;
         public event Action<byte[]> OnSender;
-        private readonly MyDictionary<int, RTODataFrame> senderDict = new MyDictionary<int, RTODataFrame>();
-        private readonly MyDictionary<int, RTODataFrame> revderDict = new MyDictionary<int, RTODataFrame>();
+        private readonly MyDictionary<uint, RTODataFrame> senderDict = new MyDictionary<uint, RTODataFrame>();
+        private readonly MyDictionary<uint, RTODataFrame> revderDict = new MyDictionary<uint, RTODataFrame>();
         private byte[] current;
         public EndPoint RemotePoint { get; set; }
         public int WinSize { get; set; } = ushort.MaxValue;
@@ -130,13 +130,13 @@ namespace Net.Plugins
                 {
                     if (current == null)
                         return;
-                    var frame = segment.ReadInt32();
+                    var frame = segment.ReadUInt32();
                     if (frame < senderFrame)
                         return;
                     var frame1 = frame - senderFrameLocal;
                     if (frame1 < 0)
                         return;
-                    var index = frame1 * MTU;
+                    int index = (int)(frame1 * MTU);
                     if (index >= current.Length)
                         return;
                     segment = BufferPool.Take();
@@ -153,7 +153,7 @@ namespace Net.Plugins
                 }
                 else if (flags == Cmd.Frame | flags == Cmd.FrameFinish)
                 {
-                    var frame = segment.ReadInt32();
+                    var frame = segment.ReadUInt32();
                     var cmd = Cmd.Ack;
                     if (revderFrame == frame)
                     {
@@ -164,8 +164,8 @@ namespace Net.Plugins
                         stream.Write(segment, segment.Position, segment.Count - segment.Position);
                         if (flags == Cmd.FrameFinish)
                         {
-                            revderFrameLocal = revderFrame;
                             cmd = Cmd.Finish;
+                            revderFrameLocal = revderFrame;
                             revderQueue.Enqueue(stream.ToArray());
                             stream.SetLength(0);
                         }
@@ -179,7 +179,7 @@ namespace Net.Plugins
                 }
                 else if (flags == Cmd.Finish)
                 {
-                    var frame = segment.ReadInt32();
+                    var frame = segment.ReadUInt32();
                     if (senderDict.Remove(frame))
                     {
                         senderFrame = frame;
@@ -196,7 +196,7 @@ namespace Net.Plugins
                 }
                 else if (flags == Cmd.FinishAck)
                 {
-                    var frame = segment.ReadInt32();
+                    var frame = segment.ReadUInt32();
                     revderDict.Remove(frame);
                 }
             }
