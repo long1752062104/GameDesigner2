@@ -8,6 +8,6 @@
         /// <summary>
         /// 每帧更新
         /// </summary>
-        void Update();
+        void OnUpdate();
     }
 }

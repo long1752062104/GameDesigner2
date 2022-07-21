@@ -110,10 +110,6 @@ namespace Net.Client
         /// </summary>
         protected NetworkState networkState = NetworkState.None;
         /// <summary>
-        /// 当前尝试重连次数
-        /// </summary>
-        protected int currFrequency;
-        /// <summary>
         /// 每秒发送数据长度
         /// </summary>
         protected int sendCount;
@@ -403,6 +399,10 @@ namespace Net.Client
         private readonly List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID;//事件id
+        /// <summary>
+        /// 当前尝试重连次数
+        /// </summary>
+        public int CurrReconnect { get; protected set; }
         /// <summary>
         /// 断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
         /// </summary>
@@ -1033,6 +1033,8 @@ namespace Net.Client
                             Thread.Sleep(1);
                             if (DateTime.Now >= time)
                                 throw new Exception("uid赋值失败!");
+                            if (!openClient)
+                                throw new Exception("客户端调用Close!");
                             if (DateTime.Now >= time1)
                             {
                                 time1 = DateTime.Now.AddMilliseconds(1000);
@@ -1045,7 +1047,7 @@ namespace Net.Client
                         Connected = true;
                         StartupThread();
                         InvokeContext(() => {
-                            networkState = NetworkState.Connected;
+                            networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
                             result(true);
                         });
                         return true;
@@ -1056,7 +1058,7 @@ namespace Net.Client
                         Client?.Close();
                         Client = null;
                         InvokeContext(() => {
-                            networkState = NetworkState.ConnectFailed;
+                            networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
                             result(false);
                         });
                         return false;
@@ -1066,7 +1068,7 @@ namespace Net.Client
             catch (Exception ex)
             {
                 NDebug.LogError("连接错误:" + ex.ToString());
-                networkState = NetworkState.ConnectFailed;
+                networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
                 result(false);
                 return Task.FromResult(false);
             }
@@ -1996,7 +1998,7 @@ namespace Net.Client
                     return true;
                 if (!Connected)
                 {
-                    Reconnection(ReconnectCount);//尝试连接执行
+                    Reconnection();//尝试连接执行
                     return true;
                 }
                 if (heart < HeartLimit + 5)
@@ -2013,7 +2015,7 @@ namespace Net.Client
                 }
             }
             catch { }
-            return openClient & currFrequency < 10;
+            return openClient & CurrReconnect < 10;
         }
 
         /// <summary>
@@ -2037,8 +2039,7 @@ namespace Net.Client
         /// <summary>
         /// 断线重新连接
         /// </summary>
-        /// <param name="maxFrequency">重连最大次数</param>
-        protected virtual void Reconnection(int maxFrequency)
+        protected virtual void Reconnection()
         {
             if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.ConnectClosed)
                 return;
@@ -2048,17 +2049,19 @@ namespace Net.Client
             UID = 0;
             var task = ConnectResult(host, port, localPort, result =>
             {
-                currFrequency++;
+                if (!openClient)
+                    return;
+                CurrReconnect++;
                 if (result)
                 {
-                    currFrequency = 0;
+                    CurrReconnect = 0;
                     heart = 0;
                     NetworkState = networkState = NetworkState.Reconnect;
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
                     NDebug.Log("重连成功...");
                 }
-                else if (currFrequency >= maxFrequency)//尝试maxFrequency次重连，如果失败则退出线程
+                else if (CurrReconnect >= ReconnectCount)//尝试maxFrequency次重连，如果失败则退出线程
                 {
                     Close();
                     NDebug.LogError($"连接失败!请检查网络是否异常");
@@ -2066,7 +2069,7 @@ namespace Net.Client
                 else
                 {
                     NetworkState = networkState = NetworkState.TryToConnect;
-                    NDebug.Log($"尝试重连:{currFrequency}...");
+                    NDebug.Log($"尝试重连:{CurrReconnect}...");
                 }
             });
             task.Wait();
@@ -2096,6 +2099,7 @@ namespace Net.Client
             StackStream?.Close();
             StackStream = null;
             UID = 0;
+            CurrReconnect = 0;
             if (Instance == this) Instance = null;
             NDebug.Log("客户端关闭成功!");
         }

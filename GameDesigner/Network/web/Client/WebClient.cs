@@ -127,10 +127,10 @@ namespace Net.Client
                 if (Connected)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else//尝试连接执行
-                    Reconnection(ReconnectCount);
+                    Reconnection();
             }
             catch { }
-            return openClient & currFrequency < 10;
+            return openClient & CurrReconnect < 10;
         }
 
         protected override void SendRTDataHandle()
@@ -186,6 +186,7 @@ namespace Net.Client
             StackStream = null;
             stack = 0;
             UID = 0;
+            CurrReconnect = 0;
             if (Instance == this) Instance = null;
             NDebug.Log("客户端已关闭！");
         }

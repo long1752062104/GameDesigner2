@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.Animation>();
 			fields = new object[40];
 			eventsId = new int[40];
@@ -32,8 +31,6 @@ namespace BuildComponent
             fields[4] = self.animatePhysics;
             fields[5] = self.cullingType;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public UnityEngine.AnimationClip clip
         {

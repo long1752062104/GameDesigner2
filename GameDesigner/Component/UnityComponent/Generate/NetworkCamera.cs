@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.Camera>();
 			fields = new object[40];
 			eventsId = new int[40];
@@ -65,8 +64,6 @@ namespace BuildComponent
             fields[37] = self.stereoConvergence;
             fields[38] = self.stereoTargetEye;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public System.Single nearClipPlane
         {

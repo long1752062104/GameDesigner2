@@ -17,6 +17,7 @@ namespace Net.Component
         public TransportProtocol protocol = TransportProtocol.Gudp;
         public string ip = "127.0.0.1";
         public int port = 6666;
+        public bool localTest;//本机测试
         public bool throwException;
         public bool debugRpc = true;
         public bool authorize;
@@ -27,7 +28,7 @@ namespace Net.Component
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
 
-        public ClientBase client
+        public ClientBase Client
         {
             get
             {
@@ -65,12 +66,16 @@ namespace Net.Component
 
         public Task<bool> Connect()
         {
-            _client = client;
-            var ips = Dns.GetHostAddresses(ip);
-            if (ips.Length > 0)
-                _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
-            else
-                _client.host = ip;
+            _client = Client;
+            if (!localTest)
+            {
+                var ips = Dns.GetHostAddresses(ip);
+                if (ips.Length > 0)
+                    _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
+                else
+                    _client.host = ip;
+            }
+            else _client.host = "127.0.0.1";
             _client.port = port;
             switch (type)
             {
@@ -159,7 +164,7 @@ namespace Net.Component
         {
             foreach (var item in I.clients)
             {
-                item.client.BindNetworkHandle(handle);
+                item.Client.BindNetworkHandle(handle);
             }
         }
 
@@ -167,7 +172,7 @@ namespace Net.Component
         {
             foreach (var item in I.clients)
             {
-                item.client.AddRpcHandle(target);
+                item.Client.AddRpcHandle(target);
             }
         }
 
@@ -175,7 +180,7 @@ namespace Net.Component
         {
             foreach (var item in I.clients)
             {
-                item.client.RemoveRpc(target);
+                item.Client.RemoveRpc(target);
             }
         }
 
@@ -183,18 +188,18 @@ namespace Net.Component
         {
             foreach (var item in I.clients)
             {
-                item.client.Close(v1, v2);
+                item.Client.Close(v1, v2);
             }
         }
 
         public static void CallUnity(Action ptr)
         {
-            I.clients[0].client.WorkerQueue.Enqueue(ptr);
+            I.clients[0].Client.WorkerQueue.Enqueue(ptr);
         }
 
         public static void DispatcherRpc(ushort hash, params object[] parms)
         {
-            I.clients[1].client.DispatcherRpc(hash, parms);
+            I.clients[1].Client.DispatcherRpc(hash, parms);
         }
     }
 }

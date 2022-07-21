@@ -156,6 +156,16 @@ namespace Net.UnityComponent
             for (int i = IDENTITY; i < IDENTITY + capacity; i++)
                 IDENTITY_POOL.Enqueue(i);
         }
+
+        /// <summary>
+        /// 获取玩家id的偏移量, 此方法算出来每个玩家可实例化多少个网络对象
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        public static int GetUserIdOffset(int uid)
+        {
+            return 10000 + ((uid + 1 - 10000) * Capacity);
+        }
     }
 }
 #endif

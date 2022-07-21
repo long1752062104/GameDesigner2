@@ -204,9 +204,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<{TypeName}>();
 [Split]
 			fields = new object[{FieldSize}];
@@ -216,7 +215,6 @@ namespace BuildComponent
 [Split]
         }
 
-        void Start() { }//让监视面板能显示启动勾选
 [Split]
         public {PropertyType} {TypeFieldName}
         {

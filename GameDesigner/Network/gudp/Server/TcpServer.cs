@@ -35,7 +35,8 @@
                     frame = 5;
             }
         }
-        public override byte HeartLimit { get; set; } = 60;//tcp 2分钟检测一次
+        public override int HeartInterval { get; set; } = 1000;
+        public override byte HeartLimit { get; set; } = 5;
 
         public override void Start(ushort port = 6666)
         {
