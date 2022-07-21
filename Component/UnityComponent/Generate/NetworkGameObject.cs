@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.GameObject>();
 			fields = new object[22];
 			eventsId = new int[22];
@@ -32,8 +31,6 @@ namespace BuildComponent
             fields[4] = self.name;
             fields[5] = self.hideFlags;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public System.Int32 layer
         {

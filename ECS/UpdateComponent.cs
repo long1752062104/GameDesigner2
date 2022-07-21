@@ -5,7 +5,7 @@
     /// </summary>
     public class UpdateComponent : Component, IUpdate
     {
-        public virtual void Update()
+        public virtual void OnUpdate()
         {
         }
     }

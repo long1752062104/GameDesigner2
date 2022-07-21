@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.Animator>();
 			fields = new object[188];
 			eventsId = new int[188];
@@ -46,8 +45,6 @@ namespace BuildComponent
             fields[18] = self.fireEvents;
             fields[19] = self.keepAnimatorControllerStateOnDisable;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public UnityEngine.Vector3 rootPosition
         {

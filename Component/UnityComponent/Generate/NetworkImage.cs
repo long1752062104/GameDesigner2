@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.UI.Image>();
 			fields = new object[61];
 			eventsId = new int[61];
@@ -45,8 +44,6 @@ namespace BuildComponent
             fields[17] = self.raycastPadding;
             fields[18] = self.useGUILayout;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public UnityEngine.Sprite sprite
         {

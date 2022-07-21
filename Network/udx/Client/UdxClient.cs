@@ -160,10 +160,10 @@
                 if (Connected & heart < HeartLimit + 5)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else if (!Connected)//尝试连接执行
-                    Reconnection(ReconnectCount);
+                    Reconnection();
             }
             catch { }
-            return openClient & currFrequency < 10;
+            return openClient & CurrReconnect < 10;
         }
 
         protected override void SendRTDataHandle()
@@ -196,6 +196,7 @@
             StackStream = null;
             stack = 0;
             UID = 0;
+            CurrReconnect = 0;
             if (Instance == this) Instance = null;
             if (ClientPtr != IntPtr.Zero)
             {

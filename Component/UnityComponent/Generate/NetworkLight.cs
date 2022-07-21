@@ -20,9 +20,8 @@ namespace BuildComponent
         private object[] fields;
 		private int[] eventsId;
 		
-        public override void Awake()
+        public void Awake()
         {
-            base.Awake();
             self = GetComponent<UnityEngine.Light>();
 			fields = new object[32];
 			eventsId = new int[32];
@@ -55,8 +54,6 @@ namespace BuildComponent
             fields[29] = self.cookie;
             fields[30] = self.renderMode;
         }
-
-        void Start() { }//让监视面板能显示启动勾选
 
         public UnityEngine.LightType type
         {

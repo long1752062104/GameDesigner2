@@ -24,7 +24,7 @@ namespace ECS
         internal void Execute()
         {
             for (int i = 0; i < updates.Count; i++)
-                updates[i].Update();
+                updates[i].OnUpdate();
         }
 
         /// <summary>

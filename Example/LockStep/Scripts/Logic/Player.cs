@@ -16,7 +16,7 @@ namespace LockStep.Client
         public FP moveSpeed = 6f;
         internal Operation opt;
         
-        public void Update()
+        public void OnUpdate()
         {
             Net.Vector3 dir = opt.direction;
             if (dir == Net.Vector3.zero)

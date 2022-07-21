@@ -36,7 +36,8 @@
                     frame = 5;
             }
         }
-        public override byte HeartLimit { get; set; } = 60;//tcp 2分钟检测一次
+        public override int HeartInterval { get; set; } = 1000;
+        public override byte HeartLimit { get; set; } = 5;
 
         /// <summary>
         /// 构造可靠传输客户端
@@ -73,18 +74,20 @@
                     if (localPort != -1)
                         Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
                     Client.Connect(host, port);
-                    DateTime time = DateTime.Now.AddSeconds(5);
+                    DateTime time = DateTime.Now.AddSeconds(8);
                     while (UID == 0)
                     {
                         Receive();
                         Thread.Sleep(1);
                         if (DateTime.Now >= time)
                             throw new Exception("uid赋值失败!");
+                        if (!openClient)
+                            throw new Exception("客户端调用Close!");
                     }
                     StackStream = BufferStreamShare.Take();
                     StartupThread();
                     InvokeContext(() => {
-                        networkState = NetworkState.Connected;
+                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
                         result(true);
                     });
                     return true;
@@ -92,11 +95,11 @@
                 catch(Exception ex)
                 {
                     NDebug.LogError("连接错误:" + ex);
-                    AbortedThread();
+                    Connected = false;
                     Client?.Close();
                     Client = null;
                     InvokeContext(() => {
-                        networkState = NetworkState.ConnectFailed;
+                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
                         result(false);
                     });
                     return false;
@@ -112,14 +115,14 @@
                 if (heart <= HeartLimit)
                     return true;
                 if (!Connected)
-                    Reconnection(ReconnectCount);
+                    Reconnection();
                 else
                     Send(NetCmd.SendHeartbeat, new byte[0]);
             }
             catch
             {
             }
-            return openClient & currFrequency < ReconnectCount;
+            return openClient & CurrReconnect < ReconnectCount;
         }
 
         protected override void StartupThread()
@@ -301,6 +304,7 @@
             stackIndex = 0;
             stackCount = 0;
             UID = 0;
+            CurrReconnect = 0;
             if (Instance == this) Instance = null;
             NDebug.Log("客户端已关闭！");
         }
