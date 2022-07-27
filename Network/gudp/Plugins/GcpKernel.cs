@@ -60,7 +60,7 @@ namespace Net.Plugins
         public EndPoint RemotePoint { get; set; }
         public int WinSize { get; set; } = ushort.MaxValue;
         public uint RTO = 250;
-        private readonly static object SyncRoot = new object();
+        private readonly object SyncRoot = new object();
         private uint tick;
         public void Update()
         {

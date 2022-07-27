@@ -209,7 +209,7 @@ namespace Net.Server
         /// </summary>
         protected ConcurrentStack<int> UserIDStack = new ConcurrentStack<int>();
         /// <summary>
-        /// <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节, 这里默认为50000, 如果数据超过50000,则是该框架进行分片. 传输层则需要分片为50000/1472=34个数据片</para>
+        /// <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节</para>
         /// <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
         /// <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
         /// <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
@@ -237,10 +237,6 @@ namespace Net.Server
         /// </summary>
         protected internal int onlineNumber;
         protected internal int ignoranceNumber;
-        /// <summary>
-        /// 是以太网? 此属性控制组包发送时,执行一次能把n个数据包组合在一起, 然后一次发送, 全由数据包大小决定. 如果此属性是以太网(true), 则根据mut来判断, 否则是局域网, 固定值50000字节
-        /// </summary>
-        public bool IsEthernet { get; set; }
         /// <summary>
         /// 组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
         /// </summary>
@@ -1432,7 +1428,7 @@ namespace Net.Server
                     BufferPool.Push(stream);
                     stream = stream2;
                 }
-                if (len >= (IsEthernet ? MTU : 60000) & !reliable)//udp不可靠判断
+                if (len >= MTU & !reliable)//udp不可靠判断
                 {
                     byte[] buffer = PackData(stream);
                     SendByteData(client, buffer, reliable);

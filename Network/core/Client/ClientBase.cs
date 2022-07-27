@@ -365,10 +365,6 @@ namespace Net.Client
         /// </summary>
         protected int localPort;
         /// <summary>
-        /// 是以太网? 此属性控制组包发送时,执行一次能把n个数据包组合在一起, 然后一次发送, 全由数据包大小决定. 如果此属性是以太网(true), 则根据mut来判断, 否则是局域网, 固定值50000字节
-        /// </summary>
-        public bool IsEthernet { get; set; }
-        /// <summary>
         /// 组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
         /// </summary>
         public int PackageLength { get; set; } = 1000;
@@ -1444,7 +1440,7 @@ namespace Net.Client
                     BufferPool.Push(stream);
                     stream = stream2;
                 }
-                if (len >= (IsEthernet ? MTU : 60000) & !reliable)//udp不可靠判断
+                if (len >= MTU & !reliable)//udp不可靠判断
                 {
                     byte[] buffer = PackData(stream);
                     SendByteData(buffer, reliable);
@@ -2101,6 +2097,7 @@ namespace Net.Client
             UID = 0;
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
+            if (Gcp != null) Gcp.Dispose();
             NDebug.Log("客户端关闭成功!");
         }
 
@@ -2474,8 +2471,7 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送网络可靠传输数据, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 发送可靠的网络数据
         /// </summary>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
@@ -2485,8 +2481,7 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送可靠网络传输, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 发送可靠的网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
         /// <param name="func">函数名</param>
@@ -2496,16 +2491,31 @@ namespace Net.Client
             SendRT(new RPCModel(cmd, func, pars, true, true));
         }
 
+        /// <summary>
+        /// 发送可靠的网络数据
+        /// </summary>
+        /// <param name="methodMask"></param>
+        /// <param name="pars"></param>
         public virtual void SendRT(ushort methodMask, params object[] pars)
         {
             SendRT(NetCmd.CallRpc, methodMask, pars);
         }
 
+        /// <summary>
+        /// 发送可靠的网络数据
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="methodMask"></param>
+        /// <param name="pars"></param>
         public virtual void SendRT(byte cmd, ushort methodMask, params object[] pars)
         {
             SendRT(new RPCModel(cmd, methodMask, pars));
         }
 
+        /// <summary>
+        /// 发送可靠的网络数据,需要了解model的各个参数
+        /// </summary>
+        /// <param name="model"></param>
         public virtual void SendRT(RPCModel model)
         {
             if (!Connected)
@@ -2685,8 +2695,7 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 发送可靠的网络数据
         /// </summary>
         /// <param name="buffer"></param>
         public virtual void SendRT(byte[] buffer)
@@ -2694,6 +2703,11 @@ namespace Net.Client
             SendRT(NetCmd.OtherCmd, buffer);
         }
 
+        /// <summary>
+        /// 发送可靠的网络数据，ProtoBuf序列号
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="obj"></param>
         public virtual void SendRT(byte cmd, object obj)
         {
             if (cmd < 30)
@@ -2706,8 +2720,7 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 发送可靠的网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer"></param>

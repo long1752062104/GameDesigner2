@@ -153,6 +153,8 @@
                 SocketAsync.Dispose();
             }
             SocketAsync = null;
+            if (Gcp != null) Gcp.Dispose();
+
         }
         #endregion
 

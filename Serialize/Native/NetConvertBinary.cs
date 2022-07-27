@@ -277,430 +277,6 @@
             throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用NetConvertBinary.AddNetworkType<{type}>()进行注册类型!");
         }
 
-        private const byte BYTE = 1, SHORT = 2, INT24 = 3, INT32 = 4, INT40 = 5, INT48 = 6, INT56 = 7, LONG = 8;
-        private const long Int24 = 16777216, Int40 = 1099511627776, Int48 = 281474976710656, Int56 = 72057594037927936;
-
-        /// <summary>
-        /// 序列化基本类型
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private unsafe static bool WriteValue<T>(Segment stream, T value)
-        {
-            byte num;
-            switch (value)
-            {
-                case byte b1:
-                    if (b1 == 0) return false;
-                    stream.WriteByte(b1);
-                    break;
-                case sbyte sb:
-                    if (sb == 0) return false;
-                    stream.WriteByte((byte)sb);
-                    break;
-                case bool b:
-                    if (b == false) return false;
-                    stream.WriteByte((byte)(b ? 1 : 0));
-                    break;
-                case short s:
-                    if (s == 0) return false;
-                    if (s > 0) num = s < byte.MaxValue ? BYTE : SHORT;
-                    else num = SHORT;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(short*)(ptr + stream.Position) = s;
-                        stream.Position += num;
-                    }
-                    break;
-                case ushort us:
-                    if (us == 0) return false;
-                    num = us < byte.MaxValue ? BYTE : SHORT;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(ushort*)(ptr + stream.Position) = us;
-                        stream.Position += num;
-                    }
-                    break;
-                case char c:
-                    if (c == 0) return false;
-                    if (c > 0) num = c < byte.MaxValue ? BYTE : SHORT;
-                    else num = SHORT;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(char*)(ptr + stream.Position) = c;
-                        stream.Position += num;
-                    }
-                    break;
-                case int i:
-                    if (i == 0) return false;
-                    if(i > 0) num = i < byte.MaxValue ? BYTE : i < ushort.MaxValue ? SHORT : i < Int24 ? INT24 : INT32;
-                    else num = INT32;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(int*)(ptr + stream.Position) = i;
-                        stream.Position += num;
-                    }
-                    break;
-                case uint ui:
-                    if (ui == 0) return false;
-                    num = ui < byte.MaxValue ? BYTE : ui < ushort.MaxValue ? SHORT : ui < Int24 ? INT24 : INT32;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(uint*)(ptr + stream.Position) = ui;
-                        stream.Position += num;
-                    }
-                    break;
-                case float f:
-                    if (f == 0) return false;
-                    num = 4;
-                    stream.WriteByte(num);
-                    stream.Write(&f, 4);
-                    break;
-                case long l:
-                    if (l == 0) return false;
-                    if (l > 0) num = l < byte.MaxValue ? BYTE : l < ushort.MaxValue ? SHORT : l < Int24 ? INT24 : 
-                            l < int.MaxValue ? INT32 : l < Int40 ? INT40 : l < Int48 ? INT48 : l < Int56 ? INT56 : LONG;
-                    else num = LONG;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(long*)(ptr + stream.Position) = l;
-                        stream.Position += num;
-                    }
-                    break;
-                case ulong ul:
-                    if (ul == 0) return false;
-                    num = ul < byte.MaxValue ? BYTE : ul < ushort.MaxValue ? SHORT : ul < Int24 ? INT24 :
-                        ul < int.MaxValue ? INT32 : ul < INT40 ? INT40 : ul < Int48 ? INT48 : ul < Int56 ? INT56 : LONG;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(ulong*)(ptr + stream.Position) = ul;
-                        stream.Position += num;
-                    }
-                    break;
-                case double d:
-                    if (d == 0) return false;
-                    num = 8;
-                    stream.WriteByte(num);
-                    stream.Write(&d, 8);
-                    break;
-                case DateTime time:
-                    long tocks = time.Ticks;
-                    if (tocks > 0) num = tocks < byte.MaxValue ? BYTE : tocks < ushort.MaxValue ? SHORT : tocks < int.MaxValue ? INT32 : LONG;
-                    else num = LONG;
-                    stream.WriteByte(num);
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(long*)(ptr + stream.Position) = tocks;
-                        stream.Position += num;
-                    }
-                    break;
-                case decimal dec:
-                    if (dec == 0) return false;
-                    fixed (byte* ptr = stream.Buffer)
-                    {
-                        *(decimal*)(ptr + stream.Position) = dec;
-                        stream.Position += 16;
-                    }
-                    break;
-                case string str:
-                    int num1 = str.Length * 3;
-                    num = num1 < byte.MaxValue ? BYTE : num1 < ushort.MaxValue ? SHORT : num1 < Int24 ? INT24 : INT32;
-                    stream.WriteByte(num);
-                    num1 = stream.Position;
-                    stream.Position += num;
-                    int count = Encoding.UTF8.GetBytes(str, 0, str.Length, stream.Buffer, stream.Position);
-                    stream.Position = num1;
-                    stream.Write(BitConverter.GetBytes(count), 0, num);
-                    stream.Position += count;
-                    break;
-                default:
-                    throw new IOException("试图写入的类型不是基本类型!");
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 反序列化基本类型
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        private unsafe static object ReadValue(TypeCode type, byte[] buffer, ref int index)
-        {
-            object obj = null;
-            int num = buffer[index++];
-            switch (type)
-            {
-                case TypeCode.Byte:
-                    obj = (byte)num;
-                    break;
-                case TypeCode.SByte:
-                    obj = (sbyte)num;
-                    break;
-                case TypeCode.Boolean:
-                    obj = num == 1;
-                    break;
-                case TypeCode.Int16:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (short)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = BitConverter.ToInt16(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.UInt16:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (ushort)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = BitConverter.ToUInt16(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.Char:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (char)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = BitConverter.ToChar(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.Int32:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (int)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = (int)BitConverter.ToUInt16(buffer, index);
-                            break;
-                        case INT24:
-                            if (BitConverter.IsLittleEndian)
-                                obj = buffer[index] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16);
-                            else
-                                obj = (buffer[index] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8);
-                            break;
-                        case INT32:
-                            obj = BitConverter.ToInt32(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.UInt32:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (uint)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = (uint)BitConverter.ToUInt16(buffer, index);
-                            break;
-                        case INT24:
-                            if (BitConverter.IsLittleEndian)
-                                obj = (uint)(buffer[index] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16));
-                            else
-                                obj = (uint)((buffer[index] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8));
-                            break;
-                        case INT32:
-                            obj = BitConverter.ToUInt32(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.Single:
-                    obj = BitConverter.ToSingle(buffer, index);
-                    index += 4;
-                    break;
-                case TypeCode.Int64:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (long)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = (long)BitConverter.ToUInt16(buffer, index);
-                            break;
-                        case INT24:
-                            if (BitConverter.IsLittleEndian)
-                                obj = (long)(buffer[index] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16));
-                            else
-                                obj = (long)((buffer[index] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8));
-                            break;
-                        case INT32:
-                            obj = (long)BitConverter.ToInt32(buffer, index);
-                            break;
-                        case INT40:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4];
-                                obj = (uint)num1 | ((long)num2 << 32);
-                            }
-                            else 
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = buffer[index + 4] << 24;
-                                obj = (uint)num4 | ((long)num3 << 32);
-                            }
-                            break;
-                        case INT48:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4] | (buffer[index + 5] << 8);
-                                obj = (uint)num1 | ((long)num2 << 32);
-                            }
-                            else
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = (buffer[index + 4] << 24) | (buffer[index + 5] << 16);
-                                obj = (uint)num4 | ((long)num3 << 32);
-                            }
-                            break;
-                        case INT56:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4] | (buffer[index + 5] << 8) | (buffer[index + 6] << 16);
-                                obj = (uint)num1 | ((long)num2 << 32);
-                            }
-                            else
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = (buffer[index + 4] << 24) | (buffer[index + 5] << 16) | (buffer[index + 6] << 8);
-                                obj = (uint)num4 | ((long)num3 << 32);
-                            }
-                            break;
-                        case LONG:
-                            obj = BitConverter.ToInt64(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.UInt64:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = (ulong)buffer[index];
-                            break;
-                        case SHORT:
-                            obj = (ulong)BitConverter.ToUInt16(buffer, index);
-                            break;
-                        case INT24:
-                            if (BitConverter.IsLittleEndian)
-                                obj = (ulong)(buffer[index] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16));
-                            else
-                                obj = (ulong)((buffer[index] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8));
-                            break;
-                        case INT32:
-                            obj = (ulong)BitConverter.ToInt32(buffer, index);
-                            break;
-                        case INT40:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4];
-                                obj = (ulong)((uint)num1 | ((long)num2 << 32));
-                            }
-                            else
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = buffer[index + 4] << 24;
-                                obj = (ulong)((uint)num4 | ((long)num3 << 32));
-                            }
-                            break;
-                        case INT48:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4] | (buffer[index + 5] << 8);
-                                obj = (ulong)((uint)num1 | ((long)num2 << 32));
-                            }
-                            else
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = (buffer[index + 4] << 24) | (buffer[index + 5] << 16);
-                                obj = (ulong)((uint)num4 | ((long)num3 << 32));
-                            }
-                            break;
-                        case INT56:
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                int num1 = buffer[index + 0] | (buffer[index + 1] << 8) | (buffer[index + 2] << 16) | (buffer[index + 3] << 24);
-                                int num2 = buffer[index + 4] | (buffer[index + 5] << 8) | (buffer[index + 6] << 16);
-                                obj = (ulong)((uint)num1 | ((long)num2 << 32));
-                            }
-                            else
-                            {
-                                int num3 = (buffer[index + 0] << 24) | (buffer[index + 1] << 16) | (buffer[index + 2] << 8) | buffer[index + 3];
-                                int num4 = (buffer[index + 4] << 24) | (buffer[index + 5] << 16) | (buffer[index + 6] << 8);
-                                obj = (ulong)((uint)num4 | ((long)num3 << 32));
-                            }
-                            break;
-                        case LONG:
-                            obj = BitConverter.ToUInt64(buffer, index);
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.Double:
-                    obj = BitConverter.ToDouble(buffer, index);
-                    index += 8;
-                    break;
-                case TypeCode.DateTime:
-                    switch (num)
-                    {
-                        case BYTE:
-                            obj = new DateTime(buffer[index]);
-                            break;
-                        case SHORT:
-                            obj = new DateTime(BitConverter.ToUInt16(buffer, index));
-                            break;
-                        case INT32:
-                            obj = new DateTime(BitConverter.ToInt32(buffer, index));
-                            break;
-                        case LONG:
-                            obj = new DateTime(BitConverter.ToInt64(buffer, index));
-                            break;
-                    }
-                    index += num;
-                    break;
-                case TypeCode.Decimal:
-                    fixed (byte* ptr = &buffer[index - 1])
-                    {
-                        obj = Marshal.PtrToStructure<decimal>((IntPtr)ptr);
-                        index += 15;
-                    }
-                    break;
-                case TypeCode.String:
-                    index--;
-                    num = (int)ReadValue(TypeCode.Int32, buffer, ref index);
-                    obj = Encoding.UTF8.GetString(buffer, index, num);
-                    index += num;
-                    break;
-            }
-            return obj;
-        }
-
         /// <summary>
         /// 序列化数组实体
         /// </summary>
@@ -711,59 +287,31 @@
             int len = array.Count;
             if (len == 0)
                 return;
-            WriteValue(stream, len);
-            if (itemType.IsPrimitive)
+            stream.Write(len);
+            var bitLen = ((len - 1) / 8) + 1;
+            byte[] bits = new byte[bitLen];
+            int strPos = stream.Position;
+            stream.Write(bits, 0, bitLen);
+            for (int i = 0; i < len; i++)
             {
-                int num;
-                if (itemType == typeof(byte) | itemType == typeof(sbyte) | itemType == typeof(bool))
-                    num = 1;
-                else if (itemType == typeof(short) | itemType == typeof(ushort))
-                    num = 2;
-                else if (itemType == typeof(int) | itemType == typeof(uint) | itemType == typeof(float))
-                    num = 4;
-                else if (itemType == typeof(long) | itemType == typeof(ulong) | itemType == typeof(double))
-                    num = 8;
-                else throw new Exception($"无法识别的基础类型:{itemType}!");
-                object item;
-                if (!(array is Array))
-                    item = array.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(array);
-                else item = array;
-                var handle = GCHandle.Alloc(item, GCHandleType.Pinned);
-                var ptr = handle.AddrOfPinnedObject();
-                int size = len * num;
-                var buf = BufferPool.Take(size);
-                Marshal.Copy(ptr, buf, 0, size);
-                handle.Free();//防止内存复制当中, gc回收! 内存已被释放问题
-                stream.Write(buf, 0, size);
-                BufferPool.Push(buf);
-            }
-            else
-            {
-                var bitLen = ((len - 1) / 8) + 1;
-                byte[] bits = new byte[bitLen];
-                int strPos = stream.Position;
-                stream.Write(bits, 0, bitLen);
-                for (int i = 0; i < len; i++)
+                var arr1 = array[i];
+                int bitInx1 = i % 8;
+                int bitPos = i / 8;
+                if (arr1 == null)
+                    continue;
+                SetBit(ref bits[bitPos], bitInx1 + 1, true);
+                if (recordType)
                 {
-                    var arr1 = array[i];
-                    int bitInx1 = i % 8;
-                    int bitPos = i / 8;
-                    if (arr1 == null)
-                        continue;
-                    SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                    if (recordType)
-                    {
-                        Type type = arr1.GetType();
-                        stream.Write(BitConverter.GetBytes(TypeToIndex(type)), 0, 2);
-                        WriteObject(stream, type, arr1, recordType, ignore);
-                    }    
-                    else WriteObject(stream, itemType, arr1, recordType, ignore);
+                    var type = arr1.GetType();
+                    stream.Write(TypeToIndex(type));
+                    WriteObject(stream, type, arr1, recordType, ignore);
                 }
-                int strLen = stream.Position;
-                stream.Position = strPos;
-                stream.Write(bits, 0, bitLen);
-                stream.Position = strLen;
+                else WriteObject(stream, itemType, arr1, recordType, ignore);
             }
+            int strLen = stream.Position;
+            stream.Position = strPos;
+            stream.Write(bits, 0, bitLen);
+            stream.Position = strLen;
         }
 
         /// <summary>
@@ -772,56 +320,22 @@
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="array"></param>
-        private unsafe static void ReadArray(byte[] buffer, ref int index, ref IList array, Type itemType, bool recordType, bool ignore)
+        private unsafe static void ReadArray(Segment segment, ref IList array, Type itemType, bool recordType, bool ignore)
         {
-            if (itemType.IsPrimitive)
+            var bitLen = ((array.Count - 1) / 8) + 1;
+            byte[] bits = segment.Read(bitLen);
+            for (int i = 0; i < array.Count; i++)
             {
-                int len = array.Count;
-                int num;
-                if (itemType == typeof(byte) | itemType == typeof(sbyte) | itemType == typeof(bool))
-                    num = 1;
-                else if (itemType == typeof(short) | itemType == typeof(ushort))
-                    num = 2;
-                else if (itemType == typeof(int) | itemType == typeof(uint) | itemType == typeof(float))
-                    num = 4;
-                else if (itemType == typeof(long) | itemType == typeof(ulong) | itemType == typeof(double))
-                    num = 8;
-                else throw new Exception($"无法识别的基础类型:{itemType}!");
-                object item;
-                if (!(array is Array))
-                    item = array.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(array);
-                else item = array;
-                if (buffer.Length - index < len * num)
+                int bitInx1 = i % 8;
+                int bitPos = i / 8;
+                if (!GetBit(bits[bitPos], (byte)(++bitInx1)))
+                    continue;
+                if (recordType)
                 {
-                    index = buffer.Length - 1;
-                    return;
+                    var type = IndexToType(segment.ReadUInt16());
+                    array[i] = ReadObject(segment, type, recordType, ignore);
                 }
-                var handle = GCHandle.Alloc(item, GCHandleType.Pinned);
-                var ptr = handle.AddrOfPinnedObject();
-                Marshal.Copy(buffer, index, ptr, len * num);
-                handle.Free();
-                index += len * num;
-            }
-            else 
-            {
-                var bitLen = ((array.Count - 1) / 8) + 1;
-                byte[] bits = new byte[bitLen];
-                Array.Copy(buffer, index, bits, 0, bitLen);
-                index += bitLen;
-                for (int i = 0; i < array.Count; i++)
-                {
-                    int bitInx1 = i % 8;
-                    int bitPos = i / 8;
-                    if (!GetBit(bits[bitPos], (byte)(++bitInx1)))
-                        continue;
-                    if (recordType)
-                    {
-                        Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
-                        index += 2;
-                        array[i] = ReadObject(buffer, ref index, type, recordType, ignore);
-                    }
-                    else array[i] = ReadObject(buffer, ref index, itemType, recordType, ignore);
-                }
+                else array[i] = ReadObject(segment, itemType, recordType, ignore);
             }
         }
 
@@ -831,14 +345,13 @@
             byte[] buffer1 = new byte[0];
             try
             {
-                WriteValue(stream, func);
+                stream.Write(func);
                 foreach (var obj in pars)
                 {
                     if (obj == null)
                         continue;
-                    Type type = obj.GetType();
-                    byte[] typeBytes = BitConverter.GetBytes(TypeToIndex(type));
-                    stream.Write(typeBytes, 0, 2);
+                    var type = obj.GetType();
+                    stream.Write(TypeToIndex(type));
                     WriteObject(stream, type, obj, false, false);
                 }
                 buffer1 = stream.ToArray();
@@ -872,13 +385,12 @@
                 SetBit(ref head, 1, hasFunc);
                 SetBit(ref head, 2, hasMask);
                 stream.WriteByte(head);
-                if (hasFunc) WriteValue(stream, model.func);
-                if (hasMask) WriteValue(stream, model.methodHash);
+                if (hasFunc) stream.Write(model.func);
+                if (hasMask) stream.Write(model.methodHash);
                 foreach (var obj in model.pars)
                 {
                     var type = obj.GetType();
-                    byte[] typeBytes = BitConverter.GetBytes(TypeToIndex(type));
-                    stream.Write(typeBytes, 0, 2);
+                    stream.Write(TypeToIndex(type));
                     WriteObject(stream, type, obj, false, false);
                 }
                 buffer1 = stream.ToArray();
@@ -1020,8 +532,9 @@
             internal Type Type;
             internal TypeCode TypeCode;
             internal Type ItemType;
-            internal Type KeyType;
-            internal Type ValueType;
+            internal Type ItemType1;
+            internal bool ItemType1IsPrimitive;
+            internal Type[] ItemTypes;
 #if !SERVICE
             internal Func<object, object> getValue;
             internal Action<object, object> setValue;
@@ -1209,6 +722,28 @@
                 return false;
             if (type.IsClass & type != typeof(string))
             {
+                if (type.IsArray)
+                {
+                    var arrItemType = type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                    return CanSerialized(arrItemType);
+                }
+                else if (type.IsGenericType)
+                {
+                    if (type.GenericTypeArguments.Length == 1)
+                    {
+                        var listType = type.GenericTypeArguments[0];
+                        return CanSerialized(listType);
+                    }
+                    else if (type.GenericTypeArguments.Length == 2)
+                    {
+                        Type keyType = type.GenericTypeArguments[0];
+                        Type valueType = type.GenericTypeArguments[1];
+                        if (!CanSerialized(keyType))
+                            return false;
+                        if (!CanSerialized(valueType))
+                            return false;
+                    }
+                }
                 var constructors = type.GetConstructors();
                 bool hasConstructor = false;
                 foreach (var constructor in constructors)
@@ -1294,8 +829,20 @@
                 {
                     Type keyType = fpType.GenericTypeArguments[0];
                     Type valueType = fpType.GenericTypeArguments[1];
-                    member1.KeyType = keyType;
-                    member1.ValueType = valueType;
+                    member1.ItemType = keyType;
+                    member1.ItemType1 = valueType;
+                    if (valueType.IsArray) 
+                    {
+                        var arrItemType = valueType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                        member1.ItemType1IsPrimitive = arrItemType.IsPrimitive;
+                        member1.ItemTypes = new Type[] { arrItemType };
+                    }
+                    else if (valueType.IsGenericType & valueType.GenericTypeArguments.Length == 1)
+                    {
+                        var arrItemType = valueType.GenericTypeArguments[0];
+                        member1.ItemType1IsPrimitive = arrItemType.IsPrimitive;
+                        member1.ItemTypes = new Type[] { arrItemType };
+                    }
                 }
             }
 #if SERVICE
@@ -1321,18 +868,18 @@
         /// 序列化对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="stream"></param>
+        /// <param name="segment"></param>
         /// <param name="type"></param>
         /// <param name="target"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
-        private static void WriteObject<T>(Segment stream, Type type, T target, bool recordType, bool ignore)
+        private static void WriteObject<T>(Segment segment, Type type, T target, bool recordType, bool ignore)
         {
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
             byte[] bits = new byte[bitLen];
-            var strPos = stream.Position;
-            stream.Position += bitLen;
+            var strPos = segment.Position;
+            segment.Position += bitLen;
             for (byte i = 0; i < members.Length; i++)
             {
                 var member = members[i];
@@ -1343,70 +890,94 @@
                 int bitPos = i / 8;
                 if (member.IsPrimitive)
                 {
-                    if (WriteValue(stream, value))
+                    var defaultV = Activator.CreateInstance(member.Type);
+                    if (!value.Equals(defaultV))
+                    {
+                        segment.WriteValue(value);
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
+                    }
                 }
                 else if (member.IsEnum)
                 {
-                    var enumValue = (byte)value.GetHashCode();
+                    var enumValue = value.GetHashCode();
                     if (enumValue == 0)
                         continue;
-                    stream.WriteByte(enumValue);
+                    segment.Write(enumValue);
                     SetBit(ref bits[bitPos], bitInx1 + 1, true);
                 }
                 else if (member.IsArray | member.IsGenericType)
                 {
-                    if (member.ItemType != null)
+                    if (member.ItemType1 == null)
                     {
                         var array = (IList)value;
                         if (array.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                        WriteArray(stream, array, member.ItemType, recordType, ignore);
+                        if (member.ItemType.IsPrimitive)
+                        {
+                            if (member.IsArray) segment.WriteArray(array);
+                            else segment.WriteList(array);
+                        }
+                        else WriteArray(segment, array, member.ItemType, recordType, ignore);
                     }
                     else
                     {
-                        IDictionary array = (IDictionary)value;
-                        if (array.Count == 0)
+                        var dict = (IDictionary)value;
+                        if (dict.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                        Array keys = Array.CreateInstance(member.KeyType, array.Count);
-                        Array values = Array.CreateInstance(member.ValueType, array.Count);
-                        array.Keys.CopyTo(keys, 0);
-                        array.Values.CopyTo(values, 0);
-                        WriteArray(stream, keys, member.KeyType, recordType, ignore);
-                        WriteArray(stream, values, member.ValueType, recordType, ignore);
+                        if (!member.ItemType.IsPrimitive)
+                            throw new Exception("字典Key必须是基础类型！");
+                        segment.Write(dict.Count);
+                        var enumerator = dict.GetEnumerator();
+                        while (enumerator.MoveNext())
+                        {
+                            segment.WriteValue(enumerator.Key);
+                            if (member.ItemType1.IsPrimitive)
+                            {
+                                segment.WriteValue(enumerator.Value);
+                            }
+                            else if (member.ItemType1.IsArray & member.ItemType1IsPrimitive)
+                            {
+                                segment.WriteArray(enumerator.Value);
+                            }
+                            else if (member.ItemType1.IsGenericType & member.ItemType1IsPrimitive)
+                            {
+                                segment.WriteList(enumerator.Value);
+                            }
+                            else WriteObject(segment, member.ItemType1, enumerator.Value, recordType, ignore);
+                        }
                     }
                 }
                 else if (serializeType1s.ContainsKey(member.Type) | ignore)
                 {
                     SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                    WriteObject(stream, member.Type, value, recordType, ignore);
+                    WriteObject(segment, member.Type, value, recordType, ignore);
                 }
                 else throw new Exception($"你没有标记此类[{member.Type}]为可序列化! 请使用NetConvertBinary.AddNetworkType<T>()方法进行添加此类为可序列化类型!");
             }
-            var strLen = stream.Position;
-            stream.Position = strPos;
-            stream.Write(bits, 0, bitLen);
-            stream.Position = strLen;
+            var strLen = segment.Position;
+            segment.Position = strPos;
+            segment.Write(bits, 0, bitLen);
+            segment.Position = strLen;
         }
 
         public static FuncData Deserialize(byte[] buffer, int index, int count, bool ignore = false)
         {
             FuncData obj = default;
+            var segment = new Segment(buffer, index, count, false);
             try
             {
                 count += index;
-                var func = (string)ReadValue(TypeCode.String, buffer, ref index);
-                obj.name = func;
+                obj.name = segment.ReadString();
                 List<object> list = new List<object>();
-                while (index < count)
+                while (segment.Position < segment.Offset + segment.Count)
                 {
-                    Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
+                    Type type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
                     index += 2;
-                    var obj1 = ReadObject(buffer, ref index, type, false, ignore);
+                    var obj1 = ReadObject(segment, type, false, ignore);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
@@ -1422,22 +993,21 @@
         public static FuncData DeserializeModel(byte[] buffer, int index, int count, bool ignore = false)
         {
             FuncData obj = default;
+            var segment = new Segment(buffer, index, count, false);
             try
             {
-                count += index;
-                byte head = buffer[index++];
+                byte head = segment.ReadByte();
                 bool hasFunc = GetBit(head, 1);
                 bool hasMask = GetBit(head, 2);
-                if(hasFunc) obj.name = (string)ReadValue(TypeCode.String, buffer, ref index);
-                if(hasMask) obj.hash = (ushort)ReadValue(TypeCode.UInt16, buffer, ref index);
-                List<object> list = new List<object>();
-                while (index < count)
+                if(hasFunc) obj.name = segment.ReadString();
+                if(hasMask) obj.hash = segment.ReadUInt16();
+                var list = new List<object>();
+                while (segment.Position < segment.Offset + segment.Count)
                 {
-                    Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
+                    var type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
-                    index += 2;
-                    var obj1 = ReadObject(buffer, ref index, type, false, ignore);
+                    var obj1 = ReadObject(buffer, type, false, ignore);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
@@ -1453,20 +1023,16 @@
         /// <summary>
         /// 反序列化
         /// </summary>
-        /// <param name="segment"></param>
-        /// <param name="recordType"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="recordType">序列化的类型字段是 object[]字段时, 可以帮你记录object的绝对类型</param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
-        public static object DeserializeObject(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
+        public static T DeserializeObject<T>(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
-            object obj = default;
-            int index = segment.Offset + segment.Position;
-            int count = segment.Offset + segment.Count;
-            if (index < count)
-                obj = ReadObject(segment.Buffer, ref index, type, recordType, ignore);
-            segment.Position = index;
-            if (isPush) BufferPool.Push(segment);
-            return obj;
+            return DeserializeObject<T>(new Segment(buffer, index, count), default, recordType, ignore);
         }
 
         /// <summary>
@@ -1479,37 +1045,21 @@
         /// <returns></returns>
         public static T DeserializeObject<T>(Segment segment, bool isPush = true, bool recordType = false, bool ignore = false)
         {
-            T obj = default;
-            int index = segment.Offset + segment.Position;
-            int count = segment.Offset + segment.Count;
-            if (index < count)
-            {
-                Type type = typeof(T);
-                obj = (T)ReadObject(segment.Buffer, ref index, type, recordType, ignore);
-            }
-            segment.Position = index;
-            if (isPush) BufferPool.Push(segment);
-            return obj;
+            return (T)DeserializeObject(segment, typeof(T), isPush, recordType, ignore);
         }
 
         /// <summary>
         /// 反序列化
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        /// <param name="recordType">序列化的类型字段是 object[]字段时, 可以帮你记录object的绝对类型</param>
+        /// <param name="segment"></param>
+        /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
-        public static T DeserializeObject<T>(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
+        public static object DeserializeObject(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
-            T obj = default;
-            if (index < count)
-            {
-                Type type = typeof(T);
-                obj = (T)ReadObject(buffer, ref index, type, recordType, ignore);
-            }
+            object obj = default;
+            obj = ReadObject(segment, type, recordType, ignore);
+            if (isPush) BufferPool.Push(segment);
             return obj;
         }
 
@@ -1519,34 +1069,30 @@
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="count"></param>
-        public static object DeserializeComplex(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
-        {
-            object obj = null;
-            if (index < count)
-            {
-                Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
-                if (type == null)
-                    return obj;
-                index += 2;
-                obj = ReadObject(buffer, ref index, type, recordType, ignore);
-            }
-            return obj;
-        }
+        //public static object DeserializeComplex(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
+        //{
+        //    object obj = null;
+        //    if (index < count)
+        //    {
+        //        Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
+        //        if (type == null)
+        //            return obj;
+        //        index += 2;
+        //        obj = ReadObject(buffer, ref index, type, recordType, ignore);
+        //    }
+        //    return obj;
+        //}
 
         public static object Deserialize(Segment segment, bool isPush = true, bool ignore = false)
         {
             object obj = null;
-            int index = segment.Offset + segment.Position;
-            int count = segment.Offset + segment.Count;
-            if (index < count)
+            if (segment.Position < segment.Offset + segment.Count)
             {
-                Type type = IndexToType(BitConverter.ToUInt16(segment.Buffer, index));
+                var type = IndexToType(segment.ReadUInt16());
                 if (type == null)
                     return obj;
-                index += 2;
-                obj = ReadObject(segment.Buffer, ref index, type, false, ignore);
+                obj = ReadObject(segment, type, false, ignore);
             }
-            segment.Position = index;
             if(isPush) BufferPool.Push(segment);
             return obj;
         }
@@ -1558,7 +1104,7 @@
         /// <param name="index"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static object ReadObject(byte[] buffer, ref int index, Type type, bool recordType, bool ignore)
+        private static object ReadObject(Segment segment, Type type, bool recordType, bool ignore)
         {
             object obj;
             if (type == typeof(string)) obj = string.Empty;
@@ -1566,9 +1112,7 @@
             else obj = Activator.CreateInstance(type);
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
-            byte[] bits = new byte[bitLen];
-            Array.Copy(buffer, index, bits, 0, bitLen);
-            index += bitLen;
+            byte[] bits = segment.Read(bitLen);
             for (int i = 0; i < members.Length; i++)
             {
                 int bitInx1 = i % 8;
@@ -1578,46 +1122,74 @@
                 var member = members[i];
                 if (member.IsPrimitive)//如果是基础类型
                 {
-                    member.SetValue(ref obj, ReadValue(member.TypeCode, buffer, ref index));
+                    member.SetValue(ref obj, segment.ReadValue(member.TypeCode));
                 }
                 else if (member.IsEnum)//如果是枚举类型
                 {
-                    member.SetValue(ref obj, Enum.ToObject(member.Type, buffer[index++]));
+                    member.SetValue(ref obj, segment.ReadEnum(member.Type));
                 }
                 else if (member.IsArray)//如果是数组类型
                 {
-                    int arrCount = (int)ReadValue(TypeCode.Int32, buffer, ref index);
-                    IList array = (IList)Activator.CreateInstance(member.Type, arrCount);
-                    ReadArray(buffer, ref index, ref array, member.ItemType, recordType, ignore);
+                    IList array;
+                    if (member.ItemType.IsPrimitive)
+                    {
+                        array = (IList)segment.ReadArray(member.ItemType);
+                    }
+                    else 
+                    {
+                        int arrCount = segment.ReadInt32();
+                        array = (IList)Activator.CreateInstance(member.Type, arrCount);
+                        ReadArray(segment, ref array, member.ItemType, recordType, ignore);
+                    }
                     member.SetValue(ref obj, array);
                 }
                 else if (member.IsGenericType)
                 {
-                    if (member.ItemType != null)
+                    if (member.ItemType1 == null)//如果itemType1是空的话，说明是List类型，否则是字典
                     {
-                        int arrCount = (int)ReadValue(TypeCode.Int32, buffer, ref index);
-                        var array1 = Array.CreateInstance(member.ItemType, arrCount);
-                        IList array = (IList)Activator.CreateInstance(member.Type, array1);
-                        ReadArray(buffer, ref index, ref array, member.ItemType, recordType, ignore);
+                        IList array;
+                        if (member.ItemType.IsPrimitive)
+                        {
+                            array = (IList)segment.ReadList(member.ItemType);
+                        }
+                        else
+                        {
+                            int arrCount = segment.ReadInt32();
+                            var array1 = Array.CreateInstance(member.ItemType, arrCount);
+                            array = (IList)Activator.CreateInstance(member.Type, array1);
+                            ReadArray(segment, ref array, member.ItemType, recordType, ignore);
+                        }
                         member.SetValue(ref obj, array);
                     }
                     else
                     {
-                        int arrCount = (int)ReadValue(TypeCode.Int32, buffer, ref index);
-                        IList array = Array.CreateInstance(member.KeyType, arrCount);
-                        ReadArray(buffer, ref index, ref array, member.KeyType, recordType, ignore);
-                        arrCount = (int)ReadValue(TypeCode.Int32, buffer, ref index);
-                        IList array1 = Array.CreateInstance(member.ValueType, arrCount);
-                        ReadArray(buffer, ref index, ref array1, member.ValueType, recordType, ignore);
-                        IDictionary dictionary = (IDictionary)Activator.CreateInstance(member.Type);
-                        for (int a = 0; a < arrCount; a++)
-                            dictionary.Add(array[a], array1[a]);
-                        member.SetValue(ref obj, dictionary);
+                        var dictCount = segment.ReadInt32();
+                        var dict = (IDictionary)Activator.CreateInstance(member.Type);
+                        for (int a = 0; a < dictCount; a++)
+                        {
+                            var key = segment.ReadValue(member.ItemType);
+                            object value;
+                            if (member.ItemType1.IsPrimitive)
+                            {
+                                value = segment.ReadValue(member.ItemType1);
+                            }
+                            else if (member.ItemType1.IsArray & member.ItemType1IsPrimitive)
+                            {
+                                value = segment.ReadArray(member.ItemTypes[0]);
+                            }
+                            else if (member.ItemType1.IsGenericType & member.ItemType1IsPrimitive)
+                            {
+                                value = segment.ReadList(member.ItemTypes[0]);
+                            }
+                            else value = ReadObject(segment, member.ItemType1, recordType, ignore);
+                            dict.Add(key, value);
+                        }
+                        member.SetValue(ref obj, dict);
                     }
                 }
                 else if (serializeType1s.ContainsKey(member.Type) | ignore)//如果是序列化类型
                 {
-                    member.SetValue(ref obj, ReadObject(buffer, ref index, member.Type, recordType, ignore));
+                    member.SetValue(ref obj, ReadObject(segment, member.Type, recordType, ignore));
                 }
                 else throw new Exception($"你没有标记此类[{member.Type}]为可序列化! 请使用NetConvertBinary.AddNetworkType<T>()方法进行添加此类为可序列化类型!");
             }

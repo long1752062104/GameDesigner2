@@ -203,8 +203,13 @@ namespace Net.System
 
         public object ReadValue(Type type)
         {
+            return ReadValue(Type.GetTypeCode(type));
+        }
+
+        public object ReadValue(TypeCode type)
+        {
             object value = null;
-            switch (Type.GetTypeCode(type))
+            switch (type)
             {
                 case TypeCode.Byte:
                     value = ReadByte();
@@ -336,17 +341,33 @@ namespace Net.System
                     throw new Exception($"错误!基类不能序列化这个类:{value}");
             }
         }
-        public unsafe List<T> ReadList<T>()
+        public List<T> ReadList<T>()
         {
             var array = ReadArray<T>();
             if (array == null)
                 return new List<T>();
             return new List<T>(array);
         }
-        public unsafe T[] ReadArray<T>()
+        public object ReadList(Type type)
+        {
+            var array = ReadArray(type);
+            var listType = typeof(List<>);
+            if (array == null)
+                return Activator.CreateInstance(listType.MakeGenericType(type));
+            return Activator.CreateInstance(listType.MakeGenericType(type), array);
+        }
+        public T[] ReadArray<T>()
+        {
+            return ReadArray(typeof(T)) as T[];
+        }
+        public object ReadArray(Type type)
+        {
+            return ReadArray(Type.GetTypeCode(type));
+        }
+        public object ReadArray(TypeCode type)
         {
             object array;
-            switch (Type.GetTypeCode(typeof(T)))
+            switch (type)
             {
                 case TypeCode.Byte:
                     array = ReadByteArray();
@@ -396,7 +417,7 @@ namespace Net.System
                 default:
                     throw new Exception("错误!");
             }
-            return array as T[];
+            return array;
         }
         public void SetLength(int length)
         {
@@ -1055,6 +1076,12 @@ namespace Net.System
         public unsafe T ReadEnum<T>() where T : Enum
         {
             return (T)Enum.ToObject(typeof(T), ReadInt32());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe object ReadEnum(Type type)
+        {
+            return Enum.ToObject(type, ReadInt32());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
