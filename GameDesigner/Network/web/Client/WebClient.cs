@@ -188,6 +188,7 @@ namespace Net.Client
             UID = 0;
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
+            if (Gcp != null) Gcp.Dispose();
             NDebug.Log("客户端已关闭！");
         }
 

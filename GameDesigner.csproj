@@ -160,7 +160,6 @@
     <None Include="GameDesigner\ECS\Entity.cs.meta" />
     <None Include="GameDesigner\ECS\GObject.cs.meta" />
     <None Include="GameDesigner\ECS\GSystem.cs.meta" />
-    <None Include="GameDesigner\ECS\HotfixComponent.cs.meta" />
     <None Include="GameDesigner\ECS\IUpdate.cs.meta" />
     <None Include="GameDesigner\ECS\UpdateComponent.cs.meta" />
     <None Include="GameDesigner\Editor.meta" />
@@ -1168,7 +1167,6 @@
     <Compile Include="GameDesigner\ECS\Entity.cs" />
     <Compile Include="GameDesigner\ECS\GObject.cs" />
     <Compile Include="GameDesigner\ECS\GSystem.cs" />
-    <Compile Include="GameDesigner\ECS\HotfixComponent.cs" />
     <Compile Include="GameDesigner\ECS\IUpdate.cs" />
     <Compile Include="GameDesigner\ECS\UpdateComponent.cs" />
     <Compile Include="GameDesigner\Editor\AddBlueprintNode.cs" />

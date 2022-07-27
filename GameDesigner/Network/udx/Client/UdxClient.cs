@@ -198,6 +198,7 @@
             UID = 0;
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
+            if (Gcp != null) Gcp.Dispose();
             if (ClientPtr != IntPtr.Zero)
             {
                 UdxLib.UClose(ClientPtr);

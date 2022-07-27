@@ -1,4 +1,4 @@
-﻿namespace Net.Share// 网络共用(通用)命名空间
+﻿namespace Net.Share
 {
     /// <summary>
     /// 网络命令基类 - 可继承此类定义自己的网络命令 19.7.16 (系统命令使用0-100) 请从100开始自定义命令
@@ -7,19 +7,20 @@
     {
         /// <summary>
         /// 面向实体类型调用远程函数
-        /// 使用此命令即可在NetPlayer的派生类中定义rpc函数进行调用
+        /// 使用此命令即可在派生于<see cref="Net.Server.NetPlayer"/>类型定义<see cref="Rpc"/>函数进行调用
         /// </summary>
         public const byte EntityRpc = 0;
         /// <summary>
+        /// 公共Rpc调用指令(<see langword="服务器的公共资源"/>)
         /// 如果是客户端调用则在服务器执行 如果是服务器调用则在客户端执行.
         /// 在服务器端,如果出现多线程抢夺资源调用Client错误时，可使用SafeCall命令来执行
         /// </summary>
         public const byte CallRpc = 1;
         /// <summary>
-        /// 安全调用服务器函数,当多线程并行时会有1%的几率发生线程抢夺资源，
+        /// 安全调用服务器函数(<see langword="针对Client独立调用"/>),当多线程并行时会有概率发生资源竞争，导致数据错乱！
         /// 如果在RPC函数内部调用client的时候是其他客户端的client对象。出现这种情况时建议使用此命令，
         /// 否则可以使用CallRpc命令，
-        /// 使用此命令时,函数第一个参数将会嵌入NetPlayer参数
+        /// 使用此命令时,函数第一个参数必须是派生于<see cref="Net.Server.NetPlayer"/>类型的参数
         /// </summary>
         public const byte SafeCall = 2;
         /// <summary>
