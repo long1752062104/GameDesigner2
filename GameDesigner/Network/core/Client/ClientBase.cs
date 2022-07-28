@@ -359,7 +359,7 @@ namespace Net.Client
         /// <summary>
         /// (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
         /// </summary>
-        public int MTPS { get; set; } = 1024 * 1024;
+        public virtual int MTPS { get; set; } = 1024 * 1024;
         /// <summary>
         /// 客户端端口
         /// </summary>
@@ -2793,6 +2793,9 @@ namespace Net.Client
         {
             HeartLimit = timeoutLimit;
             HeartInterval = interval;
+            var evt = ThreadManager.Event.GetEvent(heartHandlerID);
+            if (evt != null)
+                evt.timeMax = (ulong)interval;
         }
 
         /// <summary>
