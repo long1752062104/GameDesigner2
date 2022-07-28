@@ -27,6 +27,7 @@
     {
         public override int MTU { get => Gcp.MTU; set => Gcp.MTU = (ushort)value; }
         public override int RTO { get => (int)Gcp.RTO; set => Gcp.RTO = (uint)value; }
+        public override int MTPS { get => Gcp.MTPS; set => Gcp.MTPS = value; }
 
         /// <summary>
         /// 构造udp可靠客户端
@@ -36,6 +37,7 @@
             Gcp = new GcpKernel();
             Gcp.MTU = (ushort)MTU;
             Gcp.RTO = (uint)RTO;
+            Gcp.MTPS = MTPS;
             Gcp.OnSender += (bytes) => {
                 Send(NetCmd.ReliableTransport, bytes);
             };

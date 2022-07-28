@@ -304,6 +304,22 @@ namespace Net.Event
         }
 
         /// <summary>
+        /// 获取计时事件
+        /// </summary>
+        /// <param name="eventId"></param>
+        public Event GetEvent(int eventId)
+        {
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (events[i].eventId == eventId)
+                {
+                    return events[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 移除事件
         /// </summary>
         /// <param name="eventId"></param>

@@ -166,6 +166,13 @@ public static class ArrayExtend
         return ts;
     }
 
+    public static byte[] ToArray(this byte[] self, int index, int count) 
+    {
+        var buffer = new byte[count];
+        Buffer.BlockCopy(self, index, buffer, 0, count);
+        return buffer;
+    }
+
     /// <summary>
     /// 反序列化数据(使用ProtoBuf反序列化)
     /// </summary>

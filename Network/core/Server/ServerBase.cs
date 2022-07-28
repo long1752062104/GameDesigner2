@@ -35,6 +35,7 @@ namespace Net.Server
     using Net.Helper;
     using global::System.Security.Cryptography;
     using Net.Plugins;
+    using Microsoft.Win32;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -282,6 +283,7 @@ namespace Net.Server
         /// 同步锁对象
         /// </summary>
         protected readonly object SyncRoot = new object();
+        protected int[] taskIDs = new int[4];
         #endregion
 
         #region 服务器事件处理
@@ -628,10 +630,11 @@ namespace Net.Server
             send.Start();
             Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
             suh.Start();
-            ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
-            ThreadManager.Invoke("SingleHandler", SingleHandler);
-            ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            int id = 0;
+            taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
             for (int i = 0; i < MaxThread / 2; i++)
             {
                 QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
@@ -2695,6 +2698,9 @@ namespace Net.Server
         {
             HeartLimit = timeoutLimit;
             HeartInterval = interval;
+            var evt = ThreadManager.Event.GetEvent(taskIDs[3]);
+            if(evt != null)
+                evt.timeMax = (ulong)interval;
         }
 
         /// <summary>
@@ -2860,6 +2866,27 @@ namespace Net.Server
         public bool CheckSendRT(Player client)
         {
             return client.udpRPCModels.Count < LimitQueueCount;
+        }
+
+        /// <summary>
+        /// 设置攻击防护(SYN-ACK攻击)
+        /// </summary>
+        /// <param name="synAttackProtect">0:不开启 1:系统通过减少重传次数和延迟未连接时路由缓冲项(route cache entry)防范SYN攻击 2:(Microsoft推荐使用此值)</param>
+        /// <param name="tcpMaxConnectResponseRetransmissions">确定 TCP 重新传输未应答的 SYN-ACK（连接请求确认）的次数</param>
+        /// <param name="tcpMaxHalfOpen">服务器可以保持多少个连接处于半开（SYN-RCVD）状态</param>
+        /// <param name="tcpMaxHalfOpenRetried">确定服务器可以在半打开 (SYN-RCVD) 状态下保持多少连接, 此条目的值应小于TCPMaxHalfOpen条目的值</param>
+        /// <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
+        public virtual void SetAttackProtect(int synAttackProtect = 1, int tcpMaxConnectResponseRetransmissions = 2, int tcpMaxHalfOpen = 1000, int tcpMaxHalfOpenRetried = 800, int tcpMaxPortsExhausted = 5)
+        {
+            RegistryKey hklm = Registry.LocalMachine;
+            RegistryKey tcpParams = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", true);
+            tcpParams.SetValue("SynAttackProtect", synAttackProtect, RegistryValueKind.DWord);
+            tcpParams.SetValue("TcpMaxConnectResponseRetransmissions", tcpMaxConnectResponseRetransmissions, RegistryValueKind.DWord);
+            tcpParams.SetValue("TcpMaxHalfOpen", tcpMaxHalfOpen, RegistryValueKind.DWord);
+            tcpParams.SetValue("TcpMaxHalfOpenRetried", tcpMaxHalfOpenRetried, RegistryValueKind.DWord);
+            tcpParams.SetValue("TcpMaxPortsExhausted", tcpMaxPortsExhausted, RegistryValueKind.DWord);
+            hklm.Close();
+            tcpParams.Close();
         }
     }
 }

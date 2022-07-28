@@ -79,10 +79,11 @@
             epoll.Start();
             Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
             suh.Start();
-            ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            ThreadManager.Invoke("SingleHandler", SingleHandler);
-            ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
+            int id = 0;
+            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
             threads.Add("EpollLoop", epoll);
             threads.Add("SceneUpdateHandle", suh);
             var scene = OnAddDefaultScene();
