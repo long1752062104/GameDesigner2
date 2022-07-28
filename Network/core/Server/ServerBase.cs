@@ -956,17 +956,17 @@ namespace Net.Server
                 int dataCount = buffer.ReadInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
-                RPCModel rpc = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
                 if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.SceneRT & cmd1 != NetCmd.Notice & cmd1 != NetCmd.NoticeRT & cmd1 != NetCmd.Local & cmd1 != NetCmd.LocalRT)
                 {
-                    FuncData func = OnDeserializeRpc(buffer, buffer.Position, dataCount);
+                    var func = OnDeserializeRpc(buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
-                    rpc.func = func.name;
-                    rpc.pars = func.pars;
-                    rpc.methodHash = func.hash;
+                    model.func = func.name;
+                    model.pars = func.pars;
+                    model.methodHash = func.hash;
                 }
-                DataHandle(client, rpc, buffer);//解析协议完成
+                DataHandle(client, model, buffer);//解析协议完成
                 J: buffer.Position += dataCount;
             }
         }

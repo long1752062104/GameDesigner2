@@ -12,32 +12,13 @@
     using Net.Share;
     using Net.System;
 
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
-    public struct FastData
-    {
-        public byte type;
-        public byte[] buffer;
-
-        public FastData(byte type, byte[] buffer)
-        {
-            this.type = type;
-            this.buffer = buffer;
-        }
-
-        public override string ToString()
-        {
-            return $"类型:{NetConvertFast.GetTypeHash(type)}|字节大小:{buffer.Length}";
-        }
-    }
-
     /// <summary>
     /// 快速解析类型, 使用此类需要使用AddNetworkType()先添加序列化类型, 类型是固定, 并且双端统一
     /// </summary>
     public class NetConvertFast : NetConvertBase
     {
-        private static readonly Dictionary<byte, Type> Types = new Dictionary<byte, Type>();
-        private static readonly Dictionary<Type, byte> Types1 = new Dictionary<Type, byte>();
-        private static readonly Dictionary<string, List<string>> filter = new Dictionary<string, List<string>>();
+        private static readonly Dictionary<ushort, Type> Types = new Dictionary<ushort, Type>();
+        private static readonly Dictionary<Type, ushort> Types1 = new Dictionary<Type, ushort>();
 
         static NetConvertFast()
         {
@@ -56,81 +37,105 @@
         /// </summary>
         public static void AddNetworkBaseType()
         {
-            AddNetworkType<short>();
-            AddNetworkType<int>();
-            AddNetworkType<long>();
-            AddNetworkType<ushort>();
-            AddNetworkType<uint>();
-            AddNetworkType<ulong>();
-            AddNetworkType<float>();
-            AddNetworkType<double>();
-            AddNetworkType<bool>();
-            AddNetworkType<char>();
-            AddNetworkType<string>();
-            AddNetworkType<byte>();
-            AddNetworkType<sbyte>();
+            AddSerializeType<short>();
+            AddSerializeType<int>();
+            AddSerializeType<long>();
+            AddSerializeType<ushort>();
+            AddSerializeType<uint>();
+            AddSerializeType<ulong>();
+            AddSerializeType<float>();
+            AddSerializeType<double>();
+            AddSerializeType<bool>();
+            AddSerializeType<char>();
+            AddSerializeType<string>();
+            AddSerializeType<byte>();
+            AddSerializeType<sbyte>();
+            AddSerializeType<DateTime>();
+            AddSerializeType<decimal>();
+            AddSerializeType<DBNull>();
+            AddSerializeType<Type>();
             //基础序列化数组
-            AddNetworkType<short[]>();
-            AddNetworkType<int[]>();
-            AddNetworkType<long[]>();
-            AddNetworkType<ushort[]>();
-            AddNetworkType<uint[]>();
-            AddNetworkType<ulong[]>();
-            AddNetworkType<float[]>();
-            AddNetworkType<double[]>();
-            AddNetworkType<bool[]>();
-            AddNetworkType<char[]>();
-            AddNetworkType<string[]>();
-            AddNetworkType<byte[]>();
-            AddNetworkType<sbyte[]>();
+            AddSerializeType<short[]>();
+            AddSerializeType<int[]>();
+            AddSerializeType<long[]>();
+            AddSerializeType<ushort[]>();
+            AddSerializeType<uint[]>();
+            AddSerializeType<ulong[]>();
+            AddSerializeType<float[]>();
+            AddSerializeType<double[]>();
+            AddSerializeType<bool[]>();
+            AddSerializeType<char[]>();
+            AddSerializeType<string[]>();
+            AddSerializeType<byte[]>();
+            AddSerializeType<sbyte[]>();
+            AddSerializeType<DateTime[]>();
+            AddSerializeType<decimal[]>();
             //基础序列化List
-            AddNetworkType<List<short>>();
-            AddNetworkType<List<int>>();
-            AddNetworkType<List<long>>();
-            AddNetworkType<List<ushort>>();
-            AddNetworkType<List<uint>>();
-            AddNetworkType<List<ulong>>();
-            AddNetworkType<List<float>>();
-            AddNetworkType<List<double>>();
-            AddNetworkType<List<bool>>();
-            AddNetworkType<List<char>>();
-            AddNetworkType<List<string>>();
-            AddNetworkType<List<byte>>();
-            AddNetworkType<List<sbyte>>();
+            AddSerializeType<List<short>>();
+            AddSerializeType<List<int>>();
+            AddSerializeType<List<long>>();
+            AddSerializeType<List<ushort>>();
+            AddSerializeType<List<uint>>();
+            AddSerializeType<List<ulong>>();
+            AddSerializeType<List<float>>();
+            AddSerializeType<List<double>>();
+            AddSerializeType<List<bool>>();
+            AddSerializeType<List<char>>();
+            AddSerializeType<List<string>>();
+            AddSerializeType<List<byte>>();
+            AddSerializeType<List<sbyte>>();
+            AddSerializeType<List<DateTime>>();
+            AddSerializeType<List<decimal>>();
+            //基础序列化List
+            AddSerializeType<List<short[]>>();
+            AddSerializeType<List<int[]>>();
+            AddSerializeType<List<long[]>>();
+            AddSerializeType<List<ushort[]>>();
+            AddSerializeType<List<uint[]>>();
+            AddSerializeType<List<ulong[]>>();
+            AddSerializeType<List<float[]>>();
+            AddSerializeType<List<double[]>>();
+            AddSerializeType<List<bool[]>>();
+            AddSerializeType<List<char[]>>();
+            AddSerializeType<List<string[]>>();
+            AddSerializeType<List<byte[]>>();
+            AddSerializeType<List<sbyte[]>>();
+            AddSerializeType<List<DateTime[]>>();
+            AddSerializeType<List<decimal[]>>();
             //其他可能用到的
-            AddNetworkType<Vector2>();
-            AddNetworkType<Vector3>();
-            AddNetworkType<Vector4>();
-            AddNetworkType<Quaternion>();
-            AddNetworkType<Rect>();
-            AddNetworkType<Color>();
-            AddNetworkType<Color32>();
-            AddNetworkType<UnityEngine.Vector2>();
-            AddNetworkType<UnityEngine.Vector3>();
-            AddNetworkType<UnityEngine.Vector4>();
-            AddNetworkType<UnityEngine.Quaternion>();
-            AddNetworkType<UnityEngine.Rect>();
-            AddNetworkType<UnityEngine.Color>();
-            AddNetworkType<UnityEngine.Color32>();
-            //场景操作同步用到
-            AddNetworkType<Operation>();
-            AddNetworkType<Operation[]>();
-            AddNetworkType<OperationList>();
+            AddSerializeType<Vector2>();
+            AddSerializeType<Vector3>();
+            AddSerializeType<Vector4>();
+            AddSerializeType<Quaternion>();
+            AddSerializeType<Rect>();
+            AddSerializeType<Color>();
+            AddSerializeType<Color32>();
+            AddSerializeType<UnityEngine.Vector2>();
+            AddSerializeType<UnityEngine.Vector3>();
+            AddSerializeType<UnityEngine.Vector4>();
+            AddSerializeType<UnityEngine.Quaternion>();
+            AddSerializeType<UnityEngine.Rect>();
+            AddSerializeType<UnityEngine.Color>();
+            AddSerializeType<UnityEngine.Color32>();
+            //框架操作同步用到
+            AddSerializeType<Operation>();
+            AddSerializeType<Operation[]>();
+            AddSerializeType<OperationList>();
         }
 
         /// <summary>
         /// 添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
         /// </summary>
-        public static void AddNetworkType<T>()
+        public static void AddSerializeType<T>()
         {
-            AddNetworkType(typeof(T));
+            AddSerializeType(typeof(T));
         }
 
         /// <summary>
         /// 添加经过网络传送的类型
         /// </summary>
         /// <param name="type"></param>
-        public static void AddNetworkType(Type type)
+        public static void AddSerializeType(Type type)
         {
             if (Types1.ContainsKey(type))
                 throw new Exception($"已经添加{type}键，不需要添加了!");
@@ -146,7 +151,7 @@
         {
             foreach (Type type in assembly.GetTypes().Where(t => { return !t.IsAbstract; }))
             {
-                AddNetworkType(type);
+                AddSerializeType(type);
             }
         }
 
@@ -159,173 +164,44 @@
         {
             foreach (Type type in assembly.GetTypes().Where(t => { return !t.IsAbstract & t.Namespace == nameSpace; }))
             {
-                AddNetworkType(type);
+                AddSerializeType(type);
             }
         }
 
         public static byte[] Serialize(RPCModel model)
         {
-            var bufferPool = BufferPool.Take();
-            using (MemoryStream stream = new MemoryStream(bufferPool))
+            var segment = BufferPool.Take();
+            byte head = 0;
+            bool hasFunc = !string.IsNullOrEmpty(model.func);
+            bool hasMask = model.methodHash != 0;
+            SetBit(ref head, 1, hasFunc);
+            SetBit(ref head, 2, hasMask);
+            segment.WriteByte(head);
+            if (hasFunc)
+                segment.Write(model.func);
+            if (hasMask)
+                segment.Write(model.methodHash);
+            var segment1 = BufferPool.Take();
+            foreach (object obj in model.pars)
             {
-                try
-                {
-                    stream.SetLength(0);
-                    List<FastData> datas = new List<FastData>();
-                    foreach (object obj in model.pars)
-                    {
-                        var type = obj.GetType();
-                        FastData data = new FastData() { type = GetTypeHash(type) };
-                        if (type.IsGenericType)
-                        {
-                            bool result = true;
-                            foreach (Type ga in type.GetGenericArguments())
-                            {
-#if CLOSE_ILR
-                                if (!ga.IsPrimitive & type != typeof(string) & ga.GetCustomAttribute<ProtoBuf.ProtoContractAttribute>() == null)
-#else
-                                if (!ga.IsPrimitive & type != typeof(string) & ga.GetCustomAttributes(typeof(ProtoBuf.ProtoContractAttribute), false).Length == 0)
-#endif
-                                {
-                                    result = false;
-                                    break;
-                                }
-                            }
-                            if (result)
-                            {
-                                ProtoBuf.Serializer.Serialize(stream, obj);
-                                data.buffer = stream.ToArray();
-                                datas.Add(data);
-                            }
-                            else
-                            {
-                                byte[] bts = SerializeComplex(type, obj);
-                                data.buffer = bts;
-                                datas.Add(data);
-                            }
-                        }
-                        else
-                        {
-#if CLOSE_ILR
-                            var customAtt = type.GetCustomAttribute(typeof(ProtoBuf.ProtoContractAttribute), false);
-                            if (customAtt == null & !type.IsPrimitive & type != typeof(string))
-#else
-                            object[] customAtt = type.GetCustomAttributes(typeof(ProtoBuf.ProtoContractAttribute), false);
-                            if (customAtt.Length == 0 & !type.IsPrimitive & type != typeof(string))
-#endif
-                            {
-                                byte[] bts = SerializeComplex(type, obj);
-                                data.buffer = bts;
-                                datas.Add(data);
-                            }
-                            else
-                            {
-                                ProtoBuf.Serializer.Serialize(stream, obj);
-                                data.buffer = stream.ToArray();
-                                datas.Add(data);
-                            }
-                        }
-                        stream.SetLength(0);
-                    }
-                    byte head = 0;
-                    bool hasFunc = !string.IsNullOrEmpty(model.func);
-                    bool hasMask = model.methodHash != 0;
-                    SetBit(ref head, 1, hasFunc);
-                    SetBit(ref head, 2, hasMask);
-                    stream.WriteByte(head);
-                    if (hasFunc)
-                    {
-                        var funcbts = Encoding.UTF8.GetBytes(model.func);
-                        stream.WriteByte((byte)funcbts.Length);
-                        stream.Write(funcbts, 0, funcbts.Length);
-                    }
-                    if (hasMask) stream.Write(BitConverter.GetBytes(model.methodHash), 0, 2);
-                    ProtoBuf.Serializer.Serialize(stream, datas);
-                    return stream.ToArray();
-                }
-                catch (Exception ex)
-                {
-                    NDebug.LogError("序列化:" + model.func + "方法出错 详细信息:" + ex);
-                    return new byte[0];
-                }
-                finally
-                {
-                    BufferPool.Push(bufferPool);
-                }
+                var type = obj.GetType();
+                segment.Write(GetTypeHash(type));
+                segment1.SetPositionLength(0);
+                NetConvertBinary.SerializeObject(segment1, obj, false, true);
+                var buffer = segment1.ToArray();
+                segment.Write(buffer, false);
             }
+            return segment.ToArray(true);
         }
 
-        private static byte GetTypeHash(Type type)
+        private static ushort GetTypeHash(Type type)
         {
-            if (Types1.TryGetValue(type, out byte typeHash))
+            if (Types1.TryGetValue(type, out var typeHash))
                 return typeHash;
             throw new IOException($"参数类型:[{type}]没有被注册! 请使用NetConvertFast.AddNetworkType<{type}>()添加序列化类型! 双端都要添加");
         }
 
-        //序列化复杂类型的, 如unity的类型
-        private static byte[] SerializeComplex(Type type, object obj)
-        {
-            DateTime time = DateTime.Now.AddSeconds(5);
-        JUMP: try
-            {
-                JsonSerializerSettings jSetting = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-                string typeName = type.ToString();
-                if (filter.ContainsKey(typeName))
-                    jSetting.ContractResolver = new LimitPropsContractResolver(filter[typeName].ToArray(), false);
-                string jsonStr = JsonConvert.SerializeObject(obj, jSetting);
-                return Encoding.Unicode.GetBytes(jsonStr);
-            }
-            catch (Exception e)
-            {
-                string ee = e.Message;
-                //Error setting value to 'xxxxxxxxxxxxxxxxxx'xxxxxxxxxxxxx.
-                if (ee.Contains("Error setting value to '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Error getting value from 'ScopeId' on 'System.Net.IPAddress'.
-                if (ee.Contains("Error getting value from '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Self referencing loop detected for property 'normalized' with type 'UnityEngine.Vector3'. Path 'pos.normalized.normalized'.
-                if (ee.Contains("Self referencing loop detected for property '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Self referencing loop detected with type 'Server.BydrClient'. Path 'scene.Players'.
-                if (ee.Contains("Self referencing loop detected with type '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 3)
-                        ee = field[3].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Could not create an instance of type System.Net.EndPoint. Type is an interface or abstract class and cannot be instantiated. Path 'RemotePoint.e6881ad2-e201-3376-9c81-f3496100c170.AddressFamily', line 1, position 488.
-                if (ee.Contains("Could not create an instance of type"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                string typeName = type.ToString();
-                if (!filter.ContainsKey(typeName))
-                    filter.Add(typeName, new List<string>());
-                if (!filter[typeName].Contains(ee))
-                    filter[typeName].Add(ee);
-                if (DateTime.Now > time)
-                    return new byte[0];
-                NDebug.LogError(e.ToString());
-                goto JUMP;
-            }
-        }
-
-        public static Type GetTypeHash(byte hashCode)
+        public static Type GetTypeHash(ushort hashCode)
         {
             if (Types.TryGetValue(hashCode, out Type type))
                 return type;
@@ -336,166 +212,37 @@
         public static FuncData Deserialize(byte[] buffer, int index, int count)
         {
             FuncData fdata = default;
-            if (index < 0 | count <= 0 | count > buffer.Length)
+            try
             {
-                fdata.error = true;
-                return fdata;
-            }
-            byte head = buffer[index++];
-            count--;
-            bool hasFunc = GetBit(head, 1);
-            bool hasMask = GetBit(head, 2);
-            if (hasFunc)
-            {
-                int funcLen = buffer[index++];
-                fdata.name = Encoding.UTF8.GetString(buffer, index, funcLen);
-                index += funcLen;
-                count -= funcLen + 1;
-            }
-            if (hasMask)
-            {
-                fdata.hash = BitConverter.ToUInt16(buffer, index);
-                index += 2;
-                count -= 2;
-            }
-            if (index + count > buffer.Length)
-            {
-                fdata.error = true;
-                return fdata;
-            }
-            using (MemoryStream stream = new MemoryStream(buffer, index, count))
-            {
-                List<FastData> datas = ProtoBuf.Serializer.Deserialize<List<FastData>>(stream);
-                List<object> pars = new List<object>();
-                foreach (FastData data in datas)
+                var segment = new Segment(buffer, index, count, false);
+                byte head = segment.ReadByte();
+                bool hasFunc = GetBit(head, 1);
+                bool hasMask = GetBit(head, 2);
+                if (hasFunc)
+                    fdata.name = segment.ReadString();
+                if (hasMask)
+                    fdata.hash = segment.ReadUInt16();
+                var list = new List<object>();
+                while (segment.Position < segment.Offset + segment.Count)
                 {
-                    using (MemoryStream ms = new MemoryStream(data.buffer))
+                    var typeName = segment.ReadUInt16();
+                    var type = GetTypeHash(typeName);
+                    if (type == null)
                     {
-                        Type type = GetTypeHash(data.type);
-                        if (type == null)
-                        {
-                            pars.Add(null);
-                            continue;
-                        }
-                        if (type.IsGenericType)
-                        {
-                            bool result = true;
-                            foreach (Type ga in type.GetGenericArguments())
-                            {
-#if CLOSE_ILR
-                                if (!ga.IsPrimitive & type != typeof(string) & ga.GetCustomAttribute<ProtoBuf.ProtoContractAttribute>() == null)
-#else
-                                if (!ga.IsPrimitive & type != typeof(string) & ga.GetCustomAttributes(typeof(ProtoBuf.ProtoContractAttribute), false).Length == 0)
-#endif
-                                {
-                                    result = false;
-                                    break;
-                                }
-                            }
-                            if (result)
-                            {
-                                object obj = ProtoBuf.Serializer.Deserialize(type, ms);
-                                pars.Add(obj);
-                            }
-                            else
-                            {
-                                object obj = DeserializeComplex(type, data.buffer, 0, data.buffer.Length);
-                                pars.Add(obj);
-                            }
-                        }
-                        else
-                        {
-#if CLOSE_ILR
-                            var customAtt = type.GetCustomAttribute(typeof(ProtoBuf.ProtoContractAttribute), false);
-                            if (customAtt == null & !type.IsPrimitive & type != typeof(string))
-#else
-                            object[] customAtt = type.GetCustomAttributes(typeof(ProtoBuf.ProtoContractAttribute), false);
-                            if (customAtt.Length == 0 & !type.IsPrimitive & type != typeof(string))
-#endif
-                            {
-                                object obj = DeserializeComplex(type, data.buffer, 0, data.buffer.Length);
-                                pars.Add(obj);
-                            }
-                            else
-                            {
-                                object obj = ProtoBuf.Serializer.Deserialize(type, ms);
-                                pars.Add(obj);
-                            }
-                        }
+                        fdata.error = true;
+                        break;
                     }
+                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, false, true);
+                    list.Add(obj);
                 }
-                fdata.pars = pars.ToArray();
-                return fdata;
+                fdata.pars = list.ToArray();
             }
-        }
-
-        /// <summary>
-        /// 反序列化复杂类型
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        private static object DeserializeComplex(Type type, byte[] buffer, int index, int count)
-        {
-            DateTime time = DateTime.Now.AddSeconds(5);
-        JUMP: try
+            catch (Exception ex)
             {
-                JsonSerializerSettings jSetting = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-                string typeName = type.ToString();
-                if (filter.ContainsKey(typeName))
-                    jSetting.ContractResolver = new LimitPropsContractResolver(filter[typeName].ToArray(), false);
-                string jsonStr = Encoding.Unicode.GetString(buffer, index, count);
-                return JsonConvert.DeserializeObject(jsonStr, type, jSetting);
+                fdata.error = true;
+                NDebug.LogError("反序列化:" + ex.ToString());
             }
-            catch (Exception e)
-            {
-                string ee = e.Message;
-                //Error setting value to 'xxxxxxxxxxxxxxxxxx'xxxxxxxxxxxxx.
-                if (ee.Contains("Error setting value to '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Error getting value from 'ScopeId' on 'System.Net.IPAddress'.
-                if (ee.Contains("Error getting value from '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Self referencing loop detected for property 'normalized' with type 'UnityEngine.Vector3'. Path 'pos.normalized.normalized'.
-                if (ee.Contains("Self referencing loop detected for property '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Self referencing loop detected with type 'Server.BydrClient'. Path 'scene.Players'.
-                if (ee.Contains("Self referencing loop detected with type '"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 3)
-                        ee = field[3].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                //Could not create an instance of type System.Net.EndPoint. Type is an interface or abstract class and cannot be instantiated. Path 'RemotePoint.e6881ad2-e201-3376-9c81-f3496100c170.AddressFamily', line 1, position 488.
-                if (ee.Contains("Could not create an instance of type"))
-                {
-                    string[] field = ee.Split(new string[] { "'" }, StringSplitOptions.None);
-                    if (field.Length > 1)
-                        ee = field[1].Split(new string[] { "." }, StringSplitOptions.None)[0];
-                }
-                string typeName = type.ToString();
-                if (!filter.ContainsKey(typeName))
-                    filter.Add(typeName, new List<string>());
-                if (!filter[typeName].Contains(ee))
-                    filter[typeName].Add(ee);
-                if (DateTime.Now > time)
-                    return null;
-                NDebug.LogError(e.ToString());
-                goto JUMP;
-            }
+            return fdata;
         }
     }
 }
