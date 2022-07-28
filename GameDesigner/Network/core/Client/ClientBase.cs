@@ -1683,17 +1683,17 @@ namespace Net.Client
                 int dataCount = buffer.ReadInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
-                RPCModel rpc = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
                 if (kernel)
                 {
-                    FuncData func = OnDeserializeRPC(buffer, buffer.Position, dataCount);
+                    var func = OnDeserializeRPC(buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
-                    rpc.func = func.name;
-                    rpc.pars = func.pars;
-                    rpc.methodHash = func.hash;
+                    model.func = func.name;
+                    model.pars = func.pars;
+                    model.methodHash = func.hash;
                 }
-                RPCDataHandle(rpc, buffer);//解析协议完成
+                RPCDataHandle(model, buffer);//解析协议完成
                 J: buffer.Position += dataCount;
             }
         }

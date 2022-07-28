@@ -413,36 +413,6 @@
         }
 
         /// <summary>
-        /// 序列化对象, 记录类型
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static byte[] SerializeComplex(object obj, bool recordType = false, bool ignore = false)
-        {
-            var stream = BufferPool.Take();
-            byte[] buffer1 = new byte[0];
-            try
-            {
-                if (obj == null)
-                    return stream.ToArray();
-                Type type = obj.GetType();
-                byte[] typeBytes = BitConverter.GetBytes(TypeToIndex(type));
-                stream.Write(typeBytes, 0, 2);
-                WriteObject(stream, type, obj, recordType, ignore);
-                buffer1 = stream.ToArray();
-            }
-            catch (Exception ex)
-            {
-                NDebug.LogError("序列化:" + obj + "出错 详细信息:" + ex);
-            }
-            finally
-            {
-                BufferPool.Push(stream);
-            }
-            return buffer1;
-        }
-
-        /// <summary>
         /// 序列化
         /// </summary>
         /// <param name="obj"></param>
@@ -1007,7 +977,7 @@
                     var type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
-                    var obj1 = ReadObject(buffer, type, false, ignore);
+                    var obj1 = ReadObject(segment, type, false, ignore);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
@@ -1062,26 +1032,6 @@
             if (isPush) BufferPool.Push(segment);
             return obj;
         }
-
-        /// <summary>
-        /// 反序列化复杂类型
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        //public static object DeserializeComplex(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
-        //{
-        //    object obj = null;
-        //    if (index < count)
-        //    {
-        //        Type type = IndexToType(BitConverter.ToUInt16(buffer, index));
-        //        if (type == null)
-        //            return obj;
-        //        index += 2;
-        //        obj = ReadObject(buffer, ref index, type, recordType, ignore);
-        //    }
-        //    return obj;
-        //}
 
         public static object Deserialize(Segment segment, bool isPush = true, bool ignore = false)
         {
