@@ -157,15 +157,15 @@
         public static Type GetTypeAll(string typeName)
         {
             //代码优化
-            if (Types.ContainsKey(typeName))
-                return Types[typeName];
+            if (Types.TryGetValue(typeName, out var type))
+                return type;
             if (NotTypes.Contains(typeName))
                 goto JMP;
-            Type type1 = Type.GetType(typeName);
-            if (type1 != null)
+            type = Type.GetType(typeName);
+            if (type != null)
             {
-                Types.TryAdd(typeName, type1);
-                return type1;
+                Types.TryAdd(typeName, type);
+                return type;
             }
             string typeName1 = typeName;
             typeName1 = typeName1.Replace("&", ""); // 反射参数的 out 标示
@@ -180,24 +180,24 @@
             typeName1 = typeName1.Replace("]", ""); // 反射参数的 object[](数组) 标示
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                Type type = assembly.GetType(typeName1);
-                if (type != null)
+                var type1 = assembly.GetType(typeName1);
+                if (type1 != null)
                 {
                     if (typeName.EndsWith("[]"))
                     {
-                        type = Array.CreateInstance(type, 0).GetType();
-                        Types.TryAdd(typeName, type);
-                        return type;
+                        type1 = Array.CreateInstance(type1, 0).GetType();
+                        Types.TryAdd(typeName, type1);
+                        return type1;
                     }
                     if (typeName.Contains("System.Collections.Generic.List`1"))
                     {
                         Type type2 = Type.GetType("System.Collections.Generic.List`1");    //得到此类类型 注：（`1） 为占位符 不明确类型
-                        type = type2.MakeGenericType(type);  //指定泛型类
-                        Types.TryAdd(typeName, type);
-                        return type;
+                        type1 = type2.MakeGenericType(type1);  //指定泛型类
+                        Types.TryAdd(typeName, type1);
+                        return type1;
                     }
-                    Types.TryAdd(typeName, type);
-                    return type;
+                    Types.TryAdd(typeName, type1);
+                    return type1;
                 }
             }
 #if !CLOSE_ILR

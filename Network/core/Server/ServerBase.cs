@@ -2876,7 +2876,7 @@ namespace Net.Server
         /// <param name="tcpMaxHalfOpen">服务器可以保持多少个连接处于半开（SYN-RCVD）状态</param>
         /// <param name="tcpMaxHalfOpenRetried">确定服务器可以在半打开 (SYN-RCVD) 状态下保持多少连接, 此条目的值应小于TCPMaxHalfOpen条目的值</param>
         /// <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
-        public virtual void SetAttackProtect(int synAttackProtect = 1, int tcpMaxConnectResponseRetransmissions = 2, int tcpMaxHalfOpen = 1000, int tcpMaxHalfOpenRetried = 800, int tcpMaxPortsExhausted = 5)
+        public virtual void SetAttackProtect(int synAttackProtect = 1, int tcpMaxConnectResponseRetransmissions = 2, int tcpMaxHalfOpen = 500, int tcpMaxHalfOpenRetried = 400, int tcpMaxPortsExhausted = 5)
         {
             RegistryKey hklm = Registry.LocalMachine;
             RegistryKey tcpParams = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", true);

@@ -40,10 +40,10 @@ namespace Net.Plugins
     /// </summary>
     public class GcpKernel : IDisposable
     {
-        private uint senderFrameLocal;
-        private uint revderFrameLocal;
         private uint senderFrame;
         private uint revderFrame;
+        private uint senderFrameLocal;
+        private uint revderFrameLocal;
         private byte[] revderBuffer;
         private int revderFrameEnd;
         private byte[] revderHash;
@@ -163,7 +163,7 @@ namespace Net.Plugins
                             revderHashCount = 0;
                         }
                     }
-                J: segment = BufferPool.Take();
+                J: segment.SetPositionLength(0);
                     segment.WriteByte(Cmd.Ack);
                     segment.Write(frame);
                     var bytes = segment.ToArray(true);
@@ -194,11 +194,18 @@ namespace Net.Plugins
         {
             lock (SyncRoot)
             {
+                senderFrame = 0;
+                revderFrame = 0;
+                senderFrameLocal = 0;
+                revderFrameLocal = 0;
                 revderBuffer = null;
+                revderFrameEnd = 0;
+                revderHash = null;
                 senderQueue.Clear();
                 revderQueue.Clear();
                 senderDict.Clear();
                 current = null;
+                RemotePoint = null;
             }
         }
         public override string ToString()

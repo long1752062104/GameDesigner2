@@ -446,14 +446,14 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static Segment SerializeObject<T>(T obj, bool recordType = false, bool ignore = false)
+        public static Segment SerializeObject(object obj, bool recordType = false, bool ignore = false)
         {
             var stream = BufferPool.Take();
             try
             {
                 if (obj == null)
                     return stream;
-                Type type = obj.GetType();
+                var type = obj.GetType();
                 WriteObject(stream, type, obj, recordType, ignore);
             }
             catch (Exception ex)
@@ -473,13 +473,13 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static void SerializeObject<T>(Segment stream, T obj, bool recordType = false, bool ignore = false)
+        public static void SerializeObject(Segment stream, object obj, bool recordType = false, bool ignore = false)
         {
             try
             {
                 if (obj == null)
                     return;
-                Type type = obj.GetType();
+                var type = obj.GetType();
                 WriteObject(stream, type, obj, recordType, ignore);
             }
             catch (Exception ex)
@@ -505,6 +505,7 @@
             internal Type ItemType1;
             internal bool ItemType1IsPrimitive;
             internal Type[] ItemTypes;
+            internal object defaultV;
 #if !SERVICE
             internal Func<object, object> getValue;
             internal Action<object, object> setValue;
@@ -831,6 +832,13 @@
             member1.IsGenericType = fpType.IsGenericType;
             member1.Type = fpType;
             member1.TypeCode = Type.GetTypeCode(fpType);
+            if(member1.IsPrimitive)
+            {
+                if (fpType == typeof(string))
+                    member1.defaultV = null;
+                else
+                    member1.defaultV = Activator.CreateInstance(member1.Type);
+            }
             return member1;
         }
 
@@ -843,7 +851,7 @@
         /// <param name="target"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
-        private static void WriteObject<T>(Segment segment, Type type, T target, bool recordType, bool ignore)
+        private static void WriteObject(Segment segment, Type type, object target, bool recordType, bool ignore)
         {
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
@@ -860,8 +868,7 @@
                 int bitPos = i / 8;
                 if (member.IsPrimitive)
                 {
-                    var defaultV = Activator.CreateInstance(member.Type);
-                    if (!value.Equals(defaultV))
+                    if (!value.Equals(member.defaultV))
                     {
                         segment.WriteValue(value);
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
