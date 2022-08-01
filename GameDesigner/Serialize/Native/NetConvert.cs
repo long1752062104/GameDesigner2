@@ -36,15 +36,11 @@
                 segment.Write(model.func);
             if (hasMask) 
                 segment.Write(model.methodHash);
-            var segment1 = BufferPool.Take();
             foreach (object obj in model.pars)
             {
                 var type = obj.GetType();
                 segment.Write(type.ToString());
-                segment1.SetPositionLength(0);
-                NetConvertBinary.SerializeObject(segment1, obj, false, true);
-                var buffer = segment1.ToArray();
-                segment.Write(buffer, false);
+                NetConvertBinary.SerializeObject(segment, obj, false, true);
             }
             return segment.ToArray(true);
         }
