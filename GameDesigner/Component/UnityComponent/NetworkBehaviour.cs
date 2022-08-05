@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 namespace Net.UnityComponent
 {
+    using global::System;
     using Net.Share;
     using UnityEngine;
 
@@ -11,25 +12,51 @@ namespace Net.UnityComponent
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         internal NetworkObject netObj;
+        private int index = -1;
         /// <summary>
         /// 此组件是netobj的第几个组件
         /// </summary>
-        internal int Index = -1;
+        internal int Index
+        {
+            get { return index; }
+            set
+            {
+                if (value > 10)
+                    throw new Exception("组件最多不能超过10个");
+                index = value;
+            }
+        }
         /// <summary>
         /// 这个物体是本机生成的?
         /// true:这个物体是从你本机实例化后, 同步给其他客户端的, 其他客户端的IsLocal为false
         /// false:这个物体是其他客户端实例化后,同步到本机客户端上, IsLocal为false
         /// </summary>
         public bool IsLocal => !netObj.isOtherCreate;
-        public virtual void Start() 
+        private bool isInit;
+        public virtual void Start()
         {
+            Init();
+        }
+        public void Init()
+        {
+            if (isInit)
+                return;
+            isInit = true;
             netObj = GetComponent<NetworkObject>();
             if (Index == -1)
             {
                 Index = netObj.networkBehaviours.Count;
                 netObj.networkBehaviours.Add(this);
-                netObj.InitSyncVar(this);
             }
+            else
+            {
+                while (netObj.networkBehaviours.Count <= Index)
+                    netObj.networkBehaviours.Add(null);
+                netObj.networkBehaviours[Index] = this;
+            }
+            netObj.InitSyncVar(this);
+            if (IsLocal)
+                OnNetworkObjectInit(netObj.Identity);
         }
         /// <summary>
         /// 当网络物体被初始化, 只有本机实例化的物体才会被调用

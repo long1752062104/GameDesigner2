@@ -42,7 +42,6 @@ namespace ExampleServer
             server.OnlineLimit = 24000;//服务器最大运行2500人连接
             server.LineUp = 24000;
             server.MaxThread = 10; //增加并发线程
-            server.RTOMode = RTOMode.Variable;
             server.RTO = 50;
             server.MTU = 1300;
             server.MTPS = 2048;

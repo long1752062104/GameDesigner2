@@ -2524,11 +2524,6 @@
             当前客户端网络状态
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.currFrequency">
-            <summary>
-            当前尝试重连次数
-            </summary>
-        </member>
         <member name="F:Net.Client.ClientBase.sendCount">
             <summary>
             每秒发送数据长度
@@ -2754,26 +2749,6 @@
             当服务器爆满，服务器积极拒绝客户端请求
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.sendRTList">
-            <summary>
-            发送可靠传输缓冲
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.revdRTList">
-            <summary>
-            接收可靠传输缓冲
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.sendRTListCount">
-            <summary>
-            可靠传输最大值
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.revdRTStream">
-            <summary>
-            可靠传输文件流对象
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.frame">
             <summary>
             1CRC协议
@@ -2826,11 +2801,6 @@
             TCP叠包临时缓存流
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.OperationSyncInThread">
-            <summary>
-            在多线程中调用OperationSync事件?
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.SendOperationReliable">
             <summary>
             玩家操作是以可靠传输进行发送的?     
@@ -2857,11 +2827,6 @@
             （Retransmission TimeOut）重传超时时间。 默认为20毫秒重传一次
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.RTOMode">
-            <summary>
-            超时重传模式 默认为可变重传
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.MTPS">
             <summary>
             (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
@@ -2870,31 +2835,6 @@
         <member name="F:Net.Client.ClientBase.localPort">
             <summary>
             客户端端口
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.sendReliableFrame">
-            <summary>
-            当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (发送帧)
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.revdReliableFrame">
-            <summary>
-            当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (接收帧)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.ByteCompression">
-            <summary>
-            使用字节压缩吗? 如果使用, 每次发送字节大于1000个后进行压缩处理
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Seqencing">
-            <summary>
-            可靠传输是排队模式? 排队模式下, 可靠包是一个一个处理. 不排队模式: 可靠传输数据组成多列并发 ---> 默认是无排队模式
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.IsEthernet">
-            <summary>
-            是以太网? 此属性控制组包发送时,执行一次能把n个数据包组合在一起, 然后一次发送, 全由数据包大小决定. 如果此属性是以太网(true), 则根据mut来判断, 否则是局域网, 固定值50000字节
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.PackageLength">
@@ -2915,6 +2855,11 @@
         <member name="P:Net.Client.ClientBase.LimitQueueCount">
             <summary>
             限制发送队列长度
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.CurrReconnect">
+            <summary>
+            当前尝试重连次数
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.ReconnectCount">
@@ -3211,11 +3156,10 @@
             <param name="ip"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Client.ClientBase.Reconnection(System.Int32)">
+        <member name="M:Net.Client.ClientBase.Reconnection">
             <summary>
             断线重新连接
             </summary>
-            <param name="maxFrequency">重连最大次数</param>
         </member>
         <member name="M:Net.Client.ClientBase.Close(System.Boolean,System.Int32)">
             <summary>
@@ -3416,20 +3360,39 @@
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.String,System.Object[])">
             <summary>
-            发送网络可靠传输数据, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            发送可靠的网络数据
             </summary>
             <param name="func">函数名</param>
             <param name="pars">参数</param>
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.String,System.Object[])">
             <summary>
-            发送可靠网络传输, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            发送可靠的网络数据
             </summary>
             <param name="cmd">网络命令</param>
             <param name="func">函数名</param>
             <param name="pars">参数</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendRT(System.UInt16,System.Object[])">
+            <summary>
+            发送可靠的网络数据
+            </summary>
+            <param name="methodMask"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.UInt16,System.Object[])">
+            <summary>
+            发送可靠的网络数据
+            </summary>
+            <param name="cmd"></param>
+            <param name="methodMask"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendRT(Net.Share.RPCModel)">
+            <summary>
+            发送可靠的网络数据,需要了解model的各个参数
+            </summary>
+            <param name="model"></param>
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.String,System.String,System.Delegate,System.Object[])">
             <summary>
@@ -3530,15 +3493,20 @@
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.Byte[])">
             <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            发送可靠的网络数据
             </summary>
             <param name="buffer"></param>
         </member>
+        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.Object)">
+            <summary>
+            发送可靠的网络数据，ProtoBuf序列号
+            </summary>
+            <param name="cmd"></param>
+            <param name="obj"></param>
+        </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.Byte[])">
             <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            发送可靠的网络数据
             </summary>
             <param name="cmd">网络命令</param>
             <param name="buffer"></param>
@@ -3922,7 +3890,7 @@
         </member>
         <member name="P:Net.Config.ConfigData.UseMemoryStream">
             <summary>
-            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较少!
+            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
             使用内存流缓存速度会比较快, 但运行内存占用比较大
             </summary>
         </member>
@@ -4088,6 +4056,12 @@
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
         </member>
+        <member name="M:Net.Event.TimerEvent.GetEvent(System.Int32)">
+            <summary>
+            获取计时事件
+            </summary>
+            <param name="eventId"></param>
+        </member>
         <member name="M:Net.Event.TimerEvent.RemoveEvent(System.Int32)">
             <summary>
             移除事件
@@ -4206,16 +4180,6 @@
             跳动的心
             </summary>
         </member>
-        <member name="F:Net.Server.NetPlayer.sendRTList">
-            <summary>
-            发送可靠数据缓冲
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetPlayer.revdRTList">
-            <summary>
-            接收可靠数据缓冲
-            </summary>
-        </member>
         <member name="F:Net.Server.NetPlayer.stack">
             <summary>
             TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
@@ -4231,24 +4195,9 @@
             用户唯一身份标识
             </summary>
         </member>
-        <member name="F:Net.Server.NetPlayer.sendReliableFrame">
-            <summary>
-            当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (发送帧)
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetPlayer.revdReliableFrame">
-            <summary>
-            当前可靠帧, 比如服务器发送两帧可靠数据帧给客户端, 客户端只需要收到一个帧数据即可 (接收帧)
-            </summary>
-        </member>
         <member name="P:Net.Server.NetPlayer.CloseSend">
             <summary>
             关闭发送数据, 当关闭发送数据后, 数据将会停止发送, (允许接收客户端数据,但不能发送!)
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.TcpRemoteEndPoint">
-            <summary>
-            tcp远程端口, 由于socket被关闭后无法访问RemoteEndPoint的问题
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.IsQueueUp">
@@ -4731,11 +4680,6 @@
             服务器是否处于运行状态, 如果服务器套接字已经被释放则返回False, 否则返回True. 当调用Close方法后将改变状态
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.SyncFrequency">
-            <summary>
-            网络发送频率, 正常情况是每秒60次 (FPS)
-            </summary>
-        </member>
         <member name="P:Net.Server.ServerBase`2.SyncSceneTime">
             <summary>
             网络场景同步时间(帧同步间隔), 默认每33毫秒同步一次, 一秒同步30次, 可自己设置
@@ -4833,14 +4777,9 @@
             玩家唯一标识栈
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.ByteCompression">
-            <summary>
-            使用字节压缩吗? 如果使用: 当buffer数据大于1000时, 启用压缩功能
-            </summary>
-        </member>
         <member name="P:Net.Server.ServerBase`2.MTU">
             <summary>
-            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节, 这里默认为50000, 如果数据超过50000,则是该框架进行分片. 传输层则需要分片为50000/1472=34个数据片</para>
+            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节</para>
             <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
             <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
             <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
@@ -4849,12 +4788,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.RTO">
             <summary>
-            （Retransmission TimeOut）重传超时时间。 默认为50毫秒重传一次
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.RTOMode">
-            <summary>
-            超时重传模式 默认为可变重传
+            （Retransmission TimeOut）重传超时时间。 默认为200毫秒重传一次
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.MTPS">
@@ -4875,11 +4809,6 @@
         <member name="F:Net.Server.ServerBase`2.onlineNumber">
             <summary>
             在线客户端数量
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.IsEthernet">
-            <summary>
-            是以太网? 此属性控制组包发送时,执行一次能把n个数据包组合在一起, 然后一次发送, 全由数据包大小决定. 如果此属性是以太网(true), 则根据mut来判断, 否则是局域网, 固定值50000字节
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.PackageLength">
@@ -4979,7 +4908,7 @@
         </member>
         <member name="F:Net.Server.ServerBase`2.OnPingCallback">
             <summary>
-            ping服务器回调 参数double为延迟毫秒单位 当<see cref="P:Net.Server.ServerBase`2.RTOMode"/>=<see cref="F:Net.Share.RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
+            ping服务器回调 参数double为延迟毫秒单位 当<see cref="T:Net.Share.RTOMode"/>=<see cref="F:Net.Share.RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.OnSendErrorHandle">
@@ -5721,6 +5650,16 @@
             </summary>
             <returns>是否可发送数据</returns>
         </member>
+        <member name="M:Net.Server.ServerBase`2.SetAttackProtect(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            设置攻击防护(SYN-ACK攻击)
+            </summary>
+            <param name="synAttackProtect">0:不开启 1:系统通过减少重传次数和延迟未连接时路由缓冲项(route cache entry)防范SYN攻击 2:(Microsoft推荐使用此值)</param>
+            <param name="tcpMaxConnectResponseRetransmissions">确定 TCP 重新传输未应答的 SYN-ACK（连接请求确认）的次数</param>
+            <param name="tcpMaxHalfOpen">服务器可以保持多少个连接处于半开（SYN-RCVD）状态</param>
+            <param name="tcpMaxHalfOpenRetried">确定服务器可以在半打开 (SYN-RCVD) 状态下保持多少连接, 此条目的值应小于TCPMaxHalfOpen条目的值</param>
+            <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
+        </member>
         <member name="T:Net.Server.TcpServer`2">
             <summary>
             TCP服务器类型
@@ -5781,6 +5720,11 @@
             启动服务器
             </summary>
             <param name="port">端口</param>
+        </member>
+        <member name="T:Net.Server.UdpServer">
+            <summary>
+            默认udp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
         </member>
         <member name="T:Net.Server.UdpServerIOCP`2">
             <summary>
@@ -6847,21 +6791,22 @@
         <member name="F:Net.Share.NetCmd.EntityRpc">
             <summary>
             面向实体类型调用远程函数
-            使用此命令即可在NetPlayer的派生类中定义rpc函数进行调用
+            使用此命令即可在派生于<see cref="T:Net.Server.NetPlayer"/>类型定义<see cref="T:Net.Share.Rpc"/>函数进行调用
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.CallRpc">
             <summary>
+            公共Rpc调用指令(<see langword="服务器的公共资源"/>)
             如果是客户端调用则在服务器执行 如果是服务器调用则在客户端执行.
             在服务器端,如果出现多线程抢夺资源调用Client错误时，可使用SafeCall命令来执行
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SafeCall">
             <summary>
-            安全调用服务器函数,当多线程并行时会有1%的几率发生线程抢夺资源，
+            安全调用服务器函数(<see langword="针对Client独立调用"/>),当多线程并行时会有概率发生资源竞争，导致数据错乱！
             如果在RPC函数内部调用client的时候是其他客户端的client对象。出现这种情况时建议使用此命令，
             否则可以使用CallRpc命令，
-            使用此命令时,函数第一个参数将会嵌入NetPlayer参数
+            使用此命令时,函数第一个参数必须是派生于<see cref="T:Net.Server.NetPlayer"/>类型的参数
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.Local">
@@ -6916,12 +6861,7 @@
         </member>
         <member name="F:Net.Share.NetCmd.ReliableTransport">
             <summary>
-            可靠传输接收指令. 内部命令
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.ReliableCallback">
-            <summary>
-            可靠传输数据确认回调, 内部命令
+            Gcp可靠传输协议指令. 内部命令
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SwitchPort">
@@ -6950,11 +6890,6 @@
             连接指令 (内部)
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.ReliableCallbackClear">
-            <summary>
-            可靠传输被清洗, 原因是接收缓存流设置过小 内部指令
-            </summary>
-        </member>
         <member name="F:Net.Share.NetCmd.LocalRT">
             <summary>
             自身转发, 可靠传输
@@ -6968,16 +6903,6 @@
         <member name="F:Net.Share.NetCmd.PingCallback">
             <summary>
             ping回调 内部指令
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.TakeFrame">
-            <summary>
-            可靠传输取单帧 内部指令
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.TakeFrameList">
-            <summary>
-            可靠传输取帧列表 内部指令
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SyncVar">
@@ -8581,35 +8506,25 @@
             3x3矩阵
             </summary>
         </member>
-        <member name="T:Net.Serialize.Data">
+        <member name="F:Net.Plugins.Cmd.Frame">
             <summary>
-            序列化数据标示
+            网络帧
+            </summary>
+        </member>
+        <member name="F:Net.Plugins.Cmd.Ack">
+            <summary>
+            网络帧确认
+            </summary>
+        </member>
+        <member name="T:Net.Plugins.GcpKernel">
+            <summary>
+            Gcp可靠协议核心类
             </summary>
         </member>
         <member name="T:Net.Serialize.NetConvert">
             <summary>
             网络转换核心 2019.7.16
             </summary>
-        </member>
-        <member name="T:Net.Serialize.NetConvert.LimitPropsContractResolver">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.LimitPropsContractResolver.#ctor(System.String[],System.Boolean)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="props">传入的属性数组</param>
-            <param name="retain">true:表示props是需要保留的字段  false：表示props是要排除的字段</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.LimitPropsContractResolver.CreateProperties(System.Type,Newtonsoft_X.Json.MemberSerialization)">
-            <summary>
-            
-            </summary>
-            <param name="type"></param>
-            <param name="memberSerialization"></param>
-            <returns></returns>
         </member>
         <member name="M:Net.Serialize.NetConvert.Serialize(Net.Share.RPCModel,System.Byte[])">
             <summary>
@@ -8629,15 +8544,6 @@
             <summary>
             新版反序列化
             </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.DeserializeComplex(System.Type,System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            反序列化复杂类型
-            </summary>
-            <param name="type"></param>
             <param name="buffer"></param>
             <param name="index"></param>
             <param name="count"></param>
@@ -8748,22 +8654,6 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.WriteValue``1(Net.System.Segment,``0)">
-            <summary>
-            序列化基本类型
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.ReadValue(System.TypeCode,System.Byte[],System.Int32@)">
-            <summary>
-            反序列化基本类型
-            </summary>
-            <param name="type"></param>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <returns></returns>
-        </member>
         <member name="M:Net.Serialize.NetConvertBinary.WriteArray(Net.System.Segment,System.Collections.IList,System.Type,System.Boolean,System.Boolean)">
             <summary>
             序列化数组实体
@@ -8771,20 +8661,13 @@
             <param name="stream"></param>
             <param name="array"></param>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.ReadArray(System.Byte[],System.Int32@,System.Collections.IList@,System.Type,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.ReadArray(Net.System.Segment,System.Collections.IList@,System.Type,System.Boolean,System.Boolean)">
             <summary>
             反序列化数组
             </summary>
             <param name="buffer"></param>
             <param name="index"></param>
             <param name="array"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.SerializeComplex(System.Object,System.Boolean,System.Boolean)">
-            <summary>
-            序列化对象, 记录类型
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.Serialize(System.Object,System.Boolean,System.Boolean)">
             <summary>
@@ -8794,49 +8677,30 @@
             <param name="recordType"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject``1(``0,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(System.Object,System.Boolean,System.Boolean)">
             <summary>
             序列化对象, 不记录反序列化类型
             </summary>
             <param name="obj"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject``1(Net.System.Segment,``0,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(Net.System.Segment,System.Object,System.Boolean,System.Boolean)">
             <summary>
             序列化对象, 不记录反序列化类型
             </summary>
             <param name="obj"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.WriteObject``1(Net.System.Segment,System.Type,``0,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.WriteObject(Net.System.Segment,System.Type,System.Object,System.Boolean,System.Boolean)">
             <summary>
             序列化对象
             </summary>
             <typeparam name="T"></typeparam>
-            <param name="stream"></param>
+            <param name="segment"></param>
             <param name="type"></param>
             <param name="target"></param>
             <param name="recordType"></param>
             <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化
-            </summary>
-            <param name="segment"></param>
-            <param name="recordType"></param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(Net.System.Segment,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="segment"></param>
-            <param name="recordType"></param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-            <returns></returns>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(System.Byte[],System.Int32,System.Int32,System.Boolean,System.Boolean)">
             <summary>
@@ -8850,15 +8714,26 @@
             <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeComplex(System.Byte[],System.Int32,System.Int32,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(Net.System.Segment,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
-            反序列化复杂类型
+            反序列化
             </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
+            <typeparam name="T"></typeparam>
+            <param name="segment"></param>
+            <param name="recordType"></param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+            <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.ReadObject(System.Byte[],System.Int32@,System.Type,System.Boolean,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化
+            </summary>
+            <param name="segment"></param>
+            <param name="recordType"></param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.ReadObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean)">
             <summary>
             反序列化实体对象
             </summary>
@@ -8877,12 +8752,12 @@
             添加网络基本类型， int，float，bool，string......
             </summary>
         </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddNetworkType``1">
+        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType``1">
             <summary>
             添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
             </summary>
         </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddNetworkType(System.Type)">
+        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType(System.Type)">
             <summary>
             添加经过网络传送的类型
             </summary>
@@ -8900,15 +8775,6 @@
             </summary>
             <param name="assembly"></param>
             <param name="nameSpace"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.DeserializeComplex(System.Type,System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            反序列化复杂类型
-            </summary>
-            <param name="type"></param>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
         </member>
         <member name="T:Net.Serialize.ISerialize">
             <summary>
@@ -9279,7 +9145,7 @@
             ecs组件更新接口, 减少组件for循环开销
             </summary>
         </member>
-        <member name="M:ECS.IUpdate.Update">
+        <member name="M:ECS.IUpdate.OnUpdate">
             <summary>
             每帧更新
             </summary>

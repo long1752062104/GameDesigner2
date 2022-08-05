@@ -58,16 +58,12 @@ namespace Net.UnityComponent
             if (m_identity > 0)
             {
                 sm.identitys.Add(m_identity, this);
-                foreach (var item in networkBehaviours)
-                    item.OnNetworkObjectInit(m_identity);
                 return;
             }
             if (Identity > 0)
             {
                 m_identity = Identity;
                 sm.identitys.Add(m_identity, this);
-                foreach (var item in networkBehaviours)
-                    item.OnNetworkObjectInit(m_identity);
                 return;
             }
             if (IDENTITY_POOL.Count <= 0)
@@ -78,8 +74,6 @@ namespace Net.UnityComponent
             }
             m_identity = IDENTITY_POOL.Dequeue();
             sm.identitys.Add(m_identity, this);
-            foreach (var item in networkBehaviours)
-                item.OnNetworkObjectInit(m_identity);
         }
         internal void InitSyncVar(object target)
         {
