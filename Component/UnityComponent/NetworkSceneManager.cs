@@ -19,11 +19,6 @@ namespace Net.UnityComponent
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
 
-        public virtual void OnConnected()
-        {
-            NetworkObject.Init(5000);
-        }
-
         // Start is called before the first frame update
         public virtual void Start()
         {
@@ -51,6 +46,11 @@ namespace Net.UnityComponent
             ClientBase.Instance.OnOperationSync += OperationSync;
         }
 
+        public virtual void OnConnected()
+        {
+            NetworkObject.Init(5000);
+        }
+
         public virtual void Update() 
         {
             if (NetworkTime.CanSent) 
@@ -71,7 +71,7 @@ namespace Net.UnityComponent
                 OnNetworkOperSync(opt);
         }
 
-        void OnNetworkOperSync(Operation opt)
+        private void OnNetworkOperSync(Operation opt)
         {
             switch (opt.cmd) 
             {
@@ -85,8 +85,12 @@ namespace Net.UnityComponent
                             identity.isInit = true;
                             identitys.Add(opt.identity, identity);
                             OnNetworkObjectCreate(opt, identity);
-                            foreach (var item in identity.networkBehaviours)
+                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
+                            foreach (var item in networkBehaviours)
+                            {
+                                item.Init();
                                 item.OnNetworkObjectCreate(opt);
+                            }
                         }
                         var nb = identity.networkBehaviours[opt.index1];
                         nb.OnNetworkOperationHandler(opt);
@@ -101,8 +105,13 @@ namespace Net.UnityComponent
                             identity.isOtherCreate = true;
                             identity.isInit = true;
                             identitys.Add(opt.identity, identity);
-                            foreach (var item in identity.networkBehaviours)
+                            OnNetworkObjectCreate(opt, identity);
+                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
+                            foreach (var item in networkBehaviours)
+                            {
+                                item.Init();
                                 item.OnNetworkObjectCreate(opt);
+                            }
                         }
                         var nb = identity.networkBehaviours[opt.index1];
                         nb.OnNetworkOperationHandler(opt);
@@ -123,8 +132,13 @@ namespace Net.UnityComponent
                             identity.isOtherCreate = true;
                             identity.isInit = true;
                             identitys.Add(opt.identity, identity);
-                            foreach (var item in identity.networkBehaviours)
+                            OnNetworkObjectCreate(opt, identity);
+                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
+                            foreach (var item in networkBehaviours)
+                            {
+                                item.Init();
                                 item.OnNetworkObjectCreate(opt);
+                            }
                         }
                         identity.SyncVarHandler(opt);
                     }
@@ -135,6 +149,10 @@ namespace Net.UnityComponent
             }
         }
 
+        /// <summary>
+        /// 当其他网络物体被删除(入口1)
+        /// </summary>
+        /// <param name="opt"></param>
         public virtual void OnNetworkObjectDestroy(Operation opt) 
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
@@ -171,19 +189,36 @@ namespace Net.UnityComponent
             }
         }
 
+        /// <summary>
+        /// 当其他网络物体被创建(实例化)
+        /// </summary>
+        /// <param name="opt"></param>
+        /// <param name="identity"></param>
         public virtual void OnNetworkObjectCreate(Operation opt, NetworkObject identity)
         {
         }
 
+        /// <summary>
+        /// 当其他网络物体被删除(入口2)
+        /// </summary>
+        /// <param name="identity"></param>
         public virtual void OnOtherDestroy(NetworkObject identity)
         {
             Destroy(identity.gameObject);
         }
 
+        /// <summary>
+        /// 当其他玩家网络物体退出(删除)
+        /// </summary>
+        /// <param name="identity"></param>
         public virtual void OnOtherExit(NetworkObject identity)
         {
         }
 
+        /// <summary>
+        /// 当其他操作指令调用
+        /// </summary>
+        /// <param name="opt"></param>
         public virtual void OnOtherOperator(Operation opt)
         {
         }

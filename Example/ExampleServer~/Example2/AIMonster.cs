@@ -22,7 +22,7 @@ namespace Example2
         internal int health = 100;
         internal int targetID;
         
-        public void Update()
+        public void OnUpdate()
         {
             if (isDeath)
                 return;
