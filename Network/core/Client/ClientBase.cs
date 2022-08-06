@@ -1713,49 +1713,49 @@ namespace Net.Client
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Local:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.LocalRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Scene:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.SceneRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Notice:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.NoticeRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.ThreadRpc:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeOnRevdBufferHandle(model);
+                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
@@ -1787,9 +1787,7 @@ namespace Net.Client
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);
-                    if (OnOperationSync == null)
-                        return;
-                    InvokeContext(()=> { OnOperationSync(list); });
+                    InvokeContext(()=> { OnOperationSync?.Invoke(list); });
                     break;
                 case NetCmd.Ping:
                     rPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -1798,9 +1796,7 @@ namespace Net.Client
                     long ticks = BitConverter.ToInt64(model.buffer, model.index);
                     DateTime time = new DateTime(ticks);
                     var currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
-                    if (OnPingCallback == null)
-                        return;
-                    InvokeContext(() => { OnPingCallback((currRto - 100d) / 2); });
+                    InvokeContext(() => { OnPingCallback?.Invoke((currRto - 100d) / 2); });
                     break;
                 case NetCmd.P2P:
                     {
@@ -1808,9 +1804,7 @@ namespace Net.Client
                         var address = segment1.ReadValue<long>();
                         var port = segment1.ReadValue<int>();
                         IPEndPoint iPEndPoint = new IPEndPoint(address, port);
-                        if (OnP2PCallback == null)
-                            return;
-                        InvokeContext(() => { OnP2PCallback(iPEndPoint); });
+                        InvokeContext(() => { OnP2PCallback?.Invoke(iPEndPoint); });
                     }
                     break;
                 case NetCmd.SyncVar:
@@ -1852,24 +1846,23 @@ namespace Net.Client
                         {
                             ftpDic.Remove(key);
                             fileData.fileStream.Position = 0;
-                            if (OnReceiveFileHandle != null)
-                                InvokeContext(() => {
-                                    if (OnReceiveFileHandle(fileData))
-                                    {
-                                        fileData.fileStream.Close();
-                                        File.Delete(fileData.fileStream.Name);
-                                    }
-                                });
-                            if (OnRevdFileProgress != null)
-                                InvokeContext(() => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete)); });
+                            InvokeContext(() => {
+                                if (OnReceiveFileHandle == null)
+                                    return;
+                                if (OnReceiveFileHandle(fileData))
+                                {
+                                    fileData.fileStream.Close();
+                                    File.Delete(fileData.fileStream.Name);
+                                }
+                            });
+                            InvokeContext(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete)); });
                         }
                         else
                         {
                             segment1.Position = 0;
                             segment1.Write(key);
                             SendRT(NetCmd.Download, segment1.ToArray());
-                            if (OnRevdFileProgress != null)
-                                InvokeContext(() => { OnRevdFileProgress(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
+                            InvokeContext(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
                         }
                     }
                     break;
@@ -1883,28 +1876,23 @@ namespace Net.Client
                     break;
                 case NetCmd.QueueUp:
                     {
-                        if (OnWhenQueuing != null)
-                        {
-                            var totalCount = segment.ReadInt32();
-                            var queueUpCount = segment.ReadInt32();
-                            InvokeContext(() => { OnWhenQueuing(totalCount, queueUpCount); });
-                        }
+                        var totalCount = segment.ReadInt32();
+                        var queueUpCount = segment.ReadInt32();
+                        InvokeContext(() => { OnWhenQueuing?.Invoke(totalCount, queueUpCount); });
                     }
                     break;
                 case NetCmd.QueueCancellation:
                     {
-                        if (OnQueueCancellation != null)
-                            InvokeContext(() => { OnQueueCancellation(); });
+                        InvokeContext(() => { OnQueueCancellation?.Invoke(); });
                     }
                     break;
                 case NetCmd.ServerFull:
                     {
-                        if (OnServerFull != null)
-                            InvokeContext(() => { OnServerFull(); });
+                        InvokeContext(() => { OnServerFull?.Invoke(); });
                     }
                     break;
                 default:
-                    InvokeOnRevdBufferHandle(model);
+                    InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
             }
         }
@@ -1917,22 +1905,9 @@ namespace Net.Client
 
         protected void InvokeRevdRTProgress(int currValue, int dataCount)
         {
-            if (OnRevdRTProgress != null)
-            {
-                float bfb = currValue / (float)dataCount * 100f;
-                RTProgress progress = new RTProgress(bfb, RTState.Sending);
-                InvokeContext(() => { OnRevdRTProgress(progress); });
-            }
-        }
-
-        protected void InvokeSendRTProgress(int currValue, int dataCount)
-        {
-            if (OnSendRTProgress != null)
-            {
-                float bfb = currValue / (float)dataCount * 100f;
-                RTProgress progress = new RTProgress(bfb, RTState.Sending);
-                InvokeContext(() => { OnSendRTProgress(progress); });
-            }
+            float bfb = currValue / (float)dataCount * 100f;
+            var progress = new RTProgress(bfb, RTState.Sending);
+            InvokeContext(() => { OnRevdRTProgress?.Invoke(progress); });
         }
 
         /// <summary>
@@ -2770,19 +2745,6 @@ namespace Net.Client
         /// <param name="func">Call名</param>
         /// <param name="pars">Call函数</param>
         public virtual void Request(byte cmd, string func, params object[] pars) => Send(cmd, func, pars);
-
-        /// <summary>
-        /// 调用程序员
-        /// </summary>
-        /// <param name="model"></param>
-        protected void InvokeOnRevdBufferHandle(RPCModel model)
-        {
-            if (OnRevdBufferHandle == null)
-                return;
-            InvokeContext(()=> {
-                OnRevdBufferHandle(model);
-            });
-        }
 
         /// <summary>
         /// 设置心跳时间
