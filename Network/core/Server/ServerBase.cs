@@ -322,11 +322,11 @@ namespace Net.Server
         /// <summary>
         /// 当客户端发送的大数据时, 可监听此事件显示进度值
         /// </summary>
-        public Action<Player, RTProgress> OnRevdRTProgressHandle { get; set; }
+        public virtual Action<Player, RTProgress> OnRevdRTProgressHandle { get; set; }
         /// <summary>
         /// 当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
         /// </summary>
-        public Action<Player, RTProgress> OnSendRTProgressHandle { get; set; }
+        public virtual Action<Player, RTProgress> OnSendRTProgressHandle { get; set; }
         /// <summary>
         /// 输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行监听
         /// </summary>
