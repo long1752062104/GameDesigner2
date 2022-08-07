@@ -59,39 +59,45 @@
             return 0;
         }
 
-        protected override void ReceiveHandle()
+        public override void Receive()
         {
-            while (Connected)
+            if (Client.Poll(1, SelectMode.SelectRead))
             {
-                try
+                var segment = BufferPool.Take(65507);
+                segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                if (error != SocketError.Success)
                 {
-                    byte[] buffer = new byte[65507];
-                    int count = Client.Receive(buffer);
-                    receiveCount += count;
-                    receiveAmount++;
-                    heart = 0;
-                    fixed (byte* p = &buffer[0]) 
-                        ikcp_input(kcp, p, count);
-                    ikcp_update(kcp, (uint)Environment.TickCount);
-                    int len;
-                    while ((len = ikcp_peeksize(kcp)) > 0)
+                    BufferPool.Push(segment);
+                    return;
+                }
+                if (segment.Count == 0)
+                {
+                    BufferPool.Push(segment);
+                    return;
+                }
+                receiveCount += segment.Count;
+                receiveAmount++;
+                heart = 0;
+                fixed (byte* p = &segment.Buffer[0])
+                    ikcp_input(kcp, p, segment.Count);
+                ikcp_update(kcp, (uint)Environment.TickCount);
+                int len;
+                while ((len = ikcp_peeksize(kcp)) > 0)
+                {
+                    segment.SetPositionLength(0);
+                    segment.Count = len;
+                    fixed (byte* p1 = &segment.Buffer[0])
                     {
-                        var buffer1 = BufferPool.Take(len);
-                        buffer1.Count = len;
-                        fixed (byte* p1 = &buffer1.Buffer[0])
-                        {
-                            int kcnt = ikcp_recv(kcp, p1, buffer1.Length);
-                            if (kcnt > 0) 
-                                ResolveBuffer(ref buffer1, false);
-                        }
-                        BufferPool.Push(buffer1);
+                        ikcp_recv(kcp, p1, len);
+                        ResolveBuffer(ref segment, false);
                     }
                     revdLoopNum++;
                 }
-                catch (Exception ex)
-                {
-                    NetworkException(ex);
-                }
+                BufferPool.Push(segment);
+            }
+            else
+            {
+                Thread.Sleep(1);
             }
         }
 

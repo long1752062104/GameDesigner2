@@ -121,7 +121,7 @@
             var client = base.AcceptHander(clientSocket, remotePoint);
             client.Gcp = new Plugins.GcpKernel();
             client.Gcp.MTU = (ushort)MTU;
-            client.Gcp.RTO = (uint)RTO;
+            client.Gcp.RTO = RTO;
             client.Gcp.MTPS = MTPS;
             client.Gcp.RemotePoint = remotePoint;
             client.Gcp.OnSender += (bytes) => {

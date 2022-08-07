@@ -22,17 +22,26 @@ namespace Net.Plugins
         internal const byte Ack = 4;
     }
 
-    class RTODataFrame
+    class DataFrame
     {
         internal byte[] buffer;
-        internal uint tick;
-        public RTODataFrame()
+        internal int tick;
+        public DataFrame()
         {
         }
-        public RTODataFrame(byte[] buffer)
+        public DataFrame(byte[] buffer)
         {
             this.buffer = buffer;
         }
+    }
+
+    class DataPackage 
+    {
+        internal byte[] revderBuffer;
+        internal int revderFrameEnd;
+        internal byte[] revderHash;
+        internal int revderHashCount;
+        internal bool finish;
     }
 
     /// <summary>
@@ -40,47 +49,43 @@ namespace Net.Plugins
     /// </summary>
     public class GcpKernel : IDisposable
     {
-        private uint senderFrame;
-        private uint revderFrame;
-        private uint senderFrameLocal;
-        private uint revderFrameLocal;
-        private byte[] revderBuffer;
-        private int revderFrameEnd;
-        private byte[] revderHash;
+        private uint package;
+        private uint packageLocal;
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
         public ushort MTU { get; set; } = 1300;
         public event Action<byte[]> OnSender;
-        private readonly MyDictionary<uint, RTODataFrame> senderDict = new MyDictionary<uint, RTODataFrame>();
-        private byte[] current;
+        private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
+        private readonly MyDictionary<uint, DataPackage> revderPackage = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
-        public int WinSize { get; set; } = ushort.MaxValue;
-        public uint RTO = 250;
+        public int RTO = 250;
         private readonly object SyncRoot = new object();
-        private uint tick;
-        private uint flowTick;
+        private int tick;
+        private int flowTick;
         private int currFlow;
-        private int revderHashCount;
-        public int MTPS { get; set; } = 1024 * 1024 * 2;
-
+        public int MTPS { get; set; } = 1024 * 1024;
+        
         public void Update()
         {
             lock (SyncRoot)
             {
                 CheckNextSend();
-                tick += 17;
+                tick = Environment.TickCount;
                 if (tick >= flowTick)
                 {
                     flowTick = tick + 1000;
                     currFlow = 0;
                 }
-                foreach (var sender in senderDict.Values)
+                foreach (var dic in senderDict.Values)
                 {
-                    if (tick >= sender.tick & currFlow < MTPS)
+                    foreach (var sender in dic.Values)
                     {
-                        sender.tick = tick + RTO;
-                        OnSender(sender.buffer);
-                        currFlow += sender.buffer.Length;
+                        if (tick >= sender.tick & currFlow < MTPS)
+                        {
+                            sender.tick = tick + RTO;
+                            currFlow += sender.buffer.Length;
+                            OnSender(sender.buffer);
+                        }
                     }
                 }
             }
@@ -107,26 +112,28 @@ namespace Net.Plugins
         }
         private void CheckNextSend()
         {
-            if (senderQueue.Count > 0 & current == null)
+            if (senderQueue.Count > 0)
             {
-                current = senderQueue.Dequeue();
+                var current = senderQueue.Dequeue();
                 var count = current.Length;
                 var frameEnd = (int)Math.Ceiling(count / (float)MTU);
                 using (var segment = BufferPool.Take())
                 {
-                    for (int i = 0; i < frameEnd; i++)
+                    var dic = new MyDictionary<int, DataFrame>();
+                    senderDict.Add(package, dic);
+                    for (int serialNo = 0; serialNo < frameEnd; serialNo++)
                     {
                         segment.SetPositionLength(0);
                         segment.WriteByte(Cmd.Frame);
-                        segment.Write(senderFrame);
+                        segment.Write(package);
+                        segment.Write(serialNo);
                         segment.Write(count);
-                        var offset = i * MTU;
+                        var offset = serialNo * MTU;
                         segment.Write(current, offset, offset + MTU >= count ? count - offset : MTU);
-                        senderDict.TryAdd(senderFrame, new RTODataFrame(segment.ToArray()));
-                        senderFrame++;
+                        dic.Add(serialNo, new DataFrame(segment.ToArray()));
                     }
+                    package++;
                 }
-                current = new byte[0];
             }
         }
         public void Input(byte[] buffer)
@@ -137,74 +144,72 @@ namespace Net.Plugins
                 var flags = segment.ReadByte();
                 if (flags == Cmd.Frame)
                 {
-                    var frame = segment.ReadUInt32();
-                    var dataLen = segment.ReadUInt32();
-                    if (frame < revderFrameLocal)//如果数据已经结束完成，但客户端rto还没有被确定，再次发送了之前的数据，就回ack确认即可，什么都不要做
+                    var package = segment.ReadUInt32();
+                    var serialNo = segment.ReadInt32();
+                    var dataLen = segment.ReadInt32();
+                    if (package < packageLocal)
                         goto J;
-                    var frame1 = frame - revderFrameLocal;
-                    if (revderBuffer == null)
+                    if (!revderPackage.TryGetValue(package, out var dp))
+                        revderPackage.Add(package, dp = new DataPackage());
+                    if (dp.revderBuffer == null)
                     {
-                        revderBuffer = new byte[dataLen];
-                        revderFrameEnd = (int)Math.Ceiling(dataLen / (float)MTU);
-                        revderHash = new byte[revderFrameEnd];
+                        dp.revderBuffer = new byte[dataLen];
+                        dp.revderFrameEnd = (int)Math.Ceiling(dataLen / (float)MTU);
+                        dp.revderHash = new byte[dp.revderFrameEnd];
                     }
-                    if (revderHash[frame1] == 0)
+                    if (dp.revderHash[serialNo] == 0)
                     {
-                        revderHashCount++;
-                        revderHash[frame1] = 1;
-                        Buffer.BlockCopy(segment, segment.Position, revderBuffer, (int)(frame1 * MTU), segment.Count - segment.Position);
-                        if (revderHashCount >= revderFrameEnd)
-                        {
-                            revderFrame += (uint)revderFrameEnd;
-                            revderFrameLocal = revderFrame;
-                            revderQueue.Enqueue(revderBuffer);
-                            revderBuffer = null;
-                            revderHash = null;
-                            revderHashCount = 0;
-                        }
+                        dp.revderHashCount++;
+                        dp.revderHash[serialNo] = 1;
+                        Buffer.BlockCopy(segment, segment.Position, dp.revderBuffer, (int)(serialNo * MTU), segment.Count - segment.Position);
+                        if (dp.revderHashCount >= dp.revderFrameEnd)
+                            dp.finish = true;
+                    }
+                    while (revderPackage.TryGetValue(packageLocal, out var dp1))
+                    {
+                        if (!dp1.finish)
+                            break;
+                        revderQueue.Enqueue(dp1.revderBuffer);
+                        revderPackage.Remove(packageLocal);
+                        packageLocal++;
+                        dp1.revderBuffer = null;
+                        dp1.revderHash = null;
+                        dp1.revderHashCount = 0;
                     }
                 J: segment.SetPositionLength(0);
                     segment.WriteByte(Cmd.Ack);
-                    segment.Write(frame);
+                    segment.Write(package);
+                    segment.Write(serialNo);
                     var bytes = segment.ToArray(true);
                     OnSender(bytes);
                 }
                 else if (flags == Cmd.Ack)
                 {
-                    if (current == null)
-                        return;
-                    var frame = segment.ReadUInt32();
-                    if (senderDict.Remove(frame))
+                    var package = segment.ReadUInt32();
+                    var serialNo = segment.ReadInt32();
+                    if (senderDict.TryGetValue(package, out var dic)) 
                     {
-                        if (senderDict.Count <= 0)
-                        {
-                            current = null;
-                            senderFrameLocal = senderFrame;
-                            CheckNextSend();
-                        }
+                        dic.Remove(serialNo);
+                        if (dic.Count <= 0)
+                            senderDict.Remove(package);
                     }
                 }
             }
         }
         public bool HasSend()
         {
-            return current != null;
+            return false;
         }
         public void Dispose()
         {
             lock (SyncRoot)
             {
-                senderFrame = 0;
-                revderFrame = 0;
-                senderFrameLocal = 0;
-                revderFrameLocal = 0;
-                revderBuffer = null;
-                revderFrameEnd = 0;
-                revderHash = null;
+                package = 0;
+                packageLocal = 0;
                 senderQueue.Clear();
                 revderQueue.Clear();
                 senderDict.Clear();
-                current = null;
+                revderPackage.Clear();
                 RemotePoint = null;
             }
         }
