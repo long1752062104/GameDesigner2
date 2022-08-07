@@ -104,4 +104,11 @@
             }
         }
     }
+
+    /// <summary>
+    /// 默认kcp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class KcpServer : KcpServer<KcpPlayer, NetScene<KcpPlayer>> 
+    {
+    }
 }

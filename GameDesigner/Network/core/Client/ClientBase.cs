@@ -1561,7 +1561,7 @@ namespace Net.Client
             }
         }
 
-        public void Receive()
+        public virtual void Receive()
         {
             if (Client.Poll(1, SelectMode.SelectRead))
             {
