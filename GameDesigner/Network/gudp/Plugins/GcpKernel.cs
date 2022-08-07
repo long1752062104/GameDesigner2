@@ -1,4 +1,5 @@
-﻿using Net.System;
+﻿using Net.Share;
+using Net.System;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -54,7 +55,9 @@ namespace Net.Plugins
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
         public ushort MTU { get; set; } = 1300;
-        public event Action<byte[]> OnSender;
+        public Action<byte[]> OnSender;
+        public Action<RTProgress> OnSendProgress;
+        public Action<RTProgress> OnRevdProgress;
         private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
         private readonly MyDictionary<uint, DataPackage> revderPackage = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
@@ -63,8 +66,11 @@ namespace Net.Plugins
         private int tick;
         private int flowTick;
         private int currFlow;
+        private int progressTick;
+
         public int MTPS { get; set; } = 1024 * 1024;
-        
+        public int ProgressDataLen { get; set; } = ushort.MaxValue;//要求数据大于多少才会调用发送，接收进度值
+
         public void Update()
         {
             lock (SyncRoot)
@@ -167,6 +173,15 @@ namespace Net.Plugins
                     }
                     while (revderPackage.TryGetValue(packageLocal, out var dp1))
                     {
+                        if (tick >= progressTick)
+                        {
+                            progressTick = tick + 1000;
+                            if (dp.revderFrameEnd * MTU >= ProgressDataLen)
+                            {
+                                var progress = (dp.revderHashCount / (float)dp.revderFrameEnd) * 100f;
+                                OnRevdProgress?.Invoke(new RTProgress(progress, (RTState)(progress >= 100f ? 3 : 1)));
+                            }
+                        }
                         if (!dp1.finish)
                             break;
                         revderQueue.Enqueue(dp1.revderBuffer);
@@ -180,6 +195,7 @@ namespace Net.Plugins
                     segment.WriteByte(Cmd.Ack);
                     segment.Write(package);
                     segment.Write(serialNo);
+                    segment.Write(dataLen);
                     var bytes = segment.ToArray(true);
                     OnSender(bytes);
                 }
@@ -187,11 +203,21 @@ namespace Net.Plugins
                 {
                     var package = segment.ReadUInt32();
                     var serialNo = segment.ReadInt32();
+                    var dataLen = segment.ReadInt32();
                     if (senderDict.TryGetValue(package, out var dic)) 
                     {
                         dic.Remove(serialNo);
                         if (dic.Count <= 0)
                             senderDict.Remove(package);
+                        if (tick >= progressTick)
+                        {
+                            progressTick = tick + 1000;
+                            if (dataLen >= ProgressDataLen)
+                            {
+                                var progress = ((dic.Count * MTU) / (float)dataLen) * 100f;
+                                OnSendProgress?.Invoke(new RTProgress(progress, (RTState)(progress >= 100f ? 3 : 1)));
+                            }
+                        }
                     }
                 }
             }

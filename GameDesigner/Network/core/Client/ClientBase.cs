@@ -201,11 +201,11 @@ namespace Net.Client
         /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
-        public event Action<RTProgress> OnRevdRTProgress;
+        public virtual Action<RTProgress> OnRevdRTProgress { get; set; }
         /// <summary>
         /// 当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
         /// </summary>
-        public event Action<RTProgress> OnSendRTProgress;
+        public virtual Action<RTProgress> OnSendRTProgress { get; set; }
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>

@@ -18,7 +18,7 @@
         /// </summary>
         FailSend,
         /// <summary>
-        /// 发送完成
+        /// 完成
         /// </summary>
         Complete,
         /// <summary>
