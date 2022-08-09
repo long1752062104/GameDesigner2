@@ -54,20 +54,20 @@ namespace Net.Plugins
         private uint packageLocal;
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
-        public ushort MTU { get; set; } = 1300;
         public Action<byte[]> OnSender;
         public Action<RTProgress> OnSendProgress;
         public Action<RTProgress> OnRevdProgress;
         private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
         private readonly MyDictionary<uint, DataPackage> revderPackage = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
-        public int RTO = 250;
+        
         private readonly object SyncRoot = new object();
         private int tick;
         private int flowTick;
         private int currFlow;
         private int progressTick;
-
+        public ushort MTU { get; set; } = 1300;
+        public int RTO = 1000;
         public int MTPS { get; set; } = 1024 * 1024;
         public int ProgressDataLen { get; set; } = ushort.MaxValue;//要求数据大于多少才会调用发送，接收进度值
 
