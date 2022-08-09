@@ -300,7 +300,7 @@ class Program
 
 ## Gcp可靠协议
  **gcp协议的实现原理：**
-<br>gcp协议的4个关键函数Send，Receive，Input，Update组成：Send由用户调用，向gcp内部传递发送的数据，然后用户需要每帧调用Update进行数据更新，内部处理数据超时重传等更新。
+<br>gcp协议的4个关键函数Send，Update, Input，Receive组成：Send由用户调用，向gcp内部传递发送的数据，然后用户需要每帧调用Update进行数据更新，内部处理数据超时重传等更新。
 用户需要通过OnSender事件进行socket.Send发送gcp数据，当对方socket通过socket.ReceiveFrom接收到数据后需要把数据传递给Input方法，然后调用Receive方法进行接收gcp的数据。</br>
  **gcp功能：**
 <br>流量控制：MTPS属性控制每秒可发送多少字节的数据</br>
