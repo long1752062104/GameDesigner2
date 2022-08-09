@@ -298,6 +298,45 @@ class Program
 
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/aoi.png" width = "1036" height = "663" alt="图片名称" align=center />
 
+## Gcp可靠协议
+<br>gcp协议的实现原理：</br>
+<br>gcp协议的4个关键函数Send，Receive，Input，Update组成：Send由用户调用，向gcp内部传递发送的数据，然后用户需要每帧调用Update进行数据更新，内部处理数据超时重传等更新。
+用户需要通过OnSender事件进行socket.Send发送gcp数据，当对方socket通过socket.ReceiveFrom接收到数据后需要把数据传递给Input方法，然后调用Receive方法进行接收gcp的数据。</br>
+<br>gcp功能：</br>
+<br>流量控制：MTPS属性控制每秒可发送多少字节的数据</br>
+<br>超时重传：RTO属性控制在多少毫秒如果没有收到确认帧，则进行重传</br>
+<br>最大传输单元：MTU属性控制每次只能发送多少个字节</br>
+<br>数据帧：每个数据帧会有frame标志(byte), package号(uint)，serialNo数据帧序号(int)，count数据长度(int)，总共头部为13字节</br>
+<br>多帧确认：在一秒内可以发送很多数据帧，无需顺序，到达对方后会进行字典接收，然后返回Ack确认帧给客户端进行超时重传移除(不再重传)，如果Ack发送过程丢失，则客户端会重新发起数据帧，直到Ack到客户端。当对方接收到的帧数据package号大于当前packageLocal号时，放入字典等待即可，等真正的packageLocal号确认完成后，一拼调用。</br>
+
+```
+static void Main(string[] args)
+{
+    var gcp = new GcpKernel();
+    var gcp1 = new GcpKernel();
+    gcp.OnSender += (b) => {
+        gcp1.Input(b);//socket.send(b);
+    };
+    gcp1.OnSender += (b) => {
+        gcp.Input(b);//socket.send(b);
+    };
+    gcp.Send(new byte[1235522]);
+    gcp1.Send(new byte[1235522]);
+    while (true)
+    {
+        gcp.Update();
+        gcp1.Update();
+        if (gcp.Receive(out var buffer) != 0) 
+        {
+            Console.WriteLine($"接收到的数据:{buffer.Length}");
+        }
+        if (gcp1.Receive(out var buffer1) != 0)
+        {
+            Console.WriteLine($"接收到的数据:{buffer1.Length}");
+        }
+    }
+}
+```
 
 ## 常见问题总汇
 这里是开发者遇到的问题, 我都会在这里详细写出来, 这样大家遇到的问题都可以先在这里查看
