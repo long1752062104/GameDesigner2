@@ -215,18 +215,18 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 
 ## UNet&Mirror设计模式
 
-变量同步案例:Assets/GameDesigner/Example/Example1/Scenes/SyncVarDemo.unity</br>
-可以同步C#基础单元结构体: byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double, DateTime, decimal, string类型</br>
-同步自定义结构体: 纯包含基元类型, 不需要任何额外处理</br>
-同步自定义结构体,包含类型字段: 需要重写Equals额外处理字段对等</br>
-同步类型:需要重写Equals额外处理字段对等</br>
+<br>变量同步案例:Assets/GameDesigner/Example/Example1/Scenes/SyncVarDemo.unity</br>
+<br>可以同步C#基础单元结构体: byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double, DateTime, decimal, string类型</br>
+<br>同步自定义结构体: 纯包含基元类型, 不需要任何额外处理</br>
+<br>同步自定义结构体,包含类型字段: 需要重写Equals额外处理字段对等</br>
+<br>同步类型:需要重写Equals额外处理字段对等</br>
 
-与场景内的玩家进行变量同步: 原理是检查字段值有没有改变, 改变了就会往服务器发送, 服务器转发给场景内的所有客户端, 以identiy值取到对应的对象, 进行变量设置, 达到变量同步效果!</br>
-客户端与服务器进行变量同步: 原理是检查字段值改变后, 发送字段的id和值到服务器, 服务器检查NetPlayer的变量管理列表取出对应的对象, 进行变量设置, 达到p2p变量同步效果</br>
+<br>与场景内的玩家进行变量同步: 原理是检查字段值有没有改变, 改变了就会往服务器发送, 服务器转发给场景内的所有客户端, 以identiy值取到对应的对象, 进行变量设置, 达到变量同步效果!</br>
+<br>客户端与服务器进行变量同步: 原理是检查字段值改变后, 发送字段的id和值到服务器, 服务器检查NetPlayer的变量管理列表取出对应的对象, 进行变量设置, 达到p2p变量同步效果</br>
 
-[SyncVar]//在字段定义这个特性, 则为玩家之间变量</br>
-[SyncVar(authorize = false)]//这是你实例化的网络物体, 其他玩家不能改变你的对象变量, 即使改变了也不会发生同步给其他玩家, 只能由自己控制变量变化后才会同步给其他玩家</br>
-[SyncVar(id = 1)]//这是p2p 客户端只与服务器的netplayer之间变量同步, 开发者要保证id必须是唯一的 详情请看案例1的Example1.Client类定义</br>
+<br>[SyncVar]//在字段定义这个特性, 则为玩家之间变量</br>
+<br>[SyncVar(authorize = false)]//这是你实例化的网络物体, 其他玩家不能改变你的对象变量, 即使改变了也不会发生同步给其他玩家, 只能由自己控制变量变化后才会同步给其他玩家</br>
+<br>[SyncVar(id = 1)]//这是p2p 客户端只与服务器的netplayer之间变量同步, 开发者要保证id必须是唯一的 详情请看案例1的Example1.Client类定义</br>
 
 ## 百万级别RPC小数据测试
 这里我们测试了100万次从客户端到服务器的请求并响应, 所需要的时间是4.67秒
