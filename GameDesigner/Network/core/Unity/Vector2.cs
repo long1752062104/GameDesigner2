@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Vector2 : IEquatable<Vector2>
     {
@@ -119,7 +118,6 @@ namespace Net
         // Token: 0x17001294 RID: 4756
         // (get) Token: 0x0600513B RID: 20795 RVA: 0x0008C83C File Offset: 0x0008AA3C
         [Newtonsoft_X.Json.JsonIgnore]
-        [ProtoBuf.ProtoIgnore]
         public Vector2 normalized
         {
             get

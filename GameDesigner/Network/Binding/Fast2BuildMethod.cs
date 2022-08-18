@@ -58,6 +58,12 @@ public static class Fast2BuildMethod
             var name = Path.GetFileName(path);
             if (name.Contains("Editor"))
                 continue;
+            if (name.Contains("mscorlib"))
+                continue;
+            if (!File.Exists(path))
+                continue;
+            if (path.Contains("PackageCache"))
+                continue;
             dllpaths.Add(path);
         }
         param.ReferencedAssemblies.AddRange(dllpaths.ToArray());

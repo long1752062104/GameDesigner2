@@ -4,7 +4,6 @@ using UnityEngine.Internal;
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -221,7 +220,6 @@ namespace Net
         // Token: 0x17001103 RID: 4355
         // (get) Token: 0x060048F6 RID: 18678 RVA: 0x0007DBF0 File Offset: 0x0007BDF0
         [Newtonsoft_X.Json.JsonIgnore]
-        [ProtoBuf.ProtoIgnore]
         public Vector3 normalized
         {
             get

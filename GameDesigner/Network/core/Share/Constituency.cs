@@ -3,7 +3,6 @@
     /// <summary>
     /// 选区网络传输对象
     /// </summary>
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllPublic)]
     [global::System.Serializable]
     public class Constituency
     {

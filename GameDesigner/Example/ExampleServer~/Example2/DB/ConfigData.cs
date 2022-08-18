@@ -17,7 +17,6 @@ public partial class ConfigData : IDataRow
 {
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public DataRowState RowState { get; set; }
     private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
 
@@ -56,7 +55,6 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncName
     {
         get { return name; }
@@ -73,7 +71,6 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncIDName
     {
         get { return name; }
@@ -90,12 +87,14 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void NameCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, name);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncNameCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, id, name);
     }
 
@@ -108,7 +107,6 @@ public partial class ConfigData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnName;
 
     private System.Int64 number;
@@ -137,7 +135,6 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncNumber
     {
         get { return number; }
@@ -154,7 +151,6 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncIDNumber
     {
         get { return number; }
@@ -171,12 +167,14 @@ public partial class ConfigData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void NumberCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, number);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncNumberCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, id, number);
     }
 
@@ -189,7 +187,6 @@ public partial class ConfigData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnNumber;
 
 
@@ -430,7 +427,7 @@ public partial class ConfigData : IDataRow
 #if SERVER
         if (RowState == DataRowState.Deleted)
             return;
-        string cmdText = $"DELETE FROM config WHERE `id` = {id}";
+        string cmdText = $"DELETE FROM config WHERE `id` = {id}; ";
         sb.Append(cmdText);
         RowState = DataRowState.Deleted;
 #endif

@@ -886,7 +886,7 @@
                 {
                     if (member.ItemType1 == null)
                     {
-                        var array = (IList)value;
+                        var array = value as IList;
                         if (array.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);

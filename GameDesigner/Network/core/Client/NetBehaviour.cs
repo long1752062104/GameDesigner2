@@ -171,16 +171,6 @@
             Handle.Send(func, callbackFunc, callback, pars);
         }
 
-        public void Send(byte cmd, object obj)
-        {
-            Handle.Send(cmd, obj);
-        }
-
-        public void SendRT(byte cmd, object obj)
-        {
-            Handle.SendRT(cmd, obj);
-        }
-
         public void Send(string func, string funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
         {
             Handle.Send(func, funcCB, callback, millisecondsDelay, pars);

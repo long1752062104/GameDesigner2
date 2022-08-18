@@ -13,14 +13,14 @@ namespace Net.Component
 
     public enum TransportProtocol
     {
-        Gudp, Tcp, Udx, Kcp, Web
+        Gcp, Tcp, Udx, Kcp, Web
     }
 
     public class ClientManager : SingleCase<ClientManager>, ISendHandle
     {
         private bool mainInstance;
         private ClientBase _client;
-        public TransportProtocol protocol = TransportProtocol.Gudp;
+        public TransportProtocol protocol = TransportProtocol.Gcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
         public bool throwException;
@@ -39,7 +39,7 @@ namespace Net.Component
                 {
                     switch (protocol)
                     {
-                        case TransportProtocol.Gudp:
+                        case TransportProtocol.Gcp:
                             _client = new UdpClient(true);
                             break;
                         case TransportProtocol.Tcp:
@@ -183,7 +183,6 @@ namespace Net.Component
             });
         }
 
-
         #region 发送接口实现
         public void Send(byte[] buffer)
         {
@@ -193,11 +192,6 @@ namespace Net.Component
         public void Send(byte cmd, byte[] buffer)
         {
             ((ISendHandle)_client).Send(cmd, buffer);
-        }
-
-        public void Send(byte cmd, object obj)
-        {
-            ((ISendHandle)_client).Send(cmd, obj);
         }
 
         public void Send(string func, params object[] pars)
@@ -248,11 +242,6 @@ namespace Net.Component
         public void SendRT(byte cmd, byte[] buffer)
         {
             ((ISendHandle)_client).SendRT(cmd, buffer);
-        }
-
-        public void SendRT(byte cmd, object obj)
-        {
-            ((ISendHandle)_client).SendRT(cmd, obj);
         }
 
         public void Send(string func, string funcCB, Delegate callback, params object[] pars)

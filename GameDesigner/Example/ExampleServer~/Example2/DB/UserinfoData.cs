@@ -17,7 +17,6 @@ public partial class UserinfoData : IDataRow
 {
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public DataRowState RowState { get; set; }
     private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
 
@@ -56,7 +55,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncAccount
     {
         get { return account; }
@@ -73,7 +71,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncIDAccount
     {
         get { return account; }
@@ -90,12 +87,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void AccountCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, account);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncAccountCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, id, account);
     }
 
@@ -108,7 +107,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnAccount;
 
     private System.String password;
@@ -137,7 +135,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncPassword
     {
         get { return password; }
@@ -154,7 +151,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncIDPassword
     {
         get { return password; }
@@ -171,12 +167,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void PasswordCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, password);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncPasswordCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, id, password);
     }
 
@@ -189,7 +187,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnPassword;
 
     private System.Double moveSpeed;
@@ -218,7 +215,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Double SyncMoveSpeed
     {
         get { return moveSpeed; }
@@ -235,7 +231,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Double SyncIDMoveSpeed
     {
         get { return moveSpeed; }
@@ -252,12 +247,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void MoveSpeedCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, moveSpeed);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncMoveSpeedCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, id, moveSpeed);
     }
 
@@ -270,7 +267,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnMoveSpeed;
 
     private System.String position;
@@ -299,7 +295,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncPosition
     {
         get { return position; }
@@ -316,7 +311,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncIDPosition
     {
         get { return position; }
@@ -333,12 +327,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void PositionCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, position);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncPositionCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, id, position);
     }
 
@@ -351,7 +347,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnPosition;
 
     private System.String rotation;
@@ -380,7 +375,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncRotation
     {
         get { return rotation; }
@@ -397,7 +391,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.String SyncIDRotation
     {
         get { return rotation; }
@@ -414,12 +407,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void RotationCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, rotation);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncRotationCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, id, rotation);
     }
 
@@ -432,7 +427,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnRotation;
 
     private System.Int64 health;
@@ -461,7 +455,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncHealth
     {
         get { return health; }
@@ -478,7 +471,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncIDHealth
     {
         get { return health; }
@@ -495,12 +487,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void HealthCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, health);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncHealthCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, id, health);
     }
 
@@ -513,7 +507,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnHealth;
 
     private System.Int64 healthMax;
@@ -542,7 +535,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncHealthMax
     {
         get { return healthMax; }
@@ -559,7 +551,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Int64 SyncIDHealthMax
     {
         get { return healthMax; }
@@ -576,12 +567,14 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void HealthMaxCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, healthMax);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncHealthMaxCall()
     {
+        
         Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, id, healthMax);
     }
 
@@ -594,7 +587,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnHealthMax;
 
     private System.Byte[] buffer;
@@ -623,7 +615,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE1}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Byte[] SyncBufferBytes
     {
         get { return buffer; }
@@ -640,7 +631,6 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE2}</summary>
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public System.Byte[] SyncIDBufferBytes
     {
         get { return buffer; }
@@ -657,13 +647,15 @@ public partial class UserinfoData : IDataRow
     /// <summary>{NOTE3}</summary>
     public void BufferBytesCall()
     {
-        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, buffer);
+        object bytes = buffer;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, bytes);
     }
 
 	/// <summary>{NOTE4}</summary>
     public void SyncBufferBytesCall()
     {
-        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, id, buffer);
+        object bytes = buffer;
+        Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, id, bytes);
     }
 
     [Net.Share.Rpc(hash = (ushort)Example2HashProto.BUFFER)]
@@ -675,7 +667,6 @@ public partial class UserinfoData : IDataRow
 
     [Net.Serialize.NonSerialized]
     [Newtonsoft_X.Json.JsonIgnore]
-    [ProtoBuf.ProtoIgnore]
     public Action OnBufferBytes;
 
 
@@ -994,7 +985,7 @@ public partial class UserinfoData : IDataRow
 #if SERVER
         if (RowState == DataRowState.Deleted)
             return;
-        string cmdText = $"DELETE FROM userinfo WHERE `id` = {id}";
+        string cmdText = $"DELETE FROM userinfo WHERE `id` = {id}; ";
         sb.Append(cmdText);
         RowState = DataRowState.Deleted;
 #endif

@@ -2,7 +2,6 @@
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Matrix4x4 : IEquatable<Matrix4x4>
     {

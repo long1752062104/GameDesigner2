@@ -3,7 +3,6 @@
     /// <summary>
     /// 帧同步操作
     /// </summary>
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllPublic)]
     public struct Operation
     {
         /// <summary>

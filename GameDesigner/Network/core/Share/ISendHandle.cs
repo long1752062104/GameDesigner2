@@ -23,13 +23,6 @@ namespace Net.Share
         void Send(byte cmd, byte[] buffer);
 
         /// <summary>
-        /// 发送自定义协议类型, 使用protobuf序列化obj对象
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="obj">使用protobuf序列化的对象</param>
-        void Send(byte cmd, object obj);
-
-        /// <summary>
         /// 发送远程过程调用函数数据
         /// </summary>
         /// <param name="func">RPCFun函数</param>
@@ -105,13 +98,6 @@ namespace Net.Share
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer"></param>
         void SendRT(byte cmd, byte[] buffer);
-
-        /// <summary>
-        /// 发送自定义协议类型, 使用protobuf序列化obj对象
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="obj">使用protobuf序列化的对象</param>
-        void SendRT(byte cmd, object obj);
 
         /// <summary>
         /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct

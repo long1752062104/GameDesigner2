@@ -2,7 +2,6 @@
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Quaternion : IEquatable<Quaternion>
     {
@@ -197,7 +196,6 @@ namespace Net
 
         // Token: 0x17001114 RID: 4372
         // (get) Token: 0x06004943 RID: 18755 RVA: 0x0007ED14 File Offset: 0x0007CF14
-        [ProtoBuf.ProtoIgnore]
         [Newtonsoft_X.Json.JsonIgnore]
         public Quaternion normalized
         {

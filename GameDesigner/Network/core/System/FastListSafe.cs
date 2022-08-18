@@ -1197,7 +1197,7 @@ namespace Net.System
             public bool MoveNext()
             {
                 FastListSafe<T> list = this.list;
-                if (version == list._version && index < list._size)
+                if (index < list._size)
                 {
                     current = list._items[index];
                     index++;
@@ -1208,10 +1208,6 @@ namespace Net.System
 
             private bool MoveNextRare()
             {
-                if (version != list._version)
-                {
-                    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                }
                 index = list._size + 1;
                 current = default;
                 return false;
@@ -1244,10 +1240,6 @@ namespace Net.System
 
             void IEnumerator.Reset()
             {
-                if (version != list._version)
-                {
-                    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                }
                 index = 0;
                 current = default;
             }

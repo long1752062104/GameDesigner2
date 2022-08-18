@@ -14,7 +14,7 @@ namespace Net.Component
     public class ClientGourp 
     {
         internal ClientBase _client;
-        public TransportProtocol protocol = TransportProtocol.Gudp;
+        public TransportProtocol protocol = TransportProtocol.Gcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
         public bool localTest;//±¾»ú²âÊÔ
@@ -36,7 +36,7 @@ namespace Net.Component
                     return _client;
                 switch (protocol)
                 {
-                    case TransportProtocol.Gudp:
+                    case TransportProtocol.Gcp:
                         _client = new UdpClient(true);
                         break;
                     case TransportProtocol.Tcp:

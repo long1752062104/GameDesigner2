@@ -26,7 +26,7 @@
     public class UdpClient : ClientBase
     {
         public override int MTU { get => Gcp.MTU; set => Gcp.MTU = (ushort)value; }
-        public override int RTO { get => (int)Gcp.RTO; set => Gcp.RTO = value; }
+        public override int RTO { get => Gcp.RTO; set => Gcp.RTO = value; }
         public override int MTPS { get => Gcp.MTPS; set => Gcp.MTPS = value; }
         public override Action<RTProgress> OnRevdRTProgress { get => Gcp.OnRevdProgress; set => Gcp.OnRevdProgress = value; }
         public override Action<RTProgress> OnSendRTProgress { get => Gcp.OnSendProgress; set => Gcp.OnSendProgress = value; }
@@ -36,9 +36,6 @@
         public UdpClient() 
         {
             Gcp = new GcpKernel();
-            Gcp.MTU = (ushort)MTU;
-            Gcp.RTO = RTO;
-            Gcp.MTPS = MTPS;
             Gcp.OnSender += (bytes) => {
                 Send(NetCmd.ReliableTransport, bytes);
             };
@@ -48,7 +45,7 @@
         /// 构造udp可靠客户端
         /// </summary>
         /// <param name="useUnityThread">使用unity多线程?</param>
-        public UdpClient(bool useUnityThread)
+        public UdpClient(bool useUnityThread) : this()
         {
             UseUnityThread = useUnityThread;
         }
