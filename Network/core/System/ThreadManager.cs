@@ -20,23 +20,28 @@ namespace Net.System
         /// </summary>
         public static bool IsRuning { get; set; }
 
+        
         static ThreadManager()
         {
             Init();
             Start();
         }
 
-        private static async void Init()
+        private static void Init()
         {
             IsRuning = true;
-#if UNITY_EDITOR
-            while (UnityEditor.EditorApplication.isPlaying)
-            {
-                await global::System.Threading.Tasks.Task.Yield();
-            }
-            IsRuning = false;
-#endif
         }
+
+#if UNITY_EDITOR
+        [UnityEngine.RuntimeInitializeOnLoadMethod]
+        private static async void OnInUnityEditor()
+        {
+            IsRuning = true;
+            while (UnityEditor.EditorApplication.isPlaying)
+                await global::System.Threading.Tasks.Task.Yield();
+            IsRuning = false;
+        }
+#endif
 
         private static void Start()
         {
