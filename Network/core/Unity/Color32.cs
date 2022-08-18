@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Color32
     {

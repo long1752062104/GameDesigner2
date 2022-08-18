@@ -332,7 +332,7 @@ public partial class Example2DB
                             row.AddedSql(sb, parms, ref parmsLen, ref count);
                         }
                         break;
-                    case DataRowState.Deleted:
+                    case DataRowState.Detached:
                         {
                             row.DeletedSql(sb);
                         }

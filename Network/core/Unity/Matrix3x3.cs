@@ -5,7 +5,6 @@ namespace Net
     /// <summary>
     /// 3x3矩阵
     /// </summary>
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Matrix3x3
     {

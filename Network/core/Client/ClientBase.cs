@@ -1048,8 +1048,9 @@ namespace Net.Client
                         });
                         return true;
                     }
-                    catch
+                    catch(Exception ex)
                     {
+                        NDebug.LogError("连接失败原因:" + ex.ToString());
                         Connected = false;
                         Client?.Close();
                         Client = null;
@@ -1063,7 +1064,7 @@ namespace Net.Client
             }
             catch (Exception ex)
             {
-                NDebug.LogError("连接错误:" + ex.ToString());
+                NDebug.LogError("连接失败原因:" + ex.ToString());
                 networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
                 result(false);
                 return Task.FromResult(false);
@@ -2107,18 +2108,6 @@ namespace Net.Client
             rPCModels.Enqueue(new RPCModel(cmd, buffer) { bigData = buffer.Length > short.MaxValue });
         }
 
-        public virtual void Send(byte cmd, object obj)
-        {
-            var buffer = BufferPool.Take();
-            using (MemoryStream stream = new MemoryStream(buffer))
-            {
-                stream.SetLength(0);
-                ProtoBuf.Serializer.Serialize(stream, obj);
-                Send(cmd, stream.ToArray());
-            }
-            BufferPool.Push(buffer);
-        }
-
         /// <summary>
         /// 远程调用函数, 调用服务器的方法名为func的函数
         /// </summary>
@@ -2676,22 +2665,6 @@ namespace Net.Client
         public virtual void SendRT(byte[] buffer)
         {
             SendRT(NetCmd.OtherCmd, buffer);
-        }
-
-        /// <summary>
-        /// 发送可靠的网络数据，ProtoBuf序列号
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="obj"></param>
-        public virtual void SendRT(byte cmd, object obj)
-        {
-            if (cmd < 30)
-                throw new Exception("自定义协议(命令)不能使用内核协议(命令)进行发送!");
-            using (MemoryStream stream = new MemoryStream(1024))
-            {
-                ProtoBuf.Serializer.Serialize(stream, obj);
-                SendRT(cmd, stream.ToArray());
-            }
         }
 
         /// <summary>

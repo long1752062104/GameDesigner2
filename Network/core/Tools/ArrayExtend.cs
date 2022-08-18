@@ -173,20 +173,6 @@ public static class ArrayExtend
         return buffer;
     }
 
-    /// <summary>
-    /// 反序列化数据(使用ProtoBuf反序列化)
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="self"></param>
-    /// <returns></returns>
-    public static T Deserialize<T>(this byte[] self, int index, int count)
-    {
-        using (MemoryStream stream = new MemoryStream(self, index, count))
-        {
-            return ProtoBuf.Serializer.Deserialize<T>(stream);
-        }
-    }
-
     public static T Find<T>(this List<T> self, Func<T, bool> func)
     {
         for (int i = 0; i < self.Count; i++)

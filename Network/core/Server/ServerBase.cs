@@ -678,7 +678,7 @@ namespace Net.Server
                     Thread.Sleep(SyncSceneTime);
                     Parallel.ForEach(Scenes.Values, scene =>
                     {
-                        scene.Update(this);
+                        scene.Update(this, NetCmd.OperationSync);
                     });
                 }
                 catch (Exception ex)
@@ -1751,13 +1751,13 @@ namespace Net.Server
         /// <summary>
         /// 移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
         /// </summary>
-        /// <param name="sceneID">要移除的场景id</param>
+        /// <param name="sceneName">要移除的场景id</param>
         /// <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public bool RemoveScene(string sceneID, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
+        public bool RemoveScene(string sceneName, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
         {
-            if (Scenes.TryRemove(sceneID, out Scene scene))
+            if (Scenes.TryRemove(sceneName, out Scene scene))
             {
                 exitCurrentSceneCall?.Invoke(scene);
                 if (addToMainScene)
@@ -2050,18 +2050,6 @@ namespace Net.Server
                 Send(client, cmd, func, pars);
         }
 
-        public virtual void Send(Player client, byte cmd, object obj)
-        {
-            var buffer = BufferPool.Take();
-            using (MemoryStream stream = new MemoryStream(buffer))
-            {
-                stream.SetLength(0);
-                ProtoBuf.Serializer.Serialize(stream, obj);
-                Send(client, cmd, stream.ToArray());
-            }
-            BufferPool.Push(buffer);
-        }
-
         /// <summary>
         /// 发送灵活数据包
         /// </summary>
@@ -2183,17 +2171,6 @@ namespace Net.Server
             client.tcpRPCModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
         }
 
-        public virtual void SendRT(Player client, byte cmd, object obj)
-        {
-            if (cmd < 30)
-                throw new Exception("自定义协议(命令)不能使用内核协议(命令)进行发送!");
-            using (MemoryStream stream = new MemoryStream(1024))
-            {
-                ProtoBuf.Serializer.Serialize(stream, obj);
-                SendRT(client, cmd, stream.ToArray());
-            }
-        }
-
         /// <summary>
         /// 发送灵活数据包
         /// </summary>
@@ -2261,17 +2238,6 @@ namespace Net.Server
         public virtual void Multicast(IList<Player> clients, bool reliable, byte[] buffer)
         {
             Multicast(clients, reliable, NetCmd.OtherCmd, buffer);
-        }
-
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte cmd, object obj)
-        {
-            if (cmd < 30)
-                throw new Exception("自定义协议(命令)不能使用内核协议(命令)进行发送!");
-            using (MemoryStream stream = new MemoryStream(512))
-            {
-                ProtoBuf.Serializer.Serialize(stream, obj);
-                Multicast(clients, reliable, cmd, stream.ToArray());
-            }
         }
 
         /// <summary>

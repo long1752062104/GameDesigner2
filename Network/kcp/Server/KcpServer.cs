@@ -59,7 +59,7 @@
                 IntPtr kcp = ikcp_create(1400, (IntPtr)1);
                 IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
                 ikcp_setoutput(kcp, output);
-                ikcp_wndsize(kcp, 1024, 1024);
+                ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
                 ikcp_nodelay(kcp, 1, 10, 2, 1);
                 client.Kcp = kcp;
             }

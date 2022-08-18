@@ -205,7 +205,7 @@
         /// <summary>
         /// 网络帧同步, 状态同步更新, 帧时间根据服务器主类的SyncSceneTime属性来调整速率
         /// </summary>
-        public virtual void Update(IServerSendHandle<Player> handle, byte cmd = NetCmd.OperationSync)
+        public virtual void Update(IServerSendHandle<Player> handle, byte cmd)
         {
             var players = Clients;//多线程问题, 心跳 或 未知线程 添加或移除玩家时实时更新了哈希列表
             int playerCount = players.Count;

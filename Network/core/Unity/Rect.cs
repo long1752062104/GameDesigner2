@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 
 namespace Net
 {
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     [Serializable]
     public struct Rect : IEquatable<Rect>
     {

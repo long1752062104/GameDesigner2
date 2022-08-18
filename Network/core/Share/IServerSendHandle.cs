@@ -51,14 +51,6 @@
         void Send(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize);
 
         /// <summary>
-        /// 发送自定义协议类型, 使用protobuf序列化obj对象
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd"></param>
-        /// <param name="obj"></param>
-        void Send(Player client, byte cmd, object obj);
-
-        /// <summary>
         /// 发送网络可靠传输数据
         /// 调用此方法通常情况下是一定把数据发送成功为止, 
         /// </summary>
@@ -93,15 +85,6 @@
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer"></param>
         void SendRT(Player client, byte cmd, byte[] buffer);
-
-        /// <summary>
-        /// 发送可靠网络传输
-        /// 发送自定义协议类型, 使用protobuf序列化obj对象
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd"></param>
-        /// <param name="obj"></param>
-        void SendRT(Player client, byte cmd, object obj);
 
         /// <summary>
         /// 发送灵活数据包
@@ -144,16 +127,6 @@
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer">自定义字节数组</param>
         void Multicast(IList<Player> clients, bool reliable, byte cmd, byte[] buffer);
-
-        /// <summary>
-        /// 网络多播, 发送自定义数据到clients集合的客户端
-        /// 发送自定义协议类型, 使用protobuf序列化obj对象
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="reliable">使用可靠传输?</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="obj">使用protobuf序列化的对象</param>
-        void Multicast(IList<Player> clients, bool reliable, byte cmd, object obj);
 
         /// <summary>
         /// 网络多播, 发送数据到clients集合的客户端

@@ -28,7 +28,7 @@
             output = new outputCallback(Output);
             IntPtr outputPtr = Marshal.GetFunctionPointerForDelegate(output);
             ikcp_setoutput(kcp, outputPtr);
-            ikcp_wndsize(kcp, 1024, 1024);
+            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
             ikcp_nodelay(kcp, 1, 10, 2, 1);
         }
 
