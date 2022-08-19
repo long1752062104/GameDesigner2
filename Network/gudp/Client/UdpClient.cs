@@ -101,20 +101,21 @@
         /// <param name="dataLen">每个客户端数据大小</param>
         public unsafe static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, Action<UdpClientTest> onInit = null, Action<List<UdpClientTest>> fpsAct = null, IAdapter adapter = null)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             Task.Run(() =>
             {
-                List<UdpClientTest> clients = new List<UdpClientTest>();
+                var clients = new List<UdpClientTest>();
                 for (int i = 0; i < clientLen; i++) 
                 {
-                    UdpClientTest client = new UdpClientTest();
+                    var client = new UdpClientTest();
+                    //client.MTPS = 2048;
                     onInit?.Invoke(client);
                     if(adapter!=null)
                         client.AddAdapter(adapter);
                     client.Connect(ip,port);
                     clients.Add(client);
                 }
-                byte[] buffer = new byte[dataLen];
+                var buffer = new byte[dataLen];
                 Task.Run(()=> 
                 {
                     while (!cts.IsCancellationRequested) 
@@ -133,6 +134,8 @@
                 {
                     int index = i * 1000;
                     int end = index + 1000;
+                    if (index >= clientLen)
+                        break;
                     Task.Run(()=> 
                     {
                         if (end > clientLen)
@@ -145,7 +148,7 @@
                                 try
                                 {
                                     var client = clients[ii];
-                                    client.SendRT(NetCmd.Local, new byte[dataLen]);
+                                    client.SendRT(NetCmd.Local, buffer);
                                     //client.AddOperation(new Operation(NetCmd.Local) { buffer = new byte[dataLen] });
                                     client.Update();
                                 }
@@ -186,15 +189,19 @@
             this.localPort = localPort;
             Client.Connect(host, port);
             Client.Blocking = false;
+#if WINDOWS
             var socketAddress = Client.RemoteEndPoint.Serialize();
             addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
-            SendByteData(new byte[] { 6, 0, 0, 0, 0, 0x2d, 74, NetCmd.Connect, 0, 0, 0, 0 }, false);
+#endif
+            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+            SendDirect();
             Connected = true;
+            result(true);
             return Task.FromResult(Connected);
         }
         protected override void StartupThread() { }
 
-        protected override void OnConnected(bool result) { }
+        protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
 
         protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         {
@@ -236,6 +243,7 @@
                 BufferPool.Push(buffer1);
             }
             SendDirect();
+            NetworkEventUpdate();
         }
         public override string ToString()
         {

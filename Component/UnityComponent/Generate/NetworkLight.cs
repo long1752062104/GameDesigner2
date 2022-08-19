@@ -18,13 +18,11 @@ namespace BuildComponent
         private UnityEngine.Light self;
         public bool autoCheck;
         private object[] fields;
-		private int[] eventsId;
 		
         public void Awake()
         {
             self = GetComponent<UnityEngine.Light>();
 			fields = new object[32];
-			eventsId = new int[32];
             fields[1] = self.type;
             fields[2] = self.shape;
             fields[3] = self.spotAngle;
@@ -36,7 +34,7 @@ namespace BuildComponent
             fields[9] = self.bounceIntensity;
             fields[10] = self.useBoundingSphereOverride;
             fields[11] = self.boundingSphereOverride;
-            fields[12] = self.useViewFrustumForShadowCasterCull;
+            //fields[12] = self.useViewFrustumForShadowCasterCull;
             fields[13] = self.shadowCustomResolution;
             fields[14] = self.shadowBias;
             fields[15] = self.shadowNormalBias;
@@ -297,28 +295,28 @@ namespace BuildComponent
                 });
             }
         }
-        public System.Boolean useViewFrustumForShadowCasterCull
-        {
-            get
-            {
-                return self.useViewFrustumForShadowCasterCull;
-            }
-            set
-            {
-                if (value.Equals(fields[12]))
-                    return;
-                fields[12] = value;
-                self.useViewFrustumForShadowCasterCull = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = Index,
-                    index2 = 12,
-                    buffer = SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
+        //public System.Boolean useViewFrustumForShadowCasterCull
+        //{
+        //    get
+        //    {
+        //        return self.useViewFrustumForShadowCasterCull;
+        //    }
+        //    set
+        //    {
+        //        if (value.Equals(fields[12]))
+        //            return;
+        //        fields[12] = value;
+        //        self.useViewFrustumForShadowCasterCull = value;
+        //        ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+        //        {
+        //            index = netObj.registerObjectIndex,
+        //            index1 = Index,
+        //            index2 = 12,
+        //            buffer = SerializeObject(value).ToArray(true),
+        //            uid = ClientBase.Instance.UID
+        //        });
+        //    }
+        //}
         public System.Int32 shadowCustomResolution
         {
             get
@@ -687,7 +685,7 @@ namespace BuildComponent
             bounceIntensity = bounceIntensity;
             useBoundingSphereOverride = useBoundingSphereOverride;
             boundingSphereOverride = boundingSphereOverride;
-            useViewFrustumForShadowCasterCull = useViewFrustumForShadowCasterCull;
+            //useViewFrustumForShadowCasterCull = useViewFrustumForShadowCasterCull;
             shadowCustomResolution = shadowCustomResolution;
             shadowBias = shadowBias;
             shadowNormalBias = shadowNormalBias;
@@ -810,15 +808,15 @@ namespace BuildComponent
 						self.boundingSphereOverride = boundingSphereOverride;
 					}
                     break;
-                case 12:
-                    {
-						if (opt.uid == ClientBase.Instance.UID)
-							return;
-						var useViewFrustumForShadowCasterCull = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
-						fields[12] = useViewFrustumForShadowCasterCull;
-						self.useViewFrustumForShadowCasterCull = useViewFrustumForShadowCasterCull;
-					}
-                    break;
+     //           case 12:
+     //               {
+					//	if (opt.uid == ClientBase.Instance.UID)
+					//		return;
+					//	var useViewFrustumForShadowCasterCull = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+					//	fields[12] = useViewFrustumForShadowCasterCull;
+					//	self.useViewFrustumForShadowCasterCull = useViewFrustumForShadowCasterCull;
+					//}
+     //               break;
                 case 13:
                     {
 						if (opt.uid == ClientBase.Instance.UID)

@@ -74,6 +74,18 @@ namespace Net.Server
         /// </summary>
         private readonly MyDictionary<ushort, List<RPCMethod>> RpcHashDic = new MyDictionary<ushort, List<RPCMethod>>();
         /// <summary>
+        /// 登录的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
+        /// </summary>
+        public ConcurrentDictionary<string, Player> Players { get; private set; } = new ConcurrentDictionary<string, Player>();
+        /// <summary>
+        /// 登录的客户端 与<see cref="Players"/>为互助字典 所添加的键值为<see cref="NetPlayer.UserID"/>
+        /// </summary>
+        public ConcurrentDictionary<int, Player> UIDClients { get; private set; } = new ConcurrentDictionary<int, Player>();
+        /// <summary>
+        /// 所有客户端列表
+        /// </summary>
+        public ConcurrentDictionary<EndPoint, Player> AllClients { get; private set; } = new ConcurrentDictionary<EndPoint, Player>();
+        /// <summary>
         /// 所有在线的客户端
         /// </summary>
         public List<Player> Clients
@@ -86,14 +98,6 @@ namespace Net.Server
                 return unclients;
             }
         }
-        /// <summary>
-        /// 所有在线的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
-        /// </summary>
-        public ConcurrentDictionary<string, Player> Players { get; private set; } = new ConcurrentDictionary<string, Player>();
-        /// <summary>
-        /// 所有在线的客户端 与<see cref="Players"/>为互助字典 所添加的键值为<see cref="NetPlayer.UserID"/>
-        /// </summary>
-        public ConcurrentDictionary<int, Player> UIDClients { get; private set; } = new ConcurrentDictionary<int, Player>();
         /// <summary>
         /// 未知客户端连接 或 刚连接服务器还未登录账号的IP
         /// </summary>
@@ -108,10 +112,6 @@ namespace Net.Server
             }
         }
         /// <summary>
-        /// 所有客户端列表
-        /// </summary>
-        public ConcurrentDictionary<EndPoint, Player> AllClients { get; private set; } = new ConcurrentDictionary<EndPoint, Player>();
-        /// <summary>
         /// 服务器场景，key是场景名或房间名，关卡名。 value是(场景或房间，关卡等)对象
         /// </summary>
         public ConcurrentDictionary<string, Scene> Scenes { get; set; } = new ConcurrentDictionary<string, Scene>();
@@ -122,7 +122,11 @@ namespace Net.Server
         /// <summary>
         /// 当前玩家在线人数
         /// </summary>
-        public int OnlinePlayers { get { return onlineNumber; } }
+        public int OnlinePlayers { get { return Players.Count; } }
+        /// <summary>
+        /// 未知客户端人数, 即在线不登录账号的客户端
+        /// </summary>
+        public int UnClientNumber { get { return AllClients.Count - Players.Count; } }
         /// <summary>
         /// 服务器端口
         /// </summary>
@@ -226,18 +230,9 @@ namespace Net.Server
         /// </summary>
         public int MTPS { get; set; } = 1024 * 1024;
         /// <summary>
-        /// 未知客户端人数, 即在线不登录账号的客户端
+        /// 并发线程数量, 发送线程和接收处理线程数量
         /// </summary>
-        public int UnClientNumber { get { return ignoranceNumber; } }
-        /// <summary>
-        /// 并发线程数量, 发送线程和接收处理线程数量 / 2
-        /// </summary>
-        public int MaxThread { get; set; } = 2;
-        /// <summary>
-        /// 在线客户端数量
-        /// </summary>
-        protected internal int onlineNumber;
-        protected internal int ignoranceNumber;
+        public int MaxThread { get; set; } = Environment.ProcessorCount;
         /// <summary>
         /// 组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
         /// </summary>
@@ -274,7 +269,7 @@ namespace Net.Server
         /// </summary>
         protected ConcurrentQueue<Action> SingleCallQueue { get; set; } = new ConcurrentQueue<Action>();
         protected volatile int threadNum;
-        protected List<QueueSafe<RevdDataBuffer>> RevdQueues = new List<QueueSafe<RevdDataBuffer>>();
+        protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
         /// <summary>
         /// 排队队列
         /// </summary>
@@ -592,25 +587,8 @@ namespace Net.Server
             if (Server != null)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
             Port = port;
-            OnStartingHandle += OnStarting;
-            OnStartupCompletedHandle += OnStartupCompleted;
-            OnHasConnectHandle += OnHasConnect;
-            OnRemoveClientHandle += OnRemoveClient;
-            OnOperationSyncHandle += OnOperationSync;
-            OnRevdBufferHandle += OnReceiveBuffer;
-            OnReceiveFileHandle += OnReceiveFile;
-            OnRevdRTProgressHandle += OnRevdRTProgress;
-            OnSendRTProgressHandle += OnSendRTProgress;
-            if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
-            if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
-            if (OnRPCExecute == null) OnRPCExecute = OnRpcExecuteInternal;
-            if (OnSerializeRPC == null) OnSerializeRPC = OnSerializeRpcInternal;
-            if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
-            if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
-            if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
-            Debug.LogHandle += Log;
-            Debug.LogWarningHandle += Log;
-            Debug.LogErrorHandle += Log;
+            RegisterEvent();
+            Debug.BindLogAll(Log);
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
@@ -618,7 +596,7 @@ namespace Net.Server
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);
-#if !UNITY_ANDROID//在安卓启动服务器时忽略此错误
+#if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
             uint IOC_VENDOR = 0x18000000;
             uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
@@ -635,13 +613,13 @@ namespace Net.Server
             taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
             taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread / 2; i++)
+            for (int i = 0; i < MaxThread; i++)
             {
-                QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
-                RevdQueues.Add(revdQueue);
-                Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
-                revd.Start(revdQueue);
-                threads.Add("RevdDataHandle" + i, revd);
+                var rcvQueue = new QueueSafe<RevdDataBuffer>();
+                RcvQueues.Add(rcvQueue);
+                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
+                rcv.Start(rcvQueue);
+                threads.Add("RcvDataHandle" + i, rcv);
             }
             threads.Add("SendDataHandle", send);
             threads.Add("SceneUpdateHandle", suh);
@@ -655,6 +633,26 @@ namespace Net.Server
             Win32KernelAPI.timeBeginPeriod(1);
 #endif
             InitUserID();
+        }
+
+        protected void RegisterEvent()
+        {
+            OnStartingHandle += OnStarting;
+            OnStartupCompletedHandle += OnStartupCompleted;
+            OnHasConnectHandle += OnHasConnect;
+            OnRemoveClientHandle += OnRemoveClient;
+            OnOperationSyncHandle += OnOperationSync;
+            OnRevdBufferHandle += OnReceiveBuffer;
+            OnReceiveFileHandle += OnReceiveFile;
+            OnRevdRTProgressHandle += OnRevdRTProgress;
+            OnSendRTProgressHandle += OnSendRTProgress;
+            if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
+            if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
+            if (OnRPCExecute == null) OnRPCExecute = OnRpcExecuteInternal;
+            if (OnSerializeRPC == null) OnSerializeRPC = OnSerializeRpcInternal;
+            if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
+            if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
+            if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
         }
 
         /// <summary>
@@ -819,9 +817,7 @@ namespace Net.Server
         protected virtual void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
-            {
                 client = AcceptHander(null, remotePoint);
-            }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
         }
 
@@ -838,14 +834,14 @@ namespace Net.Server
             client.PlayerID = uid.ToString();
             client.Name = uid.ToString();
             client.stackStream = BufferStreamShare.Take();
-            Interlocked.Increment(ref ignoranceNumber);
-            var buffer = BufferPool.Take(50);
-            buffer.Write(client.UserID);
-            buffer.Write(client.PlayerID);
-            SendRT(client, NetCmd.Identify, buffer.ToArray(true));
-            client.revdQueue = RevdQueues[threadNum];
-            if (++threadNum >= RevdQueues.Count)
+            client.revdQueue = RcvQueues[threadNum];
+            if (++threadNum >= RcvQueues.Count)
                 threadNum = 0;
+            AcceptHander(client);
+            var segment = BufferPool.Take(50);
+            segment.Write(client.UserID);
+            segment.Write(client.PlayerID);
+            SendRT(client, NetCmd.Identify, segment.ToArray());
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
 #if TEST1
             UIDClients.TryAdd(uid, client);//测试
@@ -862,12 +858,17 @@ namespace Net.Server
             {
                 QueueUp.Enqueue(client);
                 client.QueueUpCount = QueueUp.Count;
-                var segment = BufferPool.Take(8);
+                segment.SetPositionLength(0);
                 segment.Write(QueueUp.Count);
                 segment.Write(client.QueueUpCount);
-                SendRT(client, NetCmd.QueueUp, segment.ToArray(true, true));
+                SendRT(client, NetCmd.QueueUp, segment.ToArray());
             }
+            segment.Dispose();
             return client;
+        }
+
+        protected virtual void AcceptHander(Player client) 
+        {
         }
 
 #if TEST1
@@ -881,7 +882,7 @@ namespace Net.Server
         }
 #endif
 
-        protected virtual void RevdDataHandle(object state)//处理线程
+        protected virtual void RcvDataHandle(object state)//处理线程
         {
             var revdQueue = state as QueueSafe<RevdDataBuffer>;
             while (IsRunServer)
@@ -1075,6 +1076,7 @@ namespace Net.Server
 
         protected virtual void DataHandle(Player client, RPCModel model, Segment segment)
         {
+            client.heart = 0;
             if (IsInternalCommand(client, model))
                 return;
             if (client.Login)
@@ -1082,7 +1084,6 @@ namespace Net.Server
                 RpcDataHandle(client, model, segment);
                 return;
             }
-            client.heart = 0;
             switch (model.cmd)
             {
                 case NetCmd.ReliableTransport:
@@ -1092,9 +1093,8 @@ namespace Net.Server
                     Send(client, NetCmd.RevdHeartbeat, new byte[0]);
                     return;
                 case NetCmd.RevdHeartbeat:
-                    client.heart = 0;
                     return;
-                case NetCmd.QuitGame:
+                case NetCmd.Disconnect:
                     RemoveClient(client);
                     return;
                 case NetCmd.Ping:
@@ -1146,9 +1146,6 @@ namespace Net.Server
 
         private void LoginInternal(Player client)
         {
-            if (ignoranceNumber > 0)
-                Interlocked.Decrement(ref ignoranceNumber);
-            Interlocked.Increment(ref onlineNumber);
             Players.TryAdd(client.PlayerID, client);
             UIDClients.TryAdd(client.UserID, client);
             client.OnStart();
@@ -1164,7 +1161,6 @@ namespace Net.Server
         protected virtual void RpcDataHandle(Player client, RPCModel model, Segment segment)
         {
             resolveAmount++;
-            client.heart = 0;
             switch (model.cmd)
             {
                 case NetCmd.EntityRpc:
@@ -1210,7 +1206,7 @@ namespace Net.Server
                 case NetCmd.RevdHeartbeat:
                     client.heart = 0;
                     break;
-                case NetCmd.QuitGame:
+                case NetCmd.Disconnect:
                     RemoveClient(client);
                     break;
                 case NetCmd.ReliableTransport:
@@ -1828,8 +1824,6 @@ namespace Net.Server
         {
             if (client.isDispose)
                 return;
-            if (client.Login & onlineNumber > 0) Interlocked.Decrement(ref onlineNumber);
-            else if (!client.Login & ignoranceNumber > 0) Interlocked.Decrement(ref ignoranceNumber);
             Players.TryRemove(client.PlayerID, out _);
             UIDClients.TryRemove(client.UserID, out _);
             AllClients.TryRemove(client.RemotePoint, out _);
@@ -1897,7 +1891,7 @@ namespace Net.Server
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
             threads.Clear();
-            RevdQueues.Clear();
+            RcvQueues.Clear();
             OnStartingHandle -= OnStarting;
             OnStartupCompletedHandle -= OnStartupCompleted;
             OnHasConnectHandle -= OnHasConnect;
@@ -2637,7 +2631,6 @@ namespace Net.Server
             if (!client.Login)
                 return;
             SendDirect(client);
-            if (onlineNumber > 0) Interlocked.Decrement(ref onlineNumber);
             Players.TryRemove(client.PlayerID, out _);
             UIDClients.TryRemove(client.UserID, out _);
             ExitScene(client, false);

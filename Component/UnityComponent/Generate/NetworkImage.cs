@@ -41,7 +41,7 @@ namespace BuildComponent
             fields[14] = self.isMaskingGraphic;
             fields[15] = self.color;
             fields[16] = self.raycastTarget;
-            fields[17] = self.raycastPadding;
+            //fields[17] = self.raycastPadding;
             fields[18] = self.useGUILayout;
         }
 
@@ -397,28 +397,28 @@ namespace BuildComponent
                 });
             }
         }
-        public UnityEngine.Vector4 raycastPadding
-        {
-            get
-            {
-                return self.raycastPadding;
-            }
-            set
-            {
-                if (value.Equals(fields[17]))
-                    return;
-                fields[17] = value;
-                self.raycastPadding = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = Index,
-                    index2 = 17,
-                    buffer = SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
+        //public UnityEngine.Vector4 raycastPadding
+        //{
+        //    get
+        //    {
+        //        return self.raycastPadding;
+        //    }
+        //    set
+        //    {
+        //        if (value.Equals(fields[17]))
+        //            return;
+        //        fields[17] = value;
+        //        self.raycastPadding = value;
+        //        ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+        //        {
+        //            index = netObj.registerObjectIndex,
+        //            index1 = Index,
+        //            index2 = 17,
+        //            buffer = SerializeObject(value).ToArray(true),
+        //            uid = ClientBase.Instance.UID
+        //        });
+        //    }
+        //}
         public System.Boolean useGUILayout
         {
             get
@@ -462,7 +462,7 @@ namespace BuildComponent
             isMaskingGraphic = isMaskingGraphic;
             color = color;
             raycastTarget = raycastTarget;
-            raycastPadding = raycastPadding;
+            //raycastPadding = raycastPadding;
             useGUILayout = useGUILayout;
         }
 
@@ -1126,15 +1126,15 @@ namespace BuildComponent
 						self.raycastTarget = raycastTarget;
 					}
                     break;
-                case 17:
-                    {
-						if (opt.uid == ClientBase.Instance.UID)
-							return;
-						var raycastPadding = DeserializeObject<UnityEngine.Vector4>(new Segment(opt.buffer, false));
-						fields[17] = raycastPadding;
-						self.raycastPadding = raycastPadding;
-					}
-                    break;
+     //           case 17:
+     //               {
+					//	if (opt.uid == ClientBase.Instance.UID)
+					//		return;
+					//	var raycastPadding = DeserializeObject<UnityEngine.Vector4>(new Segment(opt.buffer, false));
+					//	fields[17] = raycastPadding;
+					//	self.raycastPadding = raycastPadding;
+					//}
+     //               break;
                 case 18:
                     {
 						if (opt.uid == ClientBase.Instance.UID)

@@ -511,9 +511,7 @@ namespace Net.System
         public bool Remove(TKey key)
         {
             if (key == null)
-            {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
             int num = comparer.GetHashCode(key) & int.MaxValue;
             int num2 = num % buckets.Length;
             int num3 = -1;
@@ -540,6 +538,41 @@ namespace Net.System
                 }
                 num3 = i;
             }
+            return false;
+        }
+
+        public bool TryRemove(TKey key, out TValue value)
+        {
+            if (key == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            int num = comparer.GetHashCode(key) & int.MaxValue;
+            int num2 = num % buckets.Length;
+            int num3 = -1;
+            for (int i = buckets[num2]; i >= 0; i = entries[i].next)
+            {
+                if (entries[i].hashCode == num && comparer.Equals(entries[i].key, key))
+                {
+                    if (num3 < 0)
+                    {
+                        buckets[num2] = entries[i].next;
+                    }
+                    else
+                    {
+                        entries[num3].next = entries[i].next;
+                    }
+                    value = entries[i].value;
+                    entries[i].hashCode = -1;
+                    entries[i].next = freeList;
+                    entries[i].key = default;
+                    entries[i].value = default;
+                    freeList = i;
+                    freeCount++;
+                    version++;
+                    return true;
+                }
+                num3 = i;
+            }
+            value = default;
             return false;
         }
 
