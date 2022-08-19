@@ -283,10 +283,16 @@
         /// <returns></returns>
         public override string ToString()
         {
-            global::System.Reflection.FieldInfo[] fields = typeof(NetCmd).GetFields(global::System.Reflection.BindingFlags.Static | global::System.Reflection.BindingFlags.Public);
+            var fields = typeof(NetCmd).GetFields(global::System.Reflection.BindingFlags.Static | global::System.Reflection.BindingFlags.Public);
             string cmdStr = "";
-            if (cmd < fields.Length)
-                cmdStr = fields[cmd].Name;
+            for (int i = 0; i < fields.Length; i++)
+            {
+                if (cmd.Equals(fields[i].GetValue(null)))
+                {
+                    cmdStr = fields[i].Name;
+                    break;
+                }
+            }
             return $"指令:{cmdStr} 内核:{kernel} 方法:{func} Mask:{methodHash} 数据:{(buffer != null ? buffer.Length : 0)}";
         }
     }

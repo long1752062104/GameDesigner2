@@ -1178,6 +1178,9 @@ namespace Net.Client
         {
             NetworkState = networkState = NetworkState.Disconnect;
             Client.Disconnect(reuseSocket);
+            Send(NetCmd.Disconnect, new byte[0]);
+            SendDirect();
+            Connected = false;
         }
 
         /// <summary>
@@ -2054,9 +2057,9 @@ namespace Net.Client
         /// <param name="millisecondsTimeout">等待毫秒数</param>
         public virtual void Close(bool await = true, int millisecondsTimeout = 1000)
         {
-            if (NetworkState != NetworkState.ConnectClosed & NetworkState == NetworkState.Connection)
+            if (Connected & openClient & NetworkState == NetworkState.Connected)
             {
-                Send(NetCmd.QuitGame, new byte[0]);
+                Send(NetCmd.Disconnect, new byte[0]);
                 SendDirect();
             }
             Connected = false;

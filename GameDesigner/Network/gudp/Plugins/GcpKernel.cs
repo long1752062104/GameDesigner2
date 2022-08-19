@@ -50,17 +50,16 @@ namespace Net.Plugins
     /// </summary>
     public class GcpKernel : IDisposable
     {
-        private uint package;
-        private uint packageLocal;
+        private uint senderPackage;
+        private uint revderPackage;
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
         public Action<byte[]> OnSender;
         public Action<RTProgress> OnSendProgress;
         public Action<RTProgress> OnRevdProgress;
-        private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
-        private readonly MyDictionary<uint, DataPackage> revderPackage = new MyDictionary<uint, DataPackage>();
+        private readonly SortedDictionary<uint, SortedDictionary<int, DataFrame>> senderDict = new SortedDictionary<uint, SortedDictionary<int, DataFrame>>();
+        private readonly MyDictionary<uint, DataPackage> revderDict = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
-        
         private readonly object SyncRoot = new object();
         private int tick;
         private int flowTick;
@@ -68,6 +67,9 @@ namespace Net.Plugins
         private int progressTick;
         public ushort MTU { get; set; } = 1300;
         public int RTO = 1000;
+        private int ackNumber = 1;
+        private int currAck;
+
         public int MTPS { get; set; } = 1024 * 1024;
         public int ProgressDataLen { get; set; } = ushort.MaxValue;//要求数据大于多少才会调用发送，接收进度值
 
@@ -81,15 +83,19 @@ namespace Net.Plugins
                 {
                     flowTick = tick + 1000;
                     currFlow = 0;
+                    currAck = 0;
+                    ackNumber = 1;
                 }
                 foreach (var dic in senderDict.Values)
                 {
                     foreach (var sender in dic.Values)
                     {
-                        if (tick >= sender.tick & currFlow < MTPS)
+                        if (tick >= sender.tick & currFlow < MTPS & currAck < ackNumber)
                         {
                             sender.tick = tick + RTO;
-                            currFlow += sender.buffer.Length;
+                            var count = sender.buffer.Length;
+                            currFlow += count;
+                            currAck++;
                             OnSender(sender.buffer);
                         }
                     }
@@ -125,20 +131,21 @@ namespace Net.Plugins
                 var frameEnd = (int)Math.Ceiling(count / (float)MTU);
                 using (var segment = BufferPool.Take())
                 {
-                    var dic = new MyDictionary<int, DataFrame>();
-                    senderDict.Add(package, dic);
+                    var dic = new SortedDictionary<int, DataFrame>();
+                    senderDict.Add(senderPackage, dic);
                     for (int serialNo = 0; serialNo < frameEnd; serialNo++)
                     {
                         segment.SetPositionLength(0);
                         segment.WriteByte(Cmd.Frame);
-                        segment.Write(package);
+                        segment.Write(senderPackage);
                         segment.Write(serialNo);
                         segment.Write(count);
                         var offset = serialNo * MTU;
                         segment.Write(current, offset, offset + MTU >= count ? count - offset : MTU);
-                        dic.Add(serialNo, new DataFrame(segment.ToArray()));
+                        var dataFrame = new DataFrame(segment.ToArray());
+                        dic.Add(serialNo, dataFrame);
                     }
-                    package++;
+                    senderPackage++;
                 }
             }
         }
@@ -153,10 +160,10 @@ namespace Net.Plugins
                     var package = segment.ReadUInt32();
                     var serialNo = segment.ReadInt32();
                     var dataLen = segment.ReadInt32();
-                    if (package < packageLocal)
+                    if (package < revderPackage)
                         goto J;
-                    if (!revderPackage.TryGetValue(package, out var dp))
-                        revderPackage.Add(package, dp = new DataPackage());
+                    if (!revderDict.TryGetValue(package, out var dp))
+                        revderDict.Add(package, dp = new DataPackage());
                     if (dp.revderBuffer == null)
                     {
                         dp.revderBuffer = new byte[dataLen];
@@ -171,7 +178,7 @@ namespace Net.Plugins
                         if (dp.revderHashCount >= dp.revderFrameEnd)
                             dp.finish = true;
                     }
-                    while (revderPackage.TryGetValue(packageLocal, out var dp1))
+                    while (revderDict.TryGetValue(revderPackage, out var dp1))
                     {
                         if (tick >= progressTick)
                         {
@@ -185,8 +192,8 @@ namespace Net.Plugins
                         if (!dp1.finish)
                             break;
                         revderQueue.Enqueue(dp1.revderBuffer);
-                        revderPackage.Remove(packageLocal);
-                        packageLocal++;
+                        revderDict.Remove(revderPackage);
+                        revderPackage++;
                         dp1.revderBuffer = null;
                         dp1.revderHash = null;
                         dp1.revderHashCount = 0;
@@ -204,9 +211,10 @@ namespace Net.Plugins
                     var package = segment.ReadUInt32();
                     var serialNo = segment.ReadInt32();
                     var dataLen = segment.ReadInt32();
-                    if (senderDict.TryGetValue(package, out var dic)) 
+                    if (senderDict.TryGetValue(package, out var dic))
                     {
-                        dic.Remove(serialNo);
+                        if (dic.Remove(serialNo))
+                            ackNumber++;
                         if (dic.Count <= 0)
                             senderDict.Remove(package);
                         if (tick >= progressTick)
@@ -230,12 +238,12 @@ namespace Net.Plugins
         {
             lock (SyncRoot)
             {
-                package = 0;
-                packageLocal = 0;
+                senderPackage = 0;
+                revderPackage = 0;
                 senderQueue.Clear();
                 revderQueue.Clear();
                 senderDict.Clear();
-                revderPackage.Clear();
+                revderDict.Clear();
                 RemotePoint = null;
             }
         }

@@ -43,25 +43,8 @@
             if (Server != null)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
             Port = port;
-            OnStartingHandle += OnStarting;
-            OnStartupCompletedHandle += OnStartupCompleted;
-            OnHasConnectHandle += OnHasConnect;
-            OnRemoveClientHandle += OnRemoveClient;
-            OnOperationSyncHandle += OnOperationSync;
-            OnRevdBufferHandle += OnReceiveBuffer;
-            OnReceiveFileHandle += OnReceiveFile;
-            OnRevdRTProgressHandle += OnRevdRTProgress;
-            OnSendRTProgressHandle += OnSendRTProgress;
-            if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
-            if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
-            if (OnRPCExecute == null) OnRPCExecute = OnRpcExecuteInternal;
-            if (OnSerializeRPC == null) OnSerializeRPC = OnSerializeRpcInternal;
-            if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
-            if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
-            if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
-            Debug.LogHandle += Log;
-            Debug.LogWarningHandle += Log;
-            Debug.LogErrorHandle += Log;
+            RegisterEvent();
+            Debug.BindLogAll(Log);
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
@@ -85,13 +68,13 @@
             taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
             taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread / 2; i++)
+            for (int i = 0; i < MaxThread; i++)
             {
-                QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
-                RevdQueues.Add(revdQueue);
-                Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
-                revd.Start(revdQueue);
-                threads.Add("RevdDataHandle" + i, revd);
+                var rcvQueue = new QueueSafe<RevdDataBuffer>();
+                RcvQueues.Add(rcvQueue);
+                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
+                rcv.Start(rcvQueue);
+                threads.Add("RcvDataHandle" + i, rcv);
             }
             threads.Add("ProcessAcceptConnect", proAcc);
             threads.Add("ProcessReceiveFrom", proRevd);
@@ -168,7 +151,7 @@
             }
         }
 
-        protected override void RevdDataHandle(object state)
+        protected override void RcvDataHandle(object state)
         {
             var revdQueue = state as QueueSafe<RevdDataBuffer>;
             while (IsRunServer)

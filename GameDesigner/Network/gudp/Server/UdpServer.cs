@@ -24,25 +24,8 @@
             if (Server != null)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
             Port = port;
-            OnStartingHandle += OnStarting;
-            OnStartupCompletedHandle += OnStartupCompleted;
-            OnHasConnectHandle += OnHasConnect;
-            OnRemoveClientHandle += OnRemoveClient;
-            OnOperationSyncHandle += OnOperationSync;
-            OnRevdBufferHandle += OnReceiveBuffer;
-            OnReceiveFileHandle += OnReceiveFile;
-            OnRevdRTProgressHandle += OnRevdRTProgress;
-            OnSendRTProgressHandle += OnSendRTProgress;
-            if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
-            if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
-            if (OnRPCExecute == null) OnRPCExecute = OnRpcExecuteInternal;
-            if (OnSerializeRPC == null) OnSerializeRPC = OnSerializeRpcInternal;
-            if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
-            if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
-            if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
-            Debug.LogHandle += Log;
-            Debug.LogWarningHandle += Log;
-            Debug.LogErrorHandle += Log;
+            RegisterEvent();
+            Debug.BindLogAll(Log);
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
@@ -50,7 +33,7 @@
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);
-#if !UNITY_ANDROID//在安卓启动服务器时忽略此错误
+#if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
             uint IOC_VENDOR = 0x18000000;
             uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
@@ -68,13 +51,13 @@
             taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
             taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread / 2; i++)
+            for (int i = 0; i < MaxThread; i++)
             {
-                QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
-                RevdQueues.Add(revdQueue);
-                Thread revd = new Thread(RevdDataHandle) { IsBackground = true, Name = "RevdDataHandle" + i };
-                revd.Start(revdQueue);
-                threads.Add("RevdDataHandle" + i, revd);
+                var rcvQueue = new QueueSafe<RevdDataBuffer>();
+                RcvQueues.Add(rcvQueue);
+                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
+                rcv.Start(rcvQueue);
+                threads.Add("RcvDataHandle" + i, rcv);
             }
             threads.Add("ProcessReceive", proRevd);
             threads.Add("SendDataHandle", send);
@@ -116,18 +99,16 @@
             }
         }
 
-        protected override Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
+        protected override void AcceptHander(Player client)
         {
-            var client = base.AcceptHander(clientSocket, remotePoint);
             client.Gcp = new Plugins.GcpKernel();
             client.Gcp.MTU = (ushort)MTU;
             client.Gcp.RTO = RTO;
             client.Gcp.MTPS = MTPS;
-            client.Gcp.RemotePoint = remotePoint;
+            client.Gcp.RemotePoint = client.RemotePoint;
             client.Gcp.OnSender += (bytes) => {
                 Send(client, NetCmd.ReliableTransport, bytes);
             };
-            return client;
         }
 
         protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)

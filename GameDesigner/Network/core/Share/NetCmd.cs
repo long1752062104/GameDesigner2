@@ -89,7 +89,10 @@
         /// 连接指令 (内部)
         /// </summary>
         public const byte Connect = 21;
-        
+        /// <summary>
+        /// 断开网络连接, 内部指令
+        /// </summary>
+        public const byte Disconnect = 22;
         /// <summary>
         /// 自身转发, 可靠传输
         /// </summary>
