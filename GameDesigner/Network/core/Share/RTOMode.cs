@@ -1,17 +1,17 @@
 ﻿namespace Net.Share
 {
     /// <summary>
-    /// 超时重传模式
+    /// 流量控制模式
     /// </summary>
-    public enum RTOMode
+    public enum FlowControlMode
     {
         /// <summary>
-        /// 可变的重传时间, 以ping指令来自动设置重传时间, 每秒ping一次, 并设置rto时间, 你还可以监听服务器,客户端的OnPingCallback事件来查看网络延迟
+        /// 正常模式 (类似Tcp)，当网络差时，会降低数据传输频率，节约网络流量
         /// </summary>
-        Variable,
+        Normal,
         /// <summary>
-        /// 固定重传时间, 以ServerBase的RTO时间重传
+        /// 极速模式 (帧同步游戏)，如果网络差时，也会以一定速度进行数据传输，保证数据流畅
         /// </summary>
-        Fixed
+        Quick
     }
 }

@@ -19,6 +19,9 @@
     /// <typeparam name="Scene"></typeparam>
     public class KcpServer<Player, Scene> : ServerBase<Player, Scene> where Player : KcpPlayer, new() where Scene : NetScene<Player>, new()
     {
+        private ikcp_malloc_hook ikcp_Malloc;
+        private ikcp_free_hook ikcp_Free;
+
         public override void Start(ushort port = 6666)
         {
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
@@ -35,9 +38,6 @@
             ikcp_allocator(mallocPtr, freePtr);
         }
 
-        ikcp_malloc_hook ikcp_Malloc;
-        ikcp_free_hook ikcp_Free;
-
         private unsafe IntPtr Ikcp_malloc_hook(int size)
         {
             return Marshal.AllocHGlobal(size);
@@ -48,21 +48,21 @@
             Marshal.FreeHGlobal(ptr);
         }
 
+        protected override void AcceptHander(Player client)
+        {
+            client.Server = Server;
+            IntPtr kcp = ikcp_create(1400, (IntPtr)1);
+            IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
+            ikcp_setoutput(kcp, output);
+            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
+            ikcp_nodelay(kcp, 1, 10, 2, 1);
+            client.Kcp = kcp;
+        }
+
         protected unsafe override void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
-            {
-                if (!UserIDStack.TryPop(out int uid))
-                    uid = GetCurrUserID();
                 client = AcceptHander(null, remotePoint);
-                client.Server = Server;
-                IntPtr kcp = ikcp_create(1400, (IntPtr)1);
-                IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
-                ikcp_setoutput(kcp, output);
-                ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
-                ikcp_nodelay(kcp, 1, 10, 2, 1);
-                client.Kcp = kcp;
-            }
             fixed (byte* p = &buffer.Buffer[0])
             {
                 ikcp_input(client.Kcp, p, buffer.Count);

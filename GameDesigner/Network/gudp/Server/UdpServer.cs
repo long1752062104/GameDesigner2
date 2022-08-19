@@ -105,6 +105,7 @@
             client.Gcp.MTU = (ushort)MTU;
             client.Gcp.RTO = RTO;
             client.Gcp.MTPS = MTPS;
+            client.Gcp.FlowControl = FlowControl;
             client.Gcp.RemotePoint = client.RemotePoint;
             client.Gcp.OnSender += (bytes) => {
                 Send(client, NetCmd.ReliableTransport, bytes);
