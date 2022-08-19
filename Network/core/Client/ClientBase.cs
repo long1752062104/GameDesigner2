@@ -353,13 +353,17 @@ namespace Net.Client
         /// </summary>
         public virtual int MTU { get; set; } = 1300;
         /// <summary>
-        /// （Retransmission TimeOut）重传超时时间。 默认为20毫秒重传一次
+        /// （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
         /// </summary>
-        public virtual int RTO { get; set; } = 200;
+        public virtual int RTO { get; set; } = 1000;
         /// <summary>
         /// (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
         /// </summary>
         public virtual int MTPS { get; set; } = 1024 * 1024;
+        /// <summary>
+        /// 流量控制模式，只有Gcp协议可用
+        /// </summary>
+        public virtual FlowControlMode FlowControl { get; set; } = FlowControlMode.Normal;
         /// <summary>
         /// 客户端端口
         /// </summary>

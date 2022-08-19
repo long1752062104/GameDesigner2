@@ -69,9 +69,9 @@ namespace Net.Plugins
         public int RTO = 1000;
         private int ackNumber = 1;
         private int currAck;
-
         public int MTPS { get; set; } = 1024 * 1024;
         public int ProgressDataLen { get; set; } = ushort.MaxValue;//要求数据大于多少才会调用发送，接收进度值
+        public FlowControlMode FlowControl { get; set; } = FlowControlMode.Normal;
 
         public void Update()
         {
@@ -84,7 +84,7 @@ namespace Net.Plugins
                     flowTick = tick + 1000;
                     currFlow = 0;
                     currAck = 0;
-                    ackNumber = 1;
+                    ackNumber = FlowControl == FlowControlMode.Normal ? 1 : ushort.MaxValue;
                 }
                 foreach (var dic in senderDict.Values)
                 {

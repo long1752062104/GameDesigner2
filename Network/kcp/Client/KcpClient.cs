@@ -152,12 +152,12 @@
         /// <param name="dataLen">每个客户端数据大小</param>
         public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             Task.Run(() =>
             {
-                IntPtr[] kcps = new IntPtr[clientLen];
-                outputCallback[] outputs = new outputCallback[clientLen];
-                Socket[] sockets = new Socket[clientLen];
+                var kcps = new IntPtr[clientLen];
+                var outputs = new outputCallback[clientLen];
+                var sockets = new Socket[clientLen];
                 for (int i = 0; i < clientLen; i++)
                 {
                     Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -174,7 +174,7 @@
                     kcps[i] = kcp;
                     sockets[i] = socket;
                 }
-                byte[] buffer = new byte[dataLen];
+                var buffer = new byte[dataLen];
                 using (MemoryStream stream = new MemoryStream(512))
                 {
                     int crcIndex = 0;
@@ -193,7 +193,7 @@
                     stream.Position = len + 6;
                     buffer = stream.ToArray();
                 }
-                byte[] buffer1 = new byte[65507];
+                var buffer1 = new byte[65507];
                 while (!cts.IsCancellationRequested)
                 {
                     Thread.Sleep(31);
@@ -215,7 +215,7 @@
                             int len;
                             while ((len = ikcp_peeksize(kcps[i])) > 0)
                             {
-                                byte[] buffer2 = new byte[len];
+                                var buffer2 = new byte[len];
                                 fixed (byte* p1 = &buffer1[0])
                                 {
                                     int kcnt = ikcp_recv(kcps[i], p1, buffer2.Length);

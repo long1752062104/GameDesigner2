@@ -28,6 +28,7 @@
         public override int MTU { get => Gcp.MTU; set => Gcp.MTU = (ushort)value; }
         public override int RTO { get => Gcp.RTO; set => Gcp.RTO = value; }
         public override int MTPS { get => Gcp.MTPS; set => Gcp.MTPS = value; }
+        public override FlowControlMode FlowControl { get => Gcp.FlowControl; set => Gcp.FlowControl = value; }
         public override Action<RTProgress> OnRevdRTProgress { get => Gcp.OnRevdProgress; set => Gcp.OnRevdProgress = value; }
         public override Action<RTProgress> OnSendRTProgress { get => Gcp.OnSendProgress; set => Gcp.OnSendProgress = value; }
         /// <summary>
