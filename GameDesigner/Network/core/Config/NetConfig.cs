@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Net.Config
 {
@@ -57,6 +54,11 @@ namespace Net.Config
                 var textRows = File.ReadAllLines(configPath);
                 foreach (var item in textRows)
                 {
+                    if (item.Contains("{"))//旧版本json存储
+                    {
+                        Save();
+                        break;
+                    }
                     var texts = item.Split('=');
                     var key = texts[0].Trim();
                     var value = texts[1].Split('#')[0].Trim();

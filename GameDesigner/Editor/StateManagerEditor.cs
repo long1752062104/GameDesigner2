@@ -817,16 +817,6 @@ namespace GameDesigner
             EditorGUILayout.EndHorizontal();
         }
 
-        public static string ToArrtsString(Parameter[] ps)
-        {
-            string str = "(";
-            foreach (Parameter p in ps)
-            {
-                str += "  " + p.parameterTypeName + "  " + p.name + "  ";
-            }
-            return str + ")";
-        }
-
         [UnityEditor.Callbacks.DidReloadScripts(0)]
         internal static void OnScriptReload()
         {
@@ -836,7 +826,7 @@ namespace GameDesigner
             {
                 for (int i = 0; i < s.behaviours.Count; i++)
                 {
-                    var type = SystemType.GetType(s.behaviours[i].name);
+                    var type = Net.Serialize.NetConvertOld.GetType(s.behaviours[i].name);
                     var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
                     s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
                     s.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);
@@ -845,7 +835,7 @@ namespace GameDesigner
                 {
                     for (int i = 0; i < t.behaviours.Count; i++)
                     {
-                        var type = SystemType.GetType(t.behaviours[i].name);
+                        var type = Net.Serialize.NetConvertOld.GetType(t.behaviours[i].name);
                         var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
                         t.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);
@@ -855,7 +845,7 @@ namespace GameDesigner
                 {
                     for (int i = 0; i < a.behaviours.Count; i++)
                     {
-                        var type = SystemType.GetType(a.behaviours[i].name);
+                        var type = Net.Serialize.NetConvertOld.GetType(a.behaviours[i].name);
                         var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
                         a.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);

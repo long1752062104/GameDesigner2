@@ -49,7 +49,7 @@
 
         public ActionBehaviour InitBehaviour()
         {
-            var type = SystemType.GetType(name);
+            var type = Net.Serialize.NetConvertOld.GetType(name);
             var runtimeBehaviour = (ActionBehaviour)Activator.CreateInstance(type);
             runtimeBehaviour.stateMachine = stateMachine;
             runtimeBehaviour.Active = Active;
