@@ -184,13 +184,14 @@ namespace Net.Server
         /// </summary>
         protected virtual byte frame { get; set; } = 1;
         /// <summary>
-        /// 允许叠包缓存最大值 默认可发送5242880(5M)的数据包
+        /// 每个客户端接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
-        public int StackBufferSize { get; set; } = 5242880;
+        //public int StackBufferSize { get; set; } = 5242880;
+        public int PackageSize { get; set; } = 1024 * 1024 * 5;
         /// <summary>
         /// 允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
         /// </summary>
-        public int StackNumberMax { get; set; } = 50;
+        //public int StackNumberMax { get; set; } = 50;
         /// <summary>
         /// 心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 但发送的数据也会增加. [开发调式时尽量把心跳值设置高点]
@@ -855,7 +856,7 @@ namespace Net.Server
             {
                 SendRT(client, NetCmd.ServerFull, new byte[0]);
                 Invoke(1f, () => {
-                    client.Client.Close();
+                    RemoveClient(client);
                 });
             }
             else if (AllClients.Count > OnlineLimit)
@@ -979,12 +980,12 @@ namespace Net.Server
         protected virtual void ResolveBuffer(Player client, ref Segment buffer)
         {
             client.heart = 0;
-            if (client.stack > StackNumberMax)//不能一直叠包
-            {
-                client.stack = 0;
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
-                return;
-            }
+            //if (client.stack > StackNumberMax)//不能一直叠包
+            //{
+            //    client.stack = 0;
+            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
+            //    return;
+            //}
             if (client.stack > 0)
             {
                 client.stack++;
@@ -1027,10 +1028,10 @@ namespace Net.Server
                     return;
                 }
                 int size = BitConverter.ToInt32(lenBytes, 0);
-                if (size < 0 | size > StackBufferSize)//如果出现解析的数据包大小有问题，则不处理
+                if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置StackBufferSize属性");
+                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 int value = MD5CRC ? 16 : 0;

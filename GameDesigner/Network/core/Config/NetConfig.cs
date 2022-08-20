@@ -7,11 +7,29 @@ using System.Threading.Tasks;
 
 namespace Net.Config
 {
-    public static class NetConfig
+    public class Config 
     {
-        public static ConfigData Config;
+        private static bool init;
+        private static bool useMemoryStream = true;
+        /// <summary>
+        /// 使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
+        /// 使用内存流缓存速度会比较快, 但运行内存占用比较大
+        /// </summary>
+        public static bool UseMemoryStream
+        {
+            get 
+            {
+                Init();
+                return useMemoryStream;
+            }
+            set 
+            {
+                useMemoryStream = value;
+                Save();
+            }
+        }
 
-        static NetConfig() 
+        public static string GetBasePath()
         {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 #if UNITY_STANDALONE || UNITY_WSA
@@ -25,27 +43,42 @@ namespace Net.Config
 #else
             var path = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-            var configPath = path + $"/network.config";
+            return path;
+        }
+
+        private static void Init()
+        {
+            if (init)
+                return;
+            init = true;
+            var configPath = GetBasePath() + "/network.config";
             if (File.Exists(configPath))
             {
-                var jsonStr = File.ReadAllText(configPath);
-                Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<ConfigData>(jsonStr);
+                var textRows = File.ReadAllLines(configPath);
+                foreach (var item in textRows)
+                {
+                    var texts = item.Split('=');
+                    var key = texts[0].Trim();
+                    var value = texts[1].Split('#')[0].Trim();
+                    switch (key)
+                    {
+                        case "useMemoryStream":
+                            useMemoryStream = bool.Parse(value);
+                            break;
+                    }
+                }
             }
-            else 
+            else
             {
-                Config = new ConfigData();
-                var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(Config);
-                File.WriteAllText(configPath, jsonStr);
+                Save();
             }
         }
-    }
 
-    public class ConfigData
-    {
-        /// <summary>
-        /// 使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
-        /// 使用内存流缓存速度会比较快, 但运行内存占用比较大
-        /// </summary>
-        public bool UseMemoryStream { get; set; }
+        private static void Save()
+        {
+            var text = $"useMemoryStream={useMemoryStream}#使用运行内存作为缓冲区? 否则使用文件流作为缓冲区";
+            var configPath = GetBasePath() + "/network.config";
+            File.WriteAllLines(configPath, new List<string>() { text });
+        }
     }
 }

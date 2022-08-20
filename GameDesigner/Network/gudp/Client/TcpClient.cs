@@ -212,12 +212,12 @@
                 StackStream = BufferStreamShare.Take();
 #endif
             heart = 0;
-            if (stack > StackNumberMax)//不能一直叠包
-            {
-                stack = 0;
-                NDebug.LogError($"请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
-                return;
-            }
+            //if (stack > StackNumberMax)//不能一直叠包
+            //{
+            //    stack = 0;
+            //    NDebug.LogError($"请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
+            //    return;
+            //}
             if (stack > 0)
             {
                 stack++;
@@ -260,10 +260,10 @@
                     return;
                 }
                 int size = BitConverter.ToInt32(lenBytes, 0);
-                if (size < 0 | size > StackBufferSize)//如果出现解析的数据包大小有问题，则不处理
+                if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     stack = 0;
-                    NDebug.LogError($"数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置StackBufferSize属性");
+                    NDebug.LogError($"数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 int value = MD5CRC ? 16 : 0;
@@ -319,13 +319,13 @@
         /// <param name="dataLen">每个客户端数据大小</param>
         public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, Action<TcpClientTest> onInit = null, Action<List<TcpClientTest>> fpsAct = null, IAdapter adapter = null)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             Task.Run(() =>
             {
-                List<TcpClientTest> clients = new List<TcpClientTest>();
+                var clients = new List<TcpClientTest>();
                 for (int i = 0; i < clientLen; i++)
                 {
-                    TcpClientTest client = new TcpClientTest();
+                    var client = new TcpClientTest();
                     onInit?.Invoke(client);
                     if(adapter != null)
                         client.AddAdapter(adapter);
@@ -337,7 +337,7 @@
                     }
                     clients.Add(client);
                 }
-                byte[] buffer = new byte[dataLen];
+                var buffer = new byte[dataLen];
                 Task.Run(() =>
                 {
                     while (!cts.IsCancellationRequested)
@@ -356,6 +356,8 @@
                 {
                     int index = i * 1000;
                     int end = index + 1000;
+                    if (index >= clientLen)
+                        break;
                     Task.Run(() =>
                     {
                         if (end > clientLen)
@@ -377,9 +379,10 @@
                                         client.ResolveBuffer(ref buffer1, false);
                                         BufferPool.Push(buffer1);
                                     }
-                                    client.Send(NetCmd.Local, buffer);
+                                    client.SendRT(NetCmd.Local, buffer);
                                     //client.SendRT("Register", RandomHelper.Range(10000,9999999).ToString(), "123");
                                     client.SendDirect();
+                                    client.NetworkEventUpdate();
                                 }
                                 catch (Exception ex)
                                 {

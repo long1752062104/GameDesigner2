@@ -109,7 +109,6 @@
                 for (int i = 0; i < clientLen; i++) 
                 {
                     var client = new UdpClientTest();
-                    //client.MTPS = 2048;
                     onInit?.Invoke(client);
                     if(adapter!=null)
                         client.AddAdapter(adapter);

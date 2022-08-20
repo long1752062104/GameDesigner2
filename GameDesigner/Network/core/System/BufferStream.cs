@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Threading;
 
 namespace Net.System
@@ -12,12 +13,15 @@ namespace Net.System
     /// </summary>
     public class BufferStream
     {
+        public Stream stream;
         public long position;
         public long Length;
         internal long offset;
         internal bool isDispose;
+        internal int referenceCount;
 
         public long Position => position;
+        private static readonly object SyncRoot = new object();
 
         public void Write(byte[] buffer, int index, int count)
         {
@@ -26,13 +30,23 @@ namespace Net.System
                 NDebug.LogError($"数据缓存超出总长:{position}/{Length}, 如果是大数据请设置BufferStreamShare.Size");
                 return;
             }
-            BufferStreamShare.Write(offset + position, buffer, index, count);
+            //BufferStreamShare.Write(offset + position, buffer, index, count);
+            lock (SyncRoot)
+            {
+                stream.Seek(offset + position, SeekOrigin.Begin);
+                stream.Write(buffer, index, count);
+            }
             position += count;
         }
 
         public void Read(byte[] buffer, int index, int count)
         {
-            BufferStreamShare.Read(offset + position, buffer, index, count);
+            //BufferStreamShare.Read(offset + position, buffer, index, count);
+            lock (SyncRoot)
+            {
+                stream.Seek(offset + position, SeekOrigin.Begin);
+                stream.Read(buffer, index, count);
+            }
             position += count;
         }
 
@@ -44,6 +58,11 @@ namespace Net.System
         public void Close()
         {
             BufferStreamShare.Push(this);
+        }
+
+        public void Destroy()
+        {
+            stream = null;
         }
 
         ~BufferStream() 
@@ -58,12 +77,13 @@ namespace Net.System
     public static class BufferStreamShare
     {
         private static readonly string filePath;
-        private static readonly Stream stream;
-        private static long Pos;
+        private static Stream stream;
+        private static long currPos;
         public static long Size = 1024 * 1024;
         private static readonly Stack<BufferStream> Stack = new Stack<BufferStream>();
-
-        public static bool UseMemoryStream { get; set; } = false;
+        public static bool UseMemoryStream { get => Net.Config.Config.UseMemoryStream; set => Net.Config.Config.UseMemoryStream = value; }
+        public static int BaseCapacity { get; set; } = 2048;
+        private readonly static object SyncRoot = new object();
 
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
         [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -74,39 +94,31 @@ namespace Net.System
 
         static BufferStreamShare()
         {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
-#if UNITY_STANDALONE || UNITY_WSA
-            var streamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
-            if (!Directory.Exists(streamingAssetsPath))
-                Directory.CreateDirectory(streamingAssetsPath);
-            var path = streamingAssetsPath;
-#else
-            var path = UnityEngine.Application.persistentDataPath;
-#endif
-#else
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-#endif
+            var path = Net.Config.Config.GetBasePath();
             var files = Directory.GetFiles(path, "*.stream");
             foreach (var file in files)
                 try { File.Delete(file); } catch{ }//尝试删除没用的之前的共享文件流
             filePath = path + $"/{Process.GetCurrentProcess().Id}.stream";
-            UseMemoryStream = Net.Config.NetConfig.Config.UseMemoryStream;
             if (UseMemoryStream)
-                stream = new MemoryStream((int)Size);
+                stream = new MemoryStream(BaseCapacity);
             else
                 stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-        }
-
-        [NonSerialized]
-        private static object _syncRoot;
-        public static object SyncRoot
-        {
-            get
+            ThreadManager.Invoke("BufferStreamSharePool", 10f, () =>
             {
-                if (_syncRoot == null)
-                    Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
-                return _syncRoot;
-            }
+                try
+                {
+                    foreach (var stack in Stack)
+                    {
+                        if (stack == null)
+                            continue;
+                        if (stack.referenceCount == 0)
+                            stack.Destroy();
+                        stack.referenceCount = 0;
+                    }
+                }
+                catch { }
+                return true;
+            }, true);
         }
 
         public static BufferStream Take()
@@ -114,25 +126,26 @@ namespace Net.System
             lock (SyncRoot)
             {
                 BufferStream stream;
-                if (Stack.Count == 0)
+            J: if (Stack.Count == 0)
                 {
                     stream = new BufferStream
                     {
-                        offset = Pos,
+                        offset = currPos,
                         Length = Size
                     };
-                    Pos += Size;
                     if (UseMemoryStream)
-                    {
-                        var stream1 = BufferStreamShare.stream as MemoryStream;
-                        if(Pos >= stream1.Capacity)
-                            stream1.Capacity = (int)Pos + ((int)Size * 10);
-                    }
+                        BufferStreamShare.stream = new MemoryStream(BaseCapacity);
+                    else
+                        currPos += Size;
+                    stream.stream = BufferStreamShare.stream;
                     return stream;
                 }
                 stream = Stack.Pop();
+                if (stream.stream == null)
+                    goto J;
                 stream.position = 0;
                 stream.isDispose = false;
+                stream.referenceCount++;
                 return stream;
             }
         }
