@@ -317,13 +317,14 @@ namespace Net.Client
         /// </summary>
         public QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
         /// <summary>
-        /// 允许叠包缓存最大值 默认可发送5242880(5M)的数据包
+        /// 接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
-        public int StackBufferSize { get; set; } = 5242880;
+        //public int StackBufferSize { get; set; } = 5242880;
+        public int PackageSize { get; set; } = 1024 * 1024 * 5;
         /// <summary>
         /// 允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
         /// </summary>
-        public int StackNumberMax { get; set; } = 50;
+        //public int StackNumberMax { get; set; } = 50;
         /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
         /// </summary>
