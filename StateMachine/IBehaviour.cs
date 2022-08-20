@@ -74,7 +74,7 @@
         {
             get {
                 if (_type == null)
-                    _type = SystemType.GetType(typeName);
+                    _type = Net.Serialize.NetConvertOld.GetType(typeName);
                 return _type;
             }
         }
@@ -278,7 +278,7 @@
         /// 状态管理器转换组建
         /// </summary>
         public Transform transform => stateManager.transform;
-        public Type Type { get { return SystemType.GetType(name); } }
+        public Type Type { get { return Net.Serialize.NetConvertOld.GetType(name); } }
         public void InitMetadatas(StateMachine stateMachine) 
         {
             var type = GetType();

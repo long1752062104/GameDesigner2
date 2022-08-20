@@ -35,7 +35,7 @@ namespace GameDesigner
 
         public StateBehaviour InitBehaviour()
         {
-            var type = SystemType.GetType(name);
+            var type = Net.Serialize.NetConvertOld.GetType(name);
             var runtimeBehaviour = (StateBehaviour)Activator.CreateInstance(type);
             runtimeBehaviour.stateMachine = stateMachine;
             runtimeBehaviour.Active = Active;
