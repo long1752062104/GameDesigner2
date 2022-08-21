@@ -30,7 +30,6 @@ namespace Net.System
                 NDebug.LogError($"数据缓存超出总长:{position}/{Length}, 如果是大数据请设置BufferStreamShare.Size");
                 return;
             }
-            //BufferStreamShare.Write(offset + position, buffer, index, count);
             lock (SyncRoot)
             {
                 stream.Seek(offset + position, SeekOrigin.Begin);
@@ -41,7 +40,6 @@ namespace Net.System
 
         public void Read(byte[] buffer, int index, int count)
         {
-            //BufferStreamShare.Read(offset + position, buffer, index, count);
             lock (SyncRoot)
             {
                 stream.Seek(offset + position, SeekOrigin.Begin);
@@ -77,10 +75,10 @@ namespace Net.System
     public static class BufferStreamShare
     {
         private static readonly string filePath;
-        private static Stream stream;
+        private static Stream STREAM;
         private static long currPos;
         public static long Size = 1024 * 1024;
-        private static readonly Stack<BufferStream> Stack = new Stack<BufferStream>();
+        private static readonly GStack<BufferStream> Stack = new GStack<BufferStream>();
         public static bool UseMemoryStream { get => Net.Config.Config.UseMemoryStream; set => Net.Config.Config.UseMemoryStream = value; }
         public static int BaseCapacity { get; set; } = 2048;
         private readonly static object SyncRoot = new object();
@@ -100,9 +98,9 @@ namespace Net.System
                 try { File.Delete(file); } catch{ }//尝试删除没用的之前的共享文件流
             filePath = path + $"/{Process.GetCurrentProcess().Id}.stream";
             if (UseMemoryStream)
-                stream = new MemoryStream(BaseCapacity);
+                STREAM = new MemoryStream(BaseCapacity);
             else
-                stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                STREAM = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             ThreadManager.Invoke("BufferStreamSharePool", 10f, () =>
             {
                 try
@@ -125,28 +123,28 @@ namespace Net.System
         {
             lock (SyncRoot)
             {
-                BufferStream stream;
+                BufferStream bStream;
             J: if (Stack.Count == 0)
                 {
-                    stream = new BufferStream
+                    bStream = new BufferStream
                     {
                         offset = currPos,
                         Length = Size
                     };
                     if (UseMemoryStream)
-                        BufferStreamShare.stream = new MemoryStream(BaseCapacity);
+                        STREAM = new MemoryStream(BaseCapacity);
                     else
                         currPos += Size;
-                    stream.stream = BufferStreamShare.stream;
-                    return stream;
+                    bStream.stream = BufferStreamShare.STREAM;
+                    return bStream;
                 }
-                stream = Stack.Pop();
-                if (stream.stream == null)
+                bStream = Stack.Pop();
+                if (bStream.stream == null)
                     goto J;
-                stream.position = 0;
-                stream.isDispose = false;
-                stream.referenceCount++;
-                return stream;
+                bStream.position = 0;
+                bStream.isDispose = false;
+                bStream.referenceCount++;
+                return bStream;
             }
         }
 
@@ -165,8 +163,8 @@ namespace Net.System
         {
             lock (SyncRoot)
             {
-                stream.Seek(seek, SeekOrigin.Begin);
-                stream.Write(buffer, index, count);
+                STREAM.Seek(seek, SeekOrigin.Begin);
+                STREAM.Write(buffer, index, count);
             }
         }
 
@@ -174,8 +172,8 @@ namespace Net.System
         {
             lock (SyncRoot)
             {
-                stream.Seek(seek, SeekOrigin.Begin);
-                return stream.Read(buffer, index, count);
+                STREAM.Seek(seek, SeekOrigin.Begin);
+                return STREAM.Read(buffer, index, count);
             }
         }
     }

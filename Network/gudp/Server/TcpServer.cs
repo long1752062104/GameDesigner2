@@ -49,10 +49,10 @@
             if (Instance == null)
                 Instance = this;
             AddRpcHandle(this, true, false);
-            Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);//---TCP协议
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);//IP端口设置
+            Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.NoDelay = true;
-            Server.Bind(ip);//绑定UDP IP端口
+            Server.Bind(ip);
             Server.Listen(LineUp);
             IsRunServer = true;
             Thread proAcc = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
@@ -98,7 +98,7 @@
             {
                 try
                 {
-                    Socket socket = Server.Accept();
+                    var socket = Server.Accept();
                     AcceptHander(socket, socket.RemoteEndPoint);
                 }
                 catch (Exception ex)
@@ -110,7 +110,7 @@
 
         private void ProcessReceive()
         {
-            Player[] allClients = new Player[0];
+            var allClients = new Player[0];
             while (IsRunServer)
             {
                 try
@@ -120,7 +120,9 @@
                         allClients = AllClients.Values.ToArray();
                     for (int i = 0; i < allClients.Length; i++)
                     {
-                        Player client = allClients[i];
+                        var client = allClients[i];
+                        if (client.CloseReceive)
+                            continue;
                         if (!client.Client.Connected)
                             continue;
                         if (client.Client.Poll(0, SelectMode.SelectRead))
@@ -263,25 +265,26 @@
 
         protected override void HeartHandle()
         {
-            foreach (var client in AllClients)
+            foreach (var item in AllClients)
             {
-                if (client.Value == null)
+                var client = item.Value;
+                if (client == null)
                     continue;
-                if (!client.Value.Client.Connected)
+                if (!client.Client.Connected)
                 {
-                    RemoveClient(client.Value);
+                    RemoveClient(client);
                     continue;
                 }
-                if (client.Value.heart > HeartLimit * 5)
+                if (client.heart > HeartLimit * 5)
                 {
-                    Debug.LogWarning($"{client.Value}:冗余连接!");
-                    RemoveClient(client.Value);
+                    client.redundant = true;
+                    RemoveClient(client);
                     continue;
                 }
-                client.Value.heart++;
-                if (client.Value.heart <= HeartLimit)//确认心跳包
+                client.heart++;
+                if (client.heart <= HeartLimit)//确认心跳包
                     continue;
-                SendRT(client.Value, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
+                SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
             }
         }
     }

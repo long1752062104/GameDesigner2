@@ -77,13 +77,19 @@
         public bool Login { get; internal set; }
         internal bool isDispose;
         /// <summary>
-        /// 关闭发送数据, 当关闭发送数据后, 数据将会停止发送, (允许接收客户端数据,但不能发送!)
+        /// 关闭发送数据, 当关闭发送数据后, 数据将会停止发送
         /// </summary>
         public bool CloseSend { get; set; }
+        /// <summary>
+        /// 关闭接收数据, 当关闭接收数据后, 数据将会停止接收
+        /// </summary>
+        public bool CloseReceive { get; set; }
         internal MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
         internal List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
+        internal bool redundant;
+
         public int QueueUpCount { get; internal set; }
         /// <summary>
         /// 是否属于排队状态
@@ -141,10 +147,11 @@
             stackIndex = 0;
             stackCount = 0;
             CloseSend = true;
+            CloseReceive = true;
             heart = 0;
             Rpcs.Clear();
-            tcpRPCModels = new QueueSafe<RPCModel>();//可能这个类并非真正释放, 而是在运行时数据库, 
-            udpRPCModels = new QueueSafe<RPCModel>();//为了下次登录不出错,所以下线要清除在线时的发送数据
+            tcpRPCModels = new QueueSafe<RPCModel>();
+            udpRPCModels = new QueueSafe<RPCModel>();
             Login = false;
             addressBuffer = null;
             if (SocketAsync != null)

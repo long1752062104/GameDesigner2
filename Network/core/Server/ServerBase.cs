@@ -507,7 +507,7 @@ namespace Net.Server
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
         /// </summary>
         /// <param name="client">要移除的客户端</param>
-        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client.Name}]断开连接...!"); }
+        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client.Name}]断开{(client.redundant ? "冗余" : "")}连接!"); }
 
         /// <summary>
         /// 当开始调用服务器RPC函数 或 开始调用自定义网络命令时 可设置请求客户端的client为全局字段，方便在服务器RPC函数内引用!!!
@@ -823,16 +823,20 @@ namespace Net.Server
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
+            client.heart = 0;//udp在关闭发送和接收后，客户端还是能给服务器发信息，导致服务器一直提示有客户端连接和断开连接，所以这里给他在服务器逗留，但不处理客户端任何数据，直到客户端自己不发送信息为止
+            if (client.CloseReceive)
+            {
+                BufferPool.Push(buffer);
+                return;
+            }
             client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
         }
 
         protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
         {
-            Player client = new Player();
+            var client = new Player();
             client.Client = clientSocket;
             client.RemotePoint = remotePoint;
-            client.isDispose = false;
-            client.CloseSend = false;
             if (!UserIDStack.TryPop(out int uid))
                 uid = GetCurrUserID();
             client.UserID = uid;
@@ -855,9 +859,10 @@ namespace Net.Server
             if (AllClients.Count >= OnlineLimit + LineUp)
             {
                 SendRT(client, NetCmd.ServerFull, new byte[0]);
-                Invoke(1f, () => {
-                    RemoveClient(client);
-                });
+                SendDirect(client);
+                client.CloseSend = true;
+                client.CloseReceive = true;
+                client.QueueUpCount = int.MaxValue;
             }
             else if (AllClients.Count > OnlineLimit)
             {
@@ -1218,10 +1223,7 @@ namespace Net.Server
                     client.Gcp.Input(model.Buffer);
                     int count1 = client.Gcp.Receive(out var buffer1);
                     if (count1 > 0)
-                    {
-                        var buffer = new Segment(buffer1, false);
-                        ReliableTransportComplete(client, buffer);
-                    }
+                        ReliableTransportComplete(client, buffer1);
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOpt(model.buffer, model.index, model.count);
@@ -1601,19 +1603,20 @@ namespace Net.Server
         /// </summary>
         protected virtual void HeartHandle()
         {
-            foreach (var client in AllClients)
+            foreach (var item in AllClients)
             {
-                if (client.Value == null)
+                var client = item.Value;
+                if (client == null)
                     continue;
-                client.Value.heart++;
-                if (client.Value.heart <= HeartLimit)//有5次确认心跳包
+                client.heart++;
+                if (client.heart <= HeartLimit)//有5次确认心跳包
                     continue;
-                if (client.Value.heart < HeartLimit * 2)
+                if (client.heart < HeartLimit * 2)
                 {
-                    Send(client.Value, NetCmd.SendHeartbeat, new byte[0]);
+                    Send(client, NetCmd.SendHeartbeat, new byte[0]);
                     continue;
                 }
-                RemoveClient(client.Value);
+                RemoveClient(client);
             }
         }
 
@@ -1837,25 +1840,16 @@ namespace Net.Server
             ExitScene(client, false);
             client.Dispose();
             UserIDStack.Push(client.UserID);
+            if (client.IsQueueUp)
+                return;
         J: if (QueueUp.TryDequeue(out var client1))
             {
                 if (client1.isDispose)
                     goto J;
+                if (client1.CloseReceive | client1.CloseSend)
+                    goto J;
                 client1.QueueUpCount = 0;
                 SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
-                int i = 1;
-                var segment = BufferPool.Take(8);
-                foreach (var client2 in QueueUp)
-                {
-                    if (client2.isDispose)
-                        continue;
-                    client2.QueueUpCount = i++;
-                    segment.SetPositionLength(0);
-                    segment.Write(QueueUp.Count);
-                    segment.Write(client2.QueueUpCount);
-                    SendRT(client2, NetCmd.QueueUp, segment.ToArray(false, true));
-                }
-                BufferPool.Push(segment);
             }
         }
 

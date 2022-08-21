@@ -31,7 +31,7 @@ namespace Net.System
             {
                 STACKS[i] = new GStack<Segment>();
             }
-            ThreadManager.Invoke("BufferPool", 3f, ()=>
+            ThreadManager.Invoke("BufferPool", 5f, ()=>
             {
                 try
                 {

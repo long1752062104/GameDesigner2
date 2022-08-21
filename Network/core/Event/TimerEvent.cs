@@ -16,8 +16,10 @@ namespace Net.Event
         {
             public string name;
             public ulong time;
-            public Action<object> ptr1;
-            public Func<object, bool> ptr2;
+            public Action ptr1;
+            public Action<object> ptr2;
+            public Func<bool> ptr3;
+            public Func<object, bool> ptr4;
             public object obj;
             public int invokeNum;
             internal ulong timeMax;
@@ -25,16 +27,18 @@ namespace Net.Event
             internal bool async;
             internal bool complete = true;
             internal bool isRemove;
-
             public override string ToString()
             {
                 return $"{name}";
             }
         }
-
         public FastListSafe<Event> events = new FastListSafe<Event>();
-        private int eventId = 1000;
+        private int eId = 1000;
         private ulong time;
+        private uint frame;
+        private uint startTick;
+        private uint nextTick;
+        private uint complement;
 
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
@@ -45,11 +49,11 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr1 = (o) => { ptr(); },
+                ptr1 = ptr,
                 eventId = enentID,
                 async = isAsync,
             });
@@ -66,11 +70,11 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr1 = ptr,
+                ptr2 = ptr,
                 obj = obj,
                 eventId = enentID,
                 async = isAsync,
@@ -89,11 +93,11 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr1 = ptr,
+                ptr2 = ptr,
                 obj = obj,
                 invokeNum = invokeNum,
                 timeMax = (ulong)(time * 1000),
@@ -125,12 +129,12 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, float time, Func<bool> ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 name = name,
                 time = (ulong)(this.time + (time * 1000)),
-                ptr2 = (o) => { return ptr(); },
+                ptr3 = ptr,
                 eventId = enentID,
                 timeMax = (ulong)(time * 1000),
                 async = isAsync,
@@ -148,12 +152,12 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, int time, Func<bool> ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 name = name,
                 time = this.time + (ulong)time,
-                ptr2 = (o) => { return ptr(); },
+                ptr3 = ptr,
                 eventId = enentID,
                 timeMax = (ulong)time,
                 async = isAsync,
@@ -171,11 +175,11 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eventId);
+            var enentID = Interlocked.Increment(ref eId);
             events.Add(new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr2 = ptr,
+                ptr4 = ptr,
                 obj = obj,
                 invokeNum = 1,
                 timeMax = (ulong)(time * 1000),
@@ -185,40 +189,44 @@ namespace Net.Event
             return enentID;
         }
 
-        private int frame;
-        private DateTime nextTime;
-        private readonly Stopwatch stopwatch;
-
         public TimerEvent() 
         {
             frame = 0;//一秒60次
-            nextTime = DateTime.Now.AddSeconds(1);
-            stopwatch = Stopwatch.StartNew();
+            startTick = (uint)Environment.TickCount;
+            nextTick = startTick + 1000u;
         }
 
         public void UpdateEventFixed(uint interval = 17, bool sleep = false)//60帧
         {
-            var frameRate = 1000 / interval;
-            var now = DateTime.Now;
-            if (now >= nextTime)
+            var frameRate = 1000 / interval; 
+            var tick = (uint)Environment.TickCount;
+            if (tick >= nextTick)
             {
+                if (complement > 0)
+                {
+                    nextTick = tick + complement;
+                    complement = 0;
+                    return;
+                }
                 if (frame < frameRate)
                 {
                     var step = (frameRate - frame) * interval;
                     UpdateEvent((uint)step);
                 }
-                nextTime = DateTime.Now.AddSeconds(1);
+                Console.WriteLine(frame);
                 frame = 0;
-                stopwatch.Restart();
+                startTick = tick;
+                nextTick = tick + 1000u;
+                if (startTick >= nextTick)
+                {
+                    complement = uint.MaxValue - tick;
+                    nextTick = uint.MaxValue;
+                }
             }
-            else if (frame < frameRate & stopwatch.ElapsedMilliseconds >= frame * interval)
+            else if (frame < frameRate & (tick - startTick) >= frame * interval)
             {
                 UpdateEvent(interval);
                 frame++;
-            }
-            else if ((nextTime - now).TotalSeconds > 60d)//当系统时间被改很长后问题
-            {
-                nextTime = DateTime.Now.AddSeconds(1);
             }
             else if(sleep)
             {
@@ -232,36 +240,67 @@ namespace Net.Event
             var count = events.Count;
             for (int i = 0; i < count; i++)
             {
-                var @event = events._items[i];
-                if (@event.isRemove)
+                var evt = events._items[i];
+                if (evt.isRemove)
                 {
                     events.RemoveAt(i);
                     count = events.Count;
                     if (i >= 0) i--;
                     continue;
                 }
-                if (time >= @event.time)
+                if (time >= evt.time)
                 {
-                    if (@event.ptr1 != null)
+                    if (evt.ptr1 != null)
                     {
-                        if (@event.async)
-                            WorkExecute1(@event);
-                        else
-                            @event.ptr1(@event.obj);
-                    }
-                    else if (@event.ptr2 != null)
-                    {
-                        if (@event.async)
+                        if (evt.async)
                         {
-                            WorkExecute2(@event);
+                            if (!evt.complete)
+                                continue;
+                            evt.complete = false;
+                            Task.Factory.StartNew(WorkExecute1, evt);
+                        }
+                        else evt.ptr1();
+                    }
+                    else if (evt.ptr2 != null)
+                    {
+                        if (evt.async)
+                        {
+                            if (!evt.complete)
+                                continue;
+                            evt.complete = false;
+                            Task.Factory.StartNew(WorkExecute2, evt);
+                        }
+                        else evt.ptr2(evt.obj);
+                    }
+                    else if (evt.ptr3 != null)
+                    {
+                        if (evt.async)
+                        {
+                            if (!evt.complete)
+                                continue;
+                            evt.complete = false;
+                            Task.Factory.StartNew(WorkExecute3, evt);
                             continue;
                         }
-                        if (@event.ptr2(@event.obj))
+                        if (evt.ptr3())
                             goto J;
                     }
-                    if (@event.invokeNum == -1)
+                    else if (evt.ptr4 != null)
+                    {
+                        if (evt.async)
+                        {
+                            if (!evt.complete)
+                                continue;
+                            evt.complete = false;
+                            Task.Factory.StartNew(WorkExecute4, evt);
+                            continue;
+                        }
+                        if (evt.ptr4(evt.obj))
+                            goto J;
+                    }
+                    if (evt.invokeNum == -1)
                         goto J;
-                    if (--@event.invokeNum <= 0)
+                    if (--evt.invokeNum <= 0)
                     {
                         events.RemoveAt(i);
                         count = events.Count;
@@ -269,38 +308,51 @@ namespace Net.Event
                         continue;//解决J:执行后索引超出异常
                     }
                 J: if (i >= 0 & i < count)
-                        @event.time = time + @event.timeMax;
+                        evt.time = time + evt.timeMax;
                 }
             }
         }
 
-        private async void WorkExecute1(Event @event)
+        private void WorkExecute1(object state)
         {
-            if (!@event.complete)
-                return;
-            @event.complete = false;
-            await Task.Yield();
-            @event.ptr1(@event.obj);
-            if (--@event.invokeNum <= 0)
-                @event.isRemove = true;
+            var evt = state as Event;
+            evt.ptr1();
+            if (--evt.invokeNum <= 0)
+                evt.isRemove = true;
             else
-                @event.time = time + @event.timeMax;
-            @event.complete = true;
+                evt.time = time + evt.timeMax;
+            evt.complete = true;
         }
 
-        private async void WorkExecute2(Event @event)
+        private void WorkExecute2(object state)
         {
-            if (!@event.complete)
-                return;
-            @event.complete = false;
-            await Task.Run(()=>
-            {
-                if (@event.ptr2(@event.obj))
-                    @event.time = time + @event.timeMax;
-                else
-                    @event.isRemove = true;
-                @event.complete = true;
-            });
+            var evt = state as Event;
+            evt.ptr2(evt.obj);
+            if (--evt.invokeNum <= 0)
+                evt.isRemove = true;
+            else
+                evt.time = time + evt.timeMax;
+            evt.complete = true;
+        }
+
+        private void WorkExecute3(object state)
+        {
+            var evt = state as Event;
+            if (evt.ptr3())
+                evt.time = time + evt.timeMax;
+            else
+                evt.isRemove = true;
+            evt.complete = true;
+        }
+
+        private void WorkExecute4(object state)
+        {
+            var evt = state as Event;
+            if (evt.ptr4(evt.obj))
+                evt.time = time + evt.timeMax;
+            else
+                evt.isRemove = true;
+            evt.complete = true;
         }
 
         /// <summary>
