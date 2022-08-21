@@ -310,7 +310,6 @@ namespace Net.System
             public bool MoveNext()
             {
                 bool retval;
-                //if (_version != _stack._version) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
                 if (_index == -2)
                 {
                     _index = _stack._size - 1;
@@ -336,8 +335,6 @@ namespace Net.System
             {
                 get
                 {
-                    if (_index == -2) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumNotStarted);
-                    if (_index == -1) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumEnded);
                     return currentElement;
                 }
             }
@@ -346,15 +343,12 @@ namespace Net.System
             {
                 get
                 {
-                    if (_index == -2) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumNotStarted);
-                    if (_index == -1) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumEnded);
                     return currentElement;
                 }
             }
 
             void IEnumerator.Reset()
             {
-                if (_version != _stack._version) ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
                 _index = -2;
                 currentElement = default(T);
             }

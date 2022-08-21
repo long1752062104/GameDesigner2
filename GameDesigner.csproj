@@ -66,7 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="GameDesigner\Blueprint.meta" />
     <None Include="GameDesigner\Component.meta" />
     <None Include="GameDesigner\Component\AOI.meta" />
     <None Include="GameDesigner\Component\AOI\AOIComponent.cs.meta" />

@@ -171,14 +171,15 @@
 
         protected override void HeartHandle()
         {
-            foreach (var client in AllClients)
+            foreach (var item in AllClients)
             {
-                if (client.Value == null)
+                var client = item.Value;
+                if (client == null)
                     continue;
-                client.Value.heart++;
-                if (client.Value.heart <= HeartLimit)//有5次确认心跳包
+                client.heart++;
+                if (client.heart <= HeartLimit)//有5次确认心跳包
                     continue;
-                Send(client.Value, NetCmd.SendHeartbeat, new byte[0]);
+                Send(client, NetCmd.SendHeartbeat, new byte[0]);
             }
         }
 

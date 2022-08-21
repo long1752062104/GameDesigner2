@@ -1770,10 +1770,7 @@ namespace Net.Client
                     Gcp.Input(model.Buffer);
                     int count1 = Gcp.Receive(out var buffer1);
                     if (count1 > 0)
-                    {
-                        var buffer = new Segment(buffer1, false);
-                        DataHandle(buffer);
-                    }
+                        DataHandle(buffer1);
                     break;
                 case NetCmd.Connect:
                     Connected = true;

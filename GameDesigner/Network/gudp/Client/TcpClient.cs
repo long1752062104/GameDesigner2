@@ -372,11 +372,14 @@
                                     var client = clients[ii];
                                     if (client.Client == null)
                                         continue;
+                                    if (!client.Client.Connected)
+                                        continue;
                                     if (client.Client.Poll(0, SelectMode.SelectRead))
                                     {
-                                        var buffer1 = BufferPool.Take(65536);
-                                        buffer1.Count = client.Client.Receive(buffer1);
-                                        client.ResolveBuffer(ref buffer1, false);
+                                        var buffer1 = BufferPool.Take(65535);
+                                        buffer1.Count = client.Client.Receive(buffer1, 0, ushort.MaxValue, SocketFlags.None, out var errorCode);
+                                        if(errorCode == SocketError.Success)
+                                            client.ResolveBuffer(ref buffer1, false);
                                         BufferPool.Push(buffer1);
                                     }
                                     client.SendRT(NetCmd.Local, buffer);

@@ -38,7 +38,7 @@ namespace Net.Plugins
 
     class DataPackage 
     {
-        internal byte[] revderBuffer;
+        internal Segment revderBuffer;
         internal int revderFrameEnd;
         internal byte[] revderHash;
         internal int revderHashCount;
@@ -53,7 +53,7 @@ namespace Net.Plugins
         private uint senderPackage;
         private uint revderPackage;
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
-        private readonly Queue<byte[]> revderQueue = new Queue<byte[]>();
+        private readonly Queue<Segment> revderQueue = new Queue<Segment>();
         public Action<byte[]> OnSender;
         public Action<RTProgress> OnSendProgress;
         public Action<RTProgress> OnRevdProgress;
@@ -102,17 +102,17 @@ namespace Net.Plugins
                 }
             }
         }
-        public int Receive(out byte[] buffer)
+        public int Receive(out Segment segment)
         {
             lock (SyncRoot)
             {
                 if (revderQueue.Count <= 0)
                 {
-                    buffer = null;
+                    segment = null;
                     return 0;
                 }
-                buffer = revderQueue.Dequeue();
-                return buffer.Length;
+                segment = revderQueue.Dequeue();
+                return segment.Count;
             }
         }
         public void Send(byte[] buffer)
@@ -166,7 +166,8 @@ namespace Net.Plugins
                         revderDict.Add(package, dp = new DataPackage());
                     if (dp.revderBuffer == null)
                     {
-                        dp.revderBuffer = new byte[dataLen];
+                        dp.revderBuffer = BufferPool.Take(dataLen);
+                        dp.revderBuffer.Count = dataLen;
                         dp.revderFrameEnd = (int)Math.Ceiling(dataLen / (float)MTU);
                         dp.revderHash = new byte[dp.revderFrameEnd];
                     }
