@@ -112,7 +112,7 @@ namespace Net.UnityComponent
                 identity.Identity = opt.identity;
                 identity.isOtherCreate = true;
                 identity.isInit = true;
-                identitys.Add(opt.identity, identity);
+                identitys.TryAdd(opt.identity, identity);
                 OnNetworkObjectCreate(opt, identity);
                 var networkBehaviours = identity.GetComponentsInChildren<NetworkBehaviour>();
                 foreach (var item in networkBehaviours)
@@ -139,10 +139,12 @@ namespace Net.UnityComponent
         /// 当其他网络物体被删除(入口1)
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnNetworkObjectDestroy(Operation opt) 
+        public virtual async void OnNetworkObjectDestroy(Operation opt) 
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
+                identity.gameObject.SetActive(false);
+                await Task.Delay(1000);
                 identitys.Remove(opt.identity);
                 OnOtherDestroy(identity);
             }
