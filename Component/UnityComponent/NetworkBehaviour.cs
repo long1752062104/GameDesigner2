@@ -8,7 +8,6 @@ namespace Net.UnityComponent
     /// <summary>
     /// 网络行为基础组件
     /// </summary>
-    [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         internal NetworkObject netObj;
@@ -37,12 +36,21 @@ namespace Net.UnityComponent
         {
             Init();
         }
+        private void OnValidate()
+        {
+            netObj = GetComponent<NetworkObject>();//在预制体上用GetComponentInParent获取不到自身组件，所以需要这样
+            if (netObj != null)
+                return;
+            netObj = GetComponentInParent<NetworkObject>();
+            if (netObj == null)
+                netObj = gameObject.AddComponent<NetworkObject>();
+        }
         public void Init()
         {
             if (isInit)
                 return;
             isInit = true;
-            netObj = GetComponent<NetworkObject>();
+            netObj = GetComponentInParent<NetworkObject>();
             if (Index == -1)
             {
                 Index = netObj.networkBehaviours.Count;

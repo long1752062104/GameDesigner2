@@ -11,12 +11,13 @@ namespace Net.Example
         public int spawnAmount = 1000;
         public float interleave = 1;
 
-        void Start()
+        async void Start()
         {
-            if (ClientBase.Instance.Connected)
-                OnConnected();
-            else
-                ClientBase.Instance.OnConnectedHandle += OnConnected;
+            while (!ClientBase.Instance.Connected)
+            {
+                await Task.Yield();
+            }
+            OnConnected();
         }
 
         private async void OnConnected()
@@ -41,11 +42,6 @@ namespace Net.Example
                     }
                 }
             }
-        }
-
-        private void OnDestroy()
-        {
-            ClientBase.Instance.OnConnectedHandle -= OnConnected;
         }
     }
 }

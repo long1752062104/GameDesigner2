@@ -27,6 +27,7 @@ namespace Example2
             if (p != null) 
             {
                 Destroy(p.headBloodBar.gameObject);
+                Destroy(p.gameObject);
                 GameManager.I.players.Remove(p);
             }
         }

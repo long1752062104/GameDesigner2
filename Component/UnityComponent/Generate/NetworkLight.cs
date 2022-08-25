@@ -457,6 +457,8 @@ namespace BuildComponent
             }
             set
             {
+                if (value == null)
+                    return;
                 if (value.Equals(fields[19]))
                     return;
                 fields[19] = value;
@@ -633,6 +635,8 @@ namespace BuildComponent
             }
             set
             {
+                if (value == null)
+                    return;
                 if (value.Equals(fields[29]))
                     return;
                 fields[29] = value;

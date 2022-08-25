@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: 126
+  m_identity: 0
   identity: 126
   registerObjectIndex: 0
 --- !u!108 &76004473
@@ -973,6 +973,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: 125
+  m_identity: 0
   identity: 125
   registerObjectIndex: 0
