@@ -54,18 +54,18 @@ namespace Net.UnityComponent
             }
             if (isOtherCreate)
             {
-                sm.identitys.Add(m_identity, this);
+                sm.identitys.TryAdd(m_identity, this);
                 return;
             }
             if (m_identity > 0)
             {
-                sm.identitys.Add(m_identity, this);
+                sm.identitys.TryAdd(m_identity, this);
                 return;
             }
             if (identity > 0)
             {
                 m_identity = identity;
-                sm.identitys.Add(m_identity, this);
+                sm.identitys.TryAdd(m_identity, this);
                 return;
             }
             if (IDENTITY == -1)
@@ -77,7 +77,7 @@ namespace Net.UnityComponent
             if (IDENTITY_POOL.Count > 0)
             {
                 m_identity = IDENTITY_POOL.Dequeue();
-                sm.identitys.Add(m_identity, this);
+                sm.identitys.TryAdd(m_identity, this);
                 return;
             }
             if (IDENTITY >= IDENTITY_MAX)
@@ -87,7 +87,7 @@ namespace Net.UnityComponent
                 return;
             }
             m_identity = IDENTITY++;
-            sm.identitys.Add(m_identity, this);
+            sm.identitys.TryAdd(m_identity, this);
         }
         public void InitAll()
         {
