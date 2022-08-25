@@ -682,7 +682,7 @@
                         }
                     }
                 }
-                map.Add(type, members2 = members1.ToArray());
+                map.TryAdd(type, members2 = members1.ToArray());
             }
             return members2;
         }

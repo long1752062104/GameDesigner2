@@ -59,6 +59,8 @@ namespace Net.UnityComponent
                 {
                     if (!identity.enabled)
                         continue;
+                    if (identity.isDispose)
+                        continue;
                     identity.CheckSyncVar();
                     identity.PropertyAutoCheckHandler();
                 }
@@ -143,6 +145,7 @@ namespace Net.UnityComponent
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
+                identity.isDispose = true;
                 identity.gameObject.SetActive(false);
                 await Task.Delay(1000);
                 identitys.Remove(opt.identity);
@@ -150,10 +153,13 @@ namespace Net.UnityComponent
             }
         }
 
-        public virtual void OnPlayerExit(Operation opt)
+        public virtual async void OnPlayerExit(Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
             {
+                identity.isDispose = true;
+                identity.gameObject.SetActive(false);
+                await Task.Delay(1000);
                 identitys.Remove(opt.identity);
                 OnOtherExit(identity);
                 OnOtherDestroy(identity);
@@ -162,6 +168,15 @@ namespace Net.UnityComponent
             {
                 var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
                 var count = uid + NetworkObject.Capacity;
+                foreach (var item in identitys)
+                {
+                    if (item.Key >= uid & item.Key < count)
+                    {
+                        item.Value.isDispose = true;
+                        item.Value.gameObject.SetActive(false);
+                    }
+                }
+                await Task.Delay(1000);
                 foreach (var item in identitys)
                 {
                     if (item.Key >= uid & item.Key < count)

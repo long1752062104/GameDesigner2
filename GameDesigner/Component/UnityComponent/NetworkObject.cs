@@ -28,6 +28,8 @@ namespace Net.UnityComponent
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
         internal List<SyncVarInfo> syncVarInfos = new List<SyncVarInfo>();
         internal bool isInit;
+        internal bool isDispose;
+
         /// <summary>
         /// 每个网络对象的唯一标识
         /// </summary>
@@ -144,6 +146,7 @@ namespace Net.UnityComponent
 
         public virtual void OnDestroy()
         {
+            isDispose = true;
             if (m_identity == -1)
                 return;
             var nsm = NetworkSceneManager.I;
