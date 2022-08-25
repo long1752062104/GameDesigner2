@@ -11,10 +11,12 @@ namespace Net.UnityComponent
     /// <summary>
     /// 网络物体标识组件
     /// </summary>
+    [DisallowMultipleComponent]
     public class NetworkObject : MonoBehaviour
     {
         private static bool IsInit;
-        internal static int IDENTITY;
+        internal static int IDENTITY { get; private set; } = -1;
+        internal static int IDENTITY_MAX { get; private set; }
         internal static Queue<int> IDENTITY_POOL = new Queue<int>();
         public static int Capacity { get; private set; }
         [SerializeField] [DisplayOnly] private int m_identity = -1;
@@ -60,20 +62,41 @@ namespace Net.UnityComponent
                 sm.identitys.Add(m_identity, this);
                 return;
             }
-            if (Identity > 0)
+            if (identity > 0)
             {
-                m_identity = Identity;
+                m_identity = identity;
                 sm.identitys.Add(m_identity, this);
                 return;
             }
-            if (IDENTITY_POOL.Count <= 0)
+            if (IDENTITY == -1)
             {
-                Debug.Log("已经没有唯一标识可用!");
+                Debug.LogError("网络标识未初始化，请调用NetworkObject.Init(5000);初始化");
                 Destroy(gameObject);
                 return;
             }
-            m_identity = IDENTITY_POOL.Dequeue();
+            if (IDENTITY_POOL.Count > 0)
+            {
+                m_identity = IDENTITY_POOL.Dequeue();
+                sm.identitys.Add(m_identity, this);
+                return;
+            }
+            if (IDENTITY >= IDENTITY_MAX)
+            {
+                Debug.LogError("网络标识已用完! 如果有需要请加大网络标识数量NetworkObject.Init(10000);");
+                Destroy(gameObject);
+                return;
+            }
+            m_identity = IDENTITY++;
             sm.identitys.Add(m_identity, this);
+        }
+        public void InitAll()
+        {
+            Init();
+            var nbs = GetComponentsInChildren<NetworkBehaviour>();
+            foreach (var np in nbs)
+            {
+                np.Init();
+            }
         }
         internal void InitSyncVar(object target)
         {
@@ -147,8 +170,9 @@ namespace Net.UnityComponent
             //服务器的记录uid从10000开始,所以这里uid+1-10000=1(网络物体记录从1开始, 而0则可以用作核心网络物体,比如玩家的网络物体), 这里 * 5000是每个客户端都可以实例化5000个networkObject网络物体组件
             //并且保证唯一id都是正确的,如果一个客户端实例化超过5000个, 就会和uid=10001的玩家networkObject网络物体组件唯一id碰撞, 会出现鬼畜问题
             IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
-            for (int i = IDENTITY; i < IDENTITY + capacity; i++)
-                IDENTITY_POOL.Enqueue(i);
+            IDENTITY_MAX = IDENTITY + capacity;
+            //for (int i = IDENTITY; i < IDENTITY + capacity; i++)
+            //    IDENTITY_POOL.Enqueue(i);
         }
 
         /// <summary>

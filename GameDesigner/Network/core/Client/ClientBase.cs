@@ -209,7 +209,7 @@ namespace Net.Client
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>
-        public Action<object, bool, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
+        public Action<object, bool, bool, Action<SyncVarInfo>, Action> OnAddRpcHandle { get; set; }
         /// <summary>
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
@@ -458,28 +458,29 @@ namespace Net.Client
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
         /// <param name="async">是否异步收集rpc方法和同步字段和属性?</param>
-        public void AddRpcHandle(object target, bool append, bool async = true, Action<SyncVarInfo> onSyncVarCollect = null)
+        public void AddRpcHandle(object target, bool append, bool async = true, Action<SyncVarInfo> onSyncVarCollect = null, Action onInitComplete = null)
         {
             if (OnAddRpcHandle == null)
                 OnAddRpcHandle = AddRpcInternal;
-            OnAddRpcHandle(target, append, async, onSyncVarCollect);
+            OnAddRpcHandle(target, append, async, onSyncVarCollect, onInitComplete);
         }
 
-        private void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect)
+        private void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete)
         {
             if (async)
             {
-                Task.Run(() => {
-                    AddRpcInternal(target, append, onSyncVarCollect);
+                Task.Run(() =>
+                {
+                    AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
                 });
             }
             else
             {
-                AddRpcInternal(target, append, onSyncVarCollect);
+                AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
             }
         }
 
-        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
+        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete)
         {
             if (!append)
             {
@@ -525,6 +526,7 @@ namespace Net.Client
                     });
                 }
             }
+            onInitComplete?.Invoke();
         }
 
         private bool CheckIsClass(Type type, ref int layer, bool root = true)

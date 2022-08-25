@@ -144,6 +144,17 @@ public static class ArrayExtend
         }
         self.Clear();
     }
+    public static void ClearChildObjects(this GameObject self)
+    {
+        ClearChildObjects(self.transform);
+    }
+    public static void ClearChildObjects(this Transform self)
+    {
+        for (int i = 0; i < self.childCount; i++)
+        {
+            Object.Destroy(self.GetChild(i).gameObject);
+        }
+    }
 #endif
 
     public static void For<T>(this HashSet<T> self, Action<T> action)

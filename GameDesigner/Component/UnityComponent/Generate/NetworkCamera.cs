@@ -56,7 +56,7 @@ namespace BuildComponent
             fields[29] = self.focalLength;
             fields[30] = self.gateFit;
             fields[31] = self.rect;
-            fields[32] = self.pixelRect;
+            //fields[32] = self.pixelRect;
             fields[33] = self.targetTexture;
             fields[34] = self.targetDisplay;
             fields[35] = self.useJitteredProjectionMatrixForTransparentRendering;
@@ -747,28 +747,28 @@ namespace BuildComponent
                 });
             }
         }
-        public UnityEngine.Rect pixelRect
-        {
-            get
-            {
-                return self.pixelRect;
-            }
-            set
-            {
-                if (value.Equals(fields[32]))
-                    return;
-                fields[32] = value;
-                self.pixelRect = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = Index,
-                    index2 = 32,
-                    buffer = SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
+        //public UnityEngine.Rect pixelRect
+        //{
+        //    get
+        //    {
+        //        return self.pixelRect;
+        //    }
+        //    set
+        //    {
+        //        if (value.Equals(fields[32]))
+        //            return;
+        //        fields[32] = value;
+        //        self.pixelRect = value;
+        //        ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+        //        {
+        //            index = netObj.registerObjectIndex,
+        //            index1 = Index,
+        //            index2 = 32,
+        //            buffer = SerializeObject(value).ToArray(true),
+        //            uid = ClientBase.Instance.UID
+        //        });
+        //    }
+        //}
         public UnityEngine.RenderTexture targetTexture
         {
             get
@@ -777,6 +777,8 @@ namespace BuildComponent
             }
             set
             {
+                if (value == null)
+                    return;
                 if (value.Equals(fields[33]))
                     return;
                 fields[33] = value;
@@ -937,7 +939,7 @@ namespace BuildComponent
             focalLength = focalLength;
             gateFit = gateFit;
             rect = rect;
-            pixelRect = pixelRect;
+            //pixelRect = pixelRect;
             targetTexture = targetTexture;
             targetDisplay = targetDisplay;
             useJitteredProjectionMatrixForTransparentRendering = useJitteredProjectionMatrixForTransparentRendering;
@@ -1322,15 +1324,15 @@ namespace BuildComponent
 						self.rect = rect;
 					}
                     break;
-                case 32:
-                    {
-						if (opt.uid == ClientBase.Instance.UID)
-							return;
-						var pixelRect = DeserializeObject<UnityEngine.Rect>(new Segment(opt.buffer, false));
-						fields[32] = pixelRect;
-						self.pixelRect = pixelRect;
-					}
-                    break;
+     //           case 32:
+     //               {
+					//	if (opt.uid == ClientBase.Instance.UID)
+					//		return;
+					//	var pixelRect = DeserializeObject<UnityEngine.Rect>(new Segment(opt.buffer, false));
+					//	fields[32] = pixelRect;
+					//	self.pixelRect = pixelRect;
+					//}
+     //               break;
                 case 33:
                     {
 						if (opt.uid == ClientBase.Instance.UID)

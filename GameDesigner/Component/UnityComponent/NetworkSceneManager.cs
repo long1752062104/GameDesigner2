@@ -76,46 +76,10 @@ namespace Net.UnityComponent
             switch (opt.cmd) 
             {
                 case Command.Transform:
-                    {
-                        if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
-                        {
-                            identity = Instantiate(registerObjects[opt.index]);
-                            identity.Identity = opt.identity;
-                            identity.isOtherCreate = true;
-                            identity.isInit = true;
-                            identitys.Add(opt.identity, identity);
-                            OnNetworkObjectCreate(opt, identity);
-                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
-                            foreach (var item in networkBehaviours)
-                            {
-                                item.Init();
-                                item.OnNetworkObjectCreate(opt);
-                            }
-                        }
-                        var nb = identity.networkBehaviours[opt.index1];
-                        nb.OnNetworkOperationHandler(opt);
-                    }
+                    OnBuildOrTransformSync(opt);
                     break;
                 case Command.BuildComponent:
-                    {
-                        if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
-                        {
-                            identity = Instantiate(registerObjects[opt.index]);
-                            identity.Identity = opt.identity;
-                            identity.isOtherCreate = true;
-                            identity.isInit = true;
-                            identitys.Add(opt.identity, identity);
-                            OnNetworkObjectCreate(opt, identity);
-                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
-                            foreach (var item in networkBehaviours)
-                            {
-                                item.Init();
-                                item.OnNetworkObjectCreate(opt);
-                            }
-                        }
-                        var nb = identity.networkBehaviours[opt.index1];
-                        nb.OnNetworkOperationHandler(opt);
-                    }
+                    OnBuildOrTransformSync(opt);
                     break;
                 case Command.Destroy:
                     OnNetworkObjectDestroy(opt);
@@ -125,21 +89,7 @@ namespace Net.UnityComponent
                     break;
                 case NetCmd.SyncVar:
                     {
-                        if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
-                        {
-                            identity = Instantiate(registerObjects[opt.index]);
-                            identity.Identity = opt.identity;
-                            identity.isOtherCreate = true;
-                            identity.isInit = true;
-                            identitys.Add(opt.identity, identity);
-                            OnNetworkObjectCreate(opt, identity);
-                            var networkBehaviours = identity.GetComponents<NetworkBehaviour>();
-                            foreach (var item in networkBehaviours)
-                            {
-                                item.Init();
-                                item.OnNetworkObjectCreate(opt);
-                            }
-                        }
+                        var identity = OnCheckIdentity(opt);
                         identity.SyncVarHandler(opt);
                     }
                     break;
@@ -147,6 +97,42 @@ namespace Net.UnityComponent
                     OnOtherOperator(opt);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 当检查网络标识物体，如果不存在就会实例化
+        /// </summary>
+        /// <param name="opt"></param>
+        /// <returns></returns>
+        public virtual NetworkObject OnCheckIdentity(Operation opt) 
+        {
+            if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
+            {
+                identity = Instantiate(registerObjects[opt.index]);
+                identity.Identity = opt.identity;
+                identity.isOtherCreate = true;
+                identity.isInit = true;
+                identitys.Add(opt.identity, identity);
+                OnNetworkObjectCreate(opt, identity);
+                var networkBehaviours = identity.GetComponentsInChildren<NetworkBehaviour>();
+                foreach (var item in networkBehaviours)
+                {
+                    item.Init();
+                    item.OnNetworkObjectCreate(opt);
+                }
+            }
+            return identity;
+        }
+
+        /// <summary>
+        /// 当BuildComponent指令或Transform指令同步时调用
+        /// </summary>
+        /// <param name="opt"></param>
+        public virtual void OnBuildOrTransformSync(Operation opt) 
+        {
+            var identity = OnCheckIdentity(opt);
+            var nb = identity.networkBehaviours[opt.index1];
+            nb.OnNetworkOperationHandler(opt);
         }
 
         /// <summary>
@@ -164,7 +150,13 @@ namespace Net.UnityComponent
 
         public virtual void OnPlayerExit(Operation opt)
         {
-            if (onExitDelectAll)
+            if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
+            {
+                identitys.Remove(opt.identity);
+                OnOtherExit(identity);
+                OnOtherDestroy(identity);
+            }
+            if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
                 var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
                 var count = uid + NetworkObject.Capacity;
@@ -176,15 +168,6 @@ namespace Net.UnityComponent
                         OnOtherExit(item.Value);
                         OnOtherDestroy(item.Value);
                     }
-                }
-            }
-            else
-            {
-                if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
-                {
-                    identitys.Remove(opt.identity);
-                    OnOtherExit(identity);
-                    OnOtherDestroy(identity);
                 }
             }
         }
