@@ -213,7 +213,6 @@ namespace Net.Event
                     var step = (frameRate - frame) * interval;
                     UpdateEvent((uint)step);
                 }
-                Console.WriteLine(frame);
                 frame = 0;
                 startTick = tick;
                 nextTick = tick + 1000u;
