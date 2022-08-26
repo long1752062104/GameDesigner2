@@ -90,10 +90,7 @@ namespace Net.UnityComponent
                     OnPlayerExit(opt);
                     break;
                 case NetCmd.SyncVar:
-                    {
-                        var identity = OnCheckIdentity(opt);
-                        identity.SyncVarHandler(opt);
-                    }
+                    OnCheckIdentity(opt).SyncVarHandler(opt);
                     break;
                 default:
                     OnOtherOperator(opt);
@@ -141,52 +138,38 @@ namespace Net.UnityComponent
         /// 当其他网络物体被删除(入口1)
         /// </summary>
         /// <param name="opt"></param>
-        public virtual async void OnNetworkObjectDestroy(Operation opt) 
+        public virtual void OnNetworkObjectDestroy(Operation opt) 
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
-                identity.isDispose = true;
-                identity.gameObject.SetActive(false);
-                await Task.Delay(1000);
-                identitys.Remove(opt.identity);
-                OnOtherDestroy(identity);
+                OnPlayerDestroy(opt.identity, identity, false);
             }
         }
 
-        public virtual async void OnPlayerExit(Operation opt)
+        public virtual void OnPlayerExit(Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
-            {
-                identity.isDispose = true;
-                identity.gameObject.SetActive(false);
-                await Task.Delay(1000);
-                identitys.Remove(opt.identity);
-                OnOtherExit(identity);
-                OnOtherDestroy(identity);
-            }
+                OnPlayerDestroy(opt.identity, identity, true);
             if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
                 var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
                 var count = uid + NetworkObject.Capacity;
                 foreach (var item in identitys)
-                {
                     if (item.Key >= uid & item.Key < count)
-                    {
-                        item.Value.isDispose = true;
-                        item.Value.gameObject.SetActive(false);
-                    }
-                }
-                await Task.Delay(1000);
-                foreach (var item in identitys)
-                {
-                    if (item.Key >= uid & item.Key < count)
-                    {
-                        identitys.Remove(item.Key);
-                        OnOtherExit(item.Value);
-                        OnOtherDestroy(item.Value);
-                    }
-                }
+                        OnPlayerDestroy(item.Key, item.Value, false);
             }
+        }
+
+        private async void OnPlayerDestroy(int identityKey, NetworkObject identity, bool isPlayer)
+        {
+            if (identity.isDispose)
+                return;
+            identity.isDispose = true;
+            await Task.Delay(1000);
+            if(isPlayer)
+                OnOtherExit(identity);
+            OnOtherDestroy(identity);
+            identitys.Remove(identityKey);
         }
 
         /// <summary>
