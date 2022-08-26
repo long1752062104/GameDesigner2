@@ -4,2173 +4,6 @@
         <name>GameDesigner</name>
     </assembly>
     <members>
-        <member name="T:GameDesigner.Blueprint">
-            <summary>
-            蓝图基类,想要自定义蓝图可继承此类
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Blueprint.CreateBlueprintInstance(System.String)">
-            创建状态机实例
-        </member>
-        <member name="T:GameDesigner.BlueprintEditorManager">
-            <summary>
-            蓝图编辑器运行类，使用此类可快速设置编辑器的功能
-            </summary>
-        </member>
-        <member name="T:GameDesigner.IBlueprint">
-            <summary>
-            行为基类
-            </summary>
-        </member>
-        <member name="M:GameDesigner.IBlueprint.CheckUpdate">
-            <summary>
-            编辑器检查更新蓝图编辑器
-            </summary>
-        </member>
-        <member name="T:GameDesigner.BlueprintManager">
-            <summary>
-            蓝图管理器,默认蓝图添加此组件
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Constructor">
-            <summary>
-            构造器
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Constructor.GetConstructors(System.String)">
-            <summary>
-            获得所有方法信息 ( typeName 要获得的类名 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Constructor.GetConstructors(System.Type)">
-            <summary>
-            获得所有方法信息 ( typeName 要获得的类名 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Constructor.CreateInstance(GameDesigner.Constructor)">
-            <summary>
-            创建对象实例 ( typeName 类的完全限定名 , 构造存储器 ) )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Constructor.CreateInstance(System.String,GameDesigner.Constructor)">
-            <summary>
-            创建对象实例 ( typeName 类的完全限定名 , 构造存储器 ) )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Constructor.Invoke(GameDesigner.Constructor)">
-            <summary>
-            调用唯一一个方法 , 使最优化，使尽可能有效 ( target 实体对象  , method 方法管理器与参数管理器 , varInfo[] 只有使用变量值时调用 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.IF(System.Object,Contition,System.Object)">
-            <summary>
-            如果控制语句函数---v2017.12.17
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.IF(System.Boolean,GameDesigner.Node)">
-            <summary>
-            如果控制语句函数---v2017.12.17
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.IF(System.Boolean,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            如果控制语句函数---v2017.12.17
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.IF(System.Object,Contition,System.Object,GameDesigner.Node)">
-            <summary>
-            如果控制语句函数---v2017.12.17
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.IF(System.Object,Contition,System.Object,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            如果控制语句函数---v2017.12.17
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.Branch.Condition(System.Object,Contition,System.Object)">
-            <summary>
-            判断参数值---v2017.7.15
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.ForLoop.For(System.Array,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            循环语句,array数组,元素索引:把元素对象发送给elementValue对象,runtime用来判断当前元素的逻辑
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.ForLoop.For1(System.Array,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            循环语句,array数组,元素索引:把索引发送给elementIndex对象,这个对象必须为int类型,runtime用来判断当前元素的逻辑
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.ForLoop.For(System.Array,GameDesigner.Node,GameDesigner.Node,Contition,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            循环语句,array数组,元素对象:把元素对象发送给elementValue对象,
-            元素索引:把索引发送给elementIndex对象
-            判断a和b的条件,当条件成立设置元素值为elementValue
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.ForLoop.For(System.Array,GameDesigner.Node,GameDesigner.Node,System.Object,Contition,System.Object,GameDesigner.Node)">
-            <summary>
-            循环语句,array数组,元素对象:把元素对象发送给elementValue对象,
-            元素索引:把索引发送给elementIndex对象,这个对象必须为int类型,
-            判断a和b的条件,当条件成立进入True参数
-            </summary>
-        </member>
-        <member name="M:GameDesigner.FlowControls.ForLoop.For(System.Array,GameDesigner.Node,GameDesigner.Node,System.Object,Contition,System.Object,GameDesigner.Node,GameDesigner.Node)">
-            <summary>
-            循环语句,array数组,元素对象:把元素对象发送给elementValue对象,
-            元素索引:把索引发送给elementIndex对象,这个对象必须为int类型,
-            判断a和b的条件,当条件成立进入True参数,假则加入False
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.Adds(System.Byte,System.Byte)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.Subtracts(System.Byte,System.Byte)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.Multiplies(System.Byte,System.Byte)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.Divides(System.Byte,System.Byte)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.BaiFeiBi100(System.Byte,System.Byte)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.QiuYu(System.Byte,System.Byte)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Byte.BinQie(System.Byte,System.Byte)" -->
-        <member name="M:GameDesigner.MathOperations.Byte.Equals(System.Byte,System.Byte)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.NotEquals(System.Byte,System.Byte)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.MaxEquals(System.Byte,System.Byte)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Byte.MinEquals(System.Byte,System.Byte)" -->
-        <member name="M:GameDesigner.MathOperations.Byte.Max(System.Byte,System.Byte)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Byte.Min(System.Byte,System.Byte)" -->
-        <member name="M:GameDesigner.MathOperations.Byte.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.AddEquals(System.Byte)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.SubtractEquals(System.Byte)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.MultiplieEquals(System.Byte)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.DivideEquals(System.Byte)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.BaiFeiBi100Equals(System.Byte)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Byte.QiuYuEquals(System.Byte)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.Adds(System.Double,System.Double)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.Subtracts(System.Double,System.Double)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.Multiplies(System.Double,System.Double)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.Divides(System.Double,System.Double)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.BaiFeiBi100(System.Double,System.Double)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.Equals(System.Double,System.Double)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.NotEquals(System.Double,System.Double)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.MaxEquals(System.Double,System.Double)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Double.MinEquals(System.Double,System.Double)" -->
-        <member name="M:GameDesigner.MathOperations.Double.Max(System.Double,System.Double)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Double.Min(System.Double,System.Double)" -->
-        <member name="M:GameDesigner.MathOperations.Double.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.AddEquals(System.Double)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.SubtractEquals(System.Double)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.MultiplieEquals(System.Double)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.DivideEquals(System.Double)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Double.BaiFeiBi100Equals(System.Double)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.Adds(System.Single,System.Single)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.Subtracts(System.Single,System.Single)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.Multiplies(System.Single,System.Single)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.Divides(System.Single,System.Single)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.BaiFeiBi100(System.Single,System.Single)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.Equals(System.Single,System.Single)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.NotEquals(System.Single,System.Single)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.MaxEquals(System.Single,System.Single)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Float.MinEquals(System.Single,System.Single)" -->
-        <member name="M:GameDesigner.MathOperations.Float.Max(System.Single,System.Single)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Float.Min(System.Single,System.Single)" -->
-        <member name="M:GameDesigner.MathOperations.Float.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.AddEquals(System.Single)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.AddEquals(System.Single,System.Boolean)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.AddEquals(System.Single,System.Single,System.Boolean)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.SubtractEquals(System.Single)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.MultiplieEquals(System.Single)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.DivideEquals(System.Single)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Float.BaiFeiBi100Equals(System.Single)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.Adds(System.Int16,System.Int16)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.Subtracts(System.Int16,System.Int16)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.Multiplies(System.Int16,System.Int16)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.Divides(System.Int16,System.Int16)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.BaiFeiBi100(System.Int16,System.Int16)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.QiuYu(System.Int16,System.Int16)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int16.BinQie(System.Int16,System.Int16)" -->
-        <member name="M:GameDesigner.MathOperations.Int16.Equals(System.Int16,System.Int16)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.NotEquals(System.Int16,System.Int16)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.MaxEquals(System.Int16,System.Int16)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int16.MinEquals(System.Int16,System.Int16)" -->
-        <member name="M:GameDesigner.MathOperations.Int16.Max(System.Int16,System.Int16)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int16.Min(System.Int16,System.Int16)" -->
-        <member name="M:GameDesigner.MathOperations.Int16.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.AddEquals(System.Int16)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.SubtractEquals(System.Int16)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.MultiplieEquals(System.Int16)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.DivideEquals(System.Int16)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.BaiFeiBi100Equals(System.Int16)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int16.QiuYuEquals(System.Int16)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.Adds(System.Int32,System.Int32)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.Subtracts(System.Int32,System.Int32)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.Multiplies(System.Int32,System.Int32)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.Divides(System.Int32,System.Int32)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.BaiFeiBi100(System.Int32,System.Int32)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.QiuYu(System.Int32,System.Int32)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int32.BinQie(System.Int32,System.Int32)" -->
-        <member name="M:GameDesigner.MathOperations.Int32.Equals(System.Int32,System.Int32)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.NotEquals(System.Int32,System.Int32)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.MaxEquals(System.Int32,System.Int32)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int32.MinEquals(System.Int32,System.Int32)" -->
-        <member name="M:GameDesigner.MathOperations.Int32.Max(System.Int32,System.Int32)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int32.Min(System.Int32,System.Int32)" -->
-        <member name="M:GameDesigner.MathOperations.Int32.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.AddEquals(System.Int32)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.SubtractEquals(System.Int32)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.MultiplieEquals(System.Int32)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.DivideEquals(System.Int32)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.BaiFeiBi100Equals(System.Int32)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int32.QiuYuEquals(System.Int32)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.Adds(System.Int64,System.Int64)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.Subtracts(System.Int64,System.Int64)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.Multiplies(System.Int64,System.Int64)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.Divides(System.Int64,System.Int64)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.BaiFeiBi100(System.Int64,System.Int64)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.QiuYu(System.Int64,System.Int64)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int64.BinQie(System.Int64,System.Int64)" -->
-        <member name="M:GameDesigner.MathOperations.Int64.Equals(System.Int64,System.Int64)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.NotEquals(System.Int64,System.Int64)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.MaxEquals(System.Int64,System.Int64)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int64.MinEquals(System.Int64,System.Int64)" -->
-        <member name="M:GameDesigner.MathOperations.Int64.Max(System.Int64,System.Int64)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.Int64.Min(System.Int64,System.Int64)" -->
-        <member name="M:GameDesigner.MathOperations.Int64.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.AddEquals(System.Int64)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.SubtractEquals(System.Int64)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.MultiplieEquals(System.Int64)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.DivideEquals(System.Int64)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.BaiFeiBi100Equals(System.Int64)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.Int64.QiuYuEquals(System.Int64)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.Adds(System.SByte,System.SByte)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.Subtracts(System.SByte,System.SByte)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.Multiplies(System.SByte,System.SByte)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.Divides(System.SByte,System.SByte)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.BaiFeiBi100(System.SByte,System.SByte)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.QiuYu(System.SByte,System.SByte)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.SByte.BinQie(System.SByte,System.SByte)" -->
-        <member name="M:GameDesigner.MathOperations.SByte.Equals(System.SByte,System.SByte)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.NotEquals(System.SByte,System.SByte)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.MaxEquals(System.SByte,System.SByte)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.SByte.MinEquals(System.SByte,System.SByte)" -->
-        <member name="M:GameDesigner.MathOperations.SByte.Max(System.SByte,System.SByte)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.SByte.Min(System.SByte,System.SByte)" -->
-        <member name="M:GameDesigner.MathOperations.SByte.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.AddEquals(System.SByte)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.SubtractEquals(System.SByte)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.MultiplieEquals(System.SByte)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.DivideEquals(System.SByte)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.BaiFeiBi100Equals(System.SByte)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.SByte.QiuYuEquals(System.SByte)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.String.Adds(System.String,System.String)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.Adds(System.UInt16,System.UInt16)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.Subtracts(System.UInt16,System.UInt16)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.Multiplies(System.UInt16,System.UInt16)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.Divides(System.UInt16,System.UInt16)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.BaiFeiBi100(System.UInt16,System.UInt16)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.QiuYu(System.UInt16,System.UInt16)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt16.BinQie(System.UInt16,System.UInt16)" -->
-        <member name="M:GameDesigner.MathOperations.UInt16.Equals(System.UInt16,System.UInt16)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.NotEquals(System.UInt16,System.UInt16)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.MaxEquals(System.UInt16,System.UInt16)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt16.MinEquals(System.UInt16,System.UInt16)" -->
-        <member name="M:GameDesigner.MathOperations.UInt16.Max(System.UInt16,System.UInt16)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt16.Min(System.UInt16,System.UInt16)" -->
-        <member name="M:GameDesigner.MathOperations.UInt16.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.AddEquals(System.UInt16)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.SubtractEquals(System.UInt16)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.MultiplieEquals(System.UInt16)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.DivideEquals(System.UInt16)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.BaiFeiBi100Equals(System.UInt16)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt16.QiuYuEquals(System.UInt16)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.Adds(System.UInt32,System.UInt32)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.Subtracts(System.UInt32,System.UInt32)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.Multiplies(System.UInt32,System.UInt32)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.Divides(System.UInt32,System.UInt32)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.BaiFeiBi100(System.UInt32,System.UInt32)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.QiuYu(System.UInt32,System.UInt32)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt32.BinQie(System.UInt32,System.UInt32)" -->
-        <member name="M:GameDesigner.MathOperations.UInt32.Equals(System.UInt32,System.UInt32)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.NotEquals(System.UInt32,System.UInt32)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.MaxEquals(System.UInt32,System.UInt32)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt32.MinEquals(System.UInt32,System.UInt32)" -->
-        <member name="M:GameDesigner.MathOperations.UInt32.Max(System.UInt32,System.UInt32)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt32.Min(System.UInt32,System.UInt32)" -->
-        <member name="M:GameDesigner.MathOperations.UInt32.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.AddEquals(System.UInt32)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.SubtractEquals(System.UInt32)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.MultiplieEquals(System.UInt32)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.DivideEquals(System.UInt32)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.BaiFeiBi100Equals(System.UInt32)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt32.QiuYuEquals(System.UInt32)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.Adds(System.UInt64,System.UInt64)">
-            <summary>
-            返回a+b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.Subtracts(System.UInt64,System.UInt64)">
-            <summary>
-            返回a-b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.Multiplies(System.UInt64,System.UInt64)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.Divides(System.UInt64,System.UInt64)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.BaiFeiBi100(System.UInt64,System.UInt64)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.QiuYu(System.UInt64,System.UInt64)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt64.BinQie(System.UInt64,System.UInt64)" -->
-        <member name="M:GameDesigner.MathOperations.UInt64.Equals(System.UInt64,System.UInt64)">
-            <summary>
-            返回a==b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.NotEquals(System.UInt64,System.UInt64)">
-            <summary>
-            返回a!=b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.MaxEquals(System.UInt64,System.UInt64)">
-            <summary>
-            返回a>=b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt64.MinEquals(System.UInt64,System.UInt64)" -->
-        <member name="M:GameDesigner.MathOperations.UInt64.Max(System.UInt64,System.UInt64)">
-            <summary>
-            返回a>b
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:GameDesigner.MathOperations.UInt64.Min(System.UInt64,System.UInt64)" -->
-        <member name="M:GameDesigner.MathOperations.UInt64.AddAdds">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.AddEquals(System.UInt64)">
-            <summary>
-            返回a++
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.SubtractSubtracts">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.SubtractEquals(System.UInt64)">
-            <summary>
-            返回a--
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.MultiplieEquals(System.UInt64)">
-            <summary>
-            返回a*b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.DivideEquals(System.UInt64)">
-            <summary>
-            返回a/b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.BaiFeiBi100Equals(System.UInt64)">
-            <summary>
-            返回a%b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.MathOperations.UInt64.QiuYuEquals(System.UInt64)">
-            <summary>
-            返回a^b
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ReplaceEndToOne(System.String,System.String,System.String)">
-            <summary>
-            解释 : 获得str字符串中的所有字符,当出现与oldValue相同的字符时更换为newValue的字符,(当出现与oldValue相同或有n个,只更换最后一个为newValue的字符)
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ReplaceEndToOne(System.String,System.String)">
-            <summary>
-            解释 : 获得str字符串中的所有字符,当出现与oldValue相同的字符时进行拆分,拆分的字符只返回后面的字符
-            解释1 : 获得str字符串中的所有字符,当str字符中出现与oldValue字符相同的字符时进行拆分,拆分后返回后面的字符(遇到与oldValue的字符作废)
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.StringSplit(System.String,System.Char)">
-            <summary>
-            拆分str字符 ， 当str的字符内容中包含了split的字符则进行拆分进数组 ， 此方法只返回数组[0]的字符 (只有一行代码 return str.Split( split )[0];) ( str 要读取的全部字符串 , split 拆分符号或其他，当遇到这个字符即返回从开始到此字符的字段 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.StringSplitEndOne(System.String,System.Char)">
-            <summary>
-            拆分str字符 ， 当str的字符内容中包含了split的字符则进行拆分进数组 ， 此方法只返回数组[0]的字符 (只有一行代码 return str.Split( split )[array.Length-1];) ( str 要读取的全部字符串 , split 拆分符号或其他，当遇到这个字符即返回从开始到此字符的字段 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.StringSplitEndToOne(System.String,System.Char)">
-            <summary>
-            拆分字符串从0字符段开始读到出现split拆分字符后结束并返回当前段的字符 ( str 要读取的全部字符串 , split 拆分符号或其他，当遇到这个字符即返回从开始到此字符的字段 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ToVector2_3_4(System.String,System.String)">
-            <summary>
-            字符转三维向量值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ToRect(System.String,System.String)">
-            <summary>
-            字符转矩形值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ToColor(System.String,System.String)">
-            <summary>
-            字符转颜色值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ToQuaternion(System.String,System.String)">
-            <summary>
-            字符转欧拉角值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.To_Vector234_Rect_Quaternion_Color(System.String,System.String)">
-            <summary>
-            转换字符为Vector2 或 Vector3 或 Vector4 或 Rect 或 Quaternion 的值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.Vector2_3_4ToString(System.Object)">
-            <summary>
-            三维向量转完整字符 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.RectToString(System.Object)">
-            <summary>
-            字符转矩形值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.ColorToString(System.Object)">
-            <summary>
-            字符转颜色值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.QuaternionToString(System.Object)">
-            <summary>
-            字符转欧拉角值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ConvertUtility.Vector234_Rect_Quaternion_ColorToString(System.Object)">
-            <summary>
-            将Vector2 或 Vector3 或 Vector4 或 Rect 或 Quaternion 的值转换成变量声明的完整字符 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.CreateUtility.CreateInstance(System.String)">
-            <summary>
-            创建类对象实例
-            </summary>
-        </member>
-        <member name="M:GameDesigner.CreateUtility.CreateInstance(System.Type)">
-            <summary>
-            创建类对象实例
-            </summary>
-        </member>
-        <member name="M:GameDesigner.CreateUtility.CreateInstance(System.Type,System.Object[])">
-            <summary>
-            创建类对象实例
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Field">
-            <summary>
-            字段信息处理器
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Field.GetFields(System.Object)">
-            <summary>
-            获得所有字段信息 ( target 对象 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Field.GetFields(System.Type)">
-            <summary>
-            获得所有字段信息 ( type类名 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Field.Invoke(System.Object,GameDesigner.Field)">
-            <summary>
-            调用变量进行赋值 ( target 实体对象  , ifield 字段信息管理 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Field.InvokeField(System.Object,GameDesigner.Field)">
-            <summary>
-            调用变量进行赋值 ( target 实体对象  , ifield 字段信息管理 )
-            </summary>
-        </member>
-        <member name="T:GameDesigner.FunBlockNode">
-            <summary>
-            蓝图功能块节点
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Method">
-            <summary>
-            方法信息处理器
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Method.typeName">
-            编辑器扩展选择Types类型数组中的唯一一个数组索引
-        </member>
-        <member name="F:GameDesigner.Method._parameters">
-            优化方法参数存储等待使用
-        </member>
-        <member name="F:GameDesigner.Method._parameterobjs">
-            优化方法参数赋值存储等待使用
-        </member>
-        <member name="T:GameDesigner.Method.ValueModel">
-            设置值或获得值模式--Invoke和Set是一样的,只是名称看起来哪个好些,Return和Get也是一样的
-        </member>
-        <member name="F:GameDesigner.Method.valueModel">
-            设置值或获得值模式--Invoke和Set是一样的,只是名称看起来哪个好些,Return和Get也是一样的
-        </member>
-        <member name="M:GameDesigner.Method.GetMethods(System.Type)">
-            <summary>
-            获得所有方法信息 ( type 类型 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Method.Invoke(GameDesigner.Method)">
-            <summary>
-            方法自调 ( method 方法信息存储器--必须是完整的方法(包含对象,方法,参数) )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Method.Invoke(System.Object,GameDesigner.Method)">
-            <summary>
-            调用唯一一个方法 , 使最优化，使尽可能有效 ( target 对象 , method 方法信息存储器--必须是完整的方法(方法,参数) )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Method.Invoke(System.Object,GameDesigner.Method,System.Collections.Generic.List{GameDesigner.Parameter})">
-            <summary>
-            调用唯一一个方法 , 使最优化，使尽可能有效 ( target 实体对象  , method 方法信息存储器 , parameters 参数信息存储器 )
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Node">
-            <summary>
-            蓝图节点组件
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Node.CreateFunctionBody(GameDesigner.Blueprint,System.Type,System.String,System.String,System.String)">
-            <summary>
-            创建蓝图方法入口节点(简称节点入口)
-            Designer 蓝图管理器,用来管理节点之间的连接
-            Type 要获取的类型
-            Fun name "获得类的方法名"，必须声明函数为公有才能获取成功
-            Inherited name "继承类型名" ， 可以忽略，代码生成所用
-            Node name 自定义节点介绍名称
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Node.Invoke">
-            <summary>
-            调用入口
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Parameter">
-            <summary>
-            参数管理类
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Property">
-            <summary>
-            属性信息处理器 -- 方法属性信息处理类，类似方法信息类
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Property.GetPropertys(System.Object)">
-            <summary>
-            获得所有方法信息,这个方法有可能是属性的定义Unity的Object类 ( target 对象 , not 查找方法时遇到的字符 , con 包含为真时，当方法出现与not字符相同时将才获取 )  当前为包含，包含就是遇到与not字符相同才获取
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Property.GetPropertys(System.Type)">
-            <summary>
-            获得所有方法信息 ( target 对象 , not 查找方法时遇到的字符 , con 包含为真时，当方法出现与not字符相同时才获取 )  当前为包含，包含就是遇到与not字符相同才获取
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Property.Invoke(System.Object,GameDesigner.Property)">
-            <summary>
-            调用变量进行赋值 ( target 实体对象  , ifield 字段信息管理 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Property.InvokeProperty(System.Object,GameDesigner.Property)">
-            <summary>
-            调用变量进行赋值 ( target 实体对象  , ifield 字段信息管理 )
-            </summary>
-        </member>
-        <member name="T:GameDesigner.SystemType">
-            <summary>
-            插件系统类管理
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.GetType(System.String)">
-            <summary>
-            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.GetTypes(System.Action{System.Type[]})">
-            <summary>
-            获取所有在unity所引用的dll文件的类型，并通过types委托调用，types不是一次获取完所有dll文件的类型，而是一个dll文件获取完（所有类型）就执行一次委托
-            </summary>
-            <param name="types">单个dll文件的所有类型委托到types的参数中</param>
-        </member>
-        <member name="M:GameDesigner.SystemType.IsSubclassOf(System.Type,System.Type)">
-            <summary>
-            解释 : 判断type的基类是否是Typeof类型,是返回真,不是返回假
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.IsSubclassOfs(System.Type,System.Type)">
-            <summary>
-            解释 : 判断type所继承的类(基类)是否是Typeof类 和 Typeof所继承的类型(基类)是否是type类 , 是返回真,不是返回假
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.IsSubclassOf``1(System.Type)">
-            <summary>
-            解释 : 判断type的基类是否是Typeof类型,是返回真,不是返回假
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.StringToValue(System.String,System.String)">
-            <summary>
-            在监视面板显示类的值并且可视化修改 ( type 给定类型名称 , value 转换这个字符串为type类型的值 )
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.Instance``1(System.Object)">
-            <summary>
-            克隆对象, 脱离引用对象的地址
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="target"></param>
-            <returns></returns>
-        </member>
-        <member name="M:GameDesigner.SystemType.SetFieldValue(System.Object,System.Object)">
-            <summary>
-            设置类的变量值,解决派生类的值控制父类的变量值 ( 被赋值变量对象 , 赋值变量对象 ) [尽可能的使用此方法,此方法产生GC]
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.SetPropertyValue(System.Object,System.Object)">
-            <summary>
-            设置类的变量值,解决派生类的值控制父类的变量值 ( 被赋值变量对象 , 赋值变量对象 ) [尽可能的使用此方法,此方法产生GC]
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.SetFieldValue(System.Object,System.Object,System.String[],GameDesigner.SetValueModel)">
-            <summary>
-            设置类的变量值,解决派生类的值控制父类的变量值 ( 被赋值变量对象 , 赋值变量对象 , 不赋值的变量名数组 ) [尽可能的使用此方法,此方法产生GC]
-            </summary>
-        </member>
-        <member name="M:GameDesigner.SystemType.SetFieldValue(System.Object,System.Object,System.Boolean)">
-            <summary>
-            设置类的变量值,解决派生类的值控制父类的变量值 ( 被赋值变量对象 , 赋值变量对象 ) [尽可能的使用此方法,此方法产生GC]
-            </summary>
-        </member>
-        <member name="T:GameDesigner.TypeInfo">
-            <summary>
-            类信息处理器
-            </summary>
-        </member>
-        <member name="M:GameDesigner.TypeInfo.UpdateCheckTypeInfo(GameDesigner.TypeInfo)">
-            <summary>
-            检查编辑器异动后进行更新类信息
-            </summary>
-        </member>
-        <member name="M:GameDesigner.TypeInfo.InitTypeData(GameDesigner.TypeInfo)">
-            <summary>
-            初始化类的信息,此静态方法可以在Update运行
-            </summary>
-        </member>
-        <member name="M:GameDesigner.TypeInfo.InitTypeInfo(GameDesigner.TypeInfo)">
-            <summary>
-            初始化类的信息
-            </summary>
-        </member>
-        <member name="M:GameDesigner.TypeInfo.CreateInstance(GameDesigner.TypeInfo)">
-            <summary>
-            当对象为空时,创建new的对象
-            </summary>
-        </member>
-        <member name="T:GameDesigner.ValueType">
-            <summary>
-            值存储管理类
-            </summary>
-        </member>
-        <member name="P:GameDesigner.ValueType.TypeParameter.type">
-            当参数类型为System.Type时使用
-        </member>
-        <member name="F:GameDesigner.ValueType.typeName">
-            编辑器扩展选择Types类型数组中的唯一一个数组索引
-        </member>
-        <member name="T:GameDesigner.ActionBehaviour">
-            <summary>
-            动作行为--用户添加的组件 v2017/12/6
-            </summary>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnEnter(GameDesigner.StateAction)">
-            <summary>
-            当进入状态
-            </summary>
-            <param name="action">当前动作</param>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnUpdate(GameDesigner.StateAction)">
-            <summary>
-            当更新状态
-            </summary>
-            <param name="action">当前动作</param>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnExit(GameDesigner.StateAction)">
-            <summary>
-            当退出状态
-            </summary>
-            <param name="action">当前动作</param>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnStop(GameDesigner.StateAction)">
-            <summary>
-            当停止动作 : 当动作不使用动画循环时, 动画时间到达100%后调用
-            </summary>
-            <param name="action"></param>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnAnimationEvent(GameDesigner.StateAction,System.Single)">
-            <summary>
-            当进入动画事件
-            </summary>
-            <param name="action">当前动作</param>
-            <param name="animEventTime">动画事件时间</param>
-        </member>
-        <member name="M:GameDesigner.ActionBehaviour.OnInstantiateSpwan(GameDesigner.StateAction,UnityEngine.GameObject)">
-            <summary>
-            当实例化技能物体
-            </summary>
-            <param name="action">当前动作</param>
-            <param name="spwan">技能物体</param>
-        </member>
-        <member name="T:GameDesigner.AudioManager">
-            <summary>
-            音效管理
-            </summary>
-        </member>
-        <member name="P:GameDesigner.AudioManager.Instance">
-            <summary>
-            音效实例
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip)">
-            <summary>
-            播放音效剪辑
-            参数clip : 放入你要播放的音源
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip,System.Single)">
-            <summary>
-            播放音效剪辑
-            参数clip : 放入你要播放的音源
-            参数volume : 声音大小调节
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip,System.Single,System.Boolean)">
-            <summary>
-            播放音效剪辑
-            参数clip : 放入你要播放的音源
-            参数volume : 声音大小调节
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioClip)">
-            <summary>
-            当音效播放完成销毁AudioSource组件
-            参数clip : 放入你要播放的音源
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioClip,System.Single)">
-            <summary>
-            当音效播放完成销毁AudioSource组件
-            参数clip : 放入你要播放的音源
-            参数volume : 声音大小调节
-            </summary>
-        </member>
-        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioSource,UnityEngine.AudioClip)">
-            <summary>
-            当音效播放完成销毁AudioSource组件
-            参数clip : 放入你要播放的音源
-            参数source : 音频源组件
-            </summary>
-        </member>
-        <member name="T:GameDesigner.IBehaviour">
-            <summary>
-            状态行为基类 2019.3.3
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IBehaviour.show">
-            <summary>
-            展开编辑器检视面板
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IBehaviour.Active">
-            <summary>
-            脚本是否启用?
-            </summary>
-        </member>
-        <member name="P:GameDesigner.IBehaviour.state">
-            <summary>
-            当前状态
-            </summary>
-        </member>
-        <member name="P:GameDesigner.IBehaviour.transform">
-            <summary>
-            状态管理器转换组建
-            </summary>
-        </member>
-        <member name="M:GameDesigner.IBehaviour.OnInit">
-            <summary>
-            当初始化调用
-            </summary>
-        </member>
-        <member name="M:GameDesigner.IBehaviour.OnDestroyComponent">
-            <summary>
-            当组件被删除调用一次
-            </summary>
-        </member>
-        <member name="M:GameDesigner.IBehaviour.OnInspectorGUI(GameDesigner.State)">
-            <summary>
-            当绘制编辑器检视面板 (重要提示!你想自定义编辑器检视面板则返回真,否则显示默认编辑器检视面板)
-            </summary>
-            <param name="state">当前状态</param>
-            <returns></returns>
-        </member>
-        <member name="M:GameDesigner.IBehaviour.EnterState(System.Int32)">
-            <summary>
-            进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
-            </summary>
-            <param name="stateID"></param>
-        </member>
-        <member name="M:GameDesigner.IBehaviour.OnEnterNextState(System.Int32)">
-            <summary>
-            当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
-            </summary>
-            <param name="stateID">下一个状态的ID</param>
-        </member>
-        <member name="T:GameDesigner.IState">
-            <summary>
-            状态基类
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.findBehaviours">
-            <summary>
-            查找行为组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.makeTransition">
-            <summary>
-            绘制状态连接线条
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.makeGetValueTransition">
-            <summary>
-            绘制蓝图获得值线条
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.makeRuntimeTransition">
-            <summary>
-            绘制蓝图运行下一个节点线条
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.makeOutRuntimeTransition">
-            <summary>
-            绘制蓝图运行线条
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.createScriptName">
-            <summary>
-            创建脚本名称
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.StateActionScriptPath">
-            <summary>
-            创建脚本路径
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.StateBehaviourScriptPath">
-            <summary>
-            创建脚本路径
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.TransitionScriptPath">
-            <summary>
-            创建脚本路径
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.foldout">
-            <summary>
-            展开编辑器 和 添加脚本编译状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.compiling">
-            <summary>
-            展开编辑器 和 添加脚本编译状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.behaviourMenuIndex">
-            <summary>
-            右键行为脚本存储行为的索引 和 动作菜单索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.actionMenuIndex">
-            <summary>
-            右键行为脚本存储行为的索引 和 动作菜单索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.IState.rect">
-            <summary>
-            蓝图 和 状态 的编辑器矩形
-            </summary>
-        </member>
-        <member name="T:GameDesigner.AnimationMode">
-            <summary>
-            动画模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AnimationMode.Animation">
-            <summary>
-            旧版动画
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AnimationMode.Animator">
-            <summary>
-            新版动画
-            </summary>
-        </member>
-        <member name="T:GameDesigner.State">
-            <summary>
-            状态 -- v2017/12/6
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.transitions">
-            <summary>
-            状态连接集合
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.behaviours">
-            <summary>
-            状态行为集合
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.actionSystem">
-            <summary>
-            动作系统 使用为真 , 不使用为假
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.animLoop">
-            <summary>
-            动画循环?
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.animPlayMode">
-            <summary>
-            动画模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.actionIndex">
-            <summary>
-            动作索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.audioIndex">
-            <summary>
-            音效索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.animSpeed">
-            <summary>
-            动画速度
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.isExitState">
-            <summary>
-            动画结束是否进入下一个状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.DstStateID">
-            <summary>
-            动画结束进入下一个状态的ID
-            </summary>
-        </member>
-        <member name="F:GameDesigner.State.actions">
-            <summary>
-            状态动作集合
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.CreateStateInstance(GameDesigner.StateMachine,System.String,UnityEngine.Vector2)">
-            <summary>
-            创建状态
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.#ctor(GameDesigner.StateMachine)">
-            <summary>
-            构造函数
-            </summary>
-        </member>
-        <member name="P:GameDesigner.State.Action">
-            <summary>
-            当前状态动作
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.OnEnterState">
-            <summary>
-            进入状态
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.OnUpdateState">
-            <summary>
-            状态每一帧
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.SetPosition(GameDesigner.StateManager,UnityEngine.GameObject)">
-            <summary>
-            设置技能位置
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.InstantiateSpwan(GameDesigner.StateManager)">
-            <summary>
-            技能实例化
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.OnExitState">
-            <summary>
-            当退出状态
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.OnActionExit">
-            <summary>
-            当子动作处于循环播放模式时, 子动作每次播放完成动画都会调用一次
-            </summary>
-        </member>
-        <member name="M:GameDesigner.State.OnStop">
-            <summary>
-            当动作停止
-            </summary>
-        </member>
-        <member name="T:GameDesigner.AnimPlayMode">
-            <summary>
-            动画播放模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AnimPlayMode.Random">
-            <summary>
-            随机播放动画
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AnimPlayMode.Sequence">
-            <summary>
-            顺序播放动画
-            </summary>
-        </member>
-        <member name="T:GameDesigner.AudioMode">
-            <summary>
-            音效模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AudioMode.EnterPlay">
-            <summary>
-            进入状态播放音效
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AudioMode.AnimEvent">
-            <summary>
-            动画事件播放音效
-            </summary>
-        </member>
-        <member name="F:GameDesigner.AudioMode.ExitPlay">
-            <summary>
-            退出状态播放音效
-            </summary>
-        </member>
-        <member name="T:GameDesigner.ActiveMode">
-            <summary>
-            技能生成模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.ActiveMode.Instantiate">
-            <summary>
-            实例化
-            </summary>
-        </member>
-        <member name="F:GameDesigner.ActiveMode.ObjectPool">
-            <summary>
-            对象池
-            </summary>
-        </member>
-        <member name="T:GameDesigner.SpwanMode">
-            <summary>
-            技能物体设置模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.SpwanMode.localPosition">
-            <summary>
-            设置技能物体在自身位置
-            </summary>
-        </member>
-        <member name="F:GameDesigner.SpwanMode.SetParent">
-            <summary>
-            设置技能物体在父对象位置和成为父对象的子物体
-            </summary>
-        </member>
-        <member name="F:GameDesigner.SpwanMode.SetInTargetPosition">
-            <summary>
-            设置技能物体在父对象位置
-            </summary>
-        </member>
-        <member name="T:GameDesigner.StateAction">
-            <summary>
-            ARPG状态动作
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.clipName">
-            <summary>
-            动画剪辑名称
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.clipIndex">
-            <summary>
-            动画剪辑索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.animTime">
-            <summary>
-            当前动画时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.animEventTime">
-            <summary>
-            动画事件时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.animTimeMax">
-            <summary>
-            动画结束时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.eventEnter">
-            <summary>
-            是否已到达事件时间或超过事件时间，到为true，没到为flase
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.effectSpwan">
-            <summary>
-            技能粒子物体
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.activeMode">
-            <summary>
-            粒子物体生成模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.spwanTime">
-            <summary>
-            粒子物体销毁或关闭时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.activeObjs">
-            <summary>
-            粒子物体对象池
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.spwanmode">
-            <summary>
-            粒子位置设置
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.parent">
-            <summary>
-            作为粒子挂载的父对象 或 作为粒子生成在此parent对象的位置
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.effectPostion">
-            <summary>
-            粒子出生位置
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.effectEulerAngles">
-            <summary>
-            粒子角度
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.isPlayAudio">
-            <summary>
-            是否播放音效
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.audioModel">
-            <summary>
-            音效触发模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.audioClips">
-            <summary>
-            音效剪辑
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.behaviours">
-            <summary>
-            ARPG动作行为
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.foldout">
-            <summary>
-            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.audiofoldout">
-            <summary>
-            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.findBehaviours">
-            <summary>
-            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.desAudioIndex">
-            <summary>
-            删除音效索引 行为脚本菜单索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.behaviourMenuIndex">
-            <summary>
-            删除音效索引 行为脚本菜单索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateAction.createScriptName">
-            <summary>
-            创建脚本名称
-            </summary>
-        </member>
-        <member name="P:GameDesigner.StateAction.IsComplete">
-            <summary>
-            动作是否完成?, 当动画播放结束后为True, 否则为false
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateAction.#ctor">
-            <summary>
-            构造状态动作
-            </summary>
-        </member>
-        <member name="T:GameDesigner.StateBehaviour">
-            <summary>
-            状态行为脚本 v2017/12/6 - 2020.6.7
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateBehaviour.OnEnter">
-            <summary>
-            当状态进入时
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateBehaviour.OnUpdate">
-            <summary>
-            当状态每一帧
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateBehaviour.OnExit">
-            <summary>
-            当状态退出后
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateBehaviour.OnStop">
-            <summary>
-            当停止动作 : 当动作不使用动画循环时, 动画时间到达100%后调用
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateBehaviour.OnActionExit">
-            <summary>
-            当动作处于循环模式时, 子动作动画每次结束都会调用一次
-            </summary>
-        </member>
-        <member name="T:GameDesigner.StateMachine">
-            <summary>
-            状态机 v2017/12/6
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.defaulID">
-            <summary>
-            默认状态ID
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.stateID">
-            <summary>
-            当前运行的状态索引
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.states">
-            <summary>
-            所有状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.selectStates">
-            <summary>
-            选中的状态,可以多选
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.animMode">
-            <summary>
-            动画选择模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.animation">
-            <summary>
-            旧版动画组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.animator">
-            <summary>
-            新版动画组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateMachine.clipNames">
-            <summary>
-            动画剪辑
-            </summary>
-        </member>
-        <member name="P:GameDesigner.StateMachine.Item(System.Int32)">
-            <summary>
-            以状态ID取出状态对象
-            </summary>
-            <param name="stateID"></param>
-            <returns></returns>
-        </member>
-        <member name="P:GameDesigner.StateMachine.defaultState">
-            <summary>
-            获取 或 设置 默认状态
-            </summary>
-        </member>
-        <member name="P:GameDesigner.StateMachine.currState">
-            <summary>
-            当前状态
-            </summary>
-        </member>
-        <member name="P:GameDesigner.StateMachine.selectState">
-            <summary>
-            选择的状态
-            </summary>
-        </member>
-        <member name="P:GameDesigner.StateMachine.stateManager">
-            <summary>
-            状态管理
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateMachine.CreateStateMachineInstance(System.String)">
-            <summary>
-            创建状态机实例
-            </summary>
-            <param name="name">状态机名称</param>
-            <returns></returns>
-        </member>
-        <member name="T:GameDesigner.StateManager">
-            <summary>
-            状态执行管理类
-            V2017.12.6
-            版本修改V2019.8.27
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateManager.stateMachine">
-            <summary>
-            状态机
-            </summary>
-        </member>
-        <member name="M:GameDesigner.StateManager.OnState(GameDesigner.State)">
-            <summary>
-            处理状态各种行为与事件方法
-            </summary>
-            <param name="state">要执行的状态</param>
-        </member>
-        <member name="M:GameDesigner.StateManager.OnTransition(GameDesigner.Transition)">
-            <summary>
-            处理连接行为线条方法
-            </summary>
-            <param name="transition">要执行的连接线条</param>
-        </member>
-        <member name="M:GameDesigner.StateManager.OnStateTransitionExit(GameDesigner.State)">
-            <summary>
-            当退出状态时处理连接事件
-            </summary>
-            <param name="state">要退出的状态</param>
-        </member>
-        <member name="M:GameDesigner.StateManager.EnterNextState(GameDesigner.State,GameDesigner.State)">
-            <summary>
-            当进入下一个状态
-            </summary>
-            <param name="currState">当前状态</param>
-            <param name="enterState">要进入的状态</param>
-        </member>
-        <member name="M:GameDesigner.StateManager.EnterNextState(System.Int32)">
-            <summary>
-            当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
-            </summary>
-            <param name="nextStateIndex">下一个状态的ID</param>
-        </member>
-        <member name="M:GameDesigner.StateManager.StatusEntry(System.Int32)">
-            <summary>
-            进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
-            </summary>
-            <param name="stateID"></param>
-        </member>
-        <member name="T:GameDesigner.StateSystem">
-            <summary>
-            状态机系统
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateSystem.CopyComponent">
-            <summary>
-            状态机复制组件
-            </summary>
-        </member>
-        <member name="F:GameDesigner.StateSystem.Component">
-            <summary>
-            状态机新型复制组件
-            </summary>
-        </member>
-        <member name="T:GameDesigner.Transition">
-            <summary>
-            状态连接组件 2017年12月6日
-            版本修改2019.8.27
-            </summary>
-        </member>
-        <member name="P:GameDesigner.Transition.currState">
-            <summary>
-            当前状态
-            </summary>
-        </member>
-        <member name="P:GameDesigner.Transition.nextState">
-            <summary>
-            下一个状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Transition.model">
-            <summary>
-            连接控制模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Transition.time">
-            <summary>
-            当前时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Transition.exitTime">
-            <summary>
-            结束时间
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Transition.behaviours">
-            <summary>
-            连接行为
-            </summary>
-        </member>
-        <member name="F:GameDesigner.Transition.isEnterNextState">
-            <summary>
-            是否进入下一个状态?
-            </summary>
-        </member>
-        <member name="M:GameDesigner.Transition.CreateTransitionInstance(GameDesigner.State,GameDesigner.State,System.String)">
-            <summary>
-            创建连接实例
-            </summary>
-            <param name="state">连接的开始状态</param>
-            <param name="nextState">连接的结束状态</param>
-            <param name="transitionName">连接名称</param>
-            <returns></returns>
-        </member>
-        <member name="T:GameDesigner.TransitionBehaviour">
-            <summary>
-            连接行为--用户可以继承此类添加组件 2017年12月6日(星期三)
-            </summary>
-        </member>
-        <member name="T:GameDesigner.TransitionModel">
-            <summary>
-            状态过渡事件选项模式
-            </summary>
-        </member>
-        <member name="F:GameDesigner.TransitionModel.ExitTime">
-            <summary>
-            用时间来跳转状态
-            </summary>
-        </member>
-        <member name="F:GameDesigner.TransitionModel.ScriptControl">
-            <summary>
-            代码控制条件跳转
-            </summary>
-        </member>
-        <member name="F:Operator.Adds">
-            加法运算符%
-        </member>
-        <member name="F:Operator.Subtracts">
-            减法运算符%
-        </member>
-        <member name="F:Operator.Multiplies">
-            乘法运算符%
-        </member>
-        <member name="F:Operator.Divides">
-            除法运算符%
-        </member>
-        <member name="F:Operator.BaiFeiBi100">
-            百分比运算符%
-        </member>
-        <member name="F:Operator.QiuYu">
-            求余运算符^
-        </member>
-        <!-- Badly formed XML comment ignored for member "F:Operator.BinQie" -->
         <member name="T:Net.AOI.Grid">
             <summary>
             格子类
@@ -2559,6 +392,16 @@
             接收线程循环次数 只有ENetServer
             </summary>
         </member>
+        <member name="F:Net.Client.ClientBase.outflowTotal">
+            <summary>
+            从启动到现在总流出的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.inflowTotal">
+            <summary>
+            从启动到现在总流入的数据流量
+            </summary>
+        </member>
         <member name="F:Net.Client.ClientBase.heart">
             <summary>
             心跳次数
@@ -2781,14 +624,9 @@
             同步线程上下文任务队列
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.StackBufferSize">
+        <member name="P:Net.Client.ClientBase.PackageSize">
             <summary>
-            允许叠包缓存最大值 默认可发送5242880(5M)的数据包
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.StackNumberMax">
-            <summary>
-            允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
+            接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.stack">
@@ -2824,12 +662,17 @@
         </member>
         <member name="P:Net.Client.ClientBase.RTO">
             <summary>
-            （Retransmission TimeOut）重传超时时间。 默认为20毫秒重传一次
+            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.MTPS">
             <summary>
             (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.FlowControl">
+            <summary>
+            流量控制模式，只有Gcp协议可用
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.localPort">
@@ -2888,7 +731,7 @@
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo},System.Action)">
             <summary>
             添加网络Rpc
             </summary>
@@ -3597,131 +1440,6 @@
             </summary>
             <returns>是否可发送数据</returns>
         </member>
-        <member name="T:Net.Client.NetBehaviour">
-            <summary>
-            网络行为，此类负责网络增删Rpc远程过程调用函数，使用到网络通讯功能，需要继承此类
-            </summary>
-        </member>
-        <member name="P:Net.Client.NetBehaviour.Handle">
-            <summary>
-            客户端发送接口
-            </summary>
-        </member>
-        <member name="M:Net.Client.NetBehaviour.AddRpc(System.Object,System.Boolean)">
-            <summary>
-            添加远程过程调用函数的委托
-            </summary>
-            <param name="target">远程过程调用指定的对象</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Client.NetBehaviour.AddRpc(Net.Client.ClientBase,System.Object,System.Boolean)">
-            <summary>
-            添加远程过程调用函数的委托
-            </summary>
-            <param name="client">添加RPC到此客户端</param>
-            <param name="target">远程过程调用指定的对象</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Client.NetBehaviour.RemoveRpc(System.Object)">
-            <summary>
-            移除RPCFun函数
-            </summary>
-            <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
-        </member>
-        <member name="M:Net.Client.NetBehaviour.RemoveRpc(Net.Client.ClientBase,System.Object)">
-            <summary>
-            移除子客户端的RPCFun函数
-            </summary>
-            <param name="client">子客户端对象</param>
-            <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
-        </member>
-        <member name="M:Net.Client.NetBehaviour.Awake">
-            <summary>
-            <para>当游戏开始初始化此对象时，搜索继承此类的方法中带有RPCFun或Rpc特性的方法，并添加到远程过程调用委托集合变量里</para>
-            <para>如果重写此方法必须base.Awake();</para>
-            </summary>
-        </member>
-        <member name="T:Net.Client.NetEvent">
-            <summary>
-            网络事件
-            </summary>
-        </member>
-        <member name="F:Net.Client.NetEvent.Context">
-            <summary>
-            unity同步线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddContextEvent(System.Int32,System.Action)">
-            <summary>
-            添加unity主线程同步事件, action回调在unity主程序被调用
-            </summary>
-            <param name="millisecondsTimeout"></param>
-            <param name="action"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddContextEvent(System.Int32,System.Action{System.Object},System.Object)">
-            <summary>
-            添加unity主线程同步事件, action回调在unity主程序被调用
-            </summary>
-            <param name="millisecondsTimeout"></param>
-            <param name="action"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent(UnityEngine.MonoBehaviour,System.Int32,System.Action)">
-            <summary>
-            添加携程事件
-            </summary>
-            <param name="mono"></param>
-            <param name="milliseconds"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent(UnityEngine.MonoBehaviour,System.Int32,System.Action,System.Action)">
-            <summary>
-            添加携程事件
-            </summary>
-            <param name="mono"></param>
-            <param name="milliseconds"></param>
-            <param name="updateAct"></param>
-            <param name="endAct"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent(UnityEngine.MonoBehaviour,System.Single,System.Int32,System.Action{System.Object},System.Object)">
-            <summary>
-            添加携程事件, 每time秒调用一次, 调用invokeNum次
-            </summary>
-            <param name="mono"></param>
-            <param name="time"></param>
-            <param name="invokeNum"></param>
-            <param name="updateAct"></param>
-            <param name="obj"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent``1(UnityEngine.MonoBehaviour,System.Single,System.Int32,System.Action{``0},``0)">
-            <summary>
-            添加携程事件, 每time秒调用一次, 调用invokeNum次
-            </summary>
-            <param name="mono"></param>
-            <param name="time"></param>
-            <param name="invokeNum"></param>
-            <param name="updateAct"></param>
-            <param name="obj"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent(UnityEngine.MonoBehaviour,System.Func{System.Boolean})">
-            <summary>
-            添加携程事件
-            </summary>
-            <param name="mono"></param>
-            <param name="updateAct"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent(UnityEngine.MonoBehaviour,System.Func{System.Object,System.Boolean},System.Object)">
-            <summary>
-            添加携程事件
-            </summary>
-            <param name="mono"></param>
-            <param name="updateAct"></param>
-        </member>
-        <member name="M:Net.Client.NetEvent.AddCoroutineEvent``1(UnityEngine.MonoBehaviour,System.Func{``0,System.Boolean},``0)">
-            <summary>
-            添加携程事件
-            </summary>
-            <param name="mono"></param>
-            <param name="updateAct"></param>
-        </member>
         <member name="T:Net.Client.NetworkCondition">
             <summary>
             检测网络状况
@@ -3875,7 +1593,7 @@
             <param name="clientLen">测试客户端数量</param>
             <param name="dataLen">每个客户端数据大小</param>
         </member>
-        <member name="P:Net.Config.ConfigData.UseMemoryStream">
+        <member name="P:Net.Config.Config.UseMemoryStream">
             <summary>
             使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
             使用内存流缓存速度会比较快, 但运行内存占用比较大
@@ -4184,7 +1902,12 @@
         </member>
         <member name="P:Net.Server.NetPlayer.CloseSend">
             <summary>
-            关闭发送数据, 当关闭发送数据后, 数据将会停止发送, (允许接收客户端数据,但不能发送!)
+            关闭发送数据, 当关闭发送数据后, 数据将会停止发送
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.CloseReceive">
+            <summary>
+            关闭接收数据, 当关闭接收数据后, 数据将会停止接收
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.IsQueueUp">
@@ -4617,29 +2340,29 @@
             远程方法哈希
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.Clients">
-            <summary>
-            所有在线的客户端
-            </summary>
-        </member>
         <member name="P:Net.Server.ServerBase`2.Players">
             <summary>
-            所有在线的客户端 与<see cref="P:Net.Server.ServerBase`2.UIDClients"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.PlayerID"/>
+            登录的客户端 与<see cref="P:Net.Server.ServerBase`2.UIDClients"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.PlayerID"/>
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.UIDClients">
             <summary>
-            所有在线的客户端 与<see cref="P:Net.Server.ServerBase`2.Players"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.UserID"/>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.UnClients">
-            <summary>
-            未知客户端连接 或 刚连接服务器还未登录账号的IP
+            登录的客户端 与<see cref="P:Net.Server.ServerBase`2.Players"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.UserID"/>
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.AllClients">
             <summary>
             所有客户端列表
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Clients">
+            <summary>
+            所有在线的客户端
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.UnClients">
+            <summary>
+            未知客户端连接 或 刚连接服务器还未登录账号的IP
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.Scenes">
@@ -4655,6 +2378,11 @@
         <member name="P:Net.Server.ServerBase`2.OnlinePlayers">
             <summary>
             当前玩家在线人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.UnClientNumber">
+            <summary>
+            未知客户端人数, 即在线不登录账号的客户端
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.Port">
@@ -4722,19 +2450,24 @@
             接收线程循环次数(FPS)
             </summary>
         </member>
+        <member name="F:Net.Server.ServerBase`2.outflowTotal">
+            <summary>
+            从启动到现在总流出的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`2.inflowTotal">
+            <summary>
+            从启动到现在总流入的数据流量
+            </summary>
+        </member>
         <member name="P:Net.Server.ServerBase`2.frame">
             <summary>
             1CRC协议
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.StackBufferSize">
+        <member name="P:Net.Server.ServerBase`2.PackageSize">
             <summary>
-            允许叠包缓存最大值 默认可发送5242880(5M)的数据包
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.StackNumberMax">
-            <summary>
-            允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
+            每个客户端接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.HeartInterval">
@@ -4775,7 +2508,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.RTO">
             <summary>
-            （Retransmission TimeOut）重传超时时间。 默认为200毫秒重传一次
+            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.MTPS">
@@ -4783,19 +2516,14 @@
             (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.UnClientNumber">
+        <member name="P:Net.Server.ServerBase`2.FlowControl">
             <summary>
-            未知客户端人数, 即在线不登录账号的客户端
+            流量控制模式，只有Gcp协议可用
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.MaxThread">
             <summary>
-            并发线程数量, 发送线程和接收处理线程数量 / 2
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`2.onlineNumber">
-            <summary>
-            在线客户端数量
+            并发线程数量, 发送线程和接收处理线程数量
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.PackageLength">
@@ -4895,7 +2623,7 @@
         </member>
         <member name="F:Net.Server.ServerBase`2.OnPingCallback">
             <summary>
-            ping服务器回调 参数double为延迟毫秒单位 当<see cref="T:Net.Share.RTOMode"/>=<see cref="F:Net.Share.RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
+            ping服务器回调 参数double为延迟毫秒单位 当<see cref="!:RTOMode"/>=<see cref="!:RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.OnSendErrorHandle">
@@ -5533,7 +3261,7 @@
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo},System.Action)">
             <summary>
             添加网络Rpc(注册远程方法)
             </summary>
@@ -6841,6 +4569,11 @@
             连接指令 (内部)
             </summary>
         </member>
+        <member name="F:Net.Share.NetCmd.Disconnect">
+            <summary>
+            断开网络连接, 内部指令
+            </summary>
+        </member>
         <member name="F:Net.Share.NetCmd.LocalRT">
             <summary>
             自身转发, 可靠传输
@@ -7009,11 +4742,11 @@
             </summary>
             <param name="sendNumber">一秒发送数据次数</param>
             <param name="sendCount">一秒发送字节长度</param>
-            <param name="receiveNumber">一秒接收数据次数</param>
-            <param name="receiveCount">一秒接收到的字节大小</param>
-            <param name="resolveNumber">解析RPC函数次数</param>
-            <param name="sendLoopNum">发送线程循环次数 并发数,类似fps</param>
-            <param name="revdLoopNum">接收线程循环次数</param>
+            <param name="receiveNumber"></param>
+            <param name="receiveCount"></param>
+            <param name="resolveNumber"></param>
+            <param name="sendLoopNum"></param>
+            <param name="revdLoopNum"></param>
         </member>
         <member name="T:Net.Share.RevdBufferHandle`1">
             <summary>
@@ -7028,6 +4761,56 @@
             </summary>
             <param name="client">处理此客户端的数据请求</param>
             <param name="model"></param>
+        </member>
+        <member name="T:Net.Share.Dataflow">
+            <summary>
+            数据流量统计结构类
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.sendNumber">
+            <summary>
+            每秒发送数据次数
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.sendCount">
+            <summary>
+            每秒发送字节长度
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.receiveNumber">
+            <summary>
+            每秒接收数据次数
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.receiveCount">
+            <summary>
+            每秒接收到的字节长度
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.resolveNumber">
+            <summary>
+            解析RPC函数次数
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.sendLoopNum">
+            <summary>
+            发送线程循环次数(FPS)
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.revdLoopNum">
+            <summary>
+            接收线程循环次数(FPS)
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.outflowTotal">
+            <summary>
+            从启动到现在总流出的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Share.Dataflow.inflowTotal">
+            <summary>
+            从启动到现在总流入的数据流量
+            </summary>
         </member>
         <member name="T:Net.Share.Operation">
             <summary>
@@ -7672,19 +5455,19 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Net.Share.RTOMode">
+        <member name="T:Net.Share.FlowControlMode">
             <summary>
-            超时重传模式
+            流量控制模式
             </summary>
         </member>
-        <member name="F:Net.Share.RTOMode.Variable">
+        <member name="F:Net.Share.FlowControlMode.Normal">
             <summary>
-            可变的重传时间, 以ping指令来自动设置重传时间, 每秒ping一次, 并设置rto时间, 你还可以监听服务器,客户端的OnPingCallback事件来查看网络延迟
+            正常模式 (类似Tcp)，当网络差时，会降低数据传输频率，节约网络流量
             </summary>
         </member>
-        <member name="F:Net.Share.RTOMode.Fixed">
+        <member name="F:Net.Share.FlowControlMode.Quick">
             <summary>
-            固定重传时间, 以ServerBase的RTO时间重传
+            极速模式 (帧同步游戏)，如果网络差时，也会以一定速度进行数据传输，保证数据流畅
             </summary>
         </member>
         <member name="T:Net.Share.SendBuffer">
@@ -7816,15 +5599,16 @@
         </member>
         <member name="T:Net.Share.Win32KernelAPI">
             <summary>
-            系统时钟间隔是个很少被关心到的系统标量，
-            它反映了系统产生时钟中断的频率，间隔越小频率越高，反之亦然。
-            每当时钟中断产生，系统相关的中断函数将会处理这个中断。
-            时钟中断处理函数会更新系统时间，检查内核调试信息等。
+            提供win32内核api类
             </summary>
         </member>
         <member name="M:Net.Share.Win32KernelAPI.timeBeginPeriod(System.UInt32)">
             <summary>
-            设置应用程序或驱动程序使用的最小定时器分辨率  
+            <code>设置应用程序或驱动程序使用的最小定时器分辨率</code>
+            系统时钟间隔是个很少被关心到的系统标量，
+            它反映了系统产生时钟中断的频率，间隔越小频率越高，反之亦然。
+            每当时钟中断产生，系统相关的中断函数将会处理这个中断。
+            时钟中断处理函数会更新系统时间，检查内核调试信息等。
             </summary>
             <param name="uMilliseconds"></param>
             <returns></returns>
@@ -18391,6 +16175,801 @@
         <member name="F:Newtonsoft_X.Json.WriteState.Start">
             <summary>
             A <see cref="T:Newtonsoft.Json.JsonWriter" /> write method has not been called.
+            </summary>
+        </member>
+        <member name="T:GameDesigner.ActionBehaviour">
+            <summary>
+            动作行为--用户添加的组件 v2017/12/6
+            </summary>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnEnter(GameDesigner.StateAction)">
+            <summary>
+            当进入状态
+            </summary>
+            <param name="action">当前动作</param>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnUpdate(GameDesigner.StateAction)">
+            <summary>
+            当更新状态
+            </summary>
+            <param name="action">当前动作</param>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnExit(GameDesigner.StateAction)">
+            <summary>
+            当退出状态
+            </summary>
+            <param name="action">当前动作</param>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnStop(GameDesigner.StateAction)">
+            <summary>
+            当停止动作 : 当动作不使用动画循环时, 动画时间到达100%后调用
+            </summary>
+            <param name="action"></param>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnAnimationEvent(GameDesigner.StateAction,System.Single)">
+            <summary>
+            当进入动画事件
+            </summary>
+            <param name="action">当前动作</param>
+            <param name="animEventTime">动画事件时间</param>
+        </member>
+        <member name="M:GameDesigner.ActionBehaviour.OnInstantiateSpwan(GameDesigner.StateAction,UnityEngine.GameObject)">
+            <summary>
+            当实例化技能物体
+            </summary>
+            <param name="action">当前动作</param>
+            <param name="spwan">技能物体</param>
+        </member>
+        <member name="T:GameDesigner.AudioManager">
+            <summary>
+            音效管理
+            </summary>
+        </member>
+        <member name="P:GameDesigner.AudioManager.Instance">
+            <summary>
+            音效实例
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip)">
+            <summary>
+            播放音效剪辑
+            参数clip : 放入你要播放的音源
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip,System.Single)">
+            <summary>
+            播放音效剪辑
+            参数clip : 放入你要播放的音源
+            参数volume : 声音大小调节
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.Play(UnityEngine.AudioClip,System.Single,System.Boolean)">
+            <summary>
+            播放音效剪辑
+            参数clip : 放入你要播放的音源
+            参数volume : 声音大小调节
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioClip)">
+            <summary>
+            当音效播放完成销毁AudioSource组件
+            参数clip : 放入你要播放的音源
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioClip,System.Single)">
+            <summary>
+            当音效播放完成销毁AudioSource组件
+            参数clip : 放入你要播放的音源
+            参数volume : 声音大小调节
+            </summary>
+        </member>
+        <member name="M:GameDesigner.AudioManager.OnPlayingDestroy(UnityEngine.AudioSource,UnityEngine.AudioClip)">
+            <summary>
+            当音效播放完成销毁AudioSource组件
+            参数clip : 放入你要播放的音源
+            参数source : 音频源组件
+            </summary>
+        </member>
+        <member name="T:GameDesigner.IBehaviour">
+            <summary>
+            状态行为基类 2019.3.3
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IBehaviour.show">
+            <summary>
+            展开编辑器检视面板
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IBehaviour.Active">
+            <summary>
+            脚本是否启用?
+            </summary>
+        </member>
+        <member name="P:GameDesigner.IBehaviour.state">
+            <summary>
+            当前状态
+            </summary>
+        </member>
+        <member name="P:GameDesigner.IBehaviour.transform">
+            <summary>
+            状态管理器转换组建
+            </summary>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.OnInit">
+            <summary>
+            当初始化调用
+            </summary>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.OnDestroyComponent">
+            <summary>
+            当组件被删除调用一次
+            </summary>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.OnInspectorGUI(GameDesigner.State)">
+            <summary>
+            当绘制编辑器检视面板 (重要提示!你想自定义编辑器检视面板则返回真,否则显示默认编辑器检视面板)
+            </summary>
+            <param name="state">当前状态</param>
+            <returns></returns>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.EnterState(System.Int32)">
+            <summary>
+            进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
+            </summary>
+            <param name="stateID"></param>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.OnEnterNextState(System.Int32)">
+            <summary>
+            当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
+            </summary>
+            <param name="stateID">下一个状态的ID</param>
+        </member>
+        <member name="T:GameDesigner.IState">
+            <summary>
+            状态基类
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.findBehaviours">
+            <summary>
+            查找行为组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.makeTransition">
+            <summary>
+            绘制状态连接线条
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.makeGetValueTransition">
+            <summary>
+            绘制蓝图获得值线条
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.makeRuntimeTransition">
+            <summary>
+            绘制蓝图运行下一个节点线条
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.makeOutRuntimeTransition">
+            <summary>
+            绘制蓝图运行线条
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.createScriptName">
+            <summary>
+            创建脚本名称
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.StateActionScriptPath">
+            <summary>
+            创建脚本路径
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.StateBehaviourScriptPath">
+            <summary>
+            创建脚本路径
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.TransitionScriptPath">
+            <summary>
+            创建脚本路径
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.foldout">
+            <summary>
+            展开编辑器 和 添加脚本编译状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.compiling">
+            <summary>
+            展开编辑器 和 添加脚本编译状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.behaviourMenuIndex">
+            <summary>
+            右键行为脚本存储行为的索引 和 动作菜单索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.actionMenuIndex">
+            <summary>
+            右键行为脚本存储行为的索引 和 动作菜单索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.IState.rect">
+            <summary>
+            蓝图 和 状态 的编辑器矩形
+            </summary>
+        </member>
+        <member name="T:GameDesigner.AnimationMode">
+            <summary>
+            动画模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AnimationMode.Animation">
+            <summary>
+            旧版动画
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AnimationMode.Animator">
+            <summary>
+            新版动画
+            </summary>
+        </member>
+        <member name="T:GameDesigner.State">
+            <summary>
+            状态 -- v2017/12/6
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.transitions">
+            <summary>
+            状态连接集合
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.behaviours">
+            <summary>
+            状态行为集合
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.actionSystem">
+            <summary>
+            动作系统 使用为真 , 不使用为假
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.animLoop">
+            <summary>
+            动画循环?
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.animPlayMode">
+            <summary>
+            动画模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.actionIndex">
+            <summary>
+            动作索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.audioIndex">
+            <summary>
+            音效索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.animSpeed">
+            <summary>
+            动画速度
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.isExitState">
+            <summary>
+            动画结束是否进入下一个状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.DstStateID">
+            <summary>
+            动画结束进入下一个状态的ID
+            </summary>
+        </member>
+        <member name="F:GameDesigner.State.actions">
+            <summary>
+            状态动作集合
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.CreateStateInstance(GameDesigner.StateMachine,System.String,UnityEngine.Vector2)">
+            <summary>
+            创建状态
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.#ctor(GameDesigner.StateMachine)">
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <member name="P:GameDesigner.State.Action">
+            <summary>
+            当前状态动作
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.OnEnterState">
+            <summary>
+            进入状态
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.OnUpdateState">
+            <summary>
+            状态每一帧
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.SetPosition(GameDesigner.StateManager,UnityEngine.GameObject)">
+            <summary>
+            设置技能位置
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.InstantiateSpwan(GameDesigner.StateManager)">
+            <summary>
+            技能实例化
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.OnExitState">
+            <summary>
+            当退出状态
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.OnActionExit">
+            <summary>
+            当子动作处于循环播放模式时, 子动作每次播放完成动画都会调用一次
+            </summary>
+        </member>
+        <member name="M:GameDesigner.State.OnStop">
+            <summary>
+            当动作停止
+            </summary>
+        </member>
+        <member name="T:GameDesigner.AnimPlayMode">
+            <summary>
+            动画播放模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AnimPlayMode.Random">
+            <summary>
+            随机播放动画
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AnimPlayMode.Sequence">
+            <summary>
+            顺序播放动画
+            </summary>
+        </member>
+        <member name="T:GameDesigner.AudioMode">
+            <summary>
+            音效模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AudioMode.EnterPlay">
+            <summary>
+            进入状态播放音效
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AudioMode.AnimEvent">
+            <summary>
+            动画事件播放音效
+            </summary>
+        </member>
+        <member name="F:GameDesigner.AudioMode.ExitPlay">
+            <summary>
+            退出状态播放音效
+            </summary>
+        </member>
+        <member name="T:GameDesigner.ActiveMode">
+            <summary>
+            技能生成模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.ActiveMode.Instantiate">
+            <summary>
+            实例化
+            </summary>
+        </member>
+        <member name="F:GameDesigner.ActiveMode.ObjectPool">
+            <summary>
+            对象池
+            </summary>
+        </member>
+        <member name="T:GameDesigner.SpwanMode">
+            <summary>
+            技能物体设置模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.SpwanMode.localPosition">
+            <summary>
+            设置技能物体在自身位置
+            </summary>
+        </member>
+        <member name="F:GameDesigner.SpwanMode.SetParent">
+            <summary>
+            设置技能物体在父对象位置和成为父对象的子物体
+            </summary>
+        </member>
+        <member name="F:GameDesigner.SpwanMode.SetInTargetPosition">
+            <summary>
+            设置技能物体在父对象位置
+            </summary>
+        </member>
+        <member name="T:GameDesigner.StateAction">
+            <summary>
+            ARPG状态动作
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.clipName">
+            <summary>
+            动画剪辑名称
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.clipIndex">
+            <summary>
+            动画剪辑索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.animTime">
+            <summary>
+            当前动画时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.animEventTime">
+            <summary>
+            动画事件时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.animTimeMax">
+            <summary>
+            动画结束时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.eventEnter">
+            <summary>
+            是否已到达事件时间或超过事件时间，到为true，没到为flase
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.effectSpwan">
+            <summary>
+            技能粒子物体
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.activeMode">
+            <summary>
+            粒子物体生成模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.spwanTime">
+            <summary>
+            粒子物体销毁或关闭时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.activeObjs">
+            <summary>
+            粒子物体对象池
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.spwanmode">
+            <summary>
+            粒子位置设置
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.parent">
+            <summary>
+            作为粒子挂载的父对象 或 作为粒子生成在此parent对象的位置
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.effectPostion">
+            <summary>
+            粒子出生位置
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.effectEulerAngles">
+            <summary>
+            粒子角度
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.isPlayAudio">
+            <summary>
+            是否播放音效
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.audioModel">
+            <summary>
+            音效触发模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.audioClips">
+            <summary>
+            音效剪辑
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.behaviours">
+            <summary>
+            ARPG动作行为
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.foldout">
+            <summary>
+            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.audiofoldout">
+            <summary>
+            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.findBehaviours">
+            <summary>
+            编辑器脚本是否展开 编辑器音效是否展开 查找行为组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.desAudioIndex">
+            <summary>
+            删除音效索引 行为脚本菜单索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.behaviourMenuIndex">
+            <summary>
+            删除音效索引 行为脚本菜单索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateAction.createScriptName">
+            <summary>
+            创建脚本名称
+            </summary>
+        </member>
+        <member name="P:GameDesigner.StateAction.IsComplete">
+            <summary>
+            动作是否完成?, 当动画播放结束后为True, 否则为false
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateAction.#ctor">
+            <summary>
+            构造状态动作
+            </summary>
+        </member>
+        <member name="T:GameDesigner.StateBehaviour">
+            <summary>
+            状态行为脚本 v2017/12/6 - 2020.6.7
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateBehaviour.OnEnter">
+            <summary>
+            当状态进入时
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateBehaviour.OnUpdate">
+            <summary>
+            当状态每一帧
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateBehaviour.OnExit">
+            <summary>
+            当状态退出后
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateBehaviour.OnStop">
+            <summary>
+            当停止动作 : 当动作不使用动画循环时, 动画时间到达100%后调用
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateBehaviour.OnActionExit">
+            <summary>
+            当动作处于循环模式时, 子动作动画每次结束都会调用一次
+            </summary>
+        </member>
+        <member name="T:GameDesigner.StateMachine">
+            <summary>
+            状态机 v2017/12/6
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.defaulID">
+            <summary>
+            默认状态ID
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.stateID">
+            <summary>
+            当前运行的状态索引
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.states">
+            <summary>
+            所有状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.selectStates">
+            <summary>
+            选中的状态,可以多选
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.animMode">
+            <summary>
+            动画选择模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.animation">
+            <summary>
+            旧版动画组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.animator">
+            <summary>
+            新版动画组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateMachine.clipNames">
+            <summary>
+            动画剪辑
+            </summary>
+        </member>
+        <member name="P:GameDesigner.StateMachine.Item(System.Int32)">
+            <summary>
+            以状态ID取出状态对象
+            </summary>
+            <param name="stateID"></param>
+            <returns></returns>
+        </member>
+        <member name="P:GameDesigner.StateMachine.defaultState">
+            <summary>
+            获取 或 设置 默认状态
+            </summary>
+        </member>
+        <member name="P:GameDesigner.StateMachine.currState">
+            <summary>
+            当前状态
+            </summary>
+        </member>
+        <member name="P:GameDesigner.StateMachine.selectState">
+            <summary>
+            选择的状态
+            </summary>
+        </member>
+        <member name="P:GameDesigner.StateMachine.stateManager">
+            <summary>
+            状态管理
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateMachine.CreateStateMachineInstance(System.String)">
+            <summary>
+            创建状态机实例
+            </summary>
+            <param name="name">状态机名称</param>
+            <returns></returns>
+        </member>
+        <member name="T:GameDesigner.StateManager">
+            <summary>
+            状态执行管理类
+            V2017.12.6
+            版本修改V2019.8.27
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateManager.stateMachine">
+            <summary>
+            状态机
+            </summary>
+        </member>
+        <member name="M:GameDesigner.StateManager.OnState(GameDesigner.State)">
+            <summary>
+            处理状态各种行为与事件方法
+            </summary>
+            <param name="state">要执行的状态</param>
+        </member>
+        <member name="M:GameDesigner.StateManager.OnTransition(GameDesigner.Transition)">
+            <summary>
+            处理连接行为线条方法
+            </summary>
+            <param name="transition">要执行的连接线条</param>
+        </member>
+        <member name="M:GameDesigner.StateManager.OnStateTransitionExit(GameDesigner.State)">
+            <summary>
+            当退出状态时处理连接事件
+            </summary>
+            <param name="state">要退出的状态</param>
+        </member>
+        <member name="M:GameDesigner.StateManager.EnterNextState(GameDesigner.State,GameDesigner.State)">
+            <summary>
+            当进入下一个状态
+            </summary>
+            <param name="currState">当前状态</param>
+            <param name="enterState">要进入的状态</param>
+        </member>
+        <member name="M:GameDesigner.StateManager.EnterNextState(System.Int32)">
+            <summary>
+            当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
+            </summary>
+            <param name="nextStateIndex">下一个状态的ID</param>
+        </member>
+        <member name="M:GameDesigner.StateManager.StatusEntry(System.Int32)">
+            <summary>
+            进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
+            </summary>
+            <param name="stateID"></param>
+        </member>
+        <member name="T:GameDesigner.StateSystem">
+            <summary>
+            状态机系统
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateSystem.CopyComponent">
+            <summary>
+            状态机复制组件
+            </summary>
+        </member>
+        <member name="F:GameDesigner.StateSystem.Component">
+            <summary>
+            状态机新型复制组件
+            </summary>
+        </member>
+        <member name="T:GameDesigner.Transition">
+            <summary>
+            状态连接组件 2017年12月6日
+            版本修改2019.8.27
+            </summary>
+        </member>
+        <member name="P:GameDesigner.Transition.currState">
+            <summary>
+            当前状态
+            </summary>
+        </member>
+        <member name="P:GameDesigner.Transition.nextState">
+            <summary>
+            下一个状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.Transition.model">
+            <summary>
+            连接控制模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.Transition.time">
+            <summary>
+            当前时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.Transition.exitTime">
+            <summary>
+            结束时间
+            </summary>
+        </member>
+        <member name="F:GameDesigner.Transition.behaviours">
+            <summary>
+            连接行为
+            </summary>
+        </member>
+        <member name="F:GameDesigner.Transition.isEnterNextState">
+            <summary>
+            是否进入下一个状态?
+            </summary>
+        </member>
+        <member name="M:GameDesigner.Transition.CreateTransitionInstance(GameDesigner.State,GameDesigner.State,System.String)">
+            <summary>
+            创建连接实例
+            </summary>
+            <param name="state">连接的开始状态</param>
+            <param name="nextState">连接的结束状态</param>
+            <param name="transitionName">连接名称</param>
+            <returns></returns>
+        </member>
+        <member name="T:GameDesigner.TransitionBehaviour">
+            <summary>
+            连接行为--用户可以继承此类添加组件 2017年12月6日(星期三)
+            </summary>
+        </member>
+        <member name="T:GameDesigner.TransitionModel">
+            <summary>
+            状态过渡事件选项模式
+            </summary>
+        </member>
+        <member name="F:GameDesigner.TransitionModel.ExitTime">
+            <summary>
+            用时间来跳转状态
+            </summary>
+        </member>
+        <member name="F:GameDesigner.TransitionModel.ScriptControl">
+            <summary>
+            代码控制条件跳转
             </summary>
         </member>
     </members>
