@@ -174,15 +174,6 @@ namespace Net.Component
             I.client.WorkerQueue.Enqueue(ptr);
         }
 
-        [Rpc]
-        void Offline(string info)
-        {
-            MessageBox.Show("登录提示", info, (r) =>
-            {
-                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-            });
-        }
-
         #region 发送接口实现
         public void Send(byte[] buffer)
         {

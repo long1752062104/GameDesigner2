@@ -1,14 +1,8 @@
 ﻿namespace Net.Serialize
 {
     using Net.Event;
-    using Newtonsoft_X.Json;
-    using Newtonsoft_X.Json.Serialization;
     using global::System;
     using global::System.Collections.Generic;
-    using global::System.IO;
-    using global::System.Linq;
-    using global::System.Reflection;
-    using global::System.Text;
     using Net.Share;
     using Net.System;
 
