@@ -180,6 +180,14 @@ namespace Net.Server
         /// </summary>
         protected int revdLoopNum;
         /// <summary>
+        /// 从启动到现在总流出的数据流量
+        /// </summary>
+        protected long outflowTotal;
+        /// <summary>
+        /// 从启动到现在总流入的数据流量
+        /// </summary>
+        protected long inflowTotal;
+        /// <summary>
         /// 1CRC协议
         /// </summary>
         protected virtual byte frame { get; set; } = 1;
@@ -730,7 +738,27 @@ namespace Net.Server
         {
             try
             {
-                OnNetworkDataTraffic?.Invoke(sendAmount, sendCount, receiveAmount, receiveCount, resolveAmount, sendLoopNum, revdLoopNum);
+                outflowTotal += (long)sendCount;
+                inflowTotal += (long)receiveCount;
+                OnNetworkDataTraffic?.Invoke(new Dataflow()
+                {
+                    sendCount = sendCount,
+                    sendNumber = sendAmount,
+                    receiveNumber = receiveAmount,
+                    receiveCount = receiveCount,
+                    resolveNumber = resolveAmount,
+                    sendLoopNum = sendLoopNum,
+                    revdLoopNum = revdLoopNum,
+                    outflowTotal = outflowTotal,
+                    inflowTotal = inflowTotal,
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("流量统计异常:" + ex);
+            }
+            finally
+            {
                 sendCount = 0;
                 sendAmount = 0;
                 resolveAmount = 0;
@@ -738,10 +766,6 @@ namespace Net.Server
                 receiveCount = 0;
                 sendLoopNum = 0;
                 revdLoopNum = 0;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("流量统计异常:" + ex);
             }
             return IsRunServer;
         }

@@ -138,6 +138,14 @@ namespace Net.Client
         /// </summary>
         protected int revdLoopNum;
         /// <summary>
+        /// 从启动到现在总流出的数据流量
+        /// </summary>
+        protected long outflowTotal;
+        /// <summary>
+        /// 从启动到现在总流入的数据流量
+        /// </summary>
+        protected long inflowTotal;
+        /// <summary>
         /// 心跳次数
         /// </summary>
         protected int heart = 0;
@@ -1197,7 +1205,20 @@ namespace Net.Client
         {
             try
             {
-                OnNetworkDataTraffic?.Invoke(sendAmount, sendCount, receiveAmount, receiveCount, resolveAmount, sendLoopNum, revdLoopNum);
+                outflowTotal += (long)sendCount;
+                inflowTotal += (long)receiveCount;
+                OnNetworkDataTraffic?.Invoke(new Dataflow()
+                {
+                    sendCount = sendCount,
+                    sendNumber = sendAmount,
+                    receiveNumber = receiveAmount,
+                    receiveCount = receiveCount,
+                    resolveNumber = resolveAmount,
+                    sendLoopNum = sendLoopNum,
+                    revdLoopNum = revdLoopNum,
+                    outflowTotal = outflowTotal,
+                    inflowTotal = inflowTotal,
+                });
             }
             catch (Exception ex)
             {

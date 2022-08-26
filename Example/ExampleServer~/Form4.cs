@@ -46,9 +46,12 @@ namespace ExampleServer
             server.MTU = 1300;
             server.MTPS = 2048;
             server.SetHeartTime(10,1000);
-            server.OnNetworkDataTraffic += (a, b, c, d, e1, f, g) => {//当统计网络性能,数据传输量
-                toolStripStatusLabel1.Text = $"发送数量:{a} 发送字节:{ByteHelper.ToString(b)} 接收数量:{c} 接收字节:{ByteHelper.ToString(d)} 发送fps:{f} 接收fps:{g} 解析数量:{e1}";
-                label2.Text = "当前在线人数:" + server.OnlinePlayers + " 未知客户端:" + server.UnClientNumber;
+            server.OnNetworkDataTraffic += (df) => {//当统计网络性能,数据传输量
+                toolStripStatusLabel1.Text = $"流出:{df.sendNumber}次/{ByteHelper.ToString(df.sendCount)} " +
+                $"流入:{df.receiveNumber}次/{ByteHelper.ToString(df.receiveCount)} " +
+                $"发送fps:{df.sendLoopNum} 接收fps:{df.revdLoopNum} 解析:{df.resolveNumber}次 " +
+                $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)}";
+                label2.Text = "登录:" + server.OnlinePlayers + " 未登录:" + server.UnClientNumber;
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter2());
             server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Client>());
