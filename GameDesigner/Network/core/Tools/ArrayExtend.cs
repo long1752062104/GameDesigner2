@@ -167,14 +167,9 @@ public static class ArrayExtend
 
     public static T[] ToArray<T>(this HashSet<T> self)
     {
-        T[] ts = new T[self.Count];
-        int i = 0;
-        foreach (T t in self)
-        {
-            ts[i] = t;
-            i++;
-        }
-        return ts;
+        var array = new T[self.Count];
+        self.CopyTo(array);
+        return array;
     }
 
     public static byte[] ToArray(this byte[] self, int index, int count) 

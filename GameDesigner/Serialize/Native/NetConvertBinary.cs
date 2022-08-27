@@ -506,6 +506,7 @@
             internal bool ItemType1IsPrimitive;
             internal Type[] ItemTypes;
             internal object defaultV;
+            internal bool Intricate;
 #if !SERVICE
             internal Func<object, object> getValue;
             internal Action<object, object> setValue;
@@ -795,6 +796,7 @@
                 {
                     Type itemType = fpType.GenericTypeArguments[0];
                     member1.ItemType = itemType;
+                    member1.Intricate = fpType.GetInterface(typeof(IList).Name) == null;
                 }
                 else if (fpType.GenericTypeArguments.Length == 2)
                 {
@@ -832,7 +834,7 @@
             member1.IsGenericType = fpType.IsGenericType;
             member1.Type = fpType;
             member1.TypeCode = Type.GetTypeCode(fpType);
-            if(member1.IsPrimitive)
+            if (member1.IsPrimitive)
             {
                 if (fpType == typeof(string))
                     member1.defaultV = null;
@@ -887,6 +889,16 @@
                     if (member.ItemType1 == null)
                     {
                         var array = value as IList;
+                        if (array == null)
+                        {
+                            array = Activator.CreateInstance(typeof(List<>).MakeGenericType(member.ItemType)) as IList;
+                            var array1 = value as IEnumerable;
+                            var enumerator = array1.GetEnumerator();
+                            while (enumerator.MoveNext())
+                            {
+                                array.Add(enumerator.Current);
+                            }
+                        }
                         if (array.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
@@ -1085,38 +1097,48 @@
                 {
                     member.SetValue(ref obj, segment.ReadEnum(member.Type));
                 }
-                else if (member.IsArray)//如果是数组类型
-                {
-                    IList array;
-                    if (member.ItemType.IsPrimitive)
-                    {
-                        array = (IList)segment.ReadArray(member.ItemType);
-                    }
-                    else 
-                    {
-                        int arrCount = segment.ReadInt32();
-                        array = (IList)Activator.CreateInstance(member.Type, arrCount);
-                        ReadArray(segment, ref array, member.ItemType, recordType, ignore);
-                    }
-                    member.SetValue(ref obj, array);
-                }
-                else if (member.IsGenericType)
+                else if (member.IsArray | member.IsGenericType)
                 {
                     if (member.ItemType1 == null)//如果itemType1是空的话，说明是List类型，否则是字典
                     {
                         IList array;
                         if (member.ItemType.IsPrimitive)
                         {
-                            array = (IList)segment.ReadList(member.ItemType);
+                            if (member.IsArray)
+                                array = (IList)segment.ReadArray(member.ItemType);
+                            else
+                                array = (IList)segment.ReadList(member.ItemType);
                         }
                         else
                         {
-                            int arrCount = segment.ReadInt32();
-                            var array1 = Array.CreateInstance(member.ItemType, arrCount);
-                            array = (IList)Activator.CreateInstance(member.Type, array1);
-                            ReadArray(segment, ref array, member.ItemType, recordType, ignore);
+                            if (member.IsArray)
+                            {
+                                int arrCount = segment.ReadInt32();
+                                array = (IList)Activator.CreateInstance(member.Type, arrCount);
+                                ReadArray(segment, ref array, member.ItemType, recordType, ignore);
+                            }
+                            else
+                            {
+                                int arrCount = segment.ReadInt32();
+                                var array1 = Array.CreateInstance(member.ItemType, arrCount);
+                                array = (IList)Activator.CreateInstance(member.Type, array1);
+                                ReadArray(segment, ref array, member.ItemType, recordType, ignore);
+                            }
                         }
-                        member.SetValue(ref obj, array);
+                        if (!member.Intricate)
+                        {
+                            member.SetValue(ref obj, array);
+                        }
+                        else 
+                        {
+                            var array1 = Activator.CreateInstance(member.Type);
+                            var addMethod = member.Type.GetMethod("Add", new Type[] {  member.ItemType });
+                            foreach (var item in array)
+                            {
+                                addMethod.Invoke(array1, new object[] { item });
+                            }
+                            member.SetValue(ref obj, array1);
+                        }
                     }
                     else
                     {

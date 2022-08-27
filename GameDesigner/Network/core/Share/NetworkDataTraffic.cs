@@ -3,13 +3,6 @@
     /// <summary>
     /// 网络流量数据统计
     /// </summary>
-    /// <param name="sendNumber">一秒发送数据次数</param>
-    /// <param name="sendCount">一秒发送字节长度</param>
-    /// <param name="receiveNumber"></param>
-    /// <param name="receiveCount"></param>
-    /// <param name="resolveNumber"></param>
-    /// <param name="sendLoopNum"></param>
-    /// <param name="revdLoopNum"></param>
     public delegate void NetworkDataTraffic(Dataflow dataflow);
 
     /// <summary>

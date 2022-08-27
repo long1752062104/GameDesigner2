@@ -168,12 +168,19 @@ namespace Net.Helper
 
         public static void SyncVarHandler(List<SyncVarInfo> syncVarList, byte[] buffer)
         {
-            SyncVarHandler(index => syncVarList[index], buffer);
+            SyncVarHandler(index => {
+                if (index >= syncVarList.Count)
+                    return null;
+                return syncVarList[index];
+            }, buffer);
         }
 
         public static void SyncVarHandler(MyDictionary<ushort, SyncVarInfo> syncVarDic, byte[] buffer)
         {
-            SyncVarHandler(index => syncVarDic[index], buffer);
+            SyncVarHandler(index => {
+                syncVarDic.TryGetValue(index, out var info);
+                return info;
+            }, buffer);
         }
 
         private static void SyncVarHandler(Func<ushort, SyncVarInfo> syncVarList, byte[] buffer)
@@ -183,6 +190,8 @@ namespace Net.Helper
             {
                 var index = segment1.ReadUInt16();
                 var syncVar = syncVarList(index);
+                if (syncVar == null)
+                    break;
                 var oldValue = syncVar.value;
                 object value;
                 if (syncVar.baseType)

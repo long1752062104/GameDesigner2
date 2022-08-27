@@ -284,6 +284,7 @@ namespace Net.System
             var array = value.GetType().GetMethod("ToArray").Invoke(value, null);
             WriteArray(array);
         }
+
         public void WriteArray<T>(T[] array)
         {
             WriteArray(value: array);
