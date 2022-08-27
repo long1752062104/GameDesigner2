@@ -111,14 +111,9 @@ namespace Net.UnityComponent
                 identity.Identity = opt.identity;
                 identity.isOtherCreate = true;
                 identity.isInit = true;
+                identity.InitAll();
                 identitys.TryAdd(opt.identity, identity);
                 OnNetworkObjectCreate(opt, identity);
-                var networkBehaviours = identity.GetComponentsInChildren<NetworkBehaviour>();
-                foreach (var item in networkBehaviours)
-                {
-                    item.Init();
-                    item.OnNetworkObjectCreate(opt);
-                }
             }
             return identity;
         }

@@ -88,7 +88,7 @@
         internal List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
-        internal bool redundant;
+        public bool redundant { get; internal set; }
 
         public int QueueUpCount { get; internal set; }
         /// <summary>
