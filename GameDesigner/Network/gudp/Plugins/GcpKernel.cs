@@ -84,7 +84,7 @@ namespace Net.Plugins
                     flowTick = tick + 1000;
                     currFlow = 0;
                     currAck = 0;
-                    ackNumber = FlowControl == FlowControlMode.Normal ? 1 : ushort.MaxValue;
+                    ackNumber = FlowControl == FlowControlMode.Normal ? 1 : 100;
                 }
                 foreach (var dic in senderDict.Values)
                 {

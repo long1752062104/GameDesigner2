@@ -1794,9 +1794,13 @@ namespace Net.Client
                     break;
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
-                    int count1 = Gcp.Receive(out var buffer1);
-                    if (count1 > 0)
+                    int count1;
+                    Segment buffer1;
+                    while ((count1 = Gcp.Receive(out buffer1)) > 0)
+                    {
                         DataHandle(buffer1);
+                        BufferPool.Push(buffer1);
+                    }
                     break;
                 case NetCmd.Connect:
                     Connected = true;
