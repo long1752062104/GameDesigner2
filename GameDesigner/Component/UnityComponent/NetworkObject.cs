@@ -47,6 +47,12 @@ namespace Net.UnityComponent
             if (isInit)
                 return;
             isInit = true;
+            if (IDENTITY == -1)
+            {
+                Debug.LogError("网络标识未初始化，请调用NetworkObject.Init(5000);初始化");
+                Destroy(gameObject);
+                return;
+            }
             var sm = NetworkSceneManager.I;
             if (sm == null)
             {
@@ -54,42 +60,40 @@ namespace Net.UnityComponent
                 Destroy(gameObject);
                 return;
             }
-            if (isOtherCreate)
+            if (isOtherCreate | m_identity > 0)
             {
-                sm.identitys.TryAdd(m_identity, this);
-                return;
-            }
-            if (m_identity > 0)
-            {
-                sm.identitys.TryAdd(m_identity, this);
-                return;
+                goto J1;
             }
             if (identity > 0)
             {
                 m_identity = identity;
-                sm.identitys.TryAdd(m_identity, this);
-                return;
-            }
-            if (IDENTITY == -1)
-            {
-                Debug.LogError("网络标识未初始化，请调用NetworkObject.Init(5000);初始化");
-                Destroy(gameObject);
-                return;
+                goto J1;
             }
             if (IDENTITY_POOL.Count > 0)
             {
                 m_identity = IDENTITY_POOL.Dequeue();
-                sm.identitys.TryAdd(m_identity, this);
-                return;
+                goto J1;
             }
-            if (IDENTITY >= IDENTITY_MAX)
+            if (IDENTITY < IDENTITY_MAX)
+            {
+                m_identity = IDENTITY++;
+                goto J1;
+            }
+            else
             {
                 Debug.LogError("网络标识已用完! 如果有需要请加大网络标识数量NetworkObject.Init(10000);");
                 Destroy(gameObject);
                 return;
             }
-            m_identity = IDENTITY++;
-            sm.identitys.TryAdd(m_identity, this);
+        J1:
+            if (!sm.identitys.TryAdd(m_identity, this, out var netObj))
+            {
+                if (netObj == this | netObj == null)
+                    return;
+                netObj.m_identity = -1;
+                Debug.Log($"uid:{m_identity}发生了两次实例化!");
+                Destroy(netObj.gameObject);
+            }
         }
         public void InitAll()
         {

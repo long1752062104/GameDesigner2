@@ -12,6 +12,8 @@
     using global::System.Net;
     using global::System.Reflection;
     using Net.System;
+    using AOT;
+    using global::System.Collections.Generic;
 
     /// <summary>
     /// kcp客户端
@@ -21,6 +23,7 @@
     {
         private readonly IntPtr kcp;
         private readonly outputCallback output;
+        private static readonly Dictionary<IntPtr, KcpClient> KcpDict = new Dictionary<IntPtr, KcpClient>();
 
         public KcpClient() : base()
         {
@@ -30,11 +33,17 @@
             ikcp_setoutput(kcp, outputPtr);
             ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
             ikcp_nodelay(kcp, 1, 10, 2, 1);
+            KcpDict[kcp] = this;
         }
 
         public KcpClient(bool useUnityThread) : this()
         {
             UseUnityThread = useUnityThread;
+        }
+
+        ~KcpClient()
+        {
+            KcpDict.Remove(kcp);
         }
 
         private byte[] addressBuffer;
@@ -47,16 +56,18 @@
             return addressBuffer;
         }
 
-        public unsafe int Output(byte* buf, int len, IntPtr kcp, IntPtr user)
+        //IL2CPP使用Marshal.GetFunctionPointerForDelegate需要设置委托方法为静态方法，并且要添加上特性MonoPInvokeCallback
+        [MonoPInvokeCallback(typeof(outputCallback))]
+        public static unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
         {
 #if WINDOWS
-            Win32KernelAPI.sendto(Client.Handle, buf, len, SocketFlags.None, RemoteAddressBuffer(), 16);
+            var client = KcpDict[kcp];
+            return Win32KernelAPI.sendto(client.Client.Handle, (byte*)buf, len, SocketFlags.None, client.RemoteAddressBuffer(), 16);
 #else
             byte[] buff = new byte[len];
-            Marshal.Copy(new IntPtr(buf), buff, 0, len);
-            Client.Send(buff, 0, len, SocketFlags.None);
+            Marshal.Copy(buf, buff, 0, len);
+            return KcpDict[kcp].Client.Send(buff, 0, len, SocketFlags.None);
 #endif
-            return 0;
         }
 
         public override void Receive()
@@ -134,10 +145,10 @@
                 this.Client = Client;
             }
 
-            public unsafe int Output(byte* buf, int len, IntPtr kcp, IntPtr user)
+            public unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
             {
                 byte[] buff = new byte[len];
-                Marshal.Copy(new IntPtr(buf), buff, 0, len);
+                Marshal.Copy(buf, buff, 0, len);
                 Client.Send(buff, 0, len, SocketFlags.None);
                 return 0;
             }

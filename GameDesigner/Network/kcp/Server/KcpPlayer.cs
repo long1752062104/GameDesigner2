@@ -27,10 +27,10 @@ namespace Net.Server
             output = new outputCallback(Output);
         }
 
-        public unsafe int Output(byte* buf, int len, IntPtr kcp, IntPtr user)
+        public unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
         {
             byte[] buff = new byte[len];
-            Marshal.Copy(new IntPtr(buf), buff, 0, len);
+            Marshal.Copy(buf, buff, 0, len);
             //sendQueue.Enqueue(new SendDataBuffer(this, buff));
             Server.SendTo(buff, 0, buff.Length, SocketFlags.None, RemotePoint);
             return 0;

@@ -142,8 +142,8 @@ namespace Net.Helper
                     string path = UnityEditor.AssetDatabase.GetAssetPath((UnityEngine.Object)value);
                     if (segment == null)
                         segment = BufferPool.Take();
-                    segment.WriteValue(syncVar.id);//(i);
-                    segment.WriteValue(path);
+                    segment.Write(syncVar.id);
+                    segment.Write(path);
 #endif
                     continue;
                 }
@@ -153,7 +153,7 @@ namespace Net.Helper
                     syncVar.value = value;
                 if (segment == null)
                     segment = BufferPool.Take();
-                segment.Write(syncVar.id);//(i);
+                segment.Write(syncVar.id);
                 if (syncVar.baseType)
                     segment.WriteValue(value);
                 else
