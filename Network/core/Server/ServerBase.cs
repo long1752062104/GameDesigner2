@@ -1247,9 +1247,13 @@ namespace Net.Server
                     break;
                 case NetCmd.ReliableTransport:
                     client.Gcp.Input(model.Buffer);
-                    int count1 = client.Gcp.Receive(out var buffer1);
-                    if (count1 > 0)
+                    int count1;
+                    Segment buffer1;
+                    while ((count1 = client.Gcp.Receive(out buffer1)) > 0)
+                    {
                         ReliableTransportComplete(client, buffer1);
+                        BufferPool.Push(buffer1);
+                    }
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOpt(model.buffer, model.index, model.count);
