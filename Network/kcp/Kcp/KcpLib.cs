@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Kcp
 {
-    public unsafe delegate int outputCallback(byte* buf, int len, IntPtr kcp, IntPtr user);
+    public unsafe delegate int outputCallback(IntPtr buf, int len, IntPtr kcp, IntPtr user);
 
     public unsafe delegate IntPtr ikcp_malloc_hook(int size);
 

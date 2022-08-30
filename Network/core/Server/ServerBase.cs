@@ -399,6 +399,7 @@ namespace Net.Server
         /// 服务器线程管理
         /// </summary>
         protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();
+        private int sendFileTick, recvFileTick;
         #endregion
 
         /// <summary>
@@ -991,6 +992,7 @@ namespace Net.Server
                 int dataCount = buffer.ReadInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
+                var position = buffer.Position + dataCount;
                 var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
                 if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.SceneRT & cmd1 != NetCmd.Notice & cmd1 != NetCmd.NoticeRT & cmd1 != NetCmd.Local & cmd1 != NetCmd.LocalRT)
                 {
@@ -1002,7 +1004,7 @@ namespace Net.Server
                     model.methodHash = func.hash;
                 }
                 DataHandle(client, model, buffer);//解析协议完成
-                J: buffer.Position += dataCount;
+                J: buffer.Position = position;
             }
         }
 
@@ -1266,13 +1268,13 @@ namespace Net.Server
                     int uid = BitConverter.ToInt32(model.buffer, model.index);
                     if (UIDClients.TryGetValue(uid, out Player player))
                     {
-                        Segment segment1 = new Segment(new byte[10], 0, 10, false);
-                        IPEndPoint iPEndPoint = player.RemotePoint as IPEndPoint;
-#pragma warning disable CS0618 // 类型或成员已过时
-                        segment1.Write(iPEndPoint.Address.Address);
-#pragma warning restore CS0618 // 类型或成员已过时
-                        segment1.Write(iPEndPoint.Port);
-                        SendRT(client, NetCmd.P2P, segment1.ToArray(false));
+                        var endPoint = player.RemotePoint as IPEndPoint;
+                        var len = segment.Count;
+                        segment.SetPositionLength(0);
+                        segment.Write(endPoint.Address.Address);
+                        segment.Write(endPoint.Port);
+                        SendRT(client, NetCmd.P2P, segment.ToArray(false));
+                        segment.Count = len;
                     }
                     break;
                 case NetCmd.SyncVar:
@@ -1280,11 +1282,10 @@ namespace Net.Server
                     break;
                 case NetCmd.SendFile:
                     {
-                        Segment segment1 = new Segment(model.Buffer, false);
-                        var key = segment1.ReadValue<int>();
-                        var length = segment1.ReadValue<long>();
-                        var fileName = segment1.ReadValue<string>();
-                        var buffer = segment1.ReadArray<byte>();
+                        var key = segment.ReadInt32();
+                        var length = segment.ReadInt64();
+                        var fileName = segment.ReadString();
+                        var buffer = segment.ReadByteArray();
                         if (!client.ftpDic.TryGetValue(key, out FileData fileData))
                         {
                             fileData = new FileData();
@@ -1303,7 +1304,7 @@ namespace Net.Server
                             {
                                 path = Path.GetTempFileName();
                             }
-                            fileData.fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                            fileData.fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                             fileData.fileName = fileName;
                             client.ftpDic.Add(key, fileData);
                         }
@@ -1322,17 +1323,22 @@ namespace Net.Server
                         }
                         else
                         {
-                            segment1.Position = 0;
-                            segment1.Write(key);
-                            SendRT(client, NetCmd.Download, segment1.ToArray());
-                            OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download));
+                            var len = segment.Count;
+                            segment.SetPositionLength(0);
+                            segment.Write(key);
+                            SendRT(client, NetCmd.Download, segment.ToArray(false));
+                            segment.Count = len;
+                            if (Environment.TickCount >= recvFileTick)
+                            {
+                                recvFileTick = Environment.TickCount + 1000;
+                                OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download));
+                            }
                         }
                     }
                     break;
                 case NetCmd.Download:
                     {
-                        Segment segment1 = new Segment(model.Buffer, false);
-                        var key = segment1.ReadValue<int>();
+                        var key = segment.ReadInt32();
                         if (client.ftpDic.TryGetValue(key, out FileData fileData))
                             SendFile(client, key, fileData);
                     }
@@ -2789,7 +2795,7 @@ namespace Net.Server
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
                 return false;
             }
-            FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
             var fileData = new FileData
             {
                 ID = fileStream.GetHashCode(),
@@ -2807,7 +2813,7 @@ namespace Net.Server
             var fileStream = fileData.fileStream;
             bool complete = false;
             long bufferSize = fileData.bufferSize;
-            if (fileStream.Position + fileData.bufferSize > fileStream.Length)
+            if (fileStream.Position + fileData.bufferSize >= fileStream.Length)
             {
                 bufferSize = fileStream.Length - fileStream.Position;
                 complete = true;
@@ -2826,8 +2832,9 @@ namespace Net.Server
                 client.ftpDic.Remove(key);
                 fileData.fileStream.Close();
             }
-            else
+            else if (Environment.TickCount >= sendFileTick)
             {
+                sendFileTick = Environment.TickCount + 1000;
                 OnSendFileProgress?.Invoke(client, new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending));
             }
         }

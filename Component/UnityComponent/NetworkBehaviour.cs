@@ -93,13 +93,14 @@ namespace Net.UnityComponent
         public virtual void OnDestroy()
         {
             netObj.RemoveSyncVar(this);
-            for (int i = 0; i < netObj.networkBehaviours.Count; i++)
+            var nbs = netObj.networkBehaviours;
+            for (int i = 0; i < nbs.Count; i++)
             {
-                var nb = netObj.networkBehaviours[i];
+                var nb = nbs[i];
                 nb.Index = i;
                 if (nb == this)
                 {
-                    netObj.networkBehaviours.RemoveAt(i);
+                    nbs.RemoveAt(i);
                     if (i >= 0) i--;
                 }
             }
