@@ -31,7 +31,6 @@ namespace Net.Server
         {
             byte[] buff = new byte[len];
             Marshal.Copy(buf, buff, 0, len);
-            //sendQueue.Enqueue(new SendDataBuffer(this, buff));
             Server.SendTo(buff, 0, buff.Length, SocketFlags.None, RemotePoint);
             return 0;
         }

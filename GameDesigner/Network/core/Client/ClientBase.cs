@@ -1816,10 +1816,8 @@ namespace Net.Client
                     });
                     break;
                 case NetCmd.Identify:
-                    var pos = segment.Position;
                     UID = segment.ReadInt32();
                     Identify = segment.ReadString();
-                    segment.Position = pos;
                     break;
                 case NetCmd.OperationSync:
                     OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);

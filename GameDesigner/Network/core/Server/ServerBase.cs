@@ -798,7 +798,7 @@ namespace Net.Server
         {
             SocketAsync = new SocketAsyncEventArgs { UserToken = Server };
             SocketAsync.Completed += OnIOCompleted;
-            SocketAsync.SetBuffer(new byte[65507], 0, 65507);
+            SocketAsync.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
             SocketAsync.RemoteEndPoint = Server.LocalEndPoint;
             Server.ReceiveFromAsync(SocketAsync);
         }
@@ -872,10 +872,7 @@ namespace Net.Server
             if (++threadNum >= RcvQueues.Count)
                 threadNum = 0;
             AcceptHander(client);
-            var segment = BufferPool.Take(50);
-            segment.Write(client.UserID);
-            segment.Write(client.PlayerID);
-            SendRT(client, NetCmd.Identify, segment.ToArray());
+            SetClientIdentity(client);
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
 #if TEST1
             UIDClients.TryAdd(uid, client);//测试
@@ -893,17 +890,24 @@ namespace Net.Server
             {
                 QueueUp.Enqueue(client);
                 client.QueueUpCount = QueueUp.Count;
-                segment.SetPositionLength(0);
+                var segment = BufferPool.Take(50);
                 segment.Write(QueueUp.Count);
                 segment.Write(client.QueueUpCount);
-                SendRT(client, NetCmd.QueueUp, segment.ToArray());
+                SendRT(client, NetCmd.QueueUp, segment.ToArray(true));
             }
-            segment.Dispose();
             return client;
         }
 
         protected virtual void AcceptHander(Player client) 
         {
+        }
+
+        protected void SetClientIdentity(Player client)
+        {
+            var segment = BufferPool.Take(50);
+            segment.Write(client.UserID);
+            segment.Write(client.PlayerID);
+            SendRT(client, NetCmd.Identify, segment.ToArray(true));
         }
 
 #if TEST1
@@ -1117,13 +1121,13 @@ namespace Net.Server
                 return;
             if (client.Login)
             {
-                RpcDataHandle(client, model, segment);
+                CommandHandle(client, model, segment);
                 return;
             }
             switch (model.cmd)
             {
                 case NetCmd.ReliableTransport:
-                    RpcDataHandle(client, model, segment);
+                    CommandHandle(client, model, segment);
                     return;
                 case NetCmd.SendHeartbeat:
                     Send(client, NetCmd.RevdHeartbeat, new byte[0]);
@@ -1137,6 +1141,9 @@ namespace Net.Server
                     return;
                 case NetCmd.PingCallback:
                     return;
+                case NetCmd.Identify:
+                    SetClientIdentity(client);
+                    break;
                 case NetCmd.EntityRpc:
                     if (CheckIsQueueUp(client))
                         return;
@@ -1188,13 +1195,9 @@ namespace Net.Server
             OnAddPlayerToScene(client);
             client.AddRpc(client);
             OnAddClientHandle?.Invoke(client);
-            var buffer = BufferPool.Take(50);
-            buffer.Write(client.UserID);
-            buffer.Write(client.PlayerID);
-            SendRT(client, NetCmd.Identify, buffer.ToArray(true));
         }
 
-        protected virtual void RpcDataHandle(Player client, RPCModel model, Segment segment)
+        protected virtual void CommandHandle(Player client, RPCModel model, Segment segment)
         {
             resolveAmount++;
             switch (model.cmd)
@@ -1346,6 +1349,9 @@ namespace Net.Server
                         if (client.ftpDic.TryGetValue(key, out FileData fileData))
                             SendFile(client, key, fileData);
                     }
+                    break;
+                case NetCmd.Identify:
+                    SetClientIdentity(client);
                     break;
                 default:
                     client.OnRevdBufferHandle(model);
