@@ -78,10 +78,20 @@
                 UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
                 return Task.Run(() =>
                 {
-                    DateTime timeout = DateTime.Now.AddSeconds(5);
+                    var timeout = DateTime.Now.AddSeconds(5);
                     while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
                     if (Connected)
                         StartupThread();
+                    timeout = DateTime.Now.AddSeconds(3);
+                    while (Connected & UID == 0 & DateTime.Now < timeout)
+                    {
+                        Send(NetCmd.Identify);
+                        Thread.Sleep(200);
+                        if (!openClient)
+                            throw new Exception("客户端调用Close!");
+                    }
+                    if (UID == 0)
+                        throw new Exception("uid赋值失败!");
                     InvokeContext(() => {
                         networkState = Connected ? NetworkState.Connected : NetworkState.ConnectFailed;
                         result(Connected); 
