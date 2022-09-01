@@ -403,66 +403,66 @@
             }, cts.Token);
             return cts;
         }
+    }
 
-        public class TcpClientTest : TcpClient
+    public class TcpClientTest : TcpClient
+    {
+        public int fps;
+        public int revdSize { get { return receiveCount; } }
+        public int sendSize { get { return sendCount; } }
+        public int sendNum { get { return sendAmount; } }
+        public int revdNum { get { return receiveAmount; } }
+        public int resolveNum { get { return receiveAmount; } }
+
+        public TcpClientTest()
         {
-            public int fps;
-            public int revdSize { get { return receiveCount; } }
-            public int sendSize { get { return sendCount; } }
-            public int sendNum { get { return sendAmount; } }
-            public int revdNum { get { return receiveAmount; } }
-            public int resolveNum { get { return receiveAmount; } }
-            
-            public TcpClientTest()
-            {
-                OnRevdBufferHandle += (model) => { fps++; };
-            }
-            protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
-            {
-                Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                this.localPort = localPort;
-                Client.Connect(host, port);
-                Client.Blocking = false;
-                Client.NoDelay = true;
-                rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
-                SendDirect();
-                Connected = true;
-                StackStream = BufferStreamShare.Take();
-                return Task.FromResult(Connected);
-            }
-            protected override void StartupThread() { }
+            OnRevdBufferHandle += (model) => { fps++; };
+        }
+        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        {
+            Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            this.localPort = localPort;
+            Client.Connect(host, port);
+            Client.Blocking = false;
+            Client.NoDelay = true;
+            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+            SendDirect();
+            Connected = true;
+            StackStream = BufferStreamShare.Take();
+            return Task.FromResult(Connected);
+        }
+        protected override void StartupThread() { }
 
-            protected override void OnConnected(bool result) { }
+        protected override void OnConnected(bool result) { }
 
-            protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-            {
-                receiveCount += buffer.Count;
-                receiveAmount++;
-                base.ResolveBuffer(ref buffer, isTcp);
-            }
-            protected unsafe override void SendByteData(byte[] buffer, bool reliable)
-            {
-                sendCount += buffer.Length;
-                sendAmount++;
+        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
+        {
+            receiveCount += buffer.Count;
+            receiveAmount++;
+            base.ResolveBuffer(ref buffer, isTcp);
+        }
+        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+        {
+            sendCount += buffer.Length;
+            sendAmount++;
 #if WINDOWS
-                fixed (byte* ptr = buffer)
-                    Win32KernelAPI.send(Client.Handle, ptr, buffer.Length, SocketFlags.None);
+            fixed (byte* ptr = buffer)
+                Win32KernelAPI.send(Client.Handle, ptr, buffer.Length, SocketFlags.None);
 #else
                 Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
 #endif
-            }
-            protected internal override byte[] OnSerializeOptInternal(OperationList list)
-            {
-                return new byte[0];
-            }
-            protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-            {
-                return default;
-            }
-            public override string ToString()
-            {
-                return $"uid:{Identify} conv:{Connected}";
-            }
+        }
+        protected internal override byte[] OnSerializeOptInternal(OperationList list)
+        {
+            return new byte[0];
+        }
+        protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
+        {
+            return default;
+        }
+        public override string ToString()
+        {
+            return $"uid:{Identify} conv:{Connected}";
         }
     }
 }

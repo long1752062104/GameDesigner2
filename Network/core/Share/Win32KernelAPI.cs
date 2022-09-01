@@ -3,6 +3,7 @@
     using global::System;
     using global::System.Net.Sockets;
     using global::System.Runtime.InteropServices;
+    using global::System.Threading;
 
     /// <summary>
     /// 提供win32内核api类
@@ -47,6 +48,9 @@
         [DllImport("Kernel32.dll")]
         private static extern Boolean SetSystemTime([In, Out] SystemTime st);
 
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        internal static extern SocketError WSASendTo([In] IntPtr socketHandle, [In] ref WSABuffer buffer, [In] int bufferCount, out int bytesTransferred, [In] SocketFlags socketFlags, [In] byte[] socketAddress, [In] int socketAddressSize, [In] SafeHandle overlapped, [In] IntPtr completionRoutine);
+
         /// <summary>
         /// 设置系统时间
         /// </summary>
@@ -84,5 +88,35 @@
         public ushort minute;
         public ushort second;
         public ushort milliseconds;
+    }
+
+    internal struct WSABuffer
+    {
+        internal int Length;
+        internal IntPtr Pointer;
+    }
+
+    internal class SafeNativeOverlapped : SafeHandle
+    {
+        internal SafeNativeOverlapped() : this(IntPtr.Zero)
+        {
+        }
+        internal unsafe SafeNativeOverlapped(NativeOverlapped* handle) : this((IntPtr)handle)
+        {
+        }
+        internal SafeNativeOverlapped(IntPtr handle) : base(IntPtr.Zero, true)
+        {
+            SetHandle(handle);
+        }
+        public override bool IsInvalid => handle == IntPtr.Zero;
+        protected unsafe override bool ReleaseHandle()
+        {
+            IntPtr intPtr = Interlocked.Exchange(ref handle, IntPtr.Zero);
+            if (intPtr != IntPtr.Zero)
+            {
+                Overlapped.Free((NativeOverlapped*)(void*)intPtr);
+            }
+            return true;
+        }
     }
 }

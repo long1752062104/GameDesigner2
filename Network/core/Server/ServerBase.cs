@@ -58,9 +58,9 @@ namespace Net.Server
         /// </summary>
         public Socket Server { get; protected set; }
         /// <summary>
-        /// IOCP套接字
+        /// io完成端口对象
         /// </summary>
-        protected SocketAsyncEventArgs SocketAsync { get; set; }
+        public SocketAsyncEventArgs ServerArgs { get; protected set; }
         /// <summary>
         /// 远程过程调用委托
         /// </summary>
@@ -617,7 +617,7 @@ namespace Net.Server
             Server.IOControl((int)SIO_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);//udp远程关闭现有连接方案
 #endif
             IsRunServer = true;
-            UdpStartReceive();
+            StartReceive();
             Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
             send.Start();
             Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
@@ -792,15 +792,16 @@ namespace Net.Server
         }
 
         /// <summary>
-        /// Udp开始接收数据
+        /// 开始接收数据
         /// </summary>
-        private void UdpStartReceive()
+        private void StartReceive()
         {
-            SocketAsync = new SocketAsyncEventArgs { UserToken = Server };
-            SocketAsync.Completed += OnIOCompleted;
-            SocketAsync.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
-            SocketAsync.RemoteEndPoint = Server.LocalEndPoint;
-            Server.ReceiveFromAsync(SocketAsync);
+            ServerArgs = new SocketAsyncEventArgs { UserToken = Server };
+            ServerArgs.Completed += OnIOCompleted;
+            ServerArgs.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
+            ServerArgs.RemoteEndPoint = Server.LocalEndPoint;
+            if (!Server.ReceiveFromAsync(ServerArgs))
+                OnIOCompleted(null, ServerArgs);
         }
 
         protected virtual void OnIOCompleted(object sender, SocketAsyncEventArgs args)
@@ -833,6 +834,12 @@ namespace Net.Server
                                 OnIOCompleted(null, args);
                     }
                     break;
+                //case SocketAsyncOperation.Send:
+                //    ObjectPool<SocketAsyncEventArgs>.Push(args);
+                //    break;
+                //case SocketAsyncOperation.SendTo:
+                //    ObjectPool<SocketAsyncEventArgs>.Push(args);
+                //    break;
             }
         }
 
@@ -1921,11 +1928,10 @@ namespace Net.Server
                 Server.Close();
                 Server = null;
             }
-            if (SocketAsync != null)
+            if (ServerArgs != null)
             {
-                SocketAsync.Completed -= OnIOCompleted;
-                SocketAsync.Dispose();
-                SocketAsync = null;
+                ServerArgs.Dispose();
+                ServerArgs = null;
             }
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
