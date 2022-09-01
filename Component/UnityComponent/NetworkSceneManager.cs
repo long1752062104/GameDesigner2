@@ -90,7 +90,9 @@ namespace Net.UnityComponent
                     OnPlayerExit(opt);
                     break;
                 case NetCmd.SyncVar:
-                    OnCheckIdentity(opt).SyncVarHandler(opt);
+                    var identity = OnCheckIdentity(opt);
+                    if (identity != null)
+                        identity.SyncVarHandler(opt);
                     break;
                 default:
                     OnOtherOperator(opt);
@@ -107,6 +109,8 @@ namespace Net.UnityComponent
         {
             if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
+                if (opt.index >= registerObjects.Count)
+                    return null;
                 identity = Instantiate(registerObjects[opt.index]);
                 identity.Identity = opt.identity;
                 identity.isOtherCreate = true;
@@ -125,6 +129,8 @@ namespace Net.UnityComponent
         public virtual void OnBuildOrTransformSync(Operation opt) 
         {
             var identity = OnCheckIdentity(opt);
+            if (identity == null)
+                return;
             var nb = identity.networkBehaviours[opt.index1];
             nb.OnNetworkOperationHandler(opt);
         }
