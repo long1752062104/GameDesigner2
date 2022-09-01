@@ -38,7 +38,7 @@
             Server.Bind(ip);
             Server.Listen(LineUp);
             IsRunServer = true;
-            AcceptConnect();
+            AcceptHandler();
             Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
             send.Start();
             Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
@@ -70,19 +70,20 @@
             InitUserID();
         }
 
-        private void AcceptConnect()
+        private void AcceptHandler()
         {
             try
             {
                 if (!IsRunServer)
                     return;
-                if (SocketAsync == null)
+                if (ServerArgs == null)
                 {
-                    SocketAsync = new SocketAsyncEventArgs();
-                    SocketAsync.Completed += OnTCPIOCompleted;
+                    ServerArgs = new SocketAsyncEventArgs();
+                    ServerArgs.Completed += OnIOCompleted;
                 }
-                SocketAsync.AcceptSocket = null;// 重用前进行对象清理
-                Server.AcceptAsync(SocketAsync);
+                ServerArgs.AcceptSocket = null;// 重用前进行对象清理
+                if (!Server.AcceptAsync(ServerArgs))
+                    OnIOCompleted(null, ServerArgs);
             }
             catch (Exception ex)
             {
@@ -90,11 +91,10 @@
             }
         }
 
-        private void OnTCPIOCompleted(object sender, SocketAsyncEventArgs args)
+        protected override void OnIOCompleted(object sender, SocketAsyncEventArgs args)
         {
             Socket clientSocket = null;
-            SocketAsyncOperation socketOpt = args.LastOperation;
-        RevdData: switch (socketOpt)
+            switch (args.LastOperation)
             {
                 case SocketAsyncOperation.Accept:
                     try
@@ -102,17 +102,14 @@
                         clientSocket = args.AcceptSocket;
                         if (clientSocket.RemoteEndPoint == null)
                             return;
-                        var args1 = new SocketAsyncEventArgs();
-                        args1.Completed += OnTCPIOCompleted;
-                        args1.SetBuffer(new byte[65507], 0, 65507);
-                        args1.UserToken = clientSocket;
                         var client = AcceptHander(clientSocket, clientSocket.RemoteEndPoint);
-                        bool willRaiseEvent = clientSocket.ReceiveAsync(args1);
-                        if (!willRaiseEvent)
-                        {
-                            socketOpt = SocketAsyncOperation.Receive;
-                            goto RevdData;
-                        }
+                        client.ReceiveArgs = new SocketAsyncEventArgs();
+                        client.ReceiveArgs.UserToken = clientSocket;
+                        client.ReceiveArgs.RemoteEndPoint = clientSocket.RemoteEndPoint;
+                        client.ReceiveArgs.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
+                        client.ReceiveArgs.Completed += OnIOCompleted;
+                        if (!clientSocket.ReceiveAsync(client.ReceiveArgs))
+                            OnIOCompleted(null, client.ReceiveArgs);
                     }
                     catch (Exception ex)
                     {
@@ -120,7 +117,7 @@
                     }
                     finally
                     {
-                        AcceptConnect();
+                        AcceptHandler();
                     }
                     break;
                 case SocketAsyncOperation.Receive:
@@ -133,34 +130,46 @@
                         Buffer.BlockCopy(args.Buffer, args.Offset, buffer, 0, count);
                         receiveCount += count;
                         receiveAmount++;
-                        EndPoint remotePoint = clientSocket.RemoteEndPoint;
+                        var remotePoint = args.RemoteEndPoint;
                         if (AllClients.TryGetValue(remotePoint, out Player client1))//在线客户端  得到client对象
                             client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer, tcp_udp = true });
+                        if (!clientSocket.Connected)
+                            return;
                         if (!clientSocket.ReceiveAsync(args))
-                            goto RevdData;
-                    }
-                    break;
-                case SocketAsyncOperation.Send:
-                    clientSocket = args.UserToken as Socket;
-                    bool willRaiseEvent1 = clientSocket.ReceiveAsync(args);
-                    if (!willRaiseEvent1)
-                    {
-                        socketOpt = SocketAsyncOperation.Receive;
-                        goto RevdData;
+                            OnIOCompleted(null, args);
                     }
                     break;
             }
         }
 
-        public override void Close()
+        protected override void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            if (SocketAsync != null)
+            if (!client.Client.Connected)
+                return;
+            if (buffer.Length <= frame)//解决长度==6的问题(没有数据)
+                return;
+            if (client.Client.Poll(1, SelectMode.SelectWrite))
             {
-                SocketAsync.Completed -= OnTCPIOCompleted;
-                SocketAsync.Dispose();
-                SocketAsync = null;
+                using (var args = new SocketAsyncEventArgs()) 
+                {
+                    args.SetBuffer(buffer, 0, buffer.Length);
+                    args.RemoteEndPoint = client.RemotePoint;
+                    args.Completed += OnIOCompleted;
+                    if (!client.Client.SendAsync(args))
+                        OnIOCompleted(client, args);
+                }
+                sendAmount++;
+                sendCount += buffer.Length;
             }
-            base.Close();
+            else
+            {
+                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
+            }
         }
     }
+
+    /// <summary>
+    /// 默认tcpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class TcpServerIOCP : TcpServerIOCP<NetPlayer, DefaultScene> { }
 }

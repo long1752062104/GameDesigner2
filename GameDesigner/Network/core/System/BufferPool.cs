@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Net.System
 {
@@ -146,11 +147,31 @@ namespace Net.System
             }
         }
 
+        public static T Take(Action<T> onNew)
+        {
+            lock (STACK)
+            {
+                if (STACK.TryPop(out T obj))
+                    return obj;
+                obj = new T();
+                onNew?.Invoke(obj);
+                return obj;
+            }
+        }
+
         public static void Push(T obj)
         {
             lock (STACK)
             {
                 STACK.Push(obj);
+            }
+        }
+
+        public static void Clear() 
+        {
+            lock (STACK)
+            {
+                STACK.Clear();
             }
         }
     }

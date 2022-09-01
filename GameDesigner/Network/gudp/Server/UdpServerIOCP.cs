@@ -1,4 +1,11 @@
-﻿namespace Net.Server
+﻿using Net.Event;
+using Net.Share;
+using Net.System;
+using System;
+using System.Net.Sockets;
+using System.Threading;
+
+namespace Net.Server
 {
     /// <summary>
     /// udp 输入输出完成端口服务器
@@ -9,6 +16,46 @@
     /// <typeparam name="Scene"></typeparam>
     public class UdpServerIOCP<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
-        //基类默认是iocp服务器
+        protected override void AcceptHander(Player client)
+        {
+            client.Gcp = new Plugins.GcpKernel();
+            client.Gcp.MTU = (ushort)MTU;
+            client.Gcp.RTO = RTO;
+            client.Gcp.MTPS = MTPS;
+            client.Gcp.FlowControl = FlowControl;
+            client.Gcp.RemotePoint = client.RemotePoint;
+            client.Gcp.OnSender += (bytes) => {
+                Send(client, NetCmd.ReliableTransport, bytes);
+            };
+        }
+
+        protected unsafe override void SendByteData(Player client, byte[] buffer, bool reliable)
+        {
+            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+                return;
+            if (buffer.Length >= 65507)
+            {
+                NDebug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                return;
+            }
+            var args = ObjectPool<SocketAsyncEventArgs>.Take(args1 =>
+            {
+                args1.Completed += OnIOCompleted;
+                args1.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
+            });
+            args.RemoteEndPoint = client.RemotePoint;
+            var buffer1 = args.Buffer;
+            Buffer.BlockCopy(buffer, 0, buffer1, 0, buffer.Length);
+            args.SetBuffer(0, buffer.Length);
+            if (!Server.SendToAsync(args))
+                OnIOCompleted(client, args);
+            sendAmount++;
+            sendCount += buffer.Length;
+        }
     }
+
+    /// <summary>
+    /// 默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class UdpServerIOCP : UdpServerIOCP<NetPlayer, DefaultScene> { }
 }

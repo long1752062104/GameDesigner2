@@ -111,21 +111,6 @@
                 Send(client, NetCmd.ReliableTransport, bytes);
             };
         }
-
-        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            int count = rtRPCModels.Count;
-            if (count <= 0)
-                goto J;
-            if (client.Gcp.HasSend())
-                goto J;
-            if (count > PackageLength)
-                count = PackageLength;
-            var stream = BufferPool.Take();
-            WriteDataBody(client, ref stream, rtRPCModels, count, true);
-            client.Gcp.Send(stream.ToArray(true));
-            J: client.Gcp.Update();
-        }
     }
 
     /// <summary>

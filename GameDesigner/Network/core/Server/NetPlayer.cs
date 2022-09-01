@@ -26,13 +26,13 @@
         /// </summary>
         public Socket Client { get; set; }
         /// <summary>
-        /// 存储UDP客户端终端
+        /// io完成端口接收对象
+        /// </summary>
+        public SocketAsyncEventArgs ReceiveArgs { get; set; }
+        /// <summary>
+        /// 存储客户端终端
         /// </summary>
         public EndPoint RemotePoint { get; set; }
-        /// <summary>
-        /// IOCP异步套接字
-        /// </summary>
-        public SocketAsyncEventArgs SocketAsync { get; set; }
         /// <summary>
         /// 此玩家所在的场景ID
         /// </summary>
@@ -140,7 +140,16 @@
             if (isDispose)
                 return;
             isDispose = true;
-            Client?.Close();
+            if (ReceiveArgs != null)
+            {
+                ReceiveArgs.Dispose();
+                ReceiveArgs = null;
+            }
+            if (Client != null) 
+            {
+                Client.Shutdown(SocketShutdown.Both);
+                Client?.Close(1);
+            }
             stackStream?.Close();
             stackStream = null;
             stack = 0;
@@ -154,14 +163,7 @@
             udpRPCModels = new QueueSafe<RPCModel>();
             Login = false;
             addressBuffer = null;
-            if (SocketAsync != null)
-            {
-                SocketAsync.SetBuffer(null, 0, 0);
-                SocketAsync.Dispose();
-            }
-            SocketAsync = null;
             if (Gcp != null) Gcp.Dispose();
-
         }
         #endregion
 
@@ -248,8 +250,10 @@
         {
             if (addressBuffer != null)
                 return addressBuffer;
-            SocketAddress socketAddress = RemotePoint.Serialize();
-            addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
+            var socketAddress = RemotePoint.Serialize();
+            addressBuffer = new byte[socketAddress.Size];
+            for (int i = 0; i < socketAddress.Size; i++)
+                addressBuffer[i] = socketAddress[i];
             return addressBuffer;
         }
 
