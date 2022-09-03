@@ -14,7 +14,7 @@ namespace Net.UnityComponent
     [DisallowMultipleComponent]
     public class NetworkObject : MonoBehaviour
     {
-        private static bool IsInit;
+        public static bool IsInit { get; private set; }
         internal static int IDENTITY { get; private set; } = -1;
         internal static int IDENTITY_MAX { get; private set; }
         internal static Queue<int> IDENTITY_POOL = new Queue<int>();

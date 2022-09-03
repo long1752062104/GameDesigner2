@@ -13,6 +13,7 @@ namespace Net.Component
     [Serializable]
     public class ClientGourp 
     {
+        public string name;
         internal ClientBase _client;
         public TransportProtocol protocol = TransportProtocol.Gcp;
         public string ip = "127.0.0.1";
@@ -23,6 +24,7 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
+        [NonReorderable]
         public List<RPCMethod> rpcs = new List<RPCMethod>();
         [Header("–Ú¡–ªØ  ≈‰∆˜")]
         public SerializeAdapterType type;
@@ -113,7 +115,14 @@ namespace Net.Component
 
     public class NetworkManager : SingleCase<NetworkManager>
     {
+        [NonReorderable]
         public List<ClientGourp> clients = new List<ClientGourp>();
+
+        public ClientBase this[int index]
+        {
+            get { return clients[index].Client; }
+            set { clients[index].Client = value; }
+        }
 
         void Awake()
         {

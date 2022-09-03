@@ -253,7 +253,7 @@ namespace Net.Client
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
-        public Action<double> OnPingCallback;
+        public Action<uint> OnPingCallback;
         /// <summary>
         /// 当socket发送失败调用. 参数1:发送的字节数组, 参数2:发送标志(可靠和不可靠)  ->可通过SendByteData方法重新发送
         /// </summary>
@@ -327,7 +327,6 @@ namespace Net.Client
         /// <summary>
         /// 接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
-        //public int StackBufferSize { get; set; } = 5242880;
         public int PackageSize { get; set; } = 1024 * 1024 * 5;
         /// <summary>
         /// 允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
@@ -407,7 +406,7 @@ namespace Net.Client
         private readonly MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
         private readonly List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
-        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID;//事件id
+        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID;//事件id
         private int sendFileTick, recvFileTick;
 
         /// <summary>
@@ -418,7 +417,19 @@ namespace Net.Client
         /// 断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
         /// </summary>
         public int ReconnectCount { get; set; } = 10;
-        protected readonly object syncRoot = new object();
+        private int sendInterval = 1;
+        /// <summary>
+        /// 每次发送数据间隔，每秒发送30次，每次间隔33毫秒
+        /// </summary>
+        public int SendInterval {
+            get => sendInterval;
+            set 
+            {
+                ThreadManager.Event.GetEvent(sendHandlerID)?.SetIntervalTime((uint)value);
+                sendInterval = value;
+            }
+        }
+        protected readonly object SyncRoot = new object();
         public GcpKernel Gcp { get; set; }
 
         /// <summary>
@@ -575,7 +586,7 @@ namespace Net.Client
 
         private void RemoveRpcInternal(object target)
         {
-            lock (syncRoot)//checkRpc方法和此方法并行时索引溢出
+            lock (SyncRoot)//checkRpc方法和此方法并行时索引溢出
             {
                 if (target is string key)
                 {
@@ -1042,7 +1053,7 @@ namespace Net.Client
                         var time1 = DateTime.Now;
                         while (UID == 0)
                         {
-                            Receive();
+                            Receive(false);
                             Thread.Sleep(1);
                             if (DateTime.Now >= time)
                                 throw new Exception("uid赋值失败!");
@@ -1157,12 +1168,12 @@ namespace Net.Client
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            StartThread("SendHandle", SendDataHandle);
             StartThread("ReceiveHandle", ReceiveHandle);
             checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
         }
@@ -1239,19 +1250,6 @@ namespace Net.Client
             return Connected;
         }
 
-        /**private FieldInfo[] fieldEvents;
-
-        protected void InitFieldEvents()
-        {
-            Type type = typeof(ClientBase);
-            var fields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
-            var fields1 = new List<FieldInfo>();
-            for (int i = 0; i < fields.Length; i++)
-                if (fields[i].FieldType.IsSubclassOf(typeof(Delegate)))
-                    fields1.Add(fields[i]);
-            fieldEvents = fields1.ToArray();
-        }*/
-
         /// <summary>
         /// rpc检查处理线程
         /// </summary>
@@ -1259,9 +1257,6 @@ namespace Net.Client
         {
             try
             {
-                //if (fieldEvents == null)
-                //    InitFieldEvents();
-                //CheckEventsUpdate(fieldEvents);
                 if (OnCheckRpcUpdate == null)
                     OnCheckRpcUpdate = CheckRpcUpdate;
                 OnCheckRpcUpdate();
@@ -1276,7 +1271,7 @@ namespace Net.Client
         //检查rpc函数
         private void CheckRpcUpdate()
         {
-            lock (syncRoot)//RemoveRpc方法和内部线程并行时索引溢出
+            lock (SyncRoot)//RemoveRpc方法和内部线程并行时索引溢出
             {
                 CheckRpcUpdate(RpcDic, true);
                 CheckRpcUpdate(RpcHashDic, false);
@@ -1330,65 +1325,21 @@ namespace Net.Client
             Rpcs = rpcsList;
         }
 
-        //检测事件委托函数
-        /**private void CheckEventsUpdate(FieldInfo[] fields)
-        {
-            var ds = new List<Delegate>();
-            for (int i = 0; i < fields.Length; i++)
-            {
-                object value = fields[i].GetValue(this);
-                if (value == null)
-                    continue;
-                var dele = value as Delegate;
-                if (dele == null)
-                    continue;
-                ds.Clear();
-                ds.AddRange(dele.GetInvocationList());
-                int oldCount = ds.Count;
-                for (int a = 0; a < ds.Count; a++)
-                {
-                    if (ds[a].Method == null)
-                    {
-                        ds.RemoveAt(a);
-                        if (a > 0) a--;
-                        continue;
-                    }
-                    if (ds[a].Method.IsStatic)//静态方法不需要判断对象是否为空
-                        continue;
-                    if (ds[a].Target == null)
-                    {
-                        ds.RemoveAt(a);
-                        if (a > 0) a--;
-                        continue;
-                    }
-                    if (ds[a].Target.Equals(null) | ds[a].Method.Equals(null))
-                    {
-                        ds.RemoveAt(a);
-                        if (a > 0) a--;
-                    }
-                }
-                if (oldCount != ds.Count)
-                    fields[i].SetValue(this, Delegate.Combine(ds.ToArray()));
-            }
-        }*/
-
         /// <summary>
         /// 发包线程
         /// </summary>
-        protected void SendDataHandle()
+        protected bool SendDataHandler()
         {
-            while (Connected)
+            try
             {
-                try
-                {
-                    Thread.Sleep(1);
-                    SendDirect();
-                }
-                catch (Exception ex)
-                {
-                    NetworkException(ex);
-                }
+                SendDirect();
+                sendLoopNum++;
             }
+            catch (Exception ex)
+            {
+                NetworkException(ex);
+            }
+            return Connected;
         }
 
         /// <summary>
@@ -1586,7 +1537,7 @@ namespace Net.Client
             {
                 try
                 {
-                    Receive();
+                    Receive(true);
                 }
                 catch (Exception ex)
                 {
@@ -1595,7 +1546,7 @@ namespace Net.Client
             }
         }
 
-        public virtual void Receive()
+        public virtual void Receive(bool isSleep)
         {
             if (Client.Poll(1, SelectMode.SelectRead))
             {
@@ -1618,7 +1569,7 @@ namespace Net.Client
                 revdLoopNum++;
                 BufferPool.Push(segment);
             }
-            else
+            else if(isSleep)
             {
                 Thread.Sleep(1);
             }
@@ -1827,10 +1778,9 @@ namespace Net.Client
                     rPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
                     break;
                 case NetCmd.PingCallback:
-                    long ticks = BitConverter.ToInt64(model.buffer, model.index);
-                    DateTime time = new DateTime(ticks);
-                    var currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
-                    InvokeContext(() => { OnPingCallback?.Invoke((currRto - 100d) / 2); });
+                    uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
+                    var delayTime = (uint)Environment.TickCount - ticks;
+                    InvokeContext(() => { OnPingCallback?.Invoke(delayTime); });
                     break;
                 case NetCmd.P2P:
                     {
@@ -2774,18 +2724,18 @@ namespace Net.Client
         /// </summary>
         public void Ping()
         {
-            long timelong = DateTime.Now.Ticks;
-            Send(NetCmd.Ping, BitConverter.GetBytes(timelong));
+            uint tick = (uint)Environment.TickCount;
+            Send(NetCmd.Ping, BitConverter.GetBytes(tick));
         }
 
         /// <summary>
         /// ping测试网络延迟, 此方法帮你监听<see cref="OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
         /// </summary>
         /// <param name="callback"></param>
-        public void Ping(Action<double> callback)
+        public void Ping(Action<uint> callback)
         {
-            long timelong = DateTime.Now.Ticks;
-            Send(NetCmd.Ping, BitConverter.GetBytes(timelong));
+            uint tick = (uint)Environment.TickCount;
+            Send(NetCmd.Ping, BitConverter.GetBytes(tick));
             OnPingCallback += callback;
         }
 

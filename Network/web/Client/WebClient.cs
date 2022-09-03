@@ -108,11 +108,11 @@ namespace Net.Client
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            StartThread("SendHandle", SendDataHandle);
-            ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
-            ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
-            ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
+            networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
+            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
+            syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
             if (!UseUnityThread)
                 ThreadManager.Invoke("UpdateHandle", UpdateHandler);
         }

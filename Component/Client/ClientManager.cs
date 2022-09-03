@@ -29,6 +29,7 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
+        [NonReorderable]
         public List<RPCMethod> rpcs = new List<RPCMethod>();
 
         public ClientBase client

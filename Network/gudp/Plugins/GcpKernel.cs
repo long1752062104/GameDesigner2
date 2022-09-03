@@ -21,18 +21,28 @@ namespace Net.Plugins
         /// 网络帧确认
         /// </summary>
         internal const byte Ack = 4;
+        /// <summary>
+        /// 冗余帧
+        /// </summary>
+        internal const byte DAck = 6;
     }
 
     class DataFrame
     {
+        private int hashCode;
         internal byte[] buffer;
         internal int tick;
         public DataFrame()
         {
         }
-        public DataFrame(byte[] buffer)
+        public DataFrame(int hashCode, byte[] buffer)
         {
+            this.hashCode = hashCode;
             this.buffer = buffer;
+        }
+        public override int GetHashCode()
+        {
+            return hashCode;
         }
     }
 
@@ -50,6 +60,7 @@ namespace Net.Plugins
     /// </summary>
     public class GcpKernel : IDisposable
     {
+        private uint pushPackage;
         private uint senderPackage;
         private uint revderPackage;
         private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
@@ -57,7 +68,7 @@ namespace Net.Plugins
         public Action<byte[]> OnSender;
         public Action<RTProgress> OnSendProgress;
         public Action<RTProgress> OnRevdProgress;
-        private readonly SortedDictionary<uint, SortedDictionary<int, DataFrame>> senderDict = new SortedDictionary<uint, SortedDictionary<int, DataFrame>>();
+        private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
         private readonly MyDictionary<uint, DataPackage> revderDict = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
         private readonly object SyncRoot = new object();
@@ -86,19 +97,16 @@ namespace Net.Plugins
                     currAck = 0;
                     ackNumber = FlowControl == FlowControlMode.Normal ? 1 : 100;
                 }
-                foreach (var dic in senderDict.Values)
+                if (senderDict.Count <= 0)
+                    return;
+                var length = senderPackage + senderDict.Count;
+                for (uint i = senderPackage; i < length; i++)
                 {
-                    foreach (var sender in dic.Values)
-                    {
-                        if (tick >= sender.tick & currFlow < MTPS & currAck < ackNumber)
-                        {
-                            sender.tick = tick + RTO;
-                            var count = sender.buffer.Length;
-                            currFlow += count;
-                            currAck++;
-                            OnSender(sender.buffer);
-                        }
-                    }
+                    if (!FastRetransmit(i))
+                        if(i == senderPackage)
+                            senderPackage++;
+                    if (currFlow >= MTPS | currAck >= ackNumber)
+                        break;
                 }
             }
         }
@@ -131,21 +139,21 @@ namespace Net.Plugins
                 var frameEnd = (int)Math.Ceiling(count / (float)MTU);
                 using (var segment = BufferPool.Take())
                 {
-                    var dic = new SortedDictionary<int, DataFrame>();
-                    senderDict.Add(senderPackage, dic);
+                    var dic = new MyDictionary<int, DataFrame>(frameEnd);
+                    senderDict.Add(pushPackage, dic);
                     for (int serialNo = 0; serialNo < frameEnd; serialNo++)
                     {
                         segment.SetPositionLength(0);
                         segment.WriteByte(Cmd.Frame);
-                        segment.Write(senderPackage);
+                        segment.Write(pushPackage);
                         segment.Write(serialNo);
                         segment.Write(count);
                         var offset = serialNo * MTU;
                         segment.Write(current, offset, offset + MTU >= count ? count - offset : MTU);
-                        var dataFrame = new DataFrame(segment.ToArray());
+                        var dataFrame = new DataFrame(serialNo, segment.ToArray());
                         dic.Add(serialNo, dataFrame);
                     }
-                    senderPackage++;
+                    pushPackage++;
                 }
             }
         }
@@ -228,8 +236,33 @@ namespace Net.Plugins
                             }
                         }
                     }
+                    FastRetransmit(senderPackage);
+                }
+                else if (flags == Cmd.DAck)
+                {
+                    var package = segment.ReadUInt32();
+                    FastRetransmit(package);
                 }
             }
+        }
+        private bool FastRetransmit(uint package)
+        {
+            if (senderDict.TryGetValue(package, out var dict))
+            {
+                foreach (var sender in dict.Values)
+                {
+                    if (tick >= sender.tick & currFlow < MTPS & currAck < ackNumber)
+                    {
+                        sender.tick = tick + RTO;
+                        var count = sender.buffer.Length;
+                        currFlow += count;
+                        currAck++;
+                        OnSender(sender.buffer);
+                    }
+                }
+                return true;
+            }
+            return false;
         }
         public bool HasSend()
         {
@@ -239,6 +272,7 @@ namespace Net.Plugins
         {
             lock (SyncRoot)
             {
+                pushPackage = 0;
                 senderPackage = 0;
                 revderPackage = 0;
                 senderQueue.Clear();

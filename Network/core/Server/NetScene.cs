@@ -158,7 +158,7 @@
         /// <param name="client"></param>
         public virtual void AddPlayer(Player client)
         {
-            client.SceneID = Name;
+            client.SceneName = Name;
             client.Scene = this;
             if(Players.Add(client))
                 Clients.Add(client);
@@ -330,7 +330,7 @@
             OnExit(player);
             player.OnExit();
             player.Scene = null;
-            player.SceneID = "";
+            player.SceneName = "";
         }
 
         /// <summary>

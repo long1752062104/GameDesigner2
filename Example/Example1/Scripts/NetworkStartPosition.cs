@@ -1,7 +1,10 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Client;
 using Net.Component;
+using Net.Share;
+using Net.System;
 using Net.UnityComponent;
+using System.Threading.Tasks;
 using UnityEngine;
 namespace Example1
 {
@@ -10,14 +13,28 @@ namespace Example1
         public GameObject playerPrefab;
         public Vector2 offsetX = new Vector2(-20, 20);
         public Vector2 offsetZ = new Vector2(-20, 20);
+        private uint delay, frame;
 
         // Start is called before the first frame update
-        void Start()
+        async void Start()
         {
-            if (ClientBase.Instance.Connected)
-                OnConnectedHandle();
-            else
-                ClientBase.Instance.OnConnectedHandle += OnConnectedHandle;
+            while (!NetworkObject.IsInit)
+            {
+                await Task.Yield();
+            }
+            OnConnectedHandle();
+            ThreadManager.Invoke(1f, ()=> {
+                ClientBase.Instance.Ping((ms)=> {
+                    delay = ms;
+                });
+                return true;
+            });
+            ClientBase.Instance.OnOperationSync += OnOperationSync;
+        }
+
+        private void OnOperationSync(OperationList list) 
+        {
+            frame = list.frame;
         }
 
         private void OnConnectedHandle()
@@ -29,9 +46,14 @@ namespace Example1
             Camera.main.GetComponent<ARPGcamera>().target = player1.transform;
         }
 
+        private void OnGUI()
+        {
+            GUI.Label(new Rect(10, 10, 200, 20), $"同步帧:{frame} 延迟:{delay}ms");
+        }
+
         private void OnDestroy()
         {
-            ClientBase.Instance.OnConnectedHandle -= OnConnectedHandle;
+            ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
     }
 }
