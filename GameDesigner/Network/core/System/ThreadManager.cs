@@ -14,7 +14,7 @@ namespace Net.System
         /// <summary>
         /// 时间计数间隔
         /// </summary>
-        public static uint Interval { get; set; } = 2;
+        public static uint Interval { get; set; } = 1;
         /// <summary>
         /// 运行中?
         /// </summary>

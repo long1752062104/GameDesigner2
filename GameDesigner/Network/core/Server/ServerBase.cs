@@ -342,7 +342,7 @@ namespace Net.Server
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当<see cref="RTOMode"/>=<see cref="RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
         /// </summary>
-        public Action<Player, double> OnPingCallback;
+        public Action<Player, uint> OnPingCallback;
         /// <summary>
         /// 当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="SendByteData"/>方法重新发送
         /// </summary>
@@ -549,7 +549,7 @@ namespace Net.Server
         {
             if (client.OnOperationSync(list))
                 return;
-            if (Scenes.TryGetValue(client.SceneID, out Scene scene))
+            if (Scenes.TryGetValue(client.SceneName, out Scene scene))
                 scene.OnOperationSync(client, list);
         }
 
@@ -683,15 +683,26 @@ namespace Net.Server
         /// </summary>
         protected virtual void SceneUpdateHandle()
         {
+            uint tick = (uint)Environment.TickCount;
+            uint nextTick = tick + (uint)SyncSceneTime;
             while (IsRunServer)
             {
                 try
                 {
-                    Thread.Sleep(SyncSceneTime);
-                    Parallel.ForEach(Scenes.Values, scene =>
+                    tick = (uint)Environment.TickCount;
+                    if (tick >= nextTick)
                     {
-                        scene.Update(this, NetCmd.OperationSync);
-                    });
+                        nextTick = tick + (uint)SyncSceneTime;
+                        var result = Parallel.ForEach(Scenes.Values, scene =>
+                        {
+                            scene.Update(this, NetCmd.OperationSync);
+                        });
+                        while (!result.IsCompleted)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }
+                    else Thread.Sleep(1);
                 }
                 catch (Exception ex)
                 {
@@ -819,7 +830,7 @@ namespace Net.Server
                             buffer.Count = count;
                             receiveCount += count;
                             receiveAmount++;
-                            EndPoint remotePoint = args.RemoteEndPoint;
+                            var remotePoint = args.RemoteEndPoint;
                             ReceiveProcessed(remotePoint, buffer, false);
                         }
                     }
@@ -834,12 +845,9 @@ namespace Net.Server
                                 OnIOCompleted(null, args);
                     }
                     break;
-                //case SocketAsyncOperation.Send:
-                //    ObjectPool<SocketAsyncEventArgs>.Push(args);
-                //    break;
-                //case SocketAsyncOperation.SendTo:
-                //    ObjectPool<SocketAsyncEventArgs>.Push(args);
-                //    break;
+                case SocketAsyncOperation.SendTo:
+                    ObjectPool<SocketAsyncEventArgs>.Push(args);
+                    break;
             }
         }
 
@@ -1273,10 +1281,9 @@ namespace Net.Server
                     client.udpRPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.PingCallback:
-                    long ticks = BitConverter.ToInt64(model.buffer, model.index);
-                    DateTime time = new DateTime(ticks);
-                    var currRto = DateTime.Now.Subtract(time).TotalMilliseconds + 100d;
-                    OnPingCallback?.Invoke(client, (currRto - 100d) / 2);
+                    uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
+                    var delayTime = (uint)Environment.TickCount - ticks;
+                    OnPingCallback?.Invoke(client, delayTime);
                     break;
                 case NetCmd.P2P:
                     int uid = BitConverter.ToInt32(model.buffer, model.index);
@@ -1671,11 +1678,11 @@ namespace Net.Server
         /// 创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
         /// </summary>
         /// <param name="player">创建网络场景的玩家实体</param>
-        /// <param name="sceneID">要创建的场景号或场景名称</param>
+        /// <param name="name">要创建的场景号或场景名称</param>
         /// <returns></returns>
-        public Scene CreateScene(Player player, string sceneID)
+        public Scene CreateScene(Player player, string name)
         {
-            return CreateScene(player, sceneID, new Scene() { Name = sceneID });
+            return CreateScene(player, name, new Scene() { Name = name });
         }
 
         /// <summary>
@@ -1694,22 +1701,22 @@ namespace Net.Server
         /// 创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
         /// </summary>
         /// <param name="player">创建网络场景的玩家实体</param>
-        /// <param name="sceneID">要创建的场景号或场景名称</param>
+        /// <param name="name">要创建的场景号或场景名称</param>
         /// <param name="scene">创建场景的实体</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene CreateScene(Player player, string sceneID, Scene scene, Action<Scene> exitCurrentSceneCall = null)
+        public Scene CreateScene(Player player, string name, Scene scene, Action<Scene> exitCurrentSceneCall = null)
         {
-            if (string.IsNullOrEmpty(sceneID))
+            if (string.IsNullOrEmpty(name))
                 return null;
-            if (Scenes.TryAdd(sceneID, scene))
+            if (Scenes.TryAdd(name, scene))
             {
-                if (Scenes.TryGetValue(player.SceneID, out Scene exitScene))
+                if (Scenes.TryGetValue(player.SceneName, out Scene exitScene))
                 {
                     exitScene.Remove(player);
                     exitCurrentSceneCall?.Invoke(exitScene);
                 }
-                scene.Name = sceneID;
+                scene.Name = name;
                 scene.AddPlayer(player);
                 scene.onSerializeOptHandle = OnSerializeOpt;
                 return scene;
@@ -1720,26 +1727,26 @@ namespace Net.Server
         /// <summary>
         /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
         /// </summary>
-        /// <param name="sceneID"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public Scene CreateScene(string sceneID)
+        public Scene CreateScene(string name)
         {
-            return CreateScene(sceneID, new Scene());
+            return CreateScene(name, new Scene());
         }
 
         /// <summary>
         /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
         /// </summary>
-        /// <param name="sceneID"></param>
+        /// <param name="name"></param>
         /// <param name="scene"></param>
         /// <returns></returns>
-        public Scene CreateScene(string sceneID, Scene scene)
+        public Scene CreateScene(string name, Scene scene)
         {
-            if (string.IsNullOrEmpty(sceneID))
+            if (string.IsNullOrEmpty(name))
                 return null;
-            if (Scenes.TryAdd(sceneID, scene))
+            if (Scenes.TryAdd(name, scene))
             {
-                scene.Name = sceneID;
+                scene.Name = name;
                 scene.onSerializeOptHandle = OnSerializeOpt;
                 return scene;
             }
@@ -1750,34 +1757,34 @@ namespace Net.Server
         /// 退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
         /// </summary>
         /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene JoinScene(Player player, string sceneID, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, sceneID, exitCurrentSceneCall);
+        public Scene JoinScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, name, exitCurrentSceneCall);
 
         /// <summary>
         /// 进入场景 - 成功进入返回true，进入失败返回false
         /// </summary>
         /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene EnterScene(Player player, string sceneID, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, sceneID, exitCurrentSceneCall);
+        public Scene EnterScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, name, exitCurrentSceneCall);
 
         /// <summary>
         /// 退出当前场景,切换到指定的场景 - 成功进入返回true，进入失败返回false
         /// </summary>
         /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene SwitchScene(Player player, string sceneID, Action<Scene> exitCurrentSceneCall = null)
+        public Scene SwitchScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null)
         {
-            if (string.IsNullOrEmpty(sceneID))
+            if (string.IsNullOrEmpty(name))
                 return null;
-            if (Scenes.TryGetValue(sceneID, out Scene scene1))
+            if (Scenes.TryGetValue(name, out Scene scene1))
             {
-                if (Scenes.TryGetValue(player.SceneID, out Scene scene2))
+                if (Scenes.TryGetValue(player.SceneName, out Scene scene2))
                 {
                     scene2.Remove(player);
                     exitCurrentSceneCall?.Invoke(scene2);
@@ -1802,13 +1809,13 @@ namespace Net.Server
         /// <summary>
         /// 移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
         /// </summary>
-        /// <param name="sceneName">要移除的场景id</param>
+        /// <param name="name">要移除的场景id</param>
         /// <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
         /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public bool RemoveScene(string sceneName, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
+        public bool RemoveScene(string name, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
         {
-            if (Scenes.TryRemove(sceneName, out Scene scene))
+            if (Scenes.TryRemove(name, out Scene scene))
             {
                 exitCurrentSceneCall?.Invoke(scene);
                 if (addToMainScene)
@@ -1826,7 +1833,7 @@ namespace Net.Server
                         scene.OnRemove(p);
                         p.OnRemove();
                         p.Scene = null;
-                        p.SceneID = "";
+                        p.SceneName = "";
                     }
                 }
                 return true;
@@ -1843,9 +1850,9 @@ namespace Net.Server
         /// <returns></returns>
         public bool RemoveScenePlayer(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
         {
-            if (string.IsNullOrEmpty(player.SceneID))
+            if (string.IsNullOrEmpty(player.SceneName))
                 return false;
-            if (Scenes.TryGetValue(player.SceneID, out Scene scene))
+            if (Scenes.TryGetValue(player.SceneName, out Scene scene))
             {
                 scene.Remove(player);
                 exitCurrentSceneCall?.Invoke(scene);
@@ -1932,6 +1939,18 @@ namespace Net.Server
             {
                 ServerArgs.Dispose();
                 ServerArgs = null;
+                #region 清除iocp完成端口绑定事件池缓存
+                var overlappedType = typeof(Overlapped);
+                var overlappedDataCacheField = overlappedType.GetField("s_overlappedDataCache", BindingFlags.NonPublic | BindingFlags.Static);
+                var s_overlappedDataCache = overlappedDataCacheField.GetValue(null);
+                var overlappedDataCacheType = s_overlappedDataCache.GetType();
+                var m_FreeListField = overlappedDataCacheType.GetField("m_FreeList", BindingFlags.NonPublic | BindingFlags.Instance);
+                var m_FreeList = m_FreeListField.GetValue(s_overlappedDataCache) as ConcurrentStack<object>;
+                m_FreeList.Clear();
+                var m_NotGen2Field = overlappedDataCacheType.GetField("m_NotGen2", BindingFlags.NonPublic | BindingFlags.Instance);
+                var m_NotGen2 = m_NotGen2Field.GetValue(s_overlappedDataCache) as List<object>;
+                m_NotGen2.Clear();
+                #endregion
             }
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
@@ -2713,8 +2732,8 @@ namespace Net.Server
         /// <param name="client"></param>
         public void Ping(Player client)
         {
-            long timelong = DateTime.Now.Ticks;
-            Send(client, NetCmd.Ping, BitConverter.GetBytes(timelong));
+            uint tick = (uint)Environment.TickCount;
+            Send(client, NetCmd.Ping, BitConverter.GetBytes(tick));
         }
 
         /// <summary>
@@ -2722,10 +2741,10 @@ namespace Net.Server
         /// </summary>
         /// <param name="client"></param>
         /// <param name="callback"></param>
-        public void Ping(Player client, Action<Player, double> callback)
+        public void Ping(Player client, Action<Player, uint> callback)
         {
-            long timelong = DateTime.Now.Ticks;
-            Send(client, NetCmd.Ping, BitConverter.GetBytes(timelong));
+            uint tick = (uint)Environment.TickCount;
+            Send(client, NetCmd.Ping, BitConverter.GetBytes(tick));
             OnPingCallback += callback;
         }
 

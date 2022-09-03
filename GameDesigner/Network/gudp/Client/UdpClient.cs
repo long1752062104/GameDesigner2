@@ -100,7 +100,7 @@
         /// <param name="port">服务器端口</param>
         /// <param name="clientLen">测试客户端数量</param>
         /// <param name="dataLen">每个客户端数据大小</param>
-        public unsafe static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, Action<UdpClientTest> onInit = null, Action<List<UdpClientTest>> fpsAct = null, IAdapter adapter = null)
+        public unsafe static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<UdpClientTest> onInit = null, Action<List<UdpClientTest>> fpsAct = null, IAdapter adapter = null)
         {
             var cts = new CancellationTokenSource();
             Task.Run(() =>
@@ -140,16 +140,25 @@
                     {
                         if (end > clientLen)
                             end = clientLen;
+                        var tick = Environment.TickCount + millisecondsTimeout;
                         while (!cts.IsCancellationRequested)
                         {
-                            Thread.Sleep(30);
+                            bool canSend = false;
+                            if (Environment.TickCount >= tick)
+                            {
+                                tick = Environment.TickCount + millisecondsTimeout;
+                                canSend = true;
+                            }
                             for (int ii = index; ii < end; ii++)
                             {
                                 try
                                 {
                                     var client = clients[ii];
-                                    client.SendRT(NetCmd.Local, buffer);
-                                    //client.AddOperation(new Operation(NetCmd.Local) { buffer = new byte[dataLen] });
+                                    if (canSend)
+                                    {
+                                        //client.SendRT(NetCmd.Local, buffer);
+                                        client.AddOperation(new Operation(NetCmd.Local, buffer));
+                                    }
                                     client.Update();
                                 }
                                 catch (Exception ex)
@@ -182,6 +191,7 @@
         public UdpClientTest()
         {
             OnRevdBufferHandle += (model) => { fps++; };
+            OnOperationSync += (list) => { fps++; };
         }
         protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
@@ -203,12 +213,10 @@
 
         protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
 
-        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-        {
-            receiveCount += buffer.Count;
-            receiveAmount++;
-            base.ResolveBuffer(ref buffer, isTcp);
-        }
+        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
+        //{
+        //    base.ResolveBuffer(ref buffer, isTcp);
+        //}
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
@@ -220,14 +228,14 @@
             Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
 #endif
         }
-        protected internal override byte[] OnSerializeOptInternal(OperationList list)
-        {
-            return new byte[0];
-        }
-        protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-        {
-            return default;
-        }
+        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
+        //{
+        //    return new byte[0];
+        //}
+        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
+        //{
+        //    return default;
+        //}
         /// <summary>
         /// 单线程更新，需要开发者自动调用更新
         /// </summary>
@@ -235,13 +243,7 @@
         {
             if (!Connected)
                 return;
-            if (Client.Poll(0, SelectMode.SelectRead))
-            {
-                var buffer1 = BufferPool.Take(65536);
-                buffer1.Count = Client.Receive(buffer1);
-                ResolveBuffer(ref buffer1, false);
-                BufferPool.Push(buffer1);
-            }
+            Receive(false);
             SendDirect();
             NetworkEventUpdate();
         }

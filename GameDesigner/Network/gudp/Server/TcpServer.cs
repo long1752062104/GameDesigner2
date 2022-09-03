@@ -171,7 +171,10 @@
                         count--;//避免崩错. 先--
                         if (revdQueue.TryDequeue(out RevdDataBuffer revdData))
                         {
-                            ResolveBuffer(revdData.client as Player, ref revdData.buffer);
+                            var client = revdData.client as Player;
+                            if (client.isDispose)//解决压力测试10000个客户端，每个客户端每秒10240个字节的数据包后出现的问题
+                                continue;
+                            ResolveBuffer(client, ref revdData.buffer);
                             BufferPool.Push(revdData.buffer);
                         }
                     }

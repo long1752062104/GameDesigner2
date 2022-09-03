@@ -77,7 +77,7 @@
                     DateTime time = DateTime.Now.AddSeconds(8);
                     while (UID == 0)
                     {
-                        Receive();
+                        Receive(false);
                         Thread.Sleep(1);
                         if (DateTime.Now >= time)
                             throw new Exception("uid赋值失败!");
@@ -129,12 +129,12 @@
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            StartThread("SendDataHandle", SendDataHandle);
             StartThread("ReceiveHandle", ReceiveHandle);
             checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
         }
@@ -317,7 +317,7 @@
         /// <param name="port">服务器端口</param>
         /// <param name="clientLen">测试客户端数量</param>
         /// <param name="dataLen">每个客户端数据大小</param>
-        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, Action<TcpClientTest> onInit = null, Action<List<TcpClientTest>> fpsAct = null, IAdapter adapter = null)
+        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<TcpClientTest> onInit = null, Action<List<TcpClientTest>> fpsAct = null, IAdapter adapter = null)
         {
             var cts = new CancellationTokenSource();
             Task.Run(() =>
@@ -362,9 +362,15 @@
                     {
                         if (end > clientLen)
                             end = clientLen;
+                        var tick = Environment.TickCount + millisecondsTimeout;
                         while (!cts.IsCancellationRequested)
                         {
-                            Thread.Sleep(1000);
+                            bool canSend = false;
+                            if (Environment.TickCount >= tick)
+                            {
+                                tick = Environment.TickCount + millisecondsTimeout;
+                                canSend = true;
+                            }
                             for (int ii = index; ii < end; ii++)
                             {
                                 try
@@ -382,9 +388,12 @@
                                             client.ResolveBuffer(ref buffer1, false);
                                         BufferPool.Push(buffer1);
                                     }
-                                    client.SendRT(NetCmd.Local, buffer);
-                                    //client.SendRT("Register", RandomHelper.Range(10000,9999999).ToString(), "123");
-                                    client.SendDirect();
+                                    if (canSend)
+                                    {
+                                        //client.SendRT(NetCmd.Local, buffer);
+                                        client.AddOperation(new Operation(66, buffer));
+                                        client.SendDirect();
+                                    }
                                     client.NetworkEventUpdate();
                                 }
                                 catch (Exception ex)
@@ -417,6 +426,7 @@
         public TcpClientTest()
         {
             OnRevdBufferHandle += (model) => { fps++; };
+            OnOperationSync += (list) => { fps++; };
         }
         protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
@@ -435,12 +445,10 @@
 
         protected override void OnConnected(bool result) { }
 
-        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-        {
-            receiveCount += buffer.Count;
-            receiveAmount++;
-            base.ResolveBuffer(ref buffer, isTcp);
-        }
+        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
+        //{
+        //    base.ResolveBuffer(ref buffer, isTcp);
+        //}
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
@@ -452,14 +460,14 @@
                 Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
 #endif
         }
-        protected internal override byte[] OnSerializeOptInternal(OperationList list)
-        {
-            return new byte[0];
-        }
-        protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-        {
-            return default;
-        }
+        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
+        //{
+        //    return new byte[0];
+        //}
+        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
+        //{
+        //    return default;
+        //}
         public override string ToString()
         {
             return $"uid:{Identify} conv:{Connected}";

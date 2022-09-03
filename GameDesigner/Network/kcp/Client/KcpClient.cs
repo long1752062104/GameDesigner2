@@ -51,7 +51,7 @@
         {
             if (addressBuffer != null)
                 return addressBuffer;
-            SocketAddress socketAddress = Client.RemoteEndPoint.Serialize();
+            var socketAddress = Client.RemoteEndPoint.Serialize();
             addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
             return addressBuffer;
         }
@@ -60,17 +60,19 @@
         [MonoPInvokeCallback(typeof(outputCallback))]
         public static unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
         {
-#if WINDOWS
             var client = KcpDict[kcp];
+            client.sendCount += len;
+            client.sendAmount++;
+#if WINDOWS
             return Win32KernelAPI.sendto(client.Client.Handle, (byte*)buf, len, SocketFlags.None, client.RemoteAddressBuffer(), 16);
 #else
             byte[] buff = new byte[len];
             Marshal.Copy(buf, buff, 0, len);
-            return KcpDict[kcp].Client.Send(buff, 0, len, SocketFlags.None);
+            return client.Client.Send(buff, 0, len, SocketFlags.None);
 #endif
         }
 
-        public override void Receive()
+        public override void Receive(bool isSleep)
         {
             if (Client.Poll(1, SelectMode.SelectRead))
             {
@@ -114,8 +116,6 @@
 
         protected override void SendByteData(byte[] buffer, bool reliable)
         {
-            sendCount += buffer.Length;
-            sendAmount++;
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(kcp, p, buffer.Length);
@@ -161,84 +161,156 @@
         /// <param name="port">服务器端口</param>
         /// <param name="clientLen">测试客户端数量</param>
         /// <param name="dataLen">每个客户端数据大小</param>
-        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen)
+        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<KcpClientTest> onInit = null, Action<List<KcpClientTest>> fpsAct = null, IAdapter adapter = null)
         {
             var cts = new CancellationTokenSource();
             Task.Run(() =>
             {
-                var kcps = new IntPtr[clientLen];
-                var outputs = new outputCallback[clientLen];
-                var sockets = new Socket[clientLen];
+                var clients = new List<KcpClientTest>();
                 for (int i = 0; i < clientLen; i++)
                 {
-                    Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                    socket.Connect(ip, port);
-                    KcpCallback callback = new KcpCallback(socket);
-                    IntPtr kcp = ikcp_create(1400, (IntPtr)1);
-                    outputCallback output = new outputCallback(callback.Output);
-                    IntPtr outputPtr = Marshal.GetFunctionPointerForDelegate(output);
-                    ikcp_setoutput(kcp, outputPtr);
-                    GC.KeepAlive(output);
-                    outputs[i] = output;
-                    ikcp_wndsize(kcp, 128, 128);
-                    ikcp_nodelay(kcp, 1, 10, 2, 1);
-                    kcps[i] = kcp;
-                    sockets[i] = socket;
+                    var client = new KcpClientTest();
+                    onInit?.Invoke(client);
+                    if (adapter != null)
+                        client.AddAdapter(adapter);
+                    client.Connect(ip, port);
+                    clients.Add(client);
                 }
                 var buffer = new byte[dataLen];
-                using (MemoryStream stream = new MemoryStream(512))
+                Task.Run(() =>
                 {
-                    int crcIndex = 0;
-                    byte crcCode = 0x2d;
-                    stream.Write(new byte[4], 0, 4);
-                    stream.WriteByte((byte)crcIndex);
-                    stream.WriteByte(crcCode);
-                    RPCModel rPCModel = new RPCModel(NetCmd.Local, buffer);
-                    stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
-                    stream.WriteByte(rPCModel.cmd);
-                    stream.Write(BitConverter.GetBytes(rPCModel.buffer.Length), 0, 4);
-                    stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-                    stream.Position = 0;
-                    int len = (int)stream.Length - 6;
-                    stream.Write(BitConverter.GetBytes(len), 0, 4);
-                    stream.Position = len + 6;
-                    buffer = stream.ToArray();
-                }
-                var buffer1 = new byte[65507];
-                while (!cts.IsCancellationRequested)
-                {
-                    Thread.Sleep(31);
-                    for (int i = 0; i < kcps.Length; i++)
+                    while (!cts.IsCancellationRequested)
                     {
-                        fixed (byte* p = &buffer[0])
+                        Thread.Sleep(1000);
+                        fpsAct?.Invoke(clients);
+                        for (int i = 0; i < clients.Count; i++)
                         {
-                            int count = ikcp_send(kcps[i], p, buffer.Length);
-                            ikcp_update(kcps[i], (uint)Environment.TickCount);
+                            clients[i].NetworkFlowHandler();
+                            clients[i].fps = 0;
                         }
-                        if (sockets[i].Poll(0, SelectMode.SelectRead))
+                    }
+                });
+                int threadNum = (clientLen / 1000) + 1;
+                for (int i = 0; i < threadNum; i++)
+                {
+                    int index = i * 1000;
+                    int end = index + 1000;
+                    if (index >= clientLen)
+                        break;
+                    Task.Run(() =>
+                    {
+                        if (end > clientLen)
+                            end = clientLen;
+                        var tick = Environment.TickCount + millisecondsTimeout;
+                        while (!cts.IsCancellationRequested)
                         {
-                            int count = sockets[i].Receive(buffer1);
-                            fixed (byte* p = &buffer1[0])
+                            bool canSend = false;
+                            if (Environment.TickCount >= tick)
                             {
-                                ikcp_input(kcps[i], p, count);
+                                tick = Environment.TickCount + millisecondsTimeout;
+                                canSend = true;
                             }
-                            ikcp_update(kcps[i], (uint)Environment.TickCount);
-                            int len;
-                            while ((len = ikcp_peeksize(kcps[i])) > 0)
+                            for (int ii = index; ii < end; ii++)
                             {
-                                var buffer2 = new byte[len];
-                                fixed (byte* p1 = &buffer1[0])
+                                try
                                 {
-                                    int kcnt = ikcp_recv(kcps[i], p1, buffer2.Length);
+                                    var client = clients[ii];
+                                    if (canSend)
+                                    {
+                                        //client.SendRT(NetCmd.Local, buffer);
+                                        client.AddOperation(new Operation(NetCmd.Local, buffer));
+                                    }
+                                    client.Update();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Event.NDebug.LogError(ex);
                                 }
                             }
                         }
-                    }
+                    });
                 }
-                for (int i = 0; i < kcps.Length; i++)
-                    ikcp_release(kcps[i]);
+                while (!cts.IsCancellationRequested)
+                    Thread.Sleep(30);
+                Thread.Sleep(100);
+                for (int i = 0; i < clients.Count; i++)
+                    clients[i].Close(false);
             }, cts.Token);
             return cts;
+        }
+    }
+
+    public class KcpClientTest : KcpClient
+    {
+        public int fps;
+        public int revdSize { get { return receiveCount; } }
+        public int sendSize { get { return sendCount; } }
+        public int sendNum { get { return sendAmount; } }
+        public int revdNum { get { return receiveAmount; } }
+        public int resolveNum { get { return receiveAmount; } }
+        private byte[] addressBuffer;
+        public KcpClientTest() : base()
+        {
+            OnRevdBufferHandle += (model) => { fps++; };
+            OnOperationSync += (list) => { fps++; };
+        }
+        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        {
+            Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            this.localPort = localPort;
+            Client.Connect(host, port);
+            Client.Blocking = false;
+#if WINDOWS
+            var socketAddress = Client.RemoteEndPoint.Serialize();
+            addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
+#endif
+            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+            SendDirect();
+            Connected = true;
+            result(true);
+            return Task.FromResult(Connected);
+        }
+        protected override void StartupThread() { }
+
+        protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
+
+        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
+        //{
+        //    base.ResolveBuffer(ref buffer, isTcp);
+        //}
+//        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+//        {
+//            sendCount += buffer.Length;
+//            sendAmount++;
+//#if WINDOWS
+//            fixed (byte* ptr = buffer)
+//                Win32KernelAPI.sendto(Client.Handle, ptr, buffer.Length, SocketFlags.None, addressBuffer, 16);
+//#else
+//            Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+//#endif
+//        }
+        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
+        //{
+        //    return new byte[0];
+        //}
+        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
+        //{
+        //    return default;
+        //}
+        /// <summary>
+        /// 单线程更新，需要开发者自动调用更新
+        /// </summary>
+        public void Update()
+        {
+            if (!Connected)
+                return;
+            Receive(false);
+            SendDirect();
+            NetworkEventUpdate();
+        }
+        public override string ToString()
+        {
+            return $"uid:{Identify} conv:{Connected}";
         }
     }
 }

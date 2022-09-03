@@ -27,6 +27,10 @@ namespace Net.Event
             internal bool async;
             internal bool complete = true;
             internal bool isRemove;
+            internal void SetIntervalTime(uint value)
+            {
+                timeMax = value;
+            }
             public override string ToString()
             {
                 return $"{name}";
@@ -211,7 +215,7 @@ namespace Net.Event
                 if (frame < frameRate)
                 {
                     var step = (frameRate - frame) * interval;
-                    UpdateEvent((uint)step);
+                    UpdateEvent(step);
                 }
                 frame = 0;
                 startTick = tick;

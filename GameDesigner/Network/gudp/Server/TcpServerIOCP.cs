@@ -132,7 +132,11 @@
                         receiveAmount++;
                         var remotePoint = args.RemoteEndPoint;
                         if (AllClients.TryGetValue(remotePoint, out Player client1))//在线客户端  得到client对象
+                        {
+                            if (client1.isDispose)
+                                return;
                             client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer, tcp_udp = true });
+                        }
                         if (!clientSocket.Connected)
                             return;
                         if (!clientSocket.ReceiveAsync(args))

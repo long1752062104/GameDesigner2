@@ -34,9 +34,9 @@
         /// </summary>
         public EndPoint RemotePoint { get; set; }
         /// <summary>
-        /// 此玩家所在的场景ID
+        /// 此玩家所在的场景名称
         /// </summary>
-        public string SceneID { get; set; } = string.Empty;
+        public string SceneName { get; set; } = string.Empty;
         /// <summary>
         /// 客户端玩家的标识
         /// </summary>
@@ -148,7 +148,7 @@
             if (Client != null) 
             {
                 Client.Shutdown(SocketShutdown.Both);
-                Client?.Close(1);
+                Client?.Close();
             }
             stackStream?.Close();
             stackStream = null;
@@ -397,7 +397,7 @@
 
         public override string ToString()
         {
-            return $"[玩家ID:{PlayerID}][用户ID:{UserID}][场景ID:{SceneID}][登录:{Login}]";
+            return $"[玩家ID:{PlayerID}][用户ID:{UserID}][场景ID:{SceneName}][登录:{Login}]";
         }
     }
 }
