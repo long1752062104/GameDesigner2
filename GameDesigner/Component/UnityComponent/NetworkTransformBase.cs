@@ -155,6 +155,13 @@ namespace Net.UnityComponent
             if (mode == SyncMode.SynchronizedAll | mode == SyncMode.Control)
                 SyncControlTransform();
         }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            if ((mode == SyncMode.SynchronizedAll | mode == SyncMode.Control) & netObj.Identity != -1)
+                ClientBase.Instance?.AddOperation(new Operation(Command.Destroy, netObj.Identity));
+        }
     }
 }
 #endif

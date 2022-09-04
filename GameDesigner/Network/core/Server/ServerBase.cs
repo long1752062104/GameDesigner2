@@ -2803,7 +2803,7 @@ namespace Net.Server
                 {
                     if (client.Value == null)
                         continue;
-                    SyncVarHelper.CheckSyncVar(false, client.Value.syncVarList, buffer=> {
+                    SyncVarHelper.CheckSyncVar(true, client.Value.syncVarList, buffer=> {
                         SendRT(client.Value, NetCmd.SyncVar, buffer);
                     });
                 }

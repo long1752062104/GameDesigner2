@@ -25,11 +25,12 @@ namespace Net.UnityComponent
         [SerializeField] private int identity;//可以设置的id
         [Tooltip("注册的网络物体索引, registerObjectIndex要对应NetworkSceneManager的registerObjects数组索引, 如果设置了自定义唯一标识, 则此字段无效!")]
         public int registerObjectIndex;
-        internal bool isOtherCreate;
+        [SerializeField] [DisplayOnly("IsLocal")] internal bool isLocal = true;
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
         internal List<SyncVarInfo> syncVarInfos = new List<SyncVarInfo>();
         internal bool isInit;
         internal bool isDispose;
+        public bool IsLocal => isLocal;
 
         /// <summary>
         /// 每个网络对象的唯一标识
@@ -61,7 +62,7 @@ namespace Net.UnityComponent
                 Destroy(gameObject);
                 return;
             }
-            if (isOtherCreate | m_identity > 0)
+            if (!isLocal | m_identity > 0)
             {
                 goto J1;
             }
@@ -87,22 +88,22 @@ namespace Net.UnityComponent
                 return;
             }
         J1:
-            if (!sm.identitys.TryAdd(m_identity, this, out var netObj))
+            if (!sm.identitys.TryAdd(m_identity, this, out var oldNetObj))
             {
-                if (netObj == this | netObj == null)
+                if (oldNetObj == this | oldNetObj == null)
                     return;
-                netObj.m_identity = -1;
+                oldNetObj.m_identity = -1;
                 Debug.Log($"uid:{m_identity}发生了两次实例化!");
-                Destroy(netObj.gameObject);
+                Destroy(oldNetObj.gameObject);
             }
         }
-        public void InitAll()
+        public void InitAll(Operation opt = default)
         {
             Init();
             var nbs = GetComponentsInChildren<NetworkBehaviour>();
             foreach (var np in nbs)
             {
-                np.Init();
+                np.Init(opt);
             }
         }
         internal void InitSyncVar(object target)
@@ -116,7 +117,7 @@ namespace Net.UnityComponent
 
         internal void CheckSyncVar()
         {
-            SyncVarHelper.CheckSyncVar(isOtherCreate, syncVarInfos, (buffer)=> 
+            SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos, (buffer)=> 
             {
                 ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVar, m_identity)
                 {
@@ -154,15 +155,13 @@ namespace Net.UnityComponent
             isDispose = true;
             if (m_identity == -1)
                 return;
-            if (isOtherCreate | identity < 10000)//0-10000是场景可用标识
+            if (!isLocal | m_identity < 10000)//0-10000是场景可用标识
             {
                 Recovery(m_identity, false);
                 return;
             }
             Recovery(m_identity, true);
-            if (ClientBase.Instance == null)
-                return;
-            ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
+            ClientBase.Instance?.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
         private static async void Recovery(int identity, bool isPush) 
@@ -188,8 +187,6 @@ namespace Net.UnityComponent
             //并且保证唯一id都是正确的,如果一个客户端实例化超过5000个, 就会和uid=10001的玩家networkObject网络物体组件唯一id碰撞, 会出现鬼畜问题
             IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
             IDENTITY_MAX = IDENTITY + capacity;
-            //for (int i = IDENTITY; i < IDENTITY + capacity; i++)
-            //    IDENTITY_POOL.Enqueue(i);
         }
 
         /// <summary>

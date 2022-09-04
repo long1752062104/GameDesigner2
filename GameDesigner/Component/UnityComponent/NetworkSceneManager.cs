@@ -57,6 +57,8 @@ namespace Net.UnityComponent
             {
                 foreach (var identity in identitys.Values)
                 {
+                    if (identity == null)
+                        continue;
                     if (!identity.enabled)
                         continue;
                     if (identity.isDispose)
@@ -111,9 +113,9 @@ namespace Net.UnityComponent
                     return null;
                 identity = Instantiate(registerObjects[opt.index]);
                 identity.Identity = opt.identity;
-                identity.isOtherCreate = true;
+                identity.isLocal = false;
                 identity.isInit = true;
-                identity.InitAll();
+                identity.InitAll(opt);
                 identitys.TryAdd(opt.identity, identity);
                 OnNetworkObjectCreate(opt, identity);
             }

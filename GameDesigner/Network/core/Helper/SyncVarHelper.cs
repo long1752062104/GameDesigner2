@@ -115,13 +115,13 @@ namespace Net.Helper
             return true;
         }
 
-        public static void CheckSyncVar(bool isOtherCreate, List<SyncVarInfo> syncVarInfos, Action<byte[]> OnBuffer)
+        public static void CheckSyncVar(bool isLocal, List<SyncVarInfo> syncVarInfos, Action<byte[]> OnBuffer)
         {
             Segment segment = null;
             for (int i = 0; i < syncVarInfos.Count; i++)
             {
                 var syncVar = syncVarInfos[i];
-                if ((isOtherCreate & !syncVar.authorize) | syncVar.isDispose)
+                if ((!isLocal & !syncVar.authorize) | syncVar.isDispose)
                     continue;
                 var value = syncVar.GetValue();
                 if (value == null)
