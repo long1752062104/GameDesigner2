@@ -8,6 +8,7 @@ namespace Net.UnityComponent
     /// <summary>
     /// 网络行为基础组件
     /// </summary>
+    [DefaultExecutionOrder(1000)]
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         internal NetworkObject netObj;

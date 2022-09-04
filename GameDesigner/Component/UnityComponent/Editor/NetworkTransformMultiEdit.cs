@@ -18,6 +18,9 @@ public class NetworkTransformMultiEdit : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
+        GUI.enabled = false;
+        EditorGUILayout.LabelField("mode", nt.currMode.ToString());
+        GUI.enabled = true;
         if (GUILayout.Button("更新子物体"))
         {
             var childs1 = nt.transform.GetComponentsInChildren<Transform>();

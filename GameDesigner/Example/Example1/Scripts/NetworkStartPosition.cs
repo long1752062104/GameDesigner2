@@ -18,7 +18,7 @@ namespace Example1
         // Start is called before the first frame update
         async void Start()
         {
-            while (!NetworkObject.IsInit)
+            while (!NetworkObject.IsInitIdentity)
             {
                 await Task.Yield();
             }

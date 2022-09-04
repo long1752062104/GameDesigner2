@@ -29,12 +29,17 @@ namespace Net.UnityComponent
         /// <summary>
         /// 完全控制在其他客户端显示的状态
         /// </summary>
-        SynchronizedAll
+        SynchronizedAll,
+        /// <summary>
+        /// 空同步
+        /// </summary>
+        None,
     }
 
     /// <summary>
     /// 网络Transform同步组件基类
     /// </summary>
+    [DefaultExecutionOrder(1000)]
     public abstract class NetworkTransformBase : NetworkBehaviour
     {
         protected Net.Vector3 position;
@@ -44,8 +49,7 @@ namespace Net.UnityComponent
         public bool syncPosition = true;
         public bool syncRotation = true;
         public bool syncScale = false;
-        [DisplayOnly]
-        public SyncMode mode = SyncMode.Synchronized;
+        [HideInInspector] public SyncMode currMode = SyncMode.None;
         internal float sendTime;
         public float interval = 0.5f;
         internal Net.Vector3 netPosition;
@@ -60,9 +64,9 @@ namespace Net.UnityComponent
         // Update is called once per frame
         public virtual void Update()
         {
-            if (netObj.Identity == -1)
+            if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;
-            if (mode == SyncMode.Synchronized)
+            if (currMode == SyncMode.Synchronized)
             {
                 SyncTransform();
             }
@@ -89,7 +93,7 @@ namespace Net.UnityComponent
         {
             ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
-                cmd1 = (byte)mode,
+                cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
                 index1 = Index,
                 uid = ClientBase.Instance.UID
@@ -128,16 +132,16 @@ namespace Net.UnityComponent
 
         public override void OnNetworkObjectInit(int identity)
         {
-            mode = syncMode;
+            currMode = syncMode;
         }
 
         public override void OnNetworkObjectCreate(Operation opt)
         {
             SyncMode mode1 = (SyncMode)opt.cmd1;
             if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
-                mode = SyncMode.SynchronizedAll;
+                currMode = SyncMode.SynchronizedAll;
             else
-                mode = SyncMode.Synchronized;
+                currMode = SyncMode.Synchronized;
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;
@@ -152,15 +156,18 @@ namespace Net.UnityComponent
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;
-            if (mode == SyncMode.SynchronizedAll | mode == SyncMode.Control)
+            if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                 SyncControlTransform();
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-            if ((mode == SyncMode.SynchronizedAll | mode == SyncMode.Control) & netObj.Identity != -1)
-                ClientBase.Instance?.AddOperation(new Operation(Command.Destroy, netObj.Identity));
+            if (ClientBase.Instance == null)
+                return;
+            //如果在退出游戏或者退出场景后不让物体被销毁，则需要查找netobj组件设置Identity等于-1，或者查找此组件设置currMode等于None，或者在点击处理的时候调用ClientBase.Instance.Close方法
+            if ((currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control) & netObj.Identity != -1 & ClientBase.Instance.Connected)
+                ClientBase.Instance.AddOperation(new Operation(Command.Destroy, netObj.Identity));
         }
     }
 }

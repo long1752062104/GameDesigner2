@@ -146,7 +146,7 @@ MonoBehaviour:
   syncPosition: 1
   syncRotation: 1
   syncScale: 0
-  mode: 3
+  currMode: 5
   interval: 0.5
   rate: 30
   lerpSpeed: 0.3

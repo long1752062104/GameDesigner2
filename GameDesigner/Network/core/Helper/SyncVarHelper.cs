@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Net.Helper
 {
@@ -183,15 +184,15 @@ namespace Net.Helper
             }, buffer);
         }
 
-        private static void SyncVarHandler(Func<ushort, SyncVarInfo> syncVarList, byte[] buffer)
+        private async static void SyncVarHandler(Func<ushort, SyncVarInfo> syncVarList, byte[] buffer)
         {
-            Segment segment1 = new Segment(buffer, false);
+            var segment1 = new Segment(buffer, false);
             while (segment1.Position < segment1.Offset + segment1.Count)
             {
                 var index = segment1.ReadUInt16();
-                var syncVar = syncVarList(index);
-                if (syncVar == null)
-                    break;
+                SyncVarInfo syncVar;
+                while ((syncVar = syncVarList(index)) == null)
+                    await Task.Yield();
                 var oldValue = syncVar.value;
                 object value;
                 if (syncVar.baseType)

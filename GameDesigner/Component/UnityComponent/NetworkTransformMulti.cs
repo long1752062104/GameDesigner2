@@ -10,6 +10,7 @@ namespace Net.UnityComponent
     /// <summary>
     /// 网络Transform同步组件基类
     /// </summary>
+    [DefaultExecutionOrder(1000)]
     public class NetworkTransformMulti : NetworkTransformBase
     {
         public ChildTransform[] childs;
@@ -25,9 +26,9 @@ namespace Net.UnityComponent
 
         public override void Update()
         {
-            if (netObj.Identity == -1)
+            if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;
-            if (mode == SyncMode.Synchronized)
+            if (currMode == SyncMode.Synchronized)
             {
                 SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
@@ -50,7 +51,7 @@ namespace Net.UnityComponent
         {
             ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
-                cmd1 = (byte)mode,
+                cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
                 index1 = Index,
                 uid = ClientBase.Instance.UID
@@ -67,7 +68,7 @@ namespace Net.UnityComponent
                 netPosition = opt.position;
                 netRotation = opt.rotation;
                 netLocalScale = opt.direction;
-                if (mode == SyncMode.SynchronizedAll | mode == SyncMode.Control)
+                if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                     SyncControlTransform();
             }
             else

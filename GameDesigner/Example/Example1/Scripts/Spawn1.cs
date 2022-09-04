@@ -2,7 +2,7 @@
 namespace Net.Example
 {
     using global::System.Threading.Tasks;
-    using Net.Client;
+    using Net.UnityComponent;
     using UnityEngine;
 
     public class Spawn1 : MonoBehaviour
@@ -13,7 +13,7 @@ namespace Net.Example
 
         async void Start()
         {
-            while (!ClientBase.Instance.Connected)
+            while (!NetworkObject.IsInitIdentity)
             {
                 await Task.Yield();
             }

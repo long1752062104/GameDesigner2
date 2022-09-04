@@ -11,6 +11,7 @@ namespace Net.UnityComponent
     using UnityEngine;
 
     [RequireComponent(typeof(NetworkTime))]
+    [DefaultExecutionOrder(1)]
     public class NetworkSceneManager : SingleCase<NetworkSceneManager>
     {
         public List<NetworkObject> registerObjects = new List<NetworkObject>();
@@ -94,6 +95,9 @@ namespace Net.UnityComponent
                 case NetCmd.SyncVar:
                     OnSyncVarHandler(opt);
                     break;
+                case NetCmd.SyncVarGet:
+                    SyncVarGetHandler(opt);
+                    break;
                 default:
                     OnOtherOperator(opt);
                     break;
@@ -147,6 +151,18 @@ namespace Net.UnityComponent
             identity.SyncVarHandler(opt);
         }
 
+        public virtual void SyncVarGetHandler(Operation opt) 
+        {
+            var identity = OnCheckIdentity(opt);
+            if (identity == null)
+                return;
+            if (identity.isDispose)
+                return;
+            if (!identity.isLocal)
+                return;
+            identity.syncVarInfos[opt.index1].value = default;
+        }
+
         /// <summary>
         /// 当其他网络物体被删除(入口1)
         /// </summary>
@@ -179,7 +195,6 @@ namespace Net.UnityComponent
                 return;
             if (identity.isDispose)
                 return;
-            identity.isDispose = true;
             if(isPlayer)
                 OnOtherExit(identity);
             OnOtherDestroy(identity);
@@ -224,11 +239,29 @@ namespace Net.UnityComponent
         {
         }
 
+        private void OnApplicationQuit()
+        {
+            ExitSceneHandler();
+        }
+
+        /// <summary>
+        /// 当退出场景时有些网络物体是不应该被销毁的
+        /// </summary>
+        public void ExitSceneHandler()
+        {
+            var transforms = FindObjectsOfType<NetworkTransformBase>();
+            foreach (var identity in transforms)
+            {
+                identity.currMode = SyncMode.None;
+                identity.netObj.Identity = -1;
+            }
+        }
+
         public virtual void OnDestroy()
         {
+            NetworkObject.UnInit();//每次离开战斗场景都要清除初始化identity
             if (ClientBase.Instance == null)
                 return;
-            ClientBase.Instance.OnConnectedHandle -= OnConnected;
             ClientBase.Instance.OnOperationSync -= OperationSync;
         }
     }
