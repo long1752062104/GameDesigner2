@@ -2,6 +2,7 @@
 namespace Net.UnityComponent
 {
     using global::System.Collections.Generic;
+    using global::System.Threading.Tasks;
     using Net.Client;
     using Net.Component;
     using Net.Helper;
@@ -153,15 +154,24 @@ namespace Net.UnityComponent
             isDispose = true;
             if (m_identity == -1)
                 return;
-            var nsm = NetworkSceneManager.I;
-            if(nsm != null)
-                nsm.identitys.Remove(m_identity);
-            if (isOtherCreate | m_identity < 10000)//identity < 10000则是自定义唯一标识
+            if (isOtherCreate | identity < 10000)//0-10000是场景可用标识
+            {
+                Recovery(m_identity, false);
                 return;
-            IDENTITY_POOL.Enqueue(m_identity);
+            }
+            Recovery(m_identity, true);
             if (ClientBase.Instance == null)
                 return;
             ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
+        }
+
+        private static async void Recovery(int identity, bool isPush) 
+        {
+            await Task.Delay(1000);
+            NetworkSceneManager.I?.RemoveIdentity(identity);
+            if (isPush)
+                return;
+            IDENTITY_POOL.Enqueue(identity);
         }
 
         /// <summary>

@@ -90,9 +90,7 @@ namespace Net.UnityComponent
                     OnPlayerExit(opt);
                     break;
                 case NetCmd.SyncVar:
-                    var identity = OnCheckIdentity(opt);
-                    if (identity != null)
-                        identity.SyncVarHandler(opt);
+                    OnSyncVarHandler(opt);
                     break;
                 default:
                     OnOtherOperator(opt);
@@ -131,8 +129,20 @@ namespace Net.UnityComponent
             var identity = OnCheckIdentity(opt);
             if (identity == null)
                 return;
+            if (identity.isDispose)
+                return;
             var nb = identity.networkBehaviours[opt.index1];
             nb.OnNetworkOperationHandler(opt);
+        }
+
+        public virtual void OnSyncVarHandler(Operation opt) 
+        {
+            var identity = OnCheckIdentity(opt);
+            if (identity == null)
+                return;
+            if (identity.isDispose)
+                return;
+            identity.SyncVarHandler(opt);
         }
 
         /// <summary>
@@ -143,34 +153,39 @@ namespace Net.UnityComponent
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
-                OnPlayerDestroy(opt.identity, identity, false);
+                OnPlayerDestroy(identity, false);
             }
         }
 
         public virtual void OnPlayerExit(Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
-                OnPlayerDestroy(opt.identity, identity, true);
+                OnPlayerDestroy(identity, true);
             if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
                 var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
                 var count = uid + NetworkObject.Capacity;
                 foreach (var item in identitys)
                     if (item.Key >= uid & item.Key < count)
-                        OnPlayerDestroy(item.Key, item.Value, false);
+                        OnPlayerDestroy(item.Value, false);
             }
         }
 
-        private async void OnPlayerDestroy(int identityKey, NetworkObject identity, bool isPlayer)
+        private void OnPlayerDestroy(NetworkObject identity, bool isPlayer)
         {
+            if (identity == null)
+                return;
             if (identity.isDispose)
                 return;
             identity.isDispose = true;
-            await Task.Delay(1000);
             if(isPlayer)
                 OnOtherExit(identity);
             OnOtherDestroy(identity);
-            identitys.Remove(identityKey);
+        }
+
+        public void RemoveIdentity(int identity)
+        {
+            identitys.Remove(identity);
         }
 
         /// <summary>

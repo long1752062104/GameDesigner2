@@ -14,8 +14,9 @@ namespace Net.UnityComponent
     {
         public ChildTransform[] childs;
 
-        public void Start()
+        public override void Start()
         {
+            base.Start();
             for (int i = 0; i < childs.Length; i++)
             {
                 childs[i].Init(i + 1);

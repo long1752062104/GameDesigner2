@@ -19,8 +19,7 @@ namespace Net.Component
         /// </summary>
         public float CanSentTime = 1f / 30f;
 
-        // Update is called once per frame
-        void Update()
+        private void LateUpdate()
         {
             if (Time.time > time)
             {

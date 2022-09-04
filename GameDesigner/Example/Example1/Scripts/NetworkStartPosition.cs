@@ -53,6 +53,8 @@ namespace Example1
 
         private void OnDestroy()
         {
+            if (ClientBase.Instance == null)
+                return;
             ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
     }
