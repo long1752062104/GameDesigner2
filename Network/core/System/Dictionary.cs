@@ -226,9 +226,9 @@ namespace Net.System
             return Insert(key, value, false, out _);
         }
 
-        public bool TryAdd(TKey key, TValue value, out TValue value1)
+        public bool TryAdd(TKey key, TValue value, out TValue oldValue)
         {
-            return Insert(key, value, false, out value1);
+            return Insert(key, value, false, out oldValue);
         }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
@@ -385,7 +385,7 @@ namespace Net.System
             freeList = -1;
         }
 
-        private bool Insert(TKey key, TValue value, bool add, out TValue value1)
+        private bool Insert(TKey key, TValue value, bool add, out TValue oldValue)
         {
             int num = key.GetHashCode() & int.MaxValue;
             int num2 = num % buckets.Length;
@@ -396,7 +396,7 @@ namespace Net.System
                 {
                     if (add)
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
-                    value1 = entries[i].value;
+                    oldValue = entries[i].value;
                     entries[i].value = value;
                     version++;
                     return false;
@@ -431,7 +431,7 @@ namespace Net.System
                 comparer = (IEqualityComparer<TKey>)HashHelpers.GetRandomizedEqualityComparer(comparer);
                 Resize(entries.Length, true);
             }
-            value1 = default;
+            oldValue = default;
             return true;
         }
 

@@ -2830,7 +2830,7 @@ namespace Net.Client
         {
             try
             {
-                SyncVarHelper.CheckSyncVar(false, syncVarList, (buffer)=> {
+                SyncVarHelper.CheckSyncVar(true, syncVarList, (buffer)=> {
                     SendRT(NetCmd.SyncVar, buffer);
                 });
             }

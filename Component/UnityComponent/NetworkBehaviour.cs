@@ -30,7 +30,7 @@ namespace Net.UnityComponent
         /// true:这个物体是从你本机实例化后, 同步给其他客户端的, 其他客户端的IsLocal为false
         /// false:这个物体是其他客户端实例化后,同步到本机客户端上, IsLocal为false
         /// </summary>
-        public bool IsLocal => !netObj.isOtherCreate;
+        public bool IsLocal => netObj.isLocal;
         private bool isInit;
         public virtual void Start()
         {
@@ -45,7 +45,7 @@ namespace Net.UnityComponent
             if (netObj == null)
                 netObj = gameObject.AddComponent<NetworkObject>();
         }
-        public void Init()
+        public void Init(Operation opt = default)
         {
             if (isInit)
                 return;
@@ -65,6 +65,8 @@ namespace Net.UnityComponent
             netObj.InitSyncVar(this);
             if (IsLocal)
                 OnNetworkObjectInit(netObj.Identity);
+            else
+                OnNetworkObjectCreate(opt);
         }
         /// <summary>
         /// 当网络物体被初始化, 只有本机实例化的物体才会被调用

@@ -14,6 +14,9 @@ public class ReadOnlyDrawer : PropertyDrawer
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         GUI.enabled = false;
+        var displayOnly = (DisplayOnly)attribute;
+        if (!string.IsNullOrEmpty(displayOnly.text))
+            label.text = displayOnly.text;
         EditorGUI.PropertyField(position, property, label, true);
         GUI.enabled = true;
     }

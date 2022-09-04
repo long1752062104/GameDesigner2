@@ -129,6 +129,7 @@ MonoBehaviour:
   m_identity: -1
   identity: 0
   registerObjectIndex: 0
+  isLocal: 1
 --- !u!114 &2596293112910532580
 MonoBehaviour:
   m_ObjectHideFlags: 0
