@@ -57,7 +57,7 @@ namespace LockStep.Server
         void ExitRoom(Player client)
         {
             if (client.Scene.CurrNum == 1)
-                RemoveScene(client.SceneID, false);
+                RemoveScene(client.SceneName, false);
             else 
                 ExitScene(client, false);
             SendRT(client, "ExitRoomCallback", "退出房间!");

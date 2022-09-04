@@ -710,6 +710,11 @@
             断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
             </summary>
         </member>
+        <member name="P:Net.Client.ClientBase.SendInterval">
+            <summary>
+            每次发送数据间隔，每秒发送30次，每次间隔33毫秒
+            </summary>
+        </member>
         <member name="M:Net.Client.ClientBase.#ctor">
             <summary>
             构造函数
@@ -897,8 +902,16 @@
             调式输出网络流量信息
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Net.Client.ClientBase.CheckRpcHandle" -->
-        <!-- Badly formed XML comment ignored for member "M:Net.Client.ClientBase.SendDataHandle" -->
+        <member name="M:Net.Client.ClientBase.CheckRpcHandle">
+            <summary>
+            rpc检查处理线程
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendDataHandler">
+            <summary>
+            发包线程
+            </summary>
+        </member>
         <member name="M:Net.Client.ClientBase.OnOptPacket(System.Int32)">
             <summary>
             当游戏操作行为封包数据时调用
@@ -1389,7 +1402,7 @@
             ping测试网络延迟, 通过<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件回调
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.Ping(System.Action{System.Double})">
+        <member name="M:Net.Client.ClientBase.Ping(System.Action{System.UInt32})">
             <summary>
             ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
             </summary>
@@ -1477,7 +1490,7 @@
             </summary>
             <param name="useUnityThread">使用unity多线程?</param>
         </member>
-        <member name="M:Net.Client.TcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.TcpClient.TcpClientTest},System.Action{System.Collections.Generic.List{Net.Client.TcpClient.TcpClientTest}},Net.Share.IAdapter)">
+        <member name="M:Net.Client.TcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.TcpClientTest},System.Action{System.Collections.Generic.List{Net.Client.TcpClientTest}},Net.Share.IAdapter)">
             <summary>
             tcp压力测试
             </summary>
@@ -1513,7 +1526,7 @@
             </summary>
             <param name="uid"></param>
         </member>
-        <member name="M:Net.Client.UdpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.UdpClientTest},System.Action{System.Collections.Generic.List{Net.Client.UdpClientTest}},Net.Share.IAdapter)">
+        <member name="M:Net.Client.UdpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.UdpClientTest},System.Action{System.Collections.Generic.List{Net.Client.UdpClientTest}},Net.Share.IAdapter)">
             <summary>
             udp压力测试
             </summary>
@@ -1532,7 +1545,7 @@
             kcp客户端
             </summary>
         </member>
-        <member name="M:Net.Client.KcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Net.Client.KcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.KcpClientTest},System.Action{System.Collections.Generic.List{Net.Client.KcpClientTest}},Net.Share.IAdapter)">
             <summary>
             udp压力测试
             </summary>
@@ -1540,6 +1553,11 @@
             <param name="port">服务器端口</param>
             <param name="clientLen">测试客户端数量</param>
             <param name="dataLen">每个客户端数据大小</param>
+        </member>
+        <member name="M:Net.Client.KcpClientTest.Update">
+            <summary>
+            单线程更新，需要开发者自动调用更新
+            </summary>
         </member>
         <member name="T:Net.Client.UdxClient">
             <summary>
@@ -1845,19 +1863,19 @@
             Tcp套接字
             </summary>
         </member>
+        <member name="P:Net.Server.NetPlayer.ReceiveArgs">
+            <summary>
+            io完成端口接收对象
+            </summary>
+        </member>
         <member name="P:Net.Server.NetPlayer.RemotePoint">
             <summary>
-            存储UDP客户端终端
+            存储客户端终端
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.SocketAsync">
+        <member name="P:Net.Server.NetPlayer.SceneName">
             <summary>
-            IOCP异步套接字
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.SceneID">
-            <summary>
-            此玩家所在的场景ID
+            此玩家所在的场景名称
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.PlayerID">
@@ -2320,9 +2338,9 @@
             服务器套接字
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.SocketAsync">
+        <member name="P:Net.Server.ServerBase`2.ServerArgs">
             <summary>
-            IOCP套接字
+            io完成端口对象
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.Rpcs">
@@ -2891,9 +2909,9 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.UdpStartReceive">
+        <member name="M:Net.Server.ServerBase`2.StartReceive">
             <summary>
-            Udp开始接收数据
+            开始接收数据
             </summary>
         </member>
         <member name="M:Net.Server.ServerBase`2.LoginHandle(`0)">
@@ -2936,7 +2954,7 @@
             创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
             </summary>
             <param name="player">创建网络场景的玩家实体</param>
-            <param name="sceneID">要创建的场景号或场景名称</param>
+            <param name="name">要创建的场景号或场景名称</param>
             <returns></returns>
         </member>
         <member name="M:Net.Server.ServerBase`2.CreateScene(`0,`1,System.Action{`1})">
@@ -2953,7 +2971,7 @@
             创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
             </summary>
             <param name="player">创建网络场景的玩家实体</param>
-            <param name="sceneID">要创建的场景号或场景名称</param>
+            <param name="name">要创建的场景号或场景名称</param>
             <param name="scene">创建场景的实体</param>
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
@@ -2962,14 +2980,14 @@
             <summary>
             创建一个场景, 成功则返回场景对象, 创建失败则返回null
             </summary>
-            <param name="sceneID"></param>
+            <param name="name"></param>
             <returns></returns>
         </member>
         <member name="M:Net.Server.ServerBase`2.CreateScene(System.String,`1)">
             <summary>
             创建一个场景, 成功则返回场景对象, 创建失败则返回null
             </summary>
-            <param name="sceneID"></param>
+            <param name="name"></param>
             <param name="scene"></param>
             <returns></returns>
         </member>
@@ -2978,7 +2996,7 @@
             退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+            <param name="name">场景ID，要切换到的场景号或场景名称</param>
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
@@ -2987,7 +3005,7 @@
             进入场景 - 成功进入返回true，进入失败返回false
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+            <param name="name">场景ID，要切换到的场景号或场景名称</param>
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
@@ -2996,7 +3014,7 @@
             退出当前场景,切换到指定的场景 - 成功进入返回true，进入失败返回false
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
+            <param name="name">场景ID，要切换到的场景号或场景名称</param>
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
@@ -3012,7 +3030,7 @@
             <summary>
             移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
             </summary>
-            <param name="sceneName">要移除的场景id</param>
+            <param name="name">要移除的场景id</param>
             <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
@@ -3319,7 +3337,7 @@
             </summary>
             <param name="client"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.Ping(`0,System.Action{`0,System.Double})">
+        <member name="M:Net.Server.ServerBase`2.Ping(`0,System.Action{`0,System.UInt32})">
             <summary>
             ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Server.ServerBase`2.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
             </summary>
@@ -3423,6 +3441,11 @@
             tcp数据长度(4) + 1CRC协议 = 5
             </summary>
         </member>
+        <member name="T:Net.Server.TcpServerIOCP">
+            <summary>
+            默认tcpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
         <member name="T:Net.Server.UdpServer`2">
             <summary>
             Udp网络服务器
@@ -3449,6 +3472,11 @@
             </summary>
             <typeparam name="Player"></typeparam>
             <typeparam name="Scene"></typeparam>
+        </member>
+        <member name="T:Net.Server.UdpServerIOCP">
+            <summary>
+            默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
         </member>
         <member name="T:Net.Server.KcpPlayer">
             <summary>
@@ -4740,13 +4768,6 @@
             <summary>
             网络流量数据统计
             </summary>
-            <param name="sendNumber">一秒发送数据次数</param>
-            <param name="sendCount">一秒发送字节长度</param>
-            <param name="receiveNumber"></param>
-            <param name="receiveCount"></param>
-            <param name="resolveNumber"></param>
-            <param name="sendLoopNum"></param>
-            <param name="revdLoopNum"></param>
         </member>
         <member name="T:Net.Share.RevdBufferHandle`1">
             <summary>
@@ -6249,6 +6270,11 @@
         <member name="F:Net.Plugins.Cmd.Ack">
             <summary>
             网络帧确认
+            </summary>
+        </member>
+        <member name="F:Net.Plugins.Cmd.DAck">
+            <summary>
+            冗余帧
             </summary>
         </member>
         <member name="T:Net.Plugins.GcpKernel">
@@ -8367,6 +8393,11 @@
         <member name="T:Binding.DictionaryBind`2">
             <summary>
             字典绑定
+            </summary>
+        </member>
+        <member name="T:Binding.MyDictionaryBind`2">
+            <summary>
+            My字典绑定
             </summary>
         </member>
         <member name="M:Fast2BuildMethod.DynamicBuild(System.Type[])">
