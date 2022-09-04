@@ -13,13 +13,14 @@ namespace Net.UnityComponent
     /// 网络物体标识组件
     /// </summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(1000)]
     public class NetworkObject : MonoBehaviour
     {
-        public static bool IsInit { get; private set; }
         internal static int IDENTITY { get; private set; } = -1;
         internal static int IDENTITY_MAX { get; private set; }
         internal static Queue<int> IDENTITY_POOL = new Queue<int>();
         public static int Capacity { get; private set; }
+        public static bool IsInitIdentity => IDENTITY != -1;
         [SerializeField] [DisplayOnly] private int m_identity = -1;
         [Tooltip("自定义唯一标识, 当值不为0后,可以不通过NetworkSceneManager的registerObjects去设置, 直接放在设计的场景里面, 不需要做成预制体")]
         [SerializeField] private int identity;//可以设置的id
@@ -93,7 +94,7 @@ namespace Net.UnityComponent
                 if (oldNetObj == this | oldNetObj == null)
                     return;
                 oldNetObj.m_identity = -1;
-                Debug.Log($"uid:{m_identity}发生了两次实例化!");
+                Debug.Log($"uid:{m_identity}发生了两次实例化! 本地的实例化和网络同步下来的identity冲突");
                 Destroy(oldNetObj.gameObject);
             }
         }
@@ -112,6 +113,14 @@ namespace Net.UnityComponent
             {
                 info.id = (ushort)syncVarInfos.Count;
                 syncVarInfos.Add(info);
+                if (!isLocal)
+                {
+                    ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarGet, m_identity)
+                    {
+                        index = registerObjectIndex,
+                        index1 = info.id,
+                    });
+                }
             });
         }
 
@@ -152,6 +161,8 @@ namespace Net.UnityComponent
 
         public virtual void OnDestroy()
         {
+            if (isDispose)
+                return;
             isDispose = true;
             if (m_identity == -1)
                 return;
@@ -161,14 +172,18 @@ namespace Net.UnityComponent
                 return;
             }
             Recovery(m_identity, true);
-            ClientBase.Instance?.AddOperation(new Operation(Command.Destroy, m_identity));
+            if (ClientBase.Instance == null)
+                return;
+            if (!ClientBase.Instance.Connected)
+                return;
+            ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
         private static async void Recovery(int identity, bool isPush) 
         {
             await Task.Delay(1000);
             NetworkSceneManager.I?.RemoveIdentity(identity);
-            if (isPush)
+            if (isPush | IDENTITY == -1)
                 return;
             IDENTITY_POOL.Enqueue(identity);
         }
@@ -179,14 +194,24 @@ namespace Net.UnityComponent
         /// <param name="capacity">一个客户端可以用的唯一标识容量</param>
         public static void Init(int capacity = 5000) 
         {
-            if (IsInit)
-                return;
-            IsInit = true;
+            //要实时可初始化，要不然每次切换场景都无法初始化id，或者切换账号后uid变了，就得不到真正的identity值了
             Capacity = capacity;
             //服务器的记录uid从10000开始,所以这里uid+1-10000=1(网络物体记录从1开始, 而0则可以用作核心网络物体,比如玩家的网络物体), 这里 * 5000是每个客户端都可以实例化5000个networkObject网络物体组件
             //并且保证唯一id都是正确的,如果一个客户端实例化超过5000个, 就会和uid=10001的玩家networkObject网络物体组件唯一id碰撞, 会出现鬼畜问题
             IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
             IDENTITY_MAX = IDENTITY + capacity;
+            IDENTITY_POOL.Clear();
+        }
+
+        /// <summary>
+        /// 释放初始化的identity
+        /// </summary>
+        public static void UnInit()
+        {
+            IDENTITY = -1;
+            IDENTITY_MAX = 0;
+            Capacity = 0;
+            IDENTITY_POOL.Clear();
         }
 
         /// <summary>

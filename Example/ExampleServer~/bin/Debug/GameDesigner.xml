@@ -4617,6 +4617,11 @@
             ping回调 内部指令
             </summary>
         </member>
+        <member name="F:Net.Share.NetCmd.SyncVarGet">
+            <summary>
+            当你客户端晚于其他客户端进入场景时，同步字段需要发起获取最新的值
+            </summary>
+        </member>
         <member name="F:Net.Share.NetCmd.SyncVar">
             <summary>
             字段或属性同步指令 内部指令

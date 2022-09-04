@@ -16,6 +16,7 @@ namespace Net.Component
         Gcp, Tcp, Udx, Kcp, Web
     }
 
+    [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
     public class ClientManager : SingleCase<ClientManager>, ISendHandle
     {
         private bool mainInstance;
