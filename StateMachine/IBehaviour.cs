@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using UnityEngine;
     using Object = UnityEngine.Object;
 
@@ -279,12 +280,12 @@
         /// </summary>
         public Transform transform => stateManager.transform;
         public Type Type { get { return Net.Serialize.NetConvertOld.GetType(name); } }
-        public void InitMetadatas(StateMachine stateMachine) 
+        public void InitMetadatas(StateMachine stateMachine)
         {
             var type = GetType();
             InitMetadatas(stateMachine, type);
         }
-        public void InitMetadatas(StateMachine stateMachine, Type type) 
+        public void InitMetadatas(StateMachine stateMachine, Type type)
         {
             this.stateMachine = stateMachine;
             name = type.FullName;
@@ -298,7 +299,7 @@
             }
         }
 
-        private void InitField(FieldInfo field) 
+        private void InitField(FieldInfo field)
         {
             var code = Type.GetTypeCode(field.FieldType);
             if (code == System.TypeCode.Object)
@@ -327,10 +328,10 @@
                     if (gta.Length > 1)
                         return;
                     metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.GenericType, this, field));
-                } 
+                }
                 else if (field.FieldType.IsArray)
                     metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Array, this, field));
-            } 
+            }
             else metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, (TypeCode)code, this, field));
         }
 
@@ -341,7 +342,7 @@
             {
                 foreach (var item1 in metadatas)
                 {
-                    if (item.name == item1.name & item.typeName == item1.typeName) 
+                    if (item.name == item1.name & item.typeName == item1.typeName)
                     {
                         item.data = item1.data;
                         item.Value = item1.Value;
@@ -387,5 +388,26 @@
         /// </summary>
         /// <param name="stateID">下一个状态的ID</param>
         public void OnEnterNextState(int stateID) => stateManager.EnterNextState(stateID);
+
+        /// <summary>
+        /// 重写此方法，方法内只需要一行return GetClassFileInfo();即可，此方法用于查找你的类在哪个cs文件
+        /// </summary>
+        /// <returns></returns>
+        public virtual (string, string, int) FindClassFile(string typeName) 
+        {
+            throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();");
+        }
+
+        /// <summary>
+        /// 获取此类的cs文件
+        /// </summary>
+        /// <param name="memberName"></param>
+        /// <param name="sourceFilePath"></param>
+        /// <param name="sourceLineNumber"></param>
+        /// <returns></returns>
+        public (string, string, int) GetClassFileInfo([CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            return (memberName, sourceFilePath, sourceLineNumber);
+        }
     }
 }
