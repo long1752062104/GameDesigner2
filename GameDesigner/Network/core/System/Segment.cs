@@ -221,7 +221,7 @@ namespace Net.System
                     value = ReadBoolean();
                     break;
                 case TypeCode.Int16:
-                    value = ReadUInt16();
+                    value = ReadInt16();
                     break;
                 case TypeCode.UInt16:
                     value = ReadUInt16();

@@ -2,11 +2,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace GameDesigner
@@ -231,7 +234,7 @@ namespace GameDesigner
                                 Rect rect = EditorGUILayout.GetControlRect();
                                 act.behaviours[i].show = EditorGUI.Foldout(new Rect(rect.x, rect.y, 50, rect.height), act.behaviours[i].show, GUIContent.none);
                                 act.behaviours[i].Active = EditorGUI.ToggleLeft(new Rect(rect.x + 5, rect.y, 70, rect.height), GUIContent.none, act.behaviours[i].Active);
-                                EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), act.behaviours[i].GetType().Name, GUI.skin.GetStyle("BoldLabel"));
+                                EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), act.behaviours[i].name, GUI.skin.GetStyle("BoldLabel"));
                                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                                 {
                                     act.behaviours[act.behaviourMenuIndex].OnDestroyComponent();
@@ -270,18 +273,13 @@ namespace GameDesigner
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[78]), false, delegate ()
                                     {
                                         string scriptName = act.behaviours[act.behaviourMenuIndex].name;
-                                        string[] filePath = Directory.GetFiles(Application.dataPath, scriptName + ".cs", SearchOption.AllDirectories);
-                                        if (filePath.Length > 0)
+                                        var item = act.behaviours[act.behaviourMenuIndex].FindClassFile(scriptName);
+                                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
+                                        var p = new Process
                                         {
-                                            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(filePath[0]);
-                                            System.Diagnostics.Process p = new System.Diagnostics.Process
-                                            {
-                                                StartInfo = psi
-                                            };
-                                            p.Start();
-                                            return;
-                                        }
-                                        Debug.Log("找不到脚本文件，类名必须是脚本文件名才能打开成功");
+                                            StartInfo = psi
+                                        };
+                                        p.Start();
                                     });
                                     menu.ShowAsContext();
                                     act.behaviourMenuIndex = i;
@@ -415,18 +413,13 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[79]), false, delegate ()
                     {
                         string scriptName = s.behaviours[s.behaviourMenuIndex].name;
-                        string[] filePath = Directory.GetFiles(Application.dataPath, scriptName + ".cs", SearchOption.AllDirectories);
-                        if (filePath.Length > 0)
+                        var item = s.behaviours[s.behaviourMenuIndex].FindClassFile(scriptName);
+                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
+                        var p = new Process
                         {
-                            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(filePath[0]);
-                            System.Diagnostics.Process p = new System.Diagnostics.Process
-                            {
-                                StartInfo = psi
-                            };
-                            p.Start();
-                            return;
-                        }
-                        Debug.Log("找不到脚本文件，类名必须是脚本文件名才能打开成功");
+                            StartInfo = psi
+                        };
+                        p.Start();
                     });
                     menu.ShowAsContext();
                     s.behaviourMenuIndex = i;
@@ -729,18 +722,13 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[80]), false, () =>
                     {
                         string scriptName = tr.behaviours[tr.behaviourMenuIndex].name;
-                        string[] filePath = Directory.GetFiles(Application.dataPath, scriptName + ".cs", SearchOption.AllDirectories);
-                        if (filePath.Length > 0)
+                        var item = tr.behaviours[tr.behaviourMenuIndex].FindClassFile(scriptName);
+                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
+                        var p = new Process
                         {
-                            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo(filePath[0]);
-                            System.Diagnostics.Process p = new System.Diagnostics.Process
-                            {
-                                StartInfo = psi
-                            };
-                            p.Start();
-                            return;
-                        }
-                        Debug.Log("找不到脚本文件，类名必须是脚本文件名才能打开成功");
+                            StartInfo = psi
+                        };
+                        p.Start();
                     });
                     menu.ShowAsContext();
                     tr.behaviourMenuIndex = i;
