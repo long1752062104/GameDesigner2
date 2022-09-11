@@ -8,7 +8,7 @@ namespace Example1
     {
         public Scene() 
         {
-            SendOperationReliable = true;
+            //SendOperationReliable = true;
         }
 
         public override void OnExit(Client client)

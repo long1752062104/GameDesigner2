@@ -266,7 +266,7 @@
             }
         }
 
-        protected override void HeartHandle()
+        protected override void HeartHandler()
         {
             foreach (var item in AllClients)
             {

@@ -38,7 +38,11 @@
         public UnityEngine.Vector3 localScale
         {
             get { return matrix.GetScale(); }
-            set { }
+            set 
+            {
+                matrix = Matrix4Utils.GetPosition(position);
+                matrix *= Matrix4x4.Scale(value);
+            }
         }
 
         public UnityEngine.Quaternion localRotation

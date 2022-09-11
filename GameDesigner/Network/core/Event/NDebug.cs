@@ -68,7 +68,7 @@
                     errorQueue.Enqueue(ex.Message);
                 }
                 return true;
-            });
+            }, true);
         }
 #endif
 

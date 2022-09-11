@@ -89,7 +89,7 @@
             }
         }
 
-        public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();
+        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterRun : StateBehaviour
@@ -134,7 +134,7 @@
             }
         }
 
-        public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();
+        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterAttack : ActionBehaviour
@@ -172,7 +172,7 @@
             }
         }
 
-        public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();
+        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterDie : StateBehaviour
@@ -198,6 +198,6 @@
             self.target = null;
         }
 
-        public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();
+        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 }
