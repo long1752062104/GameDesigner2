@@ -247,7 +247,7 @@
             }
         }
 
-        protected override void HeartHandle()
+        protected override void HeartHandler()
         {
         }
     }

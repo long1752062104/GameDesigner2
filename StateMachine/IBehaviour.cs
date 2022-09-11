@@ -393,7 +393,7 @@
         /// 重写此方法，方法内只需要一行return GetClassFileInfo();即可，此方法用于查找你的类在哪个cs文件
         /// </summary>
         /// <returns></returns>
-        public virtual (string, string, int) FindClassFile(string typeName) 
+        public virtual ClassFileInfo FindClassFile(string typeName) 
         {
             throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();");
         }
@@ -405,9 +405,23 @@
         /// <param name="sourceFilePath"></param>
         /// <param name="sourceLineNumber"></param>
         /// <returns></returns>
-        public (string, string, int) GetClassFileInfo([CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        public ClassFileInfo GetClassFileInfo([CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            return (memberName, sourceFilePath, sourceLineNumber);
+            return new ClassFileInfo(memberName, sourceFilePath, sourceLineNumber);
+        }
+    }
+
+    public struct ClassFileInfo
+    {
+        public string Item1;
+        public string Item2;
+        public int Item3;
+
+        public ClassFileInfo(string item1, string item2, int item3)
+        {
+            Item1 = item1;
+            Item2 = item2;
+            Item3 = item3;
         }
     }
 }

@@ -1928,6 +1928,11 @@
             关闭接收数据, 当关闭接收数据后, 数据将会停止接收
             </summary>
         </member>
+        <member name="P:Net.Server.NetPlayer.QueueUpNo">
+            <summary>
+            当前排队座号
+            </summary>
+        </member>
         <member name="P:Net.Server.NetPlayer.IsQueueUp">
             <summary>
             是否属于排队状态
@@ -2944,7 +2949,7 @@
             心跳检测处理线程
             </summary>
         </member>
-        <member name="M:Net.Server.ServerBase`2.HeartHandle">
+        <member name="M:Net.Server.ServerBase`2.HeartHandler">
             <summary>
             心跳处理
             </summary>
@@ -16359,6 +16364,21 @@
             当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
             </summary>
             <param name="stateID">下一个状态的ID</param>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.FindClassFile(System.String)">
+            <summary>
+            重写此方法，方法内只需要一行return GetClassFileInfo();即可，此方法用于查找你的类在哪个cs文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GameDesigner.IBehaviour.GetClassFileInfo(System.String,System.String,System.Int32)">
+            <summary>
+            获取此类的cs文件
+            </summary>
+            <param name="memberName"></param>
+            <param name="sourceFilePath"></param>
+            <param name="sourceLineNumber"></param>
+            <returns></returns>
         </member>
         <member name="T:GameDesigner.IState">
             <summary>

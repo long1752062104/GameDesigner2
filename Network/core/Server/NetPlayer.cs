@@ -89,12 +89,14 @@
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
         public bool redundant { get; internal set; }
-
-        public int QueueUpCount { get; internal set; }
+        /// <summary>
+        /// 当前排队座号
+        /// </summary>
+        public int QueueUpNo { get; internal set; }
         /// <summary>
         /// 是否属于排队状态
         /// </summary>
-        public bool IsQueueUp => QueueUpCount > 0;
+        public bool IsQueueUp => QueueUpNo > 0;
         public GcpKernel Gcp { get; set; }
 
         #region 创建网络客户端(玩家)
@@ -148,7 +150,7 @@
             if (Client != null) 
             {
                 Client.Shutdown(SocketShutdown.Both);
-                Client?.Close();
+                Client.Close();
             }
             stackStream?.Close();
             stackStream = null;

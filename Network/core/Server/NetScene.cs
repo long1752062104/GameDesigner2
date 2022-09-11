@@ -211,12 +211,12 @@
             int playerCount = players.Count;
             if (playerCount <= 0)
                 return;
-            frame++;
             for (int i = 0; i < players.Count; i++)
                 players[i]?.OnUpdate();//5000个客户端后出现null问题
             int count = operations.Count;//多线程后避免长度增加时,数据还没写入完成就会出现问题, 所以先取出写入完成的数据
             if (count > 0)
             {
+                frame++;
                 while (count > Split)
                 {
                     OnPacket(handle, cmd, Split);
@@ -361,5 +361,8 @@
     /// <summary>
     /// 默认网络场景，当不需要场景时直接继承
     /// </summary>
-    public class DefaultScene : NetScene<NetPlayer> { }
+    public class DefaultScene : NetScene<NetPlayer> 
+    {
+        public DefaultScene() { SendOperationReliable = true; }
+    }
 }
