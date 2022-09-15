@@ -968,6 +968,7 @@
     <Compile Include="GameDesigner\Component\InspectorAttribute.cs" />
     <Compile Include="GameDesigner\Component\MySqlHelper.cs" />
     <Compile Include="GameDesigner\Component\NTransform.cs" />
+    <Compile Include="GameDesigner\Component\OtherExt\MathExt.cs" />
     <Compile Include="GameDesigner\Component\OtherExt\SystemBaseExt.cs" />
     <Compile Include="GameDesigner\Component\RoomData.cs" />
     <Compile Include="GameDesigner\Component\SqlServerHelper.cs" />
