@@ -126,7 +126,7 @@ public static class Fast2BuildMethod
                 IsArray = field.FieldType.IsArray,
                 IsEnum = field.FieldType.IsEnum,
                 IsGenericType = field.FieldType.IsGenericType,
-                IsPrimitive = field.FieldType.IsPrimitive,
+                IsPrimitive = Type.GetTypeCode(field.FieldType) != TypeCode.Object,
                 Name = field.Name,
                 Type = field.FieldType,
                 TypeCode = Type.GetTypeCode(field.FieldType)
@@ -166,7 +166,7 @@ public static class Fast2BuildMethod
                 IsArray = property.PropertyType.IsArray,
                 IsEnum = property.PropertyType.IsEnum,
                 IsGenericType = property.PropertyType.IsGenericType,
-                IsPrimitive = property.PropertyType.IsPrimitive,
+                IsPrimitive = Type.GetTypeCode(property.PropertyType) != TypeCode.Object,
                 Name = property.Name,
                 Type = property.PropertyType,
                 TypeCode = Type.GetTypeCode(property.PropertyType)

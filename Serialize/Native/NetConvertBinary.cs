@@ -503,7 +503,7 @@
             internal TypeCode TypeCode;
             internal Type ItemType;
             internal Type ItemType1;
-            internal bool ItemType1IsPrimitive;
+            internal bool IsPrimitive1, IsPrimitive2;
             internal Type[] ItemTypes;
             internal object defaultV;
             internal bool Intricate;
@@ -781,6 +781,7 @@
                 }
 #endif
                 member1.ItemType = itemType;
+                member1.IsPrimitive1 = Type.GetTypeCode(itemType) != TypeCode.Object;
             }
             else if (fpType.IsGenericType)
             {
@@ -797,6 +798,7 @@
                     Type itemType = fpType.GenericTypeArguments[0];
                     member1.ItemType = itemType;
                     member1.Intricate = fpType.GetInterface(typeof(IList).Name) == null;
+                    member1.IsPrimitive1 = Type.GetTypeCode(itemType) != TypeCode.Object;
                 }
                 else if (fpType.GenericTypeArguments.Length == 2)
                 {
@@ -804,17 +806,23 @@
                     Type valueType = fpType.GenericTypeArguments[1];
                     member1.ItemType = keyType;
                     member1.ItemType1 = valueType;
-                    if (valueType.IsArray) 
+                    member1.IsPrimitive1 = Type.GetTypeCode(keyType) != TypeCode.Object;
+                    if (valueType.IsArray)
                     {
                         var arrItemType = valueType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
-                        member1.ItemType1IsPrimitive = arrItemType.IsPrimitive;
+                        member1.IsPrimitive2 = Type.GetTypeCode(arrItemType) != TypeCode.Object;
                         member1.ItemTypes = new Type[] { arrItemType };
                     }
                     else if (valueType.IsGenericType & valueType.GenericTypeArguments.Length == 1)
                     {
                         var arrItemType = valueType.GenericTypeArguments[0];
-                        member1.ItemType1IsPrimitive = arrItemType.IsPrimitive;
+                        member1.IsPrimitive2 = Type.GetTypeCode(arrItemType) != TypeCode.Object;
                         member1.ItemTypes = new Type[] { arrItemType };
+                    }
+                    else 
+                    {
+                        member1.IsPrimitive2 = Type.GetTypeCode(valueType) != TypeCode.Object;
+                        member1.ItemTypes = new Type[] { valueType };
                     }
                 }
             }
@@ -828,7 +836,7 @@
             }
 #endif
             member1.name = Name;
-            member1.IsPrimitive = fpType.IsPrimitive | (fpType == typeof(string)) | (fpType == typeof(decimal)) | (fpType == typeof(DateTime));
+            member1.IsPrimitive = Type.GetTypeCode(fpType) != TypeCode.Object;//.IsPrimitive | (fpType == typeof(string)) | (fpType == typeof(decimal)) | (fpType == typeof(DateTime));
             member1.IsEnum = fpType.IsEnum;
             member1.IsArray = fpType.IsArray;
             member1.IsGenericType = fpType.IsGenericType;
@@ -902,7 +910,7 @@
                         if (array.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                        if (member.ItemType.IsPrimitive)
+                        if (member.IsPrimitive1)
                         {
                             if (member.IsArray) segment.WriteArray(array);
                             else segment.WriteList(array);
@@ -915,24 +923,24 @@
                         if (dict.Count == 0)
                             continue;
                         SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                        if (!member.ItemType.IsPrimitive)
+                        if (!member.IsPrimitive1)
                             throw new Exception("字典Key必须是基础类型！");
                         segment.Write(dict.Count);
                         var enumerator = dict.GetEnumerator();
                         while (enumerator.MoveNext())
                         {
                             segment.WriteValue(enumerator.Key);
-                            if (member.ItemType1.IsPrimitive)
-                            {
-                                segment.WriteValue(enumerator.Value);
-                            }
-                            else if (member.ItemType1.IsArray & member.ItemType1IsPrimitive)
+                            if (member.ItemType1.IsArray & member.IsPrimitive2)
                             {
                                 segment.WriteArray(enumerator.Value);
                             }
-                            else if (member.ItemType1.IsGenericType & member.ItemType1IsPrimitive)
+                            else if (member.ItemType1.IsGenericType & member.IsPrimitive2)
                             {
                                 segment.WriteList(enumerator.Value);
+                            }
+                            else if (member.IsPrimitive2)
+                            {
+                                segment.WriteValue(enumerator.Value);
                             }
                             else WriteObject(segment, member.ItemType1, enumerator.Value, recordType, ignore);
                         }
@@ -1102,7 +1110,7 @@
                     if (member.ItemType1 == null)//如果itemType1是空的话，说明是List类型，否则是字典
                     {
                         IList array;
-                        if (member.ItemType.IsPrimitive)
+                        if (member.IsPrimitive1)
                         {
                             if (member.IsArray)
                                 array = (IList)segment.ReadArray(member.ItemType);
@@ -1148,17 +1156,17 @@
                         {
                             var key = segment.ReadValue(member.ItemType);
                             object value;
-                            if (member.ItemType1.IsPrimitive)
-                            {
-                                value = segment.ReadValue(member.ItemType1);
-                            }
-                            else if (member.ItemType1.IsArray & member.ItemType1IsPrimitive)
+                            if (member.ItemType1.IsArray & member.IsPrimitive2)
                             {
                                 value = segment.ReadArray(member.ItemTypes[0]);
                             }
-                            else if (member.ItemType1.IsGenericType & member.ItemType1IsPrimitive)
+                            else if (member.ItemType1.IsGenericType & member.IsPrimitive2)
                             {
                                 value = segment.ReadList(member.ItemTypes[0]);
+                            }
+                            else if (member.IsPrimitive2)
+                            {
+                                value = segment.ReadValue(member.ItemType1);
                             }
                             else value = ReadObject(segment, member.ItemType1, recordType, ignore);
                             dict.Add(key, value);
