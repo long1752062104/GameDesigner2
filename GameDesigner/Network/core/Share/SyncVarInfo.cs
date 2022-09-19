@@ -27,6 +27,10 @@ namespace Net.Share
         {
         }
         public virtual void SetInfo(MemberInfo member) { }
+        public object GetDefaultValue()
+        {
+            return isClass & !isUnityObject ? Clone.Instance(GetValue()) : GetValue();
+        }
     }
     public class SyncVarFieldInfo : SyncVarInfo
     {

@@ -38,7 +38,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true, false);
+            AddRpcHandle(this, true);
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
             string path = AppDomain.CurrentDomain.BaseDirectory;
             if (!File.Exists(path + "\\FastUdxApi.dll"))

@@ -30,10 +30,6 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
-#if UNITY_2020_1_OR_NEWER
-        [NonReorderable]
-#endif
-        public List<RPCMethod> rpcs = new List<RPCMethod>();
 
         public ClientBase client
         {
@@ -126,7 +122,6 @@ namespace Net.Component
         void Update()
         {
             _client.NetworkEventUpdate();
-            rpcs = _client.RPCs;
         }
 
         void OnDestroy()

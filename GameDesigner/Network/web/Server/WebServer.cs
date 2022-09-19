@@ -66,7 +66,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true, false);
+            AddRpcHandle(this, true);
             IPAddress ipAddress = IPAddress.Any;
             IPEndPoint ip = new IPEndPoint(ipAddress, port);//IP端口设置
             Server = new WebSocketServer($"ws://{ip}");

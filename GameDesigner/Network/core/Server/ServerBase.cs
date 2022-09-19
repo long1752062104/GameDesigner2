@@ -36,6 +36,7 @@ namespace Net.Server
     using global::System.Security.Cryptography;
     using Net.Plugins;
     using Microsoft.Win32;
+    using global::System.Runtime.Serialization;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -62,17 +63,41 @@ namespace Net.Server
         /// </summary>
         public SocketAsyncEventArgs ServerArgs { get; protected set; }
         /// <summary>
-        /// 远程过程调用委托
+        /// 远程方法优化字典
         /// </summary>
-        protected List<RPCMethod> Rpcs { get; set; } = new List<RPCMethod>();
+        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
         /// <summary>
-        /// 远程函数优化字典
+        /// 远程方法哈希字典
         /// </summary>
-        private readonly MyDictionary<string, List<RPCMethod>> RpcDic = new MyDictionary<string, List<RPCMethod>>();
+        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
         /// <summary>
-        /// 远程方法哈希
+        /// 已经收集过的类信息
         /// </summary>
-        private readonly MyDictionary<ushort, List<RPCMethod>> RpcHashDic = new MyDictionary<ushort, List<RPCMethod>>();
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
+        /// <summary>
+        /// 当前收集rpc的对象信息
+        /// </summary>
+        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        /// <summary>
+        /// 字段同步信息
+        /// </summary>
+        public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
+        /// <summary>
+        /// 收集rpc的对象唯一id
+        /// </summary>
+        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; } = new ConcurrentDictionary<string, RPCModelTask>();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; } = new ConcurrentDictionary<ushort, RPCModelTask>();
+        /// <summary>
+        /// Rpc任务队列
+        /// </summary>
+        public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
         /// <summary>
         /// 登录的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
         /// </summary>
@@ -350,7 +375,7 @@ namespace Net.Server
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
         /// </summary>
-        public Action<object, bool, bool, Action<SyncVarInfo>, Action> OnAddRpcHandle { get; set; }
+        public Action<object, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
         /// <summary>
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
@@ -606,7 +631,7 @@ namespace Net.Server
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            OnAddRpcHandle(this, true, false, null, null);
+            OnAddRpcHandle(this, true, null);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);
@@ -1299,7 +1324,7 @@ namespace Net.Server
                     }
                     break;
                 case NetCmd.SyncVar:
-                    SyncVarHelper.SyncVarHandler(client.syncVarDic, model.Buffer);
+                    SyncVarHelper.SyncVarHandler(client.SyncVarDic, model.Buffer);
                     break;
                 case NetCmd.SendFile:
                     {
@@ -1565,7 +1590,7 @@ namespace Net.Server
         }
 
         /// <summary>
-        /// 当执行Rpc(远程过程调用函数)时, 如果想提供服务器效率, 可以重写此方法, 指定要调用的方法, 可以提高服务器性能 (默认反射调用)
+        /// 当执行Rpc(远程过程调用函数)时调用, 如果想提升服务器Rpc调用性能(默认反射调用), 可以重写此方法, 指定要调用的方法
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="model">数据模型</param>
@@ -1576,64 +1601,53 @@ namespace Net.Server
 
         protected internal void OnRpcExecuteInternal(Player client, RPCModel model)
         {
-            List<RPCMethod> methods;
-            if (model.methodHash != 0)
+            RpcHelper.Invoke(this, model, methods=> 
             {
-                if (!RpcHashDic.TryGetValue(model.methodHash, out methods))
+                foreach (RPCMethod rpc in methods.Values)
                 {
-                    Debug.LogWarning($"[{client.RemotePoint}]没有找到:{model}的Rpc方法,请使用server(你的服务器类).AddRpcHandle方法注册!");
-                    return;
-                }
-            }
-            else if (!RpcDic.TryGetValue(model.func, out methods))
-            {
-                Debug.LogWarning($"[{client.RemotePoint}]没有找到:{model}的Rpc方法,请使用server(你的服务器类).AddRpcHandle方法注册!");
-                return;
-            }
-            foreach (RPCMethod rpc in methods)
-            {
-                try
-                {
-                    if (rpc.cmd == NetCmd.SafeCall)
+                    try
                     {
-                        object[] pars = new object[model.pars.Length + 1];
-                        pars[0] = client;
-                        Array.Copy(model.pars, 0, pars, 1, model.pars.Length);
-                        rpc.Invoke(pars);
-                    }
-                    else if (rpc.cmd == NetCmd.SingleCall)
-                    {
-                        SingleCallQueue.Enqueue(() =>
+                        if (rpc.cmd == NetCmd.SafeCall)
                         {
                             object[] pars = new object[model.pars.Length + 1];
                             pars[0] = client;
                             Array.Copy(model.pars, 0, pars, 1, model.pars.Length);
                             rpc.Invoke(pars);
-                        });
-                    }
-                    else
-                    {
-                        rpc.Invoke(model.pars);
-                    }
-                }
-                catch (Exception e)
-                {
-                    string str = "方法:" + rpc.method + " 参数:";
-                    if (model.pars == null)
-                        str += "null";
-                    else
-                    {
-                        foreach (object p in model.pars)
+                        }
+                        else if (rpc.cmd == NetCmd.SingleCall)
                         {
-                            if (p == null)
-                                str += "Null , ";
-                            else
-                                str += p + " , ";
+                            SingleCallQueue.Enqueue(() =>
+                            {
+                                object[] pars = new object[model.pars.Length + 1];
+                                pars[0] = client;
+                                Array.Copy(model.pars, 0, pars, 1, model.pars.Length);
+                                rpc.Invoke(pars);
+                            });
+                        }
+                        else
+                        {
+                            rpc.Invoke(model.pars);
                         }
                     }
-                    Debug.LogError(str + " -> " + e);
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"方法:{rpc.method} {model} 详细信息:{ex}");
+                    }
                 }
-            }
+            }, log=> {
+                switch (log)
+                {
+                    case 0:
+                        Debug.LogWarning($"{client} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                        break;
+                    case 1:
+                        Debug.LogWarning($"{client} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                        break;
+                    case 2:
+                        Debug.LogWarning($"{client} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                        break;
+                }
+            });
         }
 
         /// <summary>
@@ -2421,12 +2435,22 @@ namespace Net.Server
         }
 
         /// <summary>
+        /// 添加Rpc
+        /// </summary>
+        /// <param name="target">注册的对象实例</param>
+        /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        public void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null)
+        {
+            AddRpcHandle(target, append, onSyncVarCollect);
+        }
+
+        /// <summary>
         /// 添加网络Rpc(注册远程方法)
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         public void AddRpcHandle(object target)
         {
-            AddRpcHandle(target, false, false);
+            AddRpcHandle(target, false);
         }
 
         /// <summary>
@@ -2434,57 +2458,16 @@ namespace Net.Server
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        public void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect = null, Action onInitComplete = null)
+        public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
                 OnAddRpcHandle = AddRpcInternal;
-            OnAddRpcHandle(target, append, async, onSyncVarCollect, onInitComplete);
+            OnAddRpcHandle(target, append, onSyncVarCollect);
         }
 
-        protected void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect = null, Action onInitComplete = null)
+        protected void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
         {
-            if (async)
-            {
-                Task.Run(() =>
-                {
-                    AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
-                });
-            }
-            else 
-            {
-                AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
-            }
-        }
-
-        protected void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null, Action onInitComplete = null)
-        {
-            if (!append)
-            {
-                foreach (List<RPCMethod> rpcs in RpcDic.Values)
-                {
-                    foreach (RPCMethod o in rpcs)
-                        if (o.target == target)
-                            return;
-                }
-            }
-            foreach (MethodInfo info in target.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            {
-                RPCFun rpc = info.GetCustomAttribute<RPCFun>();
-                if (rpc != null)
-                {
-                    RPCMethod item = new RPCMethod(target, info, rpc.cmd);
-                    if (rpc.hash != 0)
-                    {
-                        if (!RpcHashDic.TryGetValue(rpc.hash, out var list))
-                            RpcHashDic.Add(rpc.hash, list = new List<RPCMethod>());
-                        list.Add(item);
-                    }
-                    if (!RpcDic.TryGetValue(item.method.Name, out var list1))
-                        RpcDic.Add(item.method.Name, list1 = new List<RPCMethod>());
-                    list1.Add(item);
-                    Rpcs.Add(item);
-                }
-            }
+            RpcHelper.AddRpc(this, target, append, onSyncVarCollect);
         }
 
         /// <summary>
@@ -2500,76 +2483,12 @@ namespace Net.Server
 
         protected void RemoveRpcInternal(object target)
         {
-            if (target is string key)
-            {
-                if (RpcDic.ContainsKey(key))
-                    RpcDic.Remove(key);
-                return;
-            }
-            RemoveRpcInternal(RpcDic, target, true);
-            RemoveRpcInternal(RpcHashDic, target, false);
+            RpcHelper.RemoveRpc(this, target);
         }
 
-        private void RemoveRpcInternal<K, List>(MyDictionary<K, List> dic, object target, bool update) where List : List<RPCMethod>
+        public void CheckRpc() 
         {
-            var entries = dic.entries;
-            bool isUpdate = false;
-            for (int i = 0; i < entries.Length; i++)
-            {
-                if (entries[i].hashCode == -1)
-                    continue;
-                var rpcs1 = entries[i].value;
-                if (rpcs1 == null)
-                    continue;
-                for (int n = rpcs1.Count - 1; n >= 0; n--)
-                {
-                    if (target is Delegate @delegate)
-                    {
-                        if (rpcs1[i].method.Equals(@delegate.Method))
-                        {
-                            rpcs1.RemoveAt(n);
-                            isUpdate = true;
-                        }
-                        continue;
-                    }
-                    if (rpcs1[n].method == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].method.IsStatic)
-                        continue;
-                    if (rpcs1[n].target == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].target.Equals(null) | rpcs1[n].method.Equals(null))
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].target.Equals(target))
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                    }
-                }
-            }
-            if (update & isUpdate)
-                UpdateRpcs();
-        }
-
-        private void UpdateRpcs()
-        {
-            var rpcsList = new List<RPCMethod>();
-            var dic = new Dictionary<string, List<RPCMethod>>(RpcDic);
-            foreach (var rpcs in dic)
-                rpcsList.AddRange(rpcs.Value);
-            Rpcs = rpcsList;
+            RpcHelper.CheckRpc(this);
         }
 
         /// <summary>
@@ -2720,7 +2639,7 @@ namespace Net.Server
                 {
                     if (client.Value == null)
                         continue;
-                    SyncVarHelper.CheckSyncVar(true, client.Value.syncVarList, buffer=> {
+                    SyncVarHelper.CheckSyncVar(true, client.Value.SyncVarDic, buffer=> {
                         SendRT(client.Value, NetCmd.SyncVar, buffer);
                     });
                 }
@@ -2819,6 +2738,7 @@ namespace Net.Server
         /// <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
         public virtual void SetAttackProtect(int synAttackProtect = 1, int tcpMaxConnectResponseRetransmissions = 2, int tcpMaxHalfOpen = 500, int tcpMaxHalfOpenRetried = 400, int tcpMaxPortsExhausted = 5)
         {
+# if WINDOWS
             RegistryKey hklm = Registry.LocalMachine;
             RegistryKey tcpParams = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", true);
             tcpParams.SetValue("SynAttackProtect", synAttackProtect, RegistryValueKind.DWord);
@@ -2828,6 +2748,7 @@ namespace Net.Server
             tcpParams.SetValue("TcpMaxPortsExhausted", tcpMaxPortsExhausted, RegistryValueKind.DWord);
             hklm.Close();
             tcpParams.Close();
+#endif
         }
     }
 }

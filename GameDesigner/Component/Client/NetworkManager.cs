@@ -24,10 +24,6 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
-#if UNITY_2020_1_OR_NEWER
-        [NonReorderable]
-#endif
-        public List<RPCMethod> rpcs = new List<RPCMethod>();
         [Header("序列化适配器")]
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
@@ -159,7 +155,6 @@ namespace Net.Component
                 if (clients[i]._client == null)
                     continue;
                 clients[i]._client.NetworkEventUpdate();
-                clients[i].rpcs = clients[i]._client.RPCs;
             }
         }
 
@@ -212,7 +207,7 @@ namespace Net.Component
 
         public static void DispatcherRpc(ushort hash, params object[] parms)
         {
-            I.clients[1].Client.DispatcherRpc(hash, parms);
+            I.clients[1].Client.DispatchRpc(hash, parms);
         }
     }
 }

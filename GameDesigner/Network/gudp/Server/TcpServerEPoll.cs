@@ -50,7 +50,7 @@
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            AddRpcHandle(this, true, false);
+            AddRpcHandle(this, true);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);//---TCP协议
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);//IP端口设置
             Server.NoDelay = true;

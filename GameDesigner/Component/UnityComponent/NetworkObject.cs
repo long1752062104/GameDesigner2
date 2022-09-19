@@ -7,6 +7,7 @@ namespace Net.UnityComponent
     using Net.Component;
     using Net.Helper;
     using Net.Share;
+    using Net.System;
     using UnityEngine;
 
     /// <summary>
@@ -28,7 +29,8 @@ namespace Net.UnityComponent
         public int registerObjectIndex;
         [SerializeField] [DisplayOnly("IsLocal")] internal bool isLocal = true;
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
-        internal List<SyncVarInfo> syncVarInfos = new List<SyncVarInfo>();
+        internal MyDictionary<ushort, SyncVarInfo> syncVarInfos = new MyDictionary<ushort, SyncVarInfo>();
+        private int syncVarID = 1;
         internal bool isInit;
         internal bool isDispose;
         public bool IsLocal => isLocal;
@@ -109,10 +111,10 @@ namespace Net.UnityComponent
         }
         internal void InitSyncVar(object target)
         {
-            ClientBase.Instance.AddRpcHandle(target, false, true, (info) =>
+            ClientBase.Instance.AddRpcHandle(target, false, (info) =>
             {
-                info.id = (ushort)syncVarInfos.Count;
-                syncVarInfos.Add(info);
+                info.id = (ushort)syncVarID++;
+                syncVarInfos.Add(info.id, info);
                 if (!isLocal)
                 {
                     ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarGet, m_identity)

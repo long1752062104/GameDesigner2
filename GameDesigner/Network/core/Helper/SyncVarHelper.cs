@@ -116,12 +116,11 @@ namespace Net.Helper
             return true;
         }
 
-        public static void CheckSyncVar(bool isLocal, List<SyncVarInfo> syncVarInfos, Action<byte[]> OnBuffer)
+        public static void CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos, Action<byte[]> OnBuffer)
         {
             Segment segment = null;
-            for (int i = 0; i < syncVarInfos.Count; i++)
+            foreach (var syncVar in syncVarInfos.Values)
             {
-                var syncVar = syncVarInfos[i];
                 if ((!isLocal & !syncVar.authorize) | syncVar.isDispose)
                     continue;
                 var value = syncVar.GetValue();
@@ -227,11 +226,11 @@ namespace Net.Helper
             }
         }
 
-        public static void RemoveSyncVar(List<SyncVarInfo> syncVarList, object target)
+        public static void RemoveSyncVar(MyDictionary<ushort, SyncVarInfo> syncVarList, object target)
         {
-            for (int i = 0; i < syncVarList.Count; i++)
+            foreach (var item in syncVarList)
             {
-                var syncVar = syncVarList[i];
+                var syncVar = item.Value;
                 if (target.Equals(syncVar.target))
                     syncVar.isDispose = true;
             }

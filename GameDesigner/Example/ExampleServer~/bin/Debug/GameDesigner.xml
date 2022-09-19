@@ -299,25 +299,49 @@
             可靠传输缓冲队列
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.revdBuffers">
-            <summary>
-            接收缓存队列
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.Rpcs">
-            <summary>
-            网络委托函数 主要用于 unity 面板查看
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="F:Net.Client.ClientBase.RpcDic">
+        <member name="P:Net.Client.ClientBase.RpcDic">
             <summary>
             远程方法优化字典
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.RpcHashDic">
+        <member name="P:Net.Client.ClientBase.RpcHashDic">
             <summary>
             远程方法哈希字典
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.IDGenerator">
+            <summary>
+            收集rpc的对象唯一id
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcTasks">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcTasks1">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.threadDic">
@@ -502,7 +526,7 @@
             当执行调用远程过程方法时触发
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnCheckRpcUpdate">
+        <member name="F:Net.Client.ClientBase.OnCheckRpc">
             <summary>
             检查rpc对象，如果对象被释放则自动移除
             </summary>
@@ -730,19 +754,25 @@
             False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出错!
             </param>
         </member>
+        <member name="M:Net.Client.ClientBase.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
         <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object)">
             <summary>
             添加网络Rpc
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo},System.Action)">
+        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
             添加网络Rpc
             </summary>
             <param name="target">注册的对象实例</param>
             <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-            <param name="async">是否异步收集rpc方法和同步字段和属性?</param>
         </member>
         <member name="M:Net.Client.ClientBase.RemoveRpc(System.Object)">
             <summary>
@@ -774,23 +804,23 @@
             </summary>
             <param name="network"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.DispatcherRpc(System.String,System.Object[])">
+        <member name="M:Net.Client.ClientBase.DispatchRpc(System.String,System.Object[])">
             <summary>
             派发给所有被收集的Rpc方法
             </summary>
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.DispatcherRpc(System.UInt16,System.Object[])">
+        <member name="M:Net.Client.ClientBase.DispatchRpc(System.UInt16,System.Object[])">
             <summary>
             派发给所有被收集的Rpc方法
             </summary>
             <param name="hash"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddRpcBuffer(Net.Share.RPCModel)">
+        <member name="M:Net.Client.ClientBase.PushRpcData(Net.Share.RPCModel)">
             <summary>
-            添加网络函数数据,添加后自动在rpc中调用
+            压入远程过程调用方法(RPC)， 将在NetworkEventUpdate线程调用
             </summary>
             <param name="model"></param>
         </member>
@@ -816,7 +846,7 @@
             网络数据更新
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.OnInvokeRpc(Net.Share.RevdBuffer)">
+        <member name="M:Net.Client.ClientBase.OnInvokeRpc(Net.Share.IRPCData)">
             <summary>
             当调用Rpc函数时调用, 如果想提高性能, 可重写此方法自行判断需要调用哪个方法
             </summary>
@@ -905,6 +935,11 @@
         <member name="M:Net.Client.ClientBase.CheckRpcHandle">
             <summary>
             rpc检查处理线程
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.CheckRpc">
+            <summary>
+            检查rpc函数
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.SendDataHandler">
@@ -1888,14 +1923,49 @@
             玩家所在的场景实体
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.Rpcs">
+        <member name="P:Net.Server.NetPlayer.RpcDic">
             <summary>
-            玩家rpc
+            远程方法优化字典
             </summary>
         </member>
-        <member name="F:Net.Server.NetPlayer.RpcMaskDic">
+        <member name="P:Net.Server.NetPlayer.RpcHashDic">
             <summary>
-            远程方法哈希
+            远程方法哈希字典
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.IDGenerator">
+            <summary>
+            收集rpc的对象唯一id
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcTasks">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcTasks1">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
             </summary>
         </member>
         <member name="F:Net.Server.NetPlayer.heart">
@@ -1971,13 +2041,12 @@
             </summary>
             <param name="append">可以重复添加rpc?</param>
         </member>
-        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean,System.Boolean)">
+        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean)">
             <summary>
             添加远程过程调用函数,从对象进行收集
             </summary>
             <param name="target"></param>
             <param name="append">可以重复添加rpc?</param>
-            <param name="replace">如果与之前的rpc同名, 新的rpc是否可以替换旧的rpc?</param>
         </member>
         <member name="M:Net.Server.NetPlayer.RemoveRpc(System.Object)">
             <summary>
@@ -2348,19 +2417,49 @@
             io完成端口对象
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.Rpcs">
+        <member name="P:Net.Server.ServerBase`2.RpcDic">
             <summary>
-            远程过程调用委托
+            远程方法优化字典
             </summary>
         </member>
-        <member name="F:Net.Server.ServerBase`2.RpcDic">
+        <member name="P:Net.Server.ServerBase`2.RpcHashDic">
             <summary>
-            远程函数优化字典
+            远程方法哈希字典
             </summary>
         </member>
-        <member name="F:Net.Server.ServerBase`2.RpcHashDic">
+        <member name="P:Net.Server.ServerBase`2.MemberInfos">
             <summary>
-            远程方法哈希
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.IDGenerator">
+            <summary>
+            收集rpc的对象唯一id
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.RpcTasks">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.RpcTasks1">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.Players">
@@ -2939,7 +3038,7 @@
         </member>
         <member name="M:Net.Server.ServerBase`2.OnRpcExecute(`0,Net.Share.RPCModel)">
             <summary>
-            当执行Rpc(远程过程调用函数)时, 如果想提供服务器效率, 可以重写此方法, 指定要调用的方法, 可以提高服务器性能 (默认反射调用)
+            当执行Rpc(远程过程调用函数)时调用, 如果想提升服务器Rpc调用性能(默认反射调用), 可以重写此方法, 指定要调用的方法
             </summary>
             <param name="client">客户端</param>
             <param name="model">数据模型</param>
@@ -3278,13 +3377,20 @@
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
+        <member name="M:Net.Server.ServerBase`2.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
         <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object)">
             <summary>
             添加网络Rpc(注册远程方法)
             </summary>
             <param name="target">注册的对象实例</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Boolean,System.Action{Net.Share.SyncVarInfo},System.Action)">
+        <member name="M:Net.Server.ServerBase`2.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
             添加网络Rpc(注册远程方法)
             </summary>
@@ -3739,7 +3845,7 @@
             客户端RPC适配器
             </summary>
         </member>
-        <member name="M:Net.Share.IRPCAdapter.CheckRpcUpdate">
+        <member name="M:Net.Share.IRPCAdapter.CheckRpc">
             <summary>
             每50毫秒调用检查rpc是否被释放
             </summary>
@@ -3985,6 +4091,62 @@
             从客户端字典中移除客户端
             </summary>
             <param name="client"></param>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcDic">
+            <summary>
+            远程方法优化字典
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcHashDic">
+            <summary>
+            远程方法哈希字典
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.IDGenerator">
+            <summary>
+            收集rpc的对象唯一id
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcTasks">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcTasks1">
+            <summary>
+            可等待异步的Rpc
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRpcHandler.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
+            </summary>
+        </member>
+        <member name="M:Net.Share.IRpcHandler.RemoveRpc(System.Object)">
+            <summary>
+            移除target的所有rpc
+            </summary>
+            <param name="target"></param>
+        </member>
+        <member name="M:Net.Share.IRpcHandler.CheckRpc">
+            <summary>
+            检查rpc对象或方法是否已被销毁（释放）
+            </summary>
         </member>
         <member name="T:Net.Share.ISendHandle">
             <summary>
@@ -4424,6 +4586,40 @@
             <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert反序列化?</param>
             <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
         </member>
+        <member name="F:Net.Share.RPCDataPtr.name">
+            <summary>
+            函数和参数的名称
+            </summary>
+        </member>
+        <member name="P:Net.Share.RPCDataPtr.target">
+            <summary>
+            存储封包反序列化出来的对象
+            </summary>
+        </member>
+        <member name="P:Net.Share.RPCDataPtr.method">
+            <summary>
+            存储反序列化的函数
+            </summary>
+        </member>
+        <member name="F:Net.Share.RPCDataPtr.pars">
+            <summary>
+            存储反序列化参数
+            </summary>
+        </member>
+        <member name="M:Net.Share.RPCDataPtr.#ctor(System.Object,System.Reflection.MethodInfo,Net.Adapter.RPCPTR,System.Object[])">
+            <summary>
+            构造函数
+            </summary>
+            <param name="target">远程调用对象</param>
+            <param name="method">远程调用方法</param>
+            <param name="pars">远程调用参数</param>
+        </member>
+        <member name="M:Net.Share.RPCDataPtr.Invoke">
+            <summary>
+            调用方法
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Net.Share.Parameter">
             <summary>
             web服务器json参数类
@@ -4674,6 +4870,21 @@
             服务器爆满状态
             </summary>
         </member>
+        <member name="P:Net.Share.IRPCMethod.cmd">
+            <summary>
+            网络命令
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRPCMethod.target">
+            <summary>
+            委托对象
+            </summary>
+        </member>
+        <member name="P:Net.Share.IRPCMethod.method">
+            <summary>
+            委托方法
+            </summary>
+        </member>
         <member name="T:Net.Share.RPCMethod">
             <summary>
             远程过程调用方法
@@ -4684,17 +4895,17 @@
             委托函数名
             </summary>
         </member>
-        <member name="F:Net.Share.RPCMethod.target">
+        <member name="P:Net.Share.RPCMethod.target">
             <summary>
             委托对象
             </summary>
         </member>
-        <member name="F:Net.Share.RPCMethod.method">
+        <member name="P:Net.Share.RPCMethod.method">
             <summary>
             委托方法
             </summary>
         </member>
-        <member name="F:Net.Share.RPCMethod.cmd">
+        <member name="P:Net.Share.RPCMethod.cmd">
             <summary>
             网络命令
             </summary>
@@ -5167,32 +5378,32 @@
             <param name="count"></param>
             <param name="client"></param>
         </member>
-        <member name="T:Net.Share.RevdBuffer">
+        <member name="T:Net.Share.RPCData">
             <summary>
             网络接收缓存结构体
             </summary>
         </member>
-        <member name="F:Net.Share.RevdBuffer.name">
+        <member name="F:Net.Share.RPCData.name">
             <summary>
             函数和参数的名称
             </summary>
         </member>
-        <member name="F:Net.Share.RevdBuffer.target">
+        <member name="P:Net.Share.RPCData.target">
             <summary>
             存储封包反序列化出来的对象
             </summary>
         </member>
-        <member name="F:Net.Share.RevdBuffer.method">
+        <member name="P:Net.Share.RPCData.method">
             <summary>
             存储反序列化的函数
             </summary>
         </member>
-        <member name="F:Net.Share.RevdBuffer.pars">
+        <member name="F:Net.Share.RPCData.pars">
             <summary>
             存储反序列化参数
             </summary>
         </member>
-        <member name="M:Net.Share.RevdBuffer.#ctor(System.Object,System.Reflection.MethodInfo,System.Object[])">
+        <member name="M:Net.Share.RPCData.#ctor(System.Object,System.Reflection.MethodInfo,System.Object[])">
             <summary>
             构造函数
             </summary>
@@ -5200,7 +5411,7 @@
             <param name="method">远程调用方法</param>
             <param name="pars">远程调用参数</param>
         </member>
-        <member name="M:Net.Share.RevdBuffer.Invoke">
+        <member name="M:Net.Share.RPCData.Invoke">
             <summary>
             调用方法
             </summary>
@@ -6826,6 +7037,114 @@
             <summary>
             极速序列化不序列化的特性
             </summary>
+        </member>
+        <member name="M:MathExt.Calc(System.Byte@,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.SByte@,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Int16@,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.UInt16@,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.CalcRef(System.Int32@,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Int32,System.Int32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.UInt32@,System.UInt32,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Single@,System.Single,System.Byte)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Int64@,System.Int32,System.Int32)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.UInt64@,System.UInt64,System.Int32)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Double@,System.Double,System.Int32)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathExt.Calc(System.Decimal@,System.Decimal,System.Int32)">
+            <summary>
+            检查算术溢出，如果溢出了，啥都不能做
+            </summary>
+            <param name="self"></param>
+            <param name="value"></param>
+            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
+            <returns></returns>
         </member>
         <member name="T:ECS.Component">
             <summary>

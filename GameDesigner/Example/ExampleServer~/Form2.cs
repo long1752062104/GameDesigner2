@@ -57,7 +57,7 @@ namespace ExampleServer
                 label2.Text = "登录:" + server.OnlinePlayers + " 未登录:" + server.UnClientNumber;
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter3());
-            server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Player>());
+            server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Player>(server));
             server.Run((ushort)port);//启动
             run = true;
             button1.Text = "关闭";

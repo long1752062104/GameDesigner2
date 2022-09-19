@@ -1304,6 +1304,7 @@
     <Compile Include="GameDesigner\Network\core\Event\TimerEvent.cs" />
     <Compile Include="GameDesigner\Network\core\Helper\CRCHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Helper\EncryptHelper.cs" />
+    <Compile Include="GameDesigner\Network\core\Helper\RpcHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Helper\SyncVarHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetPlayer.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetPort.cs" />
@@ -1321,10 +1322,12 @@
     <Compile Include="GameDesigner\Network\core\Share\INetConvert.cs" />
     <Compile Include="GameDesigner\Network\core\Share\INetworkHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\INetworkSceneHandle.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\IRpcHandler.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ISendHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IServerEventHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IServerHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IServerSendHandle.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\MemberData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\MessageModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\NetCmd.cs" />
     <Compile Include="GameDesigner\Network\core\Share\NetDelegate.cs" />
@@ -1336,7 +1339,7 @@
     <Compile Include="GameDesigner\Network\core\Share\Random.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReceiveBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReliableTemp.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\RevdBuffer.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\RPCData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCFun.cs" />

@@ -35,11 +35,12 @@ namespace Net.Client
     using Net.Helper;
     using global::System.Security.Cryptography;
     using Net.Plugins;
+    using global::System.Runtime.Serialization;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
     /// </summary>
-    public abstract class ClientBase : INetClient, ISendHandle
+    public abstract class ClientBase : INetClient, ISendHandle, IRpcHandler
     {
         /// <summary>
         /// UDP客户端套接字
@@ -62,23 +63,41 @@ namespace Net.Client
         /// </summary>
         protected QueueSafe<RPCModel> rtRPCModels = new QueueSafe<RPCModel>();
         /// <summary>
-        /// 接收缓存队列
-        /// </summary>
-        protected QueueSafe<RevdBuffer> revdBuffers = new QueueSafe<RevdBuffer>();
-
-        /// <summary>
-        /// 网络委托函数 主要用于 unity 面板查看
-        /// </summary>
-        /// <returns></returns>
-        private List<RPCMethod> Rpcs = new List<RPCMethod>();
-        /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        protected MyDictionary<string, List<RPCMethod>> RpcDic = new MyDictionary<string, List<RPCMethod>>();
+        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        private readonly MyDictionary<ushort, List<RPCMethod>> RpcHashDic = new MyDictionary<ushort, List<RPCMethod>>();
+        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
+        /// <summary>
+        /// 已经收集过的类信息
+        /// </summary>
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
+        /// <summary>
+        /// 当前收集rpc的对象信息
+        /// </summary>
+        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        /// <summary>
+        /// 字段同步信息
+        /// </summary>
+        public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
+        /// <summary>
+        /// 收集rpc的对象唯一id
+        /// </summary>
+        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; } = new ConcurrentDictionary<string, RPCModelTask>();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; } = new ConcurrentDictionary<ushort, RPCModelTask>();
+        /// <summary>
+        /// Rpc任务队列
+        /// </summary>
+        public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
         /// <summary>
         /// 线程字典
         /// </summary>
@@ -217,7 +236,7 @@ namespace Net.Client
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>
-        public Action<object, bool, bool, Action<SyncVarInfo>, Action> OnAddRpcHandle { get; set; }
+        public Action<object, bool, Action<SyncVarInfo>> OnAddRpcHandle { get; set; }
         /// <summary>
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
@@ -229,7 +248,7 @@ namespace Net.Client
         /// <summary>
         /// 检查rpc对象，如果对象被释放则自动移除
         /// </summary>
-        private Action OnCheckRpcUpdate;
+        private Action OnCheckRpc;
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
         /// </summary>
@@ -403,8 +422,6 @@ namespace Net.Client
         /// 限制发送队列长度
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
-        private readonly MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
-        private readonly List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID;//事件id
         private int sendFileTick, recvFileTick;
@@ -431,7 +448,7 @@ namespace Net.Client
         }
         protected readonly object SyncRoot = new object();
         public GcpKernel Gcp { get; set; }
-
+        
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -461,9 +478,16 @@ namespace Net.Client
 #endif
         }
 
-        public List<RPCMethod> RPCs { get { return Rpcs; } set { Rpcs = value; } }
-        public MyDictionary<string, List<RPCMethod>> RPCsDic { get { return RpcDic; } set { RpcDic = value; } }
-        
+        /// <summary>
+        /// 添加Rpc
+        /// </summary>
+        /// <param name="target">注册的对象实例</param>
+        /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        public void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null)
+        {
+            AddRpcHandle(target, append, onSyncVarCollect);
+        }
+
         /// <summary>
         /// 添加网络Rpc
         /// </summary>
@@ -478,76 +502,19 @@ namespace Net.Client
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        /// <param name="async">是否异步收集rpc方法和同步字段和属性?</param>
-        public void AddRpcHandle(object target, bool append, bool async = true, Action<SyncVarInfo> onSyncVarCollect = null, Action onInitComplete = null)
+        public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
                 OnAddRpcHandle = AddRpcInternal;
-            OnAddRpcHandle(target, append, async, onSyncVarCollect, onInitComplete);
+            OnAddRpcHandle(target, append, onSyncVarCollect);
         }
 
-        private void AddRpcInternal(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete)
+        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
         {
-            if (async)
+            lock (SyncRoot)
             {
-                Task.Run(() =>
-                {
-                    AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
-                });
+                RpcHelper.AddRpc(this, target, append, onSyncVarCollect);
             }
-            else
-            {
-                AddRpcInternal(target, append, onSyncVarCollect, onInitComplete);
-            }
-        }
-
-        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete)
-        {
-            if (!append)
-            {
-                foreach (List<RPCMethod> rpcs in RpcDic.Values)
-                {
-                    foreach (RPCMethod o in rpcs)
-                        if (o.target == target)
-                            return;
-                }
-            }
-            Type type = target.GetType();
-            var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var info in members)
-            {
-                RPCFun rpc = info.GetCustomAttribute<RPCFun>();
-                if (rpc != null)
-                {
-                    RPCMethod item = new RPCMethod(target, info as MethodInfo, rpc.cmd);
-                    if (rpc.hash != 0)
-                    {
-                        if (!RpcHashDic.TryGetValue(rpc.hash, out var list))
-                            RpcHashDic.Add(rpc.hash, list = new List<RPCMethod>());
-                        list.Add(item);
-                    }
-                    if (!RpcDic.TryGetValue(item.method.Name, out var list1))
-                        RpcDic.Add(item.method.Name, list1 = new List<RPCMethod>());
-                    list1.Add(item);
-                    Rpcs.Add(item);
-                }
-                else
-                {
-                    SyncVarHelper.InitSyncVar(info, target, (syncVar) =>
-                    {
-                        if (syncVar.id == 0)
-                        {
-                            onSyncVarCollect(syncVar);
-                        }
-                        else
-                        {
-                            syncVarDic.Add(syncVar.id, syncVar);
-                            syncVarList.Add(syncVar);
-                        }
-                    });
-                }
-            }
-            onInitComplete?.Invoke();
         }
 
         private bool CheckIsClass(Type type, ref int layer, bool root = true)
@@ -588,68 +555,8 @@ namespace Net.Client
         {
             lock (SyncRoot)//checkRpc方法和此方法并行时索引溢出
             {
-                if (target is string key)
-                {
-                    if (RpcDic.ContainsKey(key))
-                        RpcDic.Remove(key);
-                    return;
-                }
-                RemoveRpcInternal(RpcDic, target, true);
-                RemoveRpcInternal(RpcHashDic, target, false);
+                RpcHelper.RemoveRpc(this, target);
             }
-        }
-
-        private void RemoveRpcInternal<K, List>(MyDictionary<K, List> dic, object target, bool update) where List : List<RPCMethod>
-        {
-            var entries = dic.entries;
-            bool isUpdate = false;
-            for (int i = 0; i < entries.Length; i++)
-            {
-                if (entries[i].hashCode == -1)
-                    continue;
-                var rpcs1 = entries[i].value;
-                if (rpcs1 == null)
-                    continue;
-                for (int n = rpcs1.Count - 1; n >= 0; n--)
-                {
-                    if (target is Delegate @delegate)
-                    {
-                        if (rpcs1[i].method.Equals(@delegate.Method))
-                        {
-                            rpcs1.RemoveAt(n);
-                            isUpdate = true;
-                        }
-                        continue;
-                    }
-                    if (rpcs1[n].method == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].method.IsStatic)
-                        continue;
-                    if (rpcs1[n].target == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].target.Equals(null) | rpcs1[n].method.Equals(null))
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].target.Equals(target))
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                    }
-                }
-            }
-            if (update & isUpdate)
-                UpdateRpcs();
         }
 
         /// <summary>
@@ -708,9 +615,9 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        public void DispatcherRpc(string func, params object[] pars) 
+        public void DispatchRpc(string func, params object[] pars) 
         {
-            AddRpcBuffer(new RPCModel(0, func, pars));
+            PushRpcData(new RPCModel(0, func, pars));
         }
 
         /// <summary>
@@ -718,74 +625,45 @@ namespace Net.Client
         /// </summary>
         /// <param name="hash"></param>
         /// <param name="pars"></param>
-        public void DispatcherRpc(ushort hash, params object[] pars)
+        public void DispatchRpc(ushort hash, params object[] pars)
         {
-            AddRpcBuffer(new RPCModel(0, hash, pars));
+            PushRpcData(new RPCModel(0, hash, pars));
         }
 
         /// <summary>
-        /// 添加网络函数数据,添加后自动在rpc中调用
+        /// 压入远程过程调用方法(RPC)， 将在NetworkEventUpdate线程调用
         /// </summary>
         /// <param name="model"></param>
-        public void AddRpcBuffer(RPCModel model)
+        public void PushRpcData(RPCModel model)
         {
-            List<RPCMethod> methods;
-            if (model.methodHash != 0)
+            RpcHelper.Invoke(this, model, (methods) =>
             {
-                if (rpcTasks1.TryGetValue(model.methodHash, out RPCModelTask model1))
+                foreach (RPCMethod rpc in methods.Values)
                 {
-                    model1.model = model;
-                    model1.IsCompleted = true;
-                    model1.referenceCount--;
-                    if (model1.referenceCount <= 0)
-                        rpcTasks1.TryRemove(model.methodHash, out _);
-                    if (model1.intercept)
-                        return;
+                    if (rpc.cmd == NetCmd.ThreadRpc)
+                    {
+                        rpc.Invoke(model.pars);
+                    }
+                    else
+                    {
+                        var data = new RPCData(rpc.target, rpc.method, model.pars);
+                        RpcWorkQueue.Enqueue(data);
+                    }
                 }
-                if (!RpcHashDic.TryGetValue(model.methodHash, out methods))
+            }, log=> {
+                switch (log)
                 {
-                    NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpcHandle方法收集rpc方法!");
-                    return;
+                    case 0:
+                        NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
+                    case 1:
+                        NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
+                    case 2:
+                        NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
                 }
-            }
-            else 
-            {
-                if (string.IsNullOrEmpty(model.func))
-                    return;
-                if (rpcTasks.TryGetValue(model.func, out RPCModelTask model1))
-                {
-                    model1.model = model;
-                    model1.IsCompleted = true;
-                    model1.referenceCount--;
-                    if (model1.referenceCount <= 0)
-                        rpcTasks.TryRemove(model.func, out _);
-                    if (model1.intercept)
-                        return;
-                }
-                if (!RpcDic.TryGetValue(model.func, out methods))
-                {
-                    NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpcHandle方法收集rpc方法!");
-                    return;
-                }
-            }
-            if (methods.Count <= 0)
-            {
-                NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpcHandle方法收集rpc方法!");
-                return;
-            }
-            foreach (RPCMethod rpc in methods)
-            {
-                if (rpc.cmd == NetCmd.ThreadRpc)
-                {
-                    rpc.Invoke(model.pars);
-                    continue;
-                }
-                else 
-                {
-                    RevdBuffer buffer = new RevdBuffer(rpc.target, rpc.method, model.pars);
-                    revdBuffers.Enqueue(buffer);
-                }
-            }
+            });
         }
 
         /// <summary>
@@ -851,10 +729,10 @@ namespace Net.Client
                     callback();
                 }
             }
-            count = revdBuffers.Count;
+            count = RpcWorkQueue.Count;
             for (int i = 0; i < count; i++)
             {
-                if (revdBuffers.TryDequeue(out RevdBuffer buffer))
+                if (RpcWorkQueue.TryDequeue(out IRPCData buffer))
                 {
 #if UNITY_EDITOR
                     if (UseUnityThread & ThrowException)
@@ -873,15 +751,7 @@ namespace Net.Client
                     }
                     catch (Exception e)
                     {
-                        string bug = $"BUG:{buffer.method} -> Target:" + buffer.target + " -> Pars:";
-                        if (buffer.pars == null)
-                        {
-                            bug += "null";
-                            goto LOG;
-                        }
-                        foreach (object par in buffer.pars)
-                            bug += par + " , ";
-                        LOG: NDebug.LogError(bug + " -> " + e);
+                        NDebug.LogError($"方法:{buffer.method} 对象:{buffer.target} 详细信息:{e}");
                     }
                 }
             }
@@ -892,7 +762,7 @@ namespace Net.Client
         /// 当调用Rpc函数时调用, 如果想提高性能, 可重写此方法自行判断需要调用哪个方法
         /// </summary>
         /// <param name="rpc">远程过程函数对象</param>
-        public virtual void OnInvokeRpc(RevdBuffer rpc)
+        public virtual void OnInvokeRpc(IRPCData rpc)
         {
             rpc.Invoke();
         }
@@ -992,7 +862,7 @@ namespace Net.Client
             if (Instance == null)
                 Instance = this;
             if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;
-            if (OnRPCExecute == null) OnRPCExecute = AddRpcBuffer;
+            if (OnRPCExecute == null) OnRPCExecute = PushRpcData;
             if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
             if (OnSerializeRPC == null) OnSerializeRPC = OnSerializeRpcInternal;
             if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
@@ -1257,9 +1127,9 @@ namespace Net.Client
         {
             try
             {
-                if (OnCheckRpcUpdate == null)
-                    OnCheckRpcUpdate = CheckRpcUpdate;
-                OnCheckRpcUpdate();
+                if (OnCheckRpc == null)
+                    OnCheckRpc = CheckRpc;
+                OnCheckRpc();
             }
             catch (Exception ex)
             {
@@ -1268,61 +1138,15 @@ namespace Net.Client
             return Connected;
         }
 
-        //检查rpc函数
-        private void CheckRpcUpdate()
+        /// <summary>
+        /// 检查rpc函数
+        /// </summary>
+        public void CheckRpc()
         {
             lock (SyncRoot)//RemoveRpc方法和内部线程并行时索引溢出
             {
-                CheckRpcUpdate(RpcDic, true);
-                CheckRpcUpdate(RpcHashDic, false);
+                RpcHelper.CheckRpc(this);
             }
-        }
-
-        private void CheckRpcUpdate<K, List>(MyDictionary<K, List> dic, bool update) where List : List<RPCMethod>
-        {
-            var entries = dic.entries;
-            bool isUpdate = false;
-            for (int i = 0; i < entries.Length; i++)
-            { 
-                if (entries[i].hashCode == -1)
-                    continue;
-                var rpcs1 = entries[i].value;
-                if (rpcs1 == null)
-                    continue;
-                for (int n = rpcs1.Count - 1; n >= 0; n--)
-                {
-                    if (rpcs1[n].method == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].method.IsStatic)
-                        continue;
-                    if (rpcs1[n].target == null)
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                        continue;
-                    }
-                    if (rpcs1[n].target.Equals(null) | rpcs1[n].method.Equals(null))
-                    {
-                        rpcs1.RemoveAt(n);
-                        isUpdate = true;
-                    }
-                }
-            }
-            if (update & isUpdate)
-                UpdateRpcs();
-        }
-
-        private void UpdateRpcs()
-        {
-            var rpcsList = new List<RPCMethod>();
-            var dic = new Dictionary<string, List<RPCMethod>>(RpcDic);
-            foreach (var rpcs in dic)
-                rpcsList.AddRange(rpcs.Value);
-            Rpcs = rpcsList;
         }
 
         /// <summary>
@@ -1349,7 +1173,7 @@ namespace Net.Client
         protected virtual void OnOptPacket(int count)
         {
             var operations1 = operations.GetRemoveRange(0, count);
-            OperationList list = new OperationList(operations1);
+            var list = new OperationList(operations1);
             var buffer = OnSerializeOPT(list);
             if (SendOperationReliable)
                 rtRPCModels.Enqueue(new RPCModel(NetCmd.OperationSync, buffer, false, false));
@@ -1364,7 +1188,7 @@ namespace Net.Client
 
         protected internal virtual OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
         {
-            Segment segment = new Segment(buffer, index, count, false);
+            var segment = new Segment(buffer, index, count, false);
             return NetConvertFast2.DeserializeObject<OperationList>(segment);
         }
 
@@ -1791,7 +1615,7 @@ namespace Net.Client
                     }
                     break;
                 case NetCmd.SyncVar:
-                    SyncVarHelper.SyncVarHandler(syncVarDic, model.Buffer);
+                    SyncVarHelper.SyncVarHandler(SyncVarDic, model.Buffer);
                     break;
                 case NetCmd.SendFile:
                     {
@@ -2219,8 +2043,8 @@ namespace Net.Client
                 return;
             }
             rPCModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
-            if (!rpcTasks.TryGetValue(funcCB, out RPCModelTask model))
-                rpcTasks.TryAdd(funcCB, model = new RPCModelTask());
+            if (!RpcTasks.TryGetValue(funcCB, out RPCModelTask model))
+                RpcTasks.TryAdd(funcCB, model = new RPCModelTask());
             Task.Run(() =>
             {
                 DateTime time = DateTime.Now.AddMilliseconds(millisecondsDelay);
@@ -2242,9 +2066,6 @@ namespace Net.Client
                     outTimeAct?.Invoke();
             });
         }
-
-        private readonly ConcurrentDictionary<string, RPCModelTask> rpcTasks = new ConcurrentDictionary<string, RPCModelTask>();
-        private readonly ConcurrentDictionary<ushort, RPCModelTask> rpcTasks1 = new ConcurrentDictionary<ushort, RPCModelTask>();
 
         /// <summary>
         /// 远程同步调用
@@ -2394,13 +2215,13 @@ namespace Net.Client
             {
                 if (callbackFunc1 != 0)
                 {
-                    if (!rpcTasks1.TryGetValue(callbackFunc1, out model))
-                        rpcTasks1.TryAdd(callbackFunc1, model = new RPCModelTask());
+                    if (!RpcTasks1.TryGetValue(callbackFunc1, out model))
+                        RpcTasks1.TryAdd(callbackFunc1, model = new RPCModelTask());
                 }
                 else
                 {
-                    if (!rpcTasks.TryGetValue(callbackFunc, out model))
-                        rpcTasks.TryAdd(callbackFunc, model = new RPCModelTask());
+                    if (!RpcTasks.TryGetValue(callbackFunc, out model))
+                        RpcTasks.TryAdd(callbackFunc, model = new RPCModelTask());
                 }
             }
             else model = OnRpcTaskRegister(callbackFunc1, callbackFunc);
@@ -2623,8 +2444,8 @@ namespace Net.Client
                 return;
             }
             rtRPCModels.Enqueue(model);
-            if (!rpcTasks.TryGetValue(funcCB, out RPCModelTask model1))
-                rpcTasks.TryAdd(funcCB, model1 = new RPCModelTask());
+            if (!RpcTasks.TryGetValue(funcCB, out RPCModelTask model1))
+                RpcTasks.TryAdd(funcCB, model1 = new RPCModelTask());
             DateTime time = DateTime.Now.AddMilliseconds(millisecondsDelay);
             while (DateTime.Now < time)
             {
@@ -2775,7 +2596,7 @@ namespace Net.Client
                     OnAddRpcHandle = rpc.AddRpcHandle;
                     OnRPCExecute = rpc.OnRpcExecute;
                     OnRemoveRpc = rpc.RemoveRpc;
-                    OnCheckRpcUpdate = rpc.CheckRpcUpdate;
+                    OnCheckRpc = rpc.CheckRpc;
                     OnRpcTaskRegister = rpc.OnRpcTaskRegister;
                     break;
                 case AdapterType.NetworkEvt:
@@ -2830,7 +2651,7 @@ namespace Net.Client
         {
             try
             {
-                SyncVarHelper.CheckSyncVar(true, syncVarList, (buffer)=> {
+                SyncVarHelper.CheckSyncVar(true, SyncVarDic, (buffer)=> {
                     SendRT(NetCmd.SyncVar, buffer);
                 });
             }

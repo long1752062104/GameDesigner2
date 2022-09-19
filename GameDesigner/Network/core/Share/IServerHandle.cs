@@ -9,7 +9,8 @@ namespace Net.Share
     public interface IServerHandle<Player, Scene> :
         IServerSendHandle<Player>,
         INetworkSceneHandle<Player, Scene>,
-        IServerEventHandle<Player>
+        IServerEventHandle<Player>,
+        IRpcHandler
         where Player : NetPlayer where Scene : NetScene<Player>
     {
         /// <summary>
