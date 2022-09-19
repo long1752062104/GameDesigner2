@@ -37,7 +37,7 @@ namespace Net.Share
     /// </summary>
     public interface IRPCAdapter : IAdapter
     {
-        void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete);
+        void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect);
 
         void OnRpcExecute(RPCModel model);
 
@@ -45,7 +45,7 @@ namespace Net.Share
         /// <summary>
         /// 每50毫秒调用检查rpc是否被释放
         /// </summary>
-        void CheckRpcUpdate();
+        void CheckRpc();
         RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc);
     }
 
@@ -55,7 +55,7 @@ namespace Net.Share
     /// <typeparam name="Player"></typeparam>
     public interface IRPCAdapter<Player> : IAdapter where Player : NetPlayer
     {
-        void AddRpcHandle(object target, bool append, bool async, Action<SyncVarInfo> onSyncVarCollect, Action onInitComplete);
+        void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect);
 
         void OnRpcExecute(Player client, RPCModel model);
 

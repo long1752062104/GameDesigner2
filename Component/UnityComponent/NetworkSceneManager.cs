@@ -160,7 +160,7 @@ namespace Net.UnityComponent
                 return;
             if (!identity.isLocal)
                 return;
-            identity.syncVarInfos[opt.index1].value = default;
+            identity.syncVarInfos[(ushort)opt.index1].value = default;
         }
 
         /// <summary>

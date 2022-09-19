@@ -4,11 +4,29 @@
     using global::System.Reflection;
     using global::System.Runtime.InteropServices;
 
+    public interface IRPCMethod
+    {
+        /// <summary>
+        /// 网络命令
+        /// </summary>
+        byte cmd { get; set; }
+        /// <summary>
+        /// 委托对象
+        /// </summary>
+        object target { get; set; }
+        /// <summary>
+        /// 委托方法
+        /// </summary>
+        MethodInfo method { get; set; }
+
+        void Invoke(object[] pars);
+    }
+
     /// <summary>
     /// 远程过程调用方法
     /// </summary>
     [Serializable, StructLayout(LayoutKind.Sequential)]
-    public struct RPCMethod
+    public struct RPCMethod : IRPCMethod
     {
         /// <summary>
         /// 委托函数名
@@ -17,15 +35,15 @@
         /// <summary>
         /// 委托对象
         /// </summary>
-        public object target;
+        public object target { get; set; }
         /// <summary>
         /// 委托方法
         /// </summary>
-        public MethodInfo method;
+        public MethodInfo method { get; set; }
         /// <summary>
         /// 网络命令
         /// </summary>
-        public byte cmd;
+        public byte cmd { get; set; }
 
         /// <summary>
         /// 远程过程调用方法

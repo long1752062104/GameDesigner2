@@ -10,12 +10,14 @@
     using Net.System;
     using Net.Helper;
     using Net.Plugins;
+    using global::System.Runtime.Serialization;
+    using global::System.Collections.Concurrent;
 
     /// <summary>
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
     /// <code>注意:不要试图new player出来, new出来后是没有作用的!</code>
     /// </summary>
-    public class NetPlayer : IDisposable
+    public class NetPlayer : IDisposable, IRpcHandler
     {
         /// <summary>
         /// 玩家名称
@@ -46,13 +48,41 @@
         /// </summary>
         public virtual object Scene { get; set; }
         /// <summary>
-        /// 玩家rpc
+        /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, RPCMethod> Rpcs { get; set; } = new MyDictionary<string, RPCMethod>();
+        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
         /// <summary>
-        /// 远程方法哈希
+        /// 远程方法哈希字典
         /// </summary>
-        private readonly MyDictionary<ushort, RPCMethod> RpcMaskDic = new MyDictionary<ushort, RPCMethod>();
+        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
+        /// <summary>
+        /// 已经收集过的类信息
+        /// </summary>
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
+        /// <summary>
+        /// 当前收集rpc的对象信息
+        /// </summary>
+        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        /// <summary>
+        /// 字段同步信息
+        /// </summary>
+        public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
+        /// <summary>
+        /// 收集rpc的对象唯一id
+        /// </summary>
+        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; } = new ConcurrentDictionary<string, RPCModelTask>();
+        /// <summary>
+        /// 可等待异步的Rpc
+        /// </summary>
+        public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; } = new ConcurrentDictionary<ushort, RPCModelTask>();
+        /// <summary>
+        /// Rpc任务队列
+        /// </summary>
+        public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
         /// <summary>
         /// 跳动的心
         /// </summary>
@@ -84,8 +114,6 @@
         /// 关闭接收数据, 当关闭接收数据后, 数据将会停止接收
         /// </summary>
         public bool CloseReceive { get; set; }
-        internal MyDictionary<ushort, SyncVarInfo> syncVarDic = new MyDictionary<ushort, SyncVarInfo>();
-        internal List<SyncVarInfo> syncVarList = new List<SyncVarInfo>();
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
         public bool redundant { get; internal set; }
@@ -160,7 +188,6 @@
             CloseSend = true;
             CloseReceive = true;
             heart = 0;
-            Rpcs.Clear();
             tcpRPCModels = new QueueSafe<RPCModel>();
             udpRPCModels = new QueueSafe<RPCModel>();
             Login = false;
@@ -184,45 +211,23 @@
         /// </summary>
         /// <param name="target"></param>
         /// <param name="append">可以重复添加rpc?</param>
-        /// <param name="replace">如果与之前的rpc同名, 新的rpc是否可以替换旧的rpc?</param>
-        public void AddRpc(object target, bool append = false, bool replace = true)
+        public void AddRpc(object target, bool append = false)
         {
-            if (!append)
-                foreach (RPCMethod o in Rpcs.Values)
-                    if (o.target == target)
-                        return;
-            var members = target.GetType().GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var info in members)
-            {
-                RPCFun rpc = info.GetCustomAttribute<RPCFun>();
-                if (rpc != null)
-                {
-                    if (rpc.hash != 0)
-                        if (!RpcMaskDic.ContainsKey(rpc.hash))
-                            RpcMaskDic.Add(rpc.hash, new RPCMethod(target, info as MethodInfo, rpc.cmd));
-                        else
-                            NDebug.LogError($"[{RemotePoint}][{UserID}]错误! 请修改Rpc方法{info.Name}的mask值, mask值必须是唯一的!");
-                    if (!Rpcs.ContainsKey(info.Name))
-                        Rpcs.Add(info.Name, new RPCMethod(target, info as MethodInfo, rpc.cmd));
-                    else if (replace)
-                        Rpcs[info.Name] = new RPCMethod(target, info as MethodInfo, rpc.cmd);
-                    else
-                        NDebug.LogError($"[{RemotePoint}][{UserID}]添加客户端私有Rpc错误！Rpc方法{info.Name}使用同一函数名，这是不允许的，字典键值无法添加相同的函数名！");
-                }
-                else 
-                {
-                    SyncVarHelper.InitSyncVar(info, target, (syncVar) =>
-                    {
-                        if (syncVar.id == 0)
-                        {
-                            NDebug.LogError($"[{RemotePoint}][{UserID}]错误! 请赋值ID字段 :{target.GetType().Name}类的{info.Name}字段");
-                            return;
-                        }
-                        syncVarDic.Add(syncVar.id, syncVar);
-                        syncVarList.Add(syncVar);
-                    });
-                }
-            }
+            RpcHelper.AddRpc(this, target, append, null);
+        }
+
+        /// <summary>
+        /// 移除网络远程过程调用函数
+        /// </summary>
+        /// <param name="target">移除的rpc对象</param>
+        public void RemoveRpc(object target)
+        {
+            RpcHelper.RemoveRpc(this, target);
+        }
+
+        public void CheckRpc()
+        {
+            RpcHelper.CheckRpc(this);
         }
 
         private bool CheckIsClass(Type type, ref int layer, bool root = true)
@@ -257,28 +262,6 @@
             for (int i = 0; i < socketAddress.Size; i++)
                 addressBuffer[i] = socketAddress[i];
             return addressBuffer;
-        }
-
-        /// <summary>
-        /// 移除网络远程过程调用函数
-        /// </summary>
-        /// <param name="target">移除的rpc对象</param>
-        public void RemoveRpc(object target)
-        {
-            foreach (var rpc in Rpcs)
-            {
-                if (rpc.Value.target == target | rpc.Value.target.Equals(target) | rpc.Value.target.Equals(null) | rpc.Value.method.Equals(null))
-                {
-                    Rpcs.Remove(rpc.Key);
-                }
-            }
-            foreach (var rpc in RpcMaskDic)
-            {
-                if (rpc.Value.target == target | rpc.Value.target.Equals(target) | rpc.Value.target.Equals(null) | rpc.Value.method.Equals(null))
-                {
-                    RpcMaskDic.Remove(rpc.Key);
-                }
-            }
         }
         #endregion
 
@@ -330,21 +313,34 @@
         /// <param name="model"></param>
         public virtual void OnRpcExecute(RPCModel model)
         {
-            RPCMethod method;
-            if (model.methodHash != 0)
+            RpcHelper.Invoke(this, model, (methods) =>
             {
-                if (!RpcMaskDic.TryGetValue(model.methodHash, out method))
+                foreach (RPCMethod rpc in methods.Values)
                 {
-                    NDebug.LogWarning($"没有找到:{model}的Rpc方法,请使用netPlayer.AddRpcHandle方法注册!");
-                    return;
+                    if (rpc.cmd == NetCmd.ThreadRpc)
+                    {
+                        rpc.Invoke(model.pars);
+                    }
+                    else
+                    {
+                        var data = new RPCData(rpc.target, rpc.method, model.pars);
+                        RpcWorkQueue.Enqueue(data);
+                    }
                 }
-            }
-            else if (!Rpcs.TryGetValue(model.func, out method))
-            {
-                NDebug.LogWarning($"没有找到:{model}的Rpc方法,请使用netPlayer.AddRpcHandle方法注册!");
-                return;
-            }
-            method.Invoke(model.pars);
+            }, log => {
+                switch (log)
+                {
+                    case 0:
+                        NDebug.LogWarning($"{this} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
+                    case 1:
+                        NDebug.LogWarning($"{this} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
+                    case 2:
+                        NDebug.LogWarning($"{this} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                        break;
+                }
+            });
         }
         #endregion
 
@@ -399,7 +395,7 @@
 
         public override string ToString()
         {
-            return $"[玩家ID:{PlayerID}][用户ID:{UserID}][场景ID:{SceneName}][登录:{Login}]";
+            return $"[玩家ID:{PlayerID} 用户ID:{UserID} 场景ID:{SceneName} 登录:{Login}]";
         }
     }
 }

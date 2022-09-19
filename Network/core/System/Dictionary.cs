@@ -513,38 +513,9 @@ namespace Net.System
             entries = array2;
         }
 
-
         public bool Remove(TKey key)
         {
-            if (key == null)
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            int num = comparer.GetHashCode(key) & int.MaxValue;
-            int num2 = num % buckets.Length;
-            int num3 = -1;
-            for (int i = buckets[num2]; i >= 0; i = entries[i].next)
-            {
-                if (entries[i].hashCode == num && comparer.Equals(entries[i].key, key))
-                {
-                    if (num3 < 0)
-                    {
-                        buckets[num2] = entries[i].next;
-                    }
-                    else
-                    {
-                        entries[num3].next = entries[i].next;
-                    }
-                    entries[i].hashCode = -1;
-                    entries[i].next = freeList;
-                    entries[i].key = default;
-                    entries[i].value = default;
-                    freeList = i;
-                    freeCount++;
-                    version++;
-                    return true;
-                }
-                num3 = i;
-            }
-            return false;
+            return TryRemove(key, out _);
         }
 
         public bool TryRemove(TKey key, out TValue value)
@@ -1479,7 +1450,6 @@ namespace Net.System
                 internal Enumerator(MyDictionary<TKey, TValue> dictionary)
                 {
                     this.dictionary = dictionary;
-                    version = dictionary.version;
                     index = 0;
                     currentValue = default;
                 }
@@ -1492,15 +1462,12 @@ namespace Net.System
 
                 public bool MoveNext()
                 {
-                    //if (version != dictionary.version)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    //}
                     while (index < dictionary.count)
                     {
-                        if (dictionary.entries[index].hashCode >= 0)
+                        var entrie = dictionary.entries[index];
+                        if (entrie.hashCode >= 0)
                         {
-                            currentValue = dictionary.entries[index].value;
+                            currentValue = entrie.value;
                             index++;
                             return true;
                         }
@@ -1527,10 +1494,6 @@ namespace Net.System
 
                     get
                     {
-                        //if (index == 0 || index == dictionary.count + 1)
-                        //{
-                        //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                        //}
                         return currentValue;
                     }
                 }
@@ -1538,10 +1501,6 @@ namespace Net.System
 
                 void IEnumerator.Reset()
                 {
-                    //if (version != dictionary.version)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    //}
                     index = 0;
                     currentValue = default;
                 }
@@ -1549,8 +1508,6 @@ namespace Net.System
                 private readonly MyDictionary<TKey, TValue> dictionary;
 
                 private int index;
-
-                private readonly int version;
 
                 private TValue currentValue;
             }
