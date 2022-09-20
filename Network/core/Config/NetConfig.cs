@@ -60,11 +60,11 @@ namespace Net.Config
                         break;
                     }
                     var texts = item.Split('=');
-                    var key = texts[0].Trim();
+                    var key = texts[0].Trim().ToLower();
                     var value = texts[1].Split('#')[0].Trim();
                     switch (key)
                     {
-                        case "useMemoryStream":
+                        case "usememorystream":
                             useMemoryStream = bool.Parse(value);
                             break;
                     }

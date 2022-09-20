@@ -129,6 +129,10 @@ namespace Net.Adapter
     /// <typeparam name="Player"></typeparam>
     public class CallSiteRpcAdapter<Player> : CallSiteRpcAdapter, IRPCAdapter<Player> where Player : NetPlayer
     {
+        /// <summary>
+        /// 构造客户端Rpc适配器，参数是xxxServer对象
+        /// </summary>
+        /// <param name="handle"></param>
         public CallSiteRpcAdapter(IRpcHandler handle) : base(handle)
         {
         }
@@ -195,6 +199,10 @@ namespace Net.Adapter
 #if UNITY_EDITOR
         private readonly bool useIL2CPP;
 #endif
+        /// <summary>
+        /// 构造客户端Rpc适配器，参数是xxxClient对象
+        /// </summary>
+        /// <param name="handle"></param>
         public CallSiteRpcAdapter(IRpcHandler handle)
         {
             this.handle = handle;
@@ -296,17 +304,18 @@ namespace Net.Adapter
 
         public RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc)
         {
-            var model = new RPCModelTask();
+            RPCModelTask model;
             if (methodHash != 0)
             {
-                handle.RpcTasks1[methodHash] = model;
-                return model;
+                if (!handle.RpcTasks1.TryGetValue(methodHash, out model))
+                    handle.RpcTasks1.TryAdd(methodHash, model = new RPCModelTask());
             }
-            else 
+            else
             {
-                handle.RpcTasks[callbackFunc] = model;
-                return model;
+                if (!handle.RpcTasks.TryGetValue(callbackFunc, out model))
+                    handle.RpcTasks.TryAdd(callbackFunc, model = new RPCModelTask());
             }
+            return model;
         }
     }
 }

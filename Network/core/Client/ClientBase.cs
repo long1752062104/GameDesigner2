@@ -1946,14 +1946,14 @@ namespace Net.Client
             rPCModels.Enqueue(new RPCModel(cmd, func, pars));
         }
 
-        public virtual void Send(ushort methodMask, params object[] pars)
+        public virtual void Send(ushort methodHash, params object[] pars)
         {
-            Send(NetCmd.CallRpc, methodMask, pars);
+            Send(NetCmd.CallRpc, methodHash, pars);
         }
 
-        public virtual void Send(byte cmd, ushort methodMask, params object[] pars)
+        public virtual void Send(byte cmd, ushort methodHash, params object[] pars)
         {
-            Send(new RPCModel(cmd, methodMask, pars));
+            Send(new RPCModel(cmd, methodHash, pars));
         }
 
         public void Send(RPCModel model) 
@@ -2047,8 +2047,8 @@ namespace Net.Client
                 RpcTasks.TryAdd(funcCB, model = new RPCModelTask());
             Task.Run(() =>
             {
-                DateTime time = DateTime.Now.AddMilliseconds(millisecondsDelay);
-                while (DateTime.Now < time)
+                var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
+                while ((uint)Environment.TickCount < timeout)
                 {
                     Thread.Sleep(1);
                     if (model.IsCompleted)
@@ -2231,8 +2231,8 @@ namespace Net.Client
                 millisecondsDelay = int.MaxValue;
             else if (millisecondsDelay == 0)
                 millisecondsDelay = 5000;
-            var outtime = DateTime.Now.AddMilliseconds(millisecondsDelay);
-            while (DateTime.Now < outtime)
+            var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
+            while ((uint)Environment.TickCount < timeout)
             {
                 await Task.Yield();
                 if (model.IsCompleted)
@@ -2265,22 +2265,22 @@ namespace Net.Client
         /// <summary>
         /// 发送可靠的网络数据
         /// </summary>
-        /// <param name="methodMask"></param>
+        /// <param name="methodHash"></param>
         /// <param name="pars"></param>
-        public virtual void SendRT(ushort methodMask, params object[] pars)
+        public virtual void SendRT(ushort methodHash, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, methodMask, pars);
+            SendRT(NetCmd.CallRpc, methodHash, pars);
         }
 
         /// <summary>
         /// 发送可靠的网络数据
         /// </summary>
         /// <param name="cmd"></param>
-        /// <param name="methodMask"></param>
+        /// <param name="methodHash"></param>
         /// <param name="pars"></param>
-        public virtual void SendRT(byte cmd, ushort methodMask, params object[] pars)
+        public virtual void SendRT(byte cmd, ushort methodHash, params object[] pars)
         {
-            SendRT(new RPCModel(cmd, methodMask, pars));
+            SendRT(new RPCModel(cmd, methodHash, pars));
         }
 
         /// <summary>
@@ -2446,8 +2446,8 @@ namespace Net.Client
             rtRPCModels.Enqueue(model);
             if (!RpcTasks.TryGetValue(funcCB, out RPCModelTask model1))
                 RpcTasks.TryAdd(funcCB, model1 = new RPCModelTask());
-            DateTime time = DateTime.Now.AddMilliseconds(millisecondsDelay);
-            while (DateTime.Now < time)
+            var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
+            while ((uint)Environment.TickCount < timeout)
             {
                 await Task.Yield();
                 if (model1.IsCompleted)
