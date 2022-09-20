@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -274,12 +275,7 @@ namespace GameDesigner
                                     {
                                         string scriptName = act.behaviours[act.behaviourMenuIndex].name;
                                         var item = act.behaviours[act.behaviourMenuIndex].FindClassFile(scriptName);
-                                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
-                                        var p = new Process
-                                        {
-                                            StartInfo = psi
-                                        };
-                                        p.Start();
+                                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
                                     });
                                     menu.ShowAsContext();
                                     act.behaviourMenuIndex = i;
@@ -414,12 +410,7 @@ namespace GameDesigner
                     {
                         string scriptName = s.behaviours[s.behaviourMenuIndex].name;
                         var item = s.behaviours[s.behaviourMenuIndex].FindClassFile(scriptName);
-                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
-                        var p = new Process
-                        {
-                            StartInfo = psi
-                        };
-                        p.Start();
+                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
                     });
                     menu.ShowAsContext();
                     s.behaviourMenuIndex = i;
@@ -723,12 +714,7 @@ namespace GameDesigner
                     {
                         string scriptName = tr.behaviours[tr.behaviourMenuIndex].name;
                         var item = tr.behaviours[tr.behaviourMenuIndex].FindClassFile(scriptName);
-                        var psi = new ProcessStartInfo(item.Item2, $"devenv /edit {item.Item2} /command \"edit.goto {item.Item3}\"");
-                        var p = new Process
-                        {
-                            StartInfo = psi
-                        };
-                        p.Start();
+                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
                     });
                     menu.ShowAsContext();
                     tr.behaviourMenuIndex = i;
@@ -810,36 +796,7 @@ namespace GameDesigner
         {
             if (stateManager == null)
                 return;
-            foreach (var s in stateManager.stateMachine.states) 
-            {
-                for (int i = 0; i < s.behaviours.Count; i++)
-                {
-                    var type = Net.Serialize.NetConvertOld.GetType(s.behaviours[i].name);
-                    var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
-                    s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
-                    s.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);
-                }
-                foreach (var t in s.transitions)
-                {
-                    for (int i = 0; i < t.behaviours.Count; i++)
-                    {
-                        var type = Net.Serialize.NetConvertOld.GetType(t.behaviours[i].name);
-                        var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
-                        t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
-                        t.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);
-                    }
-                }
-                foreach (var a in s.actions)
-                {
-                    for (int i = 0; i < a.behaviours.Count; i++)
-                    {
-                        var type = Net.Serialize.NetConvertOld.GetType(a.behaviours[i].name);
-                        var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
-                        a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
-                        a.behaviours[i].Reload(type, stateManager.stateMachine, metadatas);
-                    }
-                }
-            }
+            stateManager.OnScriptReload();
         }
     }
 

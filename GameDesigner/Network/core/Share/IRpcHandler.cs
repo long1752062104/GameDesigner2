@@ -36,11 +36,11 @@ namespace Net.Share
         /// </summary>
         public ObjectIDGenerator IDGenerator { get; set; }
         /// <summary>
-        /// 可等待异步的Rpc
+        /// 等待回调的异步Rpc
         /// </summary>
         public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; }
         /// <summary>
-        /// 可等待异步的Rpc
+        /// 等待回调的异步Rpc
         /// </summary>
         public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; }
         /// <summary>

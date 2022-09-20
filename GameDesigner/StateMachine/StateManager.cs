@@ -1,5 +1,7 @@
 ﻿namespace GameDesigner
 {
+    using System;
+    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>
@@ -172,5 +174,48 @@
                 return;
             EnterNextState(stateID);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            OnScriptReload();
+        }
+
+        public void OnScriptReload()
+        {
+            if (stateMachine == null)
+                return;
+            foreach (var s in stateMachine.states)
+            {
+                for (int i = 0; i < s.behaviours.Count; i++)
+                {
+                    var type = Net.Serialize.NetConvertOld.GetType(s.behaviours[i].name);
+                    var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
+                    s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
+                    s.behaviours[i].Reload(type, stateMachine, metadatas);
+                }
+                foreach (var t in s.transitions)
+                {
+                    for (int i = 0; i < t.behaviours.Count; i++)
+                    {
+                        var type = Net.Serialize.NetConvertOld.GetType(t.behaviours[i].name);
+                        var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
+                        t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
+                        t.behaviours[i].Reload(type, stateMachine, metadatas);
+                    }
+                }
+                foreach (var a in s.actions)
+                {
+                    for (int i = 0; i < a.behaviours.Count; i++)
+                    {
+                        var type = Net.Serialize.NetConvertOld.GetType(a.behaviours[i].name);
+                        var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
+                        a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
+                        a.behaviours[i].Reload(type, stateMachine, metadatas);
+                    }
+                }
+            }
+        }
+#endif
     }
 }
