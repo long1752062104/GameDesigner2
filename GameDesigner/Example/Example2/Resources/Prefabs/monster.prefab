@@ -76,6 +76,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1888,6 +1889,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -2101,6 +2103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd62b054878167b47976909cd320c85d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 0
   health: 100
   healthMax: 100
   moveSpeed: 3
@@ -2112,7 +2115,6 @@ MonoBehaviour:
   sm: {fileID: 4615171339904707043}
   walkSpeed: 2
   target: {fileID: 0}
-  id: 0
   targetID: 0
 --- !u!114 &4615171339904707043
 MonoBehaviour:
@@ -2546,8 +2548,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
@@ -2612,8 +2613,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
@@ -2678,8 +2678,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
@@ -2744,8 +2743,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
@@ -2810,8 +2808,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
@@ -2876,8 +2873,7 @@ MonoBehaviour:
           type: 1
           typeName: UnityEngine.GameObject
           data: 
-          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281,
-            type: 3}
+          Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
           values: []
           arraySize: 0
           foldout: 0
