@@ -239,10 +239,22 @@
             </summary>
             <typeparam name="Player"></typeparam>
         </member>
+        <member name="M:Net.Adapter.CallSiteRpcAdapter`1.#ctor(Net.Share.IRpcHandler)">
+            <summary>
+            构造客户端Rpc适配器，参数是xxxServer对象
+            </summary>
+            <param name="handle"></param>
+        </member>
         <member name="T:Net.Adapter.CallSiteRpcAdapter">
             <summary>
             客户端远程过程调用适配器
             </summary>
+        </member>
+        <member name="M:Net.Adapter.CallSiteRpcAdapter.#ctor(Net.Share.IRpcHandler)">
+            <summary>
+            构造客户端Rpc适配器，参数是xxxClient对象
+            </summary>
+            <param name="handle"></param>
         </member>
         <member name="T:Net.Adapter.ListenerAdapter">
             <summary>
@@ -1268,7 +1280,7 @@
             <summary>
             发送可靠的网络数据
             </summary>
-            <param name="methodMask"></param>
+            <param name="methodHash"></param>
             <param name="pars"></param>
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.UInt16,System.Object[])">
@@ -1276,7 +1288,7 @@
             发送可靠的网络数据
             </summary>
             <param name="cmd"></param>
-            <param name="methodMask"></param>
+            <param name="methodHash"></param>
             <param name="pars"></param>
         </member>
         <member name="M:Net.Client.ClientBase.SendRT(Net.Share.RPCModel)">
@@ -1881,6 +1893,11 @@
             </summary> 
             <param name="text">要解密的字符串</param> 
             <returns>解密后的字符串</returns>   
+        </member>
+        <member name="T:Net.Helper.RpcHelper">
+            <summary>
+            远程过程调用(RPC)帮助类
+            </summary>
         </member>
         <member name="T:Net.Server.NetPlayer">
             <summary>
@@ -4124,12 +4141,12 @@
         </member>
         <member name="P:Net.Share.IRpcHandler.RpcTasks">
             <summary>
-            可等待异步的Rpc
+            等待回调的异步Rpc
             </summary>
         </member>
         <member name="P:Net.Share.IRpcHandler.RpcTasks1">
             <summary>
-            可等待异步的Rpc
+            等待回调的异步Rpc
             </summary>
         </member>
         <member name="P:Net.Share.IRpcHandler.RpcWorkQueue">

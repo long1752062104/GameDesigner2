@@ -23,13 +23,17 @@ namespace Example1
                 await Task.Yield();
             }
             OnConnectedHandle();
+            ClientBase.Instance.OnPingCallback += PingCall;
             ThreadManager.Invoke(1f, ()=> {
-                ClientBase.Instance.Ping((ms)=> {
-                    delay = ms;
-                });
+                ClientBase.Instance.Ping();
                 return true;
             });
             ClientBase.Instance.OnOperationSync += OnOperationSync;
+        }
+
+        private void PingCall(uint ms) 
+        {
+            delay = ms;
         }
 
         private void OnOperationSync(OperationList list) 
@@ -48,7 +52,10 @@ namespace Example1
 
         private void OnGUI()
         {
+            var color = GUI.color;
+            GUI.color = Color.green;
             GUI.Label(new Rect(10, 10, 200, 20), $"同步帧:{frame} 延迟:{delay}ms");
+            GUI.color = color;
         }
 
         private void OnDestroy()
@@ -56,6 +63,7 @@ namespace Example1
             if (ClientBase.Instance == null)
                 return;
             ClientBase.Instance.OnOperationSync -= OnOperationSync;
+            ClientBase.Instance.OnPingCallback -= PingCall;
         }
     }
 }
