@@ -317,15 +317,7 @@
             {
                 foreach (RPCMethod rpc in methods.Values)
                 {
-                    if (rpc.cmd == NetCmd.ThreadRpc)
-                    {
-                        rpc.Invoke(model.pars);
-                    }
-                    else
-                    {
-                        var data = new RPCData(rpc.target, rpc.method, model.pars);
-                        RpcWorkQueue.Enqueue(data);
-                    }
+                    rpc.Invoke(model.pars);
                 }
             }, log => {
                 switch (log)
