@@ -4840,9 +4840,14 @@
             当你客户端晚于其他客户端进入场景时，同步字段需要发起获取最新的值
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.SyncVar">
+        <member name="F:Net.Share.NetCmd.SyncVarNetObj">
             <summary>
-            字段或属性同步指令 内部指令
+            网络物体的同步指令 （NetworkObject之间同步）
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.SyncVarP2P">
+            <summary>
+            字段或属性同步指令 内部指令 (客户端与服务器的Player字段同步)
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SendFile">
@@ -5792,7 +5797,7 @@
         </member>
         <member name="F:Net.Share.SyncVar.authorize">
             <summary>
-            允许所有客户端改变后同步此字段
+            true:允许所有客户端改变后同步此字段 false:只允许<see cref="!:UnityComponent.NetworkObject.IsLocal"/>为true的网络物体才能同步
             </summary>
         </member>
         <member name="M:Net.Share.SyncVar.#ctor">

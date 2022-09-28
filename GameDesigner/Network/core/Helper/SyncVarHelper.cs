@@ -4,9 +4,7 @@ using Net.Share;
 using Net.System;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Net.Helper
 {
@@ -14,7 +12,7 @@ namespace Net.Helper
     {
         public static void InitSyncVar(MemberInfo info, object target, Action<SyncVarInfo> onSyncVarCollect)
         {
-            SyncVar syncVar = info.GetCustomAttribute<SyncVar>();
+            var syncVar = info.GetCustomAttribute<SyncVar>();
             if (syncVar == null)
                 return;
             Type type1 = null;
@@ -72,7 +70,8 @@ namespace Net.Helper
             syncVarInfo.isClass = isClass;
             syncVarInfo.isList = type1.IsGenericType | type1.IsArray;
             syncVarInfo.isUnityObject = isUnityObject;
-            syncVarInfo.SetInfo(info);
+            syncVarInfo.member = info;
+            syncVarInfo.Init();
             syncVarInfo.value = isClass & !isUnityObject ? Clone.Instance(syncVarInfo.GetValue()) : syncVarInfo.GetValue();
             if (!string.IsNullOrEmpty(syncVar.hook))
                 syncVarInfo.OnValueChanged = target.GetType().GetMethod(syncVar.hook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -109,10 +108,8 @@ namespace Net.Helper
             if (a.Count != b.Count)
                 return false;
             for (int i = 0; i < a.Count; i++)
-            {
                 if (!a[i].Equals(b[i]))
                     return false;
-            }
             return true;
         }
 
@@ -166,32 +163,16 @@ namespace Net.Helper
             }
         }
 
-        public static void SyncVarHandler(List<SyncVarInfo> syncVarList, byte[] buffer)
-        {
-            SyncVarHandler(index => {
-                if (index >= syncVarList.Count)
-                    return null;
-                return syncVarList[index];
-            }, buffer);
-        }
-
         public static void SyncVarHandler(MyDictionary<ushort, SyncVarInfo> syncVarDic, byte[] buffer)
-        {
-            SyncVarHandler(index => {
-                syncVarDic.TryGetValue(index, out var info);
-                return info;
-            }, buffer);
-        }
-
-        private async static void SyncVarHandler(Func<ushort, SyncVarInfo> syncVarList, byte[] buffer)
         {
             var segment1 = new Segment(buffer, false);
             while (segment1.Position < segment1.Offset + segment1.Count)
             {
                 var index = segment1.ReadUInt16();
-                SyncVarInfo syncVar;
-                while ((syncVar = syncVarList(index)) == null)
-                    await Task.Yield();
+                if (!syncVarDic.TryGetValue(index, out var syncVar))
+                    break;
+                if (syncVar == null)
+                    break;
                 var oldValue = syncVar.value;
                 object value;
                 if (syncVar.baseType)

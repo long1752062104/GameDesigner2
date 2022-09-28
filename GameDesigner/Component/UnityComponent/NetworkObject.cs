@@ -2,7 +2,6 @@
 namespace Net.UnityComponent
 {
     using global::System.Collections.Generic;
-    using global::System.Threading.Tasks;
     using Net.Client;
     using Net.Component;
     using Net.Helper;
@@ -52,7 +51,7 @@ namespace Net.UnityComponent
             if (isInit)
                 return;
             isInit = true;
-            if (IDENTITY == -1)
+            if (IDENTITY == -1 & identity == 0)//全局netobj
             {
                 Debug.LogError("网络标识未初始化，请调用NetworkObject.Init(5000);初始化");
                 Destroy(gameObject);
@@ -100,6 +99,7 @@ namespace Net.UnityComponent
                 Destroy(oldNetObj.gameObject);
             }
         }
+
         public void InitAll(Operation opt = default)
         {
             Init();
@@ -130,7 +130,7 @@ namespace Net.UnityComponent
         {
             SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos, (buffer)=> 
             {
-                ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVar, m_identity)
+                ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
                 {
                     uid = ClientBase.Instance.UID,
                     index = registerObjectIndex,
@@ -141,7 +141,7 @@ namespace Net.UnityComponent
 
         internal void SyncVarHandler(Operation opt)
         {
-            if (opt.cmd != NetCmd.SyncVar | opt.uid == ClientBase.Instance.UID)
+            if (opt.uid == ClientBase.Instance.UID)
                 return;
             SyncVarHelper.SyncVarHandler(syncVarInfos, opt.buffer);
         }
@@ -170,10 +170,10 @@ namespace Net.UnityComponent
                 return;
             if (!isLocal | m_identity < 10000)//0-10000是场景可用标识
             {
-                Recovery(m_identity, false);
+                NetworkSceneManager.I.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
                 return;
             }
-            Recovery(m_identity, true);
+            NetworkSceneManager.I.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
             if (ClientBase.Instance == null)
                 return;
             if (!ClientBase.Instance.Connected)
@@ -181,11 +181,9 @@ namespace Net.UnityComponent
             ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
-        private static async void Recovery(int identity, bool isPush) 
+        internal static void PushIdentity(int identity)
         {
-            await Task.Delay(1000);
-            NetworkSceneManager.I?.RemoveIdentity(identity);
-            if (isPush | IDENTITY == -1)
+            if (IDENTITY == -1)
                 return;
             IDENTITY_POOL.Enqueue(identity);
         }
@@ -198,8 +196,8 @@ namespace Net.UnityComponent
         {
             //要实时可初始化，要不然每次切换场景都无法初始化id，或者切换账号后uid变了，就得不到真正的identity值了
             Capacity = capacity;
-            //服务器的记录uid从10000开始,所以这里uid+1-10000=1(网络物体记录从1开始, 而0则可以用作核心网络物体,比如玩家的网络物体), 这里 * 5000是每个客户端都可以实例化5000个networkObject网络物体组件
-            //并且保证唯一id都是正确的,如果一个客户端实例化超过5000个, 就会和uid=10001的玩家networkObject网络物体组件唯一id碰撞, 会出现鬼畜问题
+            //0-10000是公共id，10000-15000是玩家uid，也就是同时在线5000个玩家，每个玩家占用一个id，15000-20000是uid=10000的网络物体id，
+            //每个玩家可以实例化5000个网络物体，并且id都是唯一的，如果超出则报错
             IDENTITY = 10000 + ((ClientBase.Instance.UID + 1 - 10000) * capacity);
             IDENTITY_MAX = IDENTITY + capacity;
             IDENTITY_POOL.Clear();
@@ -223,6 +221,8 @@ namespace Net.UnityComponent
         /// <returns></returns>
         public static int GetUserIdOffset(int uid)
         {
+            //0-10000是公共id，10000-15000是玩家uid，也就是同时在线5000个玩家，每个玩家占用一个id，15000-20000是uid=10000的网络物体id，
+            //每个玩家可以实例化5000个网络物体，并且id都是唯一的，如果超出则报错
             return 10000 + ((uid + 1 - 10000) * Capacity);
         }
     }

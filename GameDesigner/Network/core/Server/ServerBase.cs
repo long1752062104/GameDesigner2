@@ -36,7 +36,6 @@ namespace Net.Server
     using global::System.Security.Cryptography;
     using Net.Plugins;
     using Microsoft.Win32;
-    using global::System.Runtime.Serialization;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -1323,7 +1322,7 @@ namespace Net.Server
                         segment.Count = len;
                     }
                     break;
-                case NetCmd.SyncVar:
+                case NetCmd.SyncVarP2P:
                     SyncVarHelper.SyncVarHandler(client.SyncVarDic, model.Buffer);
                     break;
                 case NetCmd.SendFile:
@@ -2640,7 +2639,7 @@ namespace Net.Server
                     if (client.Value == null)
                         continue;
                     SyncVarHelper.CheckSyncVar(true, client.Value.SyncVarDic, buffer=> {
-                        SendRT(client.Value, NetCmd.SyncVar, buffer);
+                        SendRT(client.Value, NetCmd.SyncVarP2P, buffer);
                     });
                 }
             }

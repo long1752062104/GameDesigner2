@@ -10,7 +10,6 @@
     using Net.System;
     using Net.Helper;
     using Net.Plugins;
-    using global::System.Runtime.Serialization;
     using global::System.Collections.Concurrent;
 
     /// <summary>

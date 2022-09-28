@@ -18,7 +18,7 @@ namespace Net.Share
         /// </summary>
         public string hook;
         /// <summary>
-        /// 允许所有客户端改变后同步此字段
+        /// true:允许所有客户端改变后同步此字段 false:只允许<see cref="UnityComponent.NetworkObject.IsLocal"/>为true的网络物体才能同步
         /// </summary>
         public bool authorize;
 

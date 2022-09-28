@@ -1363,6 +1363,7 @@
     <Compile Include="GameDesigner\Network\core\System\HashSetSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\IWellKnownStringEqualityComparer.cs" />
     <Compile Include="GameDesigner\Network\core\System\ListSafe.cs" />
+    <Compile Include="GameDesigner\Network\core\System\ObjectIDGenerator.cs" />
     <Compile Include="GameDesigner\Network\core\System\QueueSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\RandomizedObjectEqualityComparer.cs" />
     <Compile Include="GameDesigner\Network\core\System\RandomSafe.cs" />
