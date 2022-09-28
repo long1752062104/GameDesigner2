@@ -23,7 +23,7 @@ namespace Net.Helper
 
         public static void AddRpc(IRpcHandler handle, object target, Type type, bool append, Action<SyncVarInfo> onSyncVarCollect, Action<MemberInfo, MemberData> action, Func<MemberData, IRPCMethod> func)
         {
-            var hash = handle.IDGenerator.GetId(target, out var firstTime);
+            var hash = handle.IDGenerator.GetId(target);
             if (!append)
             {
                 if (handle.RpcTargetHash.TryGetValue(hash, out var member))
@@ -77,16 +77,31 @@ namespace Net.Helper
                 var syncVar = member.syncVar;
                 if (syncVar != null)
                 {
-                    syncVar.target = target;
-                    syncVar.value = syncVar.GetDefaultValue();
-                    if (syncVar.id == 0)
-                    {
-                        onSyncVarCollect?.Invoke(syncVar);
-                    }
+                    syncVar.target = target;//给对象才能获取默认值
+                    SyncVarInfo syncVar1;
+                    if (syncVar.member.MemberType == MemberTypes.Field)
+                        syncVar1 = new SyncVarFieldInfo();
                     else
-                    {
-                        handle.SyncVarDic.Add(syncVar.id, syncVar);
-                    }
+                        syncVar1 = new SyncVarPropertyInfo();
+                    syncVar1.value = syncVar.GetDefaultValue();
+                    syncVar1.id = syncVar.id;
+                    syncVar1.type = syncVar.type;
+                    syncVar1.passive = syncVar.passive;
+                    syncVar1.authorize = syncVar.authorize;
+                    syncVar1.target = target;
+                    syncVar1.OnValueChanged = syncVar.OnValueChanged;
+                    syncVar1.isEnum = syncVar.isEnum;
+                    syncVar1.baseType = syncVar.baseType;
+                    syncVar1.isClass = syncVar.isClass;
+                    syncVar1.isDispose = syncVar.isDispose;
+                    syncVar1.isList = syncVar.isList;
+                    syncVar1.isUnityObject = syncVar.isUnityObject;
+                    syncVar1.member = syncVar.member;
+                    syncVar1.Init();
+                    if (syncVar.id == 0)
+                        onSyncVarCollect?.Invoke(syncVar1);
+                    else
+                        handle.SyncVarDic.TryAdd(syncVar1.id, syncVar1);
                 }
             }
             if (list.Count > 0)
@@ -95,7 +110,8 @@ namespace Net.Helper
 
         public static void RemoveRpc(IRpcHandler handle, object target)
         {
-            var hash = handle.IDGenerator.GetId(target, out var firstTime);
+            if (!handle.IDGenerator.TryRemove(target, out var hash))
+                return;
             if (handle.RpcTargetHash.TryRemove(hash, out var list))
             {
                 foreach (var item in list.members)

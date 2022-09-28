@@ -19,6 +19,7 @@ namespace Net.Share
         internal bool isDispose;
         internal bool isList;
         internal bool isUnityObject;
+        internal MemberInfo member;
         public virtual object GetValue()
         {
             return null;
@@ -26,7 +27,9 @@ namespace Net.Share
         public virtual void SetValue(object value)
         {
         }
-        public virtual void SetInfo(MemberInfo member) { }
+        public virtual void Init()
+        {
+        }
         public object GetDefaultValue()
         {
             return isClass & !isUnityObject ? Clone.Instance(GetValue()) : GetValue();
@@ -43,7 +46,7 @@ namespace Net.Share
         {
             fieldInfo.SetValue(target, value);
         }
-        public override void SetInfo(MemberInfo member)
+        public override void Init()
         {
             fieldInfo = member as FieldInfo;
         }
@@ -59,7 +62,7 @@ namespace Net.Share
         {
             propertyInfo.SetValue(target, value);
         }
-        public override void SetInfo(MemberInfo member)
+        public override void Init()
         {
             propertyInfo = member as PropertyInfo;
         }

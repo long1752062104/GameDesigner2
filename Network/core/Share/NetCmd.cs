@@ -109,12 +109,16 @@
         /// 当你客户端晚于其他客户端进入场景时，同步字段需要发起获取最新的值
         /// </summary>
         public const byte SyncVarGet = 26;
+        /// <summary>
+        /// 网络物体的同步指令 （NetworkObject之间同步）
+        /// </summary>
+        public const byte SyncVarNetObj = 27;
 
         public const byte P2P = 28;
         /// <summary>
-        /// 字段或属性同步指令 内部指令
+        /// 字段或属性同步指令 内部指令 (客户端与服务器的Player字段同步)
         /// </summary>
-        public const byte SyncVar = 29;
+        public const byte SyncVarP2P = 29;
         /// <summary>
         /// 发送文件
         /// </summary>

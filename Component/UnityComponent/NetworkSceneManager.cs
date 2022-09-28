@@ -10,6 +10,21 @@ namespace Net.UnityComponent
     using Net.System;
     using UnityEngine;
 
+    [Serializable]
+    public class WaitDestroy
+    {
+        public int identity;
+        public bool isPush;
+        public float time;
+
+        public WaitDestroy(int identity, bool isPush, float time)
+        {
+            this.identity = identity;
+            this.isPush = isPush;
+            this.time = time;
+        }
+    }
+
     [RequireComponent(typeof(NetworkTime))]
     [DefaultExecutionOrder(1)]
     public class NetworkSceneManager : SingleCase<NetworkSceneManager>
@@ -19,8 +34,8 @@ namespace Net.UnityComponent
         public MyDictionary<int, NetworkObject> identitys = new MyDictionary<int, NetworkObject>();
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
+        internal List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
 
-        // Start is called before the first frame update
         public virtual void Start()
         {
             WaitConnecting();
@@ -68,6 +83,19 @@ namespace Net.UnityComponent
                     identity.PropertyAutoCheckHandler();
                 }
             }
+            WaitDestroy waitDestroy;
+            for (int i = 0; i < waitDestroyList.Count; i++)
+            {
+                waitDestroy = waitDestroyList[i];
+                if (Time.time >= waitDestroy.time) 
+                {
+                    RemoveIdentity(waitDestroy.identity);
+                    waitDestroyList.RemoveAt(i);
+                    if (!waitDestroy.isPush)
+                        continue;
+                    NetworkObject.PushIdentity(waitDestroy.identity);
+                }
+            }
         }
 
         private void OperationSync(OperationList list)
@@ -92,7 +120,7 @@ namespace Net.UnityComponent
                 case Command.OnPlayerExit:
                     OnPlayerExit(opt);
                     break;
-                case NetCmd.SyncVar:
+                case NetCmd.SyncVarNetObj:
                     OnSyncVarHandler(opt);
                     break;
                 case NetCmd.SyncVarGet:
@@ -181,7 +209,7 @@ namespace Net.UnityComponent
                 OnPlayerDestroy(identity, true);
             if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
-                var uid = 10000 + ((opt.identity + 1 - 10000) * NetworkObject.Capacity);
+                var uid = NetworkObject.GetUserIdOffset(opt.identity);
                 var count = uid + NetworkObject.Capacity;
                 foreach (var item in identitys)
                     if (item.Key >= uid & item.Key < count)

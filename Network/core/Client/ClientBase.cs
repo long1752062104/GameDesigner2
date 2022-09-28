@@ -35,7 +35,6 @@ namespace Net.Client
     using Net.Helper;
     using global::System.Security.Cryptography;
     using Net.Plugins;
-    using global::System.Runtime.Serialization;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -1614,7 +1613,7 @@ namespace Net.Client
                         InvokeContext(() => { OnP2PCallback?.Invoke(endPoint); });
                     }
                     break;
-                case NetCmd.SyncVar:
+                case NetCmd.SyncVarP2P:
                     SyncVarHelper.SyncVarHandler(SyncVarDic, model.Buffer);
                     break;
                 case NetCmd.SendFile:
@@ -2652,7 +2651,7 @@ namespace Net.Client
             try
             {
                 SyncVarHelper.CheckSyncVar(true, SyncVarDic, (buffer)=> {
-                    SendRT(NetCmd.SyncVar, buffer);
+                    SendRT(NetCmd.SyncVarP2P, buffer);
                 });
             }
             catch (Exception e)
