@@ -97,6 +97,7 @@ namespace Net.Helper
                     syncVar1.isList = syncVar.isList;
                     syncVar1.isUnityObject = syncVar.isUnityObject;
                     syncVar1.member = syncVar.member;
+                    syncVar1.ptr = syncVar.ptr;
                     syncVar1.Init();
                     if (syncVar.id == 0)
                         onSyncVarCollect?.Invoke(syncVar1);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Net.Helper;
+using System;
 using System.Reflection;
 
 namespace Net.Share
@@ -20,6 +21,7 @@ namespace Net.Share
         internal bool isList;
         internal bool isUnityObject;
         internal MemberInfo member;
+        internal InvokePTR ptr;
         public virtual object GetValue()
         {
             return null;
@@ -40,15 +42,22 @@ namespace Net.Share
         public FieldInfo fieldInfo;
         public override object GetValue()
         {
+            if (ptr != null)
+                return ptr.GetValue();
             return fieldInfo.GetValue(target);
         }
         public override void SetValue(object value)
         {
-            fieldInfo.SetValue(target, value);
+            if (ptr != null)
+                ptr.SetValue(value);
+            else
+                fieldInfo.SetValue(target, value);
         }
         public override void Init()
         {
             fieldInfo = member as FieldInfo;
+            if (ptr != null)
+                ptr.target = target;
         }
     }
     public class SyncVarPropertyInfo : SyncVarInfo
@@ -56,15 +65,22 @@ namespace Net.Share
         public PropertyInfo propertyInfo;
         public override object GetValue()
         {
+            if (ptr != null)
+                return ptr.GetValue();
             return propertyInfo.GetValue(target);
         }
         public override void SetValue(object value)
         {
-            propertyInfo.SetValue(target, value);
+            if (ptr != null)
+                ptr.SetValue(value);
+            else
+                propertyInfo.SetValue(target, value);
         }
         public override void Init()
         {
             propertyInfo = member as PropertyInfo;
+            if (ptr != null)
+                ptr.target = target;
         }
     }
 }

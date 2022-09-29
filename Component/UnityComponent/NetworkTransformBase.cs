@@ -137,11 +137,15 @@ namespace Net.UnityComponent
 
         public override void OnNetworkObjectCreate(Operation opt)
         {
-            SyncMode mode1 = (SyncMode)opt.cmd1;
-            if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
-                currMode = SyncMode.SynchronizedAll;
-            else
-                currMode = SyncMode.Synchronized;
+            if (opt.cmd == Command.Transform)
+            {
+                var mode1 = (SyncMode)opt.cmd1;
+                if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
+                    currMode = SyncMode.SynchronizedAll;
+                else
+                    currMode = SyncMode.Synchronized;
+            }
+            else currMode = syncMode;
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;
@@ -150,7 +154,7 @@ namespace Net.UnityComponent
 
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (ClientBase.Instance.UID == opt.uid | opt.cmd != Command.Transform)
+            if (ClientBase.Instance.UID == opt.uid)
                 return;
             sendTime = Time.time + interval;
             netPosition = opt.position;
@@ -158,6 +162,14 @@ namespace Net.UnityComponent
             netLocalScale = opt.direction;
             if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                 SyncControlTransform();
+            else if (currMode == SyncMode.None)
+            {
+                var mode1 = (SyncMode)opt.cmd1;
+                if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
+                    currMode = SyncMode.SynchronizedAll;
+                else
+                    currMode = SyncMode.Synchronized;
+            }
         }
 
         public override void OnDestroy()

@@ -71,6 +71,8 @@ namespace Net.Helper
             syncVarInfo.isList = type1.IsGenericType | type1.IsArray;
             syncVarInfo.isUnityObject = isUnityObject;
             syncVarInfo.member = info;
+            if (InvokeHelper.Cache.TryGetValue(target.GetType(), out var dict))
+                dict.TryGetValue(info.Name, out syncVarInfo.ptr);
             syncVarInfo.Init();
             syncVarInfo.value = isClass & !isUnityObject ? Clone.Instance(syncVarInfo.GetValue()) : syncVarInfo.GetValue();
             if (!string.IsNullOrEmpty(syncVar.hook))
