@@ -128,14 +128,18 @@ namespace Net.UnityComponent
 
         internal void CheckSyncVar()
         {
-            SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos, (buffer)=> 
+            if (syncVarInfos.Count == 0)
+                return;
+            SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos, SyncVarSend);
+        }
+
+        private void SyncVarSend(byte[] buffer) 
+        {
+            ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
             {
-                ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
-                {
-                    uid = ClientBase.Instance.UID,
-                    index = registerObjectIndex,
-                    buffer = buffer
-                });
+                uid = ClientBase.Instance.UID,
+                index = registerObjectIndex,
+                buffer = buffer
             });
         }
 

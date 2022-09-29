@@ -60,7 +60,7 @@ namespace Net.UnityComponent
 
         public override void OnNetworkOperationHandler(Operation opt)
         {
-            if (ClientBase.Instance.UID == opt.uid | opt.cmd != Command.Transform)
+            if (ClientBase.Instance.UID == opt.uid)
                 return;
             sendTime = Time.time + interval;
             if (opt.index2 == 0)

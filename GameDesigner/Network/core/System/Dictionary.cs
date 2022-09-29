@@ -1271,7 +1271,6 @@ namespace Net.System
         [Serializable]
         public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IEnumerable, ICollection, IReadOnlyCollection<TValue>
         {
-
             public ValueCollection(MyDictionary<TKey, TValue> dictionary)
             {
                 if (dictionary == null)
@@ -1499,7 +1498,7 @@ namespace Net.System
                 }
 
 
-                void IEnumerator.Reset()
+                public void Reset()
                 {
                     index = 0;
                     currentValue = default;
