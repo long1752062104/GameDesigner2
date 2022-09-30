@@ -65,7 +65,7 @@ namespace Net.System
             {
                 Initialize(capacity);
             }
-            this.comparer = (comparer ?? EqualityComparer<TKey>.Default);
+            this.comparer = comparer ?? EqualityComparer<TKey>.Default;
         }
 
 
@@ -871,22 +871,23 @@ namespace Net.System
         [Serializable]
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IDisposable, IEnumerator, IDictionaryEnumerator
         {
+            private readonly MyDictionary<TKey, TValue> dictionary;
+            private int index;
+            private KeyValuePair<TKey, TValue> current;
+            private readonly int getEnumeratorRetType;
+            internal const int DictEntry = 1;
+            internal const int KeyValuePair = 2;
+
             internal Enumerator(MyDictionary<TKey, TValue> dictionary, int getEnumeratorRetType)
             {
                 this.dictionary = dictionary;
-                version = dictionary.version;
                 index = 0;
                 this.getEnumeratorRetType = getEnumeratorRetType;
                 current = default;
             }
 
-
             public bool MoveNext()
             {
-                //if (version != dictionary.version)
-                //{
-                //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                //}
                 while (index < dictionary.count)
                 {
                     if (dictionary.entries[index].hashCode >= 0)
@@ -902,7 +903,6 @@ namespace Net.System
                 return false;
             }
 
-
             public KeyValuePair<TKey, TValue> Current
             {
 
@@ -912,21 +912,15 @@ namespace Net.System
                 }
             }
 
-
             public void Dispose()
             {
             }
-
 
             object IEnumerator.Current
             {
 
                 get
                 {
-                    //if (index == 0 || index == dictionary.count + 1)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    //}
                     if (getEnumeratorRetType == 1)
                     {
                         return new DictionaryEntry(current.Key, current.Value);
@@ -935,72 +929,38 @@ namespace Net.System
                 }
             }
 
-
             void IEnumerator.Reset()
             {
-                //if (version != dictionary.version)
-                //{
-                //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                //}
                 index = 0;
                 current = default;
             }
-
 
             DictionaryEntry IDictionaryEnumerator.Entry
             {
 
                 get
                 {
-                    //if (index == 0 || index == dictionary.count + 1)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    //}
                     return new DictionaryEntry(current.Key, current.Value);
                 }
             }
-
 
             object IDictionaryEnumerator.Key
             {
 
                 get
                 {
-                    //if (index == 0 || index == dictionary.count + 1)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    //}
                     return current.Key;
                 }
             }
-
 
             object IDictionaryEnumerator.Value
             {
 
                 get
                 {
-                    //if (index == 0 || index == dictionary.count + 1)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    //}
                     return current.Value;
                 }
             }
-
-            private readonly MyDictionary<TKey, TValue> dictionary;
-
-            private readonly int version;
-
-            private int index;
-
-            private KeyValuePair<TKey, TValue> current;
-
-            private readonly int getEnumeratorRetType;
-
-            internal const int DictEntry = 1;
-
-            internal const int KeyValuePair = 2;
         }
 
 

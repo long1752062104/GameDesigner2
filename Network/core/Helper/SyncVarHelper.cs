@@ -115,11 +115,14 @@ namespace Net.Helper
             return true;
         }
 
-        public static void CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos, Action<byte[]> OnBuffer)
+        public static byte[] CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos)
         {
             Segment segment = null;
-            foreach (var syncVar in syncVarInfos.Values)
+            for (int i = 0; i < syncVarInfos.count; i++)
             {
+                if (syncVarInfos.entries[i].hashCode == -1)
+                    continue;
+                var syncVar = syncVarInfos.entries[i].value;
                 if ((!isLocal & !syncVar.authorize) | syncVar.isDispose)
                     continue;
                 var value = syncVar.GetValue();
@@ -158,11 +161,10 @@ namespace Net.Helper
                 else
                     NetConvertBinary.SerializeObject(segment, value, false, true);
             }
+            byte[] buffer = null;
             if (segment != null)
-            {
-                var buffer = segment.ToArray(true);
-                OnBuffer(buffer);
-            }
+                buffer = segment.ToArray(true);
+            return buffer;
         }
 
         public static void SyncVarHandler(MyDictionary<ushort, SyncVarInfo> syncVarDic, byte[] buffer)

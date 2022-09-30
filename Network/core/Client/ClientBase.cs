@@ -1594,7 +1594,7 @@ namespace Net.Client
                     Identify = segment.ReadString();
                     break;
                 case NetCmd.OperationSync:
-                    OperationList list = OnDeserializeOPT(model.buffer, model.index, model.count);
+                    var list = OnDeserializeOPT(model.buffer, model.index, model.count);
                     InvokeContext(()=> { OnOperationSync?.Invoke(list); });
                     break;
                 case NetCmd.Ping:
@@ -2650,9 +2650,9 @@ namespace Net.Client
         {
             try
             {
-                SyncVarHelper.CheckSyncVar(true, SyncVarDic, (buffer)=> {
+                var buffer = SyncVarHelper.CheckSyncVar(true, SyncVarDic);
+                if (buffer != null)
                     SendRT(NetCmd.SyncVarP2P, buffer);
-                });
             }
             catch (Exception e)
             {
