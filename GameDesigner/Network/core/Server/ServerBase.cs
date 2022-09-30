@@ -2638,9 +2638,9 @@ namespace Net.Server
                 {
                     if (client.Value == null)
                         continue;
-                    SyncVarHelper.CheckSyncVar(true, client.Value.SyncVarDic, buffer=> {
+                    var buffer = SyncVarHelper.CheckSyncVar(true, client.Value.SyncVarDic);
+                    if (buffer != null)
                         SendRT(client.Value, NetCmd.SyncVarP2P, buffer);
-                    });
                 }
             }
             catch (Exception e)

@@ -33,6 +33,7 @@ namespace Net.UnityComponent
         /// </summary>
         public bool IsLocal => netObj.isLocal;
         private bool isInit;
+        private bool isEnabled;
         public virtual void Start()
         {
             Init();
@@ -92,7 +93,15 @@ namespace Net.UnityComponent
         /// 检查组件是否启用
         /// </summary>
         /// <returns></returns>
-        public virtual bool CheckEnabled() { return enabled; }
+        public virtual bool CheckEnabled() { return isEnabled; }
+        public virtual void OnEnable()
+        {
+            isEnabled = true;
+        }
+        public virtual void OnDisable()
+        {
+            isEnabled = false;
+        }
         public virtual void OnDestroy()
         {
             netObj.RemoveSyncVar(this);

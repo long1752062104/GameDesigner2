@@ -130,7 +130,9 @@ namespace Net.UnityComponent
         {
             if (syncVarInfos.Count == 0)
                 return;
-            SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos, SyncVarSend);
+            var buffer = SyncVarHelper.CheckSyncVar(isLocal, syncVarInfos);
+            if (buffer != null)
+                SyncVarSend(buffer);
         }
 
         private void SyncVarSend(byte[] buffer) 
@@ -157,8 +159,9 @@ namespace Net.UnityComponent
 
         internal void PropertyAutoCheckHandler() 
         {
-            foreach (var networkBehaviour in networkBehaviours)
+            for (int i = 0; i < networkBehaviours.Count; i++)
             {
+                var networkBehaviour = networkBehaviours[i];
                 if (!networkBehaviour.CheckEnabled())
                     continue;
                 networkBehaviour.OnPropertyAutoCheck();

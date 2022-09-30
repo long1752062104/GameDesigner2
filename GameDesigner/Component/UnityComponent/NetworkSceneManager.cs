@@ -71,8 +71,11 @@ namespace Net.UnityComponent
         {
             if (NetworkTime.CanSent) 
             {
-                foreach (var identity in identitys.Values)
+                for (int i = 0; i < identitys.count; i++)
                 {
+                    if (identitys.entries[i].hashCode == -1)
+                        continue;
+                    var identity = identitys.entries[i].value;
                     if (identity == null)
                         continue;
                     if (!identity.enabled)
