@@ -145,7 +145,6 @@ namespace Net.UnityComponent
                 else
                     currMode = SyncMode.Synchronized;
             }
-            else currMode = syncMode;
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;

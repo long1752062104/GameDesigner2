@@ -70,6 +70,14 @@ namespace Net.UnityComponent
                 netLocalScale = opt.direction;
                 if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                     SyncControlTransform();
+                else if (currMode == SyncMode.None)
+                {
+                    var mode1 = (SyncMode)opt.cmd1;
+                    if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
+                        currMode = SyncMode.SynchronizedAll;
+                    else
+                        currMode = SyncMode.Synchronized;
+                }
             }
             else
             {
