@@ -44,6 +44,9 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="dnlib, Version=3.5.0.0, Culture=neutral, PublicKeyToken=50e96378b6e77999, processorArchitecture=MSIL">
+      <HintPath>..\ConsoleApp1\packages\dnlib.3.5.0\lib\net45\dnlib.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="SuperSocket.ClientEngine, Version=0.10.0.0, Culture=neutral, PublicKeyToken=ee9af13f57f00acc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -506,7 +509,6 @@
     <None Include="GameDesigner\Network\core.meta" />
     <None Include="GameDesigner\Network\core\Client.meta" />
     <None Include="GameDesigner\Network\core\Client\ClientBase.cs.meta" />
-    <None Include="GameDesigner\Network\core\Client\NetworkCondition.cs.meta" />
     <None Include="GameDesigner\Network\core\Config.meta" />
     <None Include="GameDesigner\Network\core\Config\NetConfig.cs.meta" />
     <None Include="GameDesigner\Network\core\Event.meta" />
@@ -550,7 +552,6 @@
     <None Include="GameDesigner\Network\core\Share\Random.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\ReceiveBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\ReliableTemp.cs.meta" />
-    <None Include="GameDesigner\Network\core\Share\RevdBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RPCFun.cs.meta" />
@@ -1297,7 +1298,7 @@
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector3IntBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector4Bind.cs" />
     <Compile Include="GameDesigner\Network\core\Client\ClientBase.cs" />
-    <Compile Include="GameDesigner\Network\core\Client\NetworkCondition.cs" />
+    <Compile Include="GameDesigner\Network\core\Config\App.cs" />
     <Compile Include="GameDesigner\Network\core\Config\NetConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Event\EventSystem.cs" />
     <Compile Include="GameDesigner\Network\core\Event\NDebug.cs" />
@@ -1347,6 +1348,7 @@
     <Compile Include="GameDesigner\Network\core\Share\RPCModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModelTask.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RTOMode.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\RuntimeInitializeOnLoadMethod.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SendBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVarAttribute.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVarInfo.cs" />

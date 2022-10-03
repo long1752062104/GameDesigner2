@@ -77,29 +77,8 @@ namespace Net.Helper
                 var syncVar = member.syncVar;
                 if (syncVar != null)
                 {
-                    syncVar.target = target;//给对象才能获取默认值
-                    SyncVarInfo syncVar1;
-                    if (syncVar.member.MemberType == MemberTypes.Field)
-                        syncVar1 = new SyncVarFieldInfo();
-                    else
-                        syncVar1 = new SyncVarPropertyInfo();
-                    syncVar1.value = syncVar.GetDefaultValue();
-                    syncVar1.id = syncVar.id;
-                    syncVar1.type = syncVar.type;
-                    syncVar1.passive = syncVar.passive;
-                    syncVar1.authorize = syncVar.authorize;
-                    syncVar1.target = target;
-                    syncVar1.OnValueChanged = syncVar.OnValueChanged;
-                    syncVar1.isEnum = syncVar.isEnum;
-                    syncVar1.baseType = syncVar.baseType;
-                    syncVar1.isClass = syncVar.isClass;
-                    syncVar1.isDispose = syncVar.isDispose;
-                    syncVar1.isList = syncVar.isList;
-                    syncVar1.isUnityObject = syncVar.isUnityObject;
-                    syncVar1.member = syncVar.member;
-                    syncVar1.ptr = syncVar.ptr;
-                    syncVar1.Init();
-                    if (syncVar.id == 0)
+                    var syncVar1 = syncVar.Clone(target);
+                    if (syncVar1.id == 0)
                         onSyncVarCollect?.Invoke(syncVar1);
                     else
                         handle.SyncVarDic.TryAdd(syncVar1.id, syncVar1);

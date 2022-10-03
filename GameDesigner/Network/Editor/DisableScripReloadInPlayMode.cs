@@ -26,23 +26,5 @@ public class DisableScripReloadInPlayMode
 				break;
 		}
 	}
-
-	[DidReloadScripts]
-	public static void Listen()
-	{
-		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (var assembly in assemblies)
-		{
-			if (assembly.FullName.StartsWith("Assembly-CSharp,"))
-			{
-				var text = InvokeHelperBuild.Build();
-				var path = Application.dataPath + "/Scripts/Helper/";
-				if (!Directory.Exists(path))
-					Directory.CreateDirectory(path);
-				File.WriteAllText(path + "InvokeHelperGenerate.cs", text);
-				break;
-			}
-		}
-	}
 }
 #endif

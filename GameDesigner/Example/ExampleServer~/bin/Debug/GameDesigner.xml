@@ -1500,21 +1500,6 @@
             </summary>
             <returns>是否可发送数据</returns>
         </member>
-        <member name="T:Net.Client.NetworkCondition">
-            <summary>
-            检测网络状况
-            </summary>
-        </member>
-        <member name="F:Net.Client.NetworkCondition.delayTime">
-            <summary>
-            延时毫秒时间
-            </summary>
-        </member>
-        <member name="F:Net.Client.NetworkCondition.ShowFPS">
-            <summary>
-            显示FPS和网络延迟 参数1:FPS和延迟字符串 参数2:帧率 参数2:网络延迟
-            </summary>
-        </member>
         <member name="T:Net.Client.TcpClient">
             <summary>
             TCP客户端类型 
@@ -5732,6 +5717,11 @@
         <member name="F:Net.Share.FlowControlMode.Quick">
             <summary>
             极速模式 (帧同步游戏)，如果网络差时，也会以一定速度进行数据传输，保证数据流畅
+            </summary>
+        </member>
+        <member name="T:Net.Share.RuntimeInitializeOnLoadMethod">
+            <summary>
+            当运行时调用，如果在unity会自动转到untiy的RuntimeInitializeOnLoadMethod特性
             </summary>
         </member>
         <member name="T:Net.Share.SendBuffer">

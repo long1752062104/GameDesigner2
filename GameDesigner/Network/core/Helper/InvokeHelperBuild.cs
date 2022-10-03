@@ -1,79 +1,151 @@
 ﻿using Net.Share;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Xml;
+#if UNITY_EDITOR || DEBUG
+using dnlib.DotNet;
+#endif
 
 namespace Net.Helper
 {
-    public abstract class InvokePTR
+    public class InvokeHelper
     {
-        public object target;
-        public abstract object GetValue();
-        public abstract void SetValue(object value);
+        public static Dictionary<Type, Dictionary<string, SyncVarInfo>> Cache = new Dictionary<Type, Dictionary<string, SyncVarInfo>>();
+
+#if UNITY_EDITOR || DEBUG
+        [RuntimeInitializeOnLoadMethod]
+        public static void OnScriptCompilation()
+        {
+            var path = Environment.CurrentDirectory + "/InvokeHelper.txt";
+            if (File.Exists(path))
+            {
+                var jsonStr = File.ReadAllText(path);
+                var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Data>(jsonStr);
+                var clientPaths = data.clientPaths;
+                var serverPaths = data.serverPaths;
+                var csprojPaths = data.csprojPaths;
+                var clientBinPaths = data.clientBinPaths;
+                var serverBinPaths = data.serverBinPaths;
+                InvokeHelperBuild.OnScriptCompilation(clientPaths, serverPaths, csprojPaths, clientBinPaths, serverBinPaths);
+            }
+        }
+        internal class Data
+        {
+            public List<string> csprojPaths = new List<string>();
+            public List<string> clientPaths = new List<string>();
+            public List<string> serverPaths = new List<string>();
+            public List<string> clientBinPaths = new List<string>();
+            public List<string> serverBinPaths = new List<string>();
+        }
+#endif
     }
 
-    public class InvokePTR<T, V> : InvokePTR
-    {
-        public Func<T, V> func;
-        public Action<T, V> action;
-
-        public InvokePTR(Func<T, V> func, Action<T, V> action)
-        {
-            this.func = func;
-            this.action = action;
-        }
-
-        public override object GetValue()
-        {
-            return func((T)target);
-        }
-
-        public override void SetValue(object value)
-        {
-            action((T)target, (V)value);
-        }
-    }
-    
-    public static class InvokeHelper
-    {
-        public static Dictionary<Type, Dictionary<string, InvokePTR>> Cache = new Dictionary<Type, Dictionary<string, InvokePTR>>();
-    }
-
+#if UNITY_EDITOR || DEBUG
     public static class InvokeHelperBuild
     {
-        public static string Build()
+        static TypeCode GetTypeCode(TypeSig type)
+        {
+            if (Enum.TryParse<TypeCode>(type.TypeName, out var typeCode))
+                return typeCode;
+            return TypeCode.Object;
+        }
+
+        static bool IsUnityObjectSubclassOf(TypeSig type)
+        {
+            if (type.Namespace == "UnityEngine" | type.Namespace == "UnityEditor")
+            {
+                return type.IsClassSig;
+            }
+            return false;
+        }
+
+        public static string SyncVarBuild(List<TypeDef> types)
         {
             var str = @"using Net.Helper;
+using Net.Serialize;
+using Net.Share;
+using Net.System;
+using System;
 using System.Collections.Generic;
 
-public static class InvokeHelperGenerate
+internal static class InvokeHelperGenerate
 {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
     [UnityEngine.RuntimeInitializeOnLoadMethod]
+#else
+    [RuntimeInitializeOnLoadMethod]
 #endif
     internal static void Init()
     {
         InvokeHelper.Cache.Clear();
 --
-        InvokeHelper.Cache.Add(typeof(TARGETTYPE), new Dictionary<string, InvokePTR>() {
+        InvokeHelper.Cache.Add(typeof(TARGETTYPE), new Dictionary<string, SyncVarInfo>() {
 --
-            { ""FIELDNAME"", new InvokePTR<TARGETTYPE, FIELDTYPE>(FIELDNAME, FIELDNAME) },
+            { ""FIELDNAME"", new SyncVarInfoPtr<TARGETTYPE, FIELDTYPE>(FIELDNAME) },
 --
         });
 --
     }
 --
-    internal static void FIELDNAME(this TARGETTYPE self, FIELDTYPE FIELDNAME) 
+    internal static void FIELDNAME(this TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
-        self.FIELDNAME = FIELDNAME;
+        if (isWrite)
+        {
+            if (Equals(self.FIELDNAME, null))
+                return;
+            if (JUDGE)
+                return;
+            if (segment == null)
+                segment = BufferPool.Take();
+            segment.Write(id);
+            var pos = segment.Position;
+            HANDLER
+            var end = segment.Position;
+            segment.Position = pos;
+            FIELDNAME = READVALUE
+            segment.Position = end;
+        }
+        else 
+        {
+            var pos = segment.Position;
+            var FIELDNAME1 = READVALUE
+            var end = segment.Position;
+            segment.Position = pos;
+            FIELDNAME = READVALUE
+            segment.Position = end;
+            onValueChanged?.Invoke(self.FIELDNAME, FIELDNAME1);
+            self.FIELDNAME = FIELDNAME1;
+        }
     }
 --
-    internal static RETURNTYPE FIELDNAME(this TARGETTYPE self)
+    internal static void FIELDNAME(this TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
-        return self.FIELDNAME;
+        if (isWrite)
+        {
+            if (JUDGE)
+                return;
+            if (segment == null)
+                segment = BufferPool.Take();
+            FIELDNAME = self.FIELDNAME;
+            segment.Write(id);
+#if UNITY_EDITOR
+            var path = UnityEditor.AssetDatabase.GetAssetPath(FIELDNAME);
+            segment.Write(path);
+#endif
+        }
+        else 
+        {
+#if UNITY_EDITOR
+            var path = segment.ReadString();
+            var FIELDNAME1 = UnityEditor.AssetDatabase.LoadAssetAtPath<FIELDTYPE>(path);
+            self.FIELDNAME = FIELDNAME1;
+            onValueChanged?.Invoke(FIELDNAME, FIELDNAME1);
+            FIELDNAME = FIELDNAME1;
+#endif
+        }
     }
 --
 }";
@@ -82,77 +154,140 @@ public static class InvokeHelperGenerate
             var sb = new StringBuilder();
             var setgetSb = new StringBuilder();
             sb.Append(codes[0]);
-            foreach (var assemblies in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var type in types)
             {
-                foreach (var type in assemblies.GetTypes().Where(t=> !t.IsGenericType & !t.IsAbstract & !t.IsInterface))
+                var dictSB = new StringBuilder();
+                foreach (var field in type.Fields)//字段里面包含了属性字段
                 {
-                    var dictSB = new StringBuilder();
-                    foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic))
+                    bool hasAttribute = false;
+                    foreach (var item in field.CustomAttributes)
                     {
-                        if (member.MemberType == MemberTypes.Field | member.MemberType == MemberTypes.Property)
+                        if (item.TypeFullName == "Net.Share.SyncVar")
                         {
-                            var syncVar = member.GetCustomAttribute<SyncVar>();
-                            if (syncVar != null)
-                            {
-                                Type ft = null;
-                                var fieldType = "";
-                                var fieldName = "";
-                                if (member is FieldInfo field)
-                                {
-                                    if (field.IsPrivate)
-                                        continue;
-                                    ft = field.FieldType;
-                                    fieldType = field.FieldType.FullName;
-                                    fieldName = field.Name;
-                                }
-                                else if (member is PropertyInfo property)
-                                {
-                                    if (!property.CanRead | !property.CanWrite)
-                                        continue;
-                                    ft = property.PropertyType;
-                                    fieldType = property.PropertyType.FullName;
-                                    fieldName = property.Name;
-                                }
-                                if (fieldType.Contains("`"))
-                                {
-                                    var fff = fieldType.Split('`');
-                                    fff[0] += "<";
-                                    foreach (var item in ft.GenericTypeArguments)
-                                    {
-                                        fff[0] += $"{item.FullName},";
-                                    }
-                                    fff[0] = fff[0].TrimEnd(',');
-                                    fff[0] += ">";
-                                    fieldType = fff[0];
-                                }
-                                var code = codes[2].Replace("TARGETTYPE", type.FullName);
-                                code = code.Replace("FIELDTYPE", fieldType);
-                                code = code.Replace("FIELDNAME", fieldName);
-                                dictSB.Append(code);
-
-                                code = codes[5].Replace("TARGETTYPE", type.FullName);
-                                code = code.Replace("FIELDTYPE", fieldType);
-                                code = code.Replace("FIELDNAME", fieldName);
-                                setgetSb.Append(code);
-
-                                code = codes[6].Replace("TARGETTYPE", type.FullName);
-                                code = code.Replace("RETURNTYPE", fieldType);
-                                code = code.Replace("FIELDNAME", fieldName);
-                                setgetSb.Append(code);
-                            }
+                            hasAttribute = true;
+                            break;
                         }
                     }
-                    if (dictSB.Length > 0)
+                    if (!hasAttribute)
+                        continue;
+                    if (field.IsPrivate)
+                        continue;
+                    TypeSig ft = field.FieldType;
+                    var gt = ft as GenericInstSig;
+                    string fieldType = field.FieldType.FullName;
+                    string fieldName = field.Name.String;
+                    if (fieldType.Contains("`"))
                     {
-                        dictSB.Append(codes[3]);
-
-                        var dictSB1 = new StringBuilder();
-                        var code = codes[1].Replace("TARGETTYPE", type.FullName);
-                        dictSB1.Append(code);
-                        dictSB1.Append(dictSB);
-
-                        sb.Append(dictSB1.ToString());
+                        var fff = fieldType.Split('`');
+                        fff[0] += "<";
+                        foreach (var item in gt.GenericArguments)
+                        {
+                            fff[0] += $"{item.FullName},";
+                        }
+                        fff[0] = fff[0].TrimEnd(',');
+                        fff[0] += ">";
+                        fieldType = fff[0];
                     }
+                    var code = codes[2].Replace("TARGETTYPE", type.FullName);
+                    code = code.Replace("FIELDTYPE", fieldType);
+                    code = code.Replace("FIELDNAME", fieldName);
+                    dictSB.Append(code);
+
+                    var isUnityObject = IsUnityObjectSubclassOf(ft);
+                    if (ft.IsArray | ft.IsSZArray | ft.IsValueArray | ft.IsGenericInstanceType)
+                    {
+                        TypeSig itemType;
+                        if (ft.IsGenericInstanceType)
+                            itemType = gt.GenericArguments[0];
+                        else
+                            itemType = ft.Next;
+                        isUnityObject = IsUnityObjectSubclassOf(itemType);
+                    }
+                    if (!isUnityObject)
+                    {
+                        code = codes[5].Replace("TARGETTYPE", type.FullName);
+                        code = code.Replace("FIELDTYPE", fieldType);
+                        code = code.Replace("FIELDNAME", fieldName);
+                    }
+                    else
+                    {
+                        code = codes[6].Replace("TARGETTYPE", type.FullName);
+                        code = code.Replace("FIELDTYPE", fieldType);
+                        code = code.Replace("FIELDNAME", fieldName);
+                    }
+
+                    var typeCode = GetTypeCode(ft);
+                    if (typeCode != TypeCode.Object)
+                    {
+                        code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
+                        code = code.Replace("READVALUE", $"segment.Read{typeCode}();");
+                        code = code.Replace("JUDGE", $"self.{fieldName} == {fieldName}");
+                    }
+                    else if (ft.IsArray | ft.IsSZArray | ft.IsValueArray)
+                    {
+                        var itemType = ft.Next;
+                        typeCode = GetTypeCode(itemType);
+                        if (typeCode != TypeCode.Object)
+                        {
+                            code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
+                            code = code.Replace("READVALUE", $"segment.Read{typeCode}Array();");
+                        }
+                        else
+                        {
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                        }
+                        code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                    }
+                    else if (ft.IsGenericInstanceType)
+                    {
+                        var gts = gt.GenericArguments;
+                        if (gts.Count == 1)
+                        {
+                            var itemType = gts[0];
+                            typeCode = GetTypeCode(itemType);
+                            if (typeCode != TypeCode.Object)
+                            {
+                                code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
+                                code = code.Replace("READVALUE", $"segment.Read{typeCode}List();");
+                            }
+                            else
+                            {
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                            }
+                            code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                        }
+                        else
+                        {
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                        }
+                    }
+                    else if (isUnityObject)
+                    {
+                        code = code.Replace("HANDLER", $"segment.Write(UnityEditor.AssetDatabase.GetAssetPath(self.{fieldName}));");
+                        code = code.Replace("READVALUE", $"segment.ReadString();");
+                        code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+                    }
+                    else
+                    {
+                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                        code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+                    }
+                    setgetSb.Append(code);
+                }
+                if (dictSB.Length > 0)
+                {
+                    dictSB.Append(codes[3]);
+
+                    var dictSB1 = new StringBuilder();
+                    var code = codes[1].Replace("TARGETTYPE", type.FullName);
+                    dictSB1.Append(code);
+                    dictSB1.Append(dictSB);
+
+                    sb.Append(dictSB1.ToString());
                 }
             }
             sb.Append(codes[4]);
@@ -161,5 +296,318 @@ public static class InvokeHelperGenerate
             var text = sb.ToString();
             return text;
         }
+
+        public static string InvokeRpcClientBuild(List<TypeDef> types)
+        {
+            var str = @"internal static class RpcInvokeHelper
+{
+--
+    internal static void METHOD(this Net.Client.ClientBase client PARAMETERS) 
+    {
+        BODY
+        SEND
     }
+--
+}";
+            var codes = str.Split(new string[] { "--" }, 0);
+            var sb = new StringBuilder();
+            sb.Append(codes[0]);
+            foreach (var type in types)
+            {
+                var dictSB = new StringBuilder();
+                foreach (var method in type.Methods)
+                {
+                    CustomAttribute attribute = null;
+                    foreach (var item in method.CustomAttributes)
+                    {
+                        if (item.TypeFullName == "Net.Share.Rpc")
+                        {
+                            attribute = item;
+                            break;
+                        }
+                    }
+                    if (attribute == null)
+                        continue;
+                    var paramas = method.Parameters;
+                    string parStr = "";
+                    string bodyStr = "";
+                    string sendStr = $"client.SendRT(\"{method.Name}\"";
+                    foreach (var parama in paramas)
+                    {
+                        if (string.IsNullOrEmpty(parama.Name))
+                            continue;
+                        if (attribute.HasConstructorArguments & parama.Index == 1)
+                            if (attribute.ConstructorArguments[0].Value.Equals((byte)2)) 
+                                continue;
+                        var pt = parama.Type.FullName;
+                        if (pt.Contains("`"))
+                        {
+                            var fff = pt.Split('`');
+                            fff[0] += "<";
+                            var gt = parama.Type as GenericInstSig;
+                            foreach (var item in gt.GenericArguments)
+                            {
+                                fff[0] += $"{item.FullName},";
+                            }
+                            fff[0] = fff[0].TrimEnd(',');
+                            fff[0] += ">";
+                            pt = fff[0];
+                        }
+                        if (parama.Type.IsArray | parama.Type.IsGenericInstanceType | parama.Type.IsSZArray | parama.Type.IsValueArray)
+                        {
+                            bodyStr += $"object {parama.Name}1 = {parama.Name};\r\n\t\t";
+                            sendStr += $", {parama.Name}1";
+                        }
+                        else
+                        {
+                            sendStr += $", {parama.Name}";
+                        }
+                        parStr += $", {pt} {parama.Name}";
+                    }
+                    sendStr += ");";
+                    var code = codes[1].Replace("METHOD", method.Name);
+                    code = code.Replace("PARAMETERS", parStr);
+                    code = code.Replace("BODY", bodyStr);
+                    code = code.Replace("SEND", sendStr);
+                    dictSB.Append(code);
+                }
+                if (dictSB.Length > 0)
+                {
+                    sb.Append(dictSB.ToString());
+                }
+            }
+            sb.Append(codes[2]);
+            var text = sb.ToString();
+            return text;
+        }
+
+        public static string InvokeRpcServerBuild(List<TypeDef> types, int no, string serverType, string playerType)
+        {
+            var str = @"internal static class RpcInvokeHelperNO
+{
+--
+    internal static void METHOD(this PLAYER client PARAMETERS) 
+    {
+        BODY
+        SEND
+    }
+--
+}";
+            str = str.Replace("NO", no.ToString());
+            var codes = str.Split(new string[] { "--" }, 0);
+            var sb = new StringBuilder();
+            sb.Append(codes[0]);
+            foreach (var type in types)
+            {
+                var dictSB = new StringBuilder();
+                foreach (var method in type.Methods)
+                {
+                    CustomAttribute attribute = null;
+                    foreach (var item in method.CustomAttributes)
+                    {
+                        if (item.TypeFullName == "Net.Share.Rpc")
+                        {
+                            attribute = item;
+                            break;
+                        }
+                    }
+                    if (attribute == null)
+                        continue;
+                    var paramas = method.Parameters;
+                    string parStr = "";
+                    string bodyStr = "";
+                    string sendStr = $"{serverType}.Instance.SendRT(client, \"{method.Name}\"";
+                    foreach (var parama in paramas)
+                    {
+                        if (string.IsNullOrEmpty(parama.Name))
+                            continue;
+                        var pt = parama.Type.FullName;
+                        if (pt.Contains("`"))
+                        {
+                            var fff = pt.Split('`');
+                            fff[0] += "<";
+                            var gt = parama.Type as GenericInstSig;
+                            foreach (var item in gt.GenericArguments)
+                            {
+                                fff[0] += $"{item.FullName},";
+                            }
+                            fff[0] = fff[0].TrimEnd(',');
+                            fff[0] += ">";
+                            pt = fff[0];
+                        }
+                        if (parama.Type.IsArray | parama.Type.IsGenericInstanceType | parama.Type.IsSZArray | parama.Type.IsValueArray)
+                        {
+                            bodyStr += $"object {parama.Name}1 = {parama.Name};\r\n\t\t";
+                            sendStr += $", {parama.Name}1";
+                        }
+                        else
+                        {
+                            sendStr += $", {parama.Name}";
+                        }
+                        parStr += $", {pt} {parama.Name}";
+                    }
+                    sendStr += ");";
+                    var code = codes[1].Replace("METHOD", method.Name);
+                    code = code.Replace("PARAMETERS", parStr);
+                    code = code.Replace("BODY", bodyStr);
+                    code = code.Replace("SEND", sendStr);
+                    code = code.Replace("PLAYER", playerType);
+                    dictSB.Append(code);
+                }
+                if (dictSB.Length > 0)
+                {
+                    sb.Append(dictSB.ToString());
+                }
+            }
+            sb.Append(codes[2]);
+            var text = sb.ToString();
+            return text;
+        }
+
+        public static void OnScriptCompilation(List<string> clientPaths, List<string> serverPaths, List<string> csprojPaths, List<string> clientBinPaths, List<string> serverBinPaths)
+        {
+            var streams = new List<ModuleDefMD>();
+            var clientTypes = new List<TypeDef>();
+            foreach (var file in clientBinPaths)
+            {
+                var dllData = File.ReadAllBytes(file);
+                ModuleContext modCtx = ModuleDef.CreateModuleContext();
+                ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
+                streams.Add(module);
+                var types = module.Types;
+                foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
+                {
+                    if (type.DefinitionAssembly.Name == "GameDesigner")
+                        continue;
+                    if (type.HasInterfaces)
+                    {
+                        bool hasIDataRow = false;
+                        foreach (var item in type.Interfaces)
+                        {
+                            if (item.Interface.Name == "IDataRow")
+                            {
+                                hasIDataRow = true;
+                                break;
+                            }
+                        }
+                        if (hasIDataRow)
+                            continue;
+                    }
+                    clientTypes.Add(type);
+                }
+            }
+            var serverTypes = new List<TypeDef>();
+            foreach (var file in serverBinPaths)
+            {
+                ModuleContext modCtx = ModuleDef.CreateModuleContext();
+                var dllData = File.ReadAllBytes(file);
+                ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
+                streams.Add(module);
+                var types = module.Types;
+                foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
+                {
+                    if (type.DefinitionAssembly.Name == "GameDesigner")
+                        continue;
+                    if (type.HasInterfaces)
+                    {
+                        bool hasIDataRow = false;
+                        foreach (var item in type.Interfaces)
+                        {
+                            if (item.Interface.Name == "IDataRow") 
+                            {
+                                hasIDataRow = true;
+                                break;
+                            }
+                        }
+                        if (hasIDataRow)
+                            continue;
+                    }
+                    serverTypes.Add(type);
+                }
+            }
+            var text = SyncVarBuild(clientTypes) + "\r\n\r\n";
+            text += InvokeRpcClientBuild(serverTypes);//客户端要收集服务器的rpc才能识别
+            foreach (var path1 in clientPaths)
+            {
+                File.WriteAllText(path1 + "/InvokeHelperGenerate.cs", text);
+            }
+            var text1 = SyncVarBuild(serverTypes) + "\r\n\r\n";
+
+            int num = 1;
+            foreach (var type in serverTypes)
+            {
+                if (type.ReflectionNamespace == "Net.Server")
+                    continue;
+                if (type.BaseType == null)
+                    continue;
+                if (type.BaseType.ReflectionNamespace != "Net.Server")
+                    continue;
+                var serverType = type.FullName;
+                var gt = type.BaseType.ToTypeSig() as GenericInstSig;
+                if (gt == null)
+                    continue;
+                var gts = gt.GenericArguments;
+                if (gts.Count != 2)
+                    continue;
+                var player = gts[0];
+
+                text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
+            }
+
+            for (int i = 0; i < csprojPaths.Count; i++)
+            {
+                var csprojPath = csprojPaths[i];
+                var path1 = serverPaths[i] + "/InvokeHelperGenerate.cs";
+                path1 = path1.Replace('/', '\\');
+
+                XmlDocument xml = new XmlDocument();
+                xml.Load(csprojPath);
+                XmlNodeList node_list;
+                XmlElement documentElement = xml.DocumentElement;
+                var namespaceURI = xml.DocumentElement.NamespaceURI;
+                if (!string.IsNullOrEmpty(namespaceURI))
+                {
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
+                    node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
+                }
+                else node_list = xml.SelectNodes("/Project/ItemGroup");
+                bool exist = false;
+                foreach (XmlNode node in node_list)
+                {
+                    XmlNodeList node_child = node.ChildNodes;
+                    foreach (XmlNode child_node in node_child)
+                    {
+                        var value = child_node.Attributes["Include"].Value;
+                        if (value.Contains("InvokeHelperGenerate.cs"))
+                        {
+                            if (value != path1 | !File.Exists(value))
+                            {
+                                child_node.Attributes["Include"].Value = path1;
+                                xml.Save(csprojPath);
+                            }
+                            exist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!exist)
+                {
+                    XmlElement node = xml.CreateElement("ItemGroup", namespaceURI);
+                    XmlElement e = xml.CreateElement("Compile", namespaceURI);
+                    e.SetAttribute("Include", path1);
+                    node.AppendChild(e);
+                    documentElement.AppendChild(node);
+                    xml.Save(csprojPath);
+                }
+                if (!Directory.Exists(Path.GetDirectoryName(path1)))
+                    Directory.CreateDirectory(path1);
+                File.WriteAllText(path1, text1);
+            }
+            foreach (var stream in streams)
+            {
+                stream.Dispose();
+            }
+        }
+    }
+#endif
 }

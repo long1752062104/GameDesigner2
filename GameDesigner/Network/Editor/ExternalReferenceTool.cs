@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using UnityEditor;
 using UnityEngine;
 
@@ -76,79 +77,66 @@ public class ExternalReferenceTool : EditorWindow
         {
             foreach (var csprojPath in csprojPaths)
             {
-                var rows = new List<string>(File.ReadAllLines(csprojPath));
-                int removeStart = 0, removeEnd = 0;
-                int contIndex = -1;
-                for (int i = 0; i < rows.Count; i++)
+                XmlDocument xml = new XmlDocument();
+                xml.Load(csprojPath);
+                XmlNodeList node_list;
+                XmlElement documentElement = xml.DocumentElement;
+                var namespaceURI = xml.DocumentElement.NamespaceURI;
+                if (!string.IsNullOrEmpty(namespaceURI))
                 {
-                    foreach (var path in paths)
-                    {
-                        var path1 = path.Replace("/", "\\");
-                        var dir = new DirectoryInfo(path);
-                        var dirName = dir.Parent.FullName + "\\";
-                        var files = Directory.GetFiles(path1, "*.cs", SearchOption.AllDirectories);
-                        foreach (var file in files)
-                        {
-                            if (rows[i].Contains($"<Link>{file.Replace(dirName, "")}</Link>"))
-                            {
-                                contIndex = i;
-                                goto J;
-                            }
-                        }
-                    }
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
+                    node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
                 }
-            J:;
-                if (contIndex != -1)
-                {
-                    for (int i = contIndex; i > 0; i--)
-                    {
-                        if (string.IsNullOrEmpty(rows[i]))
-                            continue;
-                        if (rows[i].Contains("<ItemGroup>"))
-                        {
-                            removeStart = i;
-                            break;
-                        }
-                    }
-                    for (int i = removeStart; i < rows.Count; i++)
-                    {
-                        if (string.IsNullOrEmpty(rows[i]))
-                            continue;
-                        if (rows[i].Contains("</ItemGroup>"))
-                        {
-                            removeEnd = i + 1;
-                            break;
-                        }
-                    }
-                    rows.RemoveRange(removeStart, removeEnd - removeStart);
-                }
-                for (int i = rows.Count - 1; i > 0; i--)
-                {
-                    if (string.IsNullOrEmpty(rows[i]))
-                        continue;
-                    if (rows[i].Contains("</Project>"))
-                    {
-                        rows.RemoveAt(i);
-                        break;
-                    }
-                }
-                rows.Add("  <ItemGroup>");
+                else node_list = xml.SelectNodes("/Project/ItemGroup");
                 foreach (var path in paths)
                 {
                     var path1 = path.Replace("/", "\\");
                     var dir = new DirectoryInfo(path);
                     var dirName = dir.Parent.FullName + "\\";
                     var files = Directory.GetFiles(path1, "*.cs", SearchOption.AllDirectories);
-                    foreach (var file in files)
+
+                    bool exist = false;
+                    for (int i = 0; i < node_list.Count; i++)
                     {
-                        rows.Add($"	<Compile Include=\"{file}\">");
-                        rows.Add($"      <Link>{file.Replace(dirName, "")}</Link>");
-                        rows.Add("	</Compile>");
+                        XmlNode node = node_list.Item(i);
+                        XmlNodeList node_child = node.ChildNodes;
+                        for (int j = 0; j < node_child.Count; j++)
+                        {
+                            XmlNode child_node = node_child.Item(j);
+                            string value = child_node.Attributes["Include"].Value;
+                            exist = value.Contains(path);
+                            break;
+                        }
+                        if (exist == true)
+                        {
+                            node.RemoveAll();
+                            foreach (var file in files)
+                            {
+                                XmlElement e = xml.CreateElement("Compile", namespaceURI);
+                                e.SetAttribute("Include", path);
+                                XmlElement e1 = xml.CreateElement("Link", namespaceURI);
+                                e1.InnerText = file.Replace(dirName, "");
+                                e.AppendChild(e1);
+                                node.AppendChild(e);
+                            }
+                        }
+                    }
+                    if (!exist)
+                    {
+                        XmlElement node = xml.CreateElement("ItemGroup", namespaceURI);
+                        foreach (var file in files)
+                        {
+                            XmlElement e = xml.CreateElement("Compile", namespaceURI);
+                            e.SetAttribute("Include", path);
+                            XmlElement e1 = xml.CreateElement("Link", namespaceURI);
+                            e1.InnerText = file.Replace(dirName, "");
+                            e.AppendChild(e1);
+                            node.AppendChild(e);
+                        }
+                        documentElement.AppendChild(node);
                     }
                 }
-                rows.Add("  </ItemGroup>");
-                rows.Add("</Project>");
-                File.WriteAllLines(csprojPath, rows);
+                xml.Save(csprojPath);
             }
             Debug.Log("更新完成!");
         }
