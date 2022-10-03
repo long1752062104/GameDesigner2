@@ -20,6 +20,9 @@ namespace Example1
         public int number;
         public Vector3 position;
         public Quaternion quaternion;
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
         public SyncVarClassTest classField;
 
         public override bool Equals(object obj)
@@ -63,15 +66,27 @@ namespace Example1
     {
         [Header("同步结构类型字段")]
         [SyncVar]
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
         public SyncVarStructTest structTest;
         [Header("同步结构类型带有类类型的字段")]
         [SyncVar]
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
         public SyncVarStructTest1 structTest1;
         [Header("同步类类型字段")]
         [SyncVar]
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
         public SyncVarClassTest classTest;
         [Header("同步结构类型数组")]
         [SyncVar]
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
         public SyncVarStructTest[] array;
         [Header("同步类类型数组列表")]
         [SyncVar]
@@ -79,6 +94,8 @@ namespace Example1
         [Header("同步所有基于UnityEngine.Object类型的物体")]
         [SyncVar]
         public GameObject obj;//只在编辑器有效!
+        [SyncVar]
+        public Rigidbody obj1;//只在编辑器有效!
         [Header("p2p同步int")]
         [SyncVar(id = 1)]
         public int testint;

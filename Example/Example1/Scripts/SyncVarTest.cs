@@ -10,6 +10,8 @@ public class SyncVarTest : NetworkBehaviour
     public SyncVarClass test1;
     [SyncVar(authorize = false, hook = nameof(OnTest2Value))]
     public SyncVarClass test2;
+    [SyncVar]
+    public SyncVarClass test3;
 
     public void OnTest2Value(SyncVarClass old, SyncVarClass value) 
     {

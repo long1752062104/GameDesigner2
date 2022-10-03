@@ -1,4 +1,4 @@
-﻿using Net.Helper;
+﻿using Net.System;
 using System;
 using System.Reflection;
 
@@ -7,80 +7,67 @@ namespace Net.Share
     [Serializable]
     public class SyncVarInfo
     {
-        internal object value;
         internal ushort id;
-        internal Type type;
-        internal bool passive;
         internal bool authorize;
-        internal object target;
-        internal MethodInfo OnValueChanged;
-        internal bool isEnum;
-        internal bool baseType;
-        internal bool isClass;
+        internal MethodInfo onValueChanged;
         internal bool isDispose;
-        internal bool isList;
-        internal bool isUnityObject;
-        internal MemberInfo member;
-        internal InvokePTR ptr;
-        public virtual object GetValue()
+        internal uint tick;
+
+        public virtual void SetTarget(object target) { }
+        public virtual void SetDefaultValue() { }
+        public virtual void CheckHandlerValue(ref Segment segment, bool isWrite)
+        {
+        }
+        public virtual SyncVarInfo Clone(object target)
         {
             return null;
         }
-        public virtual void SetValue(object value)
+        public virtual bool EqualsTarget(object target)
         {
-        }
-        public virtual void Init()
-        {
-        }
-        public object GetDefaultValue()
-        {
-            return isClass & !isUnityObject ? Clone.Instance(GetValue()) : GetValue();
+            return false;
         }
     }
-    public class SyncVarFieldInfo : SyncVarInfo
+    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, bool isWrite, Action<V, V> onValueChanged);
+    public class SyncVarInfoPtr<T, V> : SyncVarInfo
     {
-        public FieldInfo fieldInfo;
-        public override object GetValue()
+        internal T target;
+        internal V value;
+        internal SyncVarInfoDelegate<T, V> action;
+        internal Action<V, V> action1;
+
+        public SyncVarInfoPtr(SyncVarInfoDelegate<T, V> action)
         {
-            if (ptr != null)
-                return ptr.GetValue();
-            return fieldInfo.GetValue(target);
+            this.action = action;
         }
-        public override void SetValue(object value)
+
+        public override SyncVarInfo Clone(object target)
         {
-            if (ptr != null)
-                ptr.SetValue(value);
-            else
-                fieldInfo.SetValue(target, value);
+            Action<V, V> action2 = null;
+            if (onValueChanged != null)
+                action2 = (Action<V, V>)onValueChanged.CreateDelegate(typeof(Action<V, V>), target);
+            return new SyncVarInfoPtr<T, V>(action) { 
+                target = (T)target, id = id, authorize = authorize, action1 = action2
+            };
         }
-        public override void Init()
+
+        public override void SetTarget(object target)
         {
-            fieldInfo = member as FieldInfo;
-            if (ptr != null)
-                ptr.target = target;
+            this.target = (T)target;
         }
-    }
-    public class SyncVarPropertyInfo : SyncVarInfo
-    {
-        public PropertyInfo propertyInfo;
-        public override object GetValue()
+
+        public override void SetDefaultValue()
         {
-            if (ptr != null)
-                return ptr.GetValue();
-            return propertyInfo.GetValue(target);
+            value = default;
         }
-        public override void SetValue(object value)
+
+        public override void CheckHandlerValue(ref Segment segment, bool isWrite)
         {
-            if (ptr != null)
-                ptr.SetValue(value);
-            else
-                propertyInfo.SetValue(target, value);
+            action(target, ref value, id, ref segment, isWrite, action1);
         }
-        public override void Init()
+
+        public override bool EqualsTarget(object target)
         {
-            propertyInfo = member as PropertyInfo;
-            if (ptr != null)
-                ptr.target = target;
+            return this.target.Equals(target);
         }
     }
 }

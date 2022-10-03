@@ -1,6 +1,7 @@
 ﻿using ECS;
 using Example2;
 using Net;
+using Net.Config;
 using Net.Share;
 using Net.System;
 using System;
@@ -20,6 +21,7 @@ namespace ExampleServer
         {
             if (args.Length == 0)
                 return;
+            App.Setup();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             if (args[0] == "Example1") 
