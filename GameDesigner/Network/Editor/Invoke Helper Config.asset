@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c61be971a44568419079a06feb5c477, type: 3}
+  m_Name: Invoke Helper Config
+  m_EditorClassIdentifier: 
+  Config:
+    savePath: D:/MMORPG/Assets/Scripts/Helper/
+    dllPaths:
+    - D:/MMORPG/Assets/../Library/ScriptAssemblies/Assembly-CSharp.dll
+    rpcConfig:
+    - name: ConsoleApp1
+      csprojPath: D:\ConsoleApp1\ConsoleApp1\ConsoleApp1.csproj
+      savePath: D:\ConsoleApp1\ConsoleApp1
+      dllPaths:
+      - D:\ConsoleApp1\ConsoleApp1\bin\Debug\ConsoleApp1.exe
+      readConfigPath: D:\ConsoleApp1\ConsoleApp1\bin\Debug
+    - name: ExampleServer
+      csprojPath: D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\ExampleServer.csproj
+      savePath: D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\Invoke
+      dllPaths:
+      - D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\ExampleServer.exe
+      readConfigPath: D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug

@@ -23,22 +23,9 @@ namespace Net.Helper
             if (File.Exists(path))
             {
                 var jsonStr = File.ReadAllText(path);
-                var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Data>(jsonStr);
-                var clientPaths = data.clientPaths;
-                var serverPaths = data.serverPaths;
-                var csprojPaths = data.csprojPaths;
-                var clientBinPaths = data.clientBinPaths;
-                var serverBinPaths = data.serverBinPaths;
-                InvokeHelperBuild.OnScriptCompilation(clientPaths, serverPaths, csprojPaths, clientBinPaths, serverBinPaths);
+                var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
+                InvokeHelperBuild.OnScriptCompilation(data);
             }
-        }
-        internal class Data
-        {
-            public List<string> csprojPaths = new List<string>();
-            public List<string> clientPaths = new List<string>();
-            public List<string> serverPaths = new List<string>();
-            public List<string> clientBinPaths = new List<string>();
-            public List<string> serverBinPaths = new List<string>();
         }
 #endif
     }
@@ -336,9 +323,19 @@ internal static class InvokeHelperGenerate
                     {
                         if (string.IsNullOrEmpty(parama.Name))
                             continue;
-                        if (attribute.HasConstructorArguments & parama.Index == 1)
-                            if (attribute.ConstructorArguments[0].Value.Equals((byte)2)) 
-                                continue;
+                        if (parama.Index == 1)
+                        {
+                            if (attribute.HasConstructorArguments) 
+                            {
+                                if (attribute.ConstructorArguments[0].Value.Equals((byte)2))
+                                    continue;
+                            }
+                            else if (attribute.HasNamedArguments)
+                            {
+                                if (attribute.NamedArguments[0].Value.Equals((byte)2))
+                                    continue;
+                            }
+                        }
                         var pt = parama.Type.FullName;
                         if (pt.Contains("`"))
                         {
@@ -397,6 +394,7 @@ internal static class InvokeHelperGenerate
             var codes = str.Split(new string[] { "--" }, 0);
             var sb = new StringBuilder();
             sb.Append(codes[0]);
+            var dict = new Dictionary<string, List<MethodDef>>();
             foreach (var type in types)
             {
                 var dictSB = new StringBuilder();
@@ -417,6 +415,32 @@ internal static class InvokeHelperGenerate
                     string parStr = "";
                     string bodyStr = "";
                     string sendStr = $"{serverType}.Instance.SendRT(client, \"{method.Name}\"";
+                    if (dict.TryGetValue(method.Name.String, out var methods))
+                    {
+                        var has = true;
+                        foreach (var method1 in methods)
+                        {
+                            if (method.Parameters.Count == method1.Parameters.Count)
+                            {
+                                for (int i = 0; i < method.Parameters.Count; i++)
+                                {
+                                    if (string.IsNullOrEmpty(method.Parameters[i].Name) & string.IsNullOrEmpty(method1.Parameters[i].Name))
+                                        continue;
+                                    if (method.Parameters[i].Type.FullName != method1.Parameters[i].Type.FullName)
+                                    {
+                                        has = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (has)
+                            continue;
+                    }
+                    else
+                    {
+                        dict.Add(method.Name.String, new List<MethodDef>() { method });
+                    }
                     foreach (var parama in paramas)
                     {
                         if (string.IsNullOrEmpty(parama.Name))
@@ -464,11 +488,11 @@ internal static class InvokeHelperGenerate
             return text;
         }
 
-        public static void OnScriptCompilation(List<string> clientPaths, List<string> serverPaths, List<string> csprojPaths, List<string> clientBinPaths, List<string> serverBinPaths)
+        public static void OnScriptCompilation(InvokeHelperConfig config)
         {
             var streams = new List<ModuleDefMD>();
             var clientTypes = new List<TypeDef>();
-            foreach (var file in clientBinPaths)
+            foreach (var file in config.dllPaths)
             {
                 var dllData = File.ReadAllBytes(file);
                 ModuleContext modCtx = ModuleDef.CreateModuleContext();
@@ -496,68 +520,73 @@ internal static class InvokeHelperGenerate
                     clientTypes.Add(type);
                 }
             }
-            var serverTypes = new List<TypeDef>();
-            foreach (var file in serverBinPaths)
+            var serverTypes = new List<List<TypeDef>>();
+            foreach (var data in config.rpcConfig)
             {
-                ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                var dllData = File.ReadAllBytes(file);
-                ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
-                streams.Add(module);
-                var types = module.Types;
-                foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
+                var serverTypes1 = new List<TypeDef>();
+                foreach (var file in data.dllPaths)
                 {
-                    if (type.DefinitionAssembly.Name == "GameDesigner")
-                        continue;
-                    if (type.HasInterfaces)
+                    ModuleContext modCtx = ModuleDef.CreateModuleContext();
+                    var dllData = File.ReadAllBytes(file);
+                    ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
+                    streams.Add(module);
+                    var types = module.Types;
+                    foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
                     {
-                        bool hasIDataRow = false;
-                        foreach (var item in type.Interfaces)
-                        {
-                            if (item.Interface.Name == "IDataRow") 
-                            {
-                                hasIDataRow = true;
-                                break;
-                            }
-                        }
-                        if (hasIDataRow)
+                        if (type.DefinitionAssembly.Name == "GameDesigner")
                             continue;
+                        if (type.HasInterfaces)
+                        {
+                            bool hasIDataRow = false;
+                            foreach (var item in type.Interfaces)
+                            {
+                                if (item.Interface.Name == "IDataRow")
+                                {
+                                    hasIDataRow = true;
+                                    break;
+                                }
+                            }
+                            if (hasIDataRow)
+                                continue;
+                        }
+                        serverTypes1.Add(type);
                     }
-                    serverTypes.Add(type);
                 }
+                serverTypes.Add(serverTypes1);
             }
+            
             var text = SyncVarBuild(clientTypes) + "\r\n\r\n";
-            text += InvokeRpcClientBuild(serverTypes);//客户端要收集服务器的rpc才能识别
-            foreach (var path1 in clientPaths)
-            {
-                File.WriteAllText(path1 + "/InvokeHelperGenerate.cs", text);
-            }
-            var text1 = SyncVarBuild(serverTypes) + "\r\n\r\n";
+            var serverTypes3 = new List<TypeDef>();
+            foreach (var item in serverTypes)
+                serverTypes3.AddRange(item);
 
-            int num = 1;
-            foreach (var type in serverTypes)
-            {
-                if (type.ReflectionNamespace == "Net.Server")
-                    continue;
-                if (type.BaseType == null)
-                    continue;
-                if (type.BaseType.ReflectionNamespace != "Net.Server")
-                    continue;
-                var serverType = type.FullName;
-                var gt = type.BaseType.ToTypeSig() as GenericInstSig;
-                if (gt == null)
-                    continue;
-                var gts = gt.GenericArguments;
-                if (gts.Count != 2)
-                    continue;
-                var player = gts[0];
+            text += InvokeRpcClientBuild(serverTypes3);//客户端要收集服务器的rpc才能识别
+            File.WriteAllText(config.savePath + "/InvokeHelperGenerate.cs", text);
 
-                text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
-            }
-
-            for (int i = 0; i < csprojPaths.Count; i++)
+            for (int i = 0; i < config.rpcConfig.Count; i++)
             {
-                var csprojPath = csprojPaths[i];
-                var path1 = serverPaths[i] + "/InvokeHelperGenerate.cs";
+                var serverTypes2 = serverTypes[i];
+                var text1 = SyncVarBuild(serverTypes2) + "\r\n\r\n";
+                int num = 1;
+                foreach (var type in serverTypes2)
+                {
+                    if (type.ReflectionNamespace == "Net.Server")
+                        continue;
+                    if (type.BaseType == null)
+                        continue;
+                    if (type.BaseType.ReflectionNamespace != "Net.Server")
+                        continue;
+                    var serverType = type.FullName;
+                    if (!(type.BaseType.ToTypeSig() is GenericInstSig gt))
+                        continue;
+                    var gts = gt.GenericArguments;
+                    if (gts.Count != 2)
+                        continue;
+                    var player = gts[0];
+                    text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
+                }
+                var csprojPath = config.rpcConfig[i].csprojPath;
+                var path1 = config.rpcConfig[i].savePath + "/InvokeHelperGenerate.cs";
                 path1 = path1.Replace('/', '\\');
 
                 XmlDocument xml = new XmlDocument();

@@ -45,8 +45,13 @@ namespace Net.Share
             Action<V, V> action2 = null;
             if (onValueChanged != null)
                 action2 = (Action<V, V>)onValueChanged.CreateDelegate(typeof(Action<V, V>), target);
-            return new SyncVarInfoPtr<T, V>(action) { 
-                target = (T)target, id = id, authorize = authorize, action1 = action2
+            var segment = BufferPool.Take();
+            V value1 = default;
+            action((T)target, ref value1, id, ref segment, true, action2);
+            segment.Dispose();
+            return new SyncVarInfoPtr<T, V>(action) 
+            {
+                target = (T)target, id = id, authorize = authorize, action1 = action2, value = value1
             };
         }
 

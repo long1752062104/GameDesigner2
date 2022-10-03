@@ -45,7 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="dnlib, Version=3.5.0.0, Culture=neutral, PublicKeyToken=50e96378b6e77999, processorArchitecture=MSIL">
-      <HintPath>..\ConsoleApp1\packages\dnlib.3.5.0\lib\net45\dnlib.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>GameDesigner\Network\dnlib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="SuperSocket.ClientEngine, Version=0.10.0.0, Culture=neutral, PublicKeyToken=ee9af13f57f00acc, processorArchitecture=MSIL">
@@ -93,6 +94,7 @@
     <None Include="GameDesigner\Component\MySqlHelper.cs.meta" />
     <None Include="GameDesigner\Component\NTransform.cs.meta" />
     <None Include="GameDesigner\Component\OtherExt.meta" />
+    <None Include="GameDesigner\Component\OtherExt\MathExt.cs.meta" />
     <None Include="GameDesigner\Component\OtherExt\SystemBaseExt.cs.meta" />
     <None Include="GameDesigner\Component\RoomData.cs.meta" />
     <None Include="GameDesigner\Component\SqlServerHelper.cs.meta" />
@@ -100,6 +102,7 @@
     <None Include="GameDesigner\Component\UnityComponent\Editor.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Editor\BuildComponentTools.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Editor\NetworkSceneManagerEdit.cs.meta" />
+    <None Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformEdit.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformMultiEdit.cs.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate.meta" />
     <None Include="GameDesigner\Component\UnityComponent\Generate\NetworkAnimation.cs.meta" />
@@ -510,6 +513,8 @@
     <None Include="GameDesigner\Network\core\Client.meta" />
     <None Include="GameDesigner\Network\core\Client\ClientBase.cs.meta" />
     <None Include="GameDesigner\Network\core\Config.meta" />
+    <None Include="GameDesigner\Network\core\Config\App.cs.meta" />
+    <None Include="GameDesigner\Network\core\Config\InvokeHelperConfigObject.cs.meta" />
     <None Include="GameDesigner\Network\core\Config\NetConfig.cs.meta" />
     <None Include="GameDesigner\Network\core\Event.meta" />
     <None Include="GameDesigner\Network\core\Event\EventSystem.cs.meta" />
@@ -518,6 +523,8 @@
     <None Include="GameDesigner\Network\core\Helper.meta" />
     <None Include="GameDesigner\Network\core\Helper\CRCHelper.cs.meta" />
     <None Include="GameDesigner\Network\core\Helper\EncryptHelper.cs.meta" />
+    <None Include="GameDesigner\Network\core\Helper\InvokeHelperBuild.cs.meta" />
+    <None Include="GameDesigner\Network\core\Helper\RpcHelper.cs.meta" />
     <None Include="GameDesigner\Network\core\Helper\SyncVarHelper.cs.meta" />
     <None Include="GameDesigner\Network\core\Server.meta" />
     <None Include="GameDesigner\Network\core\Server\NetPlayer.cs.meta" />
@@ -537,10 +544,12 @@
     <None Include="GameDesigner\Network\core\Share\INetConvert.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\INetworkHandle.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\INetworkSceneHandle.cs.meta" />
+    <None Include="GameDesigner\Network\core\Share\IRpcHandler.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\ISendHandle.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\IServerEventHandle.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\IServerHandle.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\IServerSendHandle.cs.meta" />
+    <None Include="GameDesigner\Network\core\Share\MemberData.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\MessageModel.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\NetCmd.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\NetDelegate.cs.meta" />
@@ -554,10 +563,12 @@
     <None Include="GameDesigner\Network\core\Share\ReliableTemp.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs.meta" />
+    <None Include="GameDesigner\Network\core\Share\RPCData.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RPCFun.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RPCModel.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RPCModelTask.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\RTOMode.cs.meta" />
+    <None Include="GameDesigner\Network\core\Share\RuntimeInitializeOnLoadMethod.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\SendBuffer.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\SyncVarAttribute.cs.meta" />
     <None Include="GameDesigner\Network\core\Share\SyncVarInfo.cs.meta" />
@@ -576,6 +587,7 @@
     <None Include="GameDesigner\Network\core\System\HashSetSafe.cs.meta" />
     <None Include="GameDesigner\Network\core\System\IWellKnownStringEqualityComparer.cs.meta" />
     <None Include="GameDesigner\Network\core\System\ListSafe.cs.meta" />
+    <None Include="GameDesigner\Network\core\System\ObjectIDGenerator.cs.meta" />
     <None Include="GameDesigner\Network\core\System\QueueSafe.cs.meta" />
     <None Include="GameDesigner\Network\core\System\RandomizedObjectEqualityComparer.cs.meta" />
     <None Include="GameDesigner\Network\core\System\RandomSafe.cs.meta" />
@@ -603,9 +615,15 @@
     <None Include="GameDesigner\Network\core\Unity\Vector2.cs.meta" />
     <None Include="GameDesigner\Network\core\Unity\Vector3.cs.meta" />
     <None Include="GameDesigner\Network\core\Unity\Vector4.cs.meta" />
+    <None Include="GameDesigner\Network\dnlib.dll.meta" />
     <None Include="GameDesigner\Network\Editor.meta" />
+    <None Include="GameDesigner\Network\Editor\DisableScripReloadInPlayMode.cs.meta" />
     <None Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs.meta" />
     <None Include="GameDesigner\Network\Editor\Fast2BuildTool.cs.meta" />
+    <None Include="GameDesigner\Network\Editor\Invoke Helper Config.asset" />
+    <None Include="GameDesigner\Network\Editor\Invoke Helper Config.asset.meta" />
+    <None Include="GameDesigner\Network\Editor\InvokeHelperConfigEdit.cs.meta" />
+    <None Include="GameDesigner\Network\Editor\InvokeHelperTools.cs.meta" />
     <None Include="GameDesigner\Network\gudp.meta" />
     <None Include="GameDesigner\Network\gudp\Client.meta" />
     <None Include="GameDesigner\Network\gudp\Client\TcpClient.cs.meta" />
@@ -938,6 +956,7 @@
     <Content Include="GameDesigner\Editor\Resources\server_list_bg1.png" />
     <Content Include="GameDesigner\Editor\Resources\state.jpg" />
     <Content Include="GameDesigner\Editor\Resources\stateStyle.png" />
+    <Content Include="GameDesigner\Network\dnlib.dll" />
     <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x64\kcp.dll" />
     <Content Include="GameDesigner\Network\kcp\Plugins\Windows\x86\kcp.dll" />
     <Content Include="GameDesigner\Network\kcp\使用说明.txt" />
@@ -975,6 +994,7 @@
     <Compile Include="GameDesigner\Component\SqlServerHelper.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\BuildComponentTools.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\NetworkSceneManagerEdit.cs" />
+    <Compile Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformEdit.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Editor\NetworkTransformMultiEdit.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkAnimation.cs" />
     <Compile Include="GameDesigner\Component\UnityComponent\Generate\NetworkAnimator.cs" />
@@ -1299,6 +1319,7 @@
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector4Bind.cs" />
     <Compile Include="GameDesigner\Network\core\Client\ClientBase.cs" />
     <Compile Include="GameDesigner\Network\core\Config\App.cs" />
+    <Compile Include="GameDesigner\Network\core\Config\InvokeHelperConfigObject.cs" />
     <Compile Include="GameDesigner\Network\core\Config\NetConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Event\EventSystem.cs" />
     <Compile Include="GameDesigner\Network\core\Event\NDebug.cs" />
@@ -1341,9 +1362,9 @@
     <Compile Include="GameDesigner\Network\core\Share\Random.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReceiveBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReliableTemp.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\RPCData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\RPCData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCFun.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModelTask.cs" />
@@ -1395,6 +1416,8 @@
     <Compile Include="GameDesigner\Network\Editor\DisableScripReloadInPlayMode.cs" />
     <Compile Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs" />
     <Compile Include="GameDesigner\Network\Editor\Fast2BuildTool.cs" />
+    <Compile Include="GameDesigner\Network\Editor\InvokeHelperConfigEdit.cs" />
+    <Compile Include="GameDesigner\Network\Editor\InvokeHelperTools.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Plugins\GcpKernel.cs" />
