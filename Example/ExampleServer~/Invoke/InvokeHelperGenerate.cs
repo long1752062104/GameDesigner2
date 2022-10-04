@@ -4,8 +4,9 @@ using Net.Share;
 using Net.System;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
-internal static class InvokeHelperGenerate
+/**internal static class InvokeHelperGenerate
 {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
     [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -52,7 +53,8 @@ internal static class InvokeHelperGenerate
             segment.Position = pos;
             testint = segment.ReadInt32();
             segment.Position = end;
-            onValueChanged?.Invoke(self.testint, testint1);
+            if (onValueChanged != null)
+                onValueChanged(self.testint, testint1);
             self.testint = testint1;
         }
     }
@@ -83,12 +85,13 @@ internal static class InvokeHelperGenerate
             segment.Position = pos;
             teststring = segment.ReadString();
             segment.Position = end;
-            onValueChanged?.Invoke(self.teststring, teststring1);
+            if (onValueChanged != null)
+                onValueChanged(self.teststring, teststring1);
             self.teststring = teststring1;
         }
     }
 
-}
+}*/
 
 internal static class RpcInvokeHelper1
 {
@@ -254,3 +257,15 @@ internal static class RpcInvokeHelper4
 
 }
 
+internal static class HelperFileInfo 
+{
+    internal static string GetPath()
+    {
+        return GetClassFileInfo();
+    }
+
+    internal static string GetClassFileInfo([CallerFilePath] string sourceFilePath = "")
+    {
+        return sourceFilePath;
+    }
+}

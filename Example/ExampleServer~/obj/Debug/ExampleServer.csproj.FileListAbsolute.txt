@@ -622,4 +622,3 @@ D:\My project\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\ExampleServer
 D:\My project\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\ExampleServer.pdb
 D:\My project\Assets\GameDesigner\Example\ExampleServer~\obj\Debug\ExampleServer.csproj.CopyComplete
 D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\dnlib.dll
-D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\dnlib.xml

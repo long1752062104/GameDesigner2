@@ -2,11 +2,12 @@
 using Net.Helper;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-public class InvokeHelperTools : EditorWindow
+public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPreprocessBuildWithReport
 {
     SerializedObject serializedObject;
 
@@ -29,6 +30,11 @@ public class InvokeHelperTools : EditorWindow
         serializedObject.Update();
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("Config"), true);
+        if (GUILayout.Button("保存配置", GUILayout.Height(30)))
+        {
+            SaveData();
+            Debug.Log("保存完成!");
+        }
         if (GUILayout.Button("执行", GUILayout.Height(30)))
         {
             OnScriptCompilation();
@@ -96,7 +102,25 @@ public class InvokeHelperTools : EditorWindow
         }
         if (change > 0)
             SaveData();
-        InvokeHelperBuild.OnScriptCompilation(Config);
+        InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
+    }
+
+    public int callbackOrder { get; set; }
+
+    public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
+    {
+        // build前
+        Debug.Log("开始build, 准备编译字段同步生成脚本!");
+        InvokeHelperBuild.OnScriptCompilation(Config, true, true);
+        AssetDatabase.Refresh();
+    }
+
+    public void OnPostprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
+    {
+        // build完成后
+        Debug.Log("build完成, 注释字段同步脚本!");
+        InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
+        AssetDatabase.Refresh();
     }
 }
 #endif

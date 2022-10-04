@@ -793,6 +793,8 @@ MonoBehaviour:
   - 
   - 
   obj: {fileID: 0}
+  obj1: {fileID: 0}
+  obj3: {fileID: 0}
   testint: 0
   teststring: 
 --- !u!114 &1826353262
