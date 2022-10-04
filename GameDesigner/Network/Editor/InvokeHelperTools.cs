@@ -1,7 +1,5 @@
 #if UNITY_EDITOR
 using Net.Helper;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -42,20 +40,21 @@ public class InvokeHelperTools : EditorWindow
         serializedObject.ApplyModifiedProperties();
     }
 
-    static InvokeHelperConfigObject ConfigObject;
+    static InvokeHelperConfigObject configObject;
+    internal static InvokeHelperConfigObject ConfigObject
+    {
+        get
+        {
+            if (configObject == null)
+                configObject = CreateInstance<InvokeHelperConfigObject>();
+            return configObject;
+        }
+    }
     internal static InvokeHelperConfig Config = new InvokeHelperConfig();
     private Vector2 scrollPosition;
 
     internal static void LoadData()
     {
-        var file = BlueprintSetting.GetGameDesignerPath + "/Network/Editor/Invoke Helper Config.asset";
-        var path1 = "Assets/" + file.Split(new string[] { @"Assets\" }, StringSplitOptions.RemoveEmptyEntries)[1];
-        if (!File.Exists(file))
-        {
-            ConfigObject = CreateInstance<InvokeHelperConfigObject>();
-            AssetDatabase.CreateAsset(ConfigObject, path1);
-        }
-        else ConfigObject = AssetDatabase.LoadAssetAtPath<InvokeHelperConfigObject>(path1);
         var path = Application.dataPath.Replace("Assets", "") + "InvokeHelper.txt";
         if (File.Exists(path))
         {
