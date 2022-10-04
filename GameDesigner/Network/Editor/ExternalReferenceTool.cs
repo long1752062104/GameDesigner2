@@ -100,12 +100,16 @@ public class ExternalReferenceTool : EditorWindow
                     {
                         XmlNode node = node_list.Item(i);
                         XmlNodeList node_child = node.ChildNodes;
-                        for (int j = 0; j < node_child.Count; j++)
+                        foreach (XmlNode child_node in node_child)
                         {
-                            XmlNode child_node = node_child.Item(j);
-                            string value = child_node.Attributes["Include"].Value;
-                            exist = value.Contains(path);
-                            break;
+                            if (child_node.LocalName != "Compile")
+                                continue;
+                            var value = child_node.Attributes["Include"].Value;
+                            if (value.Contains(path1))
+                            {
+                                exist = true;
+                                break;
+                            }
                         }
                         if (exist == true)
                         {
@@ -113,12 +117,13 @@ public class ExternalReferenceTool : EditorWindow
                             foreach (var file in files)
                             {
                                 XmlElement e = xml.CreateElement("Compile", namespaceURI);
-                                e.SetAttribute("Include", path);
+                                e.SetAttribute("Include", file);
                                 XmlElement e1 = xml.CreateElement("Link", namespaceURI);
                                 e1.InnerText = file.Replace(dirName, "");
                                 e.AppendChild(e1);
                                 node.AppendChild(e);
                             }
+                            break;
                         }
                     }
                     if (!exist)
@@ -127,7 +132,7 @@ public class ExternalReferenceTool : EditorWindow
                         foreach (var file in files)
                         {
                             XmlElement e = xml.CreateElement("Compile", namespaceURI);
-                            e.SetAttribute("Include", path);
+                            e.SetAttribute("Include", file);
                             XmlElement e1 = xml.CreateElement("Link", namespaceURI);
                             e1.InnerText = file.Replace(dirName, "");
                             e.AppendChild(e1);

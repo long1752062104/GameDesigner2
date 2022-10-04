@@ -5,7 +5,7 @@ using System;
 
 namespace Example1
 {
-    internal class Client : UdxPlayer
+    public class Client : UdxPlayer
     {
         [SyncVar(id = 1, hook = nameof(intCheck))]
         public int testint;

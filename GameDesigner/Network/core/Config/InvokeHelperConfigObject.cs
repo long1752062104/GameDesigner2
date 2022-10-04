@@ -17,6 +17,10 @@ public class Header : Attribute
 [Serializable]
 public class InvokeHelperConfig
 {
+    [Header("true:在unity启用字段同步帮助类生成的代码 false:运行时动态编译字段同步帮助类")]
+    public bool syncVarClientEnable;
+    [Header("true:在server启用字段同步帮助类生成的代码 false:运行时动态编译字段同步帮助类")]
+    public bool syncVarServerEnable;
     [Header("生成的脚本存放路径(unity)")]
     public string savePath;
     [Header("收集程序集路径(unity)")]
@@ -36,8 +40,8 @@ public class InvokeHelperConfigData
     public string csprojPath;
     [Header("生成的脚本存放路径")]
     public string savePath;
-    [Header("收集程序集路径")]
-    public List<string> dllPaths = new List<string>();
     [Header("读取配置数据路径")]
     public string readConfigPath;
+    [Header("收集程序集路径")]
+    public List<string> dllPaths = new List<string>();
 }

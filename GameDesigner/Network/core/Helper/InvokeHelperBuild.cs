@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Microsoft.CSharp;
+using System.CodeDom.Compiler;
+using System.Reflection;
 #if UNITY_EDITOR || DEBUG
 using dnlib.DotNet;
 #endif
@@ -23,11 +26,95 @@ namespace Net.Helper
             if (File.Exists(path))
             {
                 var jsonStr = File.ReadAllText(path);
-                var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
-                InvokeHelperBuild.OnScriptCompilation(data);
+                var Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
+                InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
             }
         }
 #endif
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod]
+        public static void OnScriptCompilation1()
+        {
+            var path = UnityEngine.Application.dataPath + "/Scripts/Helper/InvokeHelperGenerate.cs";
+            DynamicalCompilation(path, true, typeof(InvokeHelper), UnityEngine.Debug.Log);
+        }
+
+        [RuntimeInitializeOnLoadMethod]
+        public static void OnScriptCompilation2()
+        {
+            Type type = null;
+            MemberInfo entryPoint = null;
+            foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (item.EntryPoint != null)
+                    entryPoint = item.EntryPoint;
+                var type1 = item.GetType("HelperFileInfo");
+                if (type1 != null)
+                    type = type1;
+            }
+            if (type != null)
+            {
+                var path = (string)type.GetMethod("GetPath", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
+                DynamicalCompilation(path, false, entryPoint.ReflectedType, Console.WriteLine);
+                return;
+            }
+        }
+
+        public static void DynamicalCompilation(string path, bool isClient, Type type2, Action<object> log) 
+        {
+            if (File.Exists(path))
+            {
+                try
+                {
+                    var text = File.ReadAllText(path);
+                    text = text.Split(new string[] { "*/" }, 0)[0];
+                    text = text.Replace("/**", "");
+                    var provider = new CSharpCodeProvider();
+                    var parameters = new CompilerParameters();
+                    //动态添加dll库
+                    var dict = new Dictionary<string, string>();
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    foreach (var assemblie in assemblies)
+                        dict.Add(assemblie.GetName().FullName, assemblie.Location);
+                    var referencedAssemblies = type2.Assembly.GetReferencedAssemblies();
+                    foreach (var item in referencedAssemblies)
+                        if (dict.TryGetValue(item.FullName, out var path2))
+                            parameters.ReferencedAssemblies.Add(path2);
+                    if (isClient)
+                        parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
+                    else
+                        parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
+                    //True - 生成在内存中, false - 生成在外部文件中
+                    parameters.GenerateInMemory = false;
+                    //True - 生成 exe, false - 生成 dll
+                    parameters.GenerateExecutable = false;
+                    parameters.OutputAssembly = "Test.dll";         //编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
+                    //取得编译结果
+                    CompilerResults results = provider.CompileAssemblyFromSource(parameters, text);
+                    if (results.Errors.HasErrors)
+                    {
+                        var sb = new StringBuilder();
+                        foreach (CompilerError error in results.Errors)
+                        {
+                            sb.AppendLine(string.Format("Error({0}): {1}", error.Line, error.ErrorText));
+                        }
+                        log(sb.ToString());
+                    }
+                    else
+                    {
+                        var type = results.CompiledAssembly.GetType("InvokeHelperGenerate");
+                        if (type != null)
+                        {
+                            type.GetMethod("Init", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log(ex);
+                }
+            }
+        }
     }
 
 #if UNITY_EDITOR || DEBUG
@@ -42,23 +129,14 @@ namespace Net.Helper
 
         static bool IsUnityObjectSubclassOf(TypeSig type)
         {
-            if (type.Namespace == "UnityEngine" | type.Namespace == "UnityEditor")
-            {
+            if (type.FullName.StartsWith("UnityEngine.") | type.FullName.StartsWith("UnityEditor."))
                 return type.IsClassSig;
-            }
             return false;
         }
 
         public static string SyncVarBuild(List<TypeDef> types)
         {
-            var str = @"using Net.Helper;
-using Net.Serialize;
-using Net.Share;
-using Net.System;
-using System;
-using System.Collections.Generic;
-
-internal static class InvokeHelperGenerate
+            var str = @"internal static class InvokeHelperGenerate
 {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
     [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -103,7 +181,8 @@ internal static class InvokeHelperGenerate
             segment.Position = pos;
             FIELDNAME = READVALUE
             segment.Position = end;
-            onValueChanged?.Invoke(self.FIELDNAME, FIELDNAME1);
+            if (onValueChanged != null)
+                onValueChanged(self.FIELDNAME, FIELDNAME1);
             self.FIELDNAME = FIELDNAME1;
         }
     }
@@ -129,7 +208,8 @@ internal static class InvokeHelperGenerate
             var path = segment.ReadString();
             var FIELDNAME1 = UnityEditor.AssetDatabase.LoadAssetAtPath<FIELDTYPE>(path);
             self.FIELDNAME = FIELDNAME1;
-            onValueChanged?.Invoke(FIELDNAME, FIELDNAME1);
+            if (onValueChanged != null)
+                onValueChanged(self.FIELDNAME, FIELDNAME1);
             FIELDNAME = FIELDNAME1;
 #endif
         }
@@ -488,7 +568,7 @@ internal static class InvokeHelperGenerate
             return text;
         }
 
-        public static void OnScriptCompilation(InvokeHelperConfig config)
+        public static void OnScriptCompilation(InvokeHelperConfig config, bool generateClientSyncVar, bool generateServerSyncVar)
         {
             var streams = new List<ModuleDefMD>();
             var clientTypes = new List<TypeDef>();
@@ -554,19 +634,55 @@ internal static class InvokeHelperGenerate
                 }
                 serverTypes.Add(serverTypes1);
             }
-            
-            var text = SyncVarBuild(clientTypes) + "\r\n\r\n";
+
+            string text = @"using Net.Helper;
+using Net.Serialize;
+using Net.Share;
+using Net.System;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+";
+            if (generateClientSyncVar)
+                text += SyncVarBuild(clientTypes) + "\r\n\r\n";
+            else
+                text += "/**" + SyncVarBuild(clientTypes) + "*/\r\n\r\n";
             var serverTypes3 = new List<TypeDef>();
             foreach (var item in serverTypes)
                 serverTypes3.AddRange(item);
 
-            text += InvokeRpcClientBuild(serverTypes3);//客户端要收集服务器的rpc才能识别
+            text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
+            text += @"internal static class HelperFileInfo 
+{
+    internal static string GetPath()
+    {
+        return GetClassFileInfo();
+    }
+
+    internal static string GetClassFileInfo([CallerFilePath] string sourceFilePath = """")
+    {
+        return sourceFilePath;
+    }
+}";
             File.WriteAllText(config.savePath + "/InvokeHelperGenerate.cs", text);
 
             for (int i = 0; i < config.rpcConfig.Count; i++)
             {
                 var serverTypes2 = serverTypes[i];
-                var text1 = SyncVarBuild(serverTypes2) + "\r\n\r\n";
+                string text1 = @"using Net.Helper;
+using Net.Serialize;
+using Net.Share;
+using Net.System;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+";
+                if (generateServerSyncVar)
+                    text1 += SyncVarBuild(serverTypes2) + "\r\n\r\n";
+                else
+                    text1 += "/**" + SyncVarBuild(serverTypes2) + "*/\r\n\r\n";
                 int num = 1;
                 foreach (var type in serverTypes2)
                 {
@@ -585,6 +701,18 @@ internal static class InvokeHelperGenerate
                     var player = gts[0];
                     text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
                 }
+                text1 += @"internal static class HelperFileInfo 
+{
+    internal static string GetPath()
+    {
+        return GetClassFileInfo();
+    }
+
+    internal static string GetClassFileInfo([CallerFilePath] string sourceFilePath = """")
+    {
+        return sourceFilePath;
+    }
+}";
                 var csprojPath = config.rpcConfig[i].csprojPath;
                 var path1 = config.rpcConfig[i].savePath + "/InvokeHelperGenerate.cs";
                 path1 = path1.Replace('/', '\\');

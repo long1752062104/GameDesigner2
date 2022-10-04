@@ -620,9 +620,6 @@
     <None Include="GameDesigner\Network\Editor\DisableScripReloadInPlayMode.cs.meta" />
     <None Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs.meta" />
     <None Include="GameDesigner\Network\Editor\Fast2BuildTool.cs.meta" />
-    <None Include="GameDesigner\Network\Editor\Invoke Helper Config.asset" />
-    <None Include="GameDesigner\Network\Editor\Invoke Helper Config.asset.meta" />
-    <None Include="GameDesigner\Network\Editor\InvokeHelperConfigEdit.cs.meta" />
     <None Include="GameDesigner\Network\Editor\InvokeHelperTools.cs.meta" />
     <None Include="GameDesigner\Network\gudp.meta" />
     <None Include="GameDesigner\Network\gudp\Client.meta" />
@@ -1416,7 +1413,6 @@
     <Compile Include="GameDesigner\Network\Editor\DisableScripReloadInPlayMode.cs" />
     <Compile Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs" />
     <Compile Include="GameDesigner\Network\Editor\Fast2BuildTool.cs" />
-    <Compile Include="GameDesigner\Network\Editor\InvokeHelperConfigEdit.cs" />
     <Compile Include="GameDesigner\Network\Editor\InvokeHelperTools.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\gudp\Client\UdpClient.cs" />
