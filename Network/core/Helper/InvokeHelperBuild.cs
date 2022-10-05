@@ -36,7 +36,7 @@ namespace Net.Helper
         public static void OnScriptCompilation1()
         {
             var path = UnityEngine.Application.dataPath + "/Scripts/Helper/InvokeHelperGenerate.cs";
-            DynamicalCompilation(path, true, typeof(InvokeHelper), UnityEngine.Debug.Log);
+            DynamicalCompilation(path, typeof(InvokeHelper), UnityEngine.Debug.Log);
         }
 
         [RuntimeInitializeOnLoadMethod]
@@ -55,12 +55,12 @@ namespace Net.Helper
             if (type != null)
             {
                 var path = (string)type.GetMethod("GetPath", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
-                DynamicalCompilation(path, false, entryPoint.ReflectedType, Console.WriteLine);
+                DynamicalCompilation(path, entryPoint.ReflectedType, Console.WriteLine);
                 return;
             }
         }
 
-        public static void DynamicalCompilation(string path, bool isClient, Type type2, Action<object> log) 
+        public static void DynamicalCompilation(string path, Type type2, Action<object> log) 
         {
             if (File.Exists(path))
             {
@@ -80,15 +80,13 @@ namespace Net.Helper
                     foreach (var item in referencedAssemblies)
                         if (dict.TryGetValue(item.FullName, out var path2))
                             parameters.ReferencedAssemblies.Add(path2);
-                    if (isClient)
-                        parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
-                    else
-                        parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
+                    parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
                     //True - 生成在内存中, false - 生成在外部文件中
                     parameters.GenerateInMemory = false;
                     //True - 生成 exe, false - 生成 dll
                     parameters.GenerateExecutable = false;
-                    parameters.OutputAssembly = "Test.dll";         //编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
+                    parameters.OutputAssembly = "DynamicalAssembly.dll";//编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
+                    parameters.IncludeDebugInformation = true;
                     //取得编译结果
                     CompilerResults results = provider.CompileAssemblyFromSource(parameters, text);
                     if (results.Errors.HasErrors)

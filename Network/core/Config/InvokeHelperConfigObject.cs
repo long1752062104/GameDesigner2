@@ -30,6 +30,8 @@ public class InvokeHelperConfig
     [NonReorderable]
 #endif
     public List<InvokeHelperConfigData> rpcConfig = new List<InvokeHelperConfigData>();
+    public bool foldout;
+    public int rpcConfigSize;
 }
 
 [Serializable]
@@ -44,4 +46,5 @@ public class InvokeHelperConfigData
     public string readConfigPath;
     [Header("收集程序集路径")]
     public List<string> dllPaths = new List<string>();
+    public bool foldout;
 }
