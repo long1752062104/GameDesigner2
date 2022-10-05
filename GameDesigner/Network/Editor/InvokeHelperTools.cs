@@ -220,8 +220,6 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         if (string.IsNullOrEmpty(Config.savePath))
         {
             var path = Application.dataPath + "/Scripts/Helper/";
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
             Config.savePath = path;
             change++;
         }

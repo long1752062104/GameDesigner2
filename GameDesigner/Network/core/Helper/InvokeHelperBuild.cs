@@ -663,6 +663,10 @@ using System.Runtime.CompilerServices;
         return sourceFilePath;
     }
 }";
+            if (string.IsNullOrEmpty(config.savePath))
+                return;
+            if (!Directory.Exists(config.savePath))
+                Directory.CreateDirectory(config.savePath);
             File.WriteAllText(config.savePath + "/InvokeHelperGenerate.cs", text);
 
             for (int i = 0; i < config.rpcConfig.Count; i++)
