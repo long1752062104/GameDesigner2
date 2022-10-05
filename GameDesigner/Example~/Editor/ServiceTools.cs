@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Diagnostics;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +9,10 @@ public class ServiceTools
     [MenuItem("GameDesigner/Example/Example1_Service")]
     static void Init() 
     {
-        var exe = Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/ExampleServer.exe";
+        var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
         Process p = new Process();
         p.StartInfo.FileName = exe;
         p.StartInfo.Arguments = "Example1";
@@ -17,7 +21,10 @@ public class ServiceTools
     [MenuItem("GameDesigner/Example/Example2_Service")]
     static void Init1()
     {
-        var exe = Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/ExampleServer.exe";
+        var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
         Process p = new Process();
         p.StartInfo.FileName = exe;
         p.StartInfo.Arguments = "Example2";
@@ -26,7 +33,10 @@ public class ServiceTools
     [MenuItem("GameDesigner/Example/LockStepService")]
     static void Init2()
     {
-        var exe = Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/ExampleServer.exe";
+        var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
         Process p = new Process();
         p.StartInfo.FileName = exe;
         p.StartInfo.Arguments = "Example3";
@@ -35,7 +45,10 @@ public class ServiceTools
     [MenuItem("GameDesigner/Example/AOIService")]
     static void Init3()
     {
-        var exe = Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/ExampleServer.exe";
+        var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
         Process p = new Process();
         p.StartInfo.FileName = exe;
         p.StartInfo.Arguments = "Example4";

@@ -572,6 +572,10 @@ namespace Net.Helper
             var clientTypes = new List<TypeDef>();
             foreach (var file in config.dllPaths)
             {
+                if (string.IsNullOrEmpty(file))
+                    continue;
+                if (!File.Exists(file))
+                    continue;
                 var dllData = File.ReadAllBytes(file);
                 ModuleContext modCtx = ModuleDef.CreateModuleContext();
                 ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);

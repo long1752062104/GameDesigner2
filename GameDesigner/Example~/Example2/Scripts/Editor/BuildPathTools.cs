@@ -2,7 +2,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using SceneManager = UnityEngine.SceneManagement.SceneManager;
 
 public class BuildPathTools
@@ -10,8 +9,11 @@ public class BuildPathTools
     [MenuItem("GameDesigner/Example/Example2/BuildSceneData")]
     static void Init()
     {
-        Scene scene = SceneManager.GetActiveScene();
-        var path = Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/Data/" + scene.name + ".sceneData";
+        var dirs = Directory.GetDirectories(Application.dataPath, "ExampleServer~", SearchOption.AllDirectories);
+        if (dirs.Length == 0)
+            throw new System.Exception("找不到目录!");
+        var scene = SceneManager.GetActiveScene();
+        var path = dirs[0] + "/bin/Debug/Data/" + scene.name + ".sceneData";
         var roamingPaths = Object.FindObjectsOfType<RoamingPath>();
         SceneData sceneData = new SceneData();
         sceneData.name = scene.name;
