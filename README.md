@@ -1,5 +1,5 @@
 ## GDNet
- (Game Designer Network)游戏设计网络框架使用C#开发，支持.NetFramework和Core版本，目前主要用于Unity3D，Form窗体程序和控制台项目开发。扩展性强，支持新协议快速扩展，当前支持tcp，gudp, udx, kcp, enet, web网络协议。简易上手. api注释完整。
+ (Game Designer Network)专为游戏而设计的网络框架和动作状态机，使用C#开发，支持.NetFramework和Core版本，目前主要用于Unity3D，Form窗体程序和控制台项目开发。扩展性强，支持新协议快速扩展，当前支持tcp，gcp, udx, kcp, web网络协议。简易上手. api注释完整。
 
 ## 模块图
 
@@ -7,12 +7,41 @@
 
 ## 使用
 
-<br>下载GameDesigner, 解压之前要进入GameDesigner目录的第二层GameDesigner文件夹拖入unity的Assets资源目录</br>
-<br>然后打开BuildSettings->ProjectSettings->OtherSettings->设置 ApiCompatibilityLevel* = .NET 4.x 和 AllowUnsafeCode勾上</br>
+<br>1.下载GameDesigner, 解压GameDesigner.zip, 打开Unity菜单Window/PackageManager管理器，点击+号的第一项add package on disk</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager01.png" width = "490" height = "160" alt="图片名称" align=center />
+
+<br>2.选择解压的路径xx/GameDesigner/GameDesigner/package.json即可导入gdnet包</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
+
+<br>3.如果前面没有问题，最终显示的包界面</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager03.png" width = "942" height = "575" alt="图片名称" align=center />
+
+<br>4.打开BuildSettings->ProjectSettings->OtherSettings->设置 ApiCompatibilityLevel* = .NET 4.x 和 AllowUnsafeCode勾上，2021版本后是ApiCompatibilityLevel* = .NET Framework</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/gdnetsetting.png" width = "645" height = "239" alt="图片名称" align=center />
 
-<br>1.创建服务器项目,使用控制台或窗体程序都可以</br>
-<br>2.新建一个Service脚本文件, 这个就是你的服务器类</br>
+<br>5.创建服务器项目,使用控制台或窗体程序都可以，也可以统一在unity的Assembly-CSharp项目里添加新建服务器项目</br>
+<br>在unity随便创建个脚本，双击进入VS代码编辑器， 然后右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step1.png" width = "672" height = "398" alt="图片名称" align=center />
+
+<br>6.选择添加服务器项目，使用控制台项目</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step2.png" width = "1024" height = "680" alt="图片名称" align=center />
+
+<br>7.定义服务器名称，并且选择项目路径到你的unity项目根目录，和Assets同级的文件夹目录</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step3.png" width = "1024" height = "680" alt="图片名称" align=center />
+
+<br>8.右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍， 添加现有方案，现有方案，现有方案</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step4.png" width = "560" height = "370" alt="图片名称" align=center />
+
+<br>9.选择解压的GameDesigner目录，里面有GameDesigner.csproj文件</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step5.png" width = "960" height = "540" alt="图片名称" align=center />
+
+<br>10.右键Server的引用，弹出选项，选择添加引用</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step6.png" width = "362" height = "205" alt="图片名称" align=center />
+
+<br>11.选择项目选项，项目选项 项目选项，重要事情说三遍，选择GameDesigner，然后确定即可</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step7.png" width = "800" height = "550" alt="图片名称" align=center />
+
+<br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
 internal class Client : NetPlayer//你的客户端类
 {
@@ -26,7 +55,7 @@ class Service : TcpServer<Client, Scene>//你的服务器类
     {
         Console.WriteLine(model.pars[0]);
         //你也可以理解为返回true则是输入的账号密码正确, 返回false则是账号或密码错误
-        return true;//100%必须理解这个, 返回false则永远在这里被调用, 返回true才被服务器认可
+        return true;//100%必须理解这个, 返回false则一直在这里被调用，无法调用带有[Rpc]特性的方法。 返回true后下次客户端SendRT("方法名"，参数)才能调用下面那些[Rpc]特性的方法
     }
     [Rpc(cmd = NetCmd.SafeCall)]//使用SafeCall指令后, 第一个参数插入客户端对象, 这个客户端对象就是哪个客户端发送,这个参数就是对应那个客户端的对象
     void test(Client client, string str) 
@@ -36,7 +65,7 @@ class Service : TcpServer<Client, Scene>//你的服务器类
     }
 }
 ```
-<br>3.main入口方法写上</br>
+<br>13.main入口方法写上</br>
 
 ```
 var server = new Service();//创建服务器对象
@@ -48,9 +77,9 @@ while (true)
 }
 ```
 
-<br>4.创建客户端控制台项目</br>
+<br>14.创建客户端控制台项目， 跟服务器项目创建一样，看上面创建服务器项目教程</br>
 
-<br>5.定义一个Test类, 用来测试rpc过程调用</br>
+<br>15.定义一个Test类, 用来测试rpc过程调用</br>
 
 ```
 class Test 
@@ -62,7 +91,7 @@ class Test
     }
 }
 ```
-<br>6.然后在main入口方法写上</br>
+<br>16.然后在main入口方法写上，这是控制台项目， 不要把这段代码用在unity，会死循环，卡死unity</br>
 ```
 TcpClient client = new TcpClient();
 client.Log += Console.WriteLine;
@@ -231,9 +260,21 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 ## 百万级别RPC小数据测试
 这里我们测试了100万次从客户端到服务器的请求并响应, 所需要的时间是4.67秒
 
+需要引用这些命名空间
+```
+using Net.Client;
+using Net.Config;
+using Net.Event;
+using Net.Server;
+using Net.Share;
+using Net.System;
+using System;
+using System.Diagnostics;
+using System.Threading;
+```
 
 ```
-class Program
+internal class Program
 {
     static Stopwatch stopwatch;
 
@@ -241,27 +282,25 @@ class Program
     {
         NDebug.BindLogAll(Console.WriteLine);
 
-        NetConfig.Config.UseMemoryStream = true;//使用运行内存作为数据缓冲区
+        Config.UseMemoryStream = true;//使用运行内存作为数据缓冲区
         BufferStreamShare.Size = 1024 * 1024 * 100;//服务器每个客户端可以缓存的数据大小
 
         //此处是服务器部分, 可以复制到另外一个控制台项目
         var server = new TcpServer();
         server.LimitQueueCount = 10000000;//测试小数据的快速性能, 可以设置这里, 默认限制在65536
         server.PackageLength = 10000000;//小数据包封包合包大小, 一次性能运送的小数据包数量
-        server.StackBufferSize = 1024 * 1024 * 50;//接收缓存数据包的最大值, 如果超出则被丢弃
-        server.StackNumberMax = 1000000;//允许叠包数据次数, 超出则被丢弃
+        server.PackageSize = 1024 * 1024 * 50;//接收缓存数据包的最大值, 如果超出则被丢弃
         server.AddAdapter(new Net.Adapter.SerializeAdapter3());//采用极速序列化进行序列化rpc数据模型
-        server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<NetPlayer>());//采用极速调用rpc方法适配器
+        server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<NetPlayer>(server));//采用极速调用rpc方法适配器
         server.Run();
 
         //此处是客户端部分, 可以复制到另外一个控制台项目
         var client = new TcpClient();
         client.LimitQueueCount = 10000000;
         client.PackageLength = 10000000;
-        client.StackBufferSize = 1024 * 1024 * 50;
-        client.StackNumberMax = 1000000;
+        client.PackageSize = 1024 * 1024 * 50;
         client.AddAdapter(new Net.Adapter.SerializeAdapter3());
-        client.AddAdapter(new Net.Adapter.CallSiteRpcAdapter());
+        client.AddAdapter(new Net.Adapter.CallSiteRpcAdapter(client));
         client.AddRpcHandle(new Program());
         client.Connect().Wait();
 
@@ -350,6 +389,7 @@ static void Main(string[] args)
 <br>2.[我是一只鱼](https://www.taptap.com/app/220242)</br>
 <br>3.[山海经吞食天地](https://www.taptap.com/app/207447)</br>
 <br>4.[捍卫星球](https://www.taptap.com/app/170490)</br>
+<br>5.[一介散修](https://www.taptap.com/app/234010)</br>
 
 ## 支持本项目
 您的支持就是我不懈努力的动力。打赏时请一定留下您的称呼
@@ -365,6 +405,7 @@ static void Main(string[] args)
 <br>8 达西莉莉 ¥ 200</br>
 <br>9 扬神无敌 ¥ 100</br>
 <br>10 29.8°C ¥ 30</br>
+<br>11 走在冷风中. ¥ 1000</br>
 
 <br>不留名的大佬们 微信总资助 ¥ 653</br>
 
