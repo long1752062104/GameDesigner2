@@ -5,7 +5,6 @@ namespace Net.Component
     using Net.Event;
     using Net.Share;
     using global::System;
-    using global::System.Collections.Generic;
     using global::System.Threading;
     using UnityEngine;
     using global::System.Net;
@@ -21,7 +20,7 @@ namespace Net.Component
     {
         private bool mainInstance;
         private ClientBase _client;
-        public TransportProtocol protocol = TransportProtocol.Gcp;
+        public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
         public bool throwException;
