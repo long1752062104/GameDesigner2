@@ -180,7 +180,10 @@
                             var value1 = list[i];
                             var value2 = Activator.CreateInstance(itemType);
                             if (value1 == null)
+                            {
+                                list1.Add(value2);//如果列表=null 列表也要统一长度
                                 continue;
+                            }
                             DeepCopy(ref value1, ref value2, loops, types);
                             list1.Add(value2);
                         }
