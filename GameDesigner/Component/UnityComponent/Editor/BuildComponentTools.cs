@@ -20,7 +20,7 @@ public class BuildComponentTools : EditorWindow
     [MenuItem("GameDesigner/Network/BuildComponentTools")]
     public static void Init()
     {
-        BlueprintGUILayout.Instance.GraphEditor = GetWindow<BuildComponentTools>("BuildComponentTools", true);
+        GetWindow<BuildComponentTools>("BuildComponentTools", true);
     }
     private void OnEnable()
     {

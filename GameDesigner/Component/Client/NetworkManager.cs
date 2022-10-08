@@ -14,7 +14,7 @@ namespace Net.Component
     public class ClientGourp 
     {
         public string name;
-        internal ClientBase _client;
+        public ClientBase _client;
         public TransportProtocol protocol = TransportProtocol.Gcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
@@ -37,20 +37,40 @@ namespace Net.Component
                 switch (protocol)
                 {
                     case TransportProtocol.Gcp:
-                        _client = new UdpClient(true);
+                        {
+                            var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdpClient");//当删减模块后解决报错问题
+                            if (type != null)
+                                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                        }
                         break;
                     case TransportProtocol.Tcp:
-                        _client = new TcpClient(true);
+                        {
+                            var type = typeof(ClientBase).Assembly.GetType("Net.Client.TcpClient");
+                            if (type != null)
+                                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                        }
                         break;
                     case TransportProtocol.Kcp:
-                        _client = new KcpClient(true);
+                        {
+                            var type = typeof(ClientBase).Assembly.GetType("Net.Client.KcpClient");
+                            if (type != null)
+                                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                        }
                         break;
                     case TransportProtocol.Udx:
-                        _client = new UdxClient(true);
+                        {
+                            var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdxClient");
+                            if (type != null)
+                                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                        }
                         break;
 #if UNITY_STANDALONE_WIN || UNITY_WSA
                     case TransportProtocol.Web:
-                        _client = new Client.WebClient(true);
+                        {
+                            var type = typeof(ClientBase).Assembly.GetType("Net.Client.WebClient");
+                            if (type != null)
+                                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                        }
                         break;
 #endif
                 }

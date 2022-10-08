@@ -32,7 +32,10 @@ namespace Net.UnityComponent
         private int syncVarID = 1;
         internal bool isInit;
         internal bool isDispose;
-        public bool IsLocal => isLocal;
+        /// <summary>
+        /// 此物体是否是本机实例化？
+        /// </summary>
+        public bool IsLocal { get { return isLocal; } set { isLocal = value; } }
 
         /// <summary>
         /// 每个网络对象的唯一标识

@@ -12,7 +12,7 @@ namespace Net.Component
 
     public enum TransportProtocol
     {
-        Gcp, Tcp, Udx, Kcp, Web
+        Tcp, Gcp, Udx, Kcp, Web
     }
 
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
@@ -39,20 +39,40 @@ namespace Net.Component
                     switch (protocol)
                     {
                         case TransportProtocol.Gcp:
-                            _client = new UdpClient(true);
+                            {
+                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdpClient");//当删减模块后解决报错问题
+                                if (type != null)
+                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                            }
                             break;
                         case TransportProtocol.Tcp:
-                            _client = new TcpClient(true);
+                            {
+                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.TcpClient");
+                                if (type != null)
+                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                            }
                             break;
                         case TransportProtocol.Kcp:
-                            _client = new KcpClient(true);
+                            {
+                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.KcpClient");
+                                if (type != null)
+                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                            }
                             break;
-                        case TransportProtocol.Udx:   
-                            _client = new UdxClient(true);
+                        case TransportProtocol.Udx:
+                            {
+                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdxClient");
+                                if (type != null)
+                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                            }
                             break;
 #if UNITY_STANDALONE_WIN || UNITY_WSA
                         case TransportProtocol.Web:
-                            _client = new Client.WebClient(true);
+                            {
+                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.WebClient");
+                                if (type != null)
+                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                            }
                             break;
 #endif
                     }

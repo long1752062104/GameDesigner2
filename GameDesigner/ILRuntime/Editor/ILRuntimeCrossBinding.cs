@@ -28,7 +28,7 @@ public class ILRuntimeCrossBinding : EditorWindow
     private void OnEnable()
     {
         HashSet<string> types1 = new HashSet<string>();
-        var types2 = typeof(MVC.Control.GameInit).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType ).ToArray();
+        var types2 = typeof(ILRuntime.Runtime.Enviorment.AppDomain).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType ).ToArray();
         foreach (var obj in types2)
         {
             var str = obj.FullName;

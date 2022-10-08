@@ -34,7 +34,17 @@ public class Fast2BuildTools2 : EditorWindow
     private void OnEnable()
     {
         var types1 = new List<TypeData>();
-        var types2 = typeof(Net.Client.ClientBase).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        Assembly assembly = null;
+        foreach (var assemblie in assemblies)
+        {
+            if (assemblie.GetName().Name == "Assembly-CSharp")
+            {
+                assembly = assemblie;
+                break;
+            }
+        }
+        var types2 = assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
         var types3 = typeof(Vector2).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
         var typeslist = new List<Type>(types2);
         typeslist.AddRange(types3);

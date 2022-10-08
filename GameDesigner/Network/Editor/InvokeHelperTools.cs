@@ -231,6 +231,8 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         }
         if (change > 0)
             SaveData();
+        if (!Config.onReloadInvoke)
+            return;
         InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
     }
 

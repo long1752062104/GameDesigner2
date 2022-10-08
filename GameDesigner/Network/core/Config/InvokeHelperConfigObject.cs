@@ -17,6 +17,8 @@ public class Header : Attribute
 [Serializable]
 public class InvokeHelperConfig
 {
+    [Header("true:当脚本编译后调用，检测生成SyncVar和Rpc的代码，false:不启用检测")]
+    public bool onReloadInvoke;
     [Header("true:在unity启用字段同步帮助类生成的代码 false:运行时动态编译字段同步帮助类")]
     public bool syncVarClientEnable;
     [Header("true:在server启用字段同步帮助类生成的代码 false:运行时动态编译字段同步帮助类")]

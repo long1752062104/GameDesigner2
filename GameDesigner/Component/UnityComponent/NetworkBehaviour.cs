@@ -11,12 +11,12 @@ namespace Net.UnityComponent
     [DefaultExecutionOrder(1000)]
     public abstract class NetworkBehaviour : MonoBehaviour
     {
-        internal NetworkObject netObj;
+        public NetworkObject netObj;
         private int index = -1;
         /// <summary>
         /// 此组件是netobj的第几个组件
         /// </summary>
-        internal int Index
+        public int Index
         {
             get { return index; }
             set
