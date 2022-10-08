@@ -1,5 +1,6 @@
 using System;
 
+#if UNITY_2020_1_OR_NEWER
 public static class MathExt
 {
     /// <summary>
@@ -348,3 +349,4 @@ public static class MathExt
         return false;
     }
 }
+#endif

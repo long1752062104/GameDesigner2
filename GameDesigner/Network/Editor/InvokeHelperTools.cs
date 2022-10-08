@@ -39,6 +39,8 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         EditorGUI.Foldout(rect, true, "Config");
         EditorGUI.indentLevel = 1;
         rect = EditorGUILayout.GetControlRect(true, 45f);
+        EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("onReloadInvoke"));
+        rect = EditorGUILayout.GetControlRect(true, 45f);
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("syncVarClientEnable"));
         rect = EditorGUILayout.GetControlRect(true, 45f);
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("syncVarServerEnable"));
