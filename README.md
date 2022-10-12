@@ -13,6 +13,18 @@
 <br>2.选择解压的路径xx/GameDesigner/GameDesigner/package.json即可导入gdnet包</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
 
+<br>3.如果前面没有问题，最终显示的包界面</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager03.png" width = "942" height = "575" alt="图片名称" align=center />
+
+<br>4.打开BuildSettings->ProjectSettings->OtherSettings->设置 ApiCompatibilityLevel* = .NET 4.x 和 AllowUnsafeCode勾上，2021版本后是ApiCompatibilityLevel* = .NET Framework</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/gdnetsetting.png" width = "645" height = "239" alt="图片名称" align=center />
+
+<br>5.创建服务器项目,使用控制台或窗体程序都可以，也可以统一在unity的Assembly-CSharp项目里添加新建服务器项目</br>
+<br>在unity随便创建个脚本，双击进入VS代码编辑器， 然后右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step1.png" width = "672" height = "398" alt="图片名称" align=center />
+
+
+
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
 internal class Client : NetPlayer//你的客户端类
