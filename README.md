@@ -10,6 +10,9 @@
 <br>1.下载GameDesigner, 解压GameDesigner.zip, 打开Unity菜单Window/PackageManager管理器，点击+号的第一项add package on disk</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager01.png" width = "490" height = "160" alt="图片名称" align=center />
 
+<br>2.选择解压的路径xx/GameDesigner/GameDesigner/package.json即可导入gdnet包</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
+
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
 internal class Client : NetPlayer//你的客户端类
