@@ -173,7 +173,13 @@
         public virtual void OnEnter(Player client) { }
 
         /// <summary>
-        /// 当退出场景的玩家
+        /// 当开始退出场景，当调用此方法时client还在Clients属性里面
+        /// </summary>
+        /// <param name="client"></param>
+        public virtual void OnBeginExit(Player client) { }
+
+        /// <summary>
+        /// 当退出场景的玩家, 当调用此方法后client已经被移出Clients属性
         /// </summary>
         /// <param name="client"></param>
         public virtual void OnExit(Player client) { }
@@ -325,6 +331,7 @@
         /// <param name="player"></param>
         public void Remove(Player player)
         {
+            OnBeginExit(player);
             Players.Remove(player);
             Clients.Remove(player);
             OnExit(player);

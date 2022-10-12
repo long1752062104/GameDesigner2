@@ -7,39 +7,7 @@
 
 ## 使用
 
-<br>1.下载GameDesigner, 解压GameDesigner.zip, 打开Unity菜单Window/PackageManager管理器，点击+号的第一项add package on disk</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager01.png" width = "490" height = "160" alt="图片名称" align=center />
 
-<br>2.选择解压的路径xx/GameDesigner/GameDesigner/package.json即可导入gdnet包</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
-
-<br>3.如果前面没有问题，最终显示的包界面</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager03.png" width = "942" height = "575" alt="图片名称" align=center />
-
-<br>4.打开BuildSettings->ProjectSettings->OtherSettings->设置 ApiCompatibilityLevel* = .NET 4.x 和 AllowUnsafeCode勾上，2021版本后是ApiCompatibilityLevel* = .NET Framework</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/gdnetsetting.png" width = "645" height = "239" alt="图片名称" align=center />
-
-<br>5.创建服务器项目,使用控制台或窗体程序都可以，也可以统一在unity的Assembly-CSharp项目里添加新建服务器项目</br>
-<br>在unity随便创建个脚本，双击进入VS代码编辑器， 然后右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step1.png" width = "672" height = "398" alt="图片名称" align=center />
-
-<br>6.选择添加服务器项目，使用控制台项目</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step2.png" width = "1024" height = "680" alt="图片名称" align=center />
-
-<br>7.定义服务器名称，并且选择项目路径到你的unity项目根目录，和Assets同级的文件夹目录</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step3.png" width = "1024" height = "680" alt="图片名称" align=center />
-
-<br>8.右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍， 添加现有方案，现有方案，现有方案</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step4.png" width = "560" height = "370" alt="图片名称" align=center />
-
-<br>9.选择解压的GameDesigner目录，里面有GameDesigner.csproj文件</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step5.png" width = "960" height = "540" alt="图片名称" align=center />
-
-<br>10.右键Server的引用，弹出选项，选择添加引用</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step6.png" width = "362" height = "205" alt="图片名称" align=center />
-
-<br>11.选择项目选项，项目选项 项目选项，重要事情说三遍，选择GameDesigner，然后确定即可</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step7.png" width = "800" height = "550" alt="图片名称" align=center />
 
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
