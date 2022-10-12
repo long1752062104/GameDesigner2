@@ -38,8 +38,6 @@
 <br>10.右键Server的引用，弹出选项，选择添加引用</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step6.png" width = "362" height = "205" alt="图片名称" align=center />
 
-<br>11.选择项目选项，项目选项 项目选项，重要事情说三遍，选择GameDesigner，然后确定即可</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step7.png" width = "800" height = "550" alt="图片名称" align=center />
 
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
