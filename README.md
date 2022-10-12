@@ -23,6 +23,15 @@
 <br>在unity随便创建个脚本，双击进入VS代码编辑器， 然后右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step1.png" width = "672" height = "398" alt="图片名称" align=center />
 
+<br>6.选择添加服务器项目，使用控制台项目</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step2.png" width = "1024" height = "680" alt="图片名称" align=center />
+
+<br>7.定义服务器名称，并且选择项目路径到你的unity项目根目录，和Assets同级的文件夹目录</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step3.png" width = "1024" height = "680" alt="图片名称" align=center />
+
+<br>8.右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍， 添加现有方案，现有方案，现有方案</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step4.png" width = "560" height = "370" alt="图片名称" align=center />
+
 
 
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
