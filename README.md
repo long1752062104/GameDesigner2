@@ -38,6 +38,8 @@
 <br>10.右键Server的引用，弹出选项，选择添加引用</br>
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step6.png" width = "362" height = "205" alt="图片名称" align=center />
 
+<br>11.选择项目选项，选择GameDesigner，确定即可</br>
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step7.png" width = "800" height = "550" alt="图片名称" align=center />
 
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
@@ -89,7 +91,7 @@ class Test
     }
 }
 ```
-<br>16.然后在main入口方法写上，这是控制台项目， 不要把这段代码用在unity，会死循环，卡死unity</br>
+<br>16.在main入口方法写上，这是控制台项目， 不要把这段代码用在unity，会死循环，卡死unity</br>
 ```
 TcpClient client = new TcpClient();
 client.Log += Console.WriteLine;
