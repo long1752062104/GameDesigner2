@@ -141,7 +141,7 @@
     {
         private AIMonster self;
         public float distance = 3f;
-        public float range = 30f;
+        public float range = 90f;
         public float damage = 30f;
         public GameObject damageEffect;
         public override void OnInit()

@@ -1,6 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
-using UnityEditor;
 using UnityEngine;
 
 namespace GameDesigner
@@ -17,11 +15,7 @@ namespace GameDesigner
                 {
                     _instance = Resources.Load<StateMachineSetting>("StateMachineSetting");
                     if (_instance == null)
-                    {
-                        _instance = CreateInstance<StateMachineSetting>();
-                        var path = "Assets/" + BlueprintSetting.GetGameDesignerPath.Split(new string[] { @"Assets\" }, StringSplitOptions.RemoveEmptyEntries)[1];
-                        AssetDatabase.CreateAsset(_instance, path + "/Editor/Resources/StateMachineSetting.asset");
-                    }
+                        throw new System.Exception("StateMachineSetting预制体脚本丢失!");
                 }
                 return _instance;
             }

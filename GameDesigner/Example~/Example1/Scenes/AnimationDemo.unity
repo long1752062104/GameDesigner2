@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -152,8 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2dce08419b64764789f4909161f14bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 3051849639346283582, guid: 5df03698b0c2d9542ba5eb2b8e40b878,
-    type: 3}
+  playerPrefab: {fileID: 3051849639346283582, guid: 5df03698b0c2d9542ba5eb2b8e40b878, type: 3}
   offsetX: {x: -20, y: 20}
   offsetZ: {x: -20, y: 20}
 --- !u!4 &231819924
@@ -290,7 +289,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 643538764}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d29e59551abbb94fa75036c00796df6, type: 3}
+  m_Script: {fileID: 11500000, guid: 93da6bc4b548d074da3163b2be344ae6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   type: 3
@@ -304,19 +303,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 643538764}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b88d6553570e1842b9f31a025b86a92, type: 3}
+  m_Script: {fileID: 11500000, guid: 43dd04617c9f105449b227e016c972a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  protocol: 1
+  protocol: 0
   ip: 127.0.0.1
   port: 6666
-  throwException: 1
+  throwException: 0
   debugRpc: 1
   frameRate: 60
   authorize: 0
   startConnect: 1
   md5CRC: 0
-  rpcs: []
 --- !u!4 &643538767
 Transform:
   m_ObjectHideFlags: 0
@@ -358,11 +356,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1902338648}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fdd81174778b9d4a9f91d852f1448bb, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c6203a033123af4f9007c53260f4a02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   registerObjects:
-  - {fileID: 322575868513617537, guid: 5df03698b0c2d9542ba5eb2b8e40b878, type: 3}
+  - {fileID: 2594111659047008358, guid: 5df03698b0c2d9542ba5eb2b8e40b878, type: 3}
   onExitDelectAll: 1
 --- !u!4 &1902338650
 Transform:
@@ -387,7 +385,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1902338648}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 389734cdb206f1348a427f53081667eb, type: 3}
+  m_Script: {fileID: 11500000, guid: 41891f3d35225c547941574b83b44634, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   CanSentTime: 0.033333335

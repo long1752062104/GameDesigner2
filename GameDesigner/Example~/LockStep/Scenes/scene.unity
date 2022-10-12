@@ -1100,7 +1100,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 739602731}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d29e59551abbb94fa75036c00796df6, type: 3}
+  m_Script: {fileID: 11500000, guid: 93da6bc4b548d074da3163b2be344ae6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   type: 3
@@ -1114,19 +1114,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 739602731}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b88d6553570e1842b9f31a025b86a92, type: 3}
+  m_Script: {fileID: 11500000, guid: 43dd04617c9f105449b227e016c972a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   protocol: 0
   ip: 127.0.0.1
   port: 6666
   throwException: 0
-  debugRpc: 0
+  debugRpc: 1
   frameRate: 60
   authorize: 0
   startConnect: 1
   md5CRC: 0
-  rpcs: []
 --- !u!4 &739602734
 Transform:
   m_ObjectHideFlags: 0

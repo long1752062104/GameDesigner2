@@ -19,7 +19,10 @@ namespace GameDesigner
         /// <summary>
         /// 所有状态
         /// </summary>
-		public List<State> states = new List<State>();
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
+        public List<State> states = new List<State>();
         /// <summary>
         /// 选中的状态,可以多选
         /// </summary>

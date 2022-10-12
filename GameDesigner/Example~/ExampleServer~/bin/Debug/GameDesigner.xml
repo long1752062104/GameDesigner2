@@ -1884,6 +1884,541 @@
             远程过程调用(RPC)帮助类
             </summary>
         </member>
+        <member name="T:Net.Serialize.NetConvert">
+            <summary>
+            网络转换核心 2019.7.16
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvert.Serialize(Net.Share.RPCModel,System.Byte[])">
+            <summary>
+            新版网络序列化
+            </summary>
+            <param name="model">函数名</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[])">
+            <summary>
+            新版反序列化
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            新版反序列化
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+        </member>
+        <member name="T:Net.Serialize.NetConvertBase">
+            <summary>
+            网络转换基础类
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.StringToValue(System.Type,System.String)">
+            <summary>
+            字符串转对象
+            </summary>
+            <param name="type"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.StringToValue(System.String,System.String)">
+            <summary>
+            字符串转系统基础类型 ( type 给定类型名称 , value 转换这个字符串为type类型的值 )
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.ToVector2_3_4(System.String,System.String)">
+            <summary>
+            字符转三维向量值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.ToRect(System.String,System.String)">
+            <summary>
+            字符转矩形值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.ToColor(System.String,System.String)">
+            <summary>
+            字符转颜色值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.ToQuaternion(System.String,System.String)">
+            <summary>
+            字符转欧拉角值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBase.To_Vector234_Rect_Quaternion_Color(System.String,System.String)">
+            <summary>
+            转换字符为Vector2 或 Vector3 或 Vector4 或 Rect 或 Quaternion 的值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
+            </summary>
+        </member>
+        <member name="T:Net.Serialize.NetConvertBinary">
+            <summary>
+            提供序列化二进制类
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.Init">
+            <summary>
+            初始化网络转换类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeBaseType">
+            <summary>
+            添加网络基本类型， int，float，bool，string......
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeType``1(System.String[],System.String[])">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <typeparam name="T">序列化的类型</typeparam>
+            <param name="onlyFields">只序列化的字段名称列表</param>
+            <param name="ignoreFields">不序列化的字段名称列表</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeType(System.Type,System.String[],System.String[])">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <param name="type">序列化的类型</param>
+            <param name="onlyFields">只序列化的字段名称列表</param>
+            <param name="ignoreFields">不序列化的字段名称列表</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkType(System.Type[])">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <param name="types"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkTypeAssembly(System.Type)">
+            <summary>
+            添加网络程序集，此方法将会添加获取传入的类的程序集并全部添加
+            </summary>
+            <param name="value">传入的类</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkAssembly(System.Reflection.Assembly[])">
+            <summary>
+            添加网络传输程序集， 注意：添加客户端的程序集必须和服务器的程序集必须保持一致， 否则将会出现问题
+            </summary>
+            <param name="assemblies">程序集</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.IndexToType(System.UInt16)">
+            <summary>
+            索引取类型
+            </summary>
+            <param name="typeIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.TypeToIndex(System.Type)">
+            <summary>
+            类型取索引
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.WriteArray(Net.System.Segment,System.Collections.IList,System.Type,System.Boolean,System.Boolean)">
+            <summary>
+            序列化数组实体
+            </summary>
+            <param name="stream"></param>
+            <param name="array"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.ReadArray(Net.System.Segment,System.Collections.IList@,System.Type,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化数组
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="array"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.Serialize(System.Object,System.Boolean,System.Boolean)">
+            <summary>
+            序列化
+            </summary>
+            <param name="obj"></param>
+            <param name="recordType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(System.Object,System.Boolean,System.Boolean)">
+            <summary>
+            序列化对象, 不记录反序列化类型
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(Net.System.Segment,System.Object,System.Boolean,System.Boolean)">
+            <summary>
+            序列化对象, 不记录反序列化类型
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.WriteObject(Net.System.Segment,System.Type,System.Object,System.Boolean,System.Boolean)">
+            <summary>
+            序列化对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="segment"></param>
+            <param name="type"></param>
+            <param name="target"></param>
+            <param name="recordType"></param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(System.Byte[],System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+            <param name="recordType">序列化的类型字段是 object[]字段时, 可以帮你记录object的绝对类型</param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(Net.System.Segment,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="segment"></param>
+            <param name="recordType"></param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化
+            </summary>
+            <param name="segment"></param>
+            <param name="recordType"></param>
+            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertBinary.ReadObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean)">
+            <summary>
+            反序列化实体对象
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.Serialize.NetConvertFast">
+            <summary>
+            快速解析类型, 使用此类需要使用AddNetworkType()先添加序列化类型, 类型是固定, 并且双端统一
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast.AddNetworkBaseType">
+            <summary>
+            添加网络基本类型， int，float，bool，string......
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType``1">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType(System.Type)">
+            <summary>
+            添加经过网络传送的类型
+            </summary>
+            <param name="type"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast.AddAssembly(System.Reflection.Assembly)">
+            <summary>
+            添加网络传输的程序集, 程序集内的所有类型都会被添加, 注意: 客户端和服务器都必须统一使用一模一样的程序集, 否则有可能出现问题!
+            </summary>
+            <param name="assembly"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast.AddNameSpaceTypes(System.Reflection.Assembly,System.String)">
+            <summary>
+            添加assembly程序集的所有nameSpace命名空间的类型
+            </summary>
+            <param name="assembly"></param>
+            <param name="nameSpace"></param>
+        </member>
+        <member name="T:Net.Serialize.ISerialize">
+            <summary>
+            快速序列化2接口--动态匹配
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.ISerialize.WriteValue(System.Object,Net.System.Segment)">
+            <summary>
+            序列化写入
+            </summary>
+            <param name="value"></param>
+            <param name="stream"></param>
+        </member>
+        <member name="M:Net.Serialize.ISerialize.ReadValue(Net.System.Segment)">
+            <summary>
+            反序列化读取
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="T:Net.Serialize.ISerialize`1">
+            <summary>
+            快速序列化2接口---类型匹配
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.ISerialize`1.Write(`0,Net.System.Segment)">
+            <summary>
+            序列化写入
+            </summary>
+            <param name="value"></param>
+            <param name="stream"></param>
+        </member>
+        <member name="M:Net.Serialize.ISerialize`1.Read(Net.System.Segment)">
+            <summary>
+            反序列化读取
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="T:Net.Serialize.IBindingType">
+            <summary>
+            类型绑定查找收集接口
+            </summary>
+        </member>
+        <member name="P:Net.Serialize.IBindingType.TYPES">
+            <summary>
+            收集的绑定类型列表
+            </summary>
+        </member>
+        <member name="T:Net.Serialize.NetConvertFast2">
+            <summary>
+            极速序列化2版本
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.Init">
+            <summary>
+            初始化网络转换类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddBaseType">
+            <summary>
+            添加网络基本类型， int，float，bool，string......
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType``1">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <typeparam name="T">要添加的网络类型</typeparam>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3s(System.Type[])">
+            <summary>
+            添加所有可序列化的类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <param name="types"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3``1">
+            <summary>
+            添加可序列化的3个参数类型(T类,T类数组,T类List泛型), 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <typeparam name="T">要添加的网络类型</typeparam>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3(System.Type)">
+            <summary>
+            添加可序列化的3个参数类型(T类,T类数组,T类List泛型), 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType(System.Type)">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <param name="type">要添加的网络类型</param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType(System.Type[])">
+            <summary>
+            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+            </summary>
+            <param name="types"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.IndexToType(System.UInt16)">
+            <summary>
+            索引取类型
+            </summary>
+            <param name="typeIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertFast2.TypeToIndex(System.Type)">
+            <summary>
+            类型取索引
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.Serialize.FuncData">
+            <summary>
+            函数数据
+            </summary>
+        </member>
+        <member name="F:Net.Serialize.FuncData.name">
+            <summary>
+            函数名称
+            </summary>
+        </member>
+        <member name="F:Net.Serialize.FuncData.hash">
+            <summary>
+            方法哈希
+            </summary>
+        </member>
+        <member name="F:Net.Serialize.FuncData.pars">
+            <summary>
+            参数数组
+            </summary>
+        </member>
+        <member name="F:Net.Serialize.FuncData.error">
+            <summary>
+            序列化是否错误?
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.FuncData.#ctor(System.String,System.Object[])">
+            <summary>
+            构造函数
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="P:Net.Serialize.FuncData.Item(System.Int32)">
+            <summary>
+            取出index的参数值
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.FuncData.To``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.FuncData.As``1">
+            <summary>
+            每次调用参数都会指向下一个参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:Net.Serialize.NetConvertOld">
+            <summary>
+            旧版网络转换，字符串转换
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.AddSerializeType``1">
+            <summary>
+            添加系列化类型,  当复杂类型时,如果不进行添加则系列化失败: 主要类型 Dictionary
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.AddSerializeType(System.Type)">
+            <summary>
+            添加系列化类型,  当复杂类型时,如果不进行添加则系列化失败: 主要类型 Dictionary
+            </summary>
+            <param name="type"></param>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.GetType(System.String)">
+            <summary>
+            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.GetTypeAll(System.String)">
+            <summary>
+            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.GetTypeAll(System.Int32)">
+            <summary>
+            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToBaseValue(System.Type,System.String)">
+            <summary>
+            反序列化基本类型
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.WriteArray(System.Text.StringBuilder@,System.Array)">
+            <summary>
+            序列化数组实体
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToArray(System.String[],System.Int32@,System.Type)">
+            <summary>
+            反序列化数组
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToArray(System.String[],System.Int32@,System.Array@)">
+            <summary>
+            反序列化数组
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToEnum(System.String[],System.Int32@)">
+            <summary>
+            反序列化枚举类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Serialize(System.Object[])">
+            <summary>
+            新版网络序列化
+            </summary>
+            <param name="pars"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Serialize(System.String,System.Object[])">
+            <summary>
+            新版网络序列化
+            </summary>
+            <param name="funcName">函数名</param>
+            <param name="pars">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.WriteObject(System.Text.StringBuilder@,System.Type,System.Object)">
+            <summary>
+            序列化实体类型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String)">
+            <summary>
+            新版反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String,System.Action{System.String,System.Object[]})">
+            <summary>
+            新版反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String[],System.Int32,System.Int32)">
+            <summary>
+            新版反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String[],System.Int32,System.Int32,System.Action{System.String,System.Object[]})">
+            <summary>
+            新版反序列化
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToObject(System.String[],System.Int32@,System.Type)">
+            <summary>
+            反序列化实体对象
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToList(System.String[],System.Int32@,System.Type)">
+            <summary>
+            反序列化泛型
+            </summary>
+        </member>
+        <member name="M:Net.Serialize.NetConvertOld.ToDictionary(System.String[],System.Int32@,System.Type)">
+            <summary>
+            反序列化字典类型
+            </summary>
+        </member>
+        <member name="T:Net.Serialize.NonSerialized">
+            <summary>
+            极速序列化不序列化的特性
+            </summary>
+        </member>
         <member name="T:Net.Server.NetPlayer">
             <summary>
             网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -2289,9 +2824,15 @@
             </summary>
             <param name="client"></param>
         </member>
+        <member name="M:Net.Server.NetScene`1.OnBeginExit(`0)">
+            <summary>
+            当开始退出场景，当调用此方法时client还在Clients属性里面
+            </summary>
+            <param name="client"></param>
+        </member>
         <member name="M:Net.Server.NetScene`1.OnExit(`0)">
             <summary>
-            当退出场景的玩家
+            当退出场景的玩家, 当调用此方法后client已经被移出Clients属性
             </summary>
             <param name="client"></param>
         </member>
@@ -6514,649 +7055,6 @@
             <summary>
             Gcp可靠协议核心类
             </summary>
-        </member>
-        <member name="T:Net.Serialize.NetConvert">
-            <summary>
-            网络转换核心 2019.7.16
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.Serialize(Net.Share.RPCModel,System.Byte[])">
-            <summary>
-            新版网络序列化
-            </summary>
-            <param name="model">函数名</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[])">
-            <summary>
-            新版反序列化
-            </summary>
-            <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            新版反序列化
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-        </member>
-        <member name="T:Net.Serialize.NetConvertBase">
-            <summary>
-            网络转换基础类
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.StringToValue(System.Type,System.String)">
-            <summary>
-            字符串转对象
-            </summary>
-            <param name="type"></param>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.StringToValue(System.String,System.String)">
-            <summary>
-            字符串转系统基础类型 ( type 给定类型名称 , value 转换这个字符串为type类型的值 )
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.ToVector2_3_4(System.String,System.String)">
-            <summary>
-            字符转三维向量值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.ToRect(System.String,System.String)">
-            <summary>
-            字符转矩形值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.ToColor(System.String,System.String)">
-            <summary>
-            字符转颜色值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.ToQuaternion(System.String,System.String)">
-            <summary>
-            字符转欧拉角值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBase.To_Vector234_Rect_Quaternion_Color(System.String,System.String)">
-            <summary>
-            转换字符为Vector2 或 Vector3 或 Vector4 或 Rect 或 Quaternion 的值 ( type 以字符形式给定一个类型 , value 类型的值 注：类型的值必须以给定类型的值符合才能转换成功 )
-            </summary>
-        </member>
-        <member name="T:Net.Serialize.NetConvertBinary">
-            <summary>
-            提供序列化二进制类
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.Init">
-            <summary>
-            初始化网络转换类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeBaseType">
-            <summary>
-            添加网络基本类型， int，float，bool，string......
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeType``1(System.String[],System.String[])">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <typeparam name="T">序列化的类型</typeparam>
-            <param name="onlyFields">只序列化的字段名称列表</param>
-            <param name="ignoreFields">不序列化的字段名称列表</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeType(System.Type,System.String[],System.String[])">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <param name="type">序列化的类型</param>
-            <param name="onlyFields">只序列化的字段名称列表</param>
-            <param name="ignoreFields">不序列化的字段名称列表</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkType(System.Type[])">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <param name="types"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkTypeAssembly(System.Type)">
-            <summary>
-            添加网络程序集，此方法将会添加获取传入的类的程序集并全部添加
-            </summary>
-            <param name="value">传入的类</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkAssembly(System.Reflection.Assembly[])">
-            <summary>
-            添加网络传输程序集， 注意：添加客户端的程序集必须和服务器的程序集必须保持一致， 否则将会出现问题
-            </summary>
-            <param name="assemblies">程序集</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.IndexToType(System.UInt16)">
-            <summary>
-            索引取类型
-            </summary>
-            <param name="typeIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.TypeToIndex(System.Type)">
-            <summary>
-            类型取索引
-            </summary>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.WriteArray(Net.System.Segment,System.Collections.IList,System.Type,System.Boolean,System.Boolean)">
-            <summary>
-            序列化数组实体
-            </summary>
-            <param name="stream"></param>
-            <param name="array"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.ReadArray(Net.System.Segment,System.Collections.IList@,System.Type,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化数组
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="array"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.Serialize(System.Object,System.Boolean,System.Boolean)">
-            <summary>
-            序列化
-            </summary>
-            <param name="obj"></param>
-            <param name="recordType"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(System.Object,System.Boolean,System.Boolean)">
-            <summary>
-            序列化对象, 不记录反序列化类型
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(Net.System.Segment,System.Object,System.Boolean,System.Boolean)">
-            <summary>
-            序列化对象, 不记录反序列化类型
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.WriteObject(Net.System.Segment,System.Type,System.Object,System.Boolean,System.Boolean)">
-            <summary>
-            序列化对象
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="segment"></param>
-            <param name="type"></param>
-            <param name="target"></param>
-            <param name="recordType"></param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(System.Byte[],System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-            <param name="recordType">序列化的类型字段是 object[]字段时, 可以帮你记录object的绝对类型</param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject``1(Net.System.Segment,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="segment"></param>
-            <param name="recordType"></param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.DeserializeObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化
-            </summary>
-            <param name="segment"></param>
-            <param name="recordType"></param>
-            <param name="ignore">忽略不使用<see cref="M:Net.Serialize.NetConvertBinary.AddBaseType``1"/>方法也会被序列化</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.ReadObject(Net.System.Segment,System.Type,System.Boolean,System.Boolean)">
-            <summary>
-            反序列化实体对象
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.Serialize.NetConvertFast">
-            <summary>
-            快速解析类型, 使用此类需要使用AddNetworkType()先添加序列化类型, 类型是固定, 并且双端统一
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddNetworkBaseType">
-            <summary>
-            添加网络基本类型， int，float，bool，string......
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType``1">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType(System.Type)">
-            <summary>
-            添加经过网络传送的类型
-            </summary>
-            <param name="type"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddAssembly(System.Reflection.Assembly)">
-            <summary>
-            添加网络传输的程序集, 程序集内的所有类型都会被添加, 注意: 客户端和服务器都必须统一使用一模一样的程序集, 否则有可能出现问题!
-            </summary>
-            <param name="assembly"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddNameSpaceTypes(System.Reflection.Assembly,System.String)">
-            <summary>
-            添加assembly程序集的所有nameSpace命名空间的类型
-            </summary>
-            <param name="assembly"></param>
-            <param name="nameSpace"></param>
-        </member>
-        <member name="T:Net.Serialize.ISerialize">
-            <summary>
-            快速序列化2接口--动态匹配
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.ISerialize.WriteValue(System.Object,Net.System.Segment)">
-            <summary>
-            序列化写入
-            </summary>
-            <param name="value"></param>
-            <param name="stream"></param>
-        </member>
-        <member name="M:Net.Serialize.ISerialize.ReadValue(Net.System.Segment)">
-            <summary>
-            反序列化读取
-            </summary>
-            <param name="stream"></param>
-        </member>
-        <member name="T:Net.Serialize.ISerialize`1">
-            <summary>
-            快速序列化2接口---类型匹配
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.ISerialize`1.Write(`0,Net.System.Segment)">
-            <summary>
-            序列化写入
-            </summary>
-            <param name="value"></param>
-            <param name="stream"></param>
-        </member>
-        <member name="M:Net.Serialize.ISerialize`1.Read(Net.System.Segment)">
-            <summary>
-            反序列化读取
-            </summary>
-            <param name="stream"></param>
-        </member>
-        <member name="T:Net.Serialize.IBindingType">
-            <summary>
-            类型绑定查找收集接口
-            </summary>
-        </member>
-        <member name="P:Net.Serialize.IBindingType.TYPES">
-            <summary>
-            收集的绑定类型列表
-            </summary>
-        </member>
-        <member name="T:Net.Serialize.NetConvertFast2">
-            <summary>
-            极速序列化2版本
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.Init">
-            <summary>
-            初始化网络转换类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddBaseType">
-            <summary>
-            添加网络基本类型， int，float，bool，string......
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType``1">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <typeparam name="T">要添加的网络类型</typeparam>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3s(System.Type[])">
-            <summary>
-            添加所有可序列化的类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <param name="types"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3``1">
-            <summary>
-            添加可序列化的3个参数类型(T类,T类数组,T类List泛型), 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <typeparam name="T">要添加的网络类型</typeparam>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType3(System.Type)">
-            <summary>
-            添加可序列化的3个参数类型(T类,T类数组,T类List泛型), 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType(System.Type)">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <param name="type">要添加的网络类型</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.AddSerializeType(System.Type[])">
-            <summary>
-            添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-            </summary>
-            <param name="types"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.IndexToType(System.UInt16)">
-            <summary>
-            索引取类型
-            </summary>
-            <param name="typeIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast2.TypeToIndex(System.Type)">
-            <summary>
-            类型取索引
-            </summary>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.Serialize.FuncData">
-            <summary>
-            函数数据
-            </summary>
-        </member>
-        <member name="F:Net.Serialize.FuncData.name">
-            <summary>
-            函数名称
-            </summary>
-        </member>
-        <member name="F:Net.Serialize.FuncData.hash">
-            <summary>
-            方法哈希
-            </summary>
-        </member>
-        <member name="F:Net.Serialize.FuncData.pars">
-            <summary>
-            参数数组
-            </summary>
-        </member>
-        <member name="F:Net.Serialize.FuncData.error">
-            <summary>
-            序列化是否错误?
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.FuncData.#ctor(System.String,System.Object[])">
-            <summary>
-            构造函数
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="P:Net.Serialize.FuncData.Item(System.Int32)">
-            <summary>
-            取出index的参数值
-            </summary>
-            <param name="index"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.FuncData.To``1">
-            <summary>
-            每次调用参数都会指向下一个参数
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.FuncData.As``1">
-            <summary>
-            每次调用参数都会指向下一个参数
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="T:Net.Serialize.NetConvertOld">
-            <summary>
-            旧版网络转换，字符串转换
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.AddSerializeType``1">
-            <summary>
-            添加系列化类型,  当复杂类型时,如果不进行添加则系列化失败: 主要类型 Dictionary
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.AddSerializeType(System.Type)">
-            <summary>
-            添加系列化类型,  当复杂类型时,如果不进行添加则系列化失败: 主要类型 Dictionary
-            </summary>
-            <param name="type"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.GetType(System.String)">
-            <summary>
-            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.GetTypeAll(System.String)">
-            <summary>
-            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.GetTypeAll(System.Int32)">
-            <summary>
-            解释 : 获得应用程序当前已加载的所有程序集中查找typeName的类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToBaseValue(System.Type,System.String)">
-            <summary>
-            反序列化基本类型
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.WriteArray(System.Text.StringBuilder@,System.Array)">
-            <summary>
-            序列化数组实体
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToArray(System.String[],System.Int32@,System.Type)">
-            <summary>
-            反序列化数组
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToArray(System.String[],System.Int32@,System.Array@)">
-            <summary>
-            反序列化数组
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToEnum(System.String[],System.Int32@)">
-            <summary>
-            反序列化枚举类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Serialize(System.Object[])">
-            <summary>
-            新版网络序列化
-            </summary>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Serialize(System.String,System.Object[])">
-            <summary>
-            新版网络序列化
-            </summary>
-            <param name="funcName">函数名</param>
-            <param name="pars">参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.WriteObject(System.Text.StringBuilder@,System.Type,System.Object)">
-            <summary>
-            序列化实体类型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String)">
-            <summary>
-            新版反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String,System.Action{System.String,System.Object[]})">
-            <summary>
-            新版反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String[],System.Int32,System.Int32)">
-            <summary>
-            新版反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.Deserialize(System.String[],System.Int32,System.Int32,System.Action{System.String,System.Object[]})">
-            <summary>
-            新版反序列化
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToObject(System.String[],System.Int32@,System.Type)">
-            <summary>
-            反序列化实体对象
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToList(System.String[],System.Int32@,System.Type)">
-            <summary>
-            反序列化泛型
-            </summary>
-        </member>
-        <member name="M:Net.Serialize.NetConvertOld.ToDictionary(System.String[],System.Int32@,System.Type)">
-            <summary>
-            反序列化字典类型
-            </summary>
-        </member>
-        <member name="T:Net.Serialize.NonSerialized">
-            <summary>
-            极速序列化不序列化的特性
-            </summary>
-        </member>
-        <member name="M:MathExt.Calc(System.Byte@,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.SByte@,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Int16@,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.UInt16@,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.CalcRef(System.Int32@,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Int32,System.Int32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.UInt32@,System.UInt32,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Single@,System.Single,System.Byte)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Int64@,System.Int32,System.Int32)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.UInt64@,System.UInt64,System.Int32)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Double@,System.Double,System.Int32)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
-        </member>
-        <member name="M:MathExt.Calc(System.Decimal@,System.Decimal,System.Int32)">
-            <summary>
-            检查算术溢出，如果溢出了，啥都不能做
-            </summary>
-            <param name="self"></param>
-            <param name="value"></param>
-            <param name="oper">0：加 1：减 2：乘 3：除 4：取模 5：异或 6：与</param>
-            <returns></returns>
         </member>
         <member name="T:ECS.Component">
             <summary>

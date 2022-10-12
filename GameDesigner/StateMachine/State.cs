@@ -32,7 +32,10 @@ namespace GameDesigner
         /// <summary>
         /// 状态行为集合
         /// </summary>
-		public List<StateBehaviour> behaviours = new List<StateBehaviour>();
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
+#endif
+        public List<StateBehaviour> behaviours = new List<StateBehaviour>();
         /// <summary>
         /// 动作系统 使用为真 , 不使用为假
         /// </summary>

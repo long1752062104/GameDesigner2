@@ -36,7 +36,7 @@ namespace Net.Helper
         public static void OnScriptCompilation1()
         {
             var path = UnityEngine.Application.dataPath + "/Scripts/Helper/InvokeHelperGenerate.cs";
-            DynamicalCompilation(path, typeof(InvokeHelper), UnityEngine.Debug.Log);
+            DynamicalCompilation(path, "Assembly-CSharp", UnityEngine.Debug.Log);
         }
 
         [RuntimeInitializeOnLoadMethod]
@@ -60,7 +60,26 @@ namespace Net.Helper
             }
         }
 
-        public static void DynamicalCompilation(string path, Type type2, Action<object> log) 
+        public static void DynamicalCompilation(string path, string assemblyName, Action<object> log)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                if (assembly.GetName().Name == assemblyName) 
+                {
+                    DynamicalCompilation(path, assemblies, assembly, log);
+                    break;
+                }
+            }
+        }
+
+        public static void DynamicalCompilation(string path, Type type2, Action<object> log)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            DynamicalCompilation(path, assemblies, type2.Assembly, log);
+        }
+
+        public static void DynamicalCompilation(string path, Assembly[] assemblies, Assembly mainAssembly, Action<object> log) 
         {
             if (File.Exists(path))
             {
@@ -71,40 +90,31 @@ namespace Net.Helper
                     text = text.Replace("/**", "");
                     var provider = new CSharpCodeProvider();
                     var parameters = new CompilerParameters();
-                    //动态添加dll库
                     var dict = new Dictionary<string, string>();
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                     foreach (var assemblie in assemblies)
                         dict.Add(assemblie.GetName().FullName, assemblie.Location);
-                    var referencedAssemblies = type2.Assembly.GetReferencedAssemblies();
+                    var referencedAssemblies = mainAssembly.GetReferencedAssemblies();
                     foreach (var item in referencedAssemblies)
                         if (dict.TryGetValue(item.FullName, out var path2))
                             parameters.ReferencedAssemblies.Add(path2);
-                    parameters.ReferencedAssemblies.Add(type2.Assembly.Location);
-                    //True - 生成在内存中, false - 生成在外部文件中
+                    parameters.ReferencedAssemblies.Add(mainAssembly.Location);
                     parameters.GenerateInMemory = false;
-                    //True - 生成 exe, false - 生成 dll
                     parameters.GenerateExecutable = false;
                     parameters.OutputAssembly = "DynamicalAssembly.dll";//编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
                     parameters.IncludeDebugInformation = true;
-                    //取得编译结果
-                    CompilerResults results = provider.CompileAssemblyFromSource(parameters, text);
+                    var results = provider.CompileAssemblyFromSource(parameters, text);
                     if (results.Errors.HasErrors)
                     {
                         var sb = new StringBuilder();
                         foreach (CompilerError error in results.Errors)
-                        {
                             sb.AppendLine(string.Format("Error({0}): {1}", error.Line, error.ErrorText));
-                        }
                         log(sb.ToString());
                     }
                     else
                     {
                         var type = results.CompiledAssembly.GetType("InvokeHelperGenerate");
                         if (type != null)
-                        {
                             type.GetMethod("Init", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
-                        }
                     }
                 }
                 catch (Exception ex)
@@ -377,6 +387,7 @@ namespace Net.Helper
             var codes = str.Split(new string[] { "--" }, 0);
             var sb = new StringBuilder();
             sb.Append(codes[0]);
+            var dic = new Dictionary<string, int>();
             foreach (var type in types)
             {
                 var dictSB = new StringBuilder();
@@ -397,23 +408,70 @@ namespace Net.Helper
                     string parStr = "";
                     string bodyStr = "";
                     string sendStr = $"client.SendRT(\"{method.Name}\"";
+                    bool safeCmd = false;
+                    bool isServer = false;
+                    bool isClient = false;
+                    if (type.BaseType != null)
+                    {
+                        if (type.BaseType.ToTypeSig() is GenericInstSig gt)
+                        {
+                            var gts = gt.GenericArguments;
+                            if (gts.Count == 2)
+                                isServer = type.BaseType.ReflectionNamespace == "Net.Server";
+                        }
+                        isClient = type.BaseType.FullName == "Net.Server.NetPlayer";
+                    }
+                    if (attribute.HasConstructorArguments)
+                    {
+                        foreach (var item in attribute.ConstructorArguments)
+                        {
+                            var typeCode = GetTypeCode(item.Type);
+                            if (typeCode == TypeCode.Byte)
+                            {
+                                if (item.Value.Equals((byte)2))
+                                {
+                                    safeCmd = true;
+                                }
+                            }
+                            if (typeCode == TypeCode.UInt16)
+                            {
+                                if (!item.Value.Equals((ushort)0))
+                                {
+                                    sendStr = $"client.SendRT({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
+                                }
+                            }
+                        }
+                    }
+                    else if (attribute.HasNamedArguments)
+                    {
+                        foreach (var item in attribute.NamedArguments)
+                        {
+                            if (item.Name == "cmd") 
+                            {
+                                if (item.Value.Equals((byte)2)) 
+                                {
+                                    safeCmd = true;
+                                }
+                            }
+                            else if (item.Name == "hash")
+                            {
+                                if (!item.Value.Equals((ushort)0))
+                                {
+                                    sendStr = $"client.SendRT({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
+                                }
+                            }
+                        }
+                    }
+                    else if (isClient) 
+                    {
+                        sendStr = $"client.SendRT(NetCmd.EntityRpc, \"{method.Name}\"";
+                    }
                     foreach (var parama in paramas)
                     {
                         if (string.IsNullOrEmpty(parama.Name))
                             continue;
-                        if (parama.Index == 1)
-                        {
-                            if (attribute.HasConstructorArguments) 
-                            {
-                                if (attribute.ConstructorArguments[0].Value.Equals((byte)2))
-                                    continue;
-                            }
-                            else if (attribute.HasNamedArguments)
-                            {
-                                if (attribute.NamedArguments[0].Value.Equals((byte)2))
-                                    continue;
-                            }
-                        }
+                        if (parama.Index == 1 & safeCmd & isServer)
+                            continue;
                         var pt = parama.Type.FullName;
                         if (pt.Contains("`"))
                         {
@@ -444,6 +502,15 @@ namespace Net.Helper
                     code = code.Replace("PARAMETERS", parStr);
                     code = code.Replace("BODY", bodyStr);
                     code = code.Replace("SEND", sendStr);
+                    var funcs = code.Split(new string[] { "\r\n" }, 0);
+                    if (dic.TryGetValue(funcs[1], out var num))
+                    {
+                        var pos = code.IndexOf('(');
+                        code = code.Insert(pos, (isServer ? "_S" : isClient ? "_C" : "_N") + (num > 0 ? num.ToString() : ""));
+                        dic[funcs[1]]++;
+                        funcs = code.Split(new string[] { "\r\n" }, 0);
+                    }
+                    dic.Add(funcs[1], 0);
                     dictSB.Append(code);
                 }
                 if (dictSB.Length > 0)

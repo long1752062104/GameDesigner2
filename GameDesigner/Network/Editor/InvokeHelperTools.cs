@@ -169,7 +169,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         }
         if (GUILayout.Button("执行", GUILayout.Height(30)))
         {
-            OnScriptCompilation();
+            InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
             Debug.Log("更新完成!");
         }
 
