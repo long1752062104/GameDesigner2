@@ -243,7 +243,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
     {
         // build前
-        Debug.Log("开始build, 准备编译字段同步生成脚本!");
+        //Debug.Log("开始build, 准备编译字段同步生成脚本!");
         InvokeHelperBuild.OnScriptCompilation(Config, true, true);
         AssetDatabase.Refresh();
     }
@@ -251,7 +251,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     public void OnPostprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
     {
         // build完成后
-        Debug.Log("build完成, 注释字段同步脚本!");
+        //Debug.Log("build完成, 注释字段同步脚本!");
         InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
         AssetDatabase.Refresh();
     }

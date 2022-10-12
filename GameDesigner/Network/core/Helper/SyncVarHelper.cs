@@ -18,7 +18,7 @@ namespace Net.Helper
             if (InvokeHelper.Cache.TryGetValue(type, out var dict))
                 dict.TryGetValue(info.Name, out syncVarInfo);
             if (syncVarInfo == null)
-                throw new Exception("请生成字段同步绑定类!");
+                throw new Exception("请使用unity菜单GameDesigner/Network/InvokeHelper工具生成字段，属性同步辅助类!");
             if(!string.IsNullOrEmpty(syncVar.hook))
                 syncVarInfo.onValueChanged = type.GetMethod(syncVar.hook, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
             syncVarInfo.id = syncVar.id;
@@ -51,8 +51,10 @@ namespace Net.Helper
 
         public static bool ALEquals(IList a, IList b)
         {
-            if (a == null | b == null)
+            if ((a != null & b == null) | (a == null & b != null))
                 return false;
+            if (a == null & b == null)
+                return true;
             if (a.Count != b.Count)
                 return false;
             for (int i = 0; i < a.Count; i++)
