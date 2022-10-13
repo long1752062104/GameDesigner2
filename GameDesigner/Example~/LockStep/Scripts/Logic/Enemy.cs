@@ -1,6 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using Net.Share;
-using TrueSync;
 using UnityEngine;
 
 namespace LockStep.Client

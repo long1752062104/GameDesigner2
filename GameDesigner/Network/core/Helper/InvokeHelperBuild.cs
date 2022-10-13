@@ -675,6 +675,8 @@ namespace Net.Helper
                 var serverTypes1 = new List<TypeDef>();
                 foreach (var file in data.dllPaths)
                 {
+                    if (!File.Exists(file))
+                        continue;
                     ModuleContext modCtx = ModuleDef.CreateModuleContext();
                     var dllData = File.ReadAllBytes(file);
                     ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
@@ -789,7 +791,8 @@ using System.Runtime.CompilerServices;
                 var csprojPath = config.rpcConfig[i].csprojPath;
                 var path1 = config.rpcConfig[i].savePath + "/InvokeHelperGenerate.cs";
                 path1 = path1.Replace('/', '\\');
-
+                if (!File.Exists(csprojPath))
+                    continue;
                 XmlDocument xml = new XmlDocument();
                 xml.Load(csprojPath);
                 XmlNodeList node_list;

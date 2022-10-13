@@ -1,10 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using ECS;
-using GGPhys.Core;
-using GGPhysUnity;
 using Net.Share;
 using System;
-using TrueSync;
 using UnityEngine;
 
 namespace LockStep.Client
@@ -13,20 +10,19 @@ namespace LockStep.Client
     public class Player : Actor, IUpdate
     {
         public ObjectView objectView;
-        public FP moveSpeed = 6f;
+        public float moveSpeed = 6f;
         internal Operation opt;
         
         public void OnUpdate()
         {
-            Net.Vector3 dir = opt.direction;
+            var dir = opt.direction;
             if (dir == Net.Vector3.zero)
                 objectView.anim.Play("soldierIdle");
             else
             {
                 objectView.anim.Play("soldierRun");
-                //rigidBody.transform.position += (Vector3)(new TSVector3(dir.x, dir.y, dir.z) * moveSpeed * LSTime.deltaTime);
-                rigidBody.Move((Vector3)(new TSVector3(dir.x, dir.y, dir.z) * moveSpeed * LSTime.deltaTime));
-                //rigidBody.AddForce((Vector3)(new TSVector3(dir.x, dir.y, dir.z) * moveSpeed));
+                gameObject.transform.rotation = Quaternion.Lerp(gameObject.transform.rotation, Quaternion.LookRotation(dir, Vector3.up), 0.5f);
+                gameObject.transform.Translate(0, 0, moveSpeed * LSTime.deltaTime);
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TrueSync;
 
 namespace LockStep
 {
@@ -8,34 +7,34 @@ namespace LockStep
     {
         public class Evt
         {
-            public FP time;
+            public double time;
             public Action act;
             public Action<object> act1;
             public object obj;
             public bool hasPars;
             public int invokeNum;
-            internal FP timeMax;
+            internal double timeMax;
             internal int actionId;
         }
 
         public static List<Evt> actions = new List<Evt>();
         private static int actionId;
 
-        internal static int AddEvent(FP time, Action act)
+        internal static int AddEvent(double time, Action act)
         {
             actionId++;
             actions.Add(new Evt() { time = LSTime.time + time, act = act, actionId = actionId });
             return actionId;
         }
 
-        internal static int AddEvent(FP time, Action<object> act, object obj)
+        internal static int AddEvent(double time, Action<object> act, object obj)
         {
             actionId++;
             actions.Add(new Evt() { time = LSTime.time + time, act1 = act, obj = obj, hasPars = true, actionId = actionId });
             return actionId;
         }
 
-        internal static int AddEvent(FP time, int invokeNum, Action<object> act, object obj)
+        internal static int AddEvent(double time, int invokeNum, Action<object> act, object obj)
         {
             actionId++;
             actions.Add(new Evt()

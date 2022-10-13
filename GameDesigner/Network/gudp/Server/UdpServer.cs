@@ -148,4 +148,16 @@
         }
 #endif
     }
+
+    /// <summary>
+    /// Gcp网络服务器
+    /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+    /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+    /// </summary>
+    public class GcpServer<Player, Scene> : UdpServer<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new() { }
+
+    /// <summary>
+    /// 默认gcp服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class GcpServer : GcpServer<NetPlayer, DefaultScene> { }
 }

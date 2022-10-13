@@ -1,11 +1,10 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 using ECS;
-using GGPhysUnity;
 using Net.Client;
 using Net.Component;
 using Net.Share;
 using System.Collections.Generic;
-using TrueSync;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace LockStep.Client
@@ -22,7 +21,7 @@ namespace LockStep.Client
         public Net.Vector3 direction;
 
         // Use this for initialization
-        void Start()
+        async void Start()
         {
             gameSystem.OnCreate += (opt) => 
             {
@@ -34,7 +33,7 @@ namespace LockStep.Client
                 actor.objectView.actor = actor;
                 actor.objectView.anim = actor.gameObject.GetComponent<Animation>();
                 //actor.transform = actor.gameObject.GetComponent<TSTransform>();
-                actor.rigidBody = actor.gameObject.GetComponent<BRigidBody>();
+                actor.rigidBody = actor.gameObject.GetComponent<Rigidbody>();
                 if (opt.identity == ClientBase.Instance.UID)
                     FindObjectOfType<ARPGcamera>().target = actor.gameObject.transform;
                 return actor;
@@ -44,8 +43,19 @@ namespace LockStep.Client
                 logicFrame = 0;
                 snapshots.Clear();
             };
+            while (ClientBase.Instance == null)
+            {
+                await Task.Yield();
+            }
+            while (!ClientBase.Instance.Connected)
+            {
+                await Task.Yield();
+            }
             ClientBase.Instance.OnOperationSync += OnOperationSync;
             ClientBase.Instance.AddRpcHandle(gameSystem);
+
+            Physics.autoSimulation = false;
+            Physics.autoSyncTransforms = false;
         }
 
         private void OnOperationSync(OperationList list)
@@ -63,7 +73,7 @@ namespace LockStep.Client
         // Update is called once per frame
         void Update()
         {
-            direction = new Net.Vector3(Input.GetAxis("Horizontal").ToFloat(100), 0f, Input.GetAxis("Vertical").ToFloat(100));
+            direction = Transform3Dir(Camera.main.transform, Direction);
             int forLogic = frame - logicFrame;
             for (int i = 0; i < forLogic; i++)
             {
@@ -75,9 +85,22 @@ namespace LockStep.Client
             }
         }
 
+        public Vector3 Direction
+        {
+            get { return new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); }
+        }
+        public Vector3 Transform3Dir(Transform t, Vector3 dir)
+        {
+            var f = Mathf.Deg2Rad * (-t.rotation.eulerAngles.y);
+            dir.Normalize();
+            var ret = new Vector3(dir.x * Mathf.Cos(f) - dir.z * Mathf.Sin(f), 0, dir.x * Mathf.Sin(f) + dir.z * Mathf.Cos(f));
+            return ret;
+        }
+
         private void OnDestroy()
         {
-            ClientBase.Instance.OnOperationSync -= OnOperationSync;
+            if(ClientBase.Instance != null)
+                ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
     }
 }

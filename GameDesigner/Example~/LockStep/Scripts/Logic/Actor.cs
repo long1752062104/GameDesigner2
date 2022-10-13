@@ -1,7 +1,6 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
-using GGPhysUnity;
 using System;
-using TrueSync;
+using UnityEngine;
 
 namespace LockStep.Client
 {
@@ -9,9 +8,9 @@ namespace LockStep.Client
     public class Actor : ECS.Component
     {
         public string name;
-        public UnityEngine.GameObject gameObject;
+        public GameObject gameObject;
         //public TSTransform transform;
-        public BRigidBody rigidBody;
+        public Rigidbody rigidBody;
     }
 }
 #endif

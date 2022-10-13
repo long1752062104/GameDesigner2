@@ -1,9 +1,9 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
-using GGPhysUnity;
 using Net.Component;
 using Net.Share;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LockStep.Client
 {
@@ -45,7 +45,7 @@ namespace LockStep.Client
             }
             Update();
             for (int i = 0; i < 5; i++)//要让每秒达到60帧或以上
-                EngineStart.I.Step();
+                Physics.Simulate(0.02f);
             EventSystem.UpdateEvent();//事件帧同步更新
         }
 
@@ -59,7 +59,7 @@ namespace LockStep.Client
                 players.Remove(uid);
             }
             OnExitBattle?.Invoke();
-            UnityEngine.Debug.Log("退出战斗");
+            Debug.Log("退出战斗");
         }
     }
 }

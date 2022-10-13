@@ -102,9 +102,7 @@
                         port = UdxLib.UGetDesStreamID(cli);
                         string ip = Encoding.ASCII.GetString(ipbytes, 0, 128);
                         ip = ip.Replace("\0", "");
-                        IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
-                        if (!UserIDStack.TryPop(out int uid))
-                            uid = GetCurrUserID();
+                        var remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
                         var client = AcceptHander(null, remotePoint);
                         client.Udx = cli;
                         peers.TryAdd(cli, client);
@@ -180,7 +178,7 @@
                 Server = IntPtr.Zero;
             }
             UdxLib.UDXS.Remove(this);
-            if (UdxLib.UDXS.Count == 0)
+            if (UdxLib.UDXS.Count == 0 & UdxLib.INIT)
             {
                 UdxLib.UUnInit();
                 UdxLib.INIT = false;

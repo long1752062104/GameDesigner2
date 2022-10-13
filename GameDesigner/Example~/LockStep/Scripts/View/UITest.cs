@@ -2,6 +2,8 @@
 using Net.Client;
 using Net.Component;
 using Net.Share;
+using Net.System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +14,7 @@ public class UITest : SingleCase<UITest>
     public Text text;
 
     // Start is called before the first frame update
-    void Start()
+    async void Start()
     {
         cr.onClick.AddListener(()=> {
             ClientBase.Instance.SendRT("CreateRoom", cri.text);
@@ -29,7 +31,19 @@ public class UITest : SingleCase<UITest>
         eb.onClick.AddListener(() => {
             ClientBase.Instance.SendRT("ExitBattle");
         });
+        while (ClientBase.Instance == null)
+        {
+            await Task.Yield();
+        }
+        while (!ClientBase.Instance.Connected)
+        {
+            await Task.Yield();
+        }
         ClientBase.Instance.AddRpcHandle(this);
+        ThreadManager.Invoke(1f, ()=> {
+            ClientBase.Instance.Ping();
+            return true;
+        });
         ClientBase.Instance.OnPingCallback += (delay) => {
             text.text = "网络延迟:" + delay;
         };

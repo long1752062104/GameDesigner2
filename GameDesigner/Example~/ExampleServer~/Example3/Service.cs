@@ -5,7 +5,7 @@ using Net.Share;
 
 namespace LockStep.Server
 {
-    public class Service : UdpServer<Player, Scene>
+    public class Service : GcpServer<Player, Scene>
     {
         protected override void OnStartupCompleted()
         {

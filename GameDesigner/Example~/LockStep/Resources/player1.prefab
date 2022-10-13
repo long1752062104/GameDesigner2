@@ -46,6 +46,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -156,6 +157,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -283,6 +285,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -814,6 +817,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -839,6 +843,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!111 &619350524177331610
 Animation:
   m_ObjectHideFlags: 0
@@ -1036,8 +1041,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274288}
-  m_LocalRotation: {x: 0.000000007336784, y: -0.0000000012972067, z: -0.17410815,
-    w: 0.98472655}
+  m_LocalRotation: {x: 0.000000007336784, y: -0.0000000012972067, z: -0.17410815, w: 0.98472655}
   m_LocalPosition: {x: -0.0505484, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1}
   m_Children: []
@@ -1220,8 +1224,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274300}
-  m_LocalRotation: {x: 0.0000000053404374, y: -0.000000001890003, z: -0.17410812,
-    w: 0.98472655}
+  m_LocalRotation: {x: 0.0000000053404374, y: -0.000000001890003, z: -0.17410812, w: 0.98472655}
   m_LocalPosition: {x: -0.05620567, y: 0, z: 0.000000019073486}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -1472,8 +1475,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274316}
-  m_LocalRotation: {x: -0.000000002594413, y: -0.000000014673567, z: -0.17410813,
-    w: 0.98472655}
+  m_LocalRotation: {x: -0.000000002594413, y: -0.000000014673567, z: -0.17410813, w: 0.98472655}
   m_LocalPosition: {x: -0.050548475, y: 0, z: 0}
   m_LocalScale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
   m_Children: []
@@ -1780,6 +1782,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1804,6 +1807,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!111 &619350524177331612
 Animation:
   m_ObjectHideFlags: 0
@@ -1830,8 +1834,8 @@ GameObject:
   - component: {fileID: 619350524187504670}
   - component: {fileID: 619350524177331614}
   - component: {fileID: 619350524187274746}
-  - component: {fileID: 619350524187274744}
-  - component: {fileID: 619350524187274751}
+  - component: {fileID: 2567262274220409419}
+  - component: {fileID: 1072232352424962648}
   m_Layer: 0
   m_Name: player1
   m_TagString: soldier
@@ -1907,67 +1911,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e8497a8f02bae1479d2a27f28a39d19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  anim: {fileID: 0}
+  anim: {fileID: 619350524177331614}
   actor:
     name: 
     gameObject: {fileID: 0}
     rigidBody: {fileID: 0}
   lerpSpeed: 0.25
---- !u!114 &619350524187274744
-MonoBehaviour:
+--- !u!136 &2567262274220409419
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274750}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2c3d219b6ae4d048aca6ac0b511408d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  IsTrigger: 0
-  CollisionLayer: 0
-  CollisionMask: 0
-  CenterOffset: {x: 0, y: 1, z: 0}
-  radius: 0.5
-  height: 1
---- !u!114 &619350524187274751
-MonoBehaviour:
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!54 &1072232352424962648
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274750}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 305ca027841b83949b75e90b18db6ed4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isStatic: 0
-  autoSyncTransform: 1
-  canSleep: 1
-  sleepOnAwake: 0
-  useGravity: 1
-  mass: 1
-  linearDamping: 0.9
-  angularDamping: 0.9
-  friction: 0.1
-  restitution: 0
-  sleepEpsilon: 0.12
-  awakeVelocityLimit: 0.1
-  collsionLayer: 1
-  collsionMask: -1
-  freezePos: 0
-  freezeRot: -1
-  CenterOfMassOffset:
-    RawX: 0
-    RawY: 0
-    RawZ: 0
-  CenterOfMassOffsetWorld:
-    RawX: 0
-    RawY: 0
-    RawZ: 0
-  m_BodyPosition: {x: 0, y: 0, z: 0}
-  m_BodyRotation: {x: 0, y: 0, z: 0, w: 0}
-  m_BodyLinearVelocity: {x: 0, y: 0, z: 0}
-  m_BodyAngularVelocity: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0

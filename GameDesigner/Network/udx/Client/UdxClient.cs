@@ -221,7 +221,7 @@
                 udxObj = IntPtr.Zero;
             }
             UdxLib.UDXS.Remove(this);
-            if (UdxLib.UDXS.Count == 0)
+            if (UdxLib.UDXS.Count == 0 & UdxLib.INIT)
             {
                 UdxLib.UUnInit();
                 UdxLib.INIT = false;

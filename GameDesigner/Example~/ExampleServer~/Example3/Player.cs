@@ -2,7 +2,7 @@
 
 namespace LockStep.Server
 {
-    public class Player : NetPlayer
+    public class Player : UdxPlayer
     {
         internal bool readyBattle;
         private Scene scene;
