@@ -40,45 +40,29 @@
         }
         public override byte HeartLimit { get; set; } = 60;//tcp 2分钟检测一次
 
-        public override void Start(ushort port = 6666)
+        protected override void CreateSenderThread()
         {
-            if (Server != null)//如果服务器套接字已创建
-                throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
-            Port = port;
-            RegisterEvent();
-            Debug.BindLogAll(Log);
-            OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
-            AddRpcHandle(this, true);
+        }
+
+        protected override void CreateOtherThread()
+        {
+            var thread = new Thread(EpollLoop) { IsBackground = true, Name = "EPollLoop" };
+            thread.Start();
+            threads.Add("EpollLoop", thread);
+        }
+
+        protected override void StartSocketHandler()
+        {
+        }
+
+        protected override void CreateServerSocket(ushort port)
+        {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);//---TCP协议
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);//IP端口设置
             Server.NoDelay = true;
             Server.Blocking = false;// 设置非阻塞
             Server.Bind(ip);//绑定UDP IP端口
             Server.Listen(LineUp);
-            IsRunServer = true;
-            Thread epoll = new Thread(EpollLoop) { IsBackground = true, Name = "EPollLoop" };
-            epoll.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            threads.Add("EpollLoop", epoll);
-            threads.Add("SceneUpdateHandle", suh);
-            var scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
-            OnStartupCompletedHandle();
-#if WINDOWS
-            Win32KernelAPI.timeBeginPeriod(1);
-#endif
-            InitUserID();
         }
 
         protected unsafe void EpollLoop()
@@ -177,10 +161,6 @@
             }
         }
 
-        protected override void RcvDataHandle(object state)
-        {
-        }
-
         protected override bool IsInternalCommand(Player client, RPCModel model)
         {
             if (model.cmd == NetCmd.Connect | model.cmd == NetCmd.Broadcast)
@@ -245,10 +225,6 @@
             {
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
             }
-        }
-
-        protected override void HeartHandler()
-        {
         }
     }
 

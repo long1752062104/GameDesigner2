@@ -21,53 +21,18 @@
         /// </summary>
         protected override byte frame { get; set; } = 5;
 
-        public override void Start(ushort port = 6666)
+        protected override void StartSocketHandler()
         {
-            if (Server != null)//如果服务器套接字已创建
-                throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
-            Port = port;
-            RegisterEvent();
-            Debug.BindLogAll(Log);
-            OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
-            AddRpcHandle(this, true);
+            AcceptHandler();
+        }
+
+        protected override void CreateServerSocket(ushort port)
+        {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
+            var ip = new IPEndPoint(IPAddress.Any, port);
             Server.NoDelay = true;
             Server.Bind(ip);
             Server.Listen(LineUp);
-            IsRunServer = true;
-            AcceptHandler();
-            Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
-            send.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var rcvQueue = new QueueSafe<RevdDataBuffer>();
-                RcvQueues.Add(rcvQueue);
-                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
-                rcv.Start(rcvQueue);
-                threads.Add("RcvDataHandle" + i, rcv);
-            }
-            threads.Add("SendDataHandle", send);
-            threads.Add("SceneUpdateHandle", suh);
-            var scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
-            OnStartupCompletedHandle();
-#if WINDOWS
-            Win32KernelAPI.timeBeginPeriod(1);
-#endif
-            InitUserID();
         }
 
         private void AcceptHandler()
@@ -135,7 +100,9 @@
                         {
                             if (client1.isDispose)
                                 return;
-                            client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer, tcp_udp = true });
+                            //client1.RevdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer, tcp_udp = true });
+                            ResolveBuffer(client1, ref buffer);
+                            BufferPool.Push(buffer);
                         }
                         if (!clientSocket.Connected)
                             return;

@@ -202,8 +202,12 @@ namespace Net.Event
 
         public void UpdateEventFixed(uint interval = 17, bool sleep = false)//60帧
         {
-            var frameRate = 1000 / interval; 
-            var tick = (uint)Environment.TickCount;
+            UpdateEventFixed((uint)Environment.TickCount, interval, sleep);
+        }
+
+        public void UpdateEventFixed(uint tick, uint interval, bool sleep = false)//60帧
+        {
+            var frameRate = 1000u / interval;
             if (tick >= nextTick)
             {
                 if (complement > 0)
@@ -388,6 +392,54 @@ namespace Net.Event
                     return;
                 }
             }
+        }
+    }
+
+    public class TimerTick 
+    {
+        private uint frame;
+        private uint startTick;
+        private uint nextTick;
+        private uint complement;
+
+        public TimerTick()
+        {
+            frame = 0;//一秒60次
+            startTick = (uint)Environment.TickCount;
+            nextTick = startTick + 1000u;
+        }
+
+        public bool CheckTimeout(uint tick, uint interval, bool sleep = false)//60帧
+        {
+            var frameRate = 1000u / interval;
+            if (tick >= nextTick)
+            {
+                if (complement > 0)
+                {
+                    nextTick = tick + complement;
+                    complement = 0;
+                    return false;
+                }
+                frame = 0;
+                startTick = tick;
+                nextTick = tick + 1000u;
+                if (startTick >= nextTick)
+                {
+                    complement = uint.MaxValue - tick;
+                    nextTick = uint.MaxValue;
+                }
+                return true;
+            }
+            else if (frame < frameRate & (tick - startTick) >= frame * interval)
+            {
+                frame++;
+                return true;
+            }
+            else if (sleep)
+            {
+                Thread.Sleep(1);
+            }
+            return false;
         }
     }
 }

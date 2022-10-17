@@ -102,7 +102,9 @@
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> tcpRPCModels = new QueueSafe<RPCModel>();
         internal QueueSafe<RPCModel> udpRPCModels = new QueueSafe<RPCModel>();
-        internal QueueSafe<RevdDataBuffer> revdQueue = new QueueSafe<RevdDataBuffer>();
+        //internal QueueSafe<RevdDataBuffer> RevdQueue = new QueueSafe<RevdDataBuffer>();
+        internal QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
+        internal ThreadGroup Group;
         public bool Login { get; internal set; }
         internal bool isDispose;
         /// <summary>

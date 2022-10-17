@@ -16,6 +16,16 @@ namespace Net.Server
     /// <typeparam name="Scene"></typeparam>
     public class UdpServerIOCP<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
+        protected override void StartSocketHandler()
+        {
+            ServerArgs = new SocketAsyncEventArgs { UserToken = Server };
+            ServerArgs.Completed += OnIOCompleted;
+            ServerArgs.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
+            ServerArgs.RemoteEndPoint = Server.LocalEndPoint;
+            if (!Server.ReceiveFromAsync(ServerArgs))
+                OnIOCompleted(null, ServerArgs);
+        }
+
         protected override void AcceptHander(Player client)
         {
             client.Gcp = new Plugins.GcpKernel();

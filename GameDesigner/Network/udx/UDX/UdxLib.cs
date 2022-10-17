@@ -97,10 +97,10 @@ namespace Udx
         public static extern bool UIsFullBuffs(IntPtr s); //判断，当前联接,是否已经缓冲满，如果满了，请调用wait或sleep，等待成为非满状态
 
         [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
-        public static extern void USetUserData(IntPtr s, long i64User);  //与联接，关联一个用户自定义的数据对象
+        public static extern void USetUserData(IntPtr s, IntPtr i64User);  //与联接，关联一个用户自定义的数据对象
 
         [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
-        public static extern long UGetUserData(IntPtr s);//获取，之前与这个联接关联的，用户自定义的数据对象
+        public static extern IntPtr UGetUserData(IntPtr s);//获取，之前与这个联接关联的，用户自定义的数据对象
 
         [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
         public static extern int UWait(IntPtr s, int ms); //等联接对象到可发状态

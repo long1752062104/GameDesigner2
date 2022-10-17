@@ -36,6 +36,7 @@ namespace Net.Server
     using global::System.Security.Cryptography;
     using Net.Plugins;
     using Microsoft.Win32;
+    using Net.Event;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -308,6 +309,14 @@ namespace Net.Server
         protected volatile int threadNum;
         protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
         /// <summary>
+        /// 线程组, 优化多线程资源竞争问题
+        /// </summary>
+        protected List<ThreadGroup> ThreadGroups = new List<ThreadGroup>();
+        /// <summary>
+        /// 线程组字典, key是线程唯一id
+        /// </summary>
+        protected MyDictionary<int, ThreadGroup> ThreadGroupDict = new MyDictionary<int, ThreadGroup>();
+        /// <summary>
         /// 排队队列
         /// </summary>
         protected ConcurrentQueue<Player> QueueUp = new ConcurrentQueue<Player>();
@@ -507,9 +516,9 @@ namespace Net.Server
         /// 当添加默认网络场景，服务器初始化后会默认创建一个主场景，供所有玩家刚登陆成功分配的临时场景，默认初始化场景人数为1000人
         /// </summary>
         /// <returns>返回值string：网络玩家所在的场景名称 , 返回值NetScene：网络玩家的场景对象</returns>
-        protected virtual KeyValuePair<string, Scene> OnAddDefaultScene()
+        protected virtual Scene OnAddDefaultScene()
         {
-            return new KeyValuePair<string, Scene>(MainSceneName, new Scene { Name = MainSceneName, sceneCapacity = 1000 });
+            return new Scene { Name = MainSceneName, sceneCapacity = 1000 };
         }
 
         /// <summary>
@@ -573,7 +582,8 @@ namespace Net.Server
         {
             if (client.OnOperationSync(list))
                 return;
-            if (Scenes.TryGetValue(client.SceneName, out Scene scene))
+            var scene = client.Scene as Scene;
+            if (scene != null)
                 scene.OnOperationSync(client, list);
         }
 
@@ -630,47 +640,73 @@ namespace Net.Server
             OnStartingHandle();
             if (Instance == null)
                 Instance = this;
-            OnAddRpcHandle(this, true, null);
-            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
-            Server.Bind(ip);
-#if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
-            uint IOC_IN = 0x80000000;
-            uint IOC_VENDOR = 0x18000000;
-            uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
-            Server.IOControl((int)SIO_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);//udp远程关闭现有连接方案
-#endif
+            AddRpc(this, true, null);
+            CreateServerSocket(port);
             IsRunServer = true;
-            StartReceive();
-            Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
-            send.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var rcvQueue = new QueueSafe<RevdDataBuffer>();
-                RcvQueues.Add(rcvQueue);
-                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
-                rcv.Start(rcvQueue);
-                threads.Add("RcvDataHandle" + i, rcv);
-            }
-            threads.Add("SendDataHandle", send);
-            threads.Add("SceneUpdateHandle", suh);
-            var scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
+            StartSocketHandler();
+            CreateSenderThread();
+            CreateSceneTickThread();
+            CreateOtherThread();
+            AddLoopEvent();
+            SetProcessThreads();
+            AddDefaultScene();
             OnStartupCompletedHandle();
 #if WINDOWS
             Win32KernelAPI.timeBeginPeriod(1);
 #endif
             InitUserID();
+        }
+
+        protected virtual void AddDefaultScene()
+        {
+            var scene = OnAddDefaultScene();
+            if (scene != null)
+            {
+                MainSceneName = scene.Name;
+                CreateScene(scene);
+            }
+        }
+
+        protected virtual void AddLoopEvent()
+        {
+            int id = 0;
+            taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
+            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+        }
+
+        protected virtual void CreateSenderThread()
+        {
+            var thread = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
+            thread.Start();
+            threads.Add("SendDataHandle", thread);
+        }
+
+        protected virtual void CreateSceneTickThread()
+        {
+            var thread = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneTickHandle" };
+            thread.Start();
+            threads.Add("SceneTickHandle", thread);
+        }
+
+        protected virtual void CreateOtherThread() { }
+
+        protected virtual void CreateServerSocket(ushort port)
+        {
+        }
+
+        protected void SetProcessThreads()
+        {
+            for (int i = 0; i < MaxThread; i++)
+            {
+                var group = new ThreadGroup() { Id = i + 1 };
+                var receive = new Thread(ProcessReceive) { IsBackground = true, Name = "ProcessReceive" + i };
+                receive.Start(group);
+                group.Thread = receive;
+                ThreadGroups.Add(group);
+                ThreadGroupDict[receive.ManagedThreadId] = group;
+                threads.Add("ProcessReceive" + i, receive);
+            }
         }
 
         protected void RegisterEvent()
@@ -707,16 +743,15 @@ namespace Net.Server
         /// </summary>
         protected virtual void SceneUpdateHandle()
         {
+            var timer = new TimerTick();
             uint tick = (uint)Environment.TickCount;
-            uint nextTick = tick + (uint)SyncSceneTime;
             while (IsRunServer)
             {
                 try
                 {
                     tick = (uint)Environment.TickCount;
-                    if (tick >= nextTick)
+                    if (timer.CheckTimeout(tick, (uint)SyncSceneTime, true))
                     {
-                        nextTick = tick + (uint)SyncSceneTime;
                         var result = Parallel.ForEach(Scenes.Values, scene =>
                         {
                             scene.Update(this, NetCmd.OperationSync);
@@ -726,7 +761,6 @@ namespace Net.Server
                             Thread.Sleep(1);
                         }
                     }
-                    else Thread.Sleep(1);
                 }
                 catch (Exception ex)
                 {
@@ -829,14 +863,8 @@ namespace Net.Server
         /// <summary>
         /// 开始接收数据
         /// </summary>
-        private void StartReceive()
+        protected virtual void StartSocketHandler()
         {
-            ServerArgs = new SocketAsyncEventArgs { UserToken = Server };
-            ServerArgs.Completed += OnIOCompleted;
-            ServerArgs.SetBuffer(new byte[ushort.MaxValue], 0, ushort.MaxValue);
-            ServerArgs.RemoteEndPoint = Server.LocalEndPoint;
-            if (!Server.ReceiveFromAsync(ServerArgs))
-                OnIOCompleted(null, ServerArgs);
         }
 
         protected virtual void OnIOCompleted(object sender, SocketAsyncEventArgs args)
@@ -883,6 +911,79 @@ namespace Net.Server
             }
         }
 
+        /// <summary>
+        /// 业务处理线程组
+        /// </summary>
+        /// <param name="obj"></param>
+        protected virtual void ProcessReceive(object obj)
+        {
+            var allClients = new Player[0];
+            uint tick = (uint)Environment.TickCount;
+            uint heartTick = tick + (uint)HeartInterval;
+            var group = obj as ThreadGroup;
+            var timer = new TimerTick();
+            var remotePoint = Server.LocalEndPoint;
+            while (IsRunServer)
+            {
+                try
+                {
+                    bool isSleep = true;
+                    ReceiveProcessed(remotePoint, ref isSleep);
+                    if (allClients.Length != AllClients.Count)
+                        allClients = AllClients.Values.ToArray();
+                    tick = (uint)Environment.TickCount;
+                    bool isCheckHeart = false;
+                    if (tick >= heartTick)
+                    {
+                        heartTick = tick + (uint)HeartInterval;
+                        isCheckHeart = true;
+                    }
+                    for (int i = 0; i < allClients.Length; i++)
+                    {
+                        var client = allClients[i];
+                        if (client.Group != group)
+                            continue;
+                        if (client.isDispose)
+                            continue;
+                        if (isCheckHeart)
+                            CheckHeart(client);
+                        if (client.CloseReceive)
+                            continue;
+                        ResolveDataQueue(client, ref isSleep);
+                    }
+                    if(isSleep)
+                        Thread.Sleep(1);
+                    revdLoopNum++;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError(ex.ToString());
+                }
+            }
+        }
+
+        protected virtual void ResolveDataQueue(Player client, ref bool isSleep)
+        {
+            while (client.RevdQueue.TryDequeue(out var segment))
+            {
+                DataCRCHandle(client, segment, false);
+                BufferPool.Push(segment);
+            }
+        }
+
+        protected virtual void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
+        {
+            if (Server.Poll(0, SelectMode.SelectRead))
+            {
+                var buffer = BufferPool.Take();
+                buffer.Count = Server.ReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref remotePoint);
+                receiveCount += buffer.Count;
+                receiveAmount++;
+                ReceiveProcessed(remotePoint, buffer, false);
+                isSleep = false;
+            }
+        }
+
         protected virtual void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
@@ -893,7 +994,7 @@ namespace Net.Server
                 BufferPool.Push(buffer);
                 return;
             }
-            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer, tcp_udp = tcp_udp });
+            client.RevdQueue.Enqueue(buffer);
         }
 
         protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
@@ -907,9 +1008,7 @@ namespace Net.Server
             client.PlayerID = uid.ToString();
             client.Name = uid.ToString();
             client.stackStream = BufferStreamShare.Take();
-            client.revdQueue = RcvQueues[threadNum];
-            if (++threadNum >= RcvQueues.Count)
-                threadNum = 0;
+            OnThreadQueueSet(client);
             AcceptHander(client);
             SetClientIdentity(client);
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
@@ -937,6 +1036,12 @@ namespace Net.Server
             return client;
         }
 
+        protected virtual void OnThreadQueueSet(Player client) 
+        {
+            var value = threadNum++;
+            client.Group = ThreadGroups[value % ThreadGroups.Count];
+        }
+
         protected virtual void AcceptHander(Player client) 
         {
         }
@@ -960,35 +1065,35 @@ namespace Net.Server
         }
 #endif
 
-        protected virtual void RcvDataHandle(object state)//处理线程
-        {
-            var revdQueue = state as QueueSafe<RevdDataBuffer>;
-            while (IsRunServer)
-            {
-                try
-                {
-                    revdLoopNum++;
-                    int count = revdQueue.Count;
-                    if (count <= 0)
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (revdQueue.TryDequeue(out RevdDataBuffer revdData))
-                        {
-                            DataCRCHandle(revdData.client as Player, revdData.buffer, false);
-                            BufferPool.Push(revdData.buffer);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning("处理异常:" + ex);
-                }
-            }
-        }
+        //protected virtual void RcvDataHandle(object state)//处理线程
+        //{
+        //    var revdQueue = state as QueueSafe<RevdDataBuffer>;
+        //    while (IsRunServer)
+        //    {
+        //        try
+        //        {
+        //            revdLoopNum++;
+        //            int count = revdQueue.Count;
+        //            if (count <= 0)
+        //            {
+        //                Thread.Sleep(1);
+        //                continue;
+        //            }
+        //            for (int i = 0; i < count; i++)
+        //            {
+        //                if (revdQueue.TryDequeue(out RevdDataBuffer revdData))
+        //                {
+        //                    DataCRCHandle(revdData.client as Player, revdData.buffer, false);
+        //                    BufferPool.Push(revdData.buffer);
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Debug.LogWarning("处理异常:" + ex);
+        //        }
+        //    }
+        //}
 
         protected virtual void DataCRCHandle(Player client, Segment buffer, bool isTcp)
         {
@@ -1298,7 +1403,7 @@ namespace Net.Server
                     }
                     break;
                 case NetCmd.OperationSync:
-                    OperationList list = OnDeserializeOpt(model.buffer, model.index, model.count);
+                    var list = OnDeserializeOpt(model.buffer, model.index, model.count);
                     OnOperationSyncHandle(client, list);
                     break;
                 case NetCmd.Ping:
@@ -1441,17 +1546,22 @@ namespace Net.Server
         protected virtual void SendDataHandle()//发送线程
         {
             var allClients = new Player[0];
+            var timer = new TimerTick();
+            var tick = (uint)Environment.TickCount;
             while (IsRunServer)
             {
                 try
                 {
-                    Thread.Sleep(1);
                     if (allClients.Length != AllClients.Count)
                         allClients = AllClients.Values.ToArray();
-                    var result = Parallel.ForEach(allClients, client => SendDirect(client));
-                    while (!result.IsCompleted)
-                        Thread.Sleep(1);
-                    sendLoopNum++;
+                    tick = (uint)Environment.TickCount;
+                    if (timer.CheckTimeout(tick, (uint)16, true)) 
+                    {
+                        var result = Parallel.ForEach(allClients, client => SendDirect(client));
+                        while (!result.IsCompleted)
+                            Thread.Sleep(1);
+                        sendLoopNum++;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1650,41 +1760,20 @@ namespace Net.Server
         }
 
         /// <summary>
-        /// 心跳检测处理线程
+        /// 检查心跳
         /// </summary>
-        protected bool CheckHeartHandler()
+        /// <param name="client"></param>
+        protected virtual void CheckHeart(Player client) 
         {
-            try
+            client.heart++;
+            if (client.heart <= HeartLimit)//有5次确认心跳包
+                return;
+            if (client.heart < HeartLimit * 2)
             {
-                HeartHandler();
+                Send(client, NetCmd.SendHeartbeat, new byte[0]);
+                return;
             }
-            catch (Exception ex)
-            {
-                Debug.Log("心跳异常: " + ex);
-            }
-            return IsRunServer;
-        }
-
-        /// <summary>
-        /// 心跳处理
-        /// </summary>
-        protected virtual void HeartHandler()
-        {
-            foreach (var item in AllClients)
-            {
-                var client = item.Value;
-                if (client == null)
-                    continue;
-                client.heart++;
-                if (client.heart <= HeartLimit)//有5次确认心跳包
-                    continue;
-                if (client.heart < HeartLimit * 2)
-                {
-                    Send(client, NetCmd.SendHeartbeat, new byte[0]);
-                    continue;
-                }
-                RemoveClient(client);
-            }
+            RemoveClient(client);
         }
 
         /// <summary>
@@ -1703,11 +1792,10 @@ namespace Net.Server
         /// </summary>
         /// <param name="player">创建网络场景的玩家实体</param>
         /// <param name="scene">创建场景的实体</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene CreateScene(Player player, Scene scene, Action<Scene> exitCurrentSceneCall = null)
+        public Scene CreateScene(Player player, Scene scene)
         {
-            return CreateScene(player, scene.Name, scene, exitCurrentSceneCall);
+            return CreateScene(player, scene.Name, scene);
         }
 
         /// <summary>
@@ -1716,20 +1804,23 @@ namespace Net.Server
         /// <param name="player">创建网络场景的玩家实体</param>
         /// <param name="name">要创建的场景号或场景名称</param>
         /// <param name="scene">创建场景的实体</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene CreateScene(Player player, string name, Scene scene, Action<Scene> exitCurrentSceneCall = null)
+        public Scene CreateScene(Player player, string name, Scene scene)
         {
-            if (string.IsNullOrEmpty(name))
+            scene.Name = name;
+            return CreateScene(player, scene, out _);
+        }
+
+        public Scene CreateScene(Player player, Scene scene, out Scene oldScene)
+        {
+            oldScene = player.Scene as Scene;
+            if (string.IsNullOrEmpty(scene.Name))
                 return null;
-            if (Scenes.TryAdd(name, scene))
+            if (Scenes.TryAdd(scene.Name, scene))
             {
-                if (Scenes.TryGetValue(player.SceneName, out Scene exitScene))
-                {
-                    exitScene.Remove(player);
-                    exitCurrentSceneCall?.Invoke(exitScene);
-                }
-                scene.Name = name;
+                if (oldScene != null)
+                    oldScene.Remove(player);
+                OnSceneGroupSet(scene);
                 scene.AddPlayer(player);
                 scene.onSerializeOptHandle = OnSerializeOpt;
                 return scene;
@@ -1755,15 +1846,34 @@ namespace Net.Server
         /// <returns></returns>
         public Scene CreateScene(string name, Scene scene)
         {
-            if (string.IsNullOrEmpty(name))
-                return null;
-            if (Scenes.TryAdd(name, scene))
+            scene.Name = name;
+            return CreateScene(scene);
+        }
+
+        /// <summary>
+        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        public Scene CreateScene(Scene scene)
+        {
+            if (string.IsNullOrEmpty(scene.Name))
             {
-                scene.Name = name;
+                Debug.LogError("创建的场景必须给名称,场景名称必须是唯一的!");
+                return null;
+            }
+            if (Scenes.TryAdd(scene.Name, scene))
+            {
+                OnSceneGroupSet(scene);
                 scene.onSerializeOptHandle = OnSerializeOpt;
                 return scene;
             }
             return null;
+        }
+
+        protected virtual void OnSceneGroupSet(Scene scene) 
+        {
         }
 
         /// <summary>
@@ -1771,41 +1881,74 @@ namespace Net.Server
         /// </summary>
         /// <param name="player">要进入sceneID场景的玩家实体</param>
         /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene JoinScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, name, exitCurrentSceneCall);
+        public Scene JoinScene(Player player, string name) => SwitchScene(player, name);
+
+        public Scene JoinScene(Player player, Scene scene) => SwitchScene(player, scene);
 
         /// <summary>
         /// 进入场景 - 成功进入返回true，进入失败返回false
         /// </summary>
         /// <param name="player">要进入sceneID场景的玩家实体</param>
         /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
         /// <returns></returns>
-        public Scene EnterScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null) => SwitchScene(player, name, exitCurrentSceneCall);
+        public Scene EnterScene(Player player, string name) => SwitchScene(player, name);
+
+        public Scene EnterScene(Player player, Scene scene) => SwitchScene(player, scene);
+        
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="name">场景名称</param>
+        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        public Scene SwitchScene(Player player, string name)
+        {
+            return SwitchScene(player, name, out _);
+        }
 
         /// <summary>
-        /// 退出当前场景,切换到指定的场景 - 成功进入返回true，进入失败返回false
+        /// 切换场景
         /// </summary>
-        /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-        /// <returns></returns>
-        public Scene SwitchScene(Player player, string name, Action<Scene> exitCurrentSceneCall = null)
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="name">场景名称</param>
+        /// <param name="oldScene">上次所在的场景</param>
+        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        public Scene SwitchScene(Player player, string name, out Scene oldScene)
         {
+            oldScene = player.Scene as Scene;
             if (string.IsNullOrEmpty(name))
                 return null;
             if (Scenes.TryGetValue(name, out Scene scene1))
-            {
-                if (Scenes.TryGetValue(player.SceneName, out Scene scene2))
-                {
-                    scene2.Remove(player);
-                    exitCurrentSceneCall?.Invoke(scene2);
-                }
-                scene1.AddPlayer(player);
-                return scene1;
-            }
+                return SwitchScene(player, scene1, out _);
             return null;
+        }
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="enterScene">要进入的场景</param>
+        /// <returns>进入的场景</returns>
+        public Scene SwitchScene(Player player, Scene enterScene)
+        {
+            return SwitchScene(player, enterScene, out _);
+        }
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="enterScene">要进入的场景</param>
+        /// <param name="oldScene">上次所在的场景</param>
+        /// <returns>进入的场景</returns>
+        public Scene SwitchScene(Player player, Scene enterScene, out Scene oldScene)
+        {
+            oldScene = player.Scene as Scene;
+            if (oldScene != null)
+                oldScene.Remove(player);
+            enterScene.AddPlayer(player);
+            return enterScene;
         }
 
         /// <summary>
@@ -1846,7 +1989,7 @@ namespace Net.Server
                         scene.OnRemove(p);
                         p.OnRemove();
                         p.Scene = null;
-                        p.SceneName = "";
+                        p.SceneName = string.Empty;
                     }
                 }
                 return true;
@@ -1966,6 +2109,8 @@ namespace Net.Server
             }
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
+            foreach (var item in threads)
+                item.Value.Abort();
             threads.Clear();
             RcvQueues.Clear();
             OnStartingHandle -= OnStarting;

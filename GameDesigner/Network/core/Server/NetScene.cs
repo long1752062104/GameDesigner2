@@ -48,7 +48,6 @@
         {
             get { return Players.Count; }
         }
-
         /// <summary>
         /// 获取场景当前人数
         /// </summary>
@@ -56,7 +55,6 @@
         {
             get { return Players.Count; }
         }
-
         /// <summary>
         /// 获取场景容纳人数
         /// </summary>
@@ -65,7 +63,6 @@
             get { return sceneCapacity; }
             set { sceneCapacity = value; }
         }
-
         /// <summary>
         /// 场景(房间)人数是否已满？
         /// </summary>
@@ -73,50 +70,24 @@
         {
             get { return Players.Count >= sceneCapacity; }
         }
-
         /// <summary>
         /// 操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
         /// </summary>
         public int Split { get; set; } = 500;
-
         /// <summary>
         /// 场景事件
         /// </summary>
         public TimerEvent Event = new TimerEvent();
-
         /// <summary>
-        /// 客户端注册游戏物体的唯一标识
+        /// 线程群组, 解决多线程竞争, Addopt方法, removeopt方法
         /// </summary>
-        internal int Identity;
+        public ThreadGroup Group;
 
         /// <summary>
         /// 构造网络场景
         /// </summary>
         public NetScene()
         {
-            //Event.AddEvent(5f, () =>
-            //{
-            //    var clients = Clients;
-            //    for (int i = 0; i < clients.Count; i++)
-            //    {
-            //        if (clients[i] == null)
-            //            continue;
-            //        if (!clients[i].Login | clients[i].isDispose | clients[i].CloseSend)
-            //        {
-            //            Clients.Remove(clients[i]);
-            //            break;
-            //        }
-            //        else if (clients[i].Client != null)
-            //        {
-            //            if (!clients[i].Client.Connected)
-            //            {
-            //                Clients.Remove(clients[i]);
-            //                break;
-            //            }
-            //        }
-            //    }
-            //    return true;
-            //});
         }
 
         /// <summary>
@@ -143,10 +114,8 @@
         /// 获取场景内的玩家到一维集合里
         /// </summary>
         /// <returns></returns>
-        public FastListSafe<Player> GetPlayers()
-        {
-            return Clients;
-        }
+        public FastListSafe<Player> GetPlayers() => Clients;
+
         /// <summary>
         /// 获取场景的所有客户端玩家
         /// </summary>
@@ -160,7 +129,9 @@
         {
             client.SceneName = Name;
             client.Scene = this;
-            if(Players.Add(client))
+            if (Group != null)
+                client.Group = Group;
+            if (Players.Add(client))
                 Clients.Add(client);
             OnEnter(client);
             client.OnEnter();
@@ -337,7 +308,7 @@
             OnExit(player);
             player.OnExit();
             player.Scene = null;
-            player.SceneName = "";
+            player.SceneName = string.Empty;
         }
 
         /// <summary>

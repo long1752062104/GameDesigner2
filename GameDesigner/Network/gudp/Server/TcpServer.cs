@@ -10,6 +10,7 @@
     using Net.System;
     using global::System.Security.Cryptography;
     using Net.Helper;
+    using Net.Event;
 
     /// <summary>
     /// TCP服务器类型
@@ -38,58 +39,24 @@
         public override int HeartInterval { get; set; } = 1000;
         public override byte HeartLimit { get; set; } = 5;
 
-        public override void Start(ushort port = 6666)
+        protected override void CreateOtherThread()
         {
-            if (Server != null)//如果服务器套接字已创建
-                throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
-            Port = port;
-            RegisterEvent();
-            Debug.BindLogAll(Log);
-            OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
-            AddRpcHandle(this, true);
+            var thread = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
+            thread.Start();
+            threads.Add("ProcessAcceptConnect", thread);
+        }
+
+        protected override void CreateServerSocket(ushort port)
+        {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.NoDelay = true;
             Server.Bind(ip);
             Server.Listen(LineUp);
-            IsRunServer = true;
-            Thread proAcc = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
-            proAcc.Start();
-            Thread proRevd = new Thread(ProcessReceive) { IsBackground = true, Name = "ProcessReceive" };
-            proRevd.Start();
-            Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
-            send.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var rcvQueue = new QueueSafe<RevdDataBuffer>();
-                RcvQueues.Add(rcvQueue);
-                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
-                rcv.Start(rcvQueue);
-                threads.Add("RcvDataHandle" + i, rcv);
-            }
-            threads.Add("ProcessAcceptConnect", proAcc);
-            threads.Add("ProcessReceiveFrom", proRevd);
-            threads.Add("SendDataHandle", send);
-            threads.Add("SceneUpdateHandle", suh);
-            var scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
-            OnStartupCompletedHandle();
-#if WINDOWS
-            Win32KernelAPI.timeBeginPeriod(1);
-#endif
-            InitUserID();
+        }
+
+        protected override void StartSocketHandler()
+        {
         }
 
         private void ProcessAcceptConnect()
@@ -108,82 +75,46 @@
             }
         }
 
-        private void ProcessReceive()
+        protected override void OnThreadQueueSet(Player client)
         {
-            var allClients = new Player[0];
-            while (IsRunServer)
+            var value = threadNum++;
+            client.Group = ThreadGroups[value % ThreadGroups.Count];
+        }
+
+        protected override void OnSceneGroupSet(Scene scene)
+        {
+            var value = threadNum++;
+            scene.Group = ThreadGroups[value % ThreadGroups.Count];
+        }
+
+        protected override void ResolveDataQueue(Player client, ref bool isSleep)
+        {
+            if (!client.Client.Connected)
+                return;
+            if (client.Client.Poll(0, SelectMode.SelectRead))
             {
-                try
+                var segment = BufferPool.Take();
+                segment.Count = client.Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                if (error != SocketError.Success)
                 {
-                    Thread.Sleep(1);
-                    if (allClients.Length != AllClients.Count)
-                        allClients = AllClients.Values.ToArray();
-                    for (int i = 0; i < allClients.Length; i++)
-                    {
-                        var client = allClients[i];
-                        if (client.CloseReceive)
-                            continue;
-                        if (!client.Client.Connected)
-                            continue;
-                        if (client.Client.Poll(0, SelectMode.SelectRead))
-                        {
-                            var segment = BufferPool.Take(65507);
-                            segment.Count = client.Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
-                            if (error != SocketError.Success)
-                            {
-                                BufferPool.Push(segment);
-                                continue;
-                            }
-                            if (segment.Count == 0)
-                            {
-                                BufferPool.Push(segment);
-                                continue;
-                            }
-                            receiveCount += segment.Count;
-                            receiveAmount++;
-                            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = segment, tcp_udp = true });
-                        }
-                    }
-                    revdLoopNum++;
+                    BufferPool.Push(segment);
+                    return;
                 }
-                catch (Exception ex)
+                if (segment.Count == 0)
                 {
-                    Debug.LogError(ex.ToString());
+                    BufferPool.Push(segment);
+                    return;
                 }
+                receiveCount += segment.Count;
+                receiveAmount++;
+                ResolveBuffer(client, ref segment);
+                BufferPool.Push(segment);
+                isSleep = false;
             }
         }
 
-        protected override void RcvDataHandle(object state)
+        protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
         {
-            var revdQueue = state as QueueSafe<RevdDataBuffer>;
-            while (IsRunServer)
-            {
-                try
-                {
-                    int count = revdQueue.Count;
-                    if (count <= 0)
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-                    while (count > 0)
-                    {
-                        count--;//避免崩错. 先--
-                        if (revdQueue.TryDequeue(out RevdDataBuffer revdData))
-                        {
-                            var client = revdData.client as Player;
-                            if (client.isDispose)//解决压力测试10000个客户端，每个客户端每秒10240个字节的数据包后出现的问题
-                                continue;
-                            ResolveBuffer(client, ref revdData.buffer);
-                            BufferPool.Push(revdData.buffer);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning("处理异常:" + ex);
-                }
-            }
         }
 
         protected override bool IsInternalCommand(Player client, RPCModel model)
@@ -266,29 +197,23 @@
             }
         }
 
-        protected override void HeartHandler()
+        protected override void CheckHeart(Player client)
         {
-            foreach (var item in AllClients)
+            if (!client.Client.Connected)
             {
-                var client = item.Value;
-                if (client == null)
-                    continue;
-                if (!client.Client.Connected)
-                {
-                    RemoveClient(client);
-                    continue;
-                }
-                if (client.heart > HeartLimit * 5)
-                {
-                    client.redundant = true;
-                    RemoveClient(client);
-                    continue;
-                }
-                client.heart++;
-                if (client.heart <= HeartLimit)//确认心跳包
-                    continue;
-                SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
+                RemoveClient(client);
+                return;
             }
+            if (client.heart > HeartLimit * 5)
+            {
+                client.redundant = true;
+                RemoveClient(client);
+                return;
+            }
+            client.heart++;
+            if (client.heart <= HeartLimit)//确认心跳包
+                return;
+            SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
         }
     }
 

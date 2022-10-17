@@ -26,19 +26,16 @@
         /// </summary>
         public new IntPtr Server;
         private UDXPRC uDXPRC;
-        private readonly ConcurrentDictionary<IntPtr, Player> peers = new ConcurrentDictionary<IntPtr, Player>();
 
         public override void Start(ushort port = 6666)
         {
             if (Server != IntPtr.Zero)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
-            Port = port;
-            RegisterEvent();
-            Debug.BindLogAll(Log);
-            OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
-            AddRpcHandle(this, true);
+            base.Start(port);
+        }
+
+        protected override void CreateServerSocket(ushort port)
+        {
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
             string path = AppDomain.CurrentDomain.BaseDirectory;
             if (!File.Exists(path + "\\FastUdxApi.dll"))
@@ -47,7 +44,7 @@
             if (!UdxLib.INIT)
             {
                 UdxLib.INIT = true;
-                UdxLib.UInit(8);
+                UdxLib.UInit(MaxThread);
             }
             UdxLib.UDXS.Add(this);
             Server = UdxLib.UCreateFUObj();
@@ -55,42 +52,13 @@
             uDXPRC = new UDXPRC(ProcessReceive);
             UdxLib.USetFUCB(Server, uDXPRC);
             GC.KeepAlive(uDXPRC);
-            IsRunServer = true;
-            Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
-            send.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var rcvQueue = new QueueSafe<RevdDataBuffer>();
-                RcvQueues.Add(rcvQueue);
-                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
-                rcv.Start(rcvQueue);
-                threads.Add("RcvDataHandle" + i, rcv);
-            }
-            threads.Add("SendDataHandle", send);
-            threads.Add("SceneUpdateHandle", suh);
-            KeyValuePair<string, Scene> scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
-            OnStartupCompletedHandle();
-#if WINDOWS
-            Win32KernelAPI.timeBeginPeriod(1);
-#endif
-            InitUserID();
         }
 
         protected void ProcessReceive(UDXEVENT_TYPE eventtype, int erro, IntPtr cli, IntPtr pData, int len)
         {
             try
             {
+                Player client = null;
                 switch (eventtype)
                 {
                     case UDXEVENT_TYPE.E_CONNECT:
@@ -103,29 +71,34 @@
                         string ip = Encoding.ASCII.GetString(ipbytes, 0, 128);
                         ip = ip.Replace("\0", "");
                         var remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
-                        var client = AcceptHander(null, remotePoint);
+                        client = AcceptHander(null, remotePoint);
                         client.Udx = cli;
-                        peers.TryAdd(cli, client);
+                        var handle = GCHandle.Alloc(client);
+                        var ptr = GCHandle.ToIntPtr(handle);
+                        UdxLib.USetUserData(cli, ptr);
+                        client.Handle = handle;
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
-                        if (peers.TryRemove(cli, out Player client2))
-                            RemoveClient(client2);
+                        var ptr1 = UdxLib.UGetUserData(cli);
+                        client = GCHandle.FromIntPtr(ptr1).Target as Player;
+                        if (client == null)
+                            return;
+                        RemoveClient(client);
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:
-                        if (peers.TryGetValue(cli, out Player client1))
-                        {
-                            client1.heart = 0;
-                            var buffer = BufferPool.Take(len);
-                            buffer.Count = len;
-                            Marshal.Copy(pData, buffer, 0, len);
-                            receiveCount += len;
-                            receiveAmount++;
-                            client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = buffer });
-                        }
-                        else
-                        {
-                            ProcessReceive(UDXEVENT_TYPE.E_CONNECT, erro, cli, pData, len);
-                        }
+                        var ptr2 = UdxLib.UGetUserData(cli);
+                        client = GCHandle.FromIntPtr(ptr2).Target as Player;
+                        if (client == null)
+                            return;
+                        client.heart = 0;
+                        var buffer = BufferPool.Take(len);
+                        buffer.Count = len;
+                        Marshal.Copy(pData, buffer, 0, len);
+                        receiveCount += len;
+                        receiveAmount++;
+                        //client.RevdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer });
+                        DataCRCHandle(client, buffer, false);
+                        BufferPool.Push(buffer);
                         break;
                 }
             }
@@ -166,7 +139,6 @@
         public override void RemoveClient(Player client)
         {
             base.RemoveClient(client);
-            peers.TryRemove(client.Udx, out _);
         }
 
         public override void Close()

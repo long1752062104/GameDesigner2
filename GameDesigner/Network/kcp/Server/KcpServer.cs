@@ -75,7 +75,7 @@
                 fixed (byte* p1 = &buffer1.Buffer[0])
                 {
                     buffer1.Count = ikcp_recv(client.Kcp, p1, len);
-                    client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer1, tcp_udp = false });
+                    client.RevdQueue.Enqueue(buffer1);
                 }
             }
             client.heart = 0;

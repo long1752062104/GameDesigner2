@@ -1378,6 +1378,7 @@
     <Compile Include="GameDesigner\Network\core\Share\SendBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVarAttribute.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVarInfo.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\ThreadGroup.cs" />
     <Compile Include="GameDesigner\Network\core\Share\TransportMode.cs" />
     <Compile Include="GameDesigner\Network\core\Share\UnZipHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\Win32KernelAPI.cs" />

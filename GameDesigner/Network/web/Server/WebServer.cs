@@ -52,64 +52,21 @@
             return true;
         }
 
-        /// <summary>
-        /// 启动服务器
-        /// </summary>
-        /// <param name="port">端口</param>
-        public override void Start(ushort port = 6666)
+        protected override void CreateServerSocket(ushort port)
         {
-            if (Server != null)//如果服务器套接字已创建
-                throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
-            Port = port;
-            RegisterEvent();
-            Debug.BindLogAll(Log);
-            OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
-            AddRpcHandle(this, true);
-            IPAddress ipAddress = IPAddress.Any;
-            IPEndPoint ip = new IPEndPoint(ipAddress, port);//IP端口设置
+            var ipAddress = IPAddress.Any;
+            var ip = new IPEndPoint(ipAddress, port);//IP端口设置
             Server = new WebSocketServer($"ws://{ip}");
             Server.ListenerSocket.NoDelay = true;
             Server.Start(AcceptConnect);
-            IsRunServer = true;
-            Thread send = new Thread(SendDataHandle) { IsBackground = true, Name = "SendDataHandle" };
-            send.Start();
-            Thread suh = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneUpdateHandle" };
-            suh.Start();
-            int id = 0;
-            taskIDs[id++] = ThreadManager.Invoke("DataTrafficThread", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            taskIDs[id++] = ThreadManager.Invoke("CheckHeartHandler", HeartInterval, CheckHeartHandler, true);
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var rcvQueue = new QueueSafe<RevdDataBuffer>();
-                RcvQueues.Add(rcvQueue);
-                var rcv = new Thread(RcvDataHandle) { IsBackground = true, Name = "RcvDataHandle" + i };
-                rcv.Start(rcvQueue);
-                threads.Add("RcvDataHandle" + i, rcv);
-            }
-            threads.Add("SendDataHandle", send);
-            threads.Add("SceneUpdateHandle", suh);
-            var scene = OnAddDefaultScene();
-            MainSceneName = scene.Key;
-            scene.Value.Name = scene.Key;
-            Scenes.TryAdd(scene.Key, scene.Value);
-            scene.Value.onSerializeOptHandle = OnSerializeOpt;
-            OnStartupCompletedHandle();
-#if WINDOWS
-            Win32KernelAPI.timeBeginPeriod(1);
-#endif
-            InitUserID();
         }
 
         //开始接受客户端连接
         private void AcceptConnect(IWebSocketConnection wsClient)
         {
-            WebSocketConnection wsClient1 = wsClient as WebSocketConnection;
-            Socket clientSocket = ((SocketWrapper)wsClient1.Socket)._socket;
-            EndPoint remotePoint = clientSocket.RemoteEndPoint;
+            var wsClient1 = wsClient as WebSocketConnection;
+            var clientSocket = ((SocketWrapper)wsClient1.Socket)._socket;
+            var remotePoint = clientSocket.RemoteEndPoint;
             wsClient1.OnOpen = () =>
             {
                 if (!UserIDStack.TryPop(out int uid))
@@ -121,8 +78,8 @@
             {
                 receiveCount += buffer.Length;
                 receiveAmount++;
-                if (AllClients.TryGetValue(remotePoint, out Player client1))//在线客户端  得到client对象
-                    WSRevdHandle(client1, buffer, message);
+                if (AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
+                    WSRevdHandle(client, buffer, message);
             };
             wsClient1.OnBinary = (buffer) =>
             {
@@ -131,8 +88,10 @@
                 segment.Count = buffer.Length;
                 receiveCount += buffer.Length;
                 receiveAmount++;
-                if (AllClients.TryGetValue(remotePoint, out Player client1))//在线客户端  得到client对象
-                    client1.revdQueue.Enqueue(new RevdDataBuffer() { client = client1, buffer = segment, tcp_udp = true });
+                if (AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
+                {
+                    client.RevdQueue.Enqueue(segment);
+                }
             };
             wsClient1.OnClose = () =>
             {
@@ -154,7 +113,7 @@
         {
             try
             {
-                MessageModel model = JsonConvert.DeserializeObject<MessageModel>(message);
+                var model = JsonConvert.DeserializeObject<MessageModel>(message);
                 RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars()) {
                     buffer = buffer, count = buffer.Length
                 };
@@ -163,24 +122,29 @@
             catch (Exception ex)
             {
                 Debug.LogError($"[{client.RemotePoint}][{client.UserID}]json解析出错:" + ex);
-                MessageModel model = new MessageModel(0, "error", new object[] { ex.Message });
+                var model = new MessageModel(0, "error", new object[] { ex.Message });
                 string jsonStr = JsonConvert.SerializeObject(model);
                 client.WSClient.Send(jsonStr);
             }
         }
 
-        protected override void HeartHandler()
+        protected override void CheckHeart(Player client)
         {
-            foreach (var item in AllClients)
+            if (!client.Client.Connected)
             {
-                var client = item.Value;
-                if (client == null)
-                    continue;
-                client.heart++;
-                if (client.heart <= HeartLimit)//有5次确认心跳包
-                    continue;
-                Send(client, NetCmd.SendHeartbeat, new byte[0]);
+                RemoveClient(client);
+                return;
             }
+            if (client.heart > HeartLimit * 5)
+            {
+                client.redundant = true;
+                RemoveClient(client);
+                return;
+            }
+            client.heart++;
+            if (client.heart <= HeartLimit)//确认心跳包
+                return;
+            SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
         }
 
         protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
@@ -211,7 +175,7 @@
         {
             if (!string.IsNullOrEmpty(model.func) | model.methodHash != 0)
             {
-                MessageModel model1 = new MessageModel(model.cmd, model.func, model.pars);
+                var model1 = new MessageModel(model.cmd, model.func, model.pars);
                 string jsonStr = JsonConvert.SerializeObject(model1);
                 byte[] jsonStrBytes = Encoding.UTF8.GetBytes(jsonStr);
                 byte[] bytes = new byte[jsonStrBytes.Length + 1];
@@ -227,7 +191,7 @@
             if (buffer[index++] == 32)
             {
                 var message = Encoding.UTF8.GetString(buffer, index, count - 1);
-                MessageModel model = JsonConvert.DeserializeObject<MessageModel>(message);
+                var model = JsonConvert.DeserializeObject<MessageModel>(message);
                 return new FuncData(model.func, model.GetPars());
             }
             return NetConvert.Deserialize(buffer, index, count - 1);

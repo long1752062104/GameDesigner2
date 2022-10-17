@@ -20,9 +20,9 @@
     [Serializable]
     public class UdxClient : ClientBase, IUDX
     {
-        private IntPtr udxObj;
+        protected IntPtr udxObj;
         public IntPtr ClientPtr { get; private set; }
-        private UDXPRC uDXPRC;
+        protected UDXPRC uDXPRC;
 
         /// <summary>
         /// 构造可靠传输客户端
@@ -139,8 +139,8 @@
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         Connected = false;
                         NetworkState = networkState = NetworkState.ConnectLost;
-                        rtRPCModels = new QueueSafe<RPCModel>();
-                        rPCModels = new QueueSafe<RPCModel>();
+                        rtRPCModels.Clear();
+                        rPCModels.Clear();
                         NDebug.Log("断开连接！");
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:
@@ -281,7 +281,7 @@
                     UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
                 }
                 byte[] buffer = new byte[dataLen];
-                using (MemoryStream stream = new MemoryStream(512))
+                using (MemoryStream stream = new MemoryStream())
                 {
                     int crcIndex = 0;
                     byte crcCode = 0x2d;
@@ -319,6 +319,144 @@
                 UdxLib.UDestroyFUObj(udxObj);
             }, cts.Token);
             return cts;
+        }
+
+        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<UdxClientTest> onInit = null, Action<List<UdxClientTest>> fpsAct = null, IAdapter adapter = null)
+        {
+            if (!UdxLib.INIT)
+            {
+                UdxLib.INIT = true;
+#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                if (!File.Exists(path + "\\FastUdxApi.dll"))
+                    throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
+#endif
+                UdxLib.UInit(8);
+            }
+            var cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                var clients = new List<UdxClientTest>();
+                for (int i = 0; i < clientLen; i++)
+                {
+                    var client = new UdxClientTest();
+                    onInit?.Invoke(client);
+                    if (adapter != null)
+                        client.AddAdapter(adapter);
+                    try
+                    {
+                        client.Connect(ip, port);
+                    }
+                    catch (Exception ex)
+                    {
+                        NDebug.LogError(ex);
+                        return;
+                    }
+                    clients.Add(client);
+                }
+                var buffer = new byte[dataLen];
+                Task.Run(() =>
+                {
+                    while (!cts.IsCancellationRequested)
+                    {
+                        Thread.Sleep(1000);
+                        fpsAct?.Invoke(clients);
+                        for (int i = 0; i < clients.Count; i++)
+                        {
+                            clients[i].NetworkFlowHandler();
+                            clients[i].fps = 0;
+                        }
+                    }
+                });
+                int threadNum = (clientLen / 1000) + 1;
+                for (int i = 0; i < threadNum; i++)
+                {
+                    int index = i * 1000;
+                    int end = index + 1000;
+                    if (index >= clientLen)
+                        break;
+                    Task.Run(() =>
+                    {
+                        if (end > clientLen)
+                            end = clientLen;
+                        var tick = Environment.TickCount + millisecondsTimeout;
+                        while (!cts.IsCancellationRequested)
+                        {
+                            bool canSend = false;
+                            if (Environment.TickCount >= tick)
+                            {
+                                tick = Environment.TickCount + millisecondsTimeout;
+                                canSend = true;
+                            }
+                            for (int ii = index; ii < end; ii++)
+                            {
+                                try
+                                {
+                                    var client = clients[ii];
+                                    if (canSend)
+                                    {
+                                        //client.SendRT(NetCmd.Local, buffer);
+                                        client.AddOperation(new Operation(66, buffer));
+                                        client.SendDirect();
+                                    }
+                                    client.NetworkEventUpdate();
+                                }
+                                catch (Exception ex)
+                                {
+                                    NDebug.LogError(ex);
+                                }
+                            }
+                        }
+                    });
+                }
+                while (!cts.IsCancellationRequested)
+                    Thread.Sleep(30);
+                Thread.Sleep(100);
+                for (int i = 0; i < clients.Count; i++)
+                    clients[i].Close(false);
+            }, cts.Token);
+            return cts;
+        }
+    }
+
+    public class UdxClientTest : UdxClient
+    {
+        public int fps;
+        public int revdSize { get { return receiveCount; } }
+        public int sendSize { get { return sendCount; } }
+        public int sendNum { get { return sendAmount; } }
+        public int revdNum { get { return receiveAmount; } }
+        public int resolveNum { get { return receiveAmount; } }
+
+        public UdxClientTest()
+        {
+            OnRevdBufferHandle += (model) => { fps++; };
+            OnOperationSync += (list) => { fps++; };
+        }
+        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        {
+            udxObj = UdxLib.UCreateFUObj();
+            UdxLib.UBind(udxObj, null, 0);
+            uDXPRC = new UDXPRC(ProcessReceive);
+            UdxLib.USetFUCB(udxObj, uDXPRC);
+            GC.KeepAlive(uDXPRC);
+            string host1 = host;
+            if (host == "127.0.0.1")
+                host1 = Server.NetPort.GetIP();
+            UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
+            return Task.FromResult(true);
+        }
+        protected override void StartupThread() { }
+
+        protected override void OnConnected(bool result) { }
+
+        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+        {
+            base.SendByteData(buffer, reliable);
+        }
+        public override string ToString()
+        {
+            return $"uid:{Identify} conv:{Connected}";
         }
     }
 }
