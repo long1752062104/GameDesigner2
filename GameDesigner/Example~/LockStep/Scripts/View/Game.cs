@@ -3,6 +3,7 @@ using ECS;
 using Net.Client;
 using Net.Component;
 using Net.Share;
+using Net.System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -13,9 +14,10 @@ namespace LockStep.Client
     {
         private int frame;
         private readonly List<OperationList> snapshots=new List<OperationList>();
-        private int logicFrame;
+        private int logicFrame, frame1;
+        public int frame2;
+        public uint delay;
         public GameSystem gameSystem = new GameSystem();
-
         public GameObject @object;
         public GameObject enemyObj;
         public Net.Vector3 direction;
@@ -32,7 +34,6 @@ namespace LockStep.Client
                 actor.objectView = actor.gameObject.GetComponent<ObjectView>();
                 actor.objectView.actor = actor;
                 actor.objectView.anim = actor.gameObject.GetComponent<Animation>();
-                //actor.transform = actor.gameObject.GetComponent<TSTransform>();
                 actor.rigidBody = actor.gameObject.GetComponent<Rigidbody>();
                 if (opt.identity == ClientBase.Instance.UID)
                     FindObjectOfType<ARPGcamera>().target = actor.gameObject.transform;
@@ -56,6 +57,18 @@ namespace LockStep.Client
 
             Physics.autoSimulation = false;
             Physics.autoSyncTransforms = false;
+
+            ThreadManager.Invoke("", 1f, ()=> 
+            {
+                frame2 = frame - frame1;
+                frame1 = frame;
+                ClientBase.Instance?.Ping();
+                return ClientBase.Instance != null;
+            });
+
+            ClientBase.Instance.OnPingCallback += (delay) => {
+                this.delay = delay;
+            };
         }
 
         private void OnOperationSync(OperationList list)

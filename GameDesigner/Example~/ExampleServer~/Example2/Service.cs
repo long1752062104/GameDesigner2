@@ -46,10 +46,10 @@
         /// 当添加默认场景的时候
         /// </summary>
         /// <returns></returns>
-        protected override KeyValuePair<string, Scene> OnAddDefaultScene()
+        protected override Scene OnAddDefaultScene()
         {
             //我们创建了一个名为 "主场景" 的一个场景对象, 并且可以容纳1000的场景
-            return new KeyValuePair<string, Scene>("主场景", new Scene() { sceneCapacity = 1000 });
+            return new Scene() { Name = "主场景", sceneCapacity = 1000 };
         }
 
         /// <summary>

@@ -123,6 +123,62 @@ public static class ArrayExtend
         }
     }
 
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetActiveAll<T>(this T[] self, bool active, int start, int end) where T : Object
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (self[i] is GameObject go)
+                go.SetActive(i < start | i >= end ? !active : active);
+            else if (self[i] is MonoBehaviour mb)
+                mb.gameObject.SetActive(i < start | i >= end ? !active : active);
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetActiveAll<T>(this List<T> self, bool active, int start, int end) where T : Object
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (self[i] is GameObject go)
+                go.SetActive(i < start | i >= end ? !active : active);
+            else if (self[i] is MonoBehaviour mb)
+                mb.gameObject.SetActive(i < start | i >= end ? !active : active);
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetActiveAll<T>(this T[] self, bool active, int index) where T : Object
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (self[i] is GameObject go)
+                go.SetActive(i != index ? !active : active);
+            else if (self[i] is MonoBehaviour mb)
+                mb.gameObject.SetActive(i != index ? !active : active);
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetActiveAll<T>(this List<T> self, bool active, int index) where T : Object
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (self[i] is GameObject go)
+                go.SetActive(i != index ? !active : active);
+            else if (self[i] is MonoBehaviour mb)
+                mb.gameObject.SetActive(i != index ? !active : active);
+        }
+    }
+
     public static void SetEnableds<T>(this T[] self, bool active) where T : Object
     {
         for (int i = 0; i < self.Length; i++)

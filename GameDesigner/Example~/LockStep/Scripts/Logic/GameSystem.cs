@@ -44,8 +44,7 @@ namespace LockStep.Client
                 }
             }
             Update();
-            for (int i = 0; i < 5; i++)//要让每秒达到60帧或以上
-                Physics.Simulate(0.02f);
+            Physics.Simulate(0.1f);
             EventSystem.UpdateEvent();//事件帧同步更新
         }
 

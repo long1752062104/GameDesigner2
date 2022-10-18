@@ -45,6 +45,7 @@
             {
                 UdxLib.INIT = true;
                 UdxLib.UInit(MaxThread);
+                UdxLib.UEnableLog(false);
             }
             UdxLib.UDXS.Add(this);
             Server = UdxLib.UCreateFUObj();
@@ -52,6 +53,10 @@
             uDXPRC = new UDXPRC(ProcessReceive);
             UdxLib.USetFUCB(Server, uDXPRC);
             GC.KeepAlive(uDXPRC);
+        }
+
+        protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
+        {
         }
 
         protected void ProcessReceive(UDXEVENT_TYPE eventtype, int erro, IntPtr cli, IntPtr pData, int len)
@@ -96,9 +101,7 @@
                         Marshal.Copy(pData, buffer, 0, len);
                         receiveCount += len;
                         receiveAmount++;
-                        //client.RevdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = buffer });
-                        DataCRCHandle(client, buffer, false);
-                        BufferPool.Push(buffer);
+                        client.RevdQueue.Enqueue(buffer);
                         break;
                 }
             }
@@ -161,5 +164,12 @@
         {
             Close();
         }
+    }
+
+    /// <summary>
+    /// 默认udx服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class UdxServer : UdxServer<UdxPlayer, NetScene<UdxPlayer>>
+    {
     }
 }

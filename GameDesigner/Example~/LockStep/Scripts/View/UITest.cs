@@ -40,13 +40,12 @@ public class UITest : SingleCase<UITest>
             await Task.Yield();
         }
         ClientBase.Instance.AddRpcHandle(this);
-        ThreadManager.Invoke(1f, ()=> {
-            ClientBase.Instance.Ping();
-            return true;
-        });
-        ClientBase.Instance.OnPingCallback += (delay) => {
-            text.text = "网络延迟:" + delay;
-        };
+    }
+
+    private void Update()
+    {
+        var i = LockStep.Client.Game.I;
+        text.text = $"网络帧:{i.frame2}/秒 延迟:{i.delay}/秒";
     }
 
     [Rpc]

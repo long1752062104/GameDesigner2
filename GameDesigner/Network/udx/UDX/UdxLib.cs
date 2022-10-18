@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
+using UDXObj = System.IntPtr;
 
 namespace Udx
 {
@@ -195,5 +196,14 @@ namespace Udx
 
         [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
         public static extern void USetGameMode(IntPtr s, bool bGameMode);
+
+        [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
+        public static extern int UGetLinkLost(IntPtr s);
+        [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
+        public static extern int UGetLinkInternalType(IntPtr s);
+        [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
+        public static extern void UEnableLog(bool bEnable);
+        [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
+        public static extern UDXObj UCreateFUObjMini(int thread, int udp);//创建一个指定线程数的UDXOBJ对象	
     }
 }

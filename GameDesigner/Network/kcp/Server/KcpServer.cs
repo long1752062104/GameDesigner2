@@ -9,6 +9,7 @@
     using global::System.Threading;
     using static Kcp.KcpLib;
     using Net.System;
+    using global::System.Net.Sockets;
 
     /// <summary>
     /// kcp服务器
@@ -38,6 +39,19 @@
             ikcp_allocator(mallocPtr, freePtr);
         }
 
+        protected override void CreateServerSocket(ushort port)
+        {
+            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
+            Server.Bind(ip);
+#if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
+            uint IOC_IN = 0x80000000;
+            uint IOC_VENDOR = 0x18000000;
+            uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
+            Server.IOControl((int)SIO_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);//udp远程关闭现有连接方案
+#endif
+        }
+
         private unsafe IntPtr Ikcp_malloc_hook(int size)
         {
             return Marshal.AllocHGlobal(size);
@@ -59,27 +73,29 @@
             client.Kcp = kcp;
         }
 
-        protected unsafe override void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
+        protected unsafe override void ResolveDataQueue(Player client, ref bool isSleep)
         {
-            if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
-                client = AcceptHander(null, remotePoint);
-            fixed (byte* p = &buffer.Buffer[0])
+            while (client.RevdQueue.TryDequeue(out var segment))
             {
-                ikcp_input(client.Kcp, p, buffer.Count);
-            }
-            ikcp_update(client.Kcp, (uint)Environment.TickCount);
-            int len;
-            while ((len = ikcp_peeksize(client.Kcp)) > 0)
-            {
-                var buffer1 = BufferPool.Take();//注意下面没有Push, 是因为还有处理线程在使用这个buffer, Push在Handle线程处理
-                fixed (byte* p1 = &buffer1.Buffer[0])
+                fixed (byte* p = &segment.Buffer[0])
                 {
-                    buffer1.Count = ikcp_recv(client.Kcp, p1, len);
-                    client.RevdQueue.Enqueue(buffer1);
+                    ikcp_input(client.Kcp, p, segment.Count);
                 }
+                ikcp_update(client.Kcp, (uint)Environment.TickCount);
+                int len;
+                while ((len = ikcp_peeksize(client.Kcp)) > 0)
+                {
+                    var segment1 = BufferPool.Take(len);
+                    fixed (byte* p1 = &segment1.Buffer[0])
+                    {
+                        segment1.Count = ikcp_recv(client.Kcp, p1, len);
+                        DataCRCHandle(client, segment1, false);
+                        BufferPool.Push(segment1);
+                    }
+                }
+                BufferPool.Push(segment);
+                client.heart = 0;
             }
-            client.heart = 0;
-            BufferPool.Push(buffer);
         }
 
         protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)

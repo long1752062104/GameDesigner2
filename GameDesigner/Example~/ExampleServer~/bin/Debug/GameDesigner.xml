@@ -1608,15 +1608,6 @@
             </summary>
             <param name="useUnityThread">使用unity多线程?</param>
         </member>
-        <member name="M:Net.Client.UdxClient.Testing(System.String,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            udx压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
         <member name="T:Net.Client.WebClient">
             <summary>
             web客户端类型
@@ -2778,9 +2769,9 @@
             场景事件
             </summary>
         </member>
-        <member name="F:Net.Server.NetScene`1.Identity">
+        <member name="F:Net.Server.NetScene`1.Group">
             <summary>
-            客户端注册游戏物体的唯一标识
+            线程群组, 解决多线程竞争, Addopt方法, removeopt方法
             </summary>
         </member>
         <member name="M:Net.Server.NetScene`1.#ctor">
@@ -3221,6 +3212,16 @@
             单线程调用队列
             </summary>
         </member>
+        <member name="F:Net.Server.ServerBase`2.ThreadGroups">
+            <summary>
+            线程组, 优化多线程资源竞争问题
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`2.ThreadGroupDict">
+            <summary>
+            线程组字典, key是线程唯一id
+            </summary>
+        </member>
         <member name="F:Net.Server.ServerBase`2.QueueUp">
             <summary>
             排队队列
@@ -3556,10 +3557,16 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.StartReceive">
+        <member name="M:Net.Server.ServerBase`2.StartSocketHandler">
             <summary>
             开始接收数据
             </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.ProcessReceive(System.Object)">
+            <summary>
+            业务处理线程组
+            </summary>
+            <param name="obj"></param>
         </member>
         <member name="M:Net.Server.ServerBase`2.LoginHandle(`0)">
             <summary>
@@ -3586,15 +3593,11 @@
             <param name="client">客户端</param>
             <param name="model">数据模型</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.CheckHeartHandler">
+        <member name="M:Net.Server.ServerBase`2.CheckHeart(`0)">
             <summary>
-            心跳检测处理线程
+            检查心跳
             </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.HeartHandler">
-            <summary>
-            心跳处理
-            </summary>
+            <param name="client"></param>
         </member>
         <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String)">
             <summary>
@@ -3604,23 +3607,21 @@
             <param name="name">要创建的场景号或场景名称</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,`1,System.Action{`1})">
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,`1)">
             <summary>
             创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
             </summary>
             <param name="player">创建网络场景的玩家实体</param>
             <param name="scene">创建场景的实体</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String,`1,System.Action{`1})">
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String,`1)">
             <summary>
             创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
             </summary>
             <param name="player">创建网络场景的玩家实体</param>
             <param name="name">要创建的场景号或场景名称</param>
             <param name="scene">创建场景的实体</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
         <member name="M:Net.Server.ServerBase`2.CreateScene(System.String)">
@@ -3638,32 +3639,63 @@
             <param name="scene"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.JoinScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`1)">
+            <summary>
+            创建一个场景, 成功则返回场景对象, 创建失败则返回null
+            </summary>
+            <param name="name"></param>
+            <param name="scene"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.JoinScene(`0,System.String)">
             <summary>
             退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
             <param name="name">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.EnterScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Server.ServerBase`2.EnterScene(`0,System.String)">
             <summary>
             进入场景 - 成功进入返回true，进入失败返回false
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
             <param name="name">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String)">
             <summary>
-            退出当前场景,切换到指定的场景 - 成功进入返回true，进入失败返回false
+            切换场景
             </summary>
-            <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="name">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-            <returns></returns>
+            <param name="player">要操作的玩家</param>
+            <param name="name">场景名称</param>
+            <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String,`1@)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="name">场景名称</param>
+            <param name="oldScene">上次所在的场景</param>
+            <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="enterScene">要进入的场景</param>
+            <returns>进入的场景</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1,`1@)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="enterScene">要进入的场景</param>
+            <param name="oldScene">上次所在的场景</param>
+            <returns>进入的场景</returns>
         </member>
         <member name="M:Net.Server.ServerBase`2.ExitScene(`0,System.Boolean,System.Action{`1})">
             <summary>
@@ -4107,12 +4139,6 @@
             <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
             </summary>
         </member>
-        <member name="M:Net.Server.UdpServer`2.Start(System.UInt16)">
-            <summary>
-            启动服务器
-            </summary>
-            <param name="port">端口</param>
-        </member>
         <member name="T:Net.Server.UdpServer">
             <summary>
             默认udp服务器，当不需要处理Player对象和Scene对象时可使用
@@ -4186,6 +4212,11 @@
             udx服务器对象
             </summary>
         </member>
+        <member name="T:Net.Server.UdxServer">
+            <summary>
+            默认udx服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
         <member name="T:Net.Server.WebPlayer">
             <summary>
             web客户端对象
@@ -4231,12 +4262,6 @@
             <param name="unClient">客户端终端</param>
             <param name="model"></param>
             <returns></returns>
-        </member>
-        <member name="M:Net.Server.WebServer`2.Start(System.UInt16)">
-            <summary>
-            启动服务器
-            </summary>
-            <param name="port">端口</param>
         </member>
         <member name="T:Net.Share.NetworkState">
             <summary>
@@ -4566,41 +4591,37 @@
             <param name="sceneID">要创建的场景号或场景名称</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.INetworkSceneHandle`2.CreateScene(`0,System.String,`1,System.Action{`1})">
+        <member name="M:Net.Share.INetworkSceneHandle`2.CreateScene(`0,System.String,`1)">
             <summary>
             创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
             </summary>
             <param name="player">创建网络场景的玩家实体</param>
             <param name="sceneID">要创建的场景号或场景名称</param>
             <param name="scene">创建场景的实体</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.INetworkSceneHandle`2.JoinScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Share.INetworkSceneHandle`2.JoinScene(`0,System.String)">
             <summary>
             退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
             <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.INetworkSceneHandle`2.EnterScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Share.INetworkSceneHandle`2.EnterScene(`0,System.String)">
             <summary>
             进入场景 - 成功进入返回true，进入失败返回false
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
             <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.INetworkSceneHandle`2.SwitchScene(`0,System.String,System.Action{`1})">
+        <member name="M:Net.Share.INetworkSceneHandle`2.SwitchScene(`0,System.String)">
             <summary>
             退出当前场景,切换到指定的场景 - 成功进入返回true，进入失败返回false
             </summary>
             <param name="player">要进入sceneID场景的玩家实体</param>
             <param name="sceneID">场景ID，要切换到的场景号或场景名称</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
         <member name="M:Net.Share.INetworkSceneHandle`2.ExitScene(`0,System.Boolean,System.Action{`1})">

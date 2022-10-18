@@ -231,6 +231,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50a7b70453c7df04b9e4fdea2b4d6655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  frame2: 0
+  delay: 0
   gameSystem:
     playersView: []
   object: {fileID: 619350524187274750, guid: 5efec1cf334b8274a8d38c63b3fb868f, type: 3}
@@ -459,7 +461,7 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
+    m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 
@@ -1080,7 +1082,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43dd04617c9f105449b227e016c972a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  protocol: 1
+  protocol: 2
   ip: 127.0.0.1
   port: 6666
   throwException: 0

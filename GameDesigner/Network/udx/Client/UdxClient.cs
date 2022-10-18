@@ -58,6 +58,7 @@
                     throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
 #endif
                 UdxLib.UInit(1);
+                UdxLib.UEnableLog(false);
             }
             UdxLib.UDXS.Add(this);
             return base.Connect(host, port, localPort, result);
@@ -229,98 +230,6 @@
             NDebug.Log("客户端已关闭！");
         }
 
-        /// <summary>
-        /// udx压力测试
-        /// </summary>
-        /// <param name="ip">服务器ip</param>
-        /// <param name="port">服务器端口</param>
-        /// <param name="clientLen">测试客户端数量</param>
-        /// <param name="dataLen">每个客户端数据大小</param>
-        public unsafe static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen)
-        {
-            if (!UdxLib.INIT)
-            {
-                UdxLib.INIT = true;
-#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
-                string path = AppDomain.CurrentDomain.BaseDirectory;
-                if (!File.Exists(path + "\\FastUdxApi.dll"))
-                    throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
-#endif
-                UdxLib.UInit(8);
-            }
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Task.Run(() =>
-            {
-                List<IntPtr> clients = new List<IntPtr>();
-                string host1 = ip;
-                if (host1 == "127.0.0.1")
-                    host1 = Server.NetPort.GetIP();
-                IntPtr udxObj = UdxLib.UCreateFUObj();
-                UdxLib.UBind(udxObj, null, 0);
-                UdxLib.USetFUCB(udxObj, (type, erro, cli, pData, len) =>
-                {
-                    switch (type)
-                    {
-                        case UDXEVENT_TYPE.E_CONNECT:
-                            if (erro != 0)
-                                return;
-                            clients.Add(cli);
-                            UdxLib.UDump(cli);
-                            UdxLib.USetGameMode(cli, true);
-                            break;
-                        case UDXEVENT_TYPE.E_LINKBROKEN:
-                            NDebug.Log("断开连接！");
-                            break;
-                        case UDXEVENT_TYPE.E_DATAREAD:
-
-                            break;
-                    }
-                });
-                for (int i = 0; i < clientLen; i++)
-                {
-                    UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
-                }
-                byte[] buffer = new byte[dataLen];
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    int crcIndex = 0;
-                    byte crcCode = 0x2d;
-                    stream.Write(new byte[4], 0, 4);
-                    stream.WriteByte((byte)crcIndex);
-                    stream.WriteByte(crcCode);
-                    RPCModel rPCModel = new RPCModel(NetCmd.CallRpc, buffer);
-                    stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
-                    stream.WriteByte(rPCModel.cmd);
-                    stream.Write(BitConverter.GetBytes(rPCModel.buffer.Length), 0, 4);
-                    stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-
-                    stream.Position = 0;
-                    int len = (int)stream.Length - 6;
-                    stream.Write(BitConverter.GetBytes(len), 0, 4);
-                    stream.Position = len + 6;
-                    buffer = stream.ToArray();
-                }
-                fixed (byte* ptr = buffer) 
-                {
-                    while (!cts.IsCancellationRequested)
-                    {
-                        Thread.Sleep(31);
-                        for (int i = 0; i < clients.Count; i++)
-                        {
-                            int count = UdxLib.USend(clients[i], ptr, buffer.Length);
-                        }
-                    }
-                }
-                for (int i = 0; i < clients.Count; i++)
-                {
-                    UdxLib.UClose(clients[i]);
-                    UdxLib.UUndump(clients[i]);
-                }
-                UdxLib.UDestroyFUObj(udxObj);
-            }, cts.Token);
-            return cts;
-        }
-
         public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<UdxClientTest> onInit = null, Action<List<UdxClientTest>> fpsAct = null, IAdapter adapter = null)
         {
             if (!UdxLib.INIT)
@@ -332,6 +241,7 @@
                     throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
 #endif
                 UdxLib.UInit(8);
+                UdxLib.UEnableLog(false);
             }
             var cts = new CancellationTokenSource();
             Task.Run(() =>

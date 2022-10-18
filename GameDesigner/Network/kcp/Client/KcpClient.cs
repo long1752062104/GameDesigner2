@@ -97,12 +97,12 @@
                 int len;
                 while ((len = ikcp_peeksize(kcp)) > 0)
                 {
-                    segment.SetPositionLength(0);
-                    segment.Count = len;
-                    fixed (byte* p1 = &segment.Buffer[0])
+                    var segment1 = BufferPool.Take(len);
+                    fixed (byte* p1 = &segment1.Buffer[0])
                     {
-                        ikcp_recv(kcp, p1, len);
-                        ResolveBuffer(ref segment, false);
+                        segment1.Count = ikcp_recv(kcp, p1, len);
+                        ResolveBuffer(ref segment1, false);
+                        BufferPool.Push(segment1);
                     }
                     revdLoopNum++;
                 }

@@ -921,8 +921,9 @@ namespace Net.Server
             uint tick = (uint)Environment.TickCount;
             uint heartTick = tick + (uint)HeartInterval;
             var group = obj as ThreadGroup;
-            var timer = new TimerTick();
-            var remotePoint = Server.LocalEndPoint;
+            EndPoint remotePoint = null;
+            if (Server != null)
+                remotePoint = Server.LocalEndPoint;
             while (IsRunServer)
             {
                 try
@@ -948,8 +949,9 @@ namespace Net.Server
                         if (isCheckHeart)
                             CheckHeart(client);
                         if (client.CloseReceive)
-                            continue;
+                            goto J;
                         ResolveDataQueue(client, ref isSleep);
+                        J: OnClientTick(client);
                     }
                     if(isSleep)
                         Thread.Sleep(1);
@@ -960,6 +962,10 @@ namespace Net.Server
                     Debug.LogError(ex.ToString());
                 }
             }
+        }
+
+        protected virtual void OnClientTick(Player client)
+        {
         }
 
         protected virtual void ResolveDataQueue(Player client, ref bool isSleep)
