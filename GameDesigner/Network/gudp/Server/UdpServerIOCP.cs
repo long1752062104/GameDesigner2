@@ -14,7 +14,7 @@ namespace Net.Server
     /// </summary>
     /// <typeparam name="Player"></typeparam>
     /// <typeparam name="Scene"></typeparam>
-    public class UdpServerIOCP<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
+    public class UdpServerIocp<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
         protected override void StartSocketHandler()
         {
@@ -67,5 +67,5 @@ namespace Net.Server
     /// <summary>
     /// 默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
     /// </summary>
-    public class UdpServerIOCP : UdpServerIOCP<NetPlayer, DefaultScene> { }
+    public class UdpServerIocp : UdpServerIocp<NetPlayer, DefaultScene> { }
 }

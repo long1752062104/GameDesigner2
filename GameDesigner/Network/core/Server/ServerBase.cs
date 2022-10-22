@@ -1071,36 +1071,6 @@ namespace Net.Server
         }
 #endif
 
-        //protected virtual void RcvDataHandle(object state)//处理线程
-        //{
-        //    var revdQueue = state as QueueSafe<RevdDataBuffer>;
-        //    while (IsRunServer)
-        //    {
-        //        try
-        //        {
-        //            revdLoopNum++;
-        //            int count = revdQueue.Count;
-        //            if (count <= 0)
-        //            {
-        //                Thread.Sleep(1);
-        //                continue;
-        //            }
-        //            for (int i = 0; i < count; i++)
-        //            {
-        //                if (revdQueue.TryDequeue(out RevdDataBuffer revdData))
-        //                {
-        //                    DataCRCHandle(revdData.client as Player, revdData.buffer, false);
-        //                    BufferPool.Push(revdData.buffer);
-        //                }
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Debug.LogWarning("处理异常:" + ex);
-        //        }
-        //    }
-        //}
-
         protected virtual void DataCRCHandle(Player client, Segment buffer, bool isTcp)
         {
             if (MD5CRC)
@@ -1255,10 +1225,10 @@ namespace Net.Server
                 IPHostEntry iPHostEntry = Dns.GetHostEntry(hostName);
                 IPAddress ipAddress = IPAddress.Any;
                 foreach (IPAddress ipAdd in iPHostEntry.AddressList)
-                    if (ipAdd.AddressFamily.ToString() == "InterNetwork")
+                    if (ipAdd.AddressFamily == AddressFamily.InterNetwork)
                         ipAddress = ipAdd;
-                byte[] b = Encoding.Unicode.GetBytes(ipAddress.ToString());
-                Server.SendTo(b, client.RemotePoint);
+                var buffer = Encoding.Unicode.GetBytes(ipAddress.ToString());
+                Server.SendTo(buffer, client.RemotePoint);
                 return true;
             }
             return false;

@@ -113,16 +113,26 @@
 
         public static void BindLogAll(Action<string> log)
         {
-            LogHandle += log;
-            LogWarningHandle += log;
-            LogErrorHandle += log;
+            BindLogAll(log, log, log);
+        }
+
+        public static void BindLogAll(Action<string> log, Action<string> warning, Action<string> error)
+        {
+            if (log != null) LogHandle += log;
+            if (warning != null) LogWarningHandle += warning;
+            if (error != null) LogErrorHandle += error;
         }
 
         public static void RemoveLogAll(Action<string> log)
         {
-            LogHandle -= log;
-            LogWarningHandle -= log;
-            LogErrorHandle -= log;
+            RemoveLogAll(log, log, log);
+        }
+
+        public static void RemoveLogAll(Action<string> log, Action<string> warning, Action<string> error)
+        {
+            if (log != null) LogHandle -= log;
+            if (warning != null) LogWarningHandle -= warning;
+            if (error != null) LogErrorHandle -= error;
         }
     }
 }

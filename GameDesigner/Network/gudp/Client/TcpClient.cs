@@ -362,13 +362,13 @@
                     {
                         if (end > clientLen)
                             end = clientLen;
-                        var tick = Environment.TickCount + millisecondsTimeout;
+                        var timer = new TimerTick();
                         while (!cts.IsCancellationRequested)
                         {
                             bool canSend = false;
-                            if (Environment.TickCount >= tick)
+                            var tick = (uint)Environment.TickCount;
+                            if (timer.CheckTimeout(tick, (uint)millisecondsTimeout, true))
                             {
-                                tick = Environment.TickCount + millisecondsTimeout;
                                 canSend = true;
                             }
                             for (int ii = index; ii < end; ii++)
@@ -390,8 +390,8 @@
                                     }
                                     if (canSend)
                                     {
-                                        //client.SendRT(NetCmd.Local, buffer);
-                                        client.AddOperation(new Operation(66, buffer));
+                                        client.SendRT(NetCmd.Local, buffer);
+                                        //client.AddOperation(new Operation(66, buffer));
                                         client.SendDirect();
                                     }
                                     client.NetworkEventUpdate();

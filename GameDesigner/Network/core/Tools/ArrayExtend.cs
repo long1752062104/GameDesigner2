@@ -179,6 +179,46 @@ public static class ArrayExtend
         }
     }
 
+    public static void SetField<T>(this T[] self, string name, object value) where T : Object
+    {
+        var type = typeof(T);
+        var property = type.GetField(name);
+        for (int i = 0; i < self.Length; i++)
+        {
+            property.SetValue(self[i], value);
+        }
+    }
+
+    public static void SetField<T>(this List<T> self, string name, object value) where T : Object
+    {
+        var type = typeof(T);
+        var property = type.GetField(name);
+        for (int i = 0; i < self.Count; i++)
+        {
+            property.SetValue(self[i], value);
+        }
+    }
+
+    public static void SetProperty<T>(this T[] self, string name, object value) where T : Object
+    {
+        var type = typeof(T);
+        var property = type.GetProperty(name);
+        for (int i = 0; i < self.Length; i++)
+        {
+            property.SetValue(self[i], value);
+        }
+    }
+
+    public static void SetProperty<T>(this List<T> self, string name, object value) where T : Object
+    {
+        var type = typeof(T);
+        var property = type.GetProperty(name);
+        for (int i = 0; i < self.Count; i++)
+        {
+            property.SetValue(self[i], value);
+        }
+    }
+
     public static void SetEnableds<T>(this T[] self, bool active) where T : Object
     {
         for (int i = 0; i < self.Length; i++)

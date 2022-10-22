@@ -7,6 +7,7 @@ using Kcp;
 using System.Runtime.InteropServices;
 using Net.Share;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 namespace Net.Server
 {

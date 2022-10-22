@@ -19,7 +19,6 @@ namespace Net.Component
         public string ip = "127.0.0.1";
         public int port = 6666;
         public bool localTest;//±¾»ú²âÊÔ
-        public bool throwException;
         public bool debugRpc = true;
         public bool authorize;
         public bool startConnect = true;
@@ -76,7 +75,6 @@ namespace Net.Component
                 }
                 _client.host = ip;
                 _client.port = port;
-                _client.ThrowException = throwException;
                 _client.LogRpc = debugRpc;
                 _client.MD5CRC = md5CRC;
                 return _client;
@@ -159,7 +157,7 @@ namespace Net.Component
         // Use this for initialization
         void Start()
         {
-            NDebug.BindLogAll(Debug.Log);
+            NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
             foreach (var client in clients)
             {
                 if (client.startConnect)
@@ -186,6 +184,7 @@ namespace Net.Component
                     continue;
                 clients[i]._client.Close();
             }
+            NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
         }
 
         public static void BindNetworkAllHandle(INetworkHandle handle)

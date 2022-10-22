@@ -35,6 +35,7 @@ namespace Net.Client
     using Net.Helper;
     using global::System.Security.Cryptography;
     using Net.Plugins;
+    using global::System.Text.RegularExpressions;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -113,10 +114,6 @@ namespace Net.Client
         /// 网络客户端实例
         /// </summary>
         public static ClientBase Instance { get; set; }
-        /// <summary>
-        /// 输出调用RPC错误级别,红色警告 (仅限编辑器调式使用!)
-        /// </summary>
-        public bool ThrowException;
         /// <summary>
         /// 是否使用unity主线程进行每一帧更新？  
         /// True：使用unity的Update等方法进行更新，unity的组建可以在Rpc函数内进行调用。
@@ -439,7 +436,7 @@ namespace Net.Client
         /// </summary>
         public int SendInterval {
             get => sendInterval;
-            set 
+            set
             {
                 ThreadManager.Event.GetEvent(sendHandlerID)?.SetIntervalTime((uint)value);
                 sendInterval = value;
@@ -447,7 +444,7 @@ namespace Net.Client
         }
         protected readonly object SyncRoot = new object();
         public GcpKernel Gcp { get; set; }
-        
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -614,7 +611,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        public void DispatchRpc(string func, params object[] pars) 
+        public void DispatchRpc(string func, params object[] pars)
         {
             PushRpcData(new RPCModel(0, func, pars));
         }
@@ -649,7 +646,7 @@ namespace Net.Client
                         RpcWorkQueue.Enqueue(data);
                     }
                 }
-            }, log=> {
+            }, log => {
                 switch (log)
                 {
                     case 0:
@@ -733,24 +730,34 @@ namespace Net.Client
             {
                 if (RpcWorkQueue.TryDequeue(out IRPCData buffer))
                 {
-#if UNITY_EDITOR
-                    if (UseUnityThread & ThrowException)
-                    {
-                        if (LogRpc)
-                            NDebug.Log($"RPC:{buffer.method}");
-                        OnInvokeRpc(buffer);
-                        continue;
-                    }
-#endif
                     try
                     {
                         if (LogRpc)
-                            NDebug.Log($"RPC:{buffer.method}");
+                        {
+                            if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                                sequence = new SequencePoint();
+                            NDebug.Log($"RPC:{buffer.method} () (at {sequence.FilePath}:{sequence.StartLine}) \n");
+                        }
                         OnInvokeRpc(buffer);
+                    }
+                    catch (TargetParameterCountException e)
+                    {
+#if UNITY_EDITOR
+                        if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                            sequence = new SequencePoint();
+                        var info = $"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
+                        Regex reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
+                        info += reg.Replace(e.ToString(), ") (at $1) ");
+                        var dataPath = UnityEngine.Application.dataPath.Replace("/", "\\").Replace("Assets", "");
+                        info = info.Replace(dataPath, "").Replace("\\", "/");
+                        NDebug.LogError(info);
+#else
+                        NDebug.LogError($"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + e);
+#endif
                     }
                     catch (Exception e)
                     {
-                        NDebug.LogError($"方法:{buffer.method} 对象:{buffer.target} 详细信息:{e}");
+                        NDebug.LogError(e);
                     }
                 }
             }

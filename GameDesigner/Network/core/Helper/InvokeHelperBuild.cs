@@ -8,17 +8,28 @@ using System.Xml;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
-#if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR //|| DEBUG
 using dnlib.DotNet;
 #endif
 
 namespace Net.Helper
 {
+    public class SequencePoint 
+    {
+        public int StartLine;
+        public string FilePath;
+    }
+
+    public class RpcCallHelper 
+    {
+        public static Dictionary<string, SequencePoint> Cache = new Dictionary<string, SequencePoint>();
+    }
+
     public class InvokeHelper
     {
         public static Dictionary<Type, Dictionary<string, SyncVarInfo>> Cache = new Dictionary<Type, Dictionary<string, SyncVarInfo>>();
 
-#if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR //|| DEBUG
         [RuntimeInitializeOnLoadMethod]
         public static void OnScriptCompilation()
         {
@@ -125,7 +136,7 @@ namespace Net.Helper
         }
     }
 
-#if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR //|| DEBUG
     public static class InvokeHelperBuild
     {
         static TypeCode GetTypeCode(TypeSig type)
@@ -633,6 +644,58 @@ namespace Net.Helper
             return text;
         }
 
+        public static string InvokeRpcCall(List<TypeDef> types)
+        {
+            var str = @"internal static class RpcCallSequencePointHelper
+{
+    #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+    [UnityEngine.RuntimeInitializeOnLoadMethod]
+#else
+    [RuntimeInitializeOnLoadMethod]
+#endif
+    internal static void Init()
+    {
+        RpcCallHelper.Cache.Clear();
+--
+        RpcCallHelper.Cache.Add(""NAME"", new SequencePoint(){ FilePath = @""PATH"", StartLine = LINE });
+--
+    }
+}";
+            var codes = str.Split(new string[] { "--" }, 0);
+            var sb = new StringBuilder();
+            sb.Append(codes[0]);
+            foreach (var type in types)
+            {
+                var dictSB = new StringBuilder();
+                foreach (var method in type.Methods)
+                {
+                    CustomAttribute attribute = null;
+                    foreach (var item in method.CustomAttributes)
+                    {
+                        if (item.TypeFullName == "Net.Share.Rpc")
+                        {
+                            attribute = item;
+                            break;
+                        }
+                    }
+                    if (attribute == null)
+                        continue;
+                    var pdb = method.Body.PdbMethod;
+                    if (pdb == null)
+                        break;
+                    var code = codes[1].Replace("NAME", type.FullName + "." + method.Name);
+                    code = code.Replace("PATH", pdb.Scope.Start.SequencePoint.Document.Url);
+                    code = code.Replace("LINE", (pdb.Scope.Start.SequencePoint.StartLine - 1).ToString());
+                    dictSB.Append(code);
+                }
+                if (dictSB.Length > 0)
+                    sb.Append(dictSB.ToString());
+            }
+            sb.Append(codes[2]);
+            var text = sb.ToString();
+            return text;
+        }
+
         public static void OnScriptCompilation(InvokeHelperConfig config, bool generateClientSyncVar, bool generateServerSyncVar)
         {
             var streams = new List<ModuleDefMD>();
@@ -643,9 +706,9 @@ namespace Net.Helper
                     continue;
                 if (!File.Exists(file))
                     continue;
-                var dllData = File.ReadAllBytes(file);
+                //var dllData = File.ReadAllBytes(file);
                 ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
+                ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
                 streams.Add(module);
                 var types = module.Types;
                 foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
@@ -678,8 +741,8 @@ namespace Net.Helper
                     if (!File.Exists(file))
                         continue;
                     ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                    var dllData = File.ReadAllBytes(file);
-                    ModuleDefMD module = ModuleDefMD.Load(dllData, modCtx);
+                    //var dllData = File.ReadAllBytes(file);
+                    ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
                     streams.Add(module);
                     var types = module.Types;
                     foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))
@@ -736,6 +799,7 @@ using System.Runtime.CompilerServices;
         return sourceFilePath;
     }
 }";
+            text += "\r\n\r\n" + InvokeRpcCall(clientTypes);
             if (string.IsNullOrEmpty(config.savePath))
                 return;
             if (!Directory.Exists(config.savePath))

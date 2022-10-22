@@ -309,7 +309,6 @@ MonoBehaviour:
   protocol: 0
   ip: 127.0.0.1
   port: 6666
-  throwException: 0
   debugRpc: 1
   frameRate: 60
   authorize: 0
@@ -482,7 +481,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1945691126}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add432a51c3f2c04080353cce96b4bee, type: 3}
+  m_Script: {fileID: 11500000, guid: 774abc526d878dc4a9339da49dca12f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}

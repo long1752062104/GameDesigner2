@@ -23,7 +23,6 @@ namespace Net.Component
         public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
-        public bool throwException;
         public bool debugRpc = true;
         public int frameRate = 60;
         public bool authorize;
@@ -78,7 +77,6 @@ namespace Net.Component
                     }
                     _client.host = ip;
                     _client.port = port;
-                    _client.ThrowException = throwException;
                     _client.LogRpc = debugRpc;
                     _client.MD5CRC = md5CRC;
                 }
@@ -113,7 +111,7 @@ namespace Net.Component
         // Use this for initialization
         void Start()
         {
-            NDebug.BindLogAll(Debug.Log);
+            NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
             if (startConnect)
                 Connect();
         }
@@ -147,6 +145,7 @@ namespace Net.Component
         {
             if (mainInstance)
                 _client.Close();
+            NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
         }
 
         /// <summary>
