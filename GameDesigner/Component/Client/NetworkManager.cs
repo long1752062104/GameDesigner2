@@ -131,6 +131,7 @@ namespace Net.Component
 
     public class NetworkManager : SingleCase<NetworkManager>
     {
+        public LogMode logMode = LogMode.Default;
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
@@ -157,7 +158,18 @@ namespace Net.Component
         // Use this for initialization
         void Start()
         {
-            NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+            switch (logMode)
+            {
+                case LogMode.Default:
+                    NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+                    break;
+                case LogMode.LogAll:
+                    NDebug.BindLogAll(Debug.Log);
+                    break;
+                case LogMode.LogAndWarning:
+                    NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+            }
             foreach (var client in clients)
             {
                 if (client.startConnect)
@@ -184,7 +196,18 @@ namespace Net.Component
                     continue;
                 clients[i]._client.Close();
             }
-            NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+            switch (logMode)
+            {
+                case LogMode.Default:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+                    break;
+                case LogMode.LogAll:
+                    NDebug.RemoveLogAll(Debug.Log);
+                    break;
+                case LogMode.LogAndWarning:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+            }
         }
 
         public static void BindNetworkAllHandle(INetworkHandle handle)

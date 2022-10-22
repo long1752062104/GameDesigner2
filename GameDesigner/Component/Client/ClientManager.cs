@@ -15,6 +15,14 @@ namespace Net.Component
         Tcp, Gcp, Udx, Kcp, Web
     }
 
+    public enum LogMode 
+    {
+        None,
+        Default,
+        LogAll,
+        LogAndWarning
+    }
+
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
     public class ClientManager : SingleCase<ClientManager>, ISendHandle
     {
@@ -23,6 +31,7 @@ namespace Net.Component
         public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 6666;
+        public LogMode logMode = LogMode.Default;
         public bool debugRpc = true;
         public int frameRate = 60;
         public bool authorize;
@@ -111,7 +120,18 @@ namespace Net.Component
         // Use this for initialization
         void Start()
         {
-            NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+            switch (logMode)
+            {
+                case LogMode.Default:
+                    NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+                    break;
+                case LogMode.LogAll:
+                    NDebug.BindLogAll(Debug.Log);
+                    break;
+                case LogMode.LogAndWarning:
+                    NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+            }
             if (startConnect)
                 Connect();
         }
@@ -145,7 +165,18 @@ namespace Net.Component
         {
             if (mainInstance)
                 _client.Close();
-            NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+            switch (logMode)
+            {
+                case LogMode.Default:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
+                    break;
+                case LogMode.LogAll:
+                    NDebug.RemoveLogAll(Debug.Log);
+                    break;
+                case LogMode.LogAndWarning:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+            }
         }
 
         /// <summary>
