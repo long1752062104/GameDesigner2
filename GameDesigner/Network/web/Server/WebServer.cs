@@ -61,6 +61,10 @@
             Server.Start(AcceptConnect);
         }
 
+        protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
+        {
+        }
+
         //开始接受客户端连接
         private void AcceptConnect(IWebSocketConnection wsClient)
         {
@@ -196,5 +200,12 @@
             }
             return NetConvert.Deserialize(buffer, index, count - 1);
         }
+    }
+
+    /// <summary>
+    /// 默认web服务器，当不需要处理Player对象和Scene对象时可使用
+    /// </summary>
+    public class WebServer : WebServer<WebPlayer, NetScene<WebPlayer>>
+    {
     }
 }
