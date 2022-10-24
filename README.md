@@ -390,6 +390,7 @@ static void Main(string[] args)
 <br>3.[山海经吞食天地](https://www.taptap.com/app/207447)</br>
 <br>4.[捍卫星球](https://www.taptap.com/app/170490)</br>
 <br>5.[一介散修](https://www.taptap.com/app/234010)</br>
+<br>6.[无限升级](https://www.taptap.cn/app/241449)</br>
 
 ## 支持本项目
 您的支持就是我不懈努力的动力。打赏时请一定留下您的称呼
@@ -407,6 +408,8 @@ static void Main(string[] args)
 <br>10 29.8°C ¥ 30</br>
 <br>11 走在冷风中. ¥ 1000</br>
 <br>12 非非有非非无 ¥ 100</br>
+<br>13 克里斯 ¥ 200</br>
+
 <br>不留名的大佬们 微信总资助 ¥ 653</br>
 
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/pay.jpg" width = "600" height = "400" alt="图片名称" align=center />
