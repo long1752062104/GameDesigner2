@@ -21,7 +21,7 @@ namespace Net.UnityComponent
         internal static Queue<int> IDENTITY_POOL = new Queue<int>();
         public static int Capacity { get; private set; }
         public static bool IsInitIdentity => IDENTITY != -1;
-        [SerializeField] [DisplayOnly] private int m_identity = -1;
+        [DisplayOnly] private int m_identity = -1;
         [Tooltip("自定义唯一标识, 当值不为0后,可以不通过NetworkSceneManager的registerObjects去设置, 直接放在设计的场景里面, 不需要做成预制体")]
         [SerializeField] private int identity;//可以设置的id
         [Tooltip("注册的网络物体索引, registerObjectIndex要对应NetworkSceneManager的registerObjects数组索引, 如果设置了自定义唯一标识, 则此字段无效!")]

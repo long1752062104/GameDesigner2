@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-/**internal static class InvokeHelperGenerate
+internal static class InvokeHelperGenerate
 {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
     [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -91,7 +91,7 @@ using System.Runtime.CompilerServices;
         }
     }
 
-}*/
+}
 
 internal static class RpcInvokeHelper1
 {
@@ -124,6 +124,30 @@ internal static class RpcInvokeHelper1
     {
         
         LockStep.Server.Service.Instance.SendRT(client, "ExitBattle", uid);
+    }
+
+    internal static void LoginCallback(this LockStep.Server.Player client , System.Boolean result, System.String info) 
+    {
+        
+        LockStep.Server.Service.Instance.SendRT(client, "LoginCallback", result, info);
+    }
+
+    internal static void BackLogin(this LockStep.Server.Player client , System.String info) 
+    {
+        
+        LockStep.Server.Service.Instance.SendRT(client, "BackLogin", info);
+    }
+
+    internal static void LogOut(this LockStep.Server.Player client ) 
+    {
+        
+        LockStep.Server.Service.Instance.SendRT(client, "LogOut");
+    }
+
+    internal static void RegisterCallback(this LockStep.Server.Player client , System.String info) 
+    {
+        
+        LockStep.Server.Service.Instance.SendRT(client, "RegisterCallback", info);
     }
 
     internal static void Test(this LockStep.Server.Player client , System.String info) 
@@ -167,6 +191,30 @@ internal static class RpcInvokeHelper2
         Example2.Service.Instance.SendRT(client, "ExitBattle", uid);
     }
 
+    internal static void LoginCallback(this Example2.Player client , System.Boolean result, System.String info) 
+    {
+        
+        Example2.Service.Instance.SendRT(client, "LoginCallback", result, info);
+    }
+
+    internal static void BackLogin(this Example2.Player client , System.String info) 
+    {
+        
+        Example2.Service.Instance.SendRT(client, "BackLogin", info);
+    }
+
+    internal static void LogOut(this Example2.Player client ) 
+    {
+        
+        Example2.Service.Instance.SendRT(client, "LogOut");
+    }
+
+    internal static void RegisterCallback(this Example2.Player client , System.String info) 
+    {
+        
+        Example2.Service.Instance.SendRT(client, "RegisterCallback", info);
+    }
+
     internal static void Test(this Example2.Player client , System.String info) 
     {
         
@@ -208,6 +256,30 @@ internal static class RpcInvokeHelper3
         Example1.Service.Instance.SendRT(client, "ExitBattle", uid);
     }
 
+    internal static void LoginCallback(this Example1.Client client , System.Boolean result, System.String info) 
+    {
+        
+        Example1.Service.Instance.SendRT(client, "LoginCallback", result, info);
+    }
+
+    internal static void BackLogin(this Example1.Client client , System.String info) 
+    {
+        
+        Example1.Service.Instance.SendRT(client, "BackLogin", info);
+    }
+
+    internal static void LogOut(this Example1.Client client ) 
+    {
+        
+        Example1.Service.Instance.SendRT(client, "LogOut");
+    }
+
+    internal static void RegisterCallback(this Example1.Client client , System.String info) 
+    {
+        
+        Example1.Service.Instance.SendRT(client, "RegisterCallback", info);
+    }
+
     internal static void Test(this Example1.Client client , System.String info) 
     {
         
@@ -247,6 +319,30 @@ internal static class RpcInvokeHelper4
     {
         
         AOIExample.Service.Instance.SendRT(client, "ExitBattle", uid);
+    }
+
+    internal static void LoginCallback(this AOIExample.Client client , System.Boolean result, System.String info) 
+    {
+        
+        AOIExample.Service.Instance.SendRT(client, "LoginCallback", result, info);
+    }
+
+    internal static void BackLogin(this AOIExample.Client client , System.String info) 
+    {
+        
+        AOIExample.Service.Instance.SendRT(client, "BackLogin", info);
+    }
+
+    internal static void LogOut(this AOIExample.Client client ) 
+    {
+        
+        AOIExample.Service.Instance.SendRT(client, "LogOut");
+    }
+
+    internal static void RegisterCallback(this AOIExample.Client client , System.String info) 
+    {
+        
+        AOIExample.Service.Instance.SendRT(client, "RegisterCallback", info);
     }
 
     internal static void Test(this AOIExample.Client client , System.String info) 

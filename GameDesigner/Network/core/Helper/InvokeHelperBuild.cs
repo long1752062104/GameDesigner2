@@ -801,7 +801,7 @@ using System.Runtime.CompilerServices;
 }";
             text += "\r\n\r\n" + InvokeRpcCall(clientTypes);
             if (string.IsNullOrEmpty(config.savePath))
-                return;
+                goto J;
             if (!Directory.Exists(config.savePath))
                 Directory.CreateDirectory(config.savePath);
             File.WriteAllText(config.savePath + "/InvokeHelperGenerate.cs", text);
@@ -900,7 +900,7 @@ using System.Runtime.CompilerServices;
                     Directory.CreateDirectory(path1);
                 File.WriteAllText(path1, text1);
             }
-            foreach (var stream in streams)
+            J: foreach (var stream in streams)
             {
                 stream.Dispose();
             }

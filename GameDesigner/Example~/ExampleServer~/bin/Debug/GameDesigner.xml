@@ -376,11 +376,6 @@
             网络客户端实例
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.ThrowException">
-            <summary>
-            输出调用RPC错误级别,红色警告 (仅限编辑器调式使用!)
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.UseUnityThread">
             <summary>
             是否使用unity主线程进行每一帧更新？  
@@ -4115,19 +4110,14 @@
             默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
         </member>
-        <member name="T:Net.Server.TcpServerIOCP`2">
+        <member name="T:Net.Server.TcpServerIocp`2">
             <summary>
             tcp 输入输出完成端口服务器
             <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
             <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
             </summary>
         </member>
-        <member name="P:Net.Server.TcpServerIOCP`2.frame">
-            <summary>
-            tcp数据长度(4) + 1CRC协议 = 5
-            </summary>
-        </member>
-        <member name="T:Net.Server.TcpServerIOCP">
+        <member name="T:Net.Server.TcpServerIocp">
             <summary>
             默认tcpiocp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
@@ -4156,7 +4146,7 @@
             默认gcp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
         </member>
-        <member name="T:Net.Server.UdpServerIOCP`2">
+        <member name="T:Net.Server.UdpServerIocp`2">
             <summary>
             udp 输入输出完成端口服务器
             <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
@@ -4165,7 +4155,7 @@
             <typeparam name="Player"></typeparam>
             <typeparam name="Scene"></typeparam>
         </member>
-        <member name="T:Net.Server.UdpServerIOCP">
+        <member name="T:Net.Server.UdpServerIocp">
             <summary>
             默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
@@ -4262,6 +4252,11 @@
             <param name="unClient">客户端终端</param>
             <param name="model"></param>
             <returns></returns>
+        </member>
+        <member name="T:Net.Server.WebServer">
+            <summary>
+            默认web服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
         </member>
         <member name="T:Net.Share.NetworkState">
             <summary>
