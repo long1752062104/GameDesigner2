@@ -74,13 +74,12 @@
                     if (localPort != -1)
                         Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
                     Client.Connect(host, port);
-                    DateTime time = DateTime.Now.AddSeconds(8);
+                    var tick = Environment.TickCount + 8000;
                     while (UID == 0)
                     {
-                        Receive(false);
-                        Thread.Sleep(1);
-                        if (DateTime.Now >= time)
-                            throw new Exception("uid赋值失败!");
+                        Receive(true);
+                        if (Environment.TickCount >= tick)
+                            throw new Exception("uid赋值失败!连接超时处理");
                         if (!openClient)
                             throw new Exception("客户端调用Close!");
                     }

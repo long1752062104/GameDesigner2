@@ -218,15 +218,15 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     {
         LoadData();
         int change = 0;
+        var path = Application.dataPath + "/Scripts/Helper/";
         if (string.IsNullOrEmpty(Config.savePath))
         {
-            var path = Application.dataPath + "/Scripts/Helper/";
             Config.savePath = path;
             change++;
         }
-        if (Config.dllPaths.Count == 0)
+        path = Application.dataPath + "/../Library/ScriptAssemblies/Assembly-CSharp.dll";
+        if (!Config.dllPaths.Contains(path))
         {
-            var path = Application.dataPath + "/../Library/ScriptAssemblies/Assembly-CSharp.dll";
             Config.dllPaths.Add(path);
             change++;
         }

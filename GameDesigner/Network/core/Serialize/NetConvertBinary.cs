@@ -26,7 +26,7 @@
         private static MyDictionary<Type, ushort> serializeType1s = new MyDictionary<Type, ushort>();
         private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>();
         private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>();
-        private static Type nonSerialized = typeof(NonSerializedAttribute);
+        private static Type nonSerialized = typeof(NonSerialized);
         private static MyDictionary<Type, Member[]> map;
 
         static NetConvertBinary()
@@ -44,7 +44,7 @@
             serializeOnly.Clear();
             serializeIgnore.Clear();
             AddSerializeBaseType();
-            MakeNonSerializedAttribute<NonSerializedAttribute>();
+            MakeNonSerializedAttribute<NonSerialized>();
             return true;
         }
 

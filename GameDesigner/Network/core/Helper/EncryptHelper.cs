@@ -108,7 +108,7 @@ namespace Net.Helper
 
         public static string GetMD5(string sDataIn)
         {
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+            var md5 = new MD5CryptoServiceProvider();
             byte[] bytValue, bytHash;
             bytValue = Encoding.UTF8.GetBytes(sDataIn);
             bytHash = md5.ComputeHash(bytValue);

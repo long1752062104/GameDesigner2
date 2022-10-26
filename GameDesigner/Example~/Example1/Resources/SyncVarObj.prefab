@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 7782284984434659819}
   - component: {fileID: 7782284984434659828}
   - component: {fileID: 7782284984434659829}
-  - component: {fileID: 7782284984434659831}
   - component: {fileID: 7782284984434659824}
   - component: {fileID: 8691971589101160987}
+  - component: {fileID: 3239532482013351171}
   m_Layer: 0
   m_Name: SyncVarObj
   m_TagString: Untagged
@@ -84,22 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7782284984434659831
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7782284984434659825}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_identity: -1
-  identity: 0
-  registerObjectIndex: 0
-  isLocal: 1
 --- !u!114 &7782284984434659824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,11 +96,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17572e32b54cd004eb3d181b56756e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  netObj: {fileID: 3239532482013351171}
   test:
     value: 0
   test1:
     value: 0
   test2:
+    value: 0
+  test3:
     value: 0
 --- !u!114 &8691971589101160987
 MonoBehaviour:
@@ -130,9 +117,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17572e32b54cd004eb3d181b56756e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  netObj: {fileID: 3239532482013351171}
   test:
     value: 0
   test1:
     value: 0
   test2:
     value: 0
+  test3:
+    value: 0
+--- !u!114 &3239532482013351171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7782284984434659825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9af66fec3bba494f8321e80ed131b0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_identity: -1
+  identity: 0
+  registerObjectIndex: 0
+  isLocal: 1
