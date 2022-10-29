@@ -56,9 +56,16 @@
             get { return Players.Count; }
         }
         /// <summary>
-        /// 获取场景容纳人数
+        /// 获取场景当前人数
         /// </summary>
         public int Count
+        {
+            get { return Players.Count; }
+        }
+        /// <summary>
+        /// 获取场景容纳人数
+        /// </summary>
+        public int Capacity 
         {
             get { return sceneCapacity; }
             set { sceneCapacity = value; }
