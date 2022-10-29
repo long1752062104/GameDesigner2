@@ -683,9 +683,12 @@ namespace Net.Helper
                     var pdb = method.Body.PdbMethod;
                     if (pdb == null)
                         break;
+                    var sequence = pdb.Scope.Start.SequencePoint;
+                    if (sequence == null)// async方法得不到源码行
+                        continue;
                     var code = codes[1].Replace("NAME", type.FullName + "." + method.Name);
-                    code = code.Replace("PATH", pdb.Scope.Start.SequencePoint.Document.Url);
-                    code = code.Replace("LINE", (pdb.Scope.Start.SequencePoint.StartLine - 1).ToString());
+                    code = code.Replace("PATH", sequence.Document.Url);
+                    code = code.Replace("LINE", (sequence.StartLine - 1).ToString());
                     dictSB.Append(code);
                 }
                 if (dictSB.Length > 0)

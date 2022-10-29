@@ -48,30 +48,46 @@ namespace Net.Component
                     {
                         case TransportProtocol.Gcp:
                             {
+#if UNITY_IOS
+                                _client = new UdpClient(true);
+#else
                                 var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdpClient");//当删减模块后解决报错问题
                                 if (type != null)
                                     _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+#endif
                             }
                             break;
                         case TransportProtocol.Tcp:
                             {
+#if UNITY_IOS
+                                _client = new TcpClient(true);
+#else
                                 var type = typeof(ClientBase).Assembly.GetType("Net.Client.TcpClient");
                                 if (type != null)
                                     _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+#endif
                             }
                             break;
                         case TransportProtocol.Kcp:
                             {
+#if UNITY_IOS
+                                _client = new KcpClient(true);
+#else
                                 var type = typeof(ClientBase).Assembly.GetType("Net.Client.KcpClient");
                                 if (type != null)
                                     _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+#endif
                             }
                             break;
                         case TransportProtocol.Udx:
                             {
+#if UNITY_IOS
+                                _client = new UdxClient(true);
+#else
                                 var type = typeof(ClientBase).Assembly.GetType("Net.Client.UdxClient");
                                 if (type != null)
                                     _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+#endif
                             }
                             break;
 #if UNITY_STANDALONE_WIN || UNITY_WSA
@@ -222,7 +238,7 @@ namespace Net.Component
             I.client.WorkerQueue.Enqueue(ptr);
         }
 
-        #region 发送接口实现
+#region 发送接口实现
         public void Send(byte[] buffer)
         {
             ((ISendHandle)_client).Send(buffer);
@@ -332,7 +348,7 @@ namespace Net.Component
         {
             ((ISendHandle)_client).SendRT(cmd, func, funcCB, callback, millisecondsDelay, outTimeAct, context, pars);
         }
-        #endregion
+#endregion
     }
 }
 #endif
