@@ -23,13 +23,9 @@ namespace Net.Helper
 
         public static void AddRpc(IRpcHandler handle, object target, Type type, bool append, Action<SyncVarInfo> onSyncVarCollect, Action<MemberInfo, MemberData> action, Func<MemberData, IRPCMethod> func)
         {
-            var hash = handle.IDGenerator.GetId(target);
             if (!append)
-            {
-                if (handle.RpcTargetHash.TryGetValue(hash, out var member))
-                    if (member.target == target)
-                        return;
-            }
+                if (handle.RpcTargetHash.ContainsKey(target))
+                    return;
             if (!handle.MemberInfos.TryGetValue(type, out var list))
             {
                 list = new List<MemberData>();
@@ -67,12 +63,12 @@ namespace Net.Helper
                     if (rpc.hash != 0)
                     {
                         if (!handle.RpcHashDic.TryGetValue(rpc.hash, out var dict))
-                            handle.RpcHashDic.Add(rpc.hash, dict = new MyDictionary<long, IRPCMethod>());
-                        dict.Add(hash, item);
+                            handle.RpcHashDic.Add(rpc.hash, dict = new MyDictionary<object, IRPCMethod>());
+                        dict.Add(target, item);
                     }
                     if (!handle.RpcDic.TryGetValue(item.method.Name, out var dict1))
-                        handle.RpcDic.Add(item.method.Name, dict1 = new MyDictionary<long, IRPCMethod>());
-                    dict1.Add(hash, item);
+                        handle.RpcDic.Add(item.method.Name, dict1 = new MyDictionary<object, IRPCMethod>());
+                    dict1.Add(target, item);
                 }
                 var syncVar = member.syncVar;
                 if (syncVar != null)
@@ -85,14 +81,12 @@ namespace Net.Helper
                 }
             }
             if (list.Count > 0)
-                handle.RpcTargetHash.Add(hash, new MemberDataList() { target = target, hash = hash, members = list });
+                handle.RpcTargetHash.Add(target, new MemberDataList() { members = list });
         }
 
         public static void RemoveRpc(IRpcHandler handle, object target)
         {
-            if (!handle.IDGenerator.TryRemove(target, out var hash))
-                return;
-            if (handle.RpcTargetHash.TryRemove(hash, out var list))
+            if (handle.RpcTargetHash.TryRemove(target, out var list))
             {
                 foreach (var item in list.members)
                 {
@@ -100,11 +94,11 @@ namespace Net.Helper
                     {
                         if (handle.RpcHashDic.TryGetValue(item.rpc.hash, out var dict))
                         {
-                            dict.Remove(hash);
+                            dict.Remove(target);
                         }
                         if (handle.RpcDic.TryGetValue(item.member.Name, out dict))
                         {
-                            dict.Remove(hash);
+                            dict.Remove(target);
                         }
                     }
                     if (item.syncVar != null)
@@ -115,9 +109,9 @@ namespace Net.Helper
             }
         }
 
-        public static void Invoke(IRpcHandler handle, RPCModel model, Action<MyDictionary<long, IRPCMethod>> action, Action<int> log)
+        public static void Invoke(IRpcHandler handle, RPCModel model, Action<MyDictionary<object, IRPCMethod>> action, Action<int> log)
         {
-            MyDictionary<long, IRPCMethod> methods;
+            MyDictionary<object, IRPCMethod> methods;
             if (model.methodHash != 0)
             {
                 if (handle.RpcTasks1.TryGetValue(model.methodHash, out var model1))
@@ -164,27 +158,27 @@ namespace Net.Helper
             action(methods);
         }
 
-        public static void CheckRpc(IRpcHandler handle)
-        {
-            foreach (var item in handle.RpcTargetHash)
-            {
-                if (item.Value.target == null)
-                {
-                    foreach (var item1 in item.Value.members)
-                    {
-                        if (item1.rpc != null)
-                        {
-                            if (handle.RpcHashDic.TryGetValue(item1.rpc.hash, out var dict))
-                                dict.Remove(item.Key);
-                            if (handle.RpcDic.TryGetValue(item1.member.Name, out dict))
-                                dict.Remove(item.Key);
-                        }
-                        if (item1.syncVar != null)
-                            handle.SyncVarDic.Remove(item1.syncVar.id);
-                    }
-                    handle.RpcTargetHash.Remove(item.Key);
-                }
-            }
-        }
+        //public static void CheckRpc(IRpcHandler handle)//unity 2020版本以上 检测失效, 请在OnDestry中移除rpc
+        //{
+        //    //foreach (var item in handle.RpcTargetHash)
+        //    //{
+        //    //    if (ReferenceEquals(item.Key, null))
+        //    //    {
+        //    //        foreach (var item1 in item.Value.members)
+        //    //        {
+        //    //            if (item1.rpc != null)
+        //    //            {
+        //    //                if (handle.RpcHashDic.TryGetValue(item1.rpc.hash, out var dict))
+        //    //                    dict.Remove(item.Key);
+        //    //                if (handle.RpcDic.TryGetValue(item1.member.Name, out dict))
+        //    //                    dict.Remove(item.Key);
+        //    //            }
+        //    //            if (item1.syncVar != null)
+        //    //                handle.SyncVarDic.Remove(item1.syncVar.id);
+        //    //        }
+        //    //        handle.RpcTargetHash.Remove(item.Key);
+        //    //    }
+        //    //}
+        //}
     }
 }

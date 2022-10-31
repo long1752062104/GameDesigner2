@@ -60,6 +60,11 @@ namespace LockStep.Client
             OnExitBattle?.Invoke();
             Debug.Log("退出战斗");
         }
+
+        ~GameSystem() 
+        {
+            ClientManager.Instance.client.RemoveRpc(this);
+        }
     }
 }
 #endif

@@ -247,75 +247,82 @@ namespace Net.Event
             var count = events.Count;
             for (int i = 0; i < count; i++)
             {
-                var evt = events._items[i];
-                if (evt.isRemove)
+                try
                 {
-                    events.RemoveAt(i);
-                    count = events.Count;
-                    if (i >= 0) i--;
-                    continue;
-                }
-                if (time >= evt.time)
-                {
-                    if (evt.ptr1 != null)
-                    {
-                        if (evt.async)
-                        {
-                            if (!evt.complete)
-                                continue;
-                            evt.complete = false;
-                            Task.Factory.StartNew(WorkExecute1, evt);
-                        }
-                        else evt.ptr1();
-                    }
-                    else if (evt.ptr2 != null)
-                    {
-                        if (evt.async)
-                        {
-                            if (!evt.complete)
-                                continue;
-                            evt.complete = false;
-                            Task.Factory.StartNew(WorkExecute2, evt);
-                        }
-                        else evt.ptr2(evt.obj);
-                    }
-                    else if (evt.ptr3 != null)
-                    {
-                        if (evt.async)
-                        {
-                            if (!evt.complete)
-                                continue;
-                            evt.complete = false;
-                            Task.Factory.StartNew(WorkExecute3, evt);
-                            continue;
-                        }
-                        if (evt.ptr3())
-                            goto J;
-                    }
-                    else if (evt.ptr4 != null)
-                    {
-                        if (evt.async)
-                        {
-                            if (!evt.complete)
-                                continue;
-                            evt.complete = false;
-                            Task.Factory.StartNew(WorkExecute4, evt);
-                            continue;
-                        }
-                        if (evt.ptr4(evt.obj))
-                            goto J;
-                    }
-                    if (evt.invokeNum == -1)
-                        goto J;
-                    if (--evt.invokeNum <= 0)
+                    var evt = events._items[i];
+                    if (evt.isRemove)
                     {
                         events.RemoveAt(i);
                         count = events.Count;
                         if (i >= 0) i--;
-                        continue;//解决J:执行后索引超出异常
+                        continue;
                     }
-                J: if (i >= 0 & i < count)
-                        evt.time = time + evt.timeMax;
+                    if (time >= evt.time)
+                    {
+                        if (evt.ptr1 != null)
+                        {
+                            if (evt.async)
+                            {
+                                if (!evt.complete)
+                                    continue;
+                                evt.complete = false;
+                                Task.Factory.StartNew(WorkExecute1, evt);
+                            }
+                            else evt.ptr1();
+                        }
+                        else if (evt.ptr2 != null)
+                        {
+                            if (evt.async)
+                            {
+                                if (!evt.complete)
+                                    continue;
+                                evt.complete = false;
+                                Task.Factory.StartNew(WorkExecute2, evt);
+                            }
+                            else evt.ptr2(evt.obj);
+                        }
+                        else if (evt.ptr3 != null)
+                        {
+                            if (evt.async)
+                            {
+                                if (!evt.complete)
+                                    continue;
+                                evt.complete = false;
+                                Task.Factory.StartNew(WorkExecute3, evt);
+                                continue;
+                            }
+                            if (evt.ptr3())
+                                goto J;
+                        }
+                        else if (evt.ptr4 != null)
+                        {
+                            if (evt.async)
+                            {
+                                if (!evt.complete)
+                                    continue;
+                                evt.complete = false;
+                                Task.Factory.StartNew(WorkExecute4, evt);
+                                continue;
+                            }
+                            if (evt.ptr4(evt.obj))
+                                goto J;
+                        }
+                        if (evt.invokeNum == -1)
+                            goto J;
+                        if (--evt.invokeNum <= 0)
+                        {
+                            events.RemoveAt(i);
+                            count = events.Count;
+                            if (i >= 0) i--;
+                            continue;//解决J:执行后索引超出异常
+                        }
+                    J: if (i >= 0 & i < count)
+                            evt.time = time + evt.timeMax;
+                    }
+                }
+                catch (Exception ex) 
+                {
+                    NDebug.LogError("计时器异常:" + ex);
                 }
             }
         }

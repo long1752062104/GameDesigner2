@@ -1,5 +1,4 @@
 using Net.Adapter;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -11,12 +10,15 @@ namespace Net.Share
         public RPCFun rpc;
         public SyncVarInfo syncVar;
         public RPCPTR ptr;
+
+        public override string ToString()
+        {
+            return $"{member}";
+        }
     }
 
     public class MemberDataList
     {
-        public object target;
-        public long hash;
         public List<MemberData> members = new List<MemberData>();
     }
 

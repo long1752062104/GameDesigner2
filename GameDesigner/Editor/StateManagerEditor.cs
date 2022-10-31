@@ -312,6 +312,7 @@ namespace GameDesigner
                                             stb.ID = s.ID;
                                             act.behaviours.Add(stb);
                                             act.findBehaviours = false;
+                                            EditorUtility.SetDirty(act.stateMachine);
                                         }
                                         if (s.compiling & type.Name == act.createScriptName)
                                         {
@@ -321,6 +322,7 @@ namespace GameDesigner
                                             act.behaviours.Add(stb);
                                             act.findBehaviours = false;
                                             s.compiling = false;
+                                            EditorUtility.SetDirty(act.stateMachine);
                                         }
                                     }
                                 }
@@ -454,6 +456,7 @@ namespace GameDesigner
                             stb.ID = s.ID;
                             s.behaviours.Add(stb);
                             s.findBehaviours = false;
+                            EditorUtility.SetDirty(s.stateMachine);
                         }
                         if (s.compiling & type.Name == s.createScriptName)
                         {
@@ -463,6 +466,7 @@ namespace GameDesigner
                             s.behaviours.Add(stb);
                             s.findBehaviours = false;
                             s.compiling = false;
+                            EditorUtility.SetDirty(s.stateMachine);
                         }
                     }
                 }

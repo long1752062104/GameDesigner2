@@ -49,11 +49,11 @@
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -61,15 +61,11 @@
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
-        /// <summary>
-        /// 收集rpc的对象唯一id
-        /// </summary>
-        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
         /// <summary>
         /// 可等待异步的Rpc
         /// </summary>
@@ -226,10 +222,10 @@
             RpcHelper.RemoveRpc(this, target);
         }
 
-        public void CheckRpc()
-        {
-            RpcHelper.CheckRpc(this);
-        }
+        //public void CheckRpc()
+        //{
+        //    RpcHelper.CheckRpc(this);
+        //}
 
         private bool CheckIsClass(Type type, ref int layer, bool root = true)
         {

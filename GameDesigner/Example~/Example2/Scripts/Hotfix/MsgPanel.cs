@@ -1,5 +1,4 @@
 using MVC.View;
-using Net.Client;
 using Net.Component;
 using Net.Share;
 using System;
@@ -89,6 +88,11 @@ namespace Hotfix
 			UnityEngine.SceneManagement.SceneManager.LoadScene(0);
 			ClientManager.Instance.client.Connect();
 			LoginPanel.Show();
+		}
+
+		~MsgPanel() 
+		{
+			ClientManager.Instance.client.RemoveRpc(this);
 		}
 	}
 }

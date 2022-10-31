@@ -1,5 +1,4 @@
 using MVC.View;
-using Net.Client;
 using Net.Component;
 using Net.Share;
 using UnityEngine;
@@ -58,6 +57,11 @@ namespace Hotfix
 		void RegisterCallback(string info)
 		{
 			MsgPanel.Show(info);
+		}
+
+		~RegisterPanel() 
+		{
+			ClientManager.Instance.client.RemoveRpc(this);
 		}
 	}
 }

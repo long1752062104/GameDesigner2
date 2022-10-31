@@ -65,11 +65,11 @@ namespace Net.Server
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -77,15 +77,11 @@ namespace Net.Server
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
-        /// <summary>
-        /// 收集rpc的对象唯一id
-        /// </summary>
-        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
         /// <summary>
         /// 可等待异步的Rpc
         /// </summary>
@@ -117,8 +113,8 @@ namespace Net.Server
         {
             get
             {
-                List<Player> unclients = new List<Player>();
-                foreach (Player client in AllClients.Values)
+                var unclients = new List<Player>();
+                foreach (var client in AllClients.Values)
                     if (client.Login) unclients.Add(client);
                 return unclients;
             }
@@ -130,8 +126,8 @@ namespace Net.Server
         {
             get
             {
-                List<Player> unclients = new List<Player>();
-                foreach (Player client in AllClients.Values)
+                var unclients = new List<Player>();
+                foreach (var client in AllClients.Values)
                     if (!client.Login) unclients.Add(client);
                 return unclients;
             }
@@ -147,11 +143,11 @@ namespace Net.Server
         /// <summary>
         /// 当前玩家在线人数
         /// </summary>
-        public int OnlinePlayers { get { return Players.Count; } }
+        public int OnlinePlayers { get { return UIDClients.Count; } }
         /// <summary>
         /// 未知客户端人数, 即在线不登录账号的客户端
         /// </summary>
-        public int UnClientNumber { get { return AllClients.Count - Players.Count; } }
+        public int UnClientNumber { get { return AllClients.Count - UIDClients.Count; } }
         /// <summary>
         /// 服务器端口
         /// </summary>
@@ -1083,7 +1079,7 @@ namespace Net.Server
                 {
                     if (retVal[i] != md5Hash[i])
                     {
-                        Debug.LogError($"[{client.RemotePoint}][{client.UserID}]MD5CRC校验失败:");
+                        Debug.LogError($"[{client}]MD5CRC校验失败:");
                         return;
                     }
                 }
@@ -1094,7 +1090,7 @@ namespace Net.Server
                 byte retVal = CRCHelper.CRC8(buffer, buffer.Position, buffer.Count);
                 if (crcCode != retVal) 
                 {
-                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]CRC校验失败:");
+                    Debug.LogError($"[{client}]CRC校验失败:");
                     return;
                 }
             }
@@ -1109,7 +1105,7 @@ namespace Net.Server
                 bool kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
-                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}][忽略]协议出错!");
+                    Debug.LogError($"[{client}][忽略]协议出错!");
                     break;
                 }
                 byte cmd1 = buffer.ReadByte();
@@ -1138,7 +1134,7 @@ namespace Net.Server
             //if (client.stack > StackNumberMax)//不能一直叠包
             //{
             //    client.stack = 0;
-            //    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
+            //    Debug.LogError($"[{client}]请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
             //    return;
             //}
             if (client.stack > 0)
@@ -1179,14 +1175,14 @@ namespace Net.Server
                 if (crcCode != retVal)
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]CRC校验失败:");
+                    Debug.LogError($"[{client}]CRC校验失败:");
                     return;
                 }
                 int size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
+                    Debug.LogError($"[{client}]数据被拦截修改或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 int value = MD5CRC ? 16 : 0;
@@ -1422,7 +1418,7 @@ namespace Net.Server
                                 var path1 = Path.GetDirectoryName(path);
                                 if (!Directory.Exists(path1))
                                 {
-                                    Debug.LogError($"[{client.RemotePoint}][{client.UserID}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
+                                    Debug.LogError($"[{client}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
                                     return;
                                 }
                             }
@@ -1666,7 +1662,7 @@ namespace Net.Server
                 return;
             if (buffer.Length >= 65507)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                Debug.LogError($"[{client}] 数据太大! 请使用SendRT");
                 return;
             }
             Server.SendTo(buffer, 0, buffer.Length, SocketFlags.None, client.RemotePoint);
@@ -2127,12 +2123,12 @@ namespace Net.Server
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             if (buffer.Length > 65507)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据太大，请分块发送!");
+                Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
             client.udpRPCModels.Enqueue(new RPCModel(cmd, buffer) { bigData = buffer.Length > short.MaxValue });
@@ -2189,7 +2185,7 @@ namespace Net.Server
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.udpRPCModels.Enqueue(new RPCModel(cmd, func, pars));
@@ -2206,7 +2202,7 @@ namespace Net.Server
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.udpRPCModels.Enqueue(new RPCModel(cmd, methodHash, pars));
@@ -2255,12 +2251,12 @@ namespace Net.Server
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             if (buffer.Length > 65507)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据太大，请分块发送!");
+                Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
             client.udpRPCModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
@@ -2272,7 +2268,7 @@ namespace Net.Server
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.udpRPCModels.Enqueue(model);
@@ -2304,7 +2300,7 @@ namespace Net.Server
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.tcpRPCModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
@@ -2321,7 +2317,7 @@ namespace Net.Server
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.tcpRPCModels.Enqueue(new RPCModel(cmd, string.Empty, pars, true, true, methodHash));
@@ -2351,12 +2347,12 @@ namespace Net.Server
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             if (buffer.Length / MTU > LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据太大，请分块发送!");
+                Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
             client.tcpRPCModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
@@ -2376,12 +2372,12 @@ namespace Net.Server
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             if (buffer.Length / MTU > LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据太大，请分块发送!");
+                Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
             client.tcpRPCModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
@@ -2393,7 +2389,7 @@ namespace Net.Server
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
             client.tcpRPCModels.Enqueue(model);
@@ -2537,7 +2533,7 @@ namespace Net.Server
                 {
                     if (client.udpRPCModels.Count >= LimitQueueCount)
                     {
-                        Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                        Debug.LogError($"[{client}]数据缓存列表超出限制!");
                         return;
                     }
                     client.udpRPCModels.Enqueue(model);
@@ -2546,7 +2542,7 @@ namespace Net.Server
                 {
                     if (client.tcpRPCModels.Count >= LimitQueueCount)
                     {
-                        Debug.LogError($"[{client.RemotePoint}][{client.UserID}]数据缓存列表超出限制!");
+                        Debug.LogError($"[{client}]数据缓存列表超出限制!");
                         return;
                     }
                     client.tcpRPCModels.Enqueue(model);
@@ -2606,10 +2602,10 @@ namespace Net.Server
             RpcHelper.RemoveRpc(this, target);
         }
 
-        public void CheckRpc() 
-        {
-            RpcHelper.CheckRpc(this);
-        }
+        //public void CheckRpc() 
+        //{
+        //    RpcHelper.CheckRpc(this);
+        //}
 
         /// <summary>
         /// playerID玩家是否在线?
@@ -2783,7 +2779,7 @@ namespace Net.Server
             var path1 = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(path1))
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
+                Debug.LogError($"[{client}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
                 return false;
             }
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);

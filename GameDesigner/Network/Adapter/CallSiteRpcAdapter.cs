@@ -297,10 +297,10 @@ namespace Net.Adapter
             handle.RemoveRpc(target);
         }
 
-        public void CheckRpc()
-        {
-            handle.CheckRpc();
-        }
+        //public void CheckRpc()
+        //{
+        //    handle.CheckRpc();
+        //}
 
         public RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc)
         {

@@ -193,7 +193,7 @@
             }
             else
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}]发送缓冲列表已经超出限制!");
+                Debug.LogError($"[{client}]发送缓冲列表已经超出限制!");
             }
         }
 

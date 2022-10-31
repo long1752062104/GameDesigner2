@@ -75,7 +75,7 @@
                 return;
             if (buffer.Length >= 65507)
             {
-                Debug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                Debug.LogError($"[{client}] 数据太大! 请使用SendRT");
                 return;
             }
             (Net.Client.UdpClient.Instance as Net.Client.UdpClient).ReceiveTest(buffer);

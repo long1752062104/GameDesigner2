@@ -10,11 +10,11 @@ namespace Net.Share
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; }
+        MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; }
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; }
+        MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; }
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -22,15 +22,11 @@ namespace Net.Share
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        MyDictionary<long, MemberDataList> RpcTargetHash { get; set; }
+        MyDictionary<object, MemberDataList> RpcTargetHash { get; set; }
         /// <summary>
         /// 字段同步信息
         /// </summary>
         MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; }
-        /// <summary>
-        /// 收集rpc的对象唯一id
-        /// </summary>
-        ObjectIDGenerator IDGenerator { get; set; }
         /// <summary>
         /// 等待回调的异步Rpc
         /// </summary>
@@ -51,6 +47,6 @@ namespace Net.Share
         /// <summary>
         /// 检查rpc对象或方法是否已被销毁（释放）
         /// </summary>
-        void CheckRpc();
+        //void CheckRpc();
     }
 }

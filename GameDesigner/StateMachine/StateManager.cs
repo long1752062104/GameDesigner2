@@ -193,6 +193,7 @@
                     var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
                     s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
                     s.behaviours[i].Reload(type, stateMachine, metadatas);
+                    s.behaviours[i].ID = s.ID;
                 }
                 foreach (var t in s.transitions)
                 {
@@ -202,6 +203,7 @@
                         var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
                         t.behaviours[i].Reload(type, stateMachine, metadatas);
+                        t.behaviours[i].ID = s.ID;
                     }
                 }
                 foreach (var a in s.actions)
@@ -212,6 +214,7 @@
                         var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
                         a.behaviours[i].Reload(type, stateMachine, metadatas);
+                        a.behaviours[i].ID = s.ID;
                     }
                 }
             }

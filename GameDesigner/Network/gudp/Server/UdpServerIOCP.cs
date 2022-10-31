@@ -45,7 +45,7 @@ namespace Net.Server
                 return;
             if (buffer.Length >= 65507)
             {
-                NDebug.LogError($"[{client.RemotePoint}][{client.UserID}] 数据太大! 请使用SendRT");
+                NDebug.LogError($"[{client}] 数据太大! 请使用SendRT");
                 return;
             }
             var args = ObjectPool<SocketAsyncEventArgs>.Take(args1 =>

@@ -65,11 +65,11 @@ namespace Net.Client
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, MyDictionary<long, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        public MyDictionary<ushort, MyDictionary<long, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<long, IRPCMethod>>();
+        public MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<object, IRPCMethod>>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -77,15 +77,11 @@ namespace Net.Client
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<long, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<long, MemberDataList>();
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
-        /// <summary>
-        /// 收集rpc的对象唯一id
-        /// </summary>
-        public ObjectIDGenerator IDGenerator { get; set; } = new ObjectIDGenerator();
         /// <summary>
         /// 可等待异步的Rpc
         /// </summary>
@@ -244,7 +240,7 @@ namespace Net.Client
         /// <summary>
         /// 检查rpc对象，如果对象被释放则自动移除
         /// </summary>
-        private Action OnCheckRpc;
+        //private Action OnCheckRpc;
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
         /// </summary>
@@ -513,33 +509,33 @@ namespace Net.Client
             }
         }
 
-        private bool CheckIsClass(Type type, ref int layer, bool root = true)
-        {
-            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var field in fields)
-            {
-                var code = Type.GetTypeCode(field.FieldType);
-                if (code == TypeCode.Object)
-                {
-                    if (field.FieldType.IsClass)
-                        return true;
-                    if (root)
-                        layer = 0;
-                    if (layer++ < 5)
-                    {
-                        var isClass = CheckIsClass(field.FieldType, ref layer, false);
-                        if (isClass)
-                            return true;
-                    }
-                }
-            }
-            return false;
-        }
+        //private bool CheckIsClass(Type type, ref int layer, bool root = true)
+        //{
+        //    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+        //    foreach (var field in fields)
+        //    {
+        //        var code = Type.GetTypeCode(field.FieldType);
+        //        if (code == TypeCode.Object)
+        //        {
+        //            if (field.FieldType.IsClass)
+        //                return true;
+        //            if (root)
+        //                layer = 0;
+        //            if (layer++ < 5)
+        //            {
+        //                var isClass = CheckIsClass(field.FieldType, ref layer, false);
+        //                if (isClass)
+        //                    return true;
+        //            }
+        //        }
+        //    }
+        //    return false;
+        //}
 
         /// <summary>
-        /// 移除子客户端的RPCFun函数
+        /// 移除客户端的Rpc方法
         /// </summary>
-        /// <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
+        /// <param name="target">将此对象的所有带有Rpc特性的方法移除</param>
         public void RemoveRpc(object target)
         {
             if (OnRemoveRpc == null)
@@ -1045,7 +1041,7 @@ namespace Net.Client
             AbortedThread();//断线重连处理
             Connected = true;
             StartThread("ReceiveHandle", ReceiveHandle);
-            checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
+            //checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
@@ -1129,31 +1125,31 @@ namespace Net.Client
         /// <summary>
         /// rpc检查处理线程
         /// </summary>
-        protected bool CheckRpcHandle()
-        {
-            try
-            {
-                if (OnCheckRpc == null)
-                    OnCheckRpc = CheckRpc;
-                OnCheckRpc();
-            }
-            catch (Exception ex)
-            {
-                NDebug.LogError(ex);
-            }
-            return Connected;
-        }
+        //protected bool CheckRpcHandle()
+        //{
+        //    try
+        //    {
+        //        if (OnCheckRpc == null)
+        //            OnCheckRpc = CheckRpc;
+        //        OnCheckRpc();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        NDebug.LogError(ex);
+        //    }
+        //    return Connected;
+        //}
 
         /// <summary>
         /// 检查rpc函数
         /// </summary>
-        public void CheckRpc()
-        {
-            lock (SyncRoot)//RemoveRpc方法和内部线程并行时索引溢出
-            {
-                RpcHelper.CheckRpc(this);
-            }
-        }
+        //public void CheckRpc()
+        //{
+        //    lock (SyncRoot)//RemoveRpc方法和内部线程并行时索引溢出
+        //    {
+        //        RpcHelper.CheckRpc(this);
+        //    }
+        //}
 
         /// <summary>
         /// 发包线程
@@ -2602,7 +2598,7 @@ namespace Net.Client
                     OnAddRpcHandle = rpc.AddRpcHandle;
                     OnRPCExecute = rpc.OnRpcExecute;
                     OnRemoveRpc = rpc.RemoveRpc;
-                    OnCheckRpc = rpc.CheckRpc;
+                    //OnCheckRpc = rpc.CheckRpc;
                     OnRpcTaskRegister = rpc.OnRpcTaskRegister;
                     break;
                 case AdapterType.NetworkEvt:

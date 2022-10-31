@@ -10,8 +10,8 @@ using System.Linq;
 public class Fast2BuildTools2 : EditorWindow
 {
     private List<FoldoutData> typeNames = new List<FoldoutData>();
-    private bool selectType;
     private string search = "", search1 = "";
+    private string searchBind = "", searchBind1 = "";
     private DateTime searchTime;
     private TypeData[] types;
     private Vector2 scrollPosition;
@@ -23,6 +23,7 @@ public class Fast2BuildTools2 : EditorWindow
     private string typeEntry1;
     private string methodEntry;
     private string methodEntry1;
+    private string selectType;
 
     [MenuItem("GameDesigner/Network/Fast2BuildTool-2")]
     static void ShowWindow()
@@ -60,7 +61,21 @@ public class Fast2BuildTools2 : EditorWindow
     private void OnGUI()
     {
         search = EditorGUILayout.TextField("搜索绑定类型", search);
-        EditorGUILayout.LabelField("绑定类型列表:");
+        searchBind = EditorGUILayout.TextField("搜索已绑定类型", searchBind);
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("全部展开")) 
+            foreach (var type1 in typeNames)
+                type1.foldout = true;
+        if (GUILayout.Button("全部收起"))
+            foreach (var type1 in typeNames)
+                type1.foldout = false;
+        if (GUILayout.Button("全部字段更新"))
+        {
+            UpdateFields();
+            SaveData();
+            Debug.Log("全部字段已更新完成!");
+        }
+        EditorGUILayout.EndHorizontal();
         if (typeNames.Count != 0)
         {
             scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
@@ -68,7 +83,11 @@ public class Fast2BuildTools2 : EditorWindow
             foreach (var type1 in typeNames)
             {
                 var rect = EditorGUILayout.GetControlRect();
+                var color = GUI.color;
+                if (type1.name == selectType)
+                    GUI.color = Color.green;
                 type1.foldout = EditorGUI.Foldout(new Rect(rect.position, rect.size - new Vector2(50, 0)), type1.foldout, type1.name, true);
+                GUI.color = color;
                 if (type1.foldout)
                 {
                     EditorGUI.indentLevel = 1;
@@ -100,12 +119,6 @@ public class Fast2BuildTools2 : EditorWindow
                         UpdateField(type1);
                         SaveData();
                     });
-                    menu.AddItem(new GUIContent("全部字段更新"), false, () =>
-                    {
-                        UpdateFields();
-                        SaveData();
-                        Debug.Log("全部字段已更新完成!");
-                    });
                     menu.AddItem(new GUIContent("移除"), false, () =>
                     {
                         typeNames.Remove(type1);
@@ -120,11 +133,10 @@ public class Fast2BuildTools2 : EditorWindow
         }
         if (search != search1)
         {
-            selectType = false;
             search1 = search;
             searchTime = DateTime.Now.AddMilliseconds(20);
         }
-        if (DateTime.Now > searchTime & !selectType & search.Length > 0)
+        if (DateTime.Now > searchTime & search.Length > 0)
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 2));
             foreach (var type1 in types)
@@ -162,6 +174,42 @@ public class Fast2BuildTools2 : EditorWindow
             }
             GUILayout.EndScrollView();
         }
+
+        if (searchBind != searchBind1)
+        {
+            searchBind1 = searchBind;
+            searchTime = DateTime.Now.AddMilliseconds(20);
+            if (searchBind.Length == 0)
+                selectType = "";
+        }
+        if (DateTime.Now > searchTime & searchBind.Length > 0)
+        {
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 6));
+            foreach (var type1 in typeNames)
+            {
+                if (!type1.name.ToLower().Contains(searchBind.ToLower()))
+                    continue;
+                if (GUILayout.Button(type1.name))
+                {
+                    var scrollPosition2 = new Vector2();
+                    for (int i = 0; i < typeNames.Count; i++)
+                    {
+                        if (typeNames[i].name == type1.name) 
+                        {
+                            scrollPosition1 = scrollPosition2;
+                            selectType = type1.name;
+                            break;
+                        }
+                        scrollPosition2.y += 20f;//20是foldout标签
+                        if (typeNames[i].foldout)
+                            scrollPosition2.y += typeNames[i].fields.Count * 20f;
+                    }
+                    break;
+                }
+            }
+            GUILayout.EndScrollView();
+        }
+
         serField = EditorGUILayout.Toggle("序列化字段:", serField);
         serProperty = EditorGUILayout.Toggle("序列化属性:", serProperty);
         GUILayout.BeginHorizontal();

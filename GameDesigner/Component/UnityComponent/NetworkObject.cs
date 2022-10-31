@@ -49,6 +49,13 @@ namespace Net.UnityComponent
         {
             Init();
         }
+
+        public void ReInit() 
+        {
+            isInit = false;
+            Init();
+        }
+
         public void Init()
         {
             if (isInit)

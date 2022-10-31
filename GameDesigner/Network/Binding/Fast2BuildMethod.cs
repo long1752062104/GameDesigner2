@@ -303,7 +303,10 @@ namespace Binding
                 templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
                 templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                 templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
+                if(members[i].IsEnum)
+                    templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.FullName.Replace("+", ".")}>");
+                else
+                    templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
                 sb1.Append(templateText2);
             }
             else if (members[i].IsArray)

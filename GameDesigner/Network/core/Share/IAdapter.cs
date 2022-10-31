@@ -45,7 +45,7 @@ namespace Net.Share
         /// <summary>
         /// 每50毫秒调用检查rpc是否被释放
         /// </summary>
-        void CheckRpc();
+        //void CheckRpc();
         RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc);
     }
 

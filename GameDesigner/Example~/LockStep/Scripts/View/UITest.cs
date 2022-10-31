@@ -2,7 +2,6 @@
 using Net.Client;
 using Net.Component;
 using Net.Share;
-using Net.System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,6 +69,11 @@ public class UITest : SingleCase<UITest>
     void StartGameSync()
     {
         Debug.Log("开始帧同步!");
+    }
+
+    private void OnDestroy()
+    {
+        ClientManager.Instance.client.RemoveRpc(this);
     }
 }
 #endif

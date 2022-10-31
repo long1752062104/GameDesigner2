@@ -113,7 +113,7 @@
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
+            //checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
