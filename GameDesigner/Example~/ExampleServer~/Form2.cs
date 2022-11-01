@@ -1,8 +1,10 @@
 ﻿using Example2;
+using Net.Event;
 using Net.Share;
 using Net.System;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -32,16 +34,12 @@ namespace ExampleServer
                 button1.Text = "启动";
                 server?.Close();
                 run = false;
+                NDebug.RemoveDebug();
                 return;
             }
+            NDebug.BindDebug(new FormDebug(listBox1));
             int port = int.Parse(textBox2.Text);//设置端口
             server = new Service();//创建服务器对象
-            server.Log += str=> {//监听log
-                if (listBox1.Items.Count > 2000)
-                    listBox1.Items.Clear();
-                listBox1.Items.Add(str);
-                listBox1.SelectedIndex = listBox1.Items.Count - 1;
-            };
             server.OnlineLimit = 24000;//服务器最大运行2500人连接
             server.LineUp = 24000;
             server.MaxThread = 10; //增加并发线程
@@ -64,24 +62,6 @@ namespace ExampleServer
             Example2DB.connStr = $"Data Source='{AppDomain.CurrentDomain.BaseDirectory}/Data/example2.db';";
             Example2DB.I.Init(Example2DB.I.OnInit, 1);
             ThreadManager.Invoke(1f, Example2DB.I.Executed, true);//每秒检查有没有数据需要往mysql数据库更新
-            //Task.Run(() =>
-            //{
-            //    while (true)
-            //    {
-            //        Thread.Sleep(100);
-            //        byte num = 0;
-            //        foreach (var user in Example2DB.I.UserinfoDatas.Values)
-            //        {
-            //            //user.Position = RandomHelper.Range(10000, 9999999).ToString();
-            //            //user.Health = RandomHelper.Range(10000, 9999999);
-            //            //user.MoveSpeed = RandomHelper.Range(10000, 9999999);
-            //            //user.Rotation = RandomHelper.Range(10000, 9999999).ToString();
-            //            //if (num++ >= 5)
-            //            //    break;
-            //            //user.BufferBytes = new byte[] { 1,2,3,4,5,6,7, num++, 9 };
-            //        }
-            //    }
-            //});
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -98,6 +78,11 @@ namespace ExampleServer
             if (item == null)
                 return;
             MessageBox.Show(item.ToString());
+        }
+
+        private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
+        {
+
         }
     }
 }

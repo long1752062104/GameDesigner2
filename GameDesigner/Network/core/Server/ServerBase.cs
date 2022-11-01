@@ -545,7 +545,7 @@ namespace Net.Server
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
         /// </summary>
         /// <param name="client">要移除的客户端</param>
-        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client.Name}]断开{(client.redundant ? "冗余" : "")}连接!"); }
+        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client.Name}]断开{(client.Redundant ? "冗余" : "")}连接!"); }
 
         /// <summary>
         /// 当开始调用服务器RPC函数 或 开始调用自定义网络命令时 可设置请求客户端的client为全局字段，方便在服务器RPC函数内引用!!!
@@ -1009,7 +1009,7 @@ namespace Net.Server
             client.UserID = uid;
             client.PlayerID = uid.ToString();
             client.Name = uid.ToString();
-            client.stackStream = BufferStreamShare.Take();
+            client.stackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
             OnThreadQueueSet(client);
             AcceptHander(client);
             SetClientIdentity(client);
@@ -1079,7 +1079,7 @@ namespace Net.Server
                 {
                     if (retVal[i] != md5Hash[i])
                     {
-                        Debug.LogError($"[{client}]MD5CRC校验失败:");
+                        Debug.LogError($"[{client}]MD5CRC校验失败!");
                         return;
                     }
                 }
@@ -1090,7 +1090,7 @@ namespace Net.Server
                 byte retVal = CRCHelper.CRC8(buffer, buffer.Position, buffer.Count);
                 if (crcCode != retVal) 
                 {
-                    Debug.LogError($"[{client}]CRC校验失败:");
+                    Debug.LogError($"[{client}]CRC校验失败!");
                     return;
                 }
             }
@@ -1105,7 +1105,7 @@ namespace Net.Server
                 bool kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
-                    Debug.LogError($"[{client}][忽略]协议出错!");
+                    Debug.LogError($"[{client}][可忽略]协议出错!");
                     break;
                 }
                 byte cmd1 = buffer.ReadByte();
@@ -1175,14 +1175,14 @@ namespace Net.Server
                 if (crcCode != retVal)
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client}]CRC校验失败:");
+                    Debug.LogError($"[{client}]CRC校验失败!");
                     return;
                 }
                 int size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client}]数据被拦截修改或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
+                    NDebug.LogError($"[{client}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 int value = MD5CRC ? 16 : 0;

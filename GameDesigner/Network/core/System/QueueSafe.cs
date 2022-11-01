@@ -238,11 +238,6 @@ namespace Net.System
             return ((IEnumerable<T>)this).GetEnumerator();
         }
 
-        internal void Clear()
-        {
-
-        }
-
         /// <summary>
         /// Attempts to add an object to the <see
         /// cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
@@ -636,11 +631,6 @@ namespace Net.System
             return false;
         }
 
-        public T[] GetRemoveRange(int index, int count)
-        {
-            return m_head.RemoveRange(index, count);
-        }
-
         /// <summary>
         /// Attempts to return an object from the beginning of the <see cref="QueueSafe{T}"/>
         /// without removing it.
@@ -887,14 +877,6 @@ namespace Net.System
                 }//end of while
                 result = default;
                 return false;
-            }
-
-            internal T[] RemoveRange(int index, int count)
-            {
-                T[] array = new T[(count - (m_low + index))];
-                Array.Copy(m_array, 0, array, 0, array.Length);
-                Interlocked.Exchange(ref m_high, m_high - (m_low + index + count));
-                return array;
             }
 
             /// <summary>

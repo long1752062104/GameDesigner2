@@ -336,11 +336,6 @@
             字段同步信息
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.IDGenerator">
-            <summary>
-            收集rpc的对象唯一id
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.RpcTasks">
             <summary>
             可等待异步的Rpc
@@ -531,11 +526,6 @@
         <member name="P:Net.Client.ClientBase.OnRPCExecute">
             <summary>
             当执行调用远程过程方法时触发
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.OnCheckRpc">
-            <summary>
-            检查rpc对象，如果对象被释放则自动移除
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.OnSerializeRPC">
@@ -783,9 +773,9 @@
         </member>
         <member name="M:Net.Client.ClientBase.RemoveRpc(System.Object)">
             <summary>
-            移除子客户端的RPCFun函数
+            移除客户端的Rpc方法
             </summary>
-            <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
+            <param name="target">将此对象的所有带有Rpc特性的方法移除</param>
         </member>
         <member name="M:Net.Client.ClientBase.BindRpc(System.Object)">
             <summary>
@@ -937,16 +927,6 @@
         <member name="M:Net.Client.ClientBase.NetworkFlowHandler">
             <summary>
             调式输出网络流量信息
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.CheckRpcHandle">
-            <summary>
-            rpc检查处理线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.CheckRpc">
-            <summary>
-            检查rpc函数
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.SendDataHandler">
@@ -1635,6 +1615,11 @@
             使用内存流缓存速度会比较快, 但运行内存占用比较大
             </summary>
         </member>
+        <member name="P:Net.Config.Config.BaseCapacity">
+            <summary>
+            内存接收缓冲区基础容量 默认1024
+            </summary>
+        </member>
         <member name="T:Net.Event.EventSystem">
             <summary>
             事件处理静态类, 此类可以用于计时调用事件
@@ -1670,6 +1655,11 @@
             </summary>
             <param name="actionId"></param>
         </member>
+        <member name="T:Net.Event.ConsoleDebug">
+            <summary>
+            控制台输出帮助类
+            </summary>
+        </member>
         <member name="T:Net.Event.NDebug">
             <summary>
             消息输入输出处理类
@@ -1688,6 +1678,11 @@
         <member name="E:Net.Event.NDebug.LogWarningHandle">
             <summary>
             输出调式警告消息
+            </summary>
+        </member>
+        <member name="E:Net.Event.NDebug.Output">
+            <summary>
+            输出信息处理事件
             </summary>
         </member>
         <member name="P:Net.Event.NDebug.LogMax">
@@ -1722,6 +1717,27 @@
             输出警告消息
             </summary>
             <param name="message"></param>
+        </member>
+        <member name="M:Net.Event.NDebug.BindConsoleLog">
+            <summary>
+            绑定控制台输出
+            </summary>
+        </member>
+        <member name="M:Net.Event.NDebug.RemoveConsoleLog">
+            <summary>
+            移除控制台输出
+            </summary>
+        </member>
+        <member name="M:Net.Event.NDebug.BindDebug(Net.Event.IDebug)">
+            <summary>
+            绑定输出接口
+            </summary>
+            <param name="log"></param>
+        </member>
+        <member name="M:Net.Event.NDebug.RemoveDebug">
+            <summary>
+            移除输出接口
+            </summary>
         </member>
         <member name="T:Net.Event.TimerEvent">
             <summary>
@@ -2471,11 +2487,6 @@
             字段同步信息
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.IDGenerator">
-            <summary>
-            收集rpc的对象唯一id
-            </summary>
-        </member>
         <member name="P:Net.Server.NetPlayer.RpcTasks">
             <summary>
             可等待异步的Rpc
@@ -2746,6 +2757,11 @@
         </member>
         <member name="P:Net.Server.NetScene`1.Count">
             <summary>
+            获取场景当前人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Capacity">
+            <summary>
             获取场景容纳人数
             </summary>
         </member>
@@ -2969,11 +2985,6 @@
         <member name="P:Net.Server.ServerBase`2.SyncVarDic">
             <summary>
             字段同步信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.IDGenerator">
-            <summary>
-            收集rpc的对象唯一id
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.RpcTasks">
@@ -4420,7 +4431,7 @@
             客户端RPC适配器
             </summary>
         </member>
-        <member name="M:Net.Share.IRPCAdapter.CheckRpc">
+        <member name="M:Net.Share.IRPCAdapter.OnRpcTaskRegister(System.UInt16,System.String)">
             <summary>
             每50毫秒调用检查rpc是否被释放
             </summary>
@@ -4688,11 +4699,6 @@
             字段同步信息
             </summary>
         </member>
-        <member name="P:Net.Share.IRpcHandler.IDGenerator">
-            <summary>
-            收集rpc的对象唯一id
-            </summary>
-        </member>
         <member name="P:Net.Share.IRpcHandler.RpcTasks">
             <summary>
             等待回调的异步Rpc
@@ -4713,11 +4719,6 @@
             移除target的所有rpc
             </summary>
             <param name="target"></param>
-        </member>
-        <member name="M:Net.Share.IRpcHandler.CheckRpc">
-            <summary>
-            检查rpc对象或方法是否已被销毁（释放）
-            </summary>
         </member>
         <member name="T:Net.Share.ISendHandle">
             <summary>
@@ -6495,16 +6496,6 @@
             压入数据片, 等待复用
             </summary>
             <param name="segment"></param>
-        </member>
-        <member name="T:Net.System.BufferStream">
-            <summary>
-            共享文件流, 此类会瓜分一个文件流的段数据作为数据缓存位置
-            </summary>
-        </member>
-        <member name="T:Net.System.BufferStreamShare">
-            <summary>
-            共享文件流类
-            </summary>
         </member>
         <member name="T:Net.System.FastListSafe`1">
             <summary>

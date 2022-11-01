@@ -352,7 +352,7 @@ namespace Net.Client
         /// <summary>
         /// TCP叠包临时缓存流
         /// </summary>
-        protected BufferStream StackStream { get; set; }
+        protected MemoryStream StackStream { get; set; }
         /// <summary>
         /// 玩家操作是以可靠传输进行发送的?     
         /// 服务器的对应属性SendOperationReliable在 NetScene类里面
@@ -417,7 +417,6 @@ namespace Net.Client
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID;//事件id
         private int sendFileTick, recvFileTick;
-
         /// <summary>
         /// 当前尝试重连次数
         /// </summary>
@@ -1461,7 +1460,7 @@ namespace Net.Client
                 {
                     if (retVal[i] != md5Hash[i])
                     {
-                        NDebug.LogError("MD5CRC校验失败:");
+                        NDebug.LogError($"[{UID}]MD5CRC校验失败!");
                         return;
                     }
                 }
@@ -1472,7 +1471,7 @@ namespace Net.Client
                 byte retVal = CRCHelper.CRC8(buffer, buffer.Position, buffer.Count);
                 if (crcCode != retVal)
                 {
-                    NDebug.LogError($"CRC校验失败:");
+                    NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
             }
@@ -1487,7 +1486,7 @@ namespace Net.Client
                 bool kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
-                    NDebug.LogError("[忽略]协议出错!");
+                    NDebug.LogError($"[{UID}][可忽略]协议出错!");
                     break;
                 }
                 byte cmd1 = buffer.ReadByte();

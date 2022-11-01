@@ -1,4 +1,5 @@
 ﻿using AOIExample;
+using Net.Event;
 using Net.Share;
 using System;
 using System.Diagnostics;
@@ -29,16 +30,12 @@ namespace ExampleServer
                 button1.Text = "启动";
                 server?.Close();
                 run = false;
+                NDebug.RemoveDebug();
                 return;
             }
+            NDebug.BindDebug(new FormDebug(listBox1));
             int port = int.Parse(textBox2.Text);//设置端口
             server = new Service();//创建服务器对象
-            server.Log += str=> {//监听log
-                if (listBox1.Items.Count > 2000)
-                    listBox1.Items.Clear();
-                listBox1.Items.Add(str);
-                listBox1.SelectedIndex = listBox1.Items.Count - 1;
-            };
             server.OnlineLimit = 24000;//服务器最大运行2500人连接
             server.LineUp = 24000;
             server.MaxThread = 10; //增加并发线程

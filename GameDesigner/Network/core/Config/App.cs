@@ -1,17 +1,11 @@
 ﻿using Net.Share;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Net.Config
 {
     public static class App
     {
-        [STAThread]
         public static void Setup() => Init();
 
         public static void Init()

@@ -12,6 +12,7 @@ namespace Net.Config
         /// 使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
         /// 使用内存流缓存速度会比较快, 但运行内存占用比较大
         /// </summary>
+        [Obsolete("文件流已废弃, 统一内存流")]
         public static bool UseMemoryStream
         {
             get 
@@ -25,8 +26,32 @@ namespace Net.Config
                 Save();
             }
         }
+        private static int baseCapacity = 1024;
+        /// <summary>
+        /// 内存接收缓冲区基础容量 默认1024
+        /// </summary>
+        public static int BaseCapacity
+        {
+            get
+            {
+                Init();
+                return baseCapacity;
+            }
+            set
+            {
+                baseCapacity = value;
+                Save();
+            }
+        }
 
-        public static string GetBasePath()
+        public static string BasePath;
+
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+        [UnityEngine.RuntimeInitializeOnLoadMethod]
+#else
+        [Net.Share.RuntimeInitializeOnLoadMethod]
+#endif
+        public static void InitBasePath()
         {
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
 #if UNITY_STANDALONE || UNITY_WSA
@@ -40,7 +65,7 @@ namespace Net.Config
 #else
             var path = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-            return path;
+            BasePath = path;
         }
 
         private static void Init()
@@ -48,7 +73,7 @@ namespace Net.Config
             if (init)
                 return;
             init = true;
-            var configPath = GetBasePath() + "/network.config";
+            var configPath = BasePath + "/network.config";
             if (File.Exists(configPath))
             {
                 var textRows = File.ReadAllLines(configPath);
@@ -67,6 +92,9 @@ namespace Net.Config
                         case "usememorystream":
                             useMemoryStream = bool.Parse(value);
                             break;
+                        case "basecapacity":
+                            BaseCapacity = int.Parse(value);
+                            break;
                     }
                 }
             }
@@ -78,9 +106,13 @@ namespace Net.Config
 
         private static void Save()
         {
+            var list = new List<string>();
             var text = $"useMemoryStream={useMemoryStream}#使用运行内存作为缓冲区? 否则使用文件流作为缓冲区";
-            var configPath = GetBasePath() + "/network.config";
-            File.WriteAllLines(configPath, new List<string>() { text });
+            list.Add(text);
+            text = $"baseCapacity={baseCapacity}#当客户端连接时分配的初始缓冲区大小";
+            list.Add(text);
+            var configPath = BasePath + "/network.config";
+            File.WriteAllLines(configPath, list);
         }
     }
 }

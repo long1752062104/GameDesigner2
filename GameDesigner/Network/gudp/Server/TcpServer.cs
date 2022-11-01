@@ -70,7 +70,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Debug.Log($"接受异常:{ex}");
+                    Debug.LogError($"接受异常:{ex}");
                 }
             }
         }
@@ -206,7 +206,7 @@
             }
             if (client.heart > HeartLimit * 5)
             {
-                client.redundant = true;
+                client.Redundant = true;
                 RemoveClient(client);
                 return;
             }

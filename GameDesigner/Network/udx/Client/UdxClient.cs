@@ -140,8 +140,8 @@
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         Connected = false;
                         NetworkState = networkState = NetworkState.ConnectLost;
-                        rtRPCModels.Clear();
-                        rPCModels.Clear();
+                        rtRPCModels = new QueueSafe<RPCModel>();
+                        rPCModels = new QueueSafe<RPCModel>();
                         NDebug.Log("断开连接！");
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:

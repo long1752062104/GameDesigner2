@@ -83,7 +83,7 @@
                         if (!openClient)
                             throw new Exception("客户端调用Close!");
                     }
-                    StackStream = BufferStreamShare.Take();
+                    StackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
                     StartupThread();
                     InvokeContext(() => {
                         networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
@@ -255,14 +255,14 @@
                 if (crcCode != retVal)
                 {
                     stack = 0;
-                    NDebug.LogError($"CRC校验失败:");
+                    NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
                 int size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     stack = 0;
-                    NDebug.LogError($"数据错乱或数据量太大: size:{size}， 如果想传输大数据，请设置PackageSize属性");
+                    NDebug.LogError($"[{UID}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 int value = MD5CRC ? 16 : 0;
@@ -437,7 +437,7 @@
             rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
             SendDirect();
             Connected = true;
-            StackStream = BufferStreamShare.Take();
+            StackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
             return Task.FromResult(Connected);
         }
         protected override void StartupThread() { }

@@ -141,7 +141,7 @@
             }
             if (client.heart > HeartLimit * 5)
             {
-                client.redundant = true;
+                client.Redundant = true;
                 RemoveClient(client);
                 return;
             }

@@ -11,6 +11,7 @@
     using Net.Helper;
     using Net.Plugins;
     using global::System.Collections.Concurrent;
+    using global::System.IO;
 
     /// <summary>
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -91,7 +92,7 @@
         /// <summary>
         /// TCP叠包临时缓存流
         /// </summary>
-        internal BufferStream stackStream;
+        internal MemoryStream stackStream;
         /// <summary>
         /// 用户唯一身份标识
         /// </summary>
@@ -113,7 +114,10 @@
         public bool CloseReceive { get; set; }
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
-        public bool redundant { get; internal set; }
+        /// <summary>
+        /// 确定是否是冗余连接
+        /// </summary>
+        public bool Redundant { get; internal set; }
         /// <summary>
         /// 当前排队座号
         /// </summary>
