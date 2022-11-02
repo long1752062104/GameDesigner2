@@ -1,4 +1,4 @@
-﻿#if UNITY_STANDALONE_WIN || UNITY_WSA || SERVICE
+﻿#if UNITY_STANDALONE_WIN || UNITY_WSA || UNITY_WEBGL || SERVICE
 namespace Net.Client
 {
     using Net.Event;
