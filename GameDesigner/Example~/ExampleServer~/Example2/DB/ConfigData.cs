@@ -364,7 +364,7 @@ public partial class ConfigData : IDataRow
 
     }
 
-    public void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
+    public void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen)
     {
 #if SERVER
         string cmdText = "REPLACE INTO config SET ";
@@ -376,10 +376,10 @@ public partial class ConfigData : IDataRow
                 cmdText += $"`{name}`='{value}',";
             else if (value is byte[] buffer)
             {
+                var count = parms.Count;
                 cmdText += $"`{name}`=@buffer{count},";
                 parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
                 parmsLen += buffer.Length;
-                count++;
             }
             else cmdText += $"`{name}`={value},";
             columns.Remove(column);
@@ -387,12 +387,11 @@ public partial class ConfigData : IDataRow
         cmdText = cmdText.TrimEnd(',');
         cmdText += "; ";
         sb.Append(cmdText);
-        count++;
         RowState = DataRowState.Unchanged;
 #endif
     }
 
-    public void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count)
+    public void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen)
     {
 #if SERVER
         if (RowState == DataRowState.Detached | RowState == DataRowState.Deleted | RowState == DataRowState.Added | RowState == 0)
@@ -406,10 +405,10 @@ public partial class ConfigData : IDataRow
                 cmdText += $"`{name}`='{value}',";
             else if (value is byte[] buffer)
             {
+                var count = parms.Count;
                 cmdText += $"`{name}`=@buffer{count},";
                 parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
                 parmsLen += buffer.Length;
-                count++;
             }
             else cmdText += $"`{name}`={value},";
             columns.Remove(column);
@@ -417,7 +416,6 @@ public partial class ConfigData : IDataRow
         cmdText = cmdText.TrimEnd(',');
         cmdText += $" WHERE `id`={id}; ";
         sb.Append(cmdText);
-        count++;
         RowState = DataRowState.Unchanged;
 #endif
     }

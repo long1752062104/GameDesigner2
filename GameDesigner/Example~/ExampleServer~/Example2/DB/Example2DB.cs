@@ -329,7 +329,7 @@ public partial class Example2DB
                 {
                     case DataRowState.Added:
                         {
-                            row.AddedSql(sb, parms, ref parmsLen, ref count);
+                            row.AddedSql(sb, parms, ref parmsLen);
                         }
                         break;
                     case DataRowState.Detached:
@@ -339,7 +339,7 @@ public partial class Example2DB
                         break;
                     case DataRowState.Modified:
                         {
-                            row.ModifiedSql(sb, parms, ref parmsLen, ref count);
+                            row.ModifiedSql(sb, parms, ref parmsLen);
                         }
                         break;
                 }
