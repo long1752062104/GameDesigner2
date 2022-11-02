@@ -90,7 +90,7 @@ namespace Net.Component
 #endif
                             }
                             break;
-#if UNITY_STANDALONE_WIN || UNITY_WSA
+#if UNITY_STANDALONE_WIN || UNITY_WSA || UNITY_WEBGL
                         case TransportProtocol.Web:
                             {
                                 var type = typeof(ClientBase).Assembly.GetType("Net.Client.WebClient");
