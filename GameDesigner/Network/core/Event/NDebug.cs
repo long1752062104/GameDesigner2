@@ -73,6 +73,9 @@
     }
 
 #if SERVICE
+    /// <summary>
+    /// Form窗口程序输出帮助类
+    /// </summary>
     public class FormDebug : IDebug
     {
         private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
@@ -106,6 +109,8 @@
 
         public void DrawItem(object sender, DrawItemEventArgs e)
         {
+            if (e.Index == -1)
+                return;
             var entity = listBox.Items[e.Index] as LogEntity;
             e.DrawBackground();
             e.DrawFocusRectangle();
@@ -117,10 +122,11 @@
             var color = entity.log == LogType.Log ? Brushes.Blue : entity.log == LogType.Warning ? Brushes.Yellow : Brushes.Red;
             e.Graphics.DrawString(msg, e.Font, color, x, y);
             x += msg.Length * 6;
+            msg = entity.msg.Split('\r', '\n')[0];
             if (entity.count > 1)
-                e.Graphics.DrawString($"] ({entity.count}) {entity.msg.Split('\r','\n')[0]}", e.Font, Brushes.Black, x, y);
+                e.Graphics.DrawString($"] ({entity.count}) {msg}", e.Font, Brushes.Black, x, y);
             else
-                e.Graphics.DrawString($"] {entity.msg.Split('\r', '\n')[0]}", e.Font, Brushes.Black, x, y);
+                e.Graphics.DrawString($"] {msg}", e.Font, Brushes.Black, x, y);
         }
     }
 #endif

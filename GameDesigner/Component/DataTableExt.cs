@@ -10,9 +10,9 @@ public interface IDataRow
 
     void Init(DataRow row);
 
-    void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count);
+    void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen);
 
-    void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen, ref int count);
+    void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen);
 
     void DeletedSql(StringBuilder sb);
 }
