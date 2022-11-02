@@ -1,9 +1,10 @@
-﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+﻿/*
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 namespace MVC.Control
 {
     using UnityEngine;
     using System.IO;
-    using ILRuntime.CLR.Method;
+    //using ILRuntime.CLR.Method;
     using System;
     using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
     using ILRuntime.Runtime.CLRBinding;
@@ -107,3 +108,4 @@ namespace MVC.Control
     }
 }
 #endif
+*/

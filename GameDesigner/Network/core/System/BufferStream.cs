@@ -83,7 +83,7 @@
 //        public static int BaseCapacity { get; set; } = 2048;
 //        private readonly static object SyncRoot = new object();
 
-//#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+//#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 //            [UnityEngine.RuntimeInitializeOnLoadMethod]
 //            static void Init()//有了这个方法就行, 在unity初始化就会进入此类的静态构造函数即可
 //            {

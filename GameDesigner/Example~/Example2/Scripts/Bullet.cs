@@ -1,7 +1,7 @@
-﻿namespace Example2
+﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+namespace Example2
 {
     using Net.Client;
-    using Net.Component;
     using UnityEngine;
 
     public class Bullet : MonoBehaviour
@@ -41,3 +41,4 @@
         }
     }
 }
+#endif

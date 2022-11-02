@@ -157,7 +157,7 @@ namespace Net.Helper
         {
             var str = @"internal static class InvokeHelperGenerate
 {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
     [UnityEngine.RuntimeInitializeOnLoadMethod]
 #else
     [RuntimeInitializeOnLoadMethod]
@@ -648,7 +648,7 @@ namespace Net.Helper
         {
             var str = @"internal static class RpcCallSequencePointHelper
 {
-    #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+    #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
     [UnityEngine.RuntimeInitializeOnLoadMethod]
 #else
     [RuntimeInitializeOnLoadMethod]

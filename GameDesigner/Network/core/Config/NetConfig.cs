@@ -46,14 +46,14 @@ namespace Net.Config
 
         public static string BasePath;
 
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
         [UnityEngine.RuntimeInitializeOnLoadMethod]
 #else
         [Net.Share.RuntimeInitializeOnLoadMethod]
 #endif
         public static void InitBasePath()
         {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 #if UNITY_STANDALONE || UNITY_WSA
             var streamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
             if (!Directory.Exists(streamingAssetsPath))

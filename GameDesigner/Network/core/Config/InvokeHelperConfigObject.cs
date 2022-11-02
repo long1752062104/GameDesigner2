@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System;
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Create InvokeHelperConfig")]

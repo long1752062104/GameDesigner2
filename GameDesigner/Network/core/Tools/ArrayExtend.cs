@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -59,7 +59,7 @@ public static class ArrayExtend
         return self[Net.Share.RandomHelper.Range(0, self.Length)];
     }
 
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
     public static void ClearObjects<T>(this T[] self) where T : Object
     {
         for (int i = 0; i < self.Length; i++)
