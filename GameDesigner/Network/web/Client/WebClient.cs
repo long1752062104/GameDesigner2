@@ -10,9 +10,9 @@ namespace Net.Client
     using global::System.Text;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using WebSocket4Net;
     using Net.Serialize;
     using Net.System;
+    using UnityWebSocket;
 
     /// <summary>
     /// web客户端类型
@@ -51,15 +51,15 @@ namespace Net.Client
             try
             {
                 WSClient = new WebSocket($"ws://{host}:{port}/");
-                WSClient.Opened += (o, e) =>
+                WSClient.OnOpen += (sender, e) =>
                 {
                     Connected = true;
                 };
-                WSClient.Error += (o, e) =>
+                WSClient.OnError += (sender, e) =>
                 {
-                    NDebug.LogError(e);
+                    NDebug.LogError(e.Exception);
                 };
-                WSClient.Closed += (o, e) =>
+                WSClient.OnClose += (sender, e) =>
                 {
                     Connected = false;
                     NetworkState = networkState = NetworkState.ConnectLost;
@@ -67,34 +67,30 @@ namespace Net.Client
                     rPCModels = new QueueSafe<RPCModel>();
                     NDebug.Log("断开连接！");
                 };
-                WSClient.MessageReceived += (o, e) =>
+                WSClient.OnMessage += (sender, e) =>
                 {
-                    receiveCount += e.Message.Length * 2;
-                    receiveAmount++;
-                    MessageModel model = JsonConvert.DeserializeObject<MessageModel>(e.Message);
-                    RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars());
-                    RPCDataHandle(model1, null);
+                    if (e.IsText)
+                    {
+                        receiveCount += e.Data.Length * 2;
+                        receiveAmount++;
+                        MessageModel model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
+                        RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars());
+                        RPCDataHandle(model1, null);
+                    }
+                    else if (e.IsBinary) 
+                    {
+                        var data = e.RawData;
+                        receiveCount += data.Length;
+                        receiveAmount++;
+                        var buffer = BufferPool.Take(data.Length);
+                        Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                        buffer.Count = data.Length;
+                        ResolveBuffer(ref buffer, false);
+                        BufferPool.Push(buffer);
+                    }
+                    
                 };
-                WSClient.DataReceived += (o, e) =>
-                {
-                    receiveCount += e.Data.Length;
-                    receiveAmount++;
-                    var buffer = BufferPool.Take(e.Data.Length);
-                    Buffer.BlockCopy(e.Data, 0, buffer, 0, e.Data.Length);
-                    buffer.Count = e.Data.Length;
-                    ResolveBuffer(ref buffer, false);
-                    BufferPool.Push(buffer);
-                };
-                WSClient.Open();
-                return Task.Run(() =>
-                {
-                    DateTime timeout = DateTime.Now.AddSeconds(5);
-                    while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
-                    if (Connected)
-                        StartupThread();
-                    InvokeContext(() => { result(Connected); });
-                    return Connected;
-                });
+                return CheckIdentity(()=> WSClient.ConnectAsync(), result);
             }
             catch (Exception ex)
             {
@@ -102,6 +98,10 @@ namespace Net.Client
                 result(false);
                 return Task.FromResult(false);
             }
+        }
+
+        public override void Receive(bool isSleep)
+        {
         }
 
         protected override void StartupThread()
@@ -142,7 +142,7 @@ namespace Net.Client
         {
             sendCount += buffer.Length;
             sendAmount++;
-            WSClient.Send(buffer, 0, buffer.Length);
+            WSClient.SendAsync(buffer);
         }
 
         protected internal override byte[] OnSerializeRpcInternal(RPCModel model)
@@ -179,7 +179,7 @@ namespace Net.Client
             AbortedThread();
             if (WSClient != null)
             {
-                WSClient.Close();
+                WSClient.CloseAsync();
                 WSClient = null;
             }
             StackStream?.Close();
@@ -208,7 +208,7 @@ namespace Net.Client
                 for (int i = 0; i < clientLen; i++)
                 {
                     WebSocket socket = new WebSocket($"ws://{ip}:{port}/");
-                    socket.Open();
+                    socket.ConnectAsync();
                     clients.Add(socket);
                 }
                 byte[] buffer = new byte[dataLen];
@@ -235,10 +235,10 @@ namespace Net.Client
                 {
                     Thread.Sleep(31);
                     for (int i = 0; i < clients.Count; i++)
-                        clients[i].Send(buffer, 0, buffer.Length);
+                        clients[i].SendAsync(buffer);
                 }
                 for (int i = 0; i < clients.Count; i++)
-                    clients[i].Close();
+                    clients[i].CloseAsync();
             }, cts.Token);
             return cts;
         }

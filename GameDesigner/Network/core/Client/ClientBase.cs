@@ -911,55 +911,7 @@ namespace Net.Client
                 this.localPort = localPort;
                 if (localPort != -1)
                     Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
-                Client.Connect(host, port);
-                return Task.Run(() =>
-                {
-                    try
-                    {
-#if UDPTEST
-                        var time = DateTime.Now.AddSeconds(8000000);
-#else
-                        var time = DateTime.Now.AddSeconds(8);
-#endif
-                        var time1 = DateTime.Now;
-                        while (UID == 0)
-                        {
-                            Receive(false);
-                            Thread.Sleep(1);
-                            if (DateTime.Now >= time)
-                                throw new Exception("uid赋值失败!");
-                            if (!openClient)
-                                throw new Exception("客户端调用Close!");
-                            if (DateTime.Now >= time1)
-                            {
-                                time1 = DateTime.Now.AddMilliseconds(1000);
-                                rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
-                                SendDirect();
-                            }
-                            if (Gcp != null)
-                                Gcp.Update();
-                        }
-                        Connected = true;
-                        StartupThread();
-                        InvokeContext(() => {
-                            networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
-                            result(true);
-                        });
-                        return true;
-                    }
-                    catch(Exception ex)
-                    {
-                        NDebug.LogError("连接失败原因:" + ex.ToString());
-                        Connected = false;
-                        Client?.Close();
-                        Client = null;
-                        InvokeContext(() => {
-                            networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
-                            result(false);
-                        });
-                        return false;
-                    }
-                });
+                return CheckIdentity(()=> Client.Connect(host, port), result);
             }
             catch (Exception ex)
             {
@@ -968,6 +920,55 @@ namespace Net.Client
                 result(false);
                 return Task.FromResult(false);
             }
+        }
+
+        protected virtual Task<bool> CheckIdentity(Action begin, Action<bool> result)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    begin?.Invoke();
+                    var tick = (uint)Environment.TickCount + 8000u;
+                    var tick1 = (uint)Environment.TickCount;
+                    while (UID == 0)
+                    {
+                        Receive(false);
+                        Thread.Sleep(1);
+                        if ((uint)Environment.TickCount >= tick)
+                            throw new Exception("uid赋值失败!");
+                        if (!openClient)
+                            throw new Exception("客户端调用Close!");
+                        if ((uint)Environment.TickCount >= tick1)
+                        {
+                            tick1 = (uint)Environment.TickCount + 1000u;
+                            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+                            SendDirect();
+                        }
+                        if (Gcp != null)
+                            Gcp.Update();
+                    }
+                    Connected = true;
+                    StartupThread();
+                    InvokeContext(() => {
+                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
+                        result(true);
+                    });
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    NDebug.LogError("连接失败原因:" + ex.ToString());
+                    Connected = false;
+                    Client?.Close();
+                    Client = null;
+                    InvokeContext(() => {
+                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
+                        result(false);
+                    });
+                    return false;
+                }
+            });
         }
 
         protected void InvokeContext(Action action)

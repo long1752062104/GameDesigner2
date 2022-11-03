@@ -27,30 +27,6 @@
         /// webSocket服务器套接字
         /// </summary>
         public new WebSocketServer Server { get; protected set; }
-        /// <summary>
-        /// 当web服务器接收到网络数据处理事件
-        /// </summary>
-        public WSRevdBufferHandle<Player> OnWSRevdBufferHandle { get; set; }
-
-        /// <summary>
-        /// 当web服务器接收到客户端其他指令的数据请求
-        /// </summary>
-        /// <param name="client">当前客户端</param>
-        /// <param name="model"></param>
-        protected void OnWSReceiveBuffer(Player client, MessageModel model) { }
-
-        /// <summary>
-        /// 当webScoket未知客户端发送数据请求，返回null，不允许unClient进入服务器!，返回对象，允许unClient客户端进入服务器
-        /// 客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
-        /// 在这里可以用来判断客户端登录和注册等等进站许可
-        /// </summary>
-        /// <param name="unClient">客户端终端</param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        protected virtual bool OnWSUnClientRequest(Player unClient, MessageModel model)
-        {
-            return true;
-        }
 
         protected override void CreateServerSocket(ushort port)
         {
@@ -118,7 +94,7 @@
             try
             {
                 var model = JsonConvert.DeserializeObject<MessageModel>(message);
-                RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars()) {
+                var model1 = new RPCModel(model.cmd, model.func, model.GetPars()) {
                     buffer = buffer, count = buffer.Length
                 };
                 DataHandle(client, model1, null);
@@ -158,14 +134,8 @@
 
         protected override void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            //if (client.sendQueue.Count >= 268435456)//最大只能处理每秒256m数据
-            //{
-            //    Debug.LogError($"[{client}]发送缓冲列表已经超出限制!");
-            //    return;
-            //}
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;
-            //client.sendQueue.Enqueue(new SendDataBuffer(client, buffer));
             client.WSClient.Send(buffer);
             sendAmount++;
             sendCount += buffer.Length;
