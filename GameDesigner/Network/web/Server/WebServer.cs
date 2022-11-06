@@ -31,7 +31,7 @@
         protected override void CreateServerSocket(ushort port)
         {
             var ipAddress = IPAddress.Any;
-            var ip = new IPEndPoint(ipAddress, port);//IP端口设置
+            var ip = new IPEndPoint(ipAddress, port);
             Server = new WebSocketServer($"ws://{ip}");
             Server.ListenerSocket.NoDelay = true;
             Server.Start(AcceptConnect);

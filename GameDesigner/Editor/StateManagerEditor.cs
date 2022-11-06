@@ -49,24 +49,25 @@ namespace GameDesigner
                     stateMachine.animation = stateManager.GetComponentInChildren<Animation>();
                 if (stateMachine.animation != null)
                 {
-                    if (stateMachine.clipNames.Count != AnimationUtility.GetAnimationClips(stateMachine.animation.gameObject).Length)
+                    var clips = AnimationUtility.GetAnimationClips(stateMachine.animation.gameObject);
+                    if (stateMachine.clipNames.Count != clips.Length)
                     {
-                        stateMachine.clipNames = new List<string>();
-                        foreach (AnimationClip clip in AnimationUtility.GetAnimationClips(stateMachine.animation.gameObject))
+                        stateMachine.clipNames.Clear();
+                        foreach (var clip in clips)
                         {
                             stateMachine.clipNames.Add(clip.name);
                         }
                     }
                 }
-                stateMachine.animator = stateManager.GetComponent<Animator>();
                 if (stateMachine.animator == null)
                     stateMachine.animator = stateManager.GetComponentInChildren<Animator>();
                 if (stateMachine.animator != null)
                 {
-                    if (stateMachine.clipNames.Count != stateMachine.animator.runtimeAnimatorController.animationClips.Length)
+                    var clips = stateMachine.animator.runtimeAnimatorController.animationClips;
+                    if (stateMachine.clipNames.Count != clips.Length)
                     {
-                        stateMachine.clipNames = new List<string>();
-                        foreach (AnimationClip clip in stateMachine.animator.runtimeAnimatorController.animationClips)
+                        stateMachine.clipNames.Clear();
+                        foreach (var clip in clips)
                         {
                             stateMachine.clipNames.Add(clip.name);
                         }

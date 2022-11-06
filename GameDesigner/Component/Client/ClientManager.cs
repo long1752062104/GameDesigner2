@@ -93,9 +93,7 @@ namespace Net.Component
 #if UNITY_STANDALONE_WIN || UNITY_WSA || UNITY_WEBGL
                         case TransportProtocol.Web:
                             {
-                                var type = typeof(ClientBase).Assembly.GetType("Net.Client.WebClient");
-                                if (type != null)
-                                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                                _client = new Client.WebClient(true);
                             }
                             break;
 #endif

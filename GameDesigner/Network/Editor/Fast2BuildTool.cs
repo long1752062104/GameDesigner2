@@ -75,6 +75,68 @@ public class Fast2BuildTools2 : EditorWindow
             SaveData();
             Debug.Log("全部字段已更新完成!");
         }
+        if (GUILayout.Button("引用文件夹"))
+        {
+            var path = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
+            var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                var texts = File.ReadLines(file);
+                var nameSpace = "";
+                var typeName = "";
+                foreach (var text in texts)
+                {
+                    if (text.Contains("namespace"))
+                    {
+                        nameSpace = text.Replace("namespace", "").Trim();
+                        continue;
+                    }
+                    var index = 0;
+                    var has = false;
+                    if (text.Contains("class"))
+                    {
+                        index = text.IndexOf("class") + 6;
+                        has = true;
+                    }
+                    if (text.Contains("struct"))
+                    {
+                        index = text.IndexOf("struct") + 7;
+                        has = true;
+                    }
+                    if (has)
+                    {
+                        var end = text.Length - index;
+                        var typeName1 = text.Substring(index, end);
+                        var typeName2 = typeName1.Split(':');
+                        typeName = typeName2[0].Trim();
+                        string typeFull;
+                        if (nameSpace == "")
+                            typeFull = typeName;
+                        else
+                            typeFull = $"{nameSpace}.{typeName}";
+                        foreach (var type1 in types)
+                        {
+                            if (type1.name != typeFull)
+                                continue;
+                            AddSerType(type1);
+                            break;
+                        }
+                        typeName = "";
+                    }
+                }
+                if (typeName.Length > 0) 
+                {
+                    var typeFull = $"{nameSpace}.{typeName}";
+                    foreach (var type1 in types)
+                    {
+                        if (type1.name != typeFull)
+                            continue;
+                        AddSerType(type1);
+                        break;
+                    }
+                }
+            }
+        }
         EditorGUILayout.EndHorizontal();
         if (typeNames.Count != 0)
         {
@@ -145,30 +207,7 @@ public class Fast2BuildTools2 : EditorWindow
                     continue;
                 if (GUILayout.Button(type1.name))
                 {
-                    if (typeNames.Find(item => item.name == type1.name) == null)
-                    {
-                        var fields = type1.type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                        var properties = type1.type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                        var fields1 = new List<FieldData>();
-                        foreach (var item in fields)
-                        {
-                            if (item.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
-                                continue;
-                            fields1.Add(new FieldData() { name = item.Name, serialize = true });
-                        }
-                        foreach (var item in properties)
-                        {
-                            if (!item.CanRead | !item.CanWrite)
-                                continue;
-                            if (item.GetIndexParameters().Length > 0)
-                                continue;
-                            if (item.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
-                                continue;
-                            fields1.Add(new FieldData() { name = item.Name, serialize = true });
-                        }
-                        typeNames.Add(new FoldoutData() { name = type1.name, fields = fields1, foldout = false });
-                    }
-                    SaveData();
+                    AddSerType(type1);
                     return;
                 }
             }
@@ -307,6 +346,34 @@ public class Fast2BuildTools2 : EditorWindow
             AssetDatabase.Refresh();
         }
         EditorGUILayout.HelpBox("使用时在Start方法初始化: Net.Serialize.NetConvertFast2.AddSerializeType3s(Binding.BindingType.TYPES);", MessageType.Info);
+    }
+
+    private void AddSerType(TypeData type1)
+    {
+        if (typeNames.Find(item => item.name == type1.name) == null)
+        {
+            var fields = type1.type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var properties = type1.type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var fields1 = new List<FieldData>();
+            foreach (var item in fields)
+            {
+                if (item.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
+                    continue;
+                fields1.Add(new FieldData() { name = item.Name, serialize = true });
+            }
+            foreach (var item in properties)
+            {
+                if (!item.CanRead | !item.CanWrite)
+                    continue;
+                if (item.GetIndexParameters().Length > 0)
+                    continue;
+                if (item.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
+                    continue;
+                fields1.Add(new FieldData() { name = item.Name, serialize = true });
+            }
+            typeNames.Add(new FoldoutData() { name = type1.name, fields = fields1, foldout = false });
+        }
+        SaveData();
     }
 
     private void UpdateFields() 

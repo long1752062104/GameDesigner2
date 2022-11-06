@@ -53,7 +53,7 @@ namespace Net.Client
                 WSClient = new WebSocket($"ws://{host}:{port}/");
                 WSClient.OnOpen += (sender, e) =>
                 {
-                    Connected = true;
+
                 };
                 WSClient.OnError += (sender, e) =>
                 {
@@ -90,7 +90,33 @@ namespace Net.Client
                     }
                     
                 };
-                return CheckIdentity(()=> WSClient.ConnectAsync(), result);
+                WSClient.ConnectAsync();
+                var tick = (uint)Environment.TickCount + 8000u;
+                var tick1 = (uint)Environment.TickCount;
+                while (UID == 0)
+                {
+                    Receive(false);
+                    Thread.Sleep(1);
+                    if ((uint)Environment.TickCount >= tick)
+                        throw new Exception("uid赋值失败!");
+                    if (!openClient)
+                        throw new Exception("客户端调用Close!");
+                    if ((uint)Environment.TickCount >= tick1)
+                    {
+                        tick1 = (uint)Environment.TickCount + 1000u;
+                        rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+                        SendDirect();
+                    }
+                    if (Gcp != null)
+                        Gcp.Update();
+                }
+                Connected = true;
+                StartupThread();
+                InvokeContext(() => {
+                    networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
+                    result(true);
+                });
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
