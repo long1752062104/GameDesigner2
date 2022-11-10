@@ -44,6 +44,8 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         rect = EditorGUILayout.GetControlRect(true, 45f);
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("syncVarServerEnable"));
         rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
+        EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("collectRpc"));
+        rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("savePath"));
         rect.position = new Vector2(rect.position.x + (position.width - 120f), rect.position.y + 25f);
         rect.size = new Vector2(100f, 20f);
@@ -143,6 +145,9 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                         SaveData();
                     }
 
+                    rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
+                    EditorGUI.PropertyField(rect, arrayElement.FindPropertyRelative("collectRpc"));
+                    
                     rect = EditorGUILayout.GetControlRect(true, 100f + (rpc.dllPaths.Count * 20f), GUILayout.Width(position.width - 130f));
                     EditorGUI.PropertyField(rect, arrayElement.FindPropertyRelative("dllPaths"), true);
                     rect.position = new Vector2(rect.position.x + (position.width - 120f), rect.position.y + 25f);
@@ -168,8 +173,10 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         }
         if (GUILayout.Button("执行", GUILayout.Height(30)))
         {
+            SaveData();
             InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
             Debug.Log("更新完成!");
+            AssetDatabase.Refresh();
         }
 
         GUILayout.EndScrollView();

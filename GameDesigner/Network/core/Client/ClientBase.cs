@@ -735,24 +735,35 @@ namespace Net.Client
                         }
                         OnInvokeRpc(buffer);
                     }
-                    catch (TargetParameterCountException e)
+                    catch (TargetParameterCountException ex)
                     {
 #if UNITY_EDITOR
                         if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
                             sequence = new SequencePoint();
                         var info = $"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
                         Regex reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
-                        info += reg.Replace(e.ToString(), ") (at $1) ");
+                        info += reg.Replace(ex.ToString(), ") (at $1) ");
                         var dataPath = UnityEngine.Application.dataPath.Replace("/", "\\").Replace("Assets", "");
                         info = info.Replace(dataPath, "").Replace("\\", "/");
                         NDebug.LogError(info);
 #else
-                        NDebug.LogError($"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + e);
+                        NDebug.LogError($"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + ex);
 #endif
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        NDebug.LogError(e);
+#if UNITY_EDITOR
+                        if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                            sequence = new SequencePoint();
+                        var info = $"{buffer.method.Name}方法内部发生错误!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
+                        Regex reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
+                        info += reg.Replace(ex.ToString(), ") (at $1) ");
+                        var dataPath = UnityEngine.Application.dataPath.Replace("/", "\\").Replace("Assets", "");
+                        info = info.Replace(dataPath, "").Replace("\\", "/");
+                        NDebug.LogError(info);
+#else
+                        NDebug.LogError($"{buffer.method.Name}方法内部发生错误! 详细信息:" + ex);
+#endif
                     }
                 }
             }

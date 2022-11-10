@@ -1609,6 +1609,21 @@
             <param name="clientLen">测试客户端数量</param>
             <param name="dataLen">每个客户端数据大小</param>
         </member>
+        <member name="T:Net.Config.App">
+            <summary>
+            gdnet应用程序入口
+            </summary>
+        </member>
+        <member name="M:Net.Config.App.Setup">
+            <summary>
+            初始化GDNet环境
+            </summary>
+        </member>
+        <member name="M:Net.Config.App.Init">
+            <summary>
+            初始化GDNet环境
+            </summary>
+        </member>
         <member name="P:Net.Config.Config.UseMemoryStream">
             <summary>
             使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
@@ -4251,28 +4266,6 @@
             <summary>
             webSocket服务器套接字
             </summary>
-        </member>
-        <member name="P:Net.Server.WebServer`2.OnWSRevdBufferHandle">
-            <summary>
-            当web服务器接收到网络数据处理事件
-            </summary>
-        </member>
-        <member name="M:Net.Server.WebServer`2.OnWSReceiveBuffer(`0,Net.Share.MessageModel)">
-            <summary>
-            当web服务器接收到客户端其他指令的数据请求
-            </summary>
-            <param name="client">当前客户端</param>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.WebServer`2.OnWSUnClientRequest(`0,Net.Share.MessageModel)">
-            <summary>
-            当webScoket未知客户端发送数据请求，返回null，不允许unClient进入服务器!，返回对象，允许unClient客户端进入服务器
-            客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
-            在这里可以用来判断客户端登录和注册等等进站许可
-            </summary>
-            <param name="unClient">客户端终端</param>
-            <param name="model"></param>
-            <returns></returns>
         </member>
         <member name="T:Net.Server.WebServer">
             <summary>
@@ -7300,6 +7293,437 @@
             <summary>
             Wraps a stream and queues multiple write operations.
             Useful for wrapping SslStream as it does not support multiple simultaneous write operations.
+            </summary>
+        </member>
+        <member name="T:UnityWebSocket.CloseEventArgs">
+            <summary>
+            Represents the event data for the <see cref="E:UnityWebSocket.IWebSocket.OnClose"/> event.
+            </summary>
+            <remarks>
+              <para>
+              That event occurs when the WebSocket connection has been closed.
+              </para>
+              <para>
+              If you would like to get the reason for the close, you should access
+              the <see cref="P:UnityWebSocket.CloseEventArgs.Code"/> or <see cref="P:UnityWebSocket.CloseEventArgs.Reason"/> property.
+              </para>
+            </remarks>
+        </member>
+        <member name="P:UnityWebSocket.CloseEventArgs.Code">
+            <summary>
+            Gets the status code for the close.
+            </summary>
+            <value>
+            A <see cref="T:System.UInt16"/> that represents the status code for the close if any.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.CloseEventArgs.Reason">
+            <summary>
+            Gets the reason for the close.
+            </summary>
+            <value>
+            A <see cref="T:System.String"/> that represents the reason for the close if any.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.CloseEventArgs.WasClean">
+            <summary>
+            Gets a value indicating whether the connection has been closed cleanly.
+            </summary>
+            <value>
+            <c>true</c> if the connection has been closed cleanly; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.CloseEventArgs.StatusCode">
+            <summary>
+            Enum value same as Code
+            </summary>
+        </member>
+        <member name="T:UnityWebSocket.CloseStatusCode">
+            <summary>
+            Indicates the status code for the WebSocket connection close.
+            </summary>
+            <remarks>
+              <para>
+              The values of this enumeration are defined in
+              <see href="http://tools.ietf.org/html/rfc6455#section-7.4">
+              Section 7.4</see> of RFC 6455.
+              </para>
+              <para>
+              "Reserved value" cannot be sent as a status code in
+              closing handshake by an endpoint.
+              </para>
+            </remarks>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.Normal">
+            <summary>
+            Equivalent to close status 1000. Indicates normal close.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.Away">
+            <summary>
+            Equivalent to close status 1001. Indicates that an endpoint is
+            going away.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.ProtocolError">
+            <summary>
+            Equivalent to close status 1002. Indicates that an endpoint is
+            terminating the connection due to a protocol error.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.UnsupportedData">
+            <summary>
+            Equivalent to close status 1003. Indicates that an endpoint is
+            terminating the connection because it has received a type of
+            data that it cannot accept.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.Undefined">
+            <summary>
+            Equivalent to close status 1004. Still undefined. A Reserved value.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.NoStatus">
+            <summary>
+            Equivalent to close status 1005. Indicates that no status code was
+            actually present. A Reserved value.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.Abnormal">
+            <summary>
+            Equivalent to close status 1006. Indicates that the connection was
+            closed abnormally. A Reserved value.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.InvalidData">
+            <summary>
+            Equivalent to close status 1007. Indicates that an endpoint is
+            terminating the connection because it has received a message that
+            contains data that is not consistent with the type of the message.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.PolicyViolation">
+            <summary>
+            Equivalent to close status 1008. Indicates that an endpoint is
+            terminating the connection because it has received a message that
+            violates its policy.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.TooBig">
+            <summary>
+            Equivalent to close status 1009. Indicates that an endpoint is
+            terminating the connection because it has received a message that
+            is too big to process.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.MandatoryExtension">
+            <summary>
+            Equivalent to close status 1010. Indicates that a client is
+            terminating the connection because it has expected the server to
+            negotiate one or more extension, but the server did not return
+            them in the handshake response.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.ServerError">
+            <summary>
+            Equivalent to close status 1011. Indicates that a server is
+            terminating the connection because it has encountered an unexpected
+            condition that prevented it from fulfilling the request.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.CloseStatusCode.TlsHandshakeFailure">
+            <summary>
+            Equivalent to close status 1015. Indicates that the connection was
+            closed due to a failure to perform a TLS handshake. A Reserved value.
+            </summary>
+        </member>
+        <member name="T:UnityWebSocket.ErrorEventArgs">
+            <summary>
+            Represents the event data for the <see cref="E:UnityWebSocket.IWebSocket.OnError"/> event.
+            </summary>
+            <remarks>
+              <para>
+              That event occurs when the <see cref="T:UnityWebSocket.IWebSocket"/> gets an error.
+              </para>
+              <para>
+              If you would like to get the error message, you should access
+              the <see cref="P:UnityWebSocket.ErrorEventArgs.Message"/> property.
+              </para>
+              <para>
+              And if the error is due to an exception, you can get it by accessing
+              the <see cref="P:UnityWebSocket.ErrorEventArgs.Exception"/> property.
+              </para>
+            </remarks>
+        </member>
+        <member name="P:UnityWebSocket.ErrorEventArgs.Exception">
+            <summary>
+            Gets the exception that caused the error.
+            </summary>
+            <value>
+            An <see cref="T:System.Exception"/> instance that represents the cause of
+            the error if it is due to an exception; otherwise, <see langword="null"/>.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.ErrorEventArgs.Message">
+            <summary>
+            Gets the error message.
+            </summary>
+            <value>
+            A <see cref="T:System.String"/> that represents the error message.
+            </value>
+        </member>
+        <member name="T:UnityWebSocket.IWebSocket">
+            <summary>
+            <para>IWebSocket indicate a network connection.</para>
+            <para>It can be connecting, connected, closing or closed state. </para>
+            <para>You can send and receive messages by using it.</para>
+            <para>Register callbacks for handling messages.</para>
+            <para> ----------------------------------------------------------- </para>
+            <para>IWebSocket 表示一个网络连接，</para>
+            <para>它可以是 connecting connected closing closed 状态，</para>
+            <para>可以发送和接收消息，</para>
+            <para>通过注册消息回调，来处理接收到的消息。</para>
+            </summary>
+        </member>
+        <member name="M:UnityWebSocket.IWebSocket.ConnectAsync">
+            <summary>
+            Establishes a connection asynchronously.
+            </summary>
+            <remarks>
+              <para>
+              This method does not wait for the connect process to be complete.
+              </para>
+              <para>
+              This method does nothing if the connection has already been
+              established.
+              </para>
+            </remarks>
+            <exception cref="T:System.InvalidOperationException">
+              <para>
+              This instance is not a client.
+              </para>
+              <para>
+              -or-
+              </para>
+              <para>
+              The close process is in progress.
+              </para>
+              <para>
+              -or-
+              </para>
+              <para>
+              A series of reconnecting has failed.
+              </para>
+            </exception>
+        </member>
+        <member name="M:UnityWebSocket.IWebSocket.CloseAsync">
+            <summary>
+            Closes the connection asynchronously.
+            </summary>
+            <remarks>
+              <para>
+              This method does not wait for the close to be complete.
+              </para>
+              <para>
+              This method does nothing if the current state of the connection is
+              Closing or Closed.
+              </para>
+            </remarks>
+        </member>
+        <member name="M:UnityWebSocket.IWebSocket.SendAsync(System.Byte[])">
+            <summary>
+            Sends the specified data asynchronously using the WebSocket connection.
+            </summary>
+            <remarks>
+            This method does not wait for the send to be complete.
+            </remarks>
+            <param name="data">
+            An array of <see cref="T:System.Byte"/> that represents the binary data to send.
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            The current state of the connection is not Open.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="data"/> is <see langword="null"/>.
+            </exception>
+        </member>
+        <member name="M:UnityWebSocket.IWebSocket.SendAsync(System.String)">
+            <summary>
+            Sends the specified data using the WebSocket connection.
+            </summary>
+            <param name="text">
+            A <see cref="T:System.String"/> that represents the text data to send.
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            The current state of the connection is not Open.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="text"/> is <see langword="null"/>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            <paramref name="text"/> could not be UTF-8 encoded.
+            </exception>
+        </member>
+        <member name="P:UnityWebSocket.IWebSocket.Address">
+            <summary>
+            get the address which to connect.
+            </summary>
+        </member>
+        <member name="P:UnityWebSocket.IWebSocket.SubProtocols">
+            <summary>
+            get sub protocols .
+            </summary>
+        </member>
+        <member name="P:UnityWebSocket.IWebSocket.ReadyState">
+            <summary>
+            Gets the current state of the connection.
+            </summary>
+            <value>
+              <para>
+              One of the <see cref="T:UnityWebSocket.WebSocketState"/> enum values.
+              </para>
+              <para>
+              It indicates the current state of the connection.
+              </para>
+              <para>
+              The default value is <see cref="F:UnityWebSocket.WebSocketState.Closed"/>.
+              </para>
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.IWebSocket.BinaryType">
+            <summary>
+            Gets the current binaryType of the connection, supported on WEBGL platform only.
+            </summary>
+            <value>
+              <para>
+              It indicates the current binaryType of the connection.
+              </para>
+              <para>
+              The default value is "arraybuffer", options: "blob" or "arraybuffer".
+              </para>
+            </value>
+        </member>
+        <member name="E:UnityWebSocket.IWebSocket.OnOpen">
+            <summary>
+            Occurs when the WebSocket connection has been established.
+            </summary>
+        </member>
+        <member name="E:UnityWebSocket.IWebSocket.OnClose">
+            <summary>
+            Occurs when the WebSocket connection has been closed.
+            </summary>
+        </member>
+        <member name="E:UnityWebSocket.IWebSocket.OnError">
+            <summary>
+            Occurs when the <see cref="T:UnityWebSocket.IWebSocket"/> gets an error.
+            </summary>
+        </member>
+        <member name="E:UnityWebSocket.IWebSocket.OnMessage">
+            <summary>
+            Occurs when the <see cref="T:UnityWebSocket.IWebSocket"/> receives a message.
+            </summary>
+        </member>
+        <member name="P:UnityWebSocket.MessageEventArgs.Opcode">
+            <summary>
+            Gets the opcode for the message.
+            </summary>
+            <value>
+            <see cref="F:UnityWebSocket.Opcode.Text"/>, <see cref="F:UnityWebSocket.Opcode.Binary"/>.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.MessageEventArgs.Data">
+            <summary>
+            Gets the message data as a <see cref="T:System.String"/>.
+            </summary>
+            <value>
+            A <see cref="T:System.String"/> that represents the message data if its type is
+            text and if decoding it to a string has successfully done;
+            otherwise, <see langword="null"/>.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.MessageEventArgs.RawData">
+            <summary>
+            Gets the message data as an array of <see cref="T:System.Byte"/>.
+            </summary>
+            <value>
+            An array of <see cref="T:System.Byte"/> that represents the message data.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.MessageEventArgs.IsBinary">
+            <summary>
+            Gets a value indicating whether the message type is binary.
+            </summary>
+            <value>
+            <c>true</c> if the message type is binary; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:UnityWebSocket.MessageEventArgs.IsText">
+            <summary>
+            Gets a value indicating whether the message type is text.
+            </summary>
+            <value>
+            <c>true</c> if the message type is text; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:UnityWebSocket.Opcode">
+            <summary>
+            Indicates the WebSocket frame type.
+            </summary>
+            <remarks>
+            The values of this enumeration are defined in
+            <see href="http://tools.ietf.org/html/rfc6455#section-5.2">
+            Section 5.2</see> of RFC 6455.
+            </remarks>
+        </member>
+        <member name="F:UnityWebSocket.Opcode.Text">
+            <summary>
+            Equivalent to numeric value 1. Indicates text frame.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.Opcode.Binary">
+            <summary>
+            Equivalent to numeric value 2. Indicates binary frame.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.Opcode.Close">
+            <summary>
+            Equivalent to numeric value 8. Indicates connection close frame.
+            </summary>
+        </member>
+        <member name="T:UnityWebSocket.WebSocketState">
+            <summary>
+            Reference html5 WebSocket ReadyState Properties
+            Indicates the state of a WebSocket connection.
+            </summary>
+            <remarks>
+            The values of this enumeration are defined in
+            <see href="http://www.w3.org/TR/websockets/#dom-websocket-readystate">
+            The WebSocket API</see>.
+            </remarks>
+        </member>
+        <member name="F:UnityWebSocket.WebSocketState.Connecting">
+            <summary>
+            Equivalent to numeric value 0. Indicates that the connection has not
+            yet been established.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.WebSocketState.Open">
+            <summary>
+            Equivalent to numeric value 1. Indicates that the connection has
+            been established, and the communication is possible.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.WebSocketState.Closing">
+            <summary>
+            Equivalent to numeric value 2. Indicates that the connection is
+            going through the closing handshake, or the close method has
+            been invoked.
+            </summary>
+        </member>
+        <member name="F:UnityWebSocket.WebSocketState.Closed">
+            <summary>
+            Equivalent to numeric value 3. Indicates that the connection has
+            been closed or could not be established.
             </summary>
         </member>
         <member name="T:Newtonsoft_X.Json.Bson.BsonObjectId">

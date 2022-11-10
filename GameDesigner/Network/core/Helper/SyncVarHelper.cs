@@ -15,7 +15,7 @@ namespace Net.Helper
                 return;
             var type = target.GetType();
             SyncVarInfo syncVarInfo = null;
-            if (InvokeHelper.Cache.TryGetValue(type, out var dict))
+            if (SyncVarGetSetHelper.Cache.TryGetValue(type, out var dict))
                 dict.TryGetValue(info.Name, out syncVarInfo);
             if (syncVarInfo == null)
                 throw new Exception("请使用unity菜单GameDesigner/Network/InvokeHelper工具生成字段，属性同步辅助类!");

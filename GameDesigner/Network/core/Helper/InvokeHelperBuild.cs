@@ -8,89 +8,67 @@ using System.Xml;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
-#if UNITY_EDITOR //|| DEBUG
+#if UNITY_EDITOR
 using dnlib.DotNet;
 #endif
 
 namespace Net.Helper
 {
-    public class SequencePoint 
+    public class SequencePoint
     {
         public int StartLine;
         public string FilePath;
     }
 
-    public class RpcCallHelper 
+    public class RpcCallHelper
     {
         public static Dictionary<string, SequencePoint> Cache = new Dictionary<string, SequencePoint>();
     }
 
-    public class InvokeHelper
+    public interface ISyncVarGetSet 
+    {
+        void Init();
+    }
+
+    public class SyncVarGetSetHelper
     {
         public static Dictionary<Type, Dictionary<string, SyncVarInfo>> Cache = new Dictionary<Type, Dictionary<string, SyncVarInfo>>();
 
-#if UNITY_EDITOR //|| DEBUG
-        [RuntimeInitializeOnLoadMethod]
-        public static void OnScriptCompilation()
-        {
-            var path = Environment.CurrentDirectory + "/InvokeHelper.txt";
-            if (File.Exists(path))
-            {
-                var jsonStr = File.ReadAllText(path);
-                var Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
-                InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
-            }
-        }
-#endif
-
-        [UnityEngine.RuntimeInitializeOnLoadMethod]
-        public static void OnScriptCompilation1()
-        {
-            var path = UnityEngine.Application.dataPath + "/Scripts/Helper/InvokeHelperGenerate.cs";
-            DynamicalCompilation(path, "Assembly-CSharp", UnityEngine.Debug.Log);
-        }
-
-        [RuntimeInitializeOnLoadMethod]
-        public static void OnScriptCompilation2()
+        static SyncVarGetSetHelper() 
         {
             Type type = null;
-            MemberInfo entryPoint = null;
-            foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (item.EntryPoint != null)
-                    entryPoint = item.EntryPoint;
-                var type1 = item.GetType("HelperFileInfo");
-                if (type1 != null)
-                    type = type1;
-            }
-            if (type != null)
-            {
-                var path = (string)type.GetMethod("GetPath", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
-                DynamicalCompilation(path, entryPoint.ReflectedType, Console.WriteLine);
-                return;
-            }
-        }
-
-        public static void DynamicalCompilation(string path, string assemblyName, Action<object> log)
-        {
+            bool hasHelper = false;
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies)
+            foreach (var assembly in assemblies) //检查是否是静态编译
             {
-                if (assembly.GetName().Name == assemblyName) 
+                var type1 = assembly.GetType("SyncVarGetSetHelperGenerate");
+                if (type1 != null)
                 {
-                    DynamicalCompilation(path, assemblies, assembly, log);
-                    break;
+                    type1.GetMethod("Init", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
+                    hasHelper = true;
+                    continue;
+                }
+                var type2 = assembly.GetType("HelperFileInfo");//此类必须在主程序集里面, 否则出问题
+                if (type2 != null)
+                {
+                    type = type2;
+                }
+            }
+            if (!hasHelper) //动态编译模式
+            {
+                if (type != null)
+                {
+                    var path = (string)type.GetMethod("GetPath", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
+#if UNITY_EDITOR
+                    DynamicalCompilation(path, assemblies, type.Assembly, UnityEngine.Debug.Log);
+#elif SERVICE
+                    DynamicalCompilation(path, assemblies, type.Assembly, Console.WriteLine);
+#endif
                 }
             }
         }
 
-        public static void DynamicalCompilation(string path, Type type2, Action<object> log)
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            DynamicalCompilation(path, assemblies, type2.Assembly, log);
-        }
-
-        public static void DynamicalCompilation(string path, Assembly[] assemblies, Assembly mainAssembly, Action<object> log) 
+        public static void DynamicalCompilation(string path, Assembly[] assemblies, Assembly mainAssembly, Action<object> log)
         {
             if (File.Exists(path))
             {
@@ -123,7 +101,7 @@ namespace Net.Helper
                     }
                     else
                     {
-                        var type = results.CompiledAssembly.GetType("InvokeHelperGenerate");
+                        var type = results.CompiledAssembly.GetType("SyncVarGetSetHelperGenerate");
                         if (type != null)
                             type.GetMethod("Init", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
                     }
@@ -136,7 +114,7 @@ namespace Net.Helper
         }
     }
 
-#if UNITY_EDITOR //|| DEBUG
+#if UNITY_EDITOR
     public static class InvokeHelperBuild
     {
         static TypeCode GetTypeCode(TypeSig type)
@@ -155,18 +133,14 @@ namespace Net.Helper
 
         public static string SyncVarBuild(List<TypeDef> types)
         {
-            var str = @"internal static class InvokeHelperGenerate
+            var str = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
+internal static class SyncVarGetSetHelperGenerate
 {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-    [UnityEngine.RuntimeInitializeOnLoadMethod]
-#else
-    [RuntimeInitializeOnLoadMethod]
-#endif
     internal static void Init()
     {
-        InvokeHelper.Cache.Clear();
+        SyncVarGetSetHelper.Cache.Clear();
 --
-        InvokeHelper.Cache.Add(typeof(TARGETTYPE), new Dictionary<string, SyncVarInfo>() {
+        SyncVarGetSetHelper.Cache.Add(typeof(TARGETTYPE), new Dictionary<string, SyncVarInfo>() {
 --
             { ""FIELDNAME"", new SyncVarInfoPtr<TARGETTYPE, FIELDTYPE>(FIELDNAME) },
 --
@@ -457,9 +431,9 @@ namespace Net.Helper
                     {
                         foreach (var item in attribute.NamedArguments)
                         {
-                            if (item.Name == "cmd") 
+                            if (item.Name == "cmd")
                             {
-                                if (item.Value.Equals((byte)2)) 
+                                if (item.Value.Equals((byte)2))
                                 {
                                     safeCmd = true;
                                 }
@@ -473,7 +447,7 @@ namespace Net.Helper
                             }
                         }
                     }
-                    else if (isClient) 
+                    else if (isClient)
                     {
                         sendStr = $"client.SendRT(NetCmd.EntityRpc, \"{method.Name}\"";
                     }
@@ -644,11 +618,17 @@ namespace Net.Helper
             return text;
         }
 
+        /// <summary>
+        /// 收集客户端被调用的Rpc方法可双击到代码位置
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
         public static string InvokeRpcCall(List<TypeDef> types)
         {
-            var str = @"internal static class RpcCallSequencePointHelper
+            var str = @"/// <summary>可寻Rpc代码段位置辅助工具类</summary>
+internal static class RpcCallSequencePointHelper
 {
-    #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
     [UnityEngine.RuntimeInitializeOnLoadMethod]
 #else
     [RuntimeInitializeOnLoadMethod]
@@ -784,13 +764,14 @@ using System.Runtime.CompilerServices;
             if (generateClientSyncVar)
                 text += SyncVarBuild(clientTypes) + "\r\n\r\n";
             else
-                text += "/**" + SyncVarBuild(clientTypes) + "*/\r\n\r\n";
+                text += "/**\r\n" + SyncVarBuild(clientTypes) + "*/\r\n\r\n";
             var serverTypes3 = new List<TypeDef>();
             foreach (var item in serverTypes)
                 serverTypes3.AddRange(item);
-
-            text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
-            text += @"internal static class HelperFileInfo 
+            if(config.collectRpc)
+                text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
+            text += @"/// <summary>定位辅助类路径</summary>
+internal static class HelperFileInfo 
 {
     internal static string GetPath()
     {
@@ -824,26 +805,30 @@ using System.Runtime.CompilerServices;
                 if (generateServerSyncVar)
                     text1 += SyncVarBuild(serverTypes2) + "\r\n\r\n";
                 else
-                    text1 += "/**" + SyncVarBuild(serverTypes2) + "*/\r\n\r\n";
-                int num = 1;
-                foreach (var type in serverTypes2)
+                    text1 += "/**\r\n" + SyncVarBuild(serverTypes2) + "*/\r\n\r\n";
+                if (config.rpcConfig[i].collectRpc)
                 {
-                    if (type.ReflectionNamespace == "Net.Server")
-                        continue;
-                    if (type.BaseType == null)
-                        continue;
-                    if (type.BaseType.ReflectionNamespace != "Net.Server")
-                        continue;
-                    var serverType = type.FullName;
-                    if (!(type.BaseType.ToTypeSig() is GenericInstSig gt))
-                        continue;
-                    var gts = gt.GenericArguments;
-                    if (gts.Count != 2)
-                        continue;
-                    var player = gts[0];
-                    text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
+                    int num = 1;
+                    foreach (var type in serverTypes2)
+                    {
+                        if (type.ReflectionNamespace == "Net.Server")
+                            continue;
+                        if (type.BaseType == null)
+                            continue;
+                        if (type.BaseType.ReflectionNamespace != "Net.Server")
+                            continue;
+                        var serverType = type.FullName;
+                        if (!(type.BaseType.ToTypeSig() is GenericInstSig gt))
+                            continue;
+                        var gts = gt.GenericArguments;
+                        if (gts.Count != 2)
+                            continue;
+                        var player = gts[0];
+                        text1 += InvokeRpcServerBuild(clientTypes, num++, serverType, player.FullName) + "\r\n\r\n";//服务器需要收集客户端的rpc才能调用
+                    }
                 }
-                text1 += @"internal static class HelperFileInfo 
+                text1 += @"/// <summary>定位辅助类路径</summary>
+internal static class HelperFileInfo 
 {
     internal static string GetPath()
     {
@@ -903,7 +888,7 @@ using System.Runtime.CompilerServices;
                     Directory.CreateDirectory(path1);
                 File.WriteAllText(path1, text1);
             }
-            J: foreach (var stream in streams)
+        J: foreach (var stream in streams)
             {
                 stream.Dispose();
             }

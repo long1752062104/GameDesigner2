@@ -44,6 +44,22 @@ namespace Net.Config
             }
         }
 
+        private static string syncVarHelper;
+        public static string SyncVarHelper
+        {
+            get 
+            {
+                Init();
+                return syncVarHelper;
+            }
+            set 
+            {
+                syncVarHelper = value;
+                Save();
+            }
+        }
+
+
         public static string BasePath;
 
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
