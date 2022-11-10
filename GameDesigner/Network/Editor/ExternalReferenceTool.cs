@@ -83,14 +83,14 @@ public class ExternalReferenceTool : EditorWindow
         {
             foreach (var csprojPath in config.csprojPaths)
             {
-                XmlDocument xml = new XmlDocument();
+                var xml = new XmlDocument();
                 xml.Load(csprojPath);
                 XmlNodeList node_list;
-                XmlElement documentElement = xml.DocumentElement;
+                var documentElement = xml.DocumentElement;
                 var namespaceURI = xml.DocumentElement.NamespaceURI;
                 if (!string.IsNullOrEmpty(namespaceURI))
                 {
-                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
+                    var nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
                     node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
                 }
                 else node_list = xml.SelectNodes("/Project/ItemGroup");
@@ -117,8 +117,8 @@ public class ExternalReferenceTool : EditorWindow
                     bool exist = false;
                     for (int i = 0; i < node_list.Count; i++)
                     {
-                        XmlNode node = node_list.Item(i);
-                        XmlNodeList node_child = node.ChildNodes;
+                        var node = node_list.Item(i);
+                        var node_child = node.ChildNodes;
                         foreach (XmlNode child_node in node_child)
                         {
                             if (child_node.LocalName != "Compile")
@@ -135,27 +135,51 @@ public class ExternalReferenceTool : EditorWindow
                             node.RemoveAll();
                             foreach (var file in files)
                             {
-                                XmlElement e = xml.CreateElement("Compile", namespaceURI);
-                                e.SetAttribute("Include", file);
-                                XmlElement e1 = xml.CreateElement("Link", namespaceURI);
-                                e1.InnerText = file.Replace(dirName, "");
-                                e.AppendChild(e1);
-                                node.AppendChild(e);
+                                if (file.EndsWith(".cs"))
+                                {
+                                    var e = xml.CreateElement("Compile", namespaceURI);
+                                    e.SetAttribute("Include", file);
+                                    var e1 = xml.CreateElement("Link", namespaceURI);
+                                    e1.InnerText = file.Replace(dirName, "");
+                                    e.AppendChild(e1);
+                                    node.AppendChild(e);
+                                }
+                                else
+                                {
+                                    var e = xml.CreateElement("Content", namespaceURI);
+                                    e.SetAttribute("Include", file);
+                                    var e1 = xml.CreateElement("Link", namespaceURI);
+                                    e1.InnerText = file.Replace(dirName, "");
+                                    e.AppendChild(e1);
+                                    node.AppendChild(e);
+                                }
                             }
                             break;
                         }
                     }
                     if (!exist)
                     {
-                        XmlElement node = xml.CreateElement("ItemGroup", namespaceURI);
+                        var node = xml.CreateElement("ItemGroup", namespaceURI);
                         foreach (var file in files)
                         {
-                            XmlElement e = xml.CreateElement("Compile", namespaceURI);
-                            e.SetAttribute("Include", file);
-                            XmlElement e1 = xml.CreateElement("Link", namespaceURI);
-                            e1.InnerText = file.Replace(dirName, "");
-                            e.AppendChild(e1);
-                            node.AppendChild(e);
+                            if (file.EndsWith(".cs"))
+                            {
+                                var e = xml.CreateElement("Compile", namespaceURI);
+                                e.SetAttribute("Include", file);
+                                var e1 = xml.CreateElement("Link", namespaceURI);
+                                e1.InnerText = file.Replace(dirName, "");
+                                e.AppendChild(e1);
+                                node.AppendChild(e);
+                            }
+                            else 
+                            {
+                                var e = xml.CreateElement("Content", namespaceURI);
+                                e.SetAttribute("Include", file);
+                                var e1 = xml.CreateElement("Link", namespaceURI);
+                                e1.InnerText = file.Replace(dirName, "");
+                                e.AppendChild(e1);
+                                node.AppendChild(e);
+                            }
                         }
                         documentElement.AppendChild(node);
                     }

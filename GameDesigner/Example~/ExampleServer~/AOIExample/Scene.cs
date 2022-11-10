@@ -76,7 +76,7 @@ namespace AOIExample
                 OperationList list = ObjectPool<OperationList>.Take();
                 list.frame = frame;
                 list.operations = opts.ToArray();
-                var buffer = onSerializeOptHandle(list);
+                var buffer = onSerializeOpt(list);
                 handle.Send(player, cmd, buffer, false, false);
                 ObjectPool<OperationList>.Push(list);
             }
