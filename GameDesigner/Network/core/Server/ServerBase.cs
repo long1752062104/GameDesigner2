@@ -1794,7 +1794,8 @@ namespace Net.Server
                     oldScene.Remove(player);
                 OnSceneGroupSet(scene);
                 scene.AddPlayer(player);
-                scene.onSerializeOptHandle = OnSerializeOpt;
+                scene.onSerializeOpt = OnSerializeOpt;
+                scene.onSerializeRpc = OnSerializeRPC;
                 return scene;
             }
             return null;
@@ -1838,7 +1839,8 @@ namespace Net.Server
             if (Scenes.TryAdd(scene.Name, scene))
             {
                 OnSceneGroupSet(scene);
-                scene.onSerializeOptHandle = OnSerializeOpt;
+                scene.onSerializeOpt = OnSerializeOpt;
+                scene.onSerializeRpc = OnSerializeRPC;
                 return scene;
             }
             return null;

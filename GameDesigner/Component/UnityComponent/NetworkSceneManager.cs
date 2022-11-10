@@ -129,6 +129,13 @@ namespace Net.UnityComponent
                 case NetCmd.SyncVarGet:
                     SyncVarGetHandler(opt);
                     break;
+                case NetCmd.CallRpc:
+                    var data = ClientBase.Instance.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
+                    if(!string.IsNullOrEmpty(data.name))
+                        ClientBase.Instance.DispatchRpc(data.name, data.pars);
+                    else if(data.hash != 0)
+                        ClientBase.Instance.DispatchRpc(data.hash, data.pars);
+                    break;
                 default:
                     OnOtherOperator(opt);
                     break;

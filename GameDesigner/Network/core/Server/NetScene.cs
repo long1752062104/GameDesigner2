@@ -40,7 +40,8 @@
         /// 玩家操作是以可靠传输进行发送的?
         /// </summary>
         public bool SendOperationReliable { get; set; }
-        public Func<OperationList, byte[]> onSerializeOptHandle;
+        public Func<OperationList, byte[]> onSerializeOpt;
+        public Func<RPCModel, byte[]> onSerializeRpc;
         /// <summary>
         /// 获取场景当前人数
         /// </summary>
@@ -89,7 +90,7 @@
         /// 线程群组, 解决多线程竞争, Addopt方法, removeopt方法
         /// </summary>
         public ThreadGroup Group;
-
+        
         /// <summary>
         /// 构造网络场景
         /// </summary>
@@ -224,7 +225,7 @@
             OperationList list = ObjectPool<OperationList>.Take();
             list.frame = frame;
             list.operations = opts;
-            var buffer = onSerializeOptHandle(list);
+            var buffer = onSerializeOpt(list);
             handle.Multicast(Clients, SendOperationReliable, cmd, buffer, false, false);
             ObjectPool<OperationList>.Push(list);
             OnRecovery(opts);
@@ -244,8 +245,19 @@
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        [Obsolete("此方法不再支持，请使用Send方法代替!", true)]
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public virtual void AddOperation(string func, params object[] pars)
+        {
+            AddOperation(NetCmd.CallRpc, func, pars);
+        }
+
+        /// <summary>
+        /// 添加操作帧, 等待帧时间同步发送
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="pars"></param>
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
+        public virtual void AddOperation(ushort func, params object[] pars)
         {
             AddOperation(NetCmd.CallRpc, func, pars);
         }
@@ -256,10 +268,23 @@
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        [Obsolete("此方法不再支持，请使用Send方法代替!", true)]
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public virtual void AddOperation(byte cmd, string func, params object[] pars)
         {
-            Operation opt = new Operation(cmd, NetConvert.Serialize(new RPCModel(0, func, pars)));
+            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func, pars)));
+            AddOperation(opt);
+        }
+
+        /// <summary>
+        /// 添加操作帧, 等待帧时间同步发送
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="func"></param>
+        /// <param name="pars"></param>
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
+        public virtual void AddOperation(byte cmd, ushort func, params object[] pars)
+        {
+            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func, pars)));
             AddOperation(opt);
         }
 
@@ -339,7 +364,7 @@
 
         ~NetScene()
         {
-            onSerializeOptHandle = null;
+            onSerializeOpt = null;
         }
     }
 

@@ -1740,8 +1740,20 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        [Obsolete("此方法不再支持，请使用Send方法代替!", true)]
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(string func, params object[] pars)
+        {
+            AddOperation(NetCmd.CallRpc, func, pars);
+        }
+
+        /// <summary>
+        /// 添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+        /// 而Send则是直接发送
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="pars"></param>
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
+        public void AddOperation(ushort func, params object[] pars)
         {
             AddOperation(NetCmd.CallRpc, func, pars);
         }
@@ -1753,10 +1765,24 @@ namespace Net.Client
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        [Obsolete("此方法不再支持，请使用Send方法代替!", true)]
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(byte cmd, string func, params object[] pars)
         {
-            Operation opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
+            AddOperation(opt);
+        }
+
+        /// <summary>
+        /// 添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+        /// 而Send则是直接发送
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="func"></param>
+        /// <param name="pars"></param>
+        [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
+        public void AddOperation(byte cmd, ushort func, params object[] pars)
+        {
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
             AddOperation(opt);
         }
 
