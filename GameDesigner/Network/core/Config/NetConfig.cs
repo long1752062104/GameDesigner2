@@ -44,44 +44,24 @@ namespace Net.Config
             }
         }
 
-        private static string syncVarHelper;
-        public static string SyncVarHelper
+        public static string BasePath
         {
-            get 
+            get
             {
-                Init();
-                return syncVarHelper;
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL
+                var path = Unity.UnitySynchronizationContext.Get(() => {
+                    var streamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
+                    if (!Directory.Exists(streamingAssetsPath))
+                        Directory.CreateDirectory(streamingAssetsPath);
+                    return streamingAssetsPath;
+                });
+#elif UNITY_ANDROID || UNITY_IOS
+                var path = Unity.UnitySynchronizationContext.Get(()=> { return UnityEngine.Application.persistentDataPath; });
+#else
+                var path = AppDomain.CurrentDomain.BaseDirectory;
+#endif
+                return path;
             }
-            set 
-            {
-                syncVarHelper = value;
-                Save();
-            }
-        }
-
-
-        public static string BasePath;
-
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-        [UnityEngine.RuntimeInitializeOnLoadMethod]
-#else
-        [Net.Share.RuntimeInitializeOnLoadMethod]
-#endif
-        public static void InitBasePath()
-        {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-#if UNITY_STANDALONE || UNITY_WSA
-            var streamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
-            if (!Directory.Exists(streamingAssetsPath))
-                Directory.CreateDirectory(streamingAssetsPath);
-            var path = streamingAssetsPath;
-#else
-            var path = UnityEngine.Application.persistentDataPath;
-#endif
-#else
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-#endif
-            BasePath = path;
         }
 
         private static void Init()
@@ -109,7 +89,7 @@ namespace Net.Config
                             useMemoryStream = bool.Parse(value);
                             break;
                         case "basecapacity":
-                            BaseCapacity = int.Parse(value);
+                            baseCapacity = int.Parse(value);
                             break;
                     }
                 }

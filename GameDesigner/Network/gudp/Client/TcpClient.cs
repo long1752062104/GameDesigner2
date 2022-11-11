@@ -83,7 +83,7 @@
                         if (!openClient)
                             throw new Exception("客户端调用Close!");
                     }
-                    StackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
+                    StackStream = new MemoryStream(Config.Config.BaseCapacity);
                     StartupThread();
                     InvokeContext(() => {
                         networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
@@ -437,7 +437,7 @@
             rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
             SendDirect();
             Connected = true;
-            StackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
+            StackStream = new MemoryStream(Config.Config.BaseCapacity);
             return Task.FromResult(Connected);
         }
         protected override void StartupThread() { }

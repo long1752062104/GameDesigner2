@@ -1867,8 +1867,14 @@ namespace Net.Client
             NetworkState = NetworkState.Connection;
             if (Client != null)
                 Client.Close();
+            if (CurrReconnect >= ReconnectCount)//如果想断线不需要重连,则直接返回
+            {
+                Close();
+                NDebug.LogError($"连接失败!请检查网络是否异常(无重连次数)");
+                return;
+            }
             UID = 0;
-            var task = ConnectResult(host, port, localPort, result =>
+            ConnectResult(host, port, localPort, result =>
             {
                 if (!openClient)
                     return;
@@ -1893,7 +1899,6 @@ namespace Net.Client
                     NDebug.Log($"尝试重连:{CurrReconnect}...");
                 }
             });
-            task.Wait();
         }
 
         /// <summary>

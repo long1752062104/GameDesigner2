@@ -1009,7 +1009,7 @@ namespace Net.Server
             client.UserID = uid;
             client.PlayerID = uid.ToString();
             client.Name = uid.ToString();
-            client.stackStream = new MemoryStream(Net.Config.Config.BaseCapacity);//BufferStreamShare.Take();
+            client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
             OnThreadQueueSet(client);
             AcceptHander(client);
             SetClientIdentity(client);
