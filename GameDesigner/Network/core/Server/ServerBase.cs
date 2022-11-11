@@ -1305,8 +1305,8 @@ namespace Net.Server
 
         private void LoginInternal(Player client)
         {
-            Players.TryAdd(client.PlayerID, client);
-            UIDClients.TryAdd(client.UserID, client);
+            Players[client.PlayerID] = client;
+            UIDClients[client.UserID] = client;
             client.OnStart();
             OnAddPlayerToScene(client);
             client.AddRpc(client);
@@ -1350,10 +1350,10 @@ namespace Net.Server
                     Multicast(scene1.Clients, true, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.Notice:
-                    Multicast(Players.Values.ToList(), false, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    Multicast(UIDClients.Values.ToList(), false, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.NoticeRT:
-                    Multicast(Players.Values.ToList(), true, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    Multicast(UIDClients.Values.ToList(), true, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.SendHeartbeat:
                     Send(client, NetCmd.RevdHeartbeat, new byte[0]);
@@ -2016,7 +2016,9 @@ namespace Net.Server
         {
             if (!AllClients.TryRemove(client.RemotePoint, out _))//防止两次进入
                 return;
-            Players.TryRemove(client.PlayerID, out _);
+            if (Players.TryGetValue(client.PlayerID, out var client1)) //如果一个账号快速登录断开,再登录断开,心跳检查断线会延迟,导致移除掉已在游戏的客户端对象
+                if(client == client1)
+                    Players.TryRemove(client.PlayerID, out _);
             UIDClients.TryRemove(client.UserID, out _);
             OnRemoveClientHandle(client);
             client.OnRemoveClient();
@@ -2025,7 +2027,7 @@ namespace Net.Server
             UserIDStack.Push(client.UserID);
             if (client.IsQueueUp)
                 return;
-        J: if (QueueUp.TryDequeue(out var client1))
+        J: if (QueueUp.TryDequeue(out client1))
             {
                 if (client1.isDispose)
                     goto J;
@@ -2616,7 +2618,7 @@ namespace Net.Server
         /// <returns></returns>
         public virtual bool IsOnline(string playerID)
         {
-            return Players.ContainsKey(playerID);
+            return IsOnline(playerID, out _);
         }
 
         /// <summary>
