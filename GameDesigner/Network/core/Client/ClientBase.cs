@@ -1862,7 +1862,7 @@ namespace Net.Client
         /// </summary>
         protected virtual void Reconnection()
         {
-            if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.ConnectClosed)
+            if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
                 return;
             NetworkState = NetworkState.Connection;
             if (Client != null)

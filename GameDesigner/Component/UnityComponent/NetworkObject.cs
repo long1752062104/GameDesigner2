@@ -31,7 +31,7 @@ namespace Net.UnityComponent
         internal MyDictionary<ushort, SyncVarInfo> syncVarInfos = new MyDictionary<ushort, SyncVarInfo>();
         private int syncVarID = 1;
         internal bool isInit;
-        internal bool isDispose;
+        public bool IsDispose { get; internal set; }
         /// <summary>
         /// 此物体是否是本机实例化？
         /// </summary>
@@ -180,9 +180,9 @@ namespace Net.UnityComponent
 
         public virtual void OnDestroy()
         {
-            if (isDispose)
+            if (IsDispose)
                 return;
-            isDispose = true;
+            IsDispose = true;
             if (m_identity == -1)
                 return;
             if (!isLocal | m_identity < 10000)//0-10000是场景可用标识

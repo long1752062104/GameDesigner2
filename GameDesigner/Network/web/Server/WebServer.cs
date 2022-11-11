@@ -108,25 +108,6 @@
             }
         }
 
-        protected override void CheckHeart(Player client)
-        {
-            if (!client.Client.Connected)
-            {
-                RemoveClient(client);
-                return;
-            }
-            if (client.heart > HeartLimit * 5)
-            {
-                client.Redundant = true;
-                RemoveClient(client);
-                return;
-            }
-            client.heart++;
-            if (client.heart <= HeartLimit)//确认心跳包
-                return;
-            SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
-        }
-
         protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
         {
             SendDataHandle(client, rtRPCModels, true);

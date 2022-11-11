@@ -80,7 +80,7 @@ namespace Net.UnityComponent
                         continue;
                     if (!identity.enabled)
                         continue;
-                    if (identity.isDispose)
+                    if (identity.IsDispose)
                         continue;
                     identity.CheckSyncVar();
                     identity.PropertyAutoCheckHandler();
@@ -173,7 +173,7 @@ namespace Net.UnityComponent
             var identity = OnCheckIdentity(opt);
             if (identity == null)
                 return;
-            if (identity.isDispose)
+            if (identity.IsDispose)
                 return;
             var nb = identity.networkBehaviours[opt.index1];
             nb.OnNetworkOperationHandler(opt);
@@ -184,7 +184,7 @@ namespace Net.UnityComponent
             var identity = OnCheckIdentity(opt);
             if (identity == null)
                 return;
-            if (identity.isDispose)
+            if (identity.IsDispose)
                 return;
             identity.SyncVarHandler(opt);
         }
@@ -194,7 +194,7 @@ namespace Net.UnityComponent
             var identity = OnCheckIdentity(opt);
             if (identity == null)
                 return;
-            if (identity.isDispose)
+            if (identity.IsDispose)
                 return;
             if (!identity.isLocal)
                 return;
@@ -231,7 +231,7 @@ namespace Net.UnityComponent
         {
             if (identity == null)
                 return;
-            if (identity.isDispose)
+            if (identity.IsDispose)
                 return;
             if(isPlayer)
                 OnOtherExit(identity);
