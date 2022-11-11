@@ -632,6 +632,7 @@ namespace Net.Server
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
             Port = port;
             RegisterEvent();
+            InitUserID();//之前放最下面会出现bug! 当处于tcp协议时,当关闭服务器重启时直接有客户端连接触发Accept后, uid还没被初始化, 导致uid=0的问题
             Debug.BindLogAll(Log);
             OnStartingHandle();
             if (Instance == null)
@@ -650,7 +651,6 @@ namespace Net.Server
 #if WINDOWS
             Win32KernelAPI.timeBeginPeriod(1);
 #endif
-            InitUserID();
         }
 
         protected virtual void AddDefaultScene()
@@ -2024,7 +2024,8 @@ namespace Net.Server
             client.OnRemoveClient();
             ExitScene(client, false);
             client.Dispose();
-            UserIDStack.Push(client.UserID);
+            if (client.UserID > 0)
+                UserIDStack.Push(client.UserID);
             if (client.IsQueueUp)
                 return;
         J: if (QueueUp.TryDequeue(out client1))
