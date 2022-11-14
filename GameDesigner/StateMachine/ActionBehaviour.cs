@@ -1,7 +1,6 @@
 ﻿namespace GameDesigner
 {
     using System;
-    using UnityEngine;
 
     /// <summary>
     /// 动作行为--用户添加的组件 v2017/12/6
@@ -32,20 +31,6 @@
         /// </summary>
         /// <param name="action"></param>
         public virtual void OnStop(StateAction action) { }
-
-        /// <summary>
-        /// 当进入动画事件
-        /// </summary>
-        /// <param name="action">当前动作</param>
-        /// <param name="animEventTime">动画事件时间</param>
-        public virtual void OnAnimationEvent(StateAction action, float animEventTime) { }
-
-        /// <summary>
-        /// 当实例化技能物体
-        /// </summary>
-        /// <param name="action">当前动作</param>
-        /// <param name="spwan">技能物体</param>
-        public virtual void OnInstantiateSpwan(StateAction action, GameObject spwan) { }
 
         public ActionBehaviour InitBehaviour()
         {

@@ -35,26 +35,6 @@ public class ActionBehaviourScript : ActionBehaviour
     }
 
     /// <summary>
-    /// 当动画事件进入
-    /// </summary>
-    /// <param name="action">当前动作</param>
-    /// <param name="animEventTime">动画事件时间</param>
-    public override void OnAnimationEvent(StateAction action , float animEventTime)
-	{
-        Debug.Log($"当动画事件进入 当前状态:{state.name} 当前动作:{action.clipName}");
-    }
-
-    /// <summary>
-    /// 当实例化技能物体时进入
-    /// </summary>
-    /// <param name="action">当前动作</param>
-    /// <param name="spwan">技能物体</param>
-    public override void OnInstantiateSpwan(StateAction action , GameObject spwan)
-	{
-        Debug.Log($"当实例化技能物体时进入 当前状态:{state.name} 当前动作:{action.clipName}");
-    }
-
-    /// <summary>
     /// 编辑器扩展 (重要提示!你想扩展编辑器就得返回真,否则显示默认编辑器监视面板) ( 参数state : 这个行为是被这个状态管理 )
     /// </summary>
     #if UNITY_EDITOR || DEBUG || DEBUG

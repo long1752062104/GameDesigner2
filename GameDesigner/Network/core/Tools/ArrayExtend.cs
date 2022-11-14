@@ -219,7 +219,7 @@ public static class ArrayExtend
         }
     }
 
-    public static void SetEnableds<T>(this T[] self, bool active) where T : Object
+    public static void SetEnableds<T>(this T[] self, bool active) where T : Behaviour
     {
         for (int i = 0; i < self.Length; i++)
         {
@@ -228,12 +228,60 @@ public static class ArrayExtend
         }
     }
 
-    public static void SetEnableds<T>(this List<T> self, bool active) where T : Object
+    public static void SetEnableds<T>(this List<T> self, bool active) where T : Behaviour
     {
         for (int i = 0; i < self.Count; i++)
         {
             if (self[i] is MonoBehaviour mb)
                 mb.enabled = active;
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetEnabledsAll<T>(this T[] self, bool active, int start, int end) where T : Behaviour
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (self[i] is MonoBehaviour mb)
+                mb.enabled = i < start | i >= end ? !active : active;
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetEnabledsAll<T>(this List<T> self, bool active, int start, int end) where T : Behaviour
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (self[i] is MonoBehaviour mb)
+                mb.enabled = i < start | i >= end ? !active : active;
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetEnabledsAll<T>(this T[] self, bool active, int index) where T : Behaviour
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            if (self[i] is MonoBehaviour mb)
+                mb.enabled = i != index ? !active : active;
+        }
+    }
+
+    /// <summary>
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// </summary>
+    public static void SetEnabledsAll<T>(this List<T> self, bool active, int index) where T : Behaviour
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (self[i] is MonoBehaviour mb)
+                mb.enabled = i != index ? !active : active;
         }
     }
 

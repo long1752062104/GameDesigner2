@@ -38,6 +38,7 @@
         AnimationCurve,
         GenericType,
         Array,
+        Enum,
     }
 
     [Serializable]
@@ -133,6 +134,8 @@
                     return Convert.ToDouble(data);
                 case TypeCode.String:
                     return data;
+                case TypeCode.Enum:
+                    return Enum.Parse(Type, data);
                 case TypeCode.Object:
                     if (Value == null)
                         return null;
@@ -252,23 +255,35 @@
     }
 
     /// <summary>
+    /// 状态机脚本不显示的字段
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    public class HideField : Attribute { }
+
+    /// <summary>
     /// 状态行为基类 2019.3.3
     /// </summary>
     [Serializable]
     public class IBehaviour
     {
+        [HideField]
         public string name;
+        [HideField]
         public int ID;
         /// <summary>
         /// 展开编辑器检视面板
         /// </summary>
+        [HideField]
         [HideInInspector]
         public bool show = true;
         /// <summary>
         /// 脚本是否启用?
         /// </summary>
+        [HideField]
         public bool Active = true;
+        [HideField]
         public List<Metadata> metadatas = new List<Metadata>();
+        [HideField]
         public StateMachine stateMachine;
         public StateManager stateManager => stateMachine.stateManager;
         /// <summary>
@@ -293,7 +308,7 @@
             metadatas.Clear();
             foreach (var field in fields)
             {
-                if (type != field.DeclaringType | field.IsStatic)
+                if (field.IsStatic | field.GetCustomAttribute<HideField>() != null)
                     continue;
                 InitField(field);
             }
@@ -332,6 +347,8 @@
                 else if (field.FieldType.IsArray)
                     metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Array, this, field));
             }
+            else if (field.FieldType.IsEnum)
+                metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Enum, this, field));
             else metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, (TypeCode)code, this, field));
         }
 
@@ -395,7 +412,7 @@
         /// <returns></returns>
         public virtual ClassFileInfo FindClassFile(string typeName) 
         {
-            throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override (string, string, int) FindClassFile(string typeName) => GetClassFileInfo();");
+            throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();");
         }
 
         /// <summary>

@@ -1,16 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace GameDesigner
@@ -82,6 +78,7 @@ namespace GameDesigner
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("stateMachine"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[0]));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[114]));
             if (GUILayout.Button(BlueprintSetting.Instance.LANGUAGE[1], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
                 StateMachineWindow.Init(stateManager.stateMachine);
             if (stateManager.stateMachine == null)
@@ -99,9 +96,7 @@ namespace GameDesigner
             }
             EditorGUILayout.Space();
             if (EditorGUI.EndChangeCheck())
-            {
                 EditorUtility.SetDirty(stateManager.stateMachine);
-            }
             Repaint();
             J: serializedObject.ApplyModifiedProperties();
         }
@@ -111,7 +106,7 @@ namespace GameDesigner
         /// </summary>
         public static void DrawState(State s, StateManager sm)
         {
-            SerializedObject serializedObject = new SerializedObject(sm.stateMachine);
+            var serializedObject = new SerializedObject(sm.stateMachine);
             var serializedProperty = serializedObject.FindProperty("states").GetArrayElementAtIndex(s.ID);
             serializedObject.Update();
             GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[2], GUI.skin.GetStyle("dragtabdropwindow"));
@@ -200,36 +195,38 @@ namespace GameDesigner
                                 { return new GUIContent(input); })));
                                 act.clipName = s.stateMachine.clipNames[act.clipIndex];
                             } catch { }
-                            s.actions[a].isPlayAudio = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[26], "isPlayAudio"), s.actions[a].isPlayAudio);
-                            if (s.actions[a].isPlayAudio)
-                            {
-                                act.audioModel = (AudioMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[27], "audioModel"), (int)act.audioModel,
-                                new GUIContent[]{ new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[28],"EnterPlayAudio") ,
-                                    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[29],"AnimEventPlayAudio") ,
-                                    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[30],"ExitPlayAudio") }
-                                );
-                                EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("audioClips"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[31], "audioClips"), true);
-                            }
+                            //s.actions[a].isPlayAudio = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[26], "isPlayAudio"), s.actions[a].isPlayAudio);
+                            //if (s.actions[a].isPlayAudio)
+                            //{
+                            //    act.audioModel = (AudioMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[27], "audioModel"), (int)act.audioModel,
+                            //    new GUIContent[]{ new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[28],"EnterPlayAudio") ,
+                            //        new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[29],"AnimEventPlayAudio") ,
+                            //        new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[30],"ExitPlayAudio") }
+                            //    );
+                            //    EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("audioClips"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[31], "audioClips"), true);
+                            //}
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[32], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[33], "animTimeMax"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animEventTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "animEventTime"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectSpwan"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[35], "effectSpwan"));
-                            act.activeMode = (ActiveMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[36], "activeModel"), (int)act.activeMode, new GUIContent[]{
-                                new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[37],"Instantiate") ,
-                                new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[38],"SetActive") }
-                            );
-                            if (act.activeMode == ActiveMode.ObjectPool)
-                                EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("activeObjs"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[39], "activeObjs"), true);
-                            act.spwanmode = (SpwanMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[40], "spwanmode"), (int)act.spwanmode, new GUIContent[]{
-                                new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[41],"TransformPoint") ,
-                                new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[42],"SetParent") ,
-                                new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[43],"localPosition") }
-                            );
-                            if (act.spwanmode != SpwanMode.localPosition)
-                                act.parent = EditorGUILayout.ObjectField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[44], "parent"), act.parent, typeof(Transform), true) as Transform;
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectPostion"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[45], "effectPostion"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectEulerAngles"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[113], "effectEulerAngles"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("spwanTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[46], "spwanTime"));
+                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animEventTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "animEventTime"));
+                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectSpwan"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[35], "effectSpwan"));
+                            //act.activeMode = (ActiveMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[36], "activeModel"), (int)act.activeMode, new GUIContent[]{
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[37],"Instantiate"),
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[38],"SetActive"),
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[115],"Active")
+                            //});
+                            //if (act.activeMode == ActiveMode.ObjectPool)
+                            //    EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("activeObjs"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[39], "activeObjs"), true);
+                            //act.spwanmode = (SpwanMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[40], "spwanmode"), (int)act.spwanmode, new GUIContent[]{
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[116],"none"),
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[41],"TransformPoint"),
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[42],"SetParent"),
+                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[43],"localPosition")
+                            //});
+                            //if (act.spwanmode != SpwanMode.localPosition & act.spwanmode != SpwanMode.None)
+                            //    act.parent = EditorGUILayout.ObjectField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[44], "parent"), act.parent, typeof(Transform), true) as Transform;
+                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectPostion"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[45], "effectPostion"));
+                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectEulerAngles"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[113], "effectEulerAngles"));
+                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("spwanTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[46], "spwanTime"));
                             for (int i = 0; i < act.behaviours.Count; ++i)
                             {
                                 EditorGUILayout.BeginHorizontal();
@@ -245,7 +242,7 @@ namespace GameDesigner
                                 }
                                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                                 {
-                                    GenericMenu menu = new GenericMenu();
+                                    var menu = new GenericMenu();
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[47]), false, delegate ()
                                     {
                                         act.behaviours[act.behaviourMenuIndex].OnDestroyComponent();
@@ -275,8 +272,9 @@ namespace GameDesigner
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[78]), false, delegate ()
                                     {
                                         string scriptName = act.behaviours[act.behaviourMenuIndex].name;
-                                        var item = act.behaviours[act.behaviourMenuIndex].FindClassFile(scriptName);
-                                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
+                                        if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
+                                            sequence = new Net.Helper.SequencePoint();
+                                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                                     });
                                     menu.ShowAsContext();
                                     act.behaviourMenuIndex = i;
@@ -287,7 +285,7 @@ namespace GameDesigner
                                     EditorGUI.indentLevel = 4;
                                     if (!act.behaviours[i].OnInspectorGUI(s))
                                         foreach (var metadata in act.behaviours[i].metadatas)
-                                            PropertyField(metadata);
+                                            PropertyField(metadata, 60f, 5, 4);
                                     GUILayout.Space(4);
                                     GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
                                     GUILayout.Space(4);
@@ -308,7 +306,7 @@ namespace GameDesigner
                                     {
                                         if (GUILayout.Button(type.Name))
                                         {
-                                            ActionBehaviour stb = (ActionBehaviour)Activator.CreateInstance(type);
+                                            var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas(act.stateMachine);
                                             stb.ID = s.ID;
                                             act.behaviours.Add(stb);
@@ -317,7 +315,7 @@ namespace GameDesigner
                                         }
                                         if (s.compiling & type.Name == act.createScriptName)
                                         {
-                                            ActionBehaviour stb = (ActionBehaviour)Activator.CreateInstance(type);
+                                            var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas(sm.stateMachine);
                                             stb.ID = s.ID;
                                             act.behaviours.Add(stb);
@@ -382,7 +380,7 @@ namespace GameDesigner
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                 {
-                    GenericMenu menu = new GenericMenu();
+                    var menu = new GenericMenu();
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[55]), false, delegate ()
                     {
                         s.behaviours[s.behaviourMenuIndex].OnDestroyComponent();
@@ -397,7 +395,7 @@ namespace GameDesigner
                     {
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
-                            StateBehaviour ab = (StateBehaviour)Net.Clone.DeepCopy(behaviour);
+                            var ab = (StateBehaviour)Net.Clone.DeepCopy(behaviour);
                             s.behaviours.Add(ab);
                         }
                     });
@@ -412,8 +410,9 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[79]), false, delegate ()
                     {
                         string scriptName = s.behaviours[s.behaviourMenuIndex].name;
-                        var item = s.behaviours[s.behaviourMenuIndex].FindClassFile(scriptName);
-                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
+                        if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
+                            sequence = new Net.Helper.SequencePoint();
+                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     });
                     menu.ShowAsContext();
                     s.behaviourMenuIndex = i;
@@ -492,7 +491,7 @@ namespace GameDesigner
             }
         }
 
-        private static void PropertyField(Metadata metadata)
+        private static void PropertyField(Metadata metadata, float width = 40f, int arrayBeginSpace = 3, int arrayEndSpace = 2)
         {
             if (metadata.type == TypeCode.Byte)
                 metadata.value = (byte)EditorGUILayout.IntField(metadata.name, (byte)metadata.value);
@@ -520,6 +519,8 @@ namespace GameDesigner
                 metadata.value = EditorGUILayout.DoubleField(metadata.name, (double)metadata.value);
             else if (metadata.type == TypeCode.String)
                 metadata.value = EditorGUILayout.TextField(metadata.name, metadata.value.ToString());
+            else if (metadata.type == TypeCode.Enum)
+                metadata.value = EditorGUILayout.EnumPopup(metadata.name, (Enum)metadata.value);
             else if (metadata.type == TypeCode.Vector2)
                 metadata.value = EditorGUILayout.Vector2Field(metadata.name, (Vector2)metadata.value);
             else if (metadata.type == TypeCode.Vector3)
@@ -546,11 +547,11 @@ namespace GameDesigner
             else if (metadata.type == TypeCode.GenericType | metadata.type == TypeCode.Array) 
             {
                 var rect = EditorGUILayout.GetControlRect();
-                rect.x += 40f;
+                rect.x += width;
                 metadata.foldout = EditorGUI.BeginFoldoutHeaderGroup(rect, metadata.foldout, metadata.name);
                 if (metadata.foldout) 
                 {
-                    EditorGUI.indentLevel = 3;
+                    EditorGUI.indentLevel = arrayBeginSpace;
                     EditorGUI.BeginChangeCheck();
                     var arraySize = EditorGUILayout.DelayedIntField("Size", metadata.arraySize);
                     bool flag8 = EditorGUI.EndChangeCheck();
@@ -574,7 +575,7 @@ namespace GameDesigner
                     for (int i = 0; i < list.Count; i++)
                         list[i] = PropertyField("Element " + i, list[i], metadata.itemType);
                     metadata.value = list;
-                    EditorGUI.indentLevel = 2;
+                    EditorGUI.indentLevel = arrayEndSpace;
                 }
                 EditorGUI.EndFoldoutHeaderGroup();
             }
@@ -718,8 +719,9 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[80]), false, () =>
                     {
                         string scriptName = tr.behaviours[tr.behaviourMenuIndex].name;
-                        var item = tr.behaviours[tr.behaviourMenuIndex].FindClassFile(scriptName);
-                        InternalEditorUtility.OpenFileAtLineExternal(item.Item2, item.Item3, 0);
+                        if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
+                            sequence = new Net.Helper.SequencePoint();
+                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     });
                     menu.ShowAsContext();
                     tr.behaviourMenuIndex = i;

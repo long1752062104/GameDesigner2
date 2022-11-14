@@ -165,7 +165,6 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         }
         EditorGUILayout.GetControlRect(true, 50f);
         EditorGUI.indentLevel = 0;
-
         if (GUILayout.Button("保存配置", GUILayout.Height(30)))
         {
             SaveData();
@@ -178,7 +177,10 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
             Debug.Log("更新完成!");
             AssetDatabase.Refresh();
         }
-
+        if (GUILayout.Button("项目路径打印", GUILayout.Height(30)))
+        {
+            Debug.Log(Net.Config.Config.BasePath);
+        }
         GUILayout.EndScrollView();
         if (EditorGUI.EndChangeCheck())
             SaveData();

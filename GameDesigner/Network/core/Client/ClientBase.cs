@@ -729,7 +729,7 @@ namespace Net.Client
                     {
                         if (LogRpc)
                         {
-                            if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                            if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
                                 sequence = new SequencePoint();
                             NDebug.Log($"RPC:{buffer.method} () (at {sequence.FilePath}:{sequence.StartLine}) \n");
                         }
@@ -738,7 +738,7 @@ namespace Net.Client
                     catch (TargetParameterCountException ex)
                     {
 #if UNITY_EDITOR
-                        if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                        if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
                             sequence = new SequencePoint();
                         var info = $"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
                         Regex reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
@@ -753,7 +753,7 @@ namespace Net.Client
                     catch (Exception ex)
                     {
 #if UNITY_EDITOR
-                        if (!RpcCallHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
+                        if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
                             sequence = new SequencePoint();
                         var info = $"{buffer.method.Name}方法内部发生错误!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
                         Regex reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");

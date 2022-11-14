@@ -374,7 +374,7 @@ namespace GameDesigner
                         state.transitions.RemoveAt(n);
                 }
             }
-            List<int> ids = new List<int>();
+            var ids = new List<int>();
             foreach (var i in stateMachine.selectStates)
                 ids.Add(stateMachine.states[i].ID);
             while (ids.Count > 0)
@@ -384,6 +384,7 @@ namespace GameDesigner
                     if (stateMachine.states[i].ID == ids[0])
                     {
                         stateMachine.states.RemoveAt(i);
+                        EditorUtility.SetDirty(stateMachine);
                         break;
                     }
                 }

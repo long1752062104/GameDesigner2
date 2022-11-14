@@ -16,13 +16,40 @@ namespace Net.Helper
 {
     public class SequencePoint
     {
-        public int StartLine;
         public string FilePath;
+        public int StartLine;
+
+        public SequencePoint() { }
+
+        public SequencePoint(string filePath, int startLine)
+        {
+            StartLine = startLine;
+            FilePath = filePath;
+        }
     }
 
-    public class RpcCallHelper
+    public class ScriptHelper
     {
-        public static Dictionary<string, SequencePoint> Cache = new Dictionary<string, SequencePoint>();
+        private static Dictionary<string, SequencePoint> cache;
+        public static Dictionary<string, SequencePoint> Cache 
+        {
+            get
+            {
+                if (cache == null)
+                {
+                    var path = Config.Config.BasePath + "/ScriptHelper.txt";
+                    if (File.Exists(path)) 
+                    {
+                        var json = File.ReadAllText(path);
+                        cache = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, SequencePoint>>(json);
+                        if (cache == null)
+                            cache = new Dictionary<string, SequencePoint>();
+                    }
+                    else cache = new Dictionary<string, SequencePoint>();
+                }
+                return cache;
+            }
+        }
     }
 
     public interface ISyncVarGetSet 
@@ -618,35 +645,12 @@ internal static class SyncVarGetSetHelperGenerate
             return text;
         }
 
-        /// <summary>
-        /// 收集客户端被调用的Rpc方法可双击到代码位置
-        /// </summary>
-        /// <param name="types"></param>
-        /// <returns></returns>
-        public static string InvokeRpcCall(List<TypeDef> types)
+        public static void ScriptSequencePoint(List<TypeDef> types)
         {
-            var str = @"/// <summary>可寻Rpc代码段位置辅助工具类</summary>
-internal static class RpcCallSequencePointHelper
-{
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-    [UnityEngine.RuntimeInitializeOnLoadMethod]
-#else
-    [RuntimeInitializeOnLoadMethod]
-#endif
-    internal static void Init()
-    {
-        RpcCallHelper.Cache.Clear();
---
-        RpcCallHelper.Cache.Add(""NAME"", new SequencePoint(){ FilePath = @""PATH"", StartLine = LINE });
---
-    }
-}";
-            var codes = str.Split(new string[] { "--" }, 0);
-            var sb = new StringBuilder();
-            sb.Append(codes[0]);
+            var cache = new Dictionary<string, SequencePoint>();
             foreach (var type in types)
             {
-                var dictSB = new StringBuilder();
+                //rpc部分
                 foreach (var method in type.Methods)
                 {
                     CustomAttribute attribute = null;
@@ -666,17 +670,38 @@ internal static class RpcCallSequencePointHelper
                     var sequence = pdb.Scope.Start.SequencePoint;
                     if (sequence == null)// async方法得不到源码行
                         continue;
-                    var code = codes[1].Replace("NAME", type.FullName + "." + method.Name);
-                    code = code.Replace("PATH", sequence.Document.Url);
-                    code = code.Replace("LINE", (sequence.StartLine - 1).ToString());
-                    dictSB.Append(code);
+                    cache.Add(type.FullName + "." + method.Name, new SequencePoint(sequence.Document.Url, sequence.StartLine - 1));
                 }
-                if (dictSB.Length > 0)
-                    sb.Append(dictSB.ToString());
+                //状态机部分
+                {
+                    var baseType = type.BaseType;
+                    bool isHas = false;
+                    while (baseType != null)
+                    {
+                        if (baseType.FullName == "GameDesigner.IBehaviour")
+                        {
+                            isHas = true;
+                            break;
+                        }
+                        baseType = baseType.GetBaseType();
+                    }
+                    if (!isHas)
+                        continue;
+                    if (type.Methods.Count == 0)
+                        continue;
+                    var method = type.Methods[0];
+                    var pdb = method.Body.PdbMethod;
+                    if (pdb == null)
+                        continue;
+                    var sequence = pdb.Scope.Start.SequencePoint;
+                    if (sequence == null)// async方法得不到源码行
+                        continue;
+                    cache.Add(type.FullName, new SequencePoint(sequence.Document.Url, sequence.StartLine - 1));
+                }
             }
-            sb.Append(codes[2]);
-            var text = sb.ToString();
-            return text;
+            var path = Config.Config.BasePath + "/ScriptHelper.txt";
+            var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(cache);
+            File.WriteAllText(path, json);
         }
 
         public static void OnScriptCompilation(InvokeHelperConfig config, bool generateClientSyncVar, bool generateServerSyncVar)
@@ -689,7 +714,6 @@ internal static class RpcCallSequencePointHelper
                     continue;
                 if (!File.Exists(file))
                     continue;
-                //var dllData = File.ReadAllBytes(file);
                 ModuleContext modCtx = ModuleDef.CreateModuleContext();
                 ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
                 streams.Add(module);
@@ -724,7 +748,6 @@ internal static class RpcCallSequencePointHelper
                     if (!File.Exists(file))
                         continue;
                     ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                    //var dllData = File.ReadAllBytes(file);
                     ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
                     streams.Add(module);
                     var types = module.Types;
@@ -783,7 +806,7 @@ internal static class HelperFileInfo
         return sourceFilePath;
     }
 }";
-            text += "\r\n\r\n" + InvokeRpcCall(clientTypes);
+            ScriptSequencePoint(clientTypes);
             if (string.IsNullOrEmpty(config.savePath))
                 goto J;
             if (!Directory.Exists(config.savePath))
@@ -845,21 +868,21 @@ internal static class HelperFileInfo
                 path1 = path1.Replace('/', '\\');
                 if (!File.Exists(csprojPath))
                     continue;
-                XmlDocument xml = new XmlDocument();
+                var xml = new XmlDocument();
                 xml.Load(csprojPath);
                 XmlNodeList node_list;
-                XmlElement documentElement = xml.DocumentElement;
+                var documentElement = xml.DocumentElement;
                 var namespaceURI = xml.DocumentElement.NamespaceURI;
                 if (!string.IsNullOrEmpty(namespaceURI))
                 {
-                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
+                    var nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
                     node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
                 }
                 else node_list = xml.SelectNodes("/Project/ItemGroup");
                 bool exist = false;
                 foreach (XmlNode node in node_list)
                 {
-                    XmlNodeList node_child = node.ChildNodes;
+                    var node_child = node.ChildNodes;
                     foreach (XmlNode child_node in node_child)
                     {
                         var value = child_node.Attributes["Include"].Value;
@@ -877,8 +900,8 @@ internal static class HelperFileInfo
                 }
                 if (!exist)
                 {
-                    XmlElement node = xml.CreateElement("ItemGroup", namespaceURI);
-                    XmlElement e = xml.CreateElement("Compile", namespaceURI);
+                    var node = xml.CreateElement("ItemGroup", namespaceURI);
+                    var e = xml.CreateElement("Compile", namespaceURI);
                     e.SetAttribute("Include", path1);
                     node.AppendChild(e);
                     documentElement.AppendChild(node);

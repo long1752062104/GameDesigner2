@@ -6,6 +6,9 @@ namespace Net.Unity
     /// <summary>
     /// unity线程同步中心管理类
     /// </summary>
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoad]
+#endif
     public class UnitySynchronizationContext
     {
         /// <summary>
@@ -18,6 +21,11 @@ namespace Net.Unity
         /// unity主线程id
         /// </summary>
         public static int MainThreadId => mainThreadId;
+
+        static UnitySynchronizationContext() 
+        {
+            InitializeSynchronizationContext();
+        }
 
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
         [UnityEngine.RuntimeInitializeOnLoadMethod]

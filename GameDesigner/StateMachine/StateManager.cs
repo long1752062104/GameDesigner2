@@ -4,6 +4,11 @@
     using System.Collections.Generic;
     using UnityEngine;
 
+    public enum RuntimeInitMode 
+    {
+        Awake, Start,
+    }
+
     /// <summary>
     /// 状态执行管理类
     /// V2017.12.6
@@ -15,8 +20,21 @@
         /// 状态机
         /// </summary>
 		public StateMachine stateMachine = null;
-        
+        public RuntimeInitMode initMode = RuntimeInitMode.Awake;
+
         void Awake()
+        {
+            if (initMode == RuntimeInitMode.Awake)
+                Init();
+        }
+
+        void Start()
+        {
+            if (initMode == RuntimeInitMode.Start)
+                Init();
+        }
+
+        private void Init()
         {
             if (stateMachine == null)
             {
@@ -28,13 +46,13 @@
                 StateMachine sm = Instantiate(stateMachine, transform);
                 sm.name = stateMachine.name;
                 sm.transform.localPosition = Vector3.zero;
-                if(sm.animation==null)
+                if (sm.animation == null)
                     sm.animation = GetComponentInChildren<Animation>();
                 else if (!sm.animation.gameObject.scene.isLoaded)
                     sm.animation = GetComponentInChildren<Animation>();
                 if (sm.animator == null)
                     sm.animator = GetComponentInChildren<Animator>();
-                else if(!sm.animator.gameObject.scene.isLoaded)
+                else if (!sm.animator.gameObject.scene.isLoaded)
                     sm.animator = GetComponentInChildren<Animator>();
                 stateMachine = sm;
             }
