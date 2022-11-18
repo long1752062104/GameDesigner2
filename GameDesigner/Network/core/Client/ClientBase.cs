@@ -2111,6 +2111,136 @@ namespace Net.Client
             });
         }
 
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(string funcAndCb, params object[] pars)
+        {
+            return Call(funcAndCb, funcAndCb, 5000, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, params object[] pars)
+        {
+            return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        {
+            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, params object[] pars)
+        {
+            return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        {
+            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, millisecondsDelay, intercept, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(ushort funcAndCb, params object[] pars)
+        {
+            return Call(funcAndCb, funcAndCb, 5000, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        {
+            return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        {
+            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        {
+            return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+        }
+
+        /// <summary>
+        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
+        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public Task<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        {
+            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+        }
+        #endregion
+
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
         /// <summary>
         /// 远程同步调用
         /// </summary>
@@ -2120,7 +2250,7 @@ namespace Net.Client
         /// <returns></returns>
         public Task<RPCModelTask> Call(string func, string callbackFunc, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, 5000, pars);
+            return Call(func, callbackFunc, 5000, pars);
         }
 
         /// <summary>
@@ -2133,7 +2263,7 @@ namespace Net.Client
         /// <returns></returns>
         public Task<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, pars);
+            return Call(func, callbackFunc, millisecondsDelay, true, pars);
         }
 
         /// <summary>
@@ -2189,7 +2319,7 @@ namespace Net.Client
         /// <returns></returns>
         public Task<RPCModelTask> Call(ushort func, ushort callbackFunc, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, 5000, pars);
+            return Call(func, callbackFunc, 5000, pars);
         }
 
         /// <summary>
@@ -2202,7 +2332,7 @@ namespace Net.Client
         /// <returns></returns>
         public Task<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, pars);
+            return Call(func, callbackFunc, millisecondsDelay, true, pars);
         }
 
         /// <summary>
@@ -2245,8 +2375,9 @@ namespace Net.Client
         /// <returns></returns>
         public Task<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
         {
-            return Call(cmd, "", "", func, callbackFunc, millisecondsDelay, intercept, pars);
+            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, millisecondsDelay, intercept, pars);
         }
+        #endregion
 
         private async Task<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int millisecondsDelay, bool intercept, params object[] pars)
         {

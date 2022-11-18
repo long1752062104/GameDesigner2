@@ -94,7 +94,7 @@
             if (dic.Count > count)
             {
                 dic.Clear();
-                Console.Clear();
+                listBox.Items.Clear();
             }
             if (!dic.TryGetValue(log + msg, out var entity))
                 dic.TryAdd(log + msg, entity = new LogEntity() { time = time, log = log, msg = msg });
@@ -104,7 +104,6 @@
                 entity.row = listBox.Items.Count;
                 listBox.Items.Add(entity);
             }
-            //listBox.Refresh();
         }
 
         public void DrawItem(object sender, DrawItemEventArgs e)
@@ -160,15 +159,15 @@
         /// <summary>
         /// 输出日志最多容纳条数
         /// </summary>
-        public static int LogMax { get; set; } = 500;
+        public static int LogMax { get; set; } = 10000;
         /// <summary>
         /// 输出错误日志最多容纳条数
         /// </summary>
-        public static int LogErrorMax { get; set; } = 500;
+        public static int LogErrorMax { get; set; } = 10000;
         /// <summary>
         /// 输出警告日志最多容纳条数
         /// </summary>
-        public static int LogWarningMax { get; set; } = 500;
+        public static int LogWarningMax { get; set; } = 10000;
 
         private static QueueSafe<object> logQueue = new QueueSafe<object>();
         private static QueueSafe<object> errorQueue = new QueueSafe<object>();
@@ -203,12 +202,6 @@
                         LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Error] {message}");
                         Output?.Invoke(DateTime.Now, LogType.Error, message.ToString());
                     }
-                    if (logQueue.Count >= LogMax)
-                        logQueue = new QueueSafe<object>();
-                    if (errorQueue.Count >= LogErrorMax)
-                        errorQueue = new QueueSafe<object>();
-                    if (warningQueue.Count >= LogWarningMax)
-                        warningQueue = new QueueSafe<object>();
                 }
                 catch (Exception ex)
                 {
@@ -225,6 +218,8 @@
         /// <param name="message"></param>
         public static void Log(object message)
         {
+            if (logQueue.Count >= LogMax)
+                return;
 #if SERVICE
             logQueue.Enqueue(message);
 #else
@@ -239,6 +234,8 @@
         /// <param name="message"></param>
         public static void LogError(object message)
         {
+            if (errorQueue.Count >= LogErrorMax)
+                return;
 #if SERVICE
             errorQueue.Enqueue(message);
 #else
@@ -253,6 +250,8 @@
         /// <param name="message"></param>
         public static void LogWarning(object message)
         {
+            if (warningQueue.Count >= LogWarningMax)
+                return;
 #if SERVICE
             warningQueue.Enqueue(message);
 #else
@@ -290,6 +289,8 @@
         /// </summary>
         public static void BindConsoleLog()
         {
+            if (debug != null)
+                RemoveDebug(debug);
             debug = new ConsoleDebug();
             NDebug.Output += debug.Output;
         }
@@ -299,23 +300,43 @@
         /// </summary>
         public static void RemoveConsoleLog()
         {
-            RemoveDebug();
+            RemoveDebug(debug);
         }
+
+#if SERVICE
+        /// <summary>
+        /// 绑定控制台输出
+        /// </summary>
+        public static void BindFormLog(ListBox listBox)
+        {
+            if (debug != null)
+                RemoveDebug(debug);
+            debug = new FormDebug(listBox);
+            NDebug.Output += debug.Output;
+        }
+
+        /// <summary>
+        /// 移除控制台输出
+        /// </summary>
+        public static void RemoveFormLog()
+        {
+            RemoveDebug(debug);
+        }
+#endif
 
         /// <summary>
         /// 绑定输出接口
         /// </summary>
         /// <param name="log"></param>
-        public static void BindDebug(IDebug log)
+        public static void BindDebug(IDebug debug)
         {
-            debug = log;
             NDebug.Output += debug.Output;
         }
 
         /// <summary>
         /// 移除输出接口
         /// </summary>
-        public static void RemoveDebug()
+        public static void RemoveDebug(IDebug debug)
         {
             NDebug.Output -= debug.Output;
         }

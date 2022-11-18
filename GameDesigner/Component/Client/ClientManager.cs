@@ -18,9 +18,22 @@ namespace Net.Component
     public enum LogMode 
     {
         None,
+        /// <summary>
+        /// 消息输出, 警告输出, 错误输出, 三种模式各自输出
+        /// </summary>
         Default,
+        /// <summary>
+        /// 所有消息输出都以白色消息输出
+        /// </summary>
         LogAll,
-        LogAndWarning
+        /// <summary>
+        /// 警告信息和消息一起输出为白色
+        /// </summary>
+        LogAndWarning,
+        /// <summary>
+        /// 警告和错误都输出为红色提示
+        /// </summary>
+        WarnAndError,
     }
 
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
@@ -146,6 +159,9 @@ namespace Net.Component
                 case LogMode.LogAndWarning:
                     NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
                     break;
+                case LogMode.WarnAndError:
+                    NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
             }
             if (startConnect)
                 Connect();
@@ -194,6 +210,9 @@ namespace Net.Component
                     break;
                 case LogMode.LogAndWarning:
                     NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+                case LogMode.WarnAndError:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
                     break;
             }
         }

@@ -185,6 +185,9 @@ namespace Net.Component
                 case LogMode.LogAndWarning:
                     NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
                     break;
+                case LogMode.WarnAndError:
+                    NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
             }
             foreach (var client in clients)
             {
@@ -222,6 +225,9 @@ namespace Net.Component
                     break;
                 case LogMode.LogAndWarning:
                     NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
+                    break;
+                case LogMode.WarnAndError:
+                    NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
                     break;
             }
         }
