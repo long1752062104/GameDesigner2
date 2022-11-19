@@ -1344,7 +1344,7 @@ namespace Net.Server
                         client.udpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                         return;
                     }
-                    Multicast(scene.Clients, false, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    Multicast(scene.Players, false, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.SceneRT:
                     if (!(client.Scene is Scene scene1))
@@ -1352,7 +1352,7 @@ namespace Net.Server
                         client.tcpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                         return;
                     }
-                    Multicast(scene1.Clients, true, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    Multicast(scene1.Players, true, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.Notice:
                     Multicast(UIDClients.Values.ToList(), false, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
@@ -1955,22 +1955,11 @@ namespace Net.Server
                 exitCurrentSceneCall?.Invoke(scene);
                 if (addToMainScene)
                 {
-                    Scene mainScene = Scenes[MainSceneName];
-                    foreach (Player p in scene.Players)
-                    {
-                        mainScene.AddPlayer(p);
-                    }
+                    var mainScene = Scenes[MainSceneName];
+                    if (mainScene != null)
+                        mainScene.AddPlayers(scene.Players);
                 }
-                else
-                {
-                    foreach (Player p in scene.Players)
-                    {
-                        scene.OnRemove(p);
-                        p.OnRemove();
-                        p.Scene = null;
-                        p.SceneName = string.Empty;
-                    }
-                }
+                scene.RemoveScene();
                 return true;
             }
             return false;

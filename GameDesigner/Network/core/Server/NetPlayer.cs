@@ -99,9 +99,9 @@
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> tcpRPCModels = new QueueSafe<RPCModel>();
         internal QueueSafe<RPCModel> udpRPCModels = new QueueSafe<RPCModel>();
-        //internal QueueSafe<RevdDataBuffer> RevdQueue = new QueueSafe<RevdDataBuffer>();
         internal QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
         internal ThreadGroup Group;
+        internal int SceneHash;
         public bool Login { get; internal set; }
         internal bool isDispose;
         /// <summary>
@@ -369,6 +369,7 @@
         /// <summary>
         /// 当场景被移除 ->场景对象在Scene属性
         /// </summary>
+        [Obsolete("此方法已不再使用, 请使用Scene的OnRemove方法")]
         public virtual void OnRemove() { }
 
         /// <summary>

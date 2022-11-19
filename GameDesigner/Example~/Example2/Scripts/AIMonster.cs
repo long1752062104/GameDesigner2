@@ -137,7 +137,7 @@
         public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
-    public class MonsterAttack : ActionBehaviour
+    public class MonsterAttack : ActionCore//ActionBehaviour
     {
         private AIMonster self;
         public float distance = 3f;
@@ -148,7 +148,7 @@
         {
             self = transform.GetComponent<AIMonster>();
         }
-        public override void OnAnimationEvent(StateAction action, float animEventTime)
+        public override void OnAnimationEvent(StateAction action)
         {
             foreach (var p in GameManager.I.players)
             {

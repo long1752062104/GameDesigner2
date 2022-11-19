@@ -21,13 +21,10 @@
         /// </summary>
         public int sceneCapacity;
         /// <summary>
-        /// 当前网络场景的玩家
+        /// 当前网络场景的玩家, 此字段不要使用Add, Remove进行调用
         /// </summary>
-        public HashSetSafe<Player> Players { get; set; } = new HashSetSafe<Player>();
-        /// <summary>
-        /// 当前网络场景状态
-        /// </summary>
-        public NetState state = NetState.Idle;
+        public FastList<Player> Players { get; private set; } = new FastList<Player>();
+        public FastList<Player> Clients => Players;
         /// <summary>
         /// 当前帧
         /// </summary>
@@ -46,13 +43,6 @@
         /// 获取场景当前人数
         /// </summary>
         public int SceneNumber
-        {
-            get { return Players.Count; }
-        }
-        /// <summary>
-        /// 获取场景当前人数
-        /// </summary>
-        public int CurrNum
         {
             get { return Players.Count; }
         }
@@ -83,19 +73,17 @@
         /// </summary>
         public int Split { get; set; } = 500;
         /// <summary>
-        /// 场景事件
-        /// </summary>
-        public TimerEvent Event = new TimerEvent();
-        /// <summary>
         /// 线程群组, 解决多线程竞争, Addopt方法, removeopt方法
         /// </summary>
         public ThreadGroup Group;
+        private int hash;
         
         /// <summary>
         /// 构造网络场景
         /// </summary>
         public NetScene()
         {
+            hash = GetHashCode();
         }
 
         /// <summary>
@@ -119,30 +107,24 @@
         }
 
         /// <summary>
-        /// 获取场景内的玩家到一维集合里
-        /// </summary>
-        /// <returns></returns>
-        public FastListSafe<Player> GetPlayers() => Clients;
-
-        /// <summary>
-        /// 获取场景的所有客户端玩家
-        /// </summary>
-        public FastListSafe<Player> Clients { get; set; } = new FastListSafe<Player>();
-
-        /// <summary>
         /// 添加玩家
         /// </summary>
         /// <param name="client"></param>
         public virtual void AddPlayer(Player client)
         {
-            client.SceneName = Name;
-            client.Scene = this;
-            if (Group != null)
-                client.Group = Group;
-            if (Players.Add(client))
-                Clients.Add(client);
-            OnEnter(client);
-            client.OnEnter();
+            lock (this)
+            {
+                if (client.SceneHash == hash)
+                    return;
+                client.SceneName = Name;
+                client.Scene = this;
+                if (Group != null)
+                    client.Group = Group;
+                Players.Add(client);
+                OnEnter(client);
+                client.OnEnter();
+                client.SceneHash = hash;
+            }
         }
 
         /// <summary>
@@ -167,7 +149,7 @@
         /// 当场景被移除
         /// </summary>
         /// <param name="client"></param>
-        public virtual void OnRemove(Player client) { }
+        public virtual void OnRemove() { }
 
         /// <summary>
         /// 当接收到客户端使用Client.AddOperation方法发送的请求时调用
@@ -181,7 +163,7 @@
         /// 添加玩家
         /// </summary>
         /// <param name="collection"></param>
-        public virtual void AddPlayerRange(IEnumerable<Player> collection)
+        public virtual void AddPlayers(IEnumerable<Player> collection)
         {
             foreach (Player p in collection)
                 AddPlayer(p);
@@ -192,25 +174,27 @@
         /// </summary>
         public virtual void Update(IServerSendHandle<Player> handle, byte cmd)
         {
-            var players = Clients;//多线程问题, 心跳 或 未知线程 添加或移除玩家时实时更新了哈希列表
-            int playerCount = players.Count;
-            if (playerCount <= 0)
-                return;
-            for (int i = 0; i < players.Count; i++)
-                players[i]?.OnUpdate();//5000个客户端后出现null问题
-            int count = operations.Count;//多线程后避免长度增加时,数据还没写入完成就会出现问题, 所以先取出写入完成的数据
-            if (count > 0)
+            lock (this) //解决多线程问题
             {
-                frame++;
-                while (count > Split)
-                {
-                    OnPacket(handle, cmd, Split);
-                    count -= Split;
-                }
+                var players = Players;
+                int playerCount = players.Count;
+                if (playerCount <= 0)
+                    return;
+                for (int i = 0; i < playerCount; i++)
+                    players[i].OnUpdate();
+                int count = operations.Count;//多线程后避免长度增加时,数据还没写入完成就会出现问题, 所以先取出写入完成的数据
                 if (count > 0)
-                    OnPacket(handle, cmd, count);
+                {
+                    frame++;
+                    while (count > Split)
+                    {
+                        OnPacket(handle, cmd, Split);
+                        count -= Split;
+                    }
+                    if (count > 0)
+                        OnPacket(handle, cmd, count);
+                }
             }
-            Event.UpdateEventFixed();
         }
 
         /// <summary>
@@ -221,23 +205,12 @@
         /// <param name="count"></param>
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count)
         {
-            Operation[] opts = operations.GetRemoveRange(0, count);
-            OperationList list = ObjectPool<OperationList>.Take();
+            var opts = operations.GetRemoveRange(0, count);
+            OperationList list = default;
             list.frame = frame;
             list.operations = opts;
             var buffer = onSerializeOpt(list);
-            handle.Multicast(Clients, SendOperationReliable, cmd, buffer, false, false);
-            ObjectPool<OperationList>.Push(list);
-            OnRecovery(opts);
-        }
-
-        /// <summary>
-        /// 当操作对象即将被回收, 可重写此方法, 用对象池回收复用 注意, 如果回收复用的, 创建也要使用对象池创建
-        /// <code>创建代码: var opt = ObjectPool&lt;Operation&gt;.Take();</code>
-        /// <code>回收代码: foreach(var opt in opts) ObjectPool&lt;Operation&gt;.Push(opt);</code>
-        /// </summary>
-        public virtual void OnRecovery(Operation[] opts)
-        {
+            handle.Multicast(Players, SendOperationReliable, cmd, buffer, false, false);
         }
 
         /// <summary>
@@ -331,16 +304,21 @@
         /// <summary>
         /// 移除玩家
         /// </summary>
-        /// <param name="player"></param>
-        public void Remove(Player player)
+        /// <param name="client"></param>
+        public void Remove(Player client)
         {
-            OnBeginExit(player);
-            Players.Remove(player);
-            Clients.Remove(player);
-            OnExit(player);
-            player.OnExit();
-            player.Scene = null;
-            player.SceneName = string.Empty;
+            lock (this)
+            {
+                if (client.SceneHash != hash)
+                    return;
+                OnBeginExit(client);
+                Players.Remove(client);
+                OnExit(client);
+                client.OnExit();
+                client.Scene = null;
+                client.SceneName = string.Empty;
+                client.SceneHash = -1;
+            }
         }
 
         /// <summary>
@@ -348,10 +326,21 @@
         /// </summary>
         public void RemoveAll()
         {
-            foreach (var player in Players)
-                Remove(player);
-            Players.Clear();
-            Clients.Clear();
+            lock (this) 
+            {
+                foreach (var player in Players)
+                    Remove(player);
+                Players.Clear();
+            }
+        }
+
+        /// <summary>
+        /// 执行移除场景
+        /// </summary>
+        public void RemoveScene()
+        {
+            RemoveAll();
+            OnRemove();
         }
 
         /// <summary>
