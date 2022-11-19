@@ -143,11 +143,11 @@ namespace Net.Server
         /// <summary>
         /// 当前玩家在线人数
         /// </summary>
-        public int OnlinePlayers { get { return UIDClients.Count; } }
+        public int OnlinePlayers { get { return Players.Count; } }
         /// <summary>
         /// 未知客户端人数, 即在线不登录账号的客户端
         /// </summary>
-        public int UnClientNumber { get { return AllClients.Count - UIDClients.Count; } }
+        public int UnClientNumber { get { return AllClients.Count - Players.Count; } }
         /// <summary>
         /// 服务器端口
         /// </summary>
@@ -545,7 +545,7 @@ namespace Net.Server
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
         /// </summary>
         /// <param name="client">要移除的客户端</param>
-        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client.Name}]断开{(client.Redundant ? "冗余" : "")}连接!"); }
+        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client}]断开{(client.Redundant ? "冗余" : "")}连接!"); }
 
         /// <summary>
         /// 当开始调用服务器RPC函数 或 开始调用自定义网络命令时 可设置请求客户端的client为全局字段，方便在服务器RPC函数内引用!!!
@@ -1007,16 +1007,14 @@ namespace Net.Server
             if (!UserIDStack.TryPop(out int uid))
                 uid = GetCurrUserID();
             client.UserID = uid;
-            client.PlayerID = uid.ToString();
+            //client.PlayerID = uid.ToString(); //已经搬到登录时处理
             client.Name = uid.ToString();
             client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
             OnThreadQueueSet(client);
             AcceptHander(client);
-            SetClientIdentity(client);
+            SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
-#if TEST1
-            UIDClients.TryAdd(uid, client);//测试
-#endif
+            UIDClients.TryAdd(uid, client);//uid必须在这里添加, 不在登录成功后添加了
             OnHasConnectHandle(client);
             if (AllClients.Count >= OnlineLimit + LineUp)
             {
@@ -1258,7 +1256,7 @@ namespace Net.Server
                 case NetCmd.PingCallback:
                     return;
                 case NetCmd.Identify:
-                    SetClientIdentity(client);
+                    SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
                     break;
                 case NetCmd.EntityRpc:
                     if (CheckIsQueueUp(client))
@@ -1305,12 +1303,19 @@ namespace Net.Server
 
         private void LoginInternal(Player client)
         {
+            //如果一个账号快速登录断开,再登录断开,心跳检查断线会延迟,导致无法移除掉已在游戏的客户端对象
+            //如果此账号的玩家已经登录游戏, 则会先进行退出登录, 此客户端才能登录进来
+            if (Players.TryGetValue(client.PlayerID, out var client1)) 
+                SignOut(client1);
+            //当此玩家一直从登录到被退出登录, 再登录后PlayerID被清除了, 如果是这种情况下, 开发者也没有给PlayerID赋值, 那么默认就需要给uid得值
+            if (string.IsNullOrEmpty(client.PlayerID))
+                client.PlayerID = client.UserID.ToString();
             Players[client.PlayerID] = client;
-            UIDClients[client.UserID] = client;
             client.OnStart();
             OnAddPlayerToScene(client);
             client.AddRpc(client);
             OnAddClientHandle?.Invoke(client);
+            SetClientIdentity(client);//将发送登录成功的identity标识, 开发者可赋值, 必须保证是唯一的
         }
 
         protected virtual void CommandHandle(Player client, RPCModel model, Segment segment)
@@ -1466,7 +1471,7 @@ namespace Net.Server
                     }
                     break;
                 case NetCmd.Identify:
-                    SetClientIdentity(client);
+                    SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
                     break;
                 default:
                     client.OnRevdBufferHandle(model);
@@ -2016,9 +2021,7 @@ namespace Net.Server
         {
             if (!AllClients.TryRemove(client.RemotePoint, out _))//防止两次进入
                 return;
-            if (Players.TryGetValue(client.PlayerID, out var client1)) //如果一个账号快速登录断开,再登录断开,心跳检查断线会延迟,导致移除掉已在游戏的客户端对象
-                if(client == client1)
-                    Players.TryRemove(client.PlayerID, out _);
+            Players.TryRemove(client.PlayerID, out _);
             UIDClients.TryRemove(client.UserID, out _);
             OnRemoveClientHandle(client);
             client.OnRemoveClient();
@@ -2028,7 +2031,7 @@ namespace Net.Server
                 UserIDStack.Push(client.UserID);
             if (client.IsQueueUp)
                 return;
-        J: if (QueueUp.TryDequeue(out client1))
+        J: if (QueueUp.TryDequeue(out var client1))
             {
                 if (client1.isDispose)
                     goto J;
@@ -2653,16 +2656,17 @@ namespace Net.Server
                 return;
             SendDirect(client);
             Players.TryRemove(client.PlayerID, out _);
-            UIDClients.TryRemove(client.UserID, out _);
+            //UIDClients.TryRemove(client.UserID, out _); //uid还在使用, 不能移除, uid需要等到此客户端真正断线后才会移除, 退出登录不等于断线
             ExitScene(client, false);
-            client.Login = false;
             OnSignOut(client);
             client.OnSignOut();
+            client.Login = false;
+            client.PlayerID = string.Empty;//此处必须清除,要不然当移除断线的账号后, 就会移除掉新登录的此账号在线字段Players
             Debug.Log("[" + client.Name + "]退出登录...!");
         }
 
         /// <summary>
-        /// 当客户端退出登录
+        /// 当客户端退出登录, 如果两个账号同时登录或者在心跳时间还没到检测时另外一个玩家也登录了相同的账号, 则会强制退出上一个账号的登录
         /// </summary>
         /// <param name="client"></param>
         public virtual void OnSignOut(Player client)
@@ -2812,7 +2816,8 @@ namespace Net.Server
             }
             byte[] buffer = new byte[bufferSize];
             fileStream.Read(buffer, 0, buffer.Length);
-            var segment1 = BufferPool.Take((int)bufferSize + 50);
+            var size = (fileData.fileName.Length * 2) + 12;
+            var segment1 = BufferPool.Take((int)bufferSize + size);
             segment1.Write(fileData.ID);
             segment1.Write(fileData.fileStream.Length);
             segment1.Write(fileData.fileName);

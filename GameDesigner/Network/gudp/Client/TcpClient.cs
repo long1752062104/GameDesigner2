@@ -469,7 +469,7 @@
         //}
         public override string ToString()
         {
-            return $"uid:{Identify} conv:{Connected}";
+            return $"uid:{UID} conv:{Connected}";
         }
     }
 }

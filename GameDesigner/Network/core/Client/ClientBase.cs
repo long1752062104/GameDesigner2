@@ -40,7 +40,7 @@ namespace Net.Client
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
     /// </summary>
-    public abstract class ClientBase : INetClient, ISendHandle, IRpcHandler
+    public abstract class ClientBase : INetClient, ISendHandle, IRpcHandler, IDisposable
     {
         /// <summary>
         /// UDP客户端套接字
@@ -2876,7 +2876,8 @@ namespace Net.Client
             }
             byte[] buffer = new byte[bufferSize];
             fileStream.Read(buffer, 0, buffer.Length);
-            var segment1 = BufferPool.Take((int)bufferSize + 50);
+            var size = (fileData.fileName.Length * 2) + 12;
+            var segment1 = BufferPool.Take((int)bufferSize + size);
             segment1.Write(fileData.ID);
             segment1.Write(fileData.fileStream.Length);
             segment1.Write(fileData.fileName);
@@ -2918,6 +2919,11 @@ namespace Net.Client
         public void TestRPCQueue(RPCModel model)
         {
             rPCModels.Enqueue(model);
+        }
+
+        public void Dispose()
+        {
+            Close();
         }
     }
 }

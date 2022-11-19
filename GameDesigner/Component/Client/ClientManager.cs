@@ -226,9 +226,14 @@ namespace Net.Component
             Instance.client.AddOperation(operation);
         }
 
-        public static void AddRpcHandler(object target)
+        public static void AddRpc(object target)
         {
             I.client.AddRpcHandle(target);
+        }
+
+        public static void RemoveRpc(object target)
+        {
+            I.client.RemoveRpc(target);
         }
 
         /// <summary>
@@ -370,7 +375,7 @@ namespace Net.Component
         {
             ((ISendHandle)_client).SendRT(cmd, func, funcCB, callback, millisecondsDelay, outTimeAct, context, pars);
         }
-#endregion
+        #endregion
     }
 }
 #endif
