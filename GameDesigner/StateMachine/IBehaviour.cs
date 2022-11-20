@@ -363,6 +363,7 @@
                     {
                         item.data = item1.data;
                         item.Value = item1.Value;
+                        item.values = item1.values;
                         item.arraySize = item1.arraySize;
                         item.foldout = item1.foldout;
                         item.field.SetValue(this, item1.value);

@@ -47,9 +47,10 @@ namespace GameDesigner
                 var field = type.GetField(metadata.name);
                 if (field == null)
                     continue;
+                var value = metadata.Read();//必须先读值才能赋值下面字段和对象
                 metadata.field = field;
                 metadata.target = runtimeBehaviour;
-                field.SetValue(runtimeBehaviour, metadata.Read());
+                field.SetValue(runtimeBehaviour, value);
             }
             return runtimeBehaviour;
         }

@@ -129,15 +129,10 @@ namespace GameDesigner
 		[HideField]
         public int audioIndex = 0;
 
-        public override void OnInit()
-        {
-            audioClips = new List<AudioClip> { null };
-        }
-
         public override void OnEnter(StateAction action)
         {
             eventEnter = false;
-            if (isPlayAudio & audioModel == AudioMode.EnterPlay)
+            if (isPlayAudio & audioModel == AudioMode.EnterPlay & audioClips.Count > 0)
             {
                 audioIndex = Random.Range(0, audioClips.Count);
                 AudioManager.Play(audioClips[audioIndex]);
@@ -191,15 +186,12 @@ namespace GameDesigner
                         SetPosition(stateManager, effectSpwan);
                     }
                 }
-                if (isPlayAudio & audioModel == AudioMode.AnimEvent)
+                if (isPlayAudio & audioModel == AudioMode.AnimEvent & audioClips.Count > 0)
                 {
                     audioIndex = Random.Range(0, audioClips.Count);
                     AudioManager.Play(audioClips[audioIndex]);
                 }
                 eventEnter = true;
-                //foreach (actionBehaviour behaviour in action.behaviours) //当子动作的动画事件进入
-                //    if (behaviour.Active)
-                //        behaviour.OnAnimationEvent(action, action.animEventTime);
                 OnAnimationEvent(action);
             }
         }
@@ -252,7 +244,7 @@ namespace GameDesigner
 
         public override void OnExit(StateAction action)
         {
-            if (isPlayAudio & audioModel == AudioMode.ExitPlay)
+            if (isPlayAudio & audioModel == AudioMode.ExitPlay & audioClips.Count > 0)
             {
                 audioIndex = Random.Range(0, audioClips.Count);
                 AudioManager.Play(audioClips[audioIndex]);
