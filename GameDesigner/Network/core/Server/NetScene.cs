@@ -32,7 +32,7 @@
         /// <summary>
         /// 备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
         /// </summary>
-        protected ListSafe<Operation> operations = new ListSafe<Operation>();
+        protected FastList<Operation> operations = new FastList<Operation>();
         /// <summary>
         /// 玩家操作是以可靠传输进行发送的?
         /// </summary>
@@ -114,17 +114,22 @@
         {
             lock (this)
             {
-                if (client.SceneHash == hash)
-                    return;
-                client.SceneName = Name;
-                client.Scene = this;
-                if (Group != null)
-                    client.Group = Group;
-                Players.Add(client);
-                OnEnter(client);
-                client.OnEnter();
-                client.SceneHash = hash;
+                AddPlayerInternal(client);
             }
+        }
+
+        private void AddPlayerInternal(Player client)
+        {
+            if (client.SceneHash == hash)
+                return;
+            client.SceneName = Name;
+            client.Scene = this;
+            if (Group != null)
+                client.Group = Group;
+            Players.Add(client);
+            OnEnter(client);
+            client.OnEnter();
+            client.SceneHash = hash;
         }
 
         /// <summary>
@@ -165,8 +170,19 @@
         /// <param name="collection"></param>
         public virtual void AddPlayers(IEnumerable<Player> collection)
         {
-            foreach (Player p in collection)
-                AddPlayer(p);
+            lock (this) 
+            {
+                foreach (var client in collection)
+                    AddPlayerInternal(client);
+            }
+        }
+
+        internal void UpdateLock(IServerSendHandle<Player> handle, byte cmd) 
+        {
+            lock (this) //解决多线程问题
+            {
+                Update(handle, cmd);
+            }
         }
 
         /// <summary>
@@ -174,26 +190,23 @@
         /// </summary>
         public virtual void Update(IServerSendHandle<Player> handle, byte cmd)
         {
-            lock (this) //解决多线程问题
+            var players = Players;
+            int playerCount = players.Count;
+            if (playerCount <= 0)
+                return;
+            for (int i = 0; i < playerCount; i++)
+                players[i].OnUpdate();
+            int count = operations.Count;
+            if (count > 0)
             {
-                var players = Players;
-                int playerCount = players.Count;
-                if (playerCount <= 0)
-                    return;
-                for (int i = 0; i < playerCount; i++)
-                    players[i].OnUpdate();
-                int count = operations.Count;//多线程后避免长度增加时,数据还没写入完成就会出现问题, 所以先取出写入完成的数据
-                if (count > 0)
+                frame++;
+                while (count > Split)
                 {
-                    frame++;
-                    while (count > Split)
-                    {
-                        OnPacket(handle, cmd, Split);
-                        count -= Split;
-                    }
-                    if (count > 0)
-                        OnPacket(handle, cmd, count);
+                    OnPacket(handle, cmd, Split);
+                    count -= Split;
                 }
+                if (count > 0)
+                    OnPacket(handle, cmd, count);
             }
         }
 
@@ -206,10 +219,12 @@
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count)
         {
             var opts = operations.GetRemoveRange(0, count);
-            OperationList list = default;
-            list.frame = frame;
-            list.operations = opts;
-            var buffer = onSerializeOpt(list);
+            var operList = new OperationList()
+            {
+                frame = frame,
+                operations = opts
+            };
+            var buffer = onSerializeOpt(operList);
             handle.Multicast(Players, SendOperationReliable, cmd, buffer, false, false);
         }
 
@@ -267,7 +282,10 @@
         /// <param name="opt"></param>
         public virtual void AddOperation(Operation opt)
         {
-            operations.Add(opt);
+            lock (this) 
+            {
+                operations.Add(opt);
+            }
         }
 
         /// <summary>
@@ -276,8 +294,10 @@
         /// <param name="opts"></param>
         public virtual void AddOperations(List<Operation> opts)
         {
-            foreach (Operation opt in opts)
-                AddOperation(opt);
+            lock (this) 
+            {
+                operations.AddRange(opts);
+            }
         }
 
         /// <summary>
@@ -286,10 +306,10 @@
         /// <param name="opts"></param>
         public virtual void AddOperations(Operation[] opts)
         {
-            if (opts == null)
-                return;
-            foreach (Operation opt in opts)
-                AddOperation(opt);
+            lock (this)
+            {
+                operations.AddRange(opts);
+            }
         }
 
         /// <summary>
@@ -348,7 +368,10 @@
         /// </summary>
         public void RemoveOperations()
         {
-            operations.Clear();
+            lock (this) 
+            {
+                operations.Clear();
+            }
         }
 
         ~NetScene()

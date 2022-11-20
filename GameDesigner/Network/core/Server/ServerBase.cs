@@ -750,7 +750,7 @@ namespace Net.Server
                     {
                         var result = Parallel.ForEach(Scenes.Values, scene =>
                         {
-                            scene.Update(this, NetCmd.OperationSync);
+                            scene.UpdateLock(this, NetCmd.OperationSync);
                         });
                         while (!result.IsCompleted)
                         {

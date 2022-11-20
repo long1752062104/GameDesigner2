@@ -8,7 +8,7 @@ using System.Threading;
 namespace Net.System
 {
     /// <summary>
-    /// List类, 无序的, 极速的
+    /// List类, 添加是有序的, 移除是无序的,极速的
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [DebuggerTypeProxy(typeof(Mscorlib_CollectionDebugView<>))]
@@ -563,23 +563,26 @@ namespace Net.System
         }
 
         /// <summary>
-        /// 获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
+        /// 获取对象数组, 并移除对象数组, 如果长度大于列表的长度, 则会裁剪到能获取的长度
         /// </summary>
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <returns></returns>
         public T[] GetRemoveRange(int index, int count)
         {
-            //获取
-            if (index < 0 | count < 0)
-                return null;
             if (_size - index < count)
                 count = _size - index;
-            T[] list = new T[count];
-            Array.Copy(_items, index, list, 0, count);
-            //移除
-            RemoveRange(index, count);
-            return list;
+            if (count > 0)
+            {
+                _size -= count;
+                var array = new T[count];
+                Array.Copy(_items, index, array, 0, count);//复制移除的数组部分
+                Array.Copy(_items, index + count, _items, index, _size - index);//将结尾数组移动到移除的数组部分来
+                Array.Clear(_items, _size, count);
+                _version++;
+                return array;
+            }
+            return null;
         }
 
         public int IndexOf(T item)
@@ -819,41 +822,22 @@ namespace Net.System
 
         public void RemoveRange(int index, int count)
         {
-            if (index < 0 | count < 0)
-                return;
             if (_size - index < count)
             {
-                return;
+                ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
             }
             if (count > 0)
             {
-                int size = _size;
-                int size1 = index + count;
                 _size -= count;
                 if (index < _size)
                 {
-                    int start = size;
-                    var size2 = _size + size1;
-                    if (_size >= size1)//如果数据充足，则从数据长度-移除长度开始复制
-                    {
-                        start = _size;
-                    }
-                    else if (size2 >= size)//如果后续填充不够，需要则从移除位置+长度开始复制
-                    {
-                        start = size1;
-                    }
-                    for (int i = start; i < size; i++)
-                    {
-                        _items[index] = _items[i];
-                        index++;
-                    }
+                    Array.Copy(_items, index + count, _items, index, _size - index);
                 }
                 Array.Clear(_items, _size, count);
                 _version++;
             }
         }
-
-
+        
         public void Reverse()
         {
             Reverse(0, Count);
