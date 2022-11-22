@@ -237,10 +237,17 @@ namespace GameDesigner
         /// </summary>
 		private GameObject InstantiateSpwan(StateManager stateManager)
         {
-            GameObject go = Object.Instantiate(effectSpwan);
+            var go = Object.Instantiate(effectSpwan);
+            OnSpwanEffect(go);
             SetPosition(stateManager, go);
             return go;
         }
+
+        /// <summary>
+        /// 当技能物体实例化
+        /// </summary>
+        /// <param name="effect"></param>
+        public virtual void OnSpwanEffect(GameObject effect) { }
 
         public override void OnExit(StateAction action)
         {

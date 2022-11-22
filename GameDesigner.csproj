@@ -49,10 +49,6 @@
       <HintPath>GameDesigner\Network\dnlib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="SuperSocket.ClientEngine, Version=0.10.0.0, Culture=neutral, PublicKeyToken=ee9af13f57f00acc, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>GameDesigner\Network\web\Plugins\SuperSocket.ClientEngine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>C:\Users\Administrator\source\repos\ConsoleApp1\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -67,10 +63,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>Library\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="WebSocket4Net, Version=0.15.2.11, Culture=neutral, PublicKeyToken=eb4e154b696bf72a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>GameDesigner\Network\web\Plugins\WebSocket4Net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -865,7 +857,6 @@
     <Compile Include="GameDesigner\Network\core\System\ExceptionResource.cs" />
     <Compile Include="GameDesigner\Network\core\System\FastListSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\HashHelpers.cs" />
-    <Compile Include="GameDesigner\Network\core\System\HashSet.cs" />
     <Compile Include="GameDesigner\Network\core\System\HashSetSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\IWellKnownStringEqualityComparer.cs" />
     <Compile Include="GameDesigner\Network\core\System\ListSafe.cs" />
