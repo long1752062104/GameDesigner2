@@ -56,7 +56,7 @@ namespace LockStep.Server
         [Rpc(NetCmd.SafeCall)]
         void ExitRoom(Player client)
         {
-            if (client.Scene.CurrNum == 1)
+            if (client.Scene.Count == 1)
                 RemoveScene(client.SceneName, false);
             else 
                 ExitScene(client, false);
@@ -117,7 +117,7 @@ namespace LockStep.Server
                 return;
             }
             scene.Remove(client);
-            if (scene.CurrNum == 0)
+            if (scene.Count == 0)
                 RemoveScene(scene.Name, false);
             SendRT(client, "ExitBattle", client.UserID);
             NDebug.Log("退出战斗");

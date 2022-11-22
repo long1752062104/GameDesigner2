@@ -103,8 +103,8 @@
                 SendRT(unClient, "RegisterCallback", "账号已经存在!");
                 return;
             }
-            int id = GetConfigID(1);//请使用Navicat可视化工具或SQLite可视化工具查看config表
-            data = new UserinfoData(id, acc, pwd, null, null, null, 100, 100);
+            long id = GetConfigID(1);//请使用Navicat可视化工具或SQLite可视化工具查看config表
+            data = new UserinfoData(id, acc, pwd, 0.0, string.Empty, string.Empty, 100l, 100l);
             Example2DB.I.UserinfoDatas.TryAdd(acc, data);
             SendRT(unClient, "RegisterCallback", "注册成功！");
         }
@@ -114,11 +114,11 @@
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        internal int GetConfigID(int id)
+        internal long GetConfigID(int id)
         {
             lock(this)
             {
-                return (int)Example2DB.I.Configs[id].Number++;
+                return Example2DB.I.Configs[id].Number++;
             }
         }
 

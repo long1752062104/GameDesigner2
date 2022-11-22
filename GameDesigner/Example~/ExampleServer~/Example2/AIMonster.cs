@@ -2,6 +2,7 @@
 using Net;
 using Net.Component;
 using Net.Share;
+using Net.System;
 
 namespace Example2
 {
@@ -101,7 +102,7 @@ namespace Example2
                 isDeath = true;
                 health = 0;
                 state1 = 4;
-                scene.Event.AddEvent(10f, () =>
+                ThreadManager.Event.AddEvent(10f, () =>
                 {
                     health = 100;
                     isDeath = false;

@@ -30,7 +30,7 @@ namespace ExampleServer
                 button1.Text = "启动";
                 server?.Close();
                 run = false;
-                NDebug.RemoveDebug();
+                NDebug.RemoveFormLog();
                 return;
             }
             NDebug.BindDebug(new FormDebug(listBox1));

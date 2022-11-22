@@ -11,365 +11,399 @@ using Net.Event;
 using Net.System;
 using System.Collections.Concurrent;
 
-/// <summary>
-/// Example2DB数据库管理类
-/// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请定义一个扩展类进行处理
-/// MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能
-/// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
-/// </summary>
-public partial class Example2DB
-{
-    public static Example2DB I { get; private set; } = new Example2DB();
-    private readonly HashSetSafe<IDataRow> dataRowHandler = new HashSetSafe<IDataRow>();
-    private static readonly ConcurrentStack<SQLiteConnection> conns = new ConcurrentStack<SQLiteConnection>();
-    public static string connStr = @"Data Source='D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db';";
-    public bool DebugSqlBatch { get; set; }
 
-    private static SQLiteConnection CheckConn(SQLiteConnection conn)
+    /// <summary>
+    /// Example2DB数据库管理类
+    /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
+    /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
+    /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
+    /// </summary>
+    public partial class Example2DB
     {
-        if (conn == null)
-        {
-            conn = new SQLiteConnection(connStr); //数据库连接
-            conn.Open();
-        }
-        
-        if (conn.State != ConnectionState.Open)
-        {
-            conn.Close();
-            conn = new SQLiteConnection(connStr); //数据库连接
-            conn.Open();
-        }
-        return conn;
-    }
+        public static Example2DB I { get; private set; } = new Example2DB();
+        private readonly HashSetSafe<IDataRow> dataRowHandler = new HashSetSafe<IDataRow>();
+        private static readonly ConcurrentStack<SQLiteConnection> conns = new ConcurrentStack<SQLiteConnection>();
+        public static string connStr = @"Data Source='D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db';";
+        public bool DebugSqlBatch { get; set; }
+        public long QueryCount { get; set; }
 
-    public void Init(Action<List<object>> onInit, int connLen = 5)
-    {
-        InitConnection(connLen);
-        List<object> list = new List<object>();
-
-        var configTable = ExecuteReader($"SELECT * FROM config");
-        foreach (DataRow row in configTable.Rows)
+        private static SQLiteConnection CheckConn(SQLiteConnection conn)
         {
-            var data = new ConfigData();
-            data.Init(row);
-            list.Add(data);
-        }
-
-        var userinfoTable = ExecuteReader($"SELECT * FROM userinfo");
-        foreach (DataRow row in userinfoTable.Rows)
-        {
-            var data = new UserinfoData();
-            data.Init(row);
-            list.Add(data);
-        }
-
-        onInit?.Invoke(list);
-    }
-
-    public void InitConnection(int connLen = 5)
-    {
-        while (conns.TryPop(out var conn))
-        {
-            conn.Close();
-        }
-        for (int i = 0; i < connLen; i++)
-        {
-            conns.Push(CheckConn(null));
-        }
-    }
-
-    public static DataTableEntity ExecuteReader(string cmdText)
-    {
-        SQLiteConnection conn1;
-        while (!conns.TryPop(out conn1))
-        {
-            Thread.Sleep(1);
-        }
-        var conn = CheckConn(conn1);
-        var dt = new DataTableEntity();
-        try
-        {
-            using (var cmd = new SQLiteCommand())
+            if (conn == null)
             {
-                cmd.CommandText = cmdText;
-                cmd.Connection = conn;
-                cmd.Parameters.Clear();
-                using (var sdr = cmd.ExecuteReader())
+                conn = new SQLiteConnection(connStr); //数据库连接
+                conn.Open();
+            }
+            
+            if (conn.State != ConnectionState.Open)
+            {
+                conn.Close();
+                conn = new SQLiteConnection(connStr); //数据库连接
+                conn.Open();
+            }
+            return conn;
+        }
+
+        public void Init(Action<List<object>> onInit, int connLen = 5)
+        {
+            InitConnection(connLen);
+            List<object> list = new List<object>();
+    
+            var configTable = ExecuteReader($"SELECT * FROM config");
+            foreach (DataRow row in configTable.Rows)
+            {
+                var data = new ConfigData();
+                data.Init(row);
+                list.Add(data);
+            }
+    
+            var userinfoTable = ExecuteReader($"SELECT * FROM userinfo");
+            foreach (DataRow row in userinfoTable.Rows)
+            {
+                var data = new UserinfoData();
+                data.Init(row);
+                list.Add(data);
+            }
+    
+            onInit?.Invoke(list);
+        }
+
+        public void InitConnection(int connLen = 5)
+        {
+            while (conns.TryPop(out var conn))
+            {
+                conn.Close();
+            }
+            for (int i = 0; i < connLen; i++)
+            {
+                conns.Push(CheckConn(null));
+            }
+        }
+
+        public static DataTableEntity ExecuteReader(string cmdText)
+        {
+            SQLiteConnection conn1;
+            while (!conns.TryPop(out conn1))
+            {
+                Thread.Sleep(1);
+            }
+            var conn = CheckConn(conn1);
+            var dt = new DataTableEntity();
+            try
+            {
+                using (var cmd = new SQLiteCommand())
                 {
-                    dt.Load(sdr);
+                    cmd.CommandText = cmdText;
+                    cmd.Connection = conn;
+                    cmd.Parameters.Clear();
+                    using (var sdr = cmd.ExecuteReader())
+                    {
+                        dt.Load(sdr);
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            NDebug.LogError(cmdText + " 错误: " + ex);
-        }
-        finally
-        {
-            conns.Push(conn);
-        }
-        return dt;
-    }
-
-    public static async Task<DataTableEntity> ExecuteReaderAsync(string cmdText)
-    {
-        SQLiteConnection conn1;
-        while (!conns.TryPop(out conn1))
-        {
-            Thread.Sleep(1);
-        }
-        var conn = CheckConn(conn1);
-        var dt = new DataTableEntity();
-        try
-        {
-            using (var cmd = new SQLiteCommand())
+            catch (Exception ex)
             {
-                cmd.CommandText = cmdText;
-                cmd.Connection = conn;
-                cmd.Parameters.Clear();
-                using (var sdr = await cmd.ExecuteReaderAsync())
+                NDebug.LogError(cmdText + " 错误: " + ex);
+            }
+            finally
+            {
+                conns.Push(conn);
+            }
+            return dt;
+        }
+
+        public static async Task<DataTableEntity> ExecuteReaderAsync(string cmdText)
+        {
+            SQLiteConnection conn1;
+            while (!conns.TryPop(out conn1))
+            {
+                Thread.Sleep(1);
+            }
+            var conn = CheckConn(conn1);
+            var dt = new DataTableEntity();
+            try
+            {
+                using (var cmd = new SQLiteCommand())
                 {
-                    dt.Load(sdr);
+                    cmd.CommandText = cmdText;
+                    cmd.Connection = conn;
+                    cmd.Parameters.Clear();
+                    using (var sdr = await cmd.ExecuteReaderAsync())
+                    {
+                        dt.Load(sdr);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                NDebug.LogError(cmdText + " 错误: " + ex);
+            }
+            finally
+            {
+                conns.Push(conn);
+            }
+            return dt;
         }
-        catch (Exception ex)
-        {
-            NDebug.LogError(cmdText + " 错误: " + ex);
-        }
-        finally
-        {
-            conns.Push(conn);
-        }
-        return dt;
-    }
 
-    /// <summary>
-    /// 查询1: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
-    /// <para></para>
-    /// 查询2: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
-    /// <para></para>
-    /// 查询3: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
-    /// <para></para>
-    /// 查询4: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
-    /// <para></para>
-    /// 查询5: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="cmdText"></param>
-    /// <returns></returns>
-    public static T ExecuteQuery<T>(string cmdText) where T : IDataRow, new()
-    {
-        var array = ExecuteQueryList<T>(cmdText);
-        if (array == null)
-            return default;
-        return array[0];
-    }
-
-    /// <summary>
-    /// 查询1: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
-    /// <para></para>
-    /// 查询2: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
-    /// <para></para>
-    /// 查询3: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
-    /// <para></para>
-    /// 查询4: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
-    /// <para></para>
-    /// 查询5: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="cmdText"></param>
-    /// <returns></returns>
-    public static T[] ExecuteQueryList<T>(string cmdText) where T : IDataRow, new()
-    {
-        using (var dt = ExecuteReader(cmdText))
+        /// <summary>
+        /// 查询1: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// <para></para>
+        /// 查询2: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// <para></para>
+        /// 查询3: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// <para></para>
+        /// 查询4: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// <para></para>
+        /// 查询5: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cmdText"></param>
+        /// <returns></returns>
+        public static T ExecuteQuery<T>(string cmdText) where T : IDataRow, new()
         {
-            if (dt.Rows.Count == 0)
+            var array = ExecuteQueryList<T>(cmdText);
+            if (array == null)
                 return default;
-            var datas = new T[dt.Rows.Count];
-            for (int i = 0; i < dt.Rows.Count; i++)
+            return array[0];
+        }
+
+        /// <summary>
+        /// 查询1: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// <para></para>
+        /// 查询2: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// <para></para>
+        /// 查询3: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// <para></para>
+        /// 查询4: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// <para></para>
+        /// 查询5: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cmdText"></param>
+        /// <returns></returns>
+        public static T[] ExecuteQueryList<T>(string cmdText) where T : IDataRow, new()
+        {
+            using (var dt = ExecuteReader(cmdText))
             {
-                datas[i] = new T();
-                datas[i].Init(dt.Rows[i]);
-            }
-            return datas;
-        }
-    }
-
-    /// <summary>
-    /// 查询1: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
-    /// <para></para>
-    /// 查询2: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
-    /// <para></para>
-    /// 查询3: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
-    /// <para></para>
-    /// 查询4: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
-    /// <para></para>
-    /// 查询5: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="cmdText"></param>
-    /// <returns></returns>
-    public static async Task<T> ExecuteQueryAsync<T>(string cmdText) where T : IDataRow, new()
-    {
-        var array = await ExecuteQueryListAsync<T>(cmdText);
-        if (array == null)
-            return default;
-        return array[0];
-    }
-
-    /// <summary>
-    /// 查询1: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
-    /// <para></para>
-    /// 查询2: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
-    /// <para></para>
-    /// 查询3: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
-    /// <para></para>
-    /// 查询4: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
-    /// <para></para>
-    /// 查询5: select * from D:\MMORPG\Assets\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="cmdText"></param>
-    /// <returns></returns>
-    public static async Task<T[]> ExecuteQueryListAsync<T>(string cmdText) where T : IDataRow, new()
-    {
-        using (var dt = await ExecuteReaderAsync(cmdText))
-        {
-            if (dt.Rows.Count == 0)
-                return default;
-            var datas = new T[dt.Rows.Count];
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                datas[i] = new T();
-                datas[i].Init(dt.Rows[i]);
-            }
-            return datas;
-        }
-    }
-
-    public static async Task<int> ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters)
-    {
-        SQLiteConnection conn1;
-        while (!conns.TryPop(out conn1))
-        {
-            Thread.Sleep(1);
-        }
-        var conn = CheckConn(conn1);
-        var pars = parameters.ToArray();
-        return await Task.Run(() =>
-        {
-            var count = ExecuteNonQuery(conn, cmdText, pars);
-            conns.Push(conn);
-            return count;
-        });
-    }
-
-    public static void ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters, Action<int, Stopwatch> onComplete)
-    {
-        SQLiteConnection conn1;
-        while (!conns.TryPop(out conn1))
-        {
-            Thread.Sleep(1);
-        }
-        var conn = CheckConn(conn1);
-        var pars = parameters.ToArray();
-        if (I.DebugSqlBatch)
-            NDebug.Log(cmdText);
-        Task.Run(() =>
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var count = ExecuteNonQuery(conn, cmdText, pars);
-            conns.Push(conn);
-            stopwatch.Stop();
-            onComplete(count, stopwatch);
-        });
-    }
-
-    private static int ExecuteNonQuery(SQLiteConnection conn, string cmdText, IDbDataParameter[] parameters)
-    {
-        var transaction = conn.BeginTransaction();
-        try
-        {
-            using (SQLiteCommand cmd = new SQLiteCommand())
-            {
-                cmd.Transaction = transaction;
-                cmd.CommandText = cmdText;
-                cmd.Connection = conn;
-                cmd.CommandTimeout = 1200;
-                cmd.Parameters.AddRange(parameters);
-                int res = cmd.ExecuteNonQuery();
-                transaction.Commit();
-                return res;
-            }
-        }
-        catch (Exception ex)
-        {
-            transaction.Rollback();
-            NDebug.LogError(cmdText + " 错误: " + ex);
-        }
-        return -1;
-    }
-
-    public void Update(IDataRow entity)//更新的行,列
-    {
-        dataRowHandler.Add(entity);
-    }
-
-    public bool Executed()//每秒调用一次, 需要自己调用此方法
-    {
-        try
-        {
-            StringBuilder sb = new StringBuilder();
-            var parms = new List<IDbDataParameter>();
-            int count = 0, parmsLen = 0;
-            foreach (var row in dataRowHandler)
-            {
-                switch (row.RowState)
+                if (dt.Rows.Count == 0)
+                    return default;
+                var datas = new T[dt.Rows.Count];
+                for (int i = 0; i < dt.Rows.Count; i++)
                 {
-                    case DataRowState.Added:
-                        {
+                    datas[i] = new T();
+                    datas[i].Init(dt.Rows[i]);
+                }
+                return datas;
+            }
+        }
+
+        /// <summary>
+        /// 查询1: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// <para></para>
+        /// 查询2: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// <para></para>
+        /// 查询3: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// <para></para>
+        /// 查询4: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// <para></para>
+        /// 查询5: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cmdText"></param>
+        /// <returns></returns>
+        public static async Task<T> ExecuteQueryAsync<T>(string cmdText) where T : IDataRow, new()
+        {
+            var array = await ExecuteQueryListAsync<T>(cmdText);
+            if (array == null)
+                return default;
+            return array[0];
+        }
+
+        /// <summary>
+        /// 查询1: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// <para></para>
+        /// 查询2: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// <para></para>
+        /// 查询3: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// <para></para>
+        /// 查询4: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// <para></para>
+        /// 查询5: select * from D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cmdText"></param>
+        /// <returns></returns>
+        public static async Task<T[]> ExecuteQueryListAsync<T>(string cmdText) where T : IDataRow, new()
+        {
+            using (var dt = await ExecuteReaderAsync(cmdText))
+            {
+                if (dt.Rows.Count == 0)
+                    return default;
+                var datas = new T[dt.Rows.Count];
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    datas[i] = new T();
+                    datas[i].Init(dt.Rows[i]);
+                }
+                return datas;
+            }
+        }
+
+        public static async Task<int> ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters)
+        {
+            SQLiteConnection conn1;
+            int tick = Environment.TickCount + 300000;//5分钟内如果一直在循环, 则提示
+            while (!conns.TryPop(out conn1))
+            {
+                if (Environment.TickCount >= tick)
+                {
+                    cmdText = GetCommandText(cmdText, parameters.ToArray());
+                    NDebug.LogError(cmdText + " 连接池不足, 等待超过5分钟, 此次提交失败! 如果有必要, 请将sql语句复制到Navicat的查询窗口执行");
+                    return await Task.FromResult(0);
+                }
+                Thread.Sleep(1);
+            }
+            var conn = CheckConn(conn1);
+            var pars = parameters.ToArray();
+            return await Task.Run(() =>
+            {
+                var count = ExecuteNonQuery(conn, cmdText, pars);
+                conns.Push(conn);
+                return count;
+            });
+        }
+
+        public static void ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters, Action<int, Stopwatch> onComplete)
+        {
+            SQLiteConnection conn1;
+            int tick = Environment.TickCount + 300000;//5分钟内如果一直在循环, 则提示
+            while (!conns.TryPop(out conn1))
+            {
+                if (Environment.TickCount >= tick)
+                {
+                    cmdText = GetCommandText(cmdText, parameters.ToArray());
+                    NDebug.LogError(cmdText + " 连接池不足, 等待超过5分钟, 此次提交失败! 如果有必要, 请将sql语句复制到Navicat的查询窗口执行");
+                    return;
+                }
+                Thread.Sleep(1);
+            }
+            var conn = CheckConn(conn1);
+            var pars = parameters.ToArray();
+            if (I.DebugSqlBatch)
+                NDebug.Log(cmdText);
+            Task.Run(() =>
+            {
+                var stopwatch = Stopwatch.StartNew();
+                var count = ExecuteNonQuery(conn, cmdText, pars);
+                conns.Push(conn);
+                stopwatch.Stop();
+                onComplete(count, stopwatch);
+            });
+        }
+
+        private static int ExecuteNonQuery(SQLiteConnection conn, string cmdText, IDbDataParameter[] parameters)
+        {
+            SQLiteTransaction transaction = null;
+            try
+            {
+                transaction = conn.BeginTransaction();
+                using (SQLiteCommand cmd = new SQLiteCommand())
+                {
+                    cmd.Transaction = transaction;
+                    cmd.CommandText = cmdText;
+                    cmd.Connection = conn;
+                    cmd.CommandTimeout = 1200;
+                    cmd.Parameters.AddRange(parameters);
+                    int res = cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null)
+                    transaction.Rollback();
+                cmdText = GetCommandText(cmdText, parameters);
+                NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
+            }
+            return -1;
+        }
+
+        private static string GetCommandText(string cmdText, IDbDataParameter[] parameters) 
+        {
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i].Value is byte[] buffer)
+                {
+                    var sb = new StringBuilder();
+                    for (int n = 0; n < buffer.Length; n++)
+                    {
+                        var x = buffer[n].ToString("x").PadLeft(2, '0');
+                        sb.Append(x);
+                    }
+                    var hex = sb.ToString();
+                    cmdText = cmdText.Replace($"@buffer{i}", $"UNHEX('{hex}')");
+                }
+            }
+            return cmdText;
+        }
+
+        public void Update(IDataRow entity)//更新的行,列
+        {
+            dataRowHandler.Add(entity);
+        }
+
+        public bool Executed()//每秒调用一次, 需要自己调用此方法
+        {
+            try
+            {
+                var sb = new StringBuilder();
+                var parms = new List<IDbDataParameter>();
+                int parmsLen = 0;
+                foreach (var row in dataRowHandler)
+                {
+                    switch (row.RowState)
+                    {
+                        case DataRowState.Added:
                             row.AddedSql(sb, parms, ref parmsLen);
-                        }
-                        break;
-                    case DataRowState.Detached:
-                        {
+                            break;
+                        case DataRowState.Detached:
                             row.DeletedSql(sb);
-                        }
-                        break;
-                    case DataRowState.Modified:
-                        {
+                            break;
+                        case DataRowState.Modified:
                             row.ModifiedSql(sb, parms, ref parmsLen);
-                        }
-                        break;
+                            break;
+                    }
+                    if (sb.Length + parmsLen >= 2000000)
+                    {
+                        ExecuteNonQuery(sb.ToString(), parms, (count1, stopwatch) =>
+                        {
+                            QueryCount += count1;
+                            NDebug.Log($"sql批处理完成:{count1} 用时:{stopwatch.ElapsedMilliseconds}");
+                        });
+                        sb.Clear();
+                        parms.Clear();
+                        parmsLen = 0;
+                    }
+                    dataRowHandler.Remove(row);
                 }
-                if (sb.Length + parmsLen >= 2000000)
+                if (sb.Length > 0)
                 {
                     ExecuteNonQuery(sb.ToString(), parms, (count1, stopwatch) =>
                     {
-                        NDebug.Log($"sql批处理完成:{count1} 用时:{stopwatch.ElapsedMilliseconds}");
+                        QueryCount += count1;
+                        if (count1 > 2000)
+                            NDebug.Log($"sql批处理完成:{count1} 用时:{stopwatch.ElapsedMilliseconds}");
                     });
-                    sb.Clear();
-                    parms.Clear();
-                    count = 0;
-                    parmsLen = 0;
                 }
-                dataRowHandler.Remove(row);
             }
-            if (sb.Length > 0)
+            catch (Exception ex)
             {
-                ExecuteNonQuery(sb.ToString(), parms, (count1, stopwatch) =>
-                {
-                    if (count1 > 2000)
-                        NDebug.Log($"sql批处理完成:{count1} 用时:{stopwatch.ElapsedMilliseconds}");
-                });
+                NDebug.LogError("SQL异常: " + ex);
             }
+            return true;
         }
-        catch (Exception ex)
-        {
-            NDebug.LogError("SQL异常: " + ex);
-        }
-        return true;
     }
-}
+
 #endif
