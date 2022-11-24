@@ -393,24 +393,24 @@ static void Main(string[] args)
 <br>6.[无限升级](https://www.taptap.cn/app/241449)</br>
 
 ## 使用到的第三方库和一些推荐的库
-<br>1.超强的一个udp可靠协议库,实力大于名气 udx: www.goodudx.com</br>
-<br>2.超多使用的可靠udp协议库 kcp: https://github.com/skywind3000/kcp</br>
-<br>3.超快的json解析库 json: https://github.com/JamesNK/Newtonsoft.Json</br>
-<br>4.巨强C#源码反编译库 dnlib: https://github.com/0xd4d/dnlib</br>
-<br>5.websocket服务器网络库 fleck: https://github.com/statianzo/Fleck</br>
-<br>6.支持webgl网页连接的库 unityWebSocket: https://github.com/psygames/UnityWebSocket</br>
+<br>1.udx: 超强的一个udp可靠协议库,实力大于名气 www.goodudx.com</br>
+<br>2.kcp: 超多使用的可靠udp协议库 https://github.com/skywind3000/kcp</br>
+<br>3.json: 超快的json解析库 https://github.com/JamesNK/Newtonsoft.Json</br>
+<br>4.dnlib: 巨强C#源码反编译库 https://github.com/0xd4d/dnlib</br>
+<br>5.fleck: websocket服务器网络库 https://github.com/statianzo/Fleck</br>
+<br>6.unityWebSocket: 支持webgl网页连接的库 https://github.com/psygames/UnityWebSocket</br>
 
 以下开发者会使用到的库:
-<br>1.快速生成mysql或sqlite数据库的对象映射,傻瓜式使用 mysqlBuild: https://gitee.com/leng_yue/my-sql-data-build</br>
-<br>2.使用量前5的强大数据库 NuGet: MySql https://dev.mysql.com/downloads/
-<br>3.超强的内存数据库 redis: https://redis.io/download/
-<br>4.使用json, bson存储的内存数据库 mongodb: https://www.mongodb.com/
-<br>5.运行热更新框架 ilruntime: https://github.com/Ourpalm/ILRuntime
-<br>6.运行热更新il2cpp hybridclr(原名huatuo): https://focus-creative-games.github.io/hybridclr/start_up/
-<br>7.强大的负载均衡,集群网关 nginx: https://github.com/nginx/nginx
-<br>8.微软巨佬的单线程Task unitask: https://github.com/Cysharp/UniTask
-<br>9.超强的序列化工具 protobuf: https://github.com/protocolbuffers/protobuf
-<br>10.超牛的日志记录工具 log4net: https://logging.apache.org/log4net/download_log4net.html
+<br>1.mysqlBuild: 快速生成mysql或sqlite数据库的对象映射,傻瓜式使用 https://gitee.com/leng_yue/my-sql-data-build</br>
+<br>2.MySql: 使用量前5的强大数据库 NuGet: MySql https://dev.mysql.com/downloads/
+<br>3.redis: 超强的内存数据库 https://redis.io/download/
+<br>4.mongodb: 使用json, bson存储的内存数据库 https://www.mongodb.com/
+<br>5.ilruntime: 运行热更新框架 https://github.com/Ourpalm/ILRuntime
+<br>6.hybridclr(原名huatuo): 运行热更新il2cpp https://focus-creative-games.github.io/hybridclr/start_up/
+<br>7.nginx: 强大的负载均衡,集群网关 https://github.com/nginx/nginx
+<br>8.unitask: 微软巨佬的单线程Task https://github.com/Cysharp/UniTask
+<br>9.protobuf: 超强的序列化工具 https://github.com/protocolbuffers/protobuf
+<br>10.log4net: 超牛的日志记录工具 https://logging.apache.org/log4net/download_log4net.html
 
 ## 支持本项目
 您的支持就是我不懈努力的动力。打赏时请一定留下您的称呼
