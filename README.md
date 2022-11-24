@@ -3,43 +3,43 @@
 
 ## 模块图
 
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/gdnet.png" width = "620" height = "700" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/gdnet.png" width = "620" height = "700" alt="图片名称" align=center />
 
 ## 使用
 
 <br>1.下载GameDesigner, 解压GameDesigner.zip, 打开Unity菜单Window/PackageManager管理器，点击+号的第一项add package on disk</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager01.png" width = "490" height = "160" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/packagemanager01.png" width = "490" height = "160" alt="图片名称" align=center />
 
 <br>2.选择解压的路径xx/GameDesigner/GameDesigner/package.json即可导入gdnet包</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/packagemanager02.png" width = "960" height = "540" alt="图片名称" align=center />
 
 <br>3.如果前面没有问题，最终显示的包界面</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/packagemanager03.png" width = "942" height = "575" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/packagemanager03.png" width = "942" height = "575" alt="图片名称" align=center />
 
 <br>4.打开BuildSettings->ProjectSettings->OtherSettings->设置 ApiCompatibilityLevel* = .NET 4.x 和 AllowUnsafeCode勾上，2021版本后是ApiCompatibilityLevel* = .NET Framework</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/gdnetsetting.png" width = "645" height = "239" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/gdnetsetting.png" width = "645" height = "239" alt="图片名称" align=center />
 
 <br>5.创建服务器项目,使用控制台或窗体程序都可以，也可以统一在unity的Assembly-CSharp项目里添加新建服务器项目</br>
 <br>在unity随便创建个脚本，双击进入VS代码编辑器， 然后右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step1.png" width = "672" height = "398" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step1.png" width = "672" height = "398" alt="图片名称" align=center />
 
 <br>6.选择添加服务器项目，使用控制台项目</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step2.png" width = "1024" height = "680" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step2.png" width = "1024" height = "680" alt="图片名称" align=center />
 
 <br>7.定义服务器名称，并且选择项目路径到你的unity项目根目录，和Assets同级的文件夹目录</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step3.png" width = "1024" height = "680" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step3.png" width = "1024" height = "680" alt="图片名称" align=center />
 
 <br>8.右键解决方案，必须右键解决方案，必须右键解决方案，必须右键解决方案 重要的问题说三遍， 添加现有方案，现有方案，现有方案</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step4.png" width = "560" height = "370" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step4.png" width = "560" height = "370" alt="图片名称" align=center />
 
 <br>9.选择解压的GameDesigner目录，里面有GameDesigner.csproj文件</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step5.png" width = "960" height = "540" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step5.png" width = "960" height = "540" alt="图片名称" align=center />
 
 <br>10.右键Server的引用，弹出选项，选择添加引用</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step6.png" width = "362" height = "205" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step6.png" width = "362" height = "205" alt="图片名称" align=center />
 
 <br>11.选择项目选项，选择GameDesigner，确定即可</br>
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/step7.png" width = "800" height = "550" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/step7.png" width = "800" height = "550" alt="图片名称" align=center />
 
 <br>12.新建一个Service脚本文件, 这个就是你的服务器类</br>
 ```
@@ -162,7 +162,7 @@ gdnet内部实现了极速序列化, 速度远超出protobuff 5-10倍, 在案例
 NetConvertFast2极速序列化的使用:
 1.要生成绑定类型, 在unity中有生成绑定类型工具, 也可以在这里生成:[绑定类型工具](https://gitee.com/leng_yue/fast2-build-tool)
 
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/fast2build.png" width = "414" height = "229" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/fast2build.png" width = "414" height = "229" alt="图片名称" align=center />
 
 ```
 public class Test //序列化的类型
@@ -234,7 +234,7 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 在帧同步中, mvc是分离的, 各自处理各自的, 做到可以不相关的地步, 比如view卡住, controller还是一直执行, 互不影响!
 
 热更新FieldCollection组件使用:当在热更新项目中, 字段无需使用Find各种查找, 使用FieldCollection组件即可自动帮你处理完成字段收集引用, 一键生成即可写你的功能代码
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/hotfixFC.png" width = "1179" height = "685" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/hotfixFC.png" width = "1179" height = "685" alt="图片名称" align=center />
 
 ## ILRuntime热更新
 网络协议传输类型必须在主工程定义! 那什么热更网络协议类型? 热更新网络协议类型必须新下载主工程apk替换旧的apk, 重新安装新的apk, 由于主工程的apk大小不是很大, 所有的资源都在ab文件里面! 所以是可以这样更新的
@@ -335,7 +335,7 @@ internal class Program
 ## MMORPG多人游戏AOI九宫格同步
 提供aoi九宫格同步模块, 服务器,客户端都可使用(使用时请在unity可视化调整九宫格网格或大小视图后,再将值修改到服务器,解决了服务器没有可视化图形的问题), 当万人同步时, 如果全部同步的话,带宽直接爆炸! 为了解决带宽问题, 使用了九宫格同步法, 只同步在9个格子之间的玩家或怪物, 这样就可以解决带宽的大多数问题. 详情请看自带的aoi案例
 
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/aoi.png" width = "1036" height = "663" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/aoi.png" width = "1036" height = "663" alt="图片名称" align=center />
 
 ## Gcp可靠协议
  **gcp协议的实现原理：**
@@ -408,8 +408,8 @@ static void Main(string[] args)
 <br>10 29.8°C ¥ 30</br>
 <br>11 走在冷风中. ¥ 1000</br>
 <br>12 非非有非非无 ¥ 100</br>
-<br>13 克里斯 ¥ 200</br>
+<br>13 克里斯 ¥ 200 + 1000</br>
 
 <br>不留名的大佬们 微信总资助 ¥ 653</br>
 
-<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/pay.jpg" width = "600" height = "400" alt="图片名称" align=center />
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/pay.jpg" width = "600" height = "400" alt="图片名称" align=center />
