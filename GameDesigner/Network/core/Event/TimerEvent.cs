@@ -1,7 +1,9 @@
 ﻿using Net.System;
 using System;
 using System.Threading;
+#if !UNITY_WEBGL
 using System.Threading.Tasks;
+#endif
 
 namespace Net.Event
 {
@@ -259,6 +261,7 @@ namespace Net.Event
                     {
                         if (evt.ptr1 != null)
                         {
+#if !UNITY_WEBGL
                             if (evt.async)
                             {
                                 if (!evt.complete)
@@ -266,10 +269,13 @@ namespace Net.Event
                                 evt.complete = false;
                                 Task.Factory.StartNew(WorkExecute1, evt);
                             }
-                            else evt.ptr1();
+                            else
+#endif
+                            evt.ptr1();
                         }
                         else if (evt.ptr2 != null)
                         {
+#if !UNITY_WEBGL
                             if (evt.async)
                             {
                                 if (!evt.complete)
@@ -277,10 +283,13 @@ namespace Net.Event
                                 evt.complete = false;
                                 Task.Factory.StartNew(WorkExecute2, evt);
                             }
-                            else evt.ptr2(evt.obj);
+                            else
+#endif
+                            evt.ptr2(evt.obj);
                         }
                         else if (evt.ptr3 != null)
                         {
+#if !UNITY_WEBGL
                             if (evt.async)
                             {
                                 if (!evt.complete)
@@ -289,11 +298,13 @@ namespace Net.Event
                                 Task.Factory.StartNew(WorkExecute3, evt);
                                 continue;
                             }
+#endif
                             if (evt.ptr3())
                                 goto J;
                         }
                         else if (evt.ptr4 != null)
                         {
+#if !UNITY_WEBGL
                             if (evt.async)
                             {
                                 if (!evt.complete)
@@ -302,6 +313,7 @@ namespace Net.Event
                                 Task.Factory.StartNew(WorkExecute4, evt);
                                 continue;
                             }
+#endif
                             if (evt.ptr4(evt.obj))
                                 goto J;
                         }
@@ -325,6 +337,7 @@ namespace Net.Event
             }
         }
 
+#if !UNITY_WEBGL
         private void WorkExecute1(object state)
         {
             var evt = state as Event;
@@ -366,6 +379,7 @@ namespace Net.Event
                 evt.isRemove = true;
             evt.complete = true;
         }
+#endif
 
         /// <summary>
         /// 获取计时事件

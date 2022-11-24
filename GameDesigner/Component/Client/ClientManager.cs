@@ -193,6 +193,8 @@ namespace Net.Component
         // Update is called once per frame
         void Update()
         {
+            if (_client == null)
+                return;
             _client.NetworkEventUpdate();
         }
 

@@ -1,6 +1,8 @@
 ﻿using Net.Event;
 using System;
+using System.Collections.Generic;
 using System.Threading;
+using UnityEngine.LowLevel;
 
 namespace Net.System
 {
@@ -9,7 +11,9 @@ namespace Net.System
     /// </summary>
     public static class ThreadManager
     {
+#if !UNITY_WEBGL
         private static Thread MainThread;
+#endif
         public static TimerEvent Event { get; private set; } = new TimerEvent();
         /// <summary>
         /// 时间计数间隔
@@ -32,23 +36,48 @@ namespace Net.System
             IsRuning = true;
         }
 
-#if UNITY_EDITOR
-        [UnityEngine.RuntimeInitializeOnLoadMethod]
-        private static async void OnInUnityEditor()
+#if UNITY_WEBGL
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void Initialize()
         {
-            IsRuning = true;
-            while (UnityEditor.EditorApplication.isPlaying)
-                await global::System.Threading.Tasks.Task.Yield();
-            IsRuning = false;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += (state) =>
+            {
+                switch (state)
+                {
+                    case UnityEditor.PlayModeStateChange.EnteredPlayMode:
+                        IsRuning = true;
+                        break;
+                    case UnityEditor.PlayModeStateChange.ExitingPlayMode:
+                        IsRuning = false;
+                        break;
+                }
+            };
+#endif
+            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            var runner = new PlayerLoopRunner();
+            var runnerLoop = new PlayerLoopSystem
+            {
+                type = typeof(PlayerLoopRunner),
+                updateDelegate = runner.Run
+            };
+            var copyList = new List<PlayerLoopSystem>(playerLoop.subSystemList)
+            {
+                runnerLoop
+            };
+            playerLoop.subSystemList = copyList.ToArray();
+            PlayerLoop.SetPlayerLoop(playerLoop);
         }
 #endif
 
         private static void Start()
         {
+#if !UNITY_WEBGL
             MainThread = new Thread(Execute);
             MainThread.Name = "网络主线程";
             MainThread.IsBackground = true;
             MainThread.Start();
+#endif
         }
 
         /// <summary>
@@ -71,11 +100,13 @@ namespace Net.System
 
         public static void Stop()
         {
+#if !UNITY_WEBGL
             if (MainThread != null)
             {
                 MainThread.Abort();
                 MainThread = null;
             }
+#endif
         }
 
         public static void Execute()

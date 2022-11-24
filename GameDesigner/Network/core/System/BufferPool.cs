@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Net.System
 {
@@ -24,7 +23,7 @@ namespace Net.System
             100663296,134217728,201326592,268435456,402653184,536870912,805306368,1073741824
         };
 
-        private static object SyncRoot = new object();
+        private static readonly object SyncRoot = new object();
 
         static BufferPool()
         {

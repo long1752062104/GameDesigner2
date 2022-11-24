@@ -3,6 +3,7 @@
     using global::System.Collections;
     using global::System.Net;
     using global::System.Net.NetworkInformation;
+    using global::System.Net.Sockets;
 
     /// <summary>
     /// 网络端口检测类
@@ -79,10 +80,10 @@
         public static string GetIP()
         {
             string hostName = Dns.GetHostName();
-            IPHostEntry iPHostEntry = Dns.GetHostEntry(hostName);
-            foreach (IPAddress ipAdd in iPHostEntry.AddressList)
-                if (ipAdd.AddressFamily.ToString() == "InterNetwork")
-                    return ipAdd.ToString();
+            var iPHostEntry = Dns.GetHostEntry(hostName);
+            foreach (var address in iPHostEntry.AddressList)
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                    return address.ToString();
             return "";
         }
     }

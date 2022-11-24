@@ -30,9 +30,7 @@
 
         protected override void CreateServerSocket(ushort port)
         {
-            var ipAddress = IPAddress.Any;
-            var ip = new IPEndPoint(ipAddress, port);
-            Server = new WebSocketServer($"ws://{ip}");
+            Server = new WebSocketServer($"ws://{NetPort.GetIP()}:{port}");
             Server.ListenerSocket.NoDelay = true;
             Server.Start(AcceptConnect);
         }

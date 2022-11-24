@@ -97,7 +97,9 @@ namespace Net.Client
         /// <summary>
         /// 线程字典
         /// </summary>
+#if !UNITY_WEBGL
         protected ConcurrentDictionary<string, Thread> threadDic = new ConcurrentDictionary<string, Thread>();
+#endif
         /// <summary>
         /// 网络连接状态
         /// </summary>
@@ -664,6 +666,7 @@ namespace Net.Client
         /// <param name="start">线程函数</param>
         public void StartThread(string threadKey, ThreadStart start)
         {
+#if !UNITY_WEBGL
             if (!threadDic.TryGetValue(threadKey, out Thread thread))
             {
                 thread = new Thread(start)
@@ -681,6 +684,7 @@ namespace Net.Client
                 threadDic.TryRemove(threadKey, out _);
                 StartThread(threadKey, start);
             }
+#endif
         }
 
         /// <summary>
@@ -688,9 +692,11 @@ namespace Net.Client
         /// </summary>
         public void AbortedThread()
         {
+#if !UNITY_WEBGL
             foreach (Thread thread in threadDic.Values)
                 thread?.Abort();
             threadDic.Clear();
+#endif
             ThreadManager.Event.RemoveEvent(checkRpcHandleID);
             ThreadManager.Event.RemoveEvent(networkFlowHandlerID);
             ThreadManager.Event.RemoveEvent(heartHandlerID);
@@ -953,7 +959,7 @@ namespace Net.Client
                         if ((uint)Environment.TickCount >= tick1)
                         {
                             tick1 = (uint)Environment.TickCount + 1000u;
-                            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+                            rPCModels.Enqueue(new RPCModel(NetCmd.Identify, new byte[0]));
                             SendDirect();
                         }
                         if (Gcp != null)
@@ -1052,7 +1058,6 @@ namespace Net.Client
             AbortedThread();//断线重连处理
             Connected = true;
             StartThread("ReceiveHandle", ReceiveHandle);
-            //checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
@@ -1101,8 +1106,8 @@ namespace Net.Client
         {
             try
             {
-                outflowTotal += (long)sendCount;
-                inflowTotal += (long)receiveCount;
+                outflowTotal += sendCount;
+                inflowTotal += receiveCount;
                 OnNetworkDataTraffic?.Invoke(new Dataflow()
                 {
                     sendCount = sendCount,
@@ -1132,35 +1137,6 @@ namespace Net.Client
             }
             return Connected;
         }
-
-        /// <summary>
-        /// rpc检查处理线程
-        /// </summary>
-        //protected bool CheckRpcHandle()
-        //{
-        //    try
-        //    {
-        //        if (OnCheckRpc == null)
-        //            OnCheckRpc = CheckRpc;
-        //        OnCheckRpc();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NDebug.LogError(ex);
-        //    }
-        //    return Connected;
-        //}
-
-        /// <summary>
-        /// 检查rpc函数
-        /// </summary>
-        //public void CheckRpc()
-        //{
-        //    lock (SyncRoot)//RemoveRpc方法和内部线程并行时索引溢出
-        //    {
-        //        RpcHelper.CheckRpc(this);
-        //    }
-        //}
 
         /// <summary>
         /// 发包线程
@@ -2111,7 +2087,7 @@ namespace Net.Client
             });
         }
 
-        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
+#region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
@@ -2238,9 +2214,9 @@ namespace Net.Client
         {
             return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
         }
-        #endregion
+#endregion
 
-        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
+#region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
         /// <summary>
         /// 远程同步调用
         /// </summary>
@@ -2377,7 +2353,7 @@ namespace Net.Client
         {
             return Call(cmd, string.Empty, string.Empty, func, callbackFunc, millisecondsDelay, intercept, pars);
         }
-        #endregion
+#endregion
 
         private async Task<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int millisecondsDelay, bool intercept, params object[] pars)
         {

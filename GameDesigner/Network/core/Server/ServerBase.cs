@@ -421,10 +421,6 @@ namespace Net.Server
         /// </summary>
         public Action<Player, RTProgress> OnSendFileProgress { get; set; }
         /// <summary>
-        /// 可靠传输是排队模式? 排队模式下, 可靠包是一个一个处理. 不排队模式: 可靠传输数据组成多列并发 ---> 默认是无排队模式
-        /// </summary>
-        public bool Seqencing { get; set; }
-        /// <summary>
         /// 服务器线程管理
         /// </summary>
         protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();

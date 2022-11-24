@@ -46,7 +46,7 @@ namespace Net.Client
 #endif
         }
 
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override async Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
             {
@@ -88,41 +88,27 @@ namespace Net.Client
                         ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);
                     }
-                    
+                    UnityEngine.Debug.Log("接收:" + e.Data);
                 };
                 WSClient.ConnectAsync();
-                var tick = (uint)Environment.TickCount + 8000u;
-                var tick1 = (uint)Environment.TickCount;
                 while (UID == 0)
                 {
-                    Receive(false);
-                    Thread.Sleep(1);
-                    if ((uint)Environment.TickCount >= tick)
-                        throw new Exception("uid赋值失败!");
-                    if (!openClient)
-                        throw new Exception("客户端调用Close!");
-                    if ((uint)Environment.TickCount >= tick1)
-                    {
-                        tick1 = (uint)Environment.TickCount + 1000u;
-                        rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
-                        SendDirect();
-                    }
-                    if (Gcp != null)
-                        Gcp.Update();
+                    await Task.Yield();
                 }
                 Connected = true;
                 StartupThread();
-                InvokeContext(() => {
+                InvokeContext(() =>
+                {
                     networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
                     result(true);
                 });
-                return Task.FromResult(true);
+                return await Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 NDebug.Log("连接错误: " + ex.ToString());
                 result(false);
-                return Task.FromResult(false);
+                return await Task.FromResult(false);
             }
         }
 
@@ -134,7 +120,6 @@ namespace Net.Client
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            //checkRpcHandleID = ThreadManager.Invoke("CheckRpcHandle", CheckRpcHandle);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
