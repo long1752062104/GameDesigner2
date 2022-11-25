@@ -562,6 +562,11 @@
             当尝试连接服务器事件
             </summary>
         </member>
+        <member name="E:Net.Client.ClientBase.TryToConnectFailedHandle">
+            <summary>
+            当尝试连接失败
+            </summary>
+        </member>
         <member name="E:Net.Client.ClientBase.OnConnectLostHandle">
             <summary>
             当连接中断 (异常) 事件
@@ -823,6 +828,11 @@
         <member name="P:Net.Client.ClientBase.ReconnectCount">
             <summary>
             断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.ReconnectInterval">
+            <summary>
+            断下重连间隔, 默认间隔2秒
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.SendInterval">
@@ -3527,11 +3537,6 @@
             当发送的文件进度
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.Seqencing">
-            <summary>
-            可靠传输是排队模式? 排队模式下, 可靠包是一个一个处理. 不排队模式: 可靠传输数据组成多列并发 ---> 默认是无排队模式
-            </summary>
-        </member>
         <member name="F:Net.Server.ServerBase`2.threads">
             <summary>
             服务器线程管理
@@ -4439,6 +4444,11 @@
         <member name="F:Net.Share.NetworkState.TryToConnect">
             <summary>
             尝试连接
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetworkState.TryToConnectFailed">
+            <summary>
+            尝试重连失败
             </summary>
         </member>
         <member name="F:Net.Share.NetworkState.Disconnect">

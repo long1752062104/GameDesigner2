@@ -308,12 +308,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   protocol: 0
   ip: 127.0.0.1
-  port: 6666
+  port: 9543
+  localTest: 0
+  logMode: 1
   debugRpc: 1
   frameRate: 60
   authorize: 0
   startConnect: 1
   md5CRC: 0
+  reconnectCount: 10
+  reconnectInterval: 2000
 --- !u!4 &643538767
 Transform:
   m_ObjectHideFlags: 0

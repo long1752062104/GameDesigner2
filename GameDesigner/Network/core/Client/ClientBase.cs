@@ -53,7 +53,7 @@ namespace Net.Client
         /// <summary>
         /// 端口号
         /// </summary>
-        public int port = 6666;
+        public int port = 9543;
         /// <summary>
         /// 发送缓存器
         /// </summary>
@@ -1018,7 +1018,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="port">广播到服务器的端口号</param>
         /// <param name="result">连接结果</param>
-        public Task Broadcast(int port = 6666, Action<bool, string> result = null)
+        public Task Broadcast(int port = 9543, Action<bool, string> result = null)
         {
             Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Broadcast, port);

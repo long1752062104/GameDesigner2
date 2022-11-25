@@ -8,7 +8,7 @@ namespace Net.Example
     public class ServerManager : MonoBehaviour
     {
         private Service server;
-        public ushort port = 6666;
+        public ushort port = 9543;
         public bool isEncrypt = false;//数据加密?
 
         // Start is called before the first frame update

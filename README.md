@@ -70,7 +70,7 @@ class Service : TcpServer<Client, Scene>//你的服务器类
 ```
 var server = new Service();//创建服务器对象
 server.Log += Console.WriteLine;//打印服务器内部信息
-server.Run(6666);//启动6666端口
+server.Run(9543);//启动9543端口
 while (true)
 {
     Console.ReadLine();
@@ -97,7 +97,7 @@ TcpClient client = new TcpClient();
 client.Log += Console.WriteLine;
 Test test = new Test();
 client.AddRpcHandle(test);
-client.Connect("127.0.0.1", 6666).Wait();
+client.Connect("127.0.0.1", 9543).Wait();
 client.SendRT("test", "第一次进入服务器的OnUnClientRequest方法");
 client.SendRT("test", "客户端rpc请求");
 while (true)
@@ -129,7 +129,7 @@ stream{
     }
     server{
         #nginx的监听端口,客户端连接的端口
-        listen 6666;
+        listen 9543;
         proxy_pass gameServer;
     }
 }
@@ -282,7 +282,6 @@ internal class Program
     {
         NDebug.BindLogAll(Console.WriteLine);
 
-        Config.UseMemoryStream = true;//使用运行内存作为数据缓冲区
         BufferStreamShare.Size = 1024 * 1024 * 100;//服务器每个客户端可以缓存的数据大小
 
         //此处是服务器部分, 可以复制到另外一个控制台项目
@@ -380,10 +379,6 @@ static void Main(string[] args)
 ## 常见问题总汇
 这里是开发者遇到的问题, 我都会在这里详细写出来, 这样大家遇到的问题都可以先在这里查看
 
-## 致谢
-
-感谢对此框架的支持，如果有其他问题，请加QQ群:825240544讨论
-
 ## TapTap游戏
 <br>1.[士兵召唤](https://www.taptap.com/app/221847)</br>
 <br>2.[我是一只鱼](https://www.taptap.com/app/220242)</br>
@@ -412,7 +407,10 @@ static void Main(string[] args)
 <br>9.protobuf: 超强的序列化工具 https://github.com/protocolbuffers/protobuf
 <br>10.log4net: 超牛的日志记录工具 https://logging.apache.org/log4net/download_log4net.html
 
-## 支持本项目
+## 致谢
+
+<br>感谢对此框架的支持，如果有其他问题，请加QQ群:825240544讨论</br>
+
 您的支持就是我不懈努力的动力。打赏时请一定留下您的称呼
 <br>感谢以下人员对gdnet捐款:</br>
 

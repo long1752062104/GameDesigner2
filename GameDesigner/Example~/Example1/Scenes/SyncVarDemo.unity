@@ -454,13 +454,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   protocol: 0
   ip: 127.0.0.1
-  port: 6666
+  port: 9543
+  localTest: 0
   logMode: 1
   debugRpc: 1
   frameRate: 60
   authorize: 0
   startConnect: 1
   md5CRC: 0
+  reconnectCount: 10
+  reconnectInterval: 2000
 --- !u!4 &643538767
 Transform:
   m_ObjectHideFlags: 0
@@ -786,7 +789,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9af66fec3bba494f8321e80ed131b0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: -1
   identity: 123
   registerObjectIndex: 0
   isLocal: 1

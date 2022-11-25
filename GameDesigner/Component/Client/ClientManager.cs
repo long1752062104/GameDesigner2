@@ -43,7 +43,7 @@ namespace Net.Component
         private ClientBase _client;
         public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
-        public int port = 6666;
+        public int port = 9543;
         public bool localTest;
         public LogMode logMode = LogMode.Default;
         public bool debugRpc = true;
