@@ -22,6 +22,10 @@
         /// </summary>
         TryToConnect,
         /// <summary>
+        /// 尝试重连失败
+        /// </summary>
+        TryToConnectFailed,
+        /// <summary>
         /// 断开连接
         /// </summary>
         Disconnect,

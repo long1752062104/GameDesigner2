@@ -164,8 +164,7 @@
         {
             try
             {
-                heart++;
-                if (heart <= HeartLimit)
+                if (++heart <= HeartLimit)
                     return true;
                 if (Connected & heart < HeartLimit + 5)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
@@ -173,7 +172,7 @@
                     Reconnection();
             }
             catch { }
-            return openClient & CurrReconnect < 10;
+            return openClient & CurrReconnect < ReconnectCount;
         }
 
         protected override void SendRTDataHandle()

@@ -192,6 +192,10 @@ namespace Net.Client
         /// </summary>
         public event Action OnTryToConnectHandle;
         /// <summary>
+        /// 当尝试连接失败
+        /// </summary>
+        public event Action TryToConnectFailedHandle;
+        /// <summary>
         /// 当连接中断 (异常) 事件
         /// </summary>
         public event Action OnConnectLostHandle;
@@ -427,6 +431,10 @@ namespace Net.Client
         /// 断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
         /// </summary>
         public int ReconnectCount { get; set; } = 10;
+        /// <summary>
+        /// 断下重连间隔, 默认间隔2秒
+        /// </summary>
+        public int ReconnectInterval { get; set; } = 2000;
         private int sendInterval = 1;
         /// <summary>
         /// 每次发送数据间隔，每秒发送30次，每次间隔33毫秒
@@ -800,6 +808,9 @@ namespace Net.Client
                     break;
                 case NetworkState.TryToConnect:
                     OnTryToConnectHandle?.Invoke();
+                    break;
+                case NetworkState.TryToConnectFailed:
+                    TryToConnectFailedHandle?.Invoke();
                     break;
                 case NetworkState.ConnectLost:
                     OnConnectLostHandle?.Invoke();
@@ -1790,8 +1801,7 @@ namespace Net.Client
         {
             try
             {
-                heart++;
-                if (heart <= HeartLimit)
+                if (++heart <= HeartLimit)
                     return true;
                 if (!Connected)
                 {
@@ -1812,7 +1822,7 @@ namespace Net.Client
                 }
             }
             catch { }
-            return openClient & CurrReconnect < 10;
+            return openClient & CurrReconnect < ReconnectCount;
         }
 
         /// <summary>
@@ -1838,7 +1848,10 @@ namespace Net.Client
         /// </summary>
         protected virtual void Reconnection()
         {
-            if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
+            if (NetworkState == NetworkState.Connection 
+                | NetworkState == NetworkState.ConnectClosed 
+                | NetworkState == NetworkState.Reconnect
+                | NetworkState == NetworkState.TryToConnectFailed)
                 return;
             NetworkState = NetworkState.Connection;
             if (Client != null)
@@ -1850,6 +1863,7 @@ namespace Net.Client
                 return;
             }
             UID = 0;
+            NDebug.Log($"尝试重连:{CurrReconnect + 1}...");
             ConnectResult(host, port, localPort, result =>
             {
                 if (!openClient)
@@ -1871,8 +1885,11 @@ namespace Net.Client
                 }
                 else
                 {
-                    NetworkState = networkState = NetworkState.TryToConnect;
-                    NDebug.Log($"尝试重连:{CurrReconnect}...");
+                    NetworkState = networkState = NetworkState.TryToConnectFailed;
+                    ThreadManager.Event.AddEvent(ReconnectInterval / 1000f, () =>
+                    {
+                        NetworkState = networkState = NetworkState.TryToConnect;
+                    });
                 }
             });
         }

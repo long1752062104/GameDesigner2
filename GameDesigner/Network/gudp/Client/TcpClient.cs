@@ -110,8 +110,7 @@
         {
             try
             {
-                heart++;
-                if (heart <= HeartLimit)
+                if (++heart <= HeartLimit)
                     return true;
                 if (!Connected)
                     Reconnection();

@@ -132,8 +132,7 @@ namespace Net.Client
         {
             try
             {
-                heart++;
-                if (heart <= HeartLimit)
+                if (++heart <= HeartLimit)
                     return true;
                 if (Connected)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
@@ -141,7 +140,7 @@ namespace Net.Client
                     Reconnection();
             }
             catch { }
-            return openClient & CurrReconnect < 10;
+            return openClient & CurrReconnect < ReconnectCount;
         }
 
         protected override void SendRTDataHandle()

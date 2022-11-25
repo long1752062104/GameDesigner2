@@ -51,8 +51,12 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
+        public int reconnectCount = 10;
+        public int reconnectInterval = 2000;
 
+#pragma warning disable IDE1006 // 命名样式
         public ClientBase client
+#pragma warning restore IDE1006 // 命名样式
         {
             get
             {
@@ -116,6 +120,8 @@ namespace Net.Component
                     _client.port = port;
                     _client.LogRpc = debugRpc;
                     _client.MD5CRC = md5CRC;
+                    _client.ReconnectCount = reconnectCount;
+                    _client.ReconnectInterval = reconnectInterval;
                 }
                 return _client;
             }
@@ -200,8 +206,9 @@ namespace Net.Component
 
         void OnDestroy()
         {
-            if (mainInstance)
-                _client.Close();
+            if (!mainInstance)
+                return;
+            _client?.Close();
             switch (logMode)
             {
                 case LogMode.Default:
