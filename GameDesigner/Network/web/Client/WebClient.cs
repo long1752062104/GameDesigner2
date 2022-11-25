@@ -50,11 +50,8 @@ namespace Net.Client
         {
             try
             {
+                bool isConnectFailed = false;
                 WSClient = new WebSocket($"ws://{host}:{port}/");
-                WSClient.OnOpen += (sender, e) =>
-                {
-
-                };
                 WSClient.OnError += (sender, e) =>
                 {
                     NDebug.LogError(e.Exception);
@@ -65,7 +62,8 @@ namespace Net.Client
                     NetworkState = networkState = NetworkState.ConnectLost;
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
-                    NDebug.Log("断开连接！");
+                    NDebug.Log("websocket关闭！");
+                    isConnectFailed = true;
                 };
                 WSClient.OnMessage += (sender, e) =>
                 {
@@ -88,12 +86,18 @@ namespace Net.Client
                         ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);
                     }
-                    UnityEngine.Debug.Log("接收:" + e.Data);
                 };
                 WSClient.ConnectAsync();
+                var tick = (uint)Environment.TickCount + 8000u;
                 while (UID == 0)
                 {
                     await Task.Yield();
+                    if ((uint)Environment.TickCount >= tick)
+                        throw new Exception("uid赋值失败!");
+                    if (!openClient)
+                        throw new Exception("客户端调用Close!");
+                    if (isConnectFailed)
+                        throw new Exception("连接服务器失败");
                 }
                 Connected = true;
                 StartupThread();
@@ -159,7 +163,7 @@ namespace Net.Client
         {
             if (!string.IsNullOrEmpty(model.func) | model.methodHash != 0)
             {
-                MessageModel model1 = new MessageModel(model.cmd, model.func, model.pars);
+                var model1 = new MessageModel(model.cmd, model.func, model.pars);
                 string jsonStr = JsonConvert.SerializeObject(model1);
                 byte[] jsonStrBytes = Encoding.UTF8.GetBytes(jsonStr);
                 byte[] bytes = new byte[jsonStrBytes.Length + 1];
@@ -175,7 +179,7 @@ namespace Net.Client
             if (buffer[index++] == 32)
             {
                 var message = Encoding.UTF8.GetString(buffer, index, count - 1);
-                MessageModel model = JsonConvert.DeserializeObject<MessageModel>(message);
+                var model = JsonConvert.DeserializeObject<MessageModel>(message);
                 return new FuncData(model.func, model.GetPars());
             }
             return NetConvert.Deserialize(buffer, index, count - 1);
@@ -211,25 +215,25 @@ namespace Net.Client
         /// <param name="dataLen">每个客户端数据大小</param>
         public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             Task.Run(() =>
             {
-                List<WebSocket> clients = new List<WebSocket>();
+                var clients = new List<WebSocket>();
                 for (int i = 0; i < clientLen; i++)
                 {
-                    WebSocket socket = new WebSocket($"ws://{ip}:{port}/");
+                    var socket = new WebSocket($"ws://{ip}:{port}/");
                     socket.ConnectAsync();
                     clients.Add(socket);
                 }
-                byte[] buffer = new byte[dataLen];
-                using (MemoryStream stream = new MemoryStream(512))
+                var buffer = new byte[dataLen];
+                using (var stream = new MemoryStream(512))
                 {
                     int crcIndex = 0;
                     byte crcCode = 0x2d;
                     stream.Write(new byte[4], 0, 4);
                     stream.WriteByte((byte)crcIndex);
                     stream.WriteByte(crcCode);
-                    RPCModel rPCModel = new RPCModel(NetCmd.CallRpc, buffer);
+                    var rPCModel = new RPCModel(NetCmd.CallRpc, buffer);
                     stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                     stream.WriteByte(rPCModel.cmd);
                     stream.Write(BitConverter.GetBytes(rPCModel.buffer.Length), 0, 4);

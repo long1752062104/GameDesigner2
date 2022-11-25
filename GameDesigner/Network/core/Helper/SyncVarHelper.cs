@@ -76,10 +76,9 @@ namespace Net.Helper
                     continue;
                 syncVar.CheckHandlerValue(ref segment, true);
             }
-            byte[] buffer = null;
-            if (segment != null)
-                buffer = segment.ToArray(true);
-            return buffer;
+            if (segment == null)
+                return null;
+            return segment.ToArray(true);
         }
 
         public static void SyncVarHandler(MyDictionary<ushort, SyncVarInfo> syncVarDic, byte[] buffer)
