@@ -40,7 +40,7 @@ public static class Fast2BuildMethod
     /// <returns></returns>
     public static bool DynamicBuild(int compilerOptionsIndex, params Type[] types)
     {
-        List<string> codes = new List<string>();
+        var codes = new List<string>();
         foreach (var type in types)
         {
             var str = BuildNew(type, true, true, new List<string>());
@@ -48,9 +48,9 @@ public static class Fast2BuildMethod
             str.Append(BuildGeneric(type));
             codes.Add(str.ToString());
         }
-        CSharpCodeProvider provider = new CSharpCodeProvider();
-        CompilerParameters param = new CompilerParameters();
-        HashSet<string> dllpaths = new HashSet<string>();
+        var provider = new CSharpCodeProvider();
+        var param = new CompilerParameters();
+        var dllpaths = new HashSet<string>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
         {
@@ -71,7 +71,7 @@ public static class Fast2BuildMethod
         param.GenerateInMemory = true;
         var options = new string[] { "/langversion:experimental", "/langversion:default", "/langversion:ISO-1", "/langversion:ISO-2", "/langversion:3", "/langversion:4", "/langversion:5", "/langversion:6", "/langversion:7" };
         param.CompilerOptions = options[compilerOptionsIndex];
-        CompilerResults cr = provider.CompileAssemblyFromSource(param, codes.ToArray());
+        var cr = provider.CompileAssemblyFromSource(param, codes.ToArray());
         if (cr.Errors.HasErrors)
         {
             NDebug.LogError("编译错误：");
@@ -102,8 +102,8 @@ public static class Fast2BuildMethod
 
     public static StringBuilder BuildNew(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null)
     {
-        StringBuilder sb = new StringBuilder();
-        StringBuilder sb1 = new StringBuilder();
+        var sb = new StringBuilder();
+        var sb1 = new StringBuilder();
         FieldInfo[] fields;
         if (serField)
             fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
@@ -114,7 +114,7 @@ public static class Fast2BuildMethod
             properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         else
             properties = new PropertyInfo[0];
-        List<Member> members = new List<Member>();
+        var members = new List<Member>();
         foreach (var field in fields)
         {
             if (field.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)

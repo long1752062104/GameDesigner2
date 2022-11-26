@@ -48,7 +48,7 @@ namespace Net.UnityComponent
             {
                 if (ClientBase.Instance == null)
                     await Task.Yield();
-                if (!ClientBase.Instance.Connected)
+                else if (!ClientBase.Instance.Connected)
                     await Task.Yield();
                 else
                     break;

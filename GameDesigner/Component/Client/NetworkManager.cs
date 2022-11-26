@@ -232,7 +232,7 @@ namespace Net.Component
             }
         }
 
-        public static void BindNetworkAllHandle(INetworkHandle handle)
+        public static void BindNetworkAll(INetworkHandle handle)
         {
             foreach (var item in I.clients)
             {
@@ -240,20 +240,66 @@ namespace Net.Component
             }
         }
 
-        public static void AddRpcHandle(object target)
+        /// <summary>
+        /// 添加索引0的客户端rpc, 也就是1的客户端
+        /// </summary>
+        /// <param name="target"></param>
+        public static void AddRpcOne(object target)
         {
-            foreach (var item in I.clients)
-            {
-                item.Client.AddRpcHandle(target);
-            }
+            I.clients[0].Client.AddRpc(target);
         }
 
-        public static void RemoveRpc(object target)
+        /// <summary>
+        /// 添加索引1的客户端, 也就是2的客户端
+        /// </summary>
+        /// <param name="target"></param>
+        public static void AddRpcTwo(object target)
         {
-            foreach (var item in I.clients)
-            {
-                item.Client.RemoveRpc(target);
-            }
+            I.clients[1].Client.AddRpc(target);
+        }
+
+        /// <summary>
+        /// 添加指定索引的客户端rpc, 如果索引小于0则为全部添加
+        /// </summary>
+        /// <param name="clientIndex"></param>
+        /// <param name="target"></param>
+        public static void AddRpc(int clientIndex, object target)
+        {
+            if (clientIndex < 0)
+                foreach (var item in I.clients)
+                    item.Client.AddRpc(target);
+            else I.clients[clientIndex].Client.AddRpc(target);
+        }
+
+        /// <summary>
+        /// 移除索引0的客户端rpc, 也就是1的客户端
+        /// </summary>
+        /// <param name="target"></param>
+        public static void RemoveRpcOne(object target)
+        {
+            I.clients[0].Client.RemoveRpc(target);
+        }
+
+        /// <summary>
+        /// 移除索引1的客户端rpc, 也就是2的客户端
+        /// </summary>
+        /// <param name="target"></param>
+        public static void RemoveRpcTwo(object target)
+        {
+            I.clients[1].Client.RemoveRpc(target);
+        }
+
+        /// <summary>
+        /// 移除指定索引的客户端rpc, 如果索引小于0则为全部添加
+        /// </summary>
+        /// <param name="clientIndex"></param>
+        /// <param name="target"></param>
+        public static void RemoveRpc(int clientIndex, object target)
+        {
+            if (clientIndex < 0)
+                foreach (var item in I.clients)
+                    item.Client.RemoveRpc(target);
+            else I.clients[clientIndex].Client.RemoveRpc(target);
         }
 
         public static void Close(bool v1, int v2)
