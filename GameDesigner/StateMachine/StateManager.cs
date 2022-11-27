@@ -68,6 +68,7 @@
                     for (int i = 0; i < t.behaviours.Count; i++)
                     {
                         t.behaviours[i] = t.behaviours[i].InitBehaviour();
+                        t.behaviours[i].transitionID = i;
                         t.behaviours[i].OnInit();
                     }
                 }

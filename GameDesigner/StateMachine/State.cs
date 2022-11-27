@@ -138,12 +138,12 @@ namespace GameDesigner
             {
                 case AnimationMode.Animation:
                     stateMachine.animation[Action.clipName].speed = animSpeed;
-                    stateMachine.animation.Rewind(Action.clipName);
+                    //stateMachine.animation.Rewind(Action.clipName);
                     stateMachine.animation.Play(Action.clipName);
                     break;
                 case AnimationMode.Animator:
                     stateMachine.animator.speed = animSpeed;
-                    stateMachine.animator.Rebind();
+                    //stateMachine.animator.Rebind();
                     stateMachine.animator.Play(Action.clipName);
                     break;
             }

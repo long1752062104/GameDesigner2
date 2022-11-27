@@ -16,7 +16,7 @@
         /// </summary>
         /// <param name="model">函数名</param>
         /// <returns></returns>
-        public static byte[] Serialize(RPCModel model, byte[] flag = null)
+        public static byte[] Serialize(RPCModel model, byte[] flag = null, bool recordType = false)
         {
             var segment = BufferPool.Take();
             byte head = 0;
@@ -34,7 +34,7 @@
             {
                 var type = obj.GetType();
                 segment.Write(type.ToString());
-                NetConvertBinary.SerializeObject(segment, obj, false, true);
+                NetConvertBinary.SerializeObject(segment, obj, recordType, true);
             }
             return segment.ToArray(true);
         }
@@ -44,9 +44,9 @@
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static FuncData Deserialize(byte[] buffer)
+        public static FuncData Deserialize(byte[] buffer, bool recordType = false)
         {
-            return Deserialize(buffer, 0, buffer.Length);
+            return Deserialize(buffer, 0, buffer.Length, recordType);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="count"></param>
-        public static FuncData Deserialize(byte[] buffer, int index, int count)
+        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false)
         {
             FuncData fdata = default;
             try 
@@ -78,7 +78,7 @@
                         fdata.error = true;
                         break;
                     }
-                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, false, true);
+                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, recordType, true);
                     list.Add(obj);
                 }
                 fdata.pars = list.ToArray();

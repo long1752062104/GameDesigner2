@@ -8,8 +8,9 @@
     [Serializable]
     public class TransitionBehaviour : IBehaviour
     {
+        [HideField]
         public int transitionID;
-        public Transition transition => state.transitions[transitionID];
+        public Transition Transition => state.transitions[transitionID];
         public virtual void OnUpdate(ref bool isEnterNextState) { }
         public TransitionBehaviour InitBehaviour()
         {

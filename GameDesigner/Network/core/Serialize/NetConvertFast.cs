@@ -165,7 +165,7 @@
             }
         }
 
-        public static byte[] Serialize(RPCModel model)
+        public static byte[] Serialize(RPCModel model, bool recordType = false)
         {
             var segment = BufferPool.Take();
             byte head = 0;
@@ -182,7 +182,7 @@
             {
                 var type = obj.GetType();
                 segment.Write(GetTypeHash(type));
-                NetConvertBinary.SerializeObject(segment, obj, false, true);
+                NetConvertBinary.SerializeObject(segment, obj, recordType, true);
             }
             return segment.ToArray(true);
         }
@@ -202,7 +202,7 @@
             return null;
         }
 
-        public static FuncData Deserialize(byte[] buffer, int index, int count)
+        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false)
         {
             FuncData fdata = default;
             try
@@ -225,7 +225,7 @@
                         fdata.error = true;
                         break;
                     }
-                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, false, true);
+                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, recordType, true);
                     list.Add(obj);
                 }
                 fdata.pars = list.ToArray();

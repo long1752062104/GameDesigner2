@@ -17,24 +17,6 @@ namespace GameDesigner
     {
         private static StateManager stateManager = null;
 
-        private static DirectoryInfo directoryInfo;
-        public static string GetGameDesignerPath
-        {
-            get
-            {
-                if (directoryInfo == null)
-                {
-                    directoryInfo = new DirectoryInfo(Application.dataPath);
-                    var dirs = directoryInfo.GetDirectories("GameDesigner", SearchOption.AllDirectories);
-                    if (dirs.Length > 0)
-                    {
-                        directoryInfo = dirs[0];
-                    }
-                }
-                return directoryInfo.FullName;
-            }
-        }
-
         void OnEnable()
         {
             stateManager = target as StateManager;
@@ -334,7 +316,8 @@ namespace GameDesigner
                                 act.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), act.createScriptName);
                                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 100f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[53]))
                                 {
-                                    string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/ActionBehaviourScript.script");
+                                    var text = Resources.Load<TextAsset>("ActionBehaviourScript");
+                                    var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);// File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/ActionBehaviourScript.script");
                                     scriptCode[7] = scriptCode[7].Replace("ActionBehaviourScript", act.createScriptName);
                                     ScriptTools.CreateScript(Application.dataPath + IState.StateActionScriptPath, act.createScriptName, scriptCode);
                                     s.compiling = true;
@@ -479,7 +462,9 @@ namespace GameDesigner
                 s.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), s.createScriptName);
                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[61]))
                 {
-                    string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/StateBehaviourScript.script");
+                    var text = Resources.Load<TextAsset>("StateBehaviourScript");
+                    var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
+                    //string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/StateBehaviourScript.script");
                     scriptCode[7] = scriptCode[7].Replace("StateBehaviourScript", s.createScriptName);
                     ScriptTools.CreateScript(Application.dataPath + IState.StateBehaviourScriptPath, s.createScriptName, scriptCode);
                     s.compiling = true;
@@ -782,7 +767,9 @@ namespace GameDesigner
                 tr.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), tr.createScriptName);
                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[75]))
                 {
-                    string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/TransitionBehaviorScript.script");
+                    var text = Resources.Load<TextAsset>("TransitionBehaviorScript");
+                    var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
+                    //string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/TransitionBehaviorScript.script");
                     scriptCode[7] = scriptCode[7].Replace("TransitionBehaviorScript", tr.createScriptName);
                     ScriptTools.CreateScript(Application.dataPath + IState.TransitionScriptPath, tr.createScriptName, scriptCode);
                     tr.compiling = true;

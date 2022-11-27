@@ -274,7 +274,7 @@
         {
             if (serializeType1s.TryGetValue(type, out ushort typeHash))
                 return typeHash;
-            throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用NetConvertBinary.AddNetworkType<{type}>()进行注册类型!");
+            throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用NetConvertBinary.AddSerializeType<{type}>()进行注册类型!");
         }
 
         /// <summary>
@@ -342,7 +342,6 @@
         public static byte[] Serialize(string func, params object[] pars)
         {
             var stream = BufferPool.Take();
-            byte[] buffer1 = new byte[0];
             try
             {
                 stream.Write(func);
@@ -354,7 +353,6 @@
                     stream.Write(TypeToIndex(type));
                     WriteObject(stream, type, obj, false, false);
                 }
-                buffer1 = stream.ToArray();
             }
             catch (Exception ex)
             {
@@ -366,17 +364,12 @@
                         str += $"[{obj}]";
                 NDebug.LogError("序列化:" + str + "方法出错 详细信息:" + ex);
             }
-            finally
-            {
-                BufferPool.Push(stream);
-            }
-            return buffer1;
+            return stream.ToArray(true);
         }
 
-        public static byte[] SerializeModel(RPCModel model)
+        public static byte[] SerializeModel(RPCModel model, bool recordType = false)
         {
             var stream = BufferPool.Take();
-            byte[] buffer1 = new byte[0];
             try
             {
                 byte head = 0;
@@ -391,9 +384,8 @@
                 {
                     var type = obj.GetType();
                     stream.Write(TypeToIndex(type));
-                    WriteObject(stream, type, obj, false, false);
+                    WriteObject(stream, type, obj, recordType, false);
                 }
-                buffer1 = stream.ToArray();
             }
             catch (Exception ex)
             {
@@ -405,11 +397,7 @@
                         str += $"[{obj}]";
                 NDebug.LogError("序列化:" + str + "方法出错 详细信息:" + ex);
             }
-            finally
-            {
-                BufferPool.Push(stream);
-            }
-            return buffer1;
+            return stream.ToArray(true);
         }
 
         /// <summary>
@@ -949,7 +937,14 @@
                 else if (serializeType1s.ContainsKey(member.Type) | ignore)
                 {
                     SetBit(ref bits[bitPos], bitInx1 + 1, true);
-                    WriteObject(segment, member.Type, value, recordType, ignore);
+                    Type memberType;
+                    if (recordType)
+                    {
+                        memberType = value.GetType();
+                        segment.Write(TypeToIndex(memberType));
+                    }
+                    else memberType = member.Type;
+                    WriteObject(segment, memberType, value, recordType, ignore);
                 }
                 else throw new Exception($"你没有标记此类[{member.Type}]为可序列化! 请使用NetConvertBinary.AddNetworkType<T>()方法进行添加此类为可序列化类型!");
             }
@@ -959,7 +954,7 @@
             segment.Position = strLen;
         }
 
-        public static FuncData Deserialize(byte[] buffer, int index, int count, bool ignore = false)
+        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
             FuncData obj = default;
             var segment = new Segment(buffer, index, count, false);
@@ -967,14 +962,14 @@
             {
                 count += index;
                 obj.name = segment.ReadString();
-                List<object> list = new List<object>();
+                var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
                     Type type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
                     index += 2;
-                    var obj1 = ReadObject(segment, type, false, ignore);
+                    var obj1 = ReadObject(segment, type, recordType, ignore);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
@@ -987,7 +982,7 @@
             return obj;
         }
 
-        public static FuncData DeserializeModel(byte[] buffer, int index, int count, bool ignore = false)
+        public static FuncData DeserializeModel(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
             FuncData obj = default;
             var segment = new Segment(buffer, index, count, false);
@@ -1004,7 +999,7 @@
                     var type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
-                    var obj1 = ReadObject(segment, type, false, ignore);
+                    var obj1 = ReadObject(segment, type, recordType, ignore);
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
@@ -1054,13 +1049,12 @@
         /// <returns></returns>
         public static object DeserializeObject(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
-            object obj = default;
-            obj = ReadObject(segment, type, recordType, ignore);
+            var obj = ReadObject(segment, type, recordType, ignore);
             if (isPush) BufferPool.Push(segment);
             return obj;
         }
 
-        public static object Deserialize(Segment segment, bool isPush = true, bool ignore = false)
+        public static object Deserialize(Segment segment, bool isPush = true, bool recordType = false, bool ignore = false)
         {
             object obj = null;
             if (segment.Position < segment.Offset + segment.Count)
@@ -1068,7 +1062,7 @@
                 var type = IndexToType(segment.ReadUInt16());
                 if (type == null)
                     return obj;
-                obj = ReadObject(segment, type, false, ignore);
+                obj = ReadObject(segment, type, recordType, ignore);
             }
             if(isPush) BufferPool.Push(segment);
             return obj;
@@ -1176,7 +1170,12 @@
                 }
                 else if (serializeType1s.ContainsKey(member.Type) | ignore)//如果是序列化类型
                 {
-                    member.SetValue(ref obj, ReadObject(segment, member.Type, recordType, ignore));
+                    Type memberType;
+                    if (recordType)
+                        memberType = IndexToType(segment.ReadUInt16());
+                    else
+                        memberType = member.Type;
+                    member.SetValue(ref obj, ReadObject(segment, memberType, recordType, ignore));
                 }
                 else throw new Exception($"你没有标记此类[{member.Type}]为可序列化! 请使用NetConvertBinary.AddNetworkType<T>()方法进行添加此类为可序列化类型!");
             }
