@@ -27,7 +27,7 @@
         public new IntPtr Server;
         private UDXPRC uDXPRC;
 
-        public override void Start(ushort port = 6666)
+        public override void Start(ushort port = 9543)
         {
             if (Server != IntPtr.Zero)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");

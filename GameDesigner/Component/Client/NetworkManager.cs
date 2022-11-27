@@ -17,7 +17,7 @@ namespace Net.Component
         public ClientBase _client;
         public TransportProtocol protocol = TransportProtocol.Gcp;
         public string ip = "127.0.0.1";
-        public int port = 6666;
+        public int port = 9543;
         public bool localTest;//±¾»ú²âÊÔ
         public bool debugRpc = true;
         public bool authorize;

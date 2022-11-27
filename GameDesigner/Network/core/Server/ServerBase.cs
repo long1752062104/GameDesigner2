@@ -616,13 +616,13 @@ namespace Net.Server
         /// 运行服务器
         /// </summary>
         /// <param name="port">服务器端口号</param>
-        public void Run(ushort port = 6666) => Start(port);
+        public void Run(ushort port = 9543) => Start(port);
 
         /// <summary>
         /// 启动服务器
         /// </summary>
         /// <param name="port">端口</param>
-        public virtual void Start(ushort port = 6666)
+        public virtual void Start(ushort port = 9543)
         {
             if (Server != null)//如果服务器套接字已创建
                 throw new Exception("服务器已经运行，不可重新启动，请先关闭后在重启服务器");
@@ -1254,6 +1254,9 @@ namespace Net.Server
                 case NetCmd.Identify:
                     SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
                     break;
+                case NetCmd.Download:
+                    DownloadHandler(client, segment.ReadInt32());
+                    break;
                 case NetCmd.EntityRpc:
                     if (CheckIsQueueUp(client))
                         return;
@@ -1269,6 +1272,12 @@ namespace Net.Server
             {
                 LoginInternal(client);
             }
+        }
+
+        protected void DownloadHandler(Player client, int key)
+        {
+            if (client.ftpDic.TryGetValue(key, out FileData fileData))
+                SendFile(client, key, fileData);
         }
 
         private bool CheckIsQueueUp(Player client) 
@@ -1425,7 +1434,16 @@ namespace Net.Server
                             }
                             else
                             {
-                                path = Path.GetTempFileName();
+                                int count = 0;
+                                var downloadPath = AppDomain.CurrentDomain.BaseDirectory + "/download/";
+                                if (!Directory.Exists(downloadPath))
+                                    Directory.CreateDirectory(downloadPath);
+                                do
+                                {
+                                    count++;
+                                    path = downloadPath + $"{fileName}{count}.temp";
+                                }
+                                while (File.Exists(path));
                             }
                             fileData.fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                             fileData.fileName = fileName;
@@ -1438,7 +1456,10 @@ namespace Net.Server
                             client.ftpDic.Remove(key);
                             OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete));
                             fileData.fileStream.Position = 0;
-                            if (OnReceiveFileHandle(client, fileData))
+                            var isDelete = true;
+                            if (OnReceiveFileHandle != null)
+                                isDelete = OnReceiveFileHandle(client, fileData);
+                            if (isDelete)
                             {
                                 fileData.fileStream.Close();
                                 File.Delete(fileData.fileStream.Name);
@@ -1460,11 +1481,7 @@ namespace Net.Server
                     }
                     break;
                 case NetCmd.Download:
-                    {
-                        var key = segment.ReadInt32();
-                        if (client.ftpDic.TryGetValue(key, out FileData fileData))
-                            SendFile(client, key, fileData);
-                    }
+                    DownloadHandler(client, segment.ReadInt32());
                     break;
                 case NetCmd.Identify:
                     SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识

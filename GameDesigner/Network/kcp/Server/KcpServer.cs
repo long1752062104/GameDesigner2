@@ -23,7 +23,7 @@
         private ikcp_malloc_hook ikcp_Malloc;
         private ikcp_free_hook ikcp_Free;
 
-        public override void Start(ushort port = 6666)
+        public override void Start(ushort port = 9543)
         {
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
             string path = AppDomain.CurrentDomain.BaseDirectory;

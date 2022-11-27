@@ -1637,9 +1637,18 @@ namespace Net.Client
                                     return;
                                 }
                             }
-                            else 
+                            else
                             {
-                                path = Path.GetTempFileName();
+                                int count = 0;
+                                var downloadPath = AppDomain.CurrentDomain.BaseDirectory + "/download/";
+                                if (!Directory.Exists(downloadPath))
+                                    Directory.CreateDirectory(downloadPath);
+                                do
+                                {
+                                    count++;
+                                    path = downloadPath + $"{fileName}{count}.temp";
+                                }
+                                while (File.Exists(path));
                             }
                             fileData.ID = key;
                             fileData.fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
@@ -1652,10 +1661,12 @@ namespace Net.Client
                         {
                             ftpDic.Remove(key);
                             fileData.fileStream.Position = 0;
-                            InvokeContext(() => {
-                                if (OnReceiveFileHandle == null)
-                                    return;
-                                if (OnReceiveFileHandle(fileData))
+                            InvokeContext(() => 
+                            {
+                                var isDelete = true;
+                                if (OnReceiveFileHandle != null)
+                                    isDelete = OnReceiveFileHandle(fileData);
+                                if (isDelete)
                                 {
                                     fileData.fileStream.Close();
                                     File.Delete(fileData.fileStream.Name);
