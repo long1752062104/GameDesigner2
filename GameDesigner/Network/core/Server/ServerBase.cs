@@ -1435,7 +1435,7 @@ namespace Net.Server
                             else
                             {
                                 int count = 0;
-                                var downloadPath = AppDomain.CurrentDomain.BaseDirectory + "/download/";
+                                var downloadPath = Environment.CurrentDirectory + "/download/";
                                 if (!Directory.Exists(downloadPath))
                                     Directory.CreateDirectory(downloadPath);
                                 do
