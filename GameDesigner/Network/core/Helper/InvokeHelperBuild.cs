@@ -753,8 +753,8 @@ internal static class SyncVarGetSetHelperGenerate
                 {
                     if (!File.Exists(file))
                         continue;
-                    ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                    ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
+                    var modCtx = ModuleDef.CreateModuleContext();
+                    var module = ModuleDefMD.Load(file, modCtx);
                     streams.Add(module);
                     var types = module.Types;
                     foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))

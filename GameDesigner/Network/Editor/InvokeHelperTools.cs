@@ -209,6 +209,10 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
             Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
             ConfigObject.Config = Config;
         }
+        else 
+        {
+            Config.onReloadInvoke = true;
+        }
     }
 
     internal static void SaveData()
