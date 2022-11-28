@@ -164,7 +164,7 @@ namespace Net.Helper
             return false;
         }
 
-        public static string SyncVarBuild(List<TypeDef> types)
+        public static string SyncVarBuild(List<TypeDef> types, bool recordType)
         {
             var str = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
 internal static class SyncVarGetSetHelperGenerate
@@ -327,8 +327,8 @@ internal static class SyncVarGetSetHelperGenerate
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
                         }
                         code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                     }
@@ -346,15 +346,15 @@ internal static class SyncVarGetSetHelperGenerate
                             }
                             else
                             {
-                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
-                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
                             }
                             code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
                         }
                     }
                     else if (isUnityObject)
@@ -365,8 +365,8 @@ internal static class SyncVarGetSetHelperGenerate
                     }
                     else
                     {
-                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
-                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
+                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                     }
                     setgetSb.Append(code);
@@ -791,9 +791,9 @@ using System.Runtime.CompilerServices;
 
 ";
             if (generateClientSyncVar)
-                text += SyncVarBuild(clientTypes) + "\r\n\r\n";
+                text += SyncVarBuild(clientTypes, config.recordType) + "\r\n\r\n";
             else
-                text += "/**\r\n" + SyncVarBuild(clientTypes) + "*/\r\n\r\n";
+                text += "/**\r\n" + SyncVarBuild(clientTypes, config.recordType) + "*/\r\n\r\n";
             var serverTypes3 = new List<TypeDef>();
             foreach (var item in serverTypes)
                 serverTypes3.AddRange(item);
@@ -832,9 +832,9 @@ using System.Runtime.CompilerServices;
 
 ";
                 if (generateServerSyncVar)
-                    text1 += SyncVarBuild(serverTypes2) + "\r\n\r\n";
+                    text1 += SyncVarBuild(serverTypes2, config.recordType) + "\r\n\r\n";
                 else
-                    text1 += "/**\r\n" + SyncVarBuild(serverTypes2) + "*/\r\n\r\n";
+                    text1 += "/**\r\n" + SyncVarBuild(serverTypes2, config.recordType) + "*/\r\n\r\n";
                 if (config.rpcConfig[i].collectRpc)
                 {
                     int num = 1;

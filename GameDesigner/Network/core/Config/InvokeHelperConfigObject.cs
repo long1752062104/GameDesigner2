@@ -25,6 +25,8 @@ public class InvokeHelperConfig
     public bool syncVarServerEnable;
     [Header("前端Rpc收集, 可视化后端Rpc方法")]
     public bool collectRpc;
+    [Header("SyncVar同步字段记录类, 可用于定义字段为基类, 但是赋值却是派生类对象")]
+    public bool recordType;
     [Header("生成的脚本存放路径(unity)")]
     public string savePath;
     [Header("收集程序集路径(unity)")]

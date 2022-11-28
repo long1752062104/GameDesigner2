@@ -46,6 +46,8 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("collectRpc"));
         rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
+        EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("recordType"));
+        rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("savePath"));
         rect.position = new Vector2(rect.position.x + (position.width - 120f), rect.position.y + 25f);
         rect.size = new Vector2(100f, 20f);
@@ -209,10 +211,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
             Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
             ConfigObject.Config = Config;
         }
-        else 
-        {
-            Config.onReloadInvoke = true;
-        }
+        else Config.onReloadInvoke = true;
     }
 
     internal static void SaveData()
