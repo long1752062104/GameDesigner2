@@ -327,8 +327,8 @@ internal static class SyncVarGetSetHelperGenerate
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
                         }
                         code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                     }
@@ -346,15 +346,15 @@ internal static class SyncVarGetSetHelperGenerate
                             }
                             else
                             {
-                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
-                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
                             }
                             code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
                         }
                     }
                     else if (isUnityObject)
@@ -365,8 +365,8 @@ internal static class SyncVarGetSetHelperGenerate
                     }
                     else
                     {
-                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType}, true);");
-                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType}, true);");
+                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                     }
                     setgetSb.Append(code);
