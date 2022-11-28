@@ -14,7 +14,7 @@ namespace Net.Share
         /// </summary>
         public ushort id;
         /// <summary>
-        /// 值改变后调用的方法名
+        /// 值改变后调用的方法名 <see langword="方法必须有两个参数, 第一个是oldValue, 第二个是newValue"/>
         /// </summary>
         public string hook;
         /// <summary>

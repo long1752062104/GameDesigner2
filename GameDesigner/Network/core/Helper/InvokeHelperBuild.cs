@@ -68,17 +68,23 @@ namespace Net.Helper
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies) //检查是否是静态编译
             {
-                var type1 = assembly.GetType("SyncVarGetSetHelperGenerate");
-                if (type1 != null)
+                if (!hasHelper)
                 {
-                    type1.GetMethod("Init", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
-                    hasHelper = true;
-                    continue;
+                    var type1 = assembly.GetType("SyncVarGetSetHelperGenerate");
+                    if (type1 != null)
+                    {
+                        type1.GetMethod("Init", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
+                        hasHelper = true;
+                        continue;
+                    }
                 }
-                var type2 = assembly.GetType("HelperFileInfo");//此类必须在主程序集里面, 否则出问题
-                if (type2 != null)
+                if (type == null) 
                 {
-                    type = type2;
+                    var type2 = assembly.GetType("HelperFileInfo");//此类必须在主程序集里面, 否则出问题
+                    if (type2 != null)
+                    {
+                        type = type2;
+                    }
                 }
             }
             if (!hasHelper) //动态编译模式
