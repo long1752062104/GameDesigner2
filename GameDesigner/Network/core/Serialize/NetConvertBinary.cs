@@ -258,7 +258,7 @@
         /// </summary>
         /// <param name="typeIndex"></param>
         /// <returns></returns>
-        private static Type IndexToType(ushort typeIndex)
+        public static Type IndexToType(ushort typeIndex)
         {
             if (serializeTypes.TryGetValue(typeIndex, out Type type))
                 return type;
@@ -270,7 +270,7 @@
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static ushort TypeToIndex(Type type)
+        public static ushort TypeToIndex(Type type)
         {
             if (serializeType1s.TryGetValue(type, out ushort typeHash))
                 return typeHash;

@@ -192,6 +192,8 @@ internal static class SyncVarGetSetHelperGenerate
             if (segment == null)
                 segment = BufferPool.Take();
             segment.Write(id);
+            GETTYPE
+            TYPETOINDEX
             var pos = segment.Position;
             HANDLER
             var end = segment.Position;
@@ -201,6 +203,7 @@ internal static class SyncVarGetSetHelperGenerate
         }
         else 
         {
+            INDEXTOTYPE
             var pos = segment.Position;
             var FIELDNAME1 = READVALUE
             var end = segment.Position;
@@ -312,6 +315,9 @@ internal static class SyncVarGetSetHelperGenerate
                     var typeCode = GetTypeCode(ft);
                     if (typeCode != TypeCode.Object)
                     {
+                        code = code.Replace("GETTYPE", "");
+                        code = code.Replace("TYPETOINDEX", "");
+                        code = code.Replace("INDEXTOTYPE", "");
                         code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
                         code = code.Replace("READVALUE", $"segment.Read{typeCode}();");
                         code = code.Replace("JUDGE", $"self.{fieldName} == {fieldName}");
@@ -322,13 +328,30 @@ internal static class SyncVarGetSetHelperGenerate
                         typeCode = GetTypeCode(itemType);
                         if (typeCode != TypeCode.Object)
                         {
+                            code = code.Replace("GETTYPE", "");
+                            code = code.Replace("TYPETOINDEX", "");
+                            code = code.Replace("INDEXTOTYPE", "");
                             code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
                             code = code.Replace("READVALUE", $"segment.Read{typeCode}Array();");
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
+                            if (recordType)
+                            {
+                                code = code.Replace("GETTYPE", $"var type = self.{fieldName}.GetType();");
+                                code = code.Replace("TYPETOINDEX", $"segment.Write(NetConvertBinary.TypeToIndex(type));");
+                                code = code.Replace("INDEXTOTYPE", $"var type = NetConvertBinary.IndexToType(segment.ReadUInt16());");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject(segment, type, false, {recordType.ToString().ToLower()}, true) as {fieldType};");
+                            }
+                            else 
+                            {
+                                code = code.Replace("GETTYPE", "");
+                                code = code.Replace("TYPETOINDEX", "");
+                                code = code.Replace("INDEXTOTYPE", "");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                            }
                         }
                         code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                     }
@@ -341,32 +364,80 @@ internal static class SyncVarGetSetHelperGenerate
                             typeCode = GetTypeCode(itemType);
                             if (typeCode != TypeCode.Object)
                             {
+                                code = code.Replace("GETTYPE", "");
+                                code = code.Replace("TYPETOINDEX", "");
+                                code = code.Replace("INDEXTOTYPE", "");
                                 code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
                                 code = code.Replace("READVALUE", $"segment.Read{typeCode}List();");
                             }
                             else
                             {
-                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
-                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
+                                if (recordType)
+                                {
+                                    code = code.Replace("GETTYPE", $"var type = self.{fieldName}.GetType();");
+                                    code = code.Replace("TYPETOINDEX", $"segment.Write(NetConvertBinary.TypeToIndex(type));");
+                                    code = code.Replace("INDEXTOTYPE", $"var type = NetConvertBinary.IndexToType(segment.ReadUInt16());");
+                                    code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                                    code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject(segment, type, false, {recordType.ToString().ToLower()}, true) as {fieldType};");
+                                }
+                                else
+                                {
+                                    code = code.Replace("GETTYPE", "");
+                                    code = code.Replace("TYPETOINDEX", "");
+                                    code = code.Replace("INDEXTOTYPE", "");
+                                    code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                                    code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                                }
                             }
                             code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                         }
                         else
                         {
-                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
-                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
+                            if (recordType)
+                            {
+                                code = code.Replace("GETTYPE", $"var type = self.{fieldName}.GetType();");
+                                code = code.Replace("TYPETOINDEX", $"segment.Write(NetConvertBinary.TypeToIndex(type));");
+                                code = code.Replace("INDEXTOTYPE", $"var type = NetConvertBinary.IndexToType(segment.ReadUInt16());");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject(segment, type, false, {recordType.ToString().ToLower()}, true) as {fieldType};");
+                            }
+                            else
+                            {
+                                code = code.Replace("GETTYPE", "");
+                                code = code.Replace("TYPETOINDEX", "");
+                                code = code.Replace("INDEXTOTYPE", "");
+                                code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                                code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                            }
                         }
                     }
                     else if (isUnityObject)
                     {
+                        code = code.Replace("GETTYPE", "");
+                        code = code.Replace("TYPETOINDEX", "");
+                        code = code.Replace("INDEXTOTYPE", "");
                         code = code.Replace("HANDLER", $"segment.Write(UnityEditor.AssetDatabase.GetAssetPath(self.{fieldName}));");
                         code = code.Replace("READVALUE", $"segment.ReadString();");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                     }
                     else
                     {
-                        code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
-                        code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, {recordType.ToString().ToLower()}, true);");
+                        if (recordType)
+                        {
+                            code = code.Replace("GETTYPE", $"var type = self.{fieldName}.GetType();");
+                            code = code.Replace("TYPETOINDEX", $"segment.Write(NetConvertBinary.TypeToIndex(type));");
+                            code = code.Replace("INDEXTOTYPE", $"var type = NetConvertBinary.IndexToType(segment.ReadUInt16());");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {recordType.ToString().ToLower()}, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject(segment, type, false, {recordType.ToString().ToLower()}, true) as {fieldType};");
+                        }
+                        else
+                        {
+                            code = code.Replace("GETTYPE", "");
+                            code = code.Replace("TYPETOINDEX", "");
+                            code = code.Replace("INDEXTOTYPE", "");
+                            code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, false, true);");
+                            code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
+                        }
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                     }
                     setgetSb.Append(code);
