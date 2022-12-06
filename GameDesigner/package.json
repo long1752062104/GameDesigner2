@@ -5,8 +5,13 @@
     "description": "专为游戏而设计的前后端网络框架和动作状态机",
 	"samples":[
     {
-      "displayName": "Example",
-      "description": "gdnet案例",
-      "path": "Example~"
-    }]
+	  "displayName": "Example",
+	  "description": "gdnet案例",
+	  "path": "Example~"
+	},
+	{
+	  "displayName": "Framework",
+	  "description": "前端框架",
+	  "path": "Framework~"
+	}]
 }
