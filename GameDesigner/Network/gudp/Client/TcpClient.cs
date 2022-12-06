@@ -12,6 +12,7 @@
     using Net.System;
     using global::System.Security.Cryptography;
     using Net.Helper;
+    using global::System.Text;
 
     /// <summary>
     /// TCP客户端类型 

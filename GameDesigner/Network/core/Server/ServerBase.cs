@@ -1614,7 +1614,7 @@ namespace Net.Server
                 }
                 if (len >= MTU & !reliable)//udp不可靠判断
                 {
-                    byte[] buffer = PackData(stream);
+                    var buffer = PackData(stream);
                     SendByteData(client, buffer, reliable);
                     index = 0;
                     ResetDataHead(stream);

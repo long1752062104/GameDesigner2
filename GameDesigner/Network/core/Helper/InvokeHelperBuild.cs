@@ -37,7 +37,7 @@ namespace Net.Helper
             {
                 if (cache == null)
                 {
-                    var path = Config.Config.BasePath + "/ScriptHelper.txt";
+                    var path = Environment.CurrentDirectory + "/ScriptHelper.txt";
                     if (File.Exists(path)) 
                     {
                         var json = File.ReadAllText(path);
@@ -747,7 +747,7 @@ internal static class SyncVarGetSetHelperGenerate
                     var sequence = pdb.Scope.Start.SequencePoint;
                     if (sequence == null)// async方法得不到源码行
                         continue;
-                    cache.Add(type.FullName + "." + method.Name, new SequencePoint(sequence.Document.Url, sequence.StartLine - 1));
+                    cache[type.FullName + "." + method.Name] = new SequencePoint(sequence.Document.Url, sequence.StartLine - 1);
                 }
                 //状态机部分
                 {
@@ -773,10 +773,10 @@ internal static class SyncVarGetSetHelperGenerate
                     var sequence = pdb.Scope.Start.SequencePoint;
                     if (sequence == null)// async方法得不到源码行
                         continue;
-                    cache.Add(type.FullName, new SequencePoint(sequence.Document.Url, sequence.StartLine - 1));
+                    cache[type.FullName] = new SequencePoint(sequence.Document.Url, sequence.StartLine - 1);
                 }
             }
-            var path = Config.Config.BasePath + "/ScriptHelper.txt";
+            var path = Environment.CurrentDirectory + "/ScriptHelper.txt";
             var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(cache);
             File.WriteAllText(path, json);
         }

@@ -211,15 +211,18 @@ public static class MathExt
     {
         try
         {
-            self = oper switch
+            checked 
             {
-                0 => checked(self + value),
-                1 => checked(self - value),
-                2 => checked(self * value),
-                3 => checked(self / value),
-                4 => checked(self % value),
-                _ => throw new Exception("没有这个操作数"),
-            };
+                self = oper switch
+                {
+                    0 => self + value,
+                    1 => self - value,
+                    2 => self * value,
+                    3 => self / value,
+                    4 => self % value,
+                    _ => throw new Exception("没有这个操作数"),
+                };
+            }
             return true;
         }
         catch (Exception ex)

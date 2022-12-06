@@ -120,10 +120,11 @@
             sendCount += buffer.Length;
         }
 
-        protected override void SceneUpdateHandle()
-        {
-        }
+        //protected override void SceneUpdateHandle()
+        //{
+        //}
 
+#if COCOS2D_JS
         protected override byte[] OnSerializeRpc(RPCModel model)
         {
             if (!string.IsNullOrEmpty(model.func) | model.methodHash != 0)
@@ -149,6 +150,7 @@
             }
             return NetConvert.Deserialize(buffer, index, count - 1);
         }
+#endif
     }
 
     /// <summary>

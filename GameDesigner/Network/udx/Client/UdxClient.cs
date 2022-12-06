@@ -3,15 +3,17 @@
     using Net.Event;
     using Net.Share;
     using global::System;
-    using global::System.Collections.Concurrent;
     using global::System.Collections.Generic;
-    using global::System.IO;
-    using global::System.Net.Sockets;
     using global::System.Runtime.InteropServices;
     using global::System.Threading;
     using global::System.Threading.Tasks;
     using Udx;
     using Net.System;
+#if SERVICE
+    using global::System.IO;
+    using global::System.Net.Sockets;
+    using global::System.Collections.Concurrent;
+#endif
 
     /// <summary>
     /// udx客户端类型 -> 只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
@@ -52,7 +54,7 @@
             if (!UdxLib.INIT)
             {
                 UdxLib.INIT = true;
-#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
+#if SERVICE
                 string path = AppDomain.CurrentDomain.BaseDirectory;
                 if (!File.Exists(path + "\\FastUdxApi.dll"))
                     throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
@@ -233,7 +235,7 @@
             if (!UdxLib.INIT)
             {
                 UdxLib.INIT = true;
-#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
+#if SERVICE
                 string path = AppDomain.CurrentDomain.BaseDirectory;
                 if (!File.Exists(path + "\\FastUdxApi.dll"))
                     throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");

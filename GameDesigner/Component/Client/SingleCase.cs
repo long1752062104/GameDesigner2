@@ -55,6 +55,7 @@ namespace Net.Component
             if (i == null)
                 return null;
             i.gameObject.SetActive(true);
+            i.transform.SetAsLastSibling();
             if(onBack != null)
                 i.OnBack.Push(onBack);
             return i;

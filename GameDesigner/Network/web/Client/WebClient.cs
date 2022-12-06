@@ -1,5 +1,4 @@
-﻿#if UNITY_STANDALONE_WIN || UNITY_WSA || UNITY_WEBGL || SERVICE
-namespace Net.Client
+﻿namespace Net.Client
 {
     using Net.Event;
     using Net.Share;
@@ -7,12 +6,14 @@ namespace Net.Client
     using global::System;
     using global::System.Collections.Generic;
     using global::System.IO;
-    using global::System.Text;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using Net.Serialize;
     using Net.System;
     using UnityWebSocket;
+#if COCOS2D_JS
+    using global::System.Text;
+    using Net.Serialize;
+#endif
 
     /// <summary>
     /// web客户端类型
@@ -159,6 +160,7 @@ namespace Net.Client
             WSClient.SendAsync(buffer);
         }
 
+#if COCOS2D_JS
         protected internal override byte[] OnSerializeRpcInternal(RPCModel model)
         {
             if (!string.IsNullOrEmpty(model.func) | model.methodHash != 0)
@@ -184,6 +186,7 @@ namespace Net.Client
             }
             return NetConvert.Deserialize(buffer, index, count - 1);
         }
+#endif
 
         public override void Close(bool await = true, int millisecondsTimeout = 1000)
         {
@@ -258,4 +261,3 @@ namespace Net.Client
         }
     }
 }
-#endif

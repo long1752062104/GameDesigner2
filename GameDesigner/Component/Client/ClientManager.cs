@@ -53,6 +53,8 @@ namespace Net.Component
         public bool md5CRC;
         public int reconnectCount = 10;
         public int reconnectInterval = 2000;
+        public byte heartLimit = 5;
+        public int heartInterval = 1000;
 
 #pragma warning disable IDE1006 // 命名样式
         public ClientBase client
@@ -122,6 +124,7 @@ namespace Net.Component
                     _client.MD5CRC = md5CRC;
                     _client.ReconnectCount = reconnectCount;
                     _client.ReconnectInterval = reconnectInterval;
+                    _client.SetHeartTime(heartLimit, heartInterval);
                 }
                 return _client;
             }

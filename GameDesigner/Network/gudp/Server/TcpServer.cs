@@ -11,6 +11,7 @@
     using global::System.Security.Cryptography;
     using Net.Helper;
     using Net.Event;
+    using global::System.Text;
 
     /// <summary>
     /// TCP服务器类型
@@ -48,8 +49,8 @@
 
         protected override void CreateServerSocket(ushort port)
         {
+            var ip = new IPEndPoint(IPAddress.Any, port);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
             Server.NoDelay = true;
             Server.Bind(ip);
             Server.Listen(LineUp);
@@ -95,12 +96,7 @@
             {
                 var segment = BufferPool.Take();
                 segment.Count = client.Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
-                if (error != SocketError.Success)
-                {
-                    BufferPool.Push(segment);
-                    return;
-                }
-                if (segment.Count == 0)
+                if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
                     return;
