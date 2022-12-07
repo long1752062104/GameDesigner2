@@ -3,7 +3,6 @@ using System;
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Create InvokeHelperConfig")]
 public class InvokeHelperConfigObject : ScriptableObject
 {
     public InvokeHelperConfig Config = new InvokeHelperConfig();

@@ -1,4 +1,3 @@
-using Net.System;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +12,7 @@ namespace Framework
         public Transform UIRoot;
         public Transform[] Levels;
         public string sheetName = "UI";
-        public MyDictionary<string, UIFormBase> formDict = new MyDictionary<string, UIFormBase>();
+        public Dictionary<string, UIFormBase> formDict = new Dictionary<string, UIFormBase>();
         public Stack<UIFormBase> formStack = new Stack<UIFormBase>();
         public IForm Loading, Message;
         [SerializeField] private UI_Loading _Loading;
@@ -103,7 +102,7 @@ namespace Framework
                 form.HideUI(isBack);
                 if (formStack.Count > 0)
                 {
-                    form = formStack.Peek();//弹出上一个界面进行显示, 弹不会移除
+                    form = formStack.Peek();//弹出上一个界面进行显示, 但不会移除
                     form.ShowUI();
                     form.transform.SetAsLastSibling();
                 }

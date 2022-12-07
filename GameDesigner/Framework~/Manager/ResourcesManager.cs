@@ -11,11 +11,24 @@ namespace Framework
         None,
         Prefabs,
         UIPrefabs,
+        Animation,
         Audio,
-        Texture,
-        UI,
+        Shader,
         Font,
+        Material,
+        Mesh,
+        Model,
+        PhysicMaterial,
         Scene,
+        Script,
+        Sprite,
+        Texture,
+        Video,
+        UI,
+        Other,
+        Other1,
+        Other2,
+        Other3,
         All
     }
 
@@ -84,19 +97,24 @@ namespace Framework
             throw new Exception("找不到资源:" + assetPath);
         }
 
-        public GameObject Instantiate(string assetPath)
+        public GameObject Instantiate(string assetPath, Transform parent = null)
         {
-            return Instantiate<GameObject>(assetPath, null);
+            return Instantiate(AssetBundleType.All, assetPath, parent);
         }
 
-        public T Instantiate<T>(string assetPath) where T : Object
+        public GameObject Instantiate(AssetBundleType type, string assetPath, Transform parent = null)
         {
-            return Instantiate<T>(assetPath, null);
+            return Instantiate<GameObject>(type, assetPath, parent);
         }
 
-        public T Instantiate<T>(string assetPath, Transform parent) where T : Object
+        public T Instantiate<T>(string assetPath, Transform parent = null) where T : Object
         {
-            var assetObj = LoadAsset<GameObject>(AssetBundleType.All, assetPath);
+            return Instantiate<T>(AssetBundleType.All, assetPath, parent);
+        }
+
+        public T Instantiate<T>(AssetBundleType type, string assetPath, Transform parent = null) where T : Object
+        {
+            var assetObj = LoadAsset<GameObject>(type, assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");

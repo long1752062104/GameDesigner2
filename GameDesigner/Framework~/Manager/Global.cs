@@ -30,9 +30,15 @@ namespace Framework
         public static NetworkManager Network => Instance.network;
         public static Logger Logger => Instance.logger;
 
-        private void Awake()
+        void Awake()
         {
+            if (instance != null)
+            {
+                DestroyImmediate(gameObject);
+                return;
+            }
             instance = this;
+            DontDestroyOnLoad(gameObject);
         }
     }
 }

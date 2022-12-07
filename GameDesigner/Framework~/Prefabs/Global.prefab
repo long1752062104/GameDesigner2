@@ -476,12 +476,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54df94d8110ca0147b0f57b5ad5b8996, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Mode: 0
+  Mode: 1
   assetBundleInfos:
   - name: data
-    type: 8
+    type: 21
     path: AssetBundles/StandaloneWindows/data
-    assetBundle: {fileID: 0}
 --- !u!114 &4109322260658001640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -514,7 +513,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0f62e7e9324ec04e8d36665f359ece0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  url: http://192.168.1.5/
+  url: http://192.168.1.4/
   entryRes: Assets/Resources/Prefabs/GameEntry.prefab
 --- !u!114 &4109322260658001642
 MonoBehaviour:
@@ -540,6 +539,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ec8511bc6e566408e669791f963ae8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sheetName: Scene
 --- !u!114 &1872683734667402477
 MonoBehaviour:
   m_ObjectHideFlags: 0

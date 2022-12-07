@@ -7,6 +7,8 @@ namespace Framework
 {
     public class SceneManager : MonoBehaviour
     {
+        public string sheetName = "Scene";
+
         public void Load(string sceneName)
         {
             StartCoroutine(AsyncLoadScene(sceneName));
@@ -14,7 +16,7 @@ namespace Framework
 
         private IEnumerator AsyncLoadScene(string sceneName)
         {
-            var op = SM.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            var op = SM.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             op.allowSceneActivation = false;
             while (op.progress < 0.9f)
             {
@@ -24,7 +26,6 @@ namespace Framework
             Global.UI.Loading.ShowUI("¼ÓÔØÍê³É", 1f);
             yield return new WaitForSeconds(1f);
             op.allowSceneActivation = true;
-            //Global.UI.Loading.HideUI();
         }
     }
 }

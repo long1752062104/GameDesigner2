@@ -5,4 +5,5 @@
 	<assembly fullname="UniTask.Linq" preserve="all" />
 	<assembly fullname="UniTask.DOTween" preserve="all" />
 	<assembly fullname="UniTask.TextMeshPro" preserve="all" />
+	<assembly fullname="Assembly-CSharp" preserve="all" />
 </linker>

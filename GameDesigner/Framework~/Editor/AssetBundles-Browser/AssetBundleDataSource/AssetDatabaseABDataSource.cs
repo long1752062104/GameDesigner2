@@ -111,20 +111,23 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 build.assetNames = assetNames.ToArray();
                 builds.Add(build);
             }
-            var buildManifest = BuildPipeline.BuildAssetBundles(info.outputDirectory, builds.ToArray(), info.options, info.buildTarget);
-            if (buildManifest == null)
+
+            for (int i = 0; i < builds.Count; i++)
             {
-                Debug.Log("Error in build");
-                return false;
+                var build = builds[i];
+                var buildManifest = BuildPipeline.BuildAssetBundles(info.outputDirectory, new AssetBundleBuild[] { build }, info.options, info.buildTarget);
+                if (buildManifest == null)
+                {
+                    Debug.Log("打包:" + build.assetBundleName + "失败！！！！");
+                    return false;
+                }
+                foreach (var assetBundleName in buildManifest.GetAllAssetBundles())
+                {
+                    info.onBuild?.Invoke(assetBundleName);
+                }
+                Debug.Log("打包:" + build.assetBundleName + "成功！");
             }
 
-            foreach(var assetBundleName in buildManifest.GetAllAssetBundles())
-            {
-                if (info.onBuild != null)
-                {
-                    info.onBuild(assetBundleName);
-                }
-            }
             return true;
         }
     }
