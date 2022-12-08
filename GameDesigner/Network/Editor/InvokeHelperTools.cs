@@ -204,25 +204,12 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
 
     internal static void LoadData()
     {
-        var path = Application.dataPath.Replace("Assets", "") + "InvokeHelper.txt";
-        if (File.Exists(path))
-        {
-            var jsonStr = File.ReadAllText(path);
-            Config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<InvokeHelperConfig>(jsonStr);
-            ConfigObject.Config = Config;
-        }
-        else Config.onReloadInvoke = true;
+        Config = PersistHelper.Deserialize<InvokeHelperConfig>("invoke hepler.json");
     }
 
     internal static void SaveData()
     {
-        var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(Config);
-        foreach (var data in Config.rpcConfig)
-        {
-            File.WriteAllText(data.readConfigPath + "/InvokeHelper.txt", jsonstr);
-        }
-        var path = Application.dataPath + "/../InvokeHelper.txt";
-        File.WriteAllText(path, jsonstr);
+        PersistHelper.Serialize(Config, "invoke hepler.json");
     }
 
     [DidReloadScripts]

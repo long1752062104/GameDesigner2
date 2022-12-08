@@ -61,16 +61,12 @@ namespace MVC.View
         string[] types = new string[0];
         DateTime searchTime;
         int deleteArrayIndex = -1;
-        private string nameSpace; 
-        private string nameSpace1;
         bool doubleClick;
         int index;
         private string savePath;
         private string selectTypeName;
         internal UnityEngine.Object selectObject;
-        private string csprojFile;
-        private bool fullpath;
-        private string savePathExt;
+        JsonSave data = new JsonSave();
 
         public class JsonSave 
         {
@@ -79,6 +75,7 @@ namespace MVC.View
             public string csprojFile;
             public bool fullPath;
             public string savePathExt;
+            internal string nameSpace1;
         }
 
         private void OnEnable()
@@ -105,32 +102,19 @@ namespace MVC.View
                 savePath = Application.dataPath;
         }
 
+        private void OnDisable()
+        {
+            SaveData();
+        }
+
         void LoadData() 
         {
-            if (File.Exists(Application.dataPath.Replace("Assets", "") + "fcdata.txt"))
-            {
-                var fcdata = File.ReadAllText(Application.dataPath.Replace("Assets", "") + "fcdata.txt");
-                var jsonsave = Newtonsoft_X.Json.JsonConvert.DeserializeObject<JsonSave>(fcdata);
-                nameSpace = jsonsave.nameSpace;
-                savePath = jsonsave.savePath;
-                csprojFile = jsonsave.csprojFile;
-                fullpath = jsonsave.fullPath;
-                savePathExt = jsonsave.savePathExt;
-            }
+            data = PersistHelper.Deserialize<JsonSave>("fcdata.txt");
         }
 
         void SaveData() 
         {
-            var path = Application.dataPath.Replace("Assets", "") + "fcdata.txt";
-            var jsonSave = new JsonSave() { 
-                csprojFile = csprojFile,
-                nameSpace = nameSpace,
-                savePath = savePath,
-                fullPath = fullpath,
-                savePathExt = savePathExt,
-            };
-            var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(jsonSave);
-            File.WriteAllText(path, jsonstr);
+            PersistHelper.Serialize(data, "fcdata.txt");
         }
 
         internal void AddField(string typeName) 
@@ -259,18 +243,18 @@ namespace MVC.View
                     search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
                 }
             }
-            nameSpace = EditorGUILayout.TextField("namespace", nameSpace);
-            if (nameSpace != nameSpace1) 
+            data.nameSpace = EditorGUILayout.TextField("namespace", data.nameSpace);
+            if (data.nameSpace != data.nameSpace1) 
             {
-                nameSpace1 = nameSpace;
+                data.nameSpace1 = data.nameSpace;
                 SaveData();
             }
-            fullpath = EditorGUILayout.Toggle("(绝/相)对路径", fullpath);
+            data.fullPath = EditorGUILayout.Toggle("(绝/相)对路径", data.fullPath);
             var rect1 = EditorGUILayout.GetControlRect();
             EditorGUI.LabelField(rect1, "文件路径:", savePath);
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
-                if (fullpath)
+                if (data.fullPath)
                 {
                     savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                     SaveData();
@@ -299,18 +283,18 @@ namespace MVC.View
                 }
             }
             var rect4 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect4, "文件路径扩展:", savePathExt);
+            EditorGUI.LabelField(rect4, "文件路径扩展:", data.savePathExt);
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
             {
-                if (fullpath)
+                if (data.fullPath)
                 {
-                    savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    data.savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                     SaveData();
                 }
                 else
                 {
-                    savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    var strs = savePathExt.ToCharArray();
+                    data.savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    var strs = data.savePathExt.ToCharArray();
                     var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
                     int index = 0;
                     for (int i = 0; i < strs.Length; i++)
@@ -326,23 +310,23 @@ namespace MVC.View
                             break;
                         }
                     }
-                    savePathExt = savePathExt.Remove(0, index);
+                    data.savePathExt = data.savePathExt.Remove(0, index);
                     SaveData();
                 }
             }
             var rect3 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect3, "csproj文件:", csprojFile);
+            EditorGUI.LabelField(rect3, "csproj文件:", data.csprojFile);
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
-                if (fullpath) 
+                if (data.fullPath) 
                 {
-                    csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
+                    data.csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
                     SaveData();
                 }
                 else
                 {
-                    csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                    var strs = csprojFile.ToCharArray();
+                    data.csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
+                    var strs = data.csprojFile.ToCharArray();
                     var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
                     int index = 0;
                     for (int i = 0; i < strs.Length; i++)
@@ -358,13 +342,13 @@ namespace MVC.View
                             break;
                         }
                     }
-                    csprojFile = csprojFile.Remove(0, index);
+                    data.csprojFile = data.csprojFile.Remove(0, index);
                     SaveData();
                 }
             }
             if (GUILayout.Button("生成脚本(hotfix)"))
             {
-                bool hasns = nameSpace != "";
+                bool hasns = data.nameSpace != "";
                 Func<string> action = new Func<string>(()=> {
                     string str = "";
                     for (int i = 0; i < field.fields.Count; i++) 
@@ -401,7 +385,7 @@ namespace MVC.View
                 var scriptStr = "using MVC.View;\n" +
                 "using UnityEngine;\n" +
                 "using UnityEngine.UI;\n\n" +
-                (hasns ? "namespace " + nameSpace + "\n{\n" : "") +
+                (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
                 $"{(hasns ? "\t" : "")}" + $"//热更新生成的脚本, 请看gitee的mvc模块使用介绍图示\n" +
                 $"{(hasns ? "\t" : "")}" + $"public class {field.fieldName}\n" +
                 $"{(hasns ? "\t" : "")}" + "{\n" +
@@ -418,15 +402,15 @@ namespace MVC.View
                 (hasns ? "\n}" : "");
                 string path = "";
                 string path1 = "";
-                if (fullpath)
+                if (data.fullPath)
                 {
                     path = savePath + $"/{field.fieldName}.cs";
-                    path1 = csprojFile;
+                    path1 = data.csprojFile;
                 }
                 else
                 {
                     path = Application.dataPath.Replace("Assets", "") + savePath + $"/{field.fieldName}.cs";
-                    path1 = Application.dataPath.Replace("Assets", "") + csprojFile;
+                    path1 = Application.dataPath.Replace("Assets", "") + data.csprojFile;
                 }
                 if (File.Exists(path)) 
                 {
@@ -460,7 +444,7 @@ namespace MVC.View
             }
             if (GUILayout.Button("生成脚本(主工程)"))
             {
-                bool hasns = nameSpace != "";
+                bool hasns = data.nameSpace != "";
                 Func<string> action = new Func<string>(() => {
                     string str = "";
                     for (int i = 0; i < field.fields.Count; i++)
@@ -513,7 +497,7 @@ namespace MVC.View
                 var scriptStr = "using Net.Component;\n" +
                 "using UnityEngine;\n" +
                 "using UnityEngine.UI;\n\n" +
-                (hasns ? "namespace " + nameSpace + "\n{\n" : "") +
+                (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
                 $"{(hasns ? "\t" : "")}public partial class {field.fieldName} : SingleCase<{field.fieldName}>\n" +
                 $"{(hasns ? "\t" : "")}" + "{\n" +
                 action() +
@@ -525,15 +509,15 @@ namespace MVC.View
                 (hasns ? "\n}" : "");
                 string path = "";
                 string path1 = "";
-                if (fullpath)
+                if (data.fullPath)
                 {
                     path = savePath + $"/{field.fieldName}.cs";
-                    path1 = savePathExt + $"/{field.fieldName}Ext.cs";
+                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
                 }
                 else
                 {
                     path = Application.dataPath.Replace("Assets", "") + savePath + $"/{field.fieldName}.cs";
-                    path1 = Application.dataPath.Replace("Assets", "") + savePathExt + $"/{field.fieldName}Ext.cs";
+                    path1 = Application.dataPath.Replace("Assets", "") + data.savePathExt + $"/{field.fieldName}Ext.cs";
                 }
                 if (File.Exists(path)) 
                 {
@@ -546,7 +530,7 @@ namespace MVC.View
                     var scriptStr1 = "using Net.Component;\n" +
                     "using UnityEngine;\n" +
                     "using UnityEngine.UI;\n\n" +
-                    (hasns ? "namespace " + nameSpace + "\n{\n" : "") +
+                    (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
                     $"{(hasns ? "\t" : "")}public partial class {field.fieldName} : SingleCase<{field.fieldName}>\n" +
                     $"{(hasns ? "\t" : "")}" + "{\n" +
                     $"\n{(hasns ? "\t\t" : "\t")}void Start()\n" +

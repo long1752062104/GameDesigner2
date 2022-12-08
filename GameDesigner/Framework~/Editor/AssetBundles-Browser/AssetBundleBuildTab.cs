@@ -79,7 +79,6 @@ namespace AssetBundleBrowser
             m_UserData = new BuildTabData();
             m_UserData.m_OnToggles = new List<string>();
             m_UserData.m_UseDefaultPath = true;
-            m_UserData.m_AutoVersionAdd = true;
         }
 
         internal void OnDisable()
@@ -288,8 +287,18 @@ namespace AssetBundleBrowser
                 }
             }
 
-            m_UserData.m_Version = EditorGUILayout.TextField(m_Version, m_UserData.m_Version);
-            m_UserData.m_AutoVersionAdd = GUILayout.Toggle(m_UserData.m_AutoVersionAdd, "自动更新版本");
+            var version = EditorGUILayout.TextField("Version", GlobalSetting.Instance.Version);
+            if (GlobalSetting.Instance.Version != version)
+            {
+                GlobalSetting.Instance.Version = version;
+                EditorUtility.SetDirty(GlobalSetting.Instance);
+            }
+            var autoIncrement = EditorGUILayout.Toggle("自动更新版本号", GlobalSetting.Instance.AutoIncrement);
+            if (GlobalSetting.Instance.AutoIncrement != autoIncrement)
+            {
+                GlobalSetting.Instance.AutoIncrement = autoIncrement;
+                EditorUtility.SetDirty(GlobalSetting.Instance);
+            }
 
             // build.
             EditorGUILayout.Space();
@@ -354,27 +363,10 @@ namespace AssetBundleBrowser
                 }
             }
 
-            var sb = new StringBuilder();
-
-            var version = m_UserData.m_OutputPath + "/../Version.txt";
-            if (m_UserData.m_AutoVersionAdd)
-            {
-                var versions = m_UserData.m_Version.Split('.');
-                var v1s = int.Parse(versions[0]);
-                var v2s = int.Parse(versions[1]);
-                var v3s = int.Parse(versions[2]);
-                if (++v3s >= 10)
-                {
-                    v3s = 0;
-                    if (++v2s >= 10)
-                    {
-                        v1s++;
-                        v2s = 0;
-                    }
-                }
-                m_UserData.m_Version = $"{v1s}.{v2s}.{v3s}";
-            }
-            sb.AppendLine(m_UserData.m_Version);
+            var versionFile = m_UserData.m_OutputPath + "/../Version.txt";
+            var version = GlobalSetting.Instance.CheckAutoIncrement();
+            var dict = GlobalSetting.Instance.GetVersionPathDict();
+            dict["Version"] = version;
 
             var buildInfo = new ABBuildInfo();
             buildInfo.outputDirectory = m_UserData.m_OutputPath;
@@ -383,8 +375,7 @@ namespace AssetBundleBrowser
             buildInfo.onBuild = (assetBundleName) =>
             {
                 var path = m_UserData.m_OutputPath + "/" + assetBundleName;
-                WriteMD5(path, sb);
-
+                dict[path] = GlobalSetting.ToMD5(path);
                 if (m_InspectTab == null)
                     return;
                 m_InspectTab.AddBundleFolder(buildInfo.outputDirectory);
@@ -397,34 +388,21 @@ namespace AssetBundleBrowser
             var dllFiles = Directory.GetFiles("AssetBundles/Hotfix/", "*.bytes");
             foreach (var file in dllFiles)
             {
-                WriteMD5("AssetBundles/Hotfix/" + Path.GetFileName(file), sb);
+                var path = "AssetBundles/Hotfix/" + Path.GetFileName(file);
+                dict[path] = GlobalSetting.ToMD5(path);
             }
 
             dllFiles = Directory.GetFiles("AssetBundles/Table/", "*.json");
             foreach (var file in dllFiles)
             {
-                WriteMD5("AssetBundles/Table/" + Path.GetFileName(file), sb);
+                var path = "AssetBundles/Table/" + Path.GetFileName(file);
+                dict[path] = GlobalSetting.ToMD5(path);
             }
 
-            File.WriteAllText(version, sb.ToString());
+            GlobalSetting.Instance.SaveVersionDict(dict);
 
             if (m_CopyToStreaming.state)
                 DirectoryCopy("AssetBundles", m_streamingPath);
-        }
-
-        private static void WriteMD5(string path, StringBuilder sb)
-        {
-            var bytValue = File.ReadAllBytes(path);
-            var md5 = new MD5CryptoServiceProvider();
-            var bytHash = md5.ComputeHash(bytValue);
-            md5.Clear();
-            string sTemp = "";
-            for (int i = 0; i < bytHash.Length; i++)
-            {
-                sTemp += bytHash[i].ToString("X").PadLeft(2, '0');
-            }
-            var hash = sTemp.ToLower();
-            sb.AppendLine(path + "|" + hash);
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)
@@ -518,8 +496,6 @@ namespace AssetBundleBrowser
             internal CompressOptions m_Compression = CompressOptions.StandardCompression;
             internal string m_OutputPath = string.Empty;
             internal bool m_UseDefaultPath = true;
-            internal string m_Version = "1.0.0";
-            internal bool m_AutoVersionAdd;
         }
     }
 }

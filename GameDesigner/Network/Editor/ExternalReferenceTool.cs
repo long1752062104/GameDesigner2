@@ -22,6 +22,11 @@ public class ExternalReferenceTool : EditorWindow
         LoadData();
     }
 
+    private void OnDisable()
+    {
+        SaveData();
+    }
+
     private void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
@@ -194,19 +199,12 @@ public class ExternalReferenceTool : EditorWindow
 
     void LoadData()
     {
-        var path = Application.dataPath.Replace("Assets", "") + "data4.txt";
-        if (File.Exists(path))
-        {
-            var jsonStr = File.ReadAllText(path);
-            config = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Data>(jsonStr);
-        }
+        config = PersistHelper.Deserialize<Data>("external References.json");
     }
 
     void SaveData()
     {
-        var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(config);
-        var path = Application.dataPath.Replace("Assets", "") + "data4.txt";
-        File.WriteAllText(path, jsonstr);
+        PersistHelper.Serialize(config, "external References.json");
     }
 
     internal class Data

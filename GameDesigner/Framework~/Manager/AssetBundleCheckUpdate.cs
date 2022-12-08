@@ -1,5 +1,5 @@
 using HybridCLR;
-using System;
+using Net.Share;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -30,14 +30,12 @@ namespace Framework
 
         private IEnumerator CheckUpdate()
         {
-            var abPath = Application.persistentDataPath + "/";
-            var versionFile = abPath + "AssetBundles/Version.txt";
             var versionUrl = url + "AssetBundles/Version.txt";
-            var webRequest = UnityWebRequest.Get(versionUrl);
-            yield return webRequest.SendWebRequest();
-            if (!string.IsNullOrEmpty(webRequest.error))
+            var request = UnityWebRequest.Get(versionUrl);
+            yield return request.SendWebRequest();
+            if (!string.IsNullOrEmpty(request.error))
             {
-                Debug.LogError($"{versionUrl} 获取失败:" + webRequest.error);
+                Debug.LogError($"{versionUrl} 获取失败:" + request.error);
                 Global.UI.Message.ShowUI("资源请求", "版本信息请求失败!", result =>
                 {
 #if UNITY_EDITOR
@@ -47,11 +45,11 @@ namespace Framework
                 });
                 yield break;
             }
-            var text = webRequest.downloadHandler.text;
-            var versionText = "";
-            if (File.Exists(versionFile))
-                versionText = File.ReadAllText(versionFile);
-            if (text != versionText)
+            var text = request.downloadHandler.text;
+            request.Dispose();
+            var abPath = Application.persistentDataPath + "/";
+            var oldDict = GlobalSetting.Instance.GetVersionPathDict(abPath);
+            if (text != oldDict["Version"])
             {
                 bool msgClose = false;
                 bool msgResult = false;
@@ -71,36 +69,40 @@ namespace Framework
                     yield return null;
                 if (!msgResult)
                     yield break;
-                var path = Path.GetDirectoryName(versionFile);
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-                var lines = text.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 1; i < lines.Length; i++)
+                var dict = GlobalSetting.Instance.GetVersionDict(text);
+                foreach (var item in dict)
                 {
-                    var line = lines[i].Split('|');
-                    var abUrl = url + line[0];
-                    var savePath = abPath + line[0];
-                    using (var request = UnityWebRequest.Get(abUrl))
+                    if (item.Key == "Version")
+                        continue;
+                    if (oldDict.TryGetValue(item.Key, out var value))
+                        if (item.Value == value)
+                            continue;
+                    var abUrl = url + item.Key;
+                    var savePath = abPath + item.Key;
+                    request = UnityWebRequest.Head(abUrl);
+                    yield return request.SendWebRequest();
+                    if (!string.IsNullOrEmpty(request.error))
                     {
-                        request.downloadHandler = new DownloadHandlerFile(savePath);
-                        var requestAsyc = request.SendWebRequest();
-                        if (!string.IsNullOrEmpty(request.error))
-                        {
-                            Debug.LogError($"{abUrl} 获取失败:" + request.error);
-                            yield break;
-                        }
-                        string progressText;
-                        while (!requestAsyc.isDone)
-                        {
-                            progressText = $"{line[0]}下载进度:{(requestAsyc.progress * 100f).ToString("f2")}";
-                            Global.UI.Loading.ShowUI(progressText, requestAsyc.progress);
-                            yield return null;
-                        }
-                        progressText = $"{line[0]}下载完成!";
-                        Global.UI.Loading.ShowUI(progressText, requestAsyc.progress);
+                        Debug.LogError($"{abUrl} 获取资源失败:" + request.error);
+                        yield break;
                     }
+                    ulong totalLength = ulong.Parse(request.GetResponseHeader("Content-Length"));
+                    request.Dispose();
+                    request = new UnityWebRequest(abUrl, "GET", new DownloadHandlerFile(savePath), null);
+                    request.SendWebRequest();
+                    string progressText;
+                    string name = Path.GetFileName(item.Key);
+                    while (!request.isDone)
+                    {
+                        progressText = $"{name}下载进度:{ByteHelper.ToString(request.downloadedBytes)}/{ByteHelper.ToString(totalLength)}";
+                        Global.UI.Loading.ShowUI(progressText, request.downloadProgress);
+                        yield return null;
+                    }
+                    progressText = $"{name}下载完成!";
+                    Global.UI.Loading.ShowUI(progressText, request.downloadProgress);
+                    request.Dispose();
                 }
-                File.WriteAllText(versionFile, text);
+                GlobalSetting.Instance.SaveVersionDict(dict, abPath);
                 yield return new WaitForSeconds(1f);
             }
             LocalLoadAB();
@@ -126,8 +128,8 @@ namespace Framework
             var mode = HomologousImageMode.SuperSet;
             foreach (var dllPath in files)
             {
-                if (dllPath.Contains("Assembly-CSharp.dll.bytes"))
-                    continue;
+                //if (dllPath.Contains("Assembly-CSharp.dll.bytes"))
+                //    continue;
                 var dllBytes = File.ReadAllBytes(dllPath);
                 // 加载assembly对应的dll，会自动为它hook。一旦aot泛型函数的native函数不存在，用解释器版本代码
                 var err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, mode);

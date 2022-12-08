@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 public class BuildComponentTools : EditorWindow
 {
-    private string savePath, savePath1;
+    private Data data = new Data();
     private Object component;
     private Object oldComponent;
     private FoldoutData foldout;
@@ -25,6 +25,10 @@ public class BuildComponentTools : EditorWindow
     private void OnEnable()
     {
         LoadData();
+    }
+    private void OnDisable()
+    {
+        SaveData();
     }
     void OnGUI()
     {
@@ -153,16 +157,16 @@ public class BuildComponentTools : EditorWindow
             GUILayout.EndScrollView();
         }
         GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("保存路径:", savePath);
+        EditorGUILayout.LabelField("保存路径:", data.savePath);
         if (GUILayout.Button("选择路径", GUILayout.Width(100)))
         {
-            savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
+            data.savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
             SaveData();
         }
         GUILayout.EndHorizontal();
         if (GUILayout.Button("生成同步组件脚本", GUILayout.Height(40)))
         {
-            if (string.IsNullOrEmpty(savePath))
+            if (string.IsNullOrEmpty(data.savePath))
             {
                 EditorUtility.DisplayDialog("提示", "请选择生成脚本路径!", "确定");
                 return;
@@ -174,7 +178,7 @@ public class BuildComponentTools : EditorWindow
             }
             var type = component.GetType();
             var str = BuildNew(type, foldout.fields.ConvertAll((item) => item.select == 2 ? item.name : ""), foldout.fields.ConvertAll((item) => item.select == 1 ? item.name : ""));
-            File.WriteAllText(savePath + $"//Network{type.Name}.cs", str.ToString());
+            File.WriteAllText(data.savePath + $"//Network{type.Name}.cs", str.ToString());
             Debug.Log("生成脚本成功!"); 
             AssetDatabase.Refresh();
         }
@@ -495,29 +499,15 @@ namespace BuildComponent
 
     void LoadData()
     {
-        var path = Application.dataPath.Replace("Assets", "") + "data3.txt";
-        if (File.Exists(path))
-        {
-            var jsonStr = File.ReadAllText(path);
-            var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Data>(jsonStr);
-            savePath = data.savepath;
-            savePath1 = data.savepath1;
-        }
+        data = PersistHelper.Deserialize<Data>("networkComponentBuild.json");
     }
     void SaveData()
     {
-        Data data = new Data()
-        {
-            savepath = savePath,
-            savepath1 = savePath1,
-        };
-        var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(data);
-        var path = Application.dataPath.Replace("Assets", "") + "data3.txt";
-        File.WriteAllText(path, jsonstr);
+        PersistHelper.Serialize(data, "networkComponentBuild.json");
     }
     internal class Data
     {
-        public string savepath, savepath1;
+        public string savePath, savePath1;
     }
 }
 #endif

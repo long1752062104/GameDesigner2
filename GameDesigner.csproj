@@ -173,7 +173,6 @@
     <Compile Include="GameDesigner\Editor\StateManagerEditor.cs" />
     <Compile Include="GameDesigner\Helper\FilterTextHelper.cs" />
     <Compile Include="GameDesigner\MVC\Control\GameInit.cs" />
-    <Compile Include="GameDesigner\MVC\View\Editor\AssetBundleWindow.cs" />
     <Compile Include="GameDesigner\MVC\View\Editor\FieldCollectionEdit.cs" />
     <Compile Include="GameDesigner\MVC\View\FieldCollection.cs" />
     <Compile Include="GameDesigner\MVC\View\PanelBase.cs" />

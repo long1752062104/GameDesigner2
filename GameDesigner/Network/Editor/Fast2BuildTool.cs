@@ -9,22 +9,18 @@ using System.Linq;
 
 public class Fast2BuildTools2 : EditorWindow
 {
-    private List<FoldoutData> typeNames = new List<FoldoutData>();
     private string search = "", search1 = "";
     private string searchBind = "", searchBind1 = "";
     private DateTime searchTime;
     private TypeData[] types;
     private Vector2 scrollPosition;
     private Vector2 scrollPosition1;
-    private string savePath, savePath1;
     private bool serField = true;
     private bool serProperty = true;
-    private string typeEntry;
     private string typeEntry1;
-    private string methodEntry;
     private string methodEntry1;
     private string selectType;
-    private int showType;
+    private Data data = new Data();
 
     [MenuItem("GameDesigner/Network/Fast2BuildTool-2")]
     static void ShowWindow()
@@ -66,10 +62,10 @@ public class Fast2BuildTools2 : EditorWindow
         searchBind = EditorGUILayout.TextField("搜索已绑定类型", searchBind);
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("全部展开")) 
-            foreach (var type1 in typeNames)
+            foreach (var type1 in data.typeNames)
                 type1.foldout = true;
         if (GUILayout.Button("全部收起"))
-            foreach (var type1 in typeNames)
+            foreach (var type1 in data.typeNames)
                 type1.foldout = false;
         if (GUILayout.Button("全部字段更新"))
         {
@@ -80,7 +76,7 @@ public class Fast2BuildTools2 : EditorWindow
         if (GUILayout.Button("类型变动更新"))
         {
             var count = 0;
-            foreach (var typeName in typeNames)
+            foreach (var typeName in data.typeNames)
             {
                 foreach (var type1 in types)
                 {
@@ -101,12 +97,12 @@ public class Fast2BuildTools2 : EditorWindow
         }
         if (GUILayout.Button("显示类名"))
         {
-            showType = 1;
+            data.showType = 1;
             SaveData();
         }
         if (GUILayout.Button("完全显示"))
         {
-            showType = 0;
+            data.showType = 0;
             SaveData();
         }
         if (GUILayout.Button("引用文件夹"))
@@ -173,15 +169,15 @@ public class Fast2BuildTools2 : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
         scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
-        for (int i = 0; i < typeNames.Count; i++)
+        for (int i = 0; i < data.typeNames.Count; i++)
         {
-            var type1 = typeNames[i];
+            var type1 = data.typeNames[i];
             var rect = EditorGUILayout.GetControlRect();
             var color = GUI.color;
             if (type1.name == selectType)
                 GUI.color = Color.green;
             string name;
-            if (showType == 1)
+            if (data.showType == 1)
             {
                 var names = type1.name.Split('.');
                 name = names[names.Length - 1];
@@ -199,7 +195,7 @@ public class Fast2BuildTools2 : EditorWindow
             }
             if (GUI.Button(new Rect(rect.position + new Vector2(position.width - 50, 0), new Vector2(20, rect.height)), "x"))
             {
-                typeNames.Remove(type1);
+                data.typeNames.Remove(type1);
                 SaveData();
                 return;
             }
@@ -221,7 +217,7 @@ public class Fast2BuildTools2 : EditorWindow
                 });
                 menu.AddItem(new GUIContent("移除"), false, () =>
                 {
-                    typeNames.Remove(type1);
+                    data.typeNames.Remove(type1);
                     SaveData();
                 });
                 menu.ShowAsContext();
@@ -258,24 +254,24 @@ public class Fast2BuildTools2 : EditorWindow
         if (DateTime.Now > searchTime & searchBind.Length > 0)
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 6));
-            foreach (var type1 in typeNames)
+            foreach (var type1 in data.typeNames)
             {
                 if (!type1.name.ToLower().Contains(searchBind.ToLower()))
                     continue;
                 if (GUILayout.Button(type1.name))
                 {
                     var scrollPosition2 = new Vector2();
-                    for (int i = 0; i < typeNames.Count; i++)
+                    for (int i = 0; i < data.typeNames.Count; i++)
                     {
-                        if (typeNames[i].name == type1.name) 
+                        if (data.typeNames[i].name == type1.name) 
                         {
                             scrollPosition1 = scrollPosition2;
                             selectType = type1.name;
                             break;
                         }
                         scrollPosition2.y += 20f;//20是foldout标签
-                        if (typeNames[i].foldout)
-                            scrollPosition2.y += typeNames[i].fields.Count * 20f;
+                        if (data.typeNames[i].foldout)
+                            scrollPosition2.y += data.typeNames[i].fields.Count * 20f;
                     }
                     break;
                 }
@@ -285,44 +281,44 @@ public class Fast2BuildTools2 : EditorWindow
         serField = EditorGUILayout.Toggle("序列化字段:", serField);
         serProperty = EditorGUILayout.Toggle("序列化属性:", serProperty);
         GUILayout.BeginHorizontal();
-        typeEntry = EditorGUILayout.TextField("收集类名:", typeEntry);
-        methodEntry = EditorGUILayout.TextField("收集方法:", methodEntry);
-        if (typeEntry != typeEntry1)
+        data.typeEntry = EditorGUILayout.TextField("收集类名:", data.typeEntry);
+        data.methodEntry = EditorGUILayout.TextField("收集方法:", data.methodEntry);
+        if (data.typeEntry != typeEntry1)
         {
-            typeEntry1 = typeEntry;
+            typeEntry1 = data.typeEntry;
             SaveData();
         }
-        if (methodEntry != methodEntry1)
+        if (data.methodEntry != methodEntry1)
         {
-            methodEntry1 = methodEntry;
+            methodEntry1 = data.methodEntry;
             SaveData();
         }
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("保存路径:", savePath);
+        EditorGUILayout.LabelField("保存路径:", data.savePath);
         if (GUILayout.Button("选择路径", GUILayout.Width(100)))
         {
-            savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
+            data.savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
             SaveData();
         }
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("保存路径1:", savePath1);
+        EditorGUILayout.LabelField("保存路径1:", data.savePath1);
         if (GUILayout.Button("选择路径1", GUILayout.Width(100)))
         {
-            savePath1 = EditorUtility.OpenFolderPanel("保存路径", "", "");
+            data.savePath1 = EditorUtility.OpenFolderPanel("保存路径", "", "");
             SaveData();
         }
         GUILayout.EndHorizontal();
         if (GUILayout.Button("生成绑定代码", GUILayout.Height(30)))
         {
-            if (string.IsNullOrEmpty(savePath))
+            if (string.IsNullOrEmpty(data.savePath))
             {
                 EditorUtility.DisplayDialog("提示", "请选择生成脚本路径!", "确定");
                 return;
             }
             List<Type> types = new List<Type>();
-            foreach (var type1 in typeNames)
+            foreach (var type1 in data.typeNames)
             {
                 Type type = Net.Serialize.NetConvertOld.GetType(type1.name);
                 if (type == null)
@@ -330,20 +326,20 @@ public class Fast2BuildTools2 : EditorWindow
                     Debug.Log($"类型:{type1.name}已不存在!");
                     continue;
                 }
-                Fast2BuildMethod.Build(type, savePath, serField, serProperty, type1.fields.ConvertAll((item)=> !item.serialize ? item.name : ""));
-                Fast2BuildMethod.BuildArray(type, savePath);
-                Fast2BuildMethod.BuildGeneric(type, savePath);
-                if (!string.IsNullOrEmpty(savePath1)) 
+                Fast2BuildMethod.Build(type, data.savePath, serField, serProperty, type1.fields.ConvertAll((item)=> !item.serialize ? item.name : ""));
+                Fast2BuildMethod.BuildArray(type, data.savePath);
+                Fast2BuildMethod.BuildGeneric(type, data.savePath);
+                if (!string.IsNullOrEmpty(data.savePath1)) 
                 {
-                    Fast2BuildMethod.Build(type, savePath1, serField, serProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""));
-                    Fast2BuildMethod.BuildArray(type, savePath1);
-                    Fast2BuildMethod.BuildGeneric(type, savePath1);
+                    Fast2BuildMethod.Build(type, data.savePath1, serField, serProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""));
+                    Fast2BuildMethod.BuildArray(type, data.savePath1);
+                    Fast2BuildMethod.BuildGeneric(type, data.savePath1);
                 }
                 types.Add(type);
             }
-            if (!string.IsNullOrEmpty(typeEntry)) 
+            if (!string.IsNullOrEmpty(data.typeEntry)) 
             {
-                var types1 = (Type[])Net.Serialize.NetConvertOld.GetType(typeEntry).GetMethod(methodEntry).Invoke(null, null);
+                var types1 = (Type[])Net.Serialize.NetConvertOld.GetType(data.typeEntry).GetMethod(data.methodEntry).Invoke(null, null);
                 foreach (var type in types1)
                 {
                     if (type.IsGenericType)
@@ -356,36 +352,35 @@ public class Fast2BuildTools2 : EditorWindow
                         else if (args.Length == 2)
                         {
                             var text = Fast2BuildMethod.BuildDictionary(type, out var className1);
-                            File.WriteAllText(savePath + $"//{className1}.cs", text);
+                            File.WriteAllText(data.savePath + $"//{className1}.cs", text);
                         }
                     }
                     else 
                     {
-                        Fast2BuildMethod.Build(type, savePath, serField, serProperty, new List<string>());
-                        Fast2BuildMethod.BuildArray(type, savePath);
-                        Fast2BuildMethod.BuildGeneric(type, savePath);
-                        if (!string.IsNullOrEmpty(savePath1))
+                        Fast2BuildMethod.Build(type, data.savePath, serField, serProperty, new List<string>());
+                        Fast2BuildMethod.BuildArray(type, data.savePath);
+                        Fast2BuildMethod.BuildGeneric(type, data.savePath);
+                        if (!string.IsNullOrEmpty(data.savePath1))
                         {
-                            Fast2BuildMethod.Build(type, savePath1, serField, serProperty, new List<string>());
-                            Fast2BuildMethod.BuildArray(type, savePath1);
-                            Fast2BuildMethod.BuildGeneric(type, savePath1);
+                            Fast2BuildMethod.Build(type, data.savePath1, serField, serProperty, new List<string>());
+                            Fast2BuildMethod.BuildArray(type, data.savePath1);
+                            Fast2BuildMethod.BuildGeneric(type, data.savePath1);
                         }
                     }
                     types.Add(type);
                 }
             }
-            Fast2BuildMethod.BuildBindingType(types, savePath);
+            Fast2BuildMethod.BuildBindingType(types, data.savePath);
             Debug.Log("生成完成.");
             AssetDatabase.Refresh();
         }
-        //EditorGUILayout.HelpBox("使用时在Start方法初始化: Net.Serialize.NetConvertFast2.AddSerializeType3s(Binding.BindingType.TYPES);", MessageType.Info);
         if (EditorGUI.EndChangeCheck())
             SaveData();
     }
 
     private void AddSerType(TypeData type1)
     {
-        if (typeNames.Find(item => item.name == type1.name) == null)
+        if (data.typeNames.Find(item => item.name == type1.name) == null)
         {
             var fields = type1.type.GetFields(BindingFlags.Public | BindingFlags.Instance);
             var properties = type1.type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -406,14 +401,14 @@ public class Fast2BuildTools2 : EditorWindow
                     continue;
                 fields1.Add(new FieldData() { name = item.Name, serialize = true });
             }
-            typeNames.Add(new FoldoutData() { name = type1.name, fields = fields1, foldout = false });
+            data.typeNames.Add(new FoldoutData() { name = type1.name, fields = fields1, foldout = false });
         }
         SaveData();
     }
 
     private void UpdateFields() 
     {
-        foreach (var fd in typeNames) 
+        foreach (var fd in data.typeNames) 
         {
             UpdateField(fd);
         }
@@ -467,33 +462,12 @@ public class Fast2BuildTools2 : EditorWindow
 
     void LoadData() 
     {
-        var path = Application.dataPath.Replace("Assets", "") + "data2.txt";
-        if (File.Exists(path))
-        {
-            var jsonStr = File.ReadAllText(path);
-            var data = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Data>(jsonStr);
-            typeNames = data.typeNames;
-            savePath = data.savepath; 
-            savePath1 = data.savepath1;
-            typeEntry = data.typeEntry;
-            methodEntry = data.methodEntry;
-            showType = data.showType;
-        }
+        data = PersistHelper.Deserialize<Data>("fastProtoBuild.json");
     }
 
     void SaveData()
     {
-        Data data = new Data() { 
-            typeNames = typeNames,
-            savepath = savePath,
-            savepath1 = savePath1,
-            typeEntry = typeEntry,
-            methodEntry = methodEntry,
-            showType = showType,
-        };
-        var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(data);
-        var path = Application.dataPath.Replace("Assets", "") + "data2.txt";
-        File.WriteAllText(path, jsonstr);
+        PersistHelper.Serialize(data, "fastProtoBuild.json");
     }
 
     internal class FoldoutData 
@@ -518,7 +492,7 @@ public class Fast2BuildTools2 : EditorWindow
 
     internal class Data
     {
-        public string savepath, savepath1;
+        public string savePath, savePath1;
         public List<FoldoutData> typeNames;
         public string typeEntry;
         public string methodEntry;

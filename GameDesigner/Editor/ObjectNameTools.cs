@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System.IO;
 
 public class ObjectName
 {
@@ -25,12 +24,12 @@ public class ObjectNameTools : EditorWindow
 
     private void OnEnable()
     {
-        var path = Application.dataPath.Replace("Assets", "") + "nametoolsData.txt";
-        if (File.Exists(path))
-        {
-            var jsonStr = File.ReadAllText(path);
-            objNames = Newtonsoft_X.Json.JsonConvert.DeserializeObject<List<ObjectName>>(jsonStr);
-        }
+        objNames = PersistHelper.Deserialize<List<ObjectName>>("nameToolsData.json");
+    }
+
+    private void OnDisable()
+    {
+        Save();
     }
 
     private void OnGUI()
@@ -70,9 +69,7 @@ public class ObjectNameTools : EditorWindow
 
     void Save()
     {
-        var jsonstr = Newtonsoft_X.Json.JsonConvert.SerializeObject(objNames);
-        var path = Application.dataPath.Replace("Assets", "") + "nametoolsData.txt";
-        File.WriteAllText(path, jsonstr);
+        PersistHelper.Serialize(objNames, "nameToolsData.json");
     }
 }
 #endif
