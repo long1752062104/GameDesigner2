@@ -97,6 +97,34 @@ namespace Framework
             throw new Exception("找不到资源:" + assetPath);
         }
 
+        /// <summary>
+        /// 加载资源，遍历所有资源进行查找尝试加载资源， 如果成功则直接返回
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="assetPath"></param>
+        /// <returns></returns>
+        public T LoadAssetWithAll<T>(string assetPath) where T : Object
+        {
+            foreach (var assetBundleInfo in assetBundleInfos)
+            {
+                if (assetBundleInfo.assetBundle != null)
+                {
+                    var assetObj = assetBundleInfo.assetBundle.LoadAsset<T>(assetPath);
+                    if (assetObj != null)
+                        return assetObj;
+                }
+                if (assetPath.Contains("Resources/"))
+                {
+                    var path = assetPath.Split(new string[] { "Resources/" }, 0);
+                    var resPath = path[1].Split('.');
+                    var resObj = Resources.Load<T>(resPath[0]);
+                    if (resObj != null)
+                        return resObj;
+                }
+            }
+            throw new Exception("找不到资源:" + assetPath);
+        }
+
         public GameObject Instantiate(string assetPath, Transform parent = null)
         {
             return Instantiate(AssetBundleType.All, assetPath, parent);

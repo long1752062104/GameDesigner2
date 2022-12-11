@@ -18,6 +18,7 @@ namespace Framework
         [SerializeField] private ConfigManager config;
         [SerializeField] private NetworkManager network;
         [SerializeField] private Logger logger;
+        [SerializeField] private ObjectPool pool;
 
         public static ResourcesManager Resources => Instance.resources;
         public static UIManager UI => Instance.ui;
@@ -29,6 +30,7 @@ namespace Framework
         public static ConfigManager Config => Instance.config;
         public static NetworkManager Network => Instance.network;
         public static Logger Logger => Instance.logger;
+        public static ObjectPool Pool => Instance.pool;
 
         void Awake()
         {

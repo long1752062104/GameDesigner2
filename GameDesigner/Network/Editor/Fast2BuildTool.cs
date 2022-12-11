@@ -493,7 +493,7 @@ public class Fast2BuildTools2 : EditorWindow
     internal class Data
     {
         public string savePath, savePath1;
-        public List<FoldoutData> typeNames;
+        public List<FoldoutData> typeNames = new List<FoldoutData>();
         public string typeEntry;
         public string methodEntry;
         public int showType;

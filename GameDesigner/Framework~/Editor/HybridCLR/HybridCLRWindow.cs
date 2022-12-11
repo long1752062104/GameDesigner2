@@ -1,9 +1,8 @@
+using Framework;
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;

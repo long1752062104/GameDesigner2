@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using AssetBundleBrowser.AssetBundleDataSource;
 using System.Text;
 using System.Security.Cryptography;
+using Framework;
 
 namespace AssetBundleBrowser
 {

@@ -989,7 +989,8 @@ namespace Net.System
                 }
                 else
                 {
-                    for (byte i = num; i > 0; i++)
+                    num -= 1;
+                    for (byte i = num; i >= 0; i--)
                         value |= (uint)ptr[i] << (i * 8);
                     return value;
                 }
@@ -1034,7 +1035,8 @@ namespace Net.System
                 }
                 else
                 {
-                    for (byte i = num; i > 0; i++)
+                    num -= 1;
+                    for (byte i = num; i >= 0; i--)
                         value |= (ulong)ptr[i] << (i * 8);
                     return value;
                 }

@@ -51,7 +51,7 @@ namespace Framework
                     goto J;
             var dataTable = Global.Table.GetTable(sheetName);
             var dataRows = dataTable.Select($"Name = '{formName}'");
-            var path = dataRows[0]["Path"].ToString();
+            var path = dataRows[0]["Path"].AsString();
             var level = dataRows[0]["Level"].AsInt();
             form = Global.Resources.Instantiate<UIFormBase>(path, Levels[level]);
             formDict[formName] = form;

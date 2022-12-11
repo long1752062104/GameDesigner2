@@ -1,7 +1,9 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class Tools
@@ -25,13 +27,20 @@ public class Tools
 		EditorUtility.SetDirty(target);
 	}
 
+	[MenuItem("GameDesigner/Framework/OpenGameConfig", priority = 5)]
+	private static void OpenExcel()
+	{
+		var path = "Tools/Excel/GameConfig.xls";
+		InternalEditorUtility.OpenFileAtLineExternal(path, 0);
+	}
+
 	[MenuItem("GameDesigner/Framework/Install", priority = 1)]
 	private static void Install()
 	{
 		var path = "Tools/Excel/";
 		if (!Directory.Exists(path))
 			Directory.CreateDirectory(path);
-		var files = Directory.GetFiles(Application.dataPath, "GameData.xls", SearchOption.AllDirectories);
+		var files = Directory.GetFiles(Application.dataPath, "GameConfig.xls", SearchOption.AllDirectories);
 		var excelPath = "";
 		foreach (var file in files)
         {
@@ -42,10 +51,24 @@ public class Tools
 				break;
 			}
         }
-		var excelPath1 = path + "GameData.xls";
+		var excelPath1 = path + "GameConfig.xls";
 		if (!File.Exists(excelPath1))//如果存在表则不能复制进去了, 避免使用者数据丢失
 			File.Copy(excelPath, excelPath1);
 		Debug.Log($"复制配置表格文件完成:{excelPath1}");
+
+		var paths = new List<string>() { 
+			"Assets/Scripts/Data/DB/", "Assets/Scripts/Data/DBExt/", "Assets/Scripts/Data/Proto/",
+			"Assets/Scripts/Data/Binding/", "Assets/Scripts/Data/BindingExt/", "Assets/Resources/Audio",
+			"Assets/Resources/Prefabs", "Assets/Resources/UI", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
+
+		};
+
+        foreach (var item in paths)
+        {
+			if (!Directory.Exists(item))
+				Directory.CreateDirectory(item);
+			Debug.Log($"创建的脚本路径:{item}");
+		}
 
 		Debug.Log($"请生成ab文件!!!!!!!!");
 	}
