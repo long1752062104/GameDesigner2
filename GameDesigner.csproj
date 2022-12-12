@@ -152,7 +152,6 @@
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertBinary.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertFast.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertFast2.cs" />
-    <Compile Include="GameDesigner\Network\core\Serialize\NetConvertOld.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NonSerialized.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetPlayer.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetPort.cs" />
@@ -164,6 +163,7 @@
     <Compile Include="GameDesigner\Network\core\Share\DataModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\EventHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\FileData.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\FuncData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IAdapter.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDataRow.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDebugHandle.cs" />

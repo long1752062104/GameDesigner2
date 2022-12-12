@@ -5,6 +5,7 @@
     using global::System.Collections.Generic;
     using Net.Share;
     using Net.System;
+    using Net.Helper;
 
     /// <summary>
     /// 网络转换核心 2019.7.16
@@ -72,7 +73,7 @@
                 while (segment.Position < segment.Offset + segment.Count)
                 {
                     var typeName = segment.ReadString();
-                    var type = NetConvertOld.GetTypeAll(typeName);
+                    var type = AssemblyHelper.GetType(typeName);
                     if (type == null)
                     {
                         fdata.error = true;

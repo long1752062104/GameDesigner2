@@ -66,7 +66,7 @@
             object[] pars1 = new object[pars.Length];
             for (int i = 0; i < pars.Length; i++)
             {
-                global::System.Type type = NetConvertOld.GetType(pars[i].typeName);
+                var type = Net.Helper.AssemblyHelper.GetType(pars[i].typeName);
                 object obj = JsonConvert.DeserializeObject(pars[i].jsonStr, type);
                 pars1[i] = obj;
             }
