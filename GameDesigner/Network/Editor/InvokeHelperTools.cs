@@ -86,7 +86,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     for (int i = 0; i < count; i++)
                     {
                         if (Config.rpcConfig.Count > 0)
-                            Config.rpcConfig.Add(Clone.DeepCopy<InvokeHelperConfigData>(Config.rpcConfig[Config.rpcConfig.Count - 1]));
+                            Config.rpcConfig.Add(CloneHelper.DeepCopy<InvokeHelperConfigData>(Config.rpcConfig[Config.rpcConfig.Count - 1]));
                         else
                             Config.rpcConfig.Add(new InvokeHelperConfigData());
                     }

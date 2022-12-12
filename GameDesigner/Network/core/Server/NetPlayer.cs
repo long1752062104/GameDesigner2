@@ -9,7 +9,6 @@
     using global::System.Reflection;
     using Net.System;
     using Net.Helper;
-    using Net.Plugins;
     using global::System.Collections.Concurrent;
     using global::System.IO;
 
@@ -82,7 +81,7 @@
         /// <summary>
         /// 跳动的心
         /// </summary>
-        internal byte heart = 0;
+        public byte heart { get; set; } = 0;
         /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
         /// </summary>
@@ -99,11 +98,11 @@
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> tcpRPCModels = new QueueSafe<RPCModel>();
         internal QueueSafe<RPCModel> udpRPCModels = new QueueSafe<RPCModel>();
-        internal QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
-        internal ThreadGroup Group;
+        public QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
+        public ThreadGroup Group;
         internal int SceneHash;
         public bool Login { get; internal set; }
-        internal bool isDispose;
+        public bool isDispose { get; internal set; }
         /// <summary>
         /// 关闭发送数据, 当关闭发送数据后, 数据将会停止发送
         /// </summary>
@@ -117,7 +116,7 @@
         /// <summary>
         /// 确定是否是冗余连接
         /// </summary>
-        public bool Redundant { get; internal set; }
+        public bool Redundant { get; set; }
         /// <summary>
         /// 当前排队座号
         /// </summary>
@@ -126,7 +125,7 @@
         /// 是否属于排队状态
         /// </summary>
         public bool IsQueueUp => QueueUpNo > 0;
-        public GcpKernel Gcp { get; set; }
+        public IGcp Gcp { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>

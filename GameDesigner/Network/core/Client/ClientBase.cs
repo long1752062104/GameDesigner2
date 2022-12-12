@@ -34,7 +34,6 @@ namespace Net.Client
     using Net.Serialize;
     using Net.Helper;
     using global::System.Security.Cryptography;
-    using Net.Plugins;
     using global::System.Text.RegularExpressions;
 
     /// <summary>
@@ -353,8 +352,8 @@ namespace Net.Client
         /// TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
         /// </summary>
         protected int stack;
-        internal int stackIndex;
-        internal int stackCount;
+        protected int stackIndex;
+        protected int stackCount;
         /// <summary>
         /// TCP叠包临时缓存流
         /// </summary>
@@ -448,7 +447,7 @@ namespace Net.Client
             }
         }
         protected readonly object SyncRoot = new object();
-        public GcpKernel Gcp { get; set; }
+        public IGcp Gcp { get; set; }
 
         /// <summary>
         /// 构造函数

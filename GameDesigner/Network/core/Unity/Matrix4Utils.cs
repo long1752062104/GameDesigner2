@@ -1,8 +1,8 @@
 ﻿namespace Net.Component
 {
-    internal static class Matrix4Utils
+    public static class Matrix4Utils
     {
-        internal static Matrix4x4 GetPosition(this Matrix4x4 self, Vector3 position)
+        public static Matrix4x4 GetPosition(this Matrix4x4 self, Vector3 position)
         {
             Matrix4x4 matrix = Matrix4x4.identity;
             matrix.m03 = position.x;
@@ -11,7 +11,7 @@
             return matrix;
         }
 
-        internal static Matrix4x4 GetPosition(Vector3 position)
+        public static Matrix4x4 GetPosition(Vector3 position)
         {
             Matrix4x4 matrix = Matrix4x4.identity;
             matrix.m03 = position.x;

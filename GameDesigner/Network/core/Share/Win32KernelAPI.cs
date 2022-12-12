@@ -37,19 +37,19 @@
         public unsafe static extern int send([In] IntPtr socketHandle, [In] byte* pinnedBuffer, [In] int len, [In] SocketFlags socketFlags);
 
         [DllImport("ws2_32.dll", SetLastError = true)]
-        internal static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] IntPtr nullTimeout);
+        public static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] IntPtr nullTimeout);
 
         [DllImport("ws2_32.dll", SetLastError = true)]
-        internal static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] ref TimeValue timeout);
+        public static extern int select([In] int ignoredParameter, [In][Out] IntPtr[] readfds, [In][Out] IntPtr[] writefds, [In][Out] IntPtr[] exceptfds, [In] ref TimeValue timeout);
 
         [DllImport("ws2_32.dll", SetLastError = true)]
-        internal unsafe static extern int recv([In] IntPtr socketHandle, [In] byte* pinnedBuffer, [In] int len, [In] SocketFlags socketFlags);
+        public unsafe static extern int recv([In] IntPtr socketHandle, [In] byte* pinnedBuffer, [In] int len, [In] SocketFlags socketFlags);
 
         [DllImport("Kernel32.dll")]
         private static extern Boolean SetSystemTime([In, Out] SystemTime st);
 
         [DllImport("ws2_32.dll", SetLastError = true)]
-        internal static extern SocketError WSASendTo([In] IntPtr socketHandle, [In] ref WSABuffer buffer, [In] int bufferCount, out int bytesTransferred, [In] SocketFlags socketFlags, [In] byte[] socketAddress, [In] int socketAddressSize, [In] SafeHandle overlapped, [In] IntPtr completionRoutine);
+        public static extern SocketError WSASendTo([In] IntPtr socketHandle, [In] ref WSABuffer buffer, [In] int bufferCount, out int bytesTransferred, [In] SocketFlags socketFlags, [In] byte[] socketAddress, [In] int socketAddressSize, [In] SafeHandle overlapped, [In] IntPtr completionRoutine);
 
         /// <summary>
         /// 设置系统时间
@@ -90,10 +90,10 @@
         public ushort milliseconds;
     }
 
-    internal struct WSABuffer
+    public struct WSABuffer
     {
-        internal int Length;
-        internal IntPtr Pointer;
+        public int Length;
+        public IntPtr Pointer;
     }
 
     internal class SafeNativeOverlapped : SafeHandle

@@ -470,27 +470,27 @@ public class Fast2BuildTools2 : EditorWindow
         PersistHelper.Serialize(data, "fastProtoBuild.json");
     }
 
-    internal class FoldoutData 
+    public class FoldoutData 
     {
         public string name;
         public bool foldout;
         public List<FieldData> fields = new List<FieldData>();
     }
 
-    internal class FieldData 
+    public class FieldData 
     {
         public string name;
         public bool serialize;
         public int select;
     }
 
-    internal class TypeData 
+    public class TypeData 
     {
         public string name;
         public Type type;
     }
 
-    internal class Data
+    public class Data
     {
         public string savePath, savePath1;
         public List<FoldoutData> typeNames = new List<FoldoutData>();

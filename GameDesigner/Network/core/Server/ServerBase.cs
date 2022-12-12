@@ -34,9 +34,10 @@ namespace Net.Server
     using Net.Serialize;
     using Net.Helper;
     using global::System.Security.Cryptography;
-    using Net.Plugins;
-    using Microsoft.Win32;
     using Net.Event;
+#if WINDOWS
+    using Microsoft.Win32;
+#endif
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -425,6 +426,7 @@ namespace Net.Server
         /// </summary>
         protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();
         private int sendFileTick, recvFileTick;
+        private int checkPlayersEventID;
         #endregion
 
         /// <summary>
@@ -1310,8 +1312,8 @@ namespace Net.Server
         {
             //如果一个账号快速登录断开,再登录断开,心跳检查断线会延迟,导致无法移除掉已在游戏的客户端对象
             //如果此账号的玩家已经登录游戏, 则会先进行退出登录, 此客户端才能登录进来
-            if (Players.TryGetValue(client.PlayerID, out var client1)) 
-                SignOut(client1);
+            if (Players.TryRemove(client.PlayerID, out var client1)) 
+                SignOutInternal(client1);
             //当此玩家一直从登录到被退出登录, 再登录后PlayerID被清除了, 如果是这种情况下, 开发者也没有给PlayerID赋值, 那么默认就需要给uid得值
             if (string.IsNullOrEmpty(client.PlayerID))
                 client.PlayerID = client.UserID.ToString();
@@ -2656,9 +2658,12 @@ namespace Net.Server
         {
             if (!client.Login)
                 return;
+            SignOutInternal(client);
+        }
+
+        protected void SignOutInternal(Player client) 
+        {
             SendDirect(client);
-            Players.TryRemove(client.PlayerID, out _);
-            //UIDClients.TryRemove(client.UserID, out _); //uid还在使用, 不能移除, uid需要等到此客户端真正断线后才会移除, 退出登录不等于断线
             ExitScene(client, false);
             OnSignOut(client);
             client.OnSignOut();
@@ -2866,7 +2871,7 @@ namespace Net.Server
         /// <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
         public virtual void SetAttackProtect(int synAttackProtect = 1, int tcpMaxConnectResponseRetransmissions = 2, int tcpMaxHalfOpen = 500, int tcpMaxHalfOpenRetried = 400, int tcpMaxPortsExhausted = 5)
         {
-# if WINDOWS
+#if WINDOWS
             RegistryKey hklm = Registry.LocalMachine;
             RegistryKey tcpParams = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", true);
             tcpParams.SetValue("SynAttackProtect", synAttackProtect, RegistryValueKind.DWord);
@@ -2877,6 +2882,31 @@ namespace Net.Server
             hklm.Close();
             tcpParams.Close();
 #endif
+        }
+
+        /// <summary>
+        /// 检查在线人数，当服务器长时间运行，显示的在线人数不对时，可以调用此方法进行设置每millisecond毫秒检查一次 默认是一小时检查一次
+        /// </summary>
+        /// <param name="millisecond"></param>
+        public void CheckOnLinePlayers(int millisecond = 1000 * 60 * 60)
+        {
+            var @event = ThreadManager.Event.GetEvent(checkPlayersEventID);
+            if (@event != null)
+            {
+                @event.SetIntervalTime((uint)millisecond);
+                return;
+            }
+            checkPlayersEventID = ThreadManager.Event.AddEvent("CheckOnLinePlayers", millisecond, () =>
+            {
+                foreach (var item in Players)
+                {
+                    if (item.Value.isDispose | !item.Value.Login)
+                    {
+                        Players.TryRemove(item.Key, out _);
+                    }
+                }
+                return true;
+            });
         }
     }
 }

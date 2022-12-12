@@ -7,11 +7,11 @@ namespace Net.Share
     [Serializable]
     public class SyncVarInfo
     {
-        internal ushort id;
-        internal bool authorize;
-        internal MethodInfo onValueChanged;
-        internal bool isDispose;
-        internal uint tick;
+        public ushort id;
+        public bool authorize;
+        public MethodInfo onValueChanged;
+        public bool isDispose;
+        public uint tick;
 
         public virtual void SetTarget(object target) { }
         public virtual void SetDefaultValue() { }

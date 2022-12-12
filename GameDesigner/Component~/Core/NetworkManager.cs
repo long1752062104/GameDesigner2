@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Net.Client;
 using Net.Event;
 using Net.Share;
@@ -6,58 +7,16 @@ using UnityEngine;
 using System.Net;
 using System.Threading.Tasks;
 using System;
-using Net.Adapter;
 using Net.Helper;
 
-namespace Framework
+namespace Net.Component
 {
-    /// <summary>
-    /// 传输协议
-    /// </summary>
-    public enum TransportProtocol
-    {
-        Tcp, Gcp, Udx, Kcp, Web
-    }
-
-    public enum LogMode
-    {
-        None,
-        /// <summary>
-        /// 消息输出, 警告输出, 错误输出, 三种模式各自输出
-        /// </summary>
-        Default,
-        /// <summary>
-        /// 所有消息输出都以白色消息输出
-        /// </summary>
-        LogAll,
-        /// <summary>
-        /// 警告信息和消息一起输出为白色
-        /// </summary>
-        LogAndWarning,
-        /// <summary>
-        /// 警告和错误都输出为红色提示
-        /// </summary>
-        WarnAndError,
-    }
-
-    /// <summary>
-    /// 网络解析适配器
-    /// </summary>
-    public enum SerializeAdapterType
-    {
-        Default,//默认序列化, protobuff + json
-        PB_JSON_FAST,//快速序列化 protobuff + json
-        Binary,//快速序列化 需要注册远程类型
-        Binary2,//极速序列化 Binary + Binary2 需要生成序列化类型, 菜单GameDesigner/Netowrk/Fast2BuildTools
-        Binary3//极速序列化 需要生成序列化类型, 菜单GameDesigner/Netowrk/Fast2BuildTools
-    }
-
     [Serializable]
-    public class ClientGourp
+    public class ClientGourp 
     {
         public string name;
         public ClientBase _client;
-        public TransportProtocol protocol = TransportProtocol.Gcp;
+        public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 9543;
         public bool localTest;//本机测试
@@ -68,10 +27,6 @@ namespace Framework
         [Header("序列化适配器")]
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
-        public int reconnectCount = 10;
-        public int reconnectInterval = 2000;
-        public byte heartLimit = 5;
-        public int heartInterval = 1000;
 
         public ClientBase Client
         {
@@ -87,9 +42,6 @@ namespace Framework
                 _client.port = port;
                 _client.LogRpc = debugRpc;
                 _client.MD5CRC = md5CRC;
-                _client.ReconnectCount = reconnectCount;
-                _client.ReconnectInterval = reconnectInterval;
-                _client.SetHeartTime(heartLimit, heartInterval);
                 return _client;
             }
             set { _client = value; }
@@ -113,16 +65,16 @@ namespace Framework
                 case SerializeAdapterType.Default:
                     break;
                 case SerializeAdapterType.PB_JSON_FAST:
-                    _client.AddAdapter(new SerializeFastAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeFastAdapter() { isEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary:
-                    _client.AddAdapter(new SerializeAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter() { isEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary2:
-                    _client.AddAdapter(new SerializeAdapter2() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter2() { isEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary3:
-                    _client.AddAdapter(new SerializeAdapter3() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter3() { isEncrypt = isEncrypt });
                     break;
             }
             return _client.Connect(result =>
@@ -142,7 +94,7 @@ namespace Framework
         }
     }
 
-    public partial class NetworkManager : MonoBehaviour
+    public class NetworkManager : SingleCase<NetworkManager>
     {
         public LogMode logMode = LogMode.Default;
 #if UNITY_2020_1_OR_NEWER
@@ -154,6 +106,18 @@ namespace Framework
         {
             get { return clients[index].Client; }
             set { clients[index].Client = value; }
+        }
+
+        void Awake()
+        {
+            if (instance != null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Application.runInBackground = true;
         }
 
         // Use this for initialization
@@ -217,9 +181,9 @@ namespace Framework
             }
         }
 
-        public void BindNetworkAll(INetworkHandle handle)
+        public static void BindNetworkAll(INetworkHandle handle)
         {
-            foreach (var item in clients)
+            foreach (var item in I.clients)
             {
                 item.Client.BindNetworkHandle(handle);
             }
@@ -229,18 +193,18 @@ namespace Framework
         /// 添加索引0的客户端rpc, 也就是1的客户端
         /// </summary>
         /// <param name="target"></param>
-        public void AddRpcOne(object target)
+        public static void AddRpcOne(object target)
         {
-            clients[0].Client.AddRpc(target);
+            I.clients[0].Client.AddRpc(target);
         }
 
         /// <summary>
         /// 添加索引1的客户端, 也就是2的客户端
         /// </summary>
         /// <param name="target"></param>
-        public void AddRpcTwo(object target)
+        public static void AddRpcTwo(object target)
         {
-            clients[1].Client.AddRpc(target);
+            I.clients[1].Client.AddRpc(target);
         }
 
         /// <summary>
@@ -248,30 +212,30 @@ namespace Framework
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <param name="target"></param>
-        public void AddRpc(int clientIndex, object target)
+        public static void AddRpc(int clientIndex, object target)
         {
             if (clientIndex < 0)
-                foreach (var item in clients)
+                foreach (var item in I.clients)
                     item.Client.AddRpc(target);
-            else clients[clientIndex].Client.AddRpc(target);
+            else I.clients[clientIndex].Client.AddRpc(target);
         }
 
         /// <summary>
         /// 移除索引0的客户端rpc, 也就是1的客户端
         /// </summary>
         /// <param name="target"></param>
-        public void RemoveRpcOne(object target)
+        public static void RemoveRpcOne(object target)
         {
-            clients[0].Client.RemoveRpc(target);
+            I.clients[0].Client.RemoveRpc(target);
         }
 
         /// <summary>
         /// 移除索引1的客户端rpc, 也就是2的客户端
         /// </summary>
         /// <param name="target"></param>
-        public void RemoveRpcTwo(object target)
+        public static void RemoveRpcTwo(object target)
         {
-            clients[1].Client.RemoveRpc(target);
+            I.clients[1].Client.RemoveRpc(target);
         }
 
         /// <summary>
@@ -279,50 +243,31 @@ namespace Framework
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <param name="target"></param>
-        public void RemoveRpc(int clientIndex, object target)
+        public static void RemoveRpc(int clientIndex, object target)
         {
             if (clientIndex < 0)
-                foreach (var item in clients)
+                foreach (var item in I.clients)
                     item.Client.RemoveRpc(target);
-            else clients[clientIndex].Client.RemoveRpc(target);
+            else I.clients[clientIndex].Client.RemoveRpc(target);
         }
 
-        public void Close(bool await, int millisecondsTimeout)
+        public static void Close(bool v1, int v2)
         {
-            foreach (var item in clients)
+            foreach (var item in I.clients)
             {
-                item.Client.Close(await, millisecondsTimeout);
+                item.Client.Close(v1, v2);
             }
         }
 
-        public void CallUnity(Action ptr)
+        public static void CallUnity(Action ptr)
         {
-            clients[0].Client.WorkerQueue.Enqueue(ptr);
+            I.clients[0].Client.WorkerQueue.Enqueue(ptr);
         }
 
-        public void DispatcherRpc(ushort hash, params object[] parms)
+        public static void DispatcherRpc(ushort hash, params object[] parms)
         {
-            clients[1].Client.DispatchRpc(hash, parms);
-        }
-
-        public void CallOne(string func, params object[] pars)
-        {
-            clients[0].Client.SendRT(func, pars);
-        }
-
-        public void CallOne(ushort hash, params object[] pars)
-        {
-            clients[0].Client.SendRT(hash, pars);
-        }
-
-        public void CallTwo(string func, params object[] pars)
-        {
-            clients[1].Client.SendRT(func, pars);
-        }
-
-        public void CallTwo(ushort hash, params object[] pars)
-        {
-            clients[1].Client.SendRT(hash, pars);
+            I.clients[1].Client.DispatchRpc(hash, parms);
         }
     }
 }
+#endif
