@@ -7,6 +7,7 @@ using System.Text;
 #if SERVER
 using System.Data.SQLite;
 #endif
+using Net.Share;
 
 #if ANTICHEAT
 using Boolean = CodeStage.AntiCheat.ObscuredTypes.ObscuredBool;

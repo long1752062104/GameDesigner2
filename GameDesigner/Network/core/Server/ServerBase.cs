@@ -1008,6 +1008,7 @@ namespace Net.Server
             //client.PlayerID = uid.ToString(); //已经搬到登录时处理
             client.Name = uid.ToString();
             client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
+            client.ConnectTime = DateTime.Now;
             OnThreadQueueSet(client);
             AcceptHander(client);
             SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识

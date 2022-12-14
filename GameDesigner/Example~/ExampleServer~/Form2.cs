@@ -19,7 +19,7 @@ namespace ExampleServer
             CheckForIllegalCrossThreadCalls = false;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Form2_Load(object sender, EventArgs e)
         {
             button1_Click(null, null);
         }
@@ -51,8 +51,8 @@ namespace ExampleServer
                 toolStripStatusLabel1.Text = $"流出:{df.sendNumber}次/{ByteHelper.ToString(df.sendCount)} " +
                 $"流入:{df.receiveNumber}次/{ByteHelper.ToString(df.receiveCount)} " +
                 $"发送fps:{df.sendLoopNum} 接收fps:{df.revdLoopNum} 解析:{df.resolveNumber}次 " +
-                $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)}";
-                label2.Text = "登录:" + server.OnlinePlayers + " 未登录:" + server.UnClientNumber;
+                $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)} " +
+                $"登录:{server.OnlinePlayers} 未登录:{server.UnClientNumber}";
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter3());
             server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Player>(server));
@@ -64,7 +64,7 @@ namespace ExampleServer
             ThreadManager.Invoke(1f, Example2DB.I.Executed, true);//每秒检查有没有数据需要往mysql数据库更新
         }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        private void Form2_FormClosed(object sender, FormClosedEventArgs e)
         {
             server?.Close();
             Process.GetCurrentProcess().Kill();
@@ -80,9 +80,32 @@ namespace ExampleServer
             MessageBox.Show(item.ToString());
         }
 
-        private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            if (tabControl1.SelectedIndex == 1)
+            {
+                dataGridView1.Rows.Clear();
+                dataGridView1.Columns.Clear();
+                dataGridView1.Columns.Add("PlayerID", "玩家标识");
+                dataGridView1.Columns.Add("Name", "玩家名称");
+                dataGridView1.Columns.Add("RemotePoint", "玩家IP");
+                dataGridView1.Columns.Add("SceneName", "当前场景");
+                dataGridView1.Columns.Add("UserID", "玩家UID");
+                dataGridView1.Columns.Add("Login", "是否登录");
+                dataGridView1.Columns.Add("isDispose", "是否释放");
+                dataGridView1.Columns.Add("CloseSend", "关闭发送");
+                dataGridView1.Columns.Add("CloseReceive", "关闭接收");
+                dataGridView1.Columns.Add("Redundant", "冗余连接");
+                dataGridView1.Columns.Add("QueueUpNo", "玩家排队");
+                dataGridView1.Columns.Add("ConnectTime", "连接时间");
+                foreach (var client in server.AllClients.Values)
+                {
+                    dataGridView1.Rows.Add(client.PlayerID, client.Name, client.RemotePoint.ToString(),
+                        client.SceneName, client.UserID.ToString(), client.Login.ToString(), client.isDispose.ToString(),
+                        client.CloseSend.ToString(), client.CloseReceive.ToString(), client.Redundant.ToString(),
+                        client.QueueUpNo.ToString(), client.ConnectTime.ToString("f"));
+                }
+            }
         }
     }
 }

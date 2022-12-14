@@ -7,6 +7,7 @@ using System.Text;
 #if SERVER
 using System.Data.SQLite;
 #endif
+using Net.Share;
 
 #if ANTICHEAT
 using Boolean = CodeStage.AntiCheat.ObscuredTypes.ObscuredBool;
@@ -79,14 +80,13 @@ using String = CodeStage.AntiCheat.ObscuredTypes.ObscuredString;
 using String = System.String;
 #endif
 
-
-    /// <summary>
-    /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
-    /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
-    /// <para><see href="此脚本支持unity的CodeStage.AntiCheat防修改数值插件, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
-    /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
-    /// </summary>
-    public partial class UserinfoData : IDataRow
+/// <summary>
+/// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
+/// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
+/// <para><see href="此脚本支持unity的CodeStage.AntiCheat防修改数值插件, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
+/// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
+/// </summary>
+public partial class UserinfoData : IDataRow
     {
         [Net.Serialize.NonSerialized]
         [Newtonsoft_X.Json.JsonIgnore]

@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 namespace MVC.View
 {
+    using Net.Helper;
     using System;
     using System.Collections.Generic;
     using UnityEngine;
@@ -20,7 +21,7 @@ namespace MVC.View
                 get
                 {
                     if (type == null)
-                        type = Net.Serialize.NetConvertOld.GetType(typeName);
+                        type = AssemblyHelper.GetType(typeName);
                     return type;
                 }
                 internal set { type = value; }

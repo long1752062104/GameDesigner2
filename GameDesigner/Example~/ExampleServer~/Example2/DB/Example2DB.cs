@@ -10,15 +10,15 @@ using System.Data.SQLite;
 using Net.Event;
 using Net.System;
 using System.Collections.Concurrent;
+using Net.Share;
 
-
-    /// <summary>
-    /// Example2DB数据库管理类
-    /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
-    /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
-    /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
-    /// </summary>
-    public partial class Example2DB
+/// <summary>
+/// Example2DB数据库管理类
+/// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
+/// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
+/// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
+/// </summary>
+public partial class Example2DB
     {
         public static Example2DB I { get; private set; } = new Example2DB();
         private readonly HashSetSafe<IDataRow> dataRowHandler = new HashSetSafe<IDataRow>();
@@ -80,7 +80,7 @@ using System.Collections.Concurrent;
             }
         }
 
-        public static DataTableEntity ExecuteReader(string cmdText)
+        public static DataTable ExecuteReader(string cmdText)
         {
             SQLiteConnection conn1;
             while (!conns.TryPop(out conn1))
@@ -88,7 +88,7 @@ using System.Collections.Concurrent;
                 Thread.Sleep(1);
             }
             var conn = CheckConn(conn1);
-            var dt = new DataTableEntity();
+            var dt = new DataTable();
             try
             {
                 using (var cmd = new SQLiteCommand())
@@ -113,7 +113,7 @@ using System.Collections.Concurrent;
             return dt;
         }
 
-        public static async Task<DataTableEntity> ExecuteReaderAsync(string cmdText)
+        public static async Task<DataTable> ExecuteReaderAsync(string cmdText)
         {
             SQLiteConnection conn1;
             while (!conns.TryPop(out conn1))
@@ -121,7 +121,7 @@ using System.Collections.Concurrent;
                 Thread.Sleep(1);
             }
             var conn = CheckConn(conn1);
-            var dt = new DataTableEntity();
+            var dt = new DataTable();
             try
             {
                 using (var cmd = new SQLiteCommand())

@@ -126,6 +126,10 @@
         /// </summary>
         public bool IsQueueUp => QueueUpNo > 0;
         public IGcp Gcp { get; set; }
+        /// <summary>
+        /// 客户端连接时间
+        /// </summary>
+        public DateTime ConnectTime { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>
