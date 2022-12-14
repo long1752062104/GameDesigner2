@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -14,204 +15,86 @@ public class ImportSettingWindow : EditorWindow
         window.Show();
     }
 
+    private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import = null, string pluginsPath = "Assets/Plugins/GameDesigner/") 
+    {
+        if (Directory.Exists(path))
+        {
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button($"重新导入{name}模块"))
+            {
+                import?.Invoke();
+                Import(sourceProtocolName, copyToProtocolName, pluginsPath);
+            }
+            GUI.color = Color.red;
+            if (GUILayout.Button($"移除{name}模块"))
+            {
+                Directory.Delete(path, true);
+                File.Delete(path + ".meta");
+                AssetDatabase.Refresh();
+            }
+            GUI.color = Color.white;
+            GUILayout.EndHorizontal();
+        }
+        else if (GUILayout.Button($"导入{name}模块"))
+        {
+            Import(sourceProtocolName, copyToProtocolName, pluginsPath);
+        }
+    }
+
     private void OnGUI()
     {
         EditorGUILayout.LabelField("导入模块:");
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
         EditorGUILayout.HelpBox("Tcp&Gcp模块 基础网络协议模块", MessageType.Info);
         var path = "Assets/Plugins/GameDesigner/Network/Gcp";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Gcp模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Gcp模块"))
-        {
-            Import("Network/Gcp~", "Network/Gcp");
-        }
+        DrawGUI(path, "Gcp", "Network/Gcp~", "Network/Gcp");
+
         EditorGUILayout.HelpBox("Udx模块 可用于帧同步，视频流，直播流，大数据传输", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/Network/Udx";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Udx模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Udx模块"))
-        {
-            Import("Network/Udx~", "Network/Udx");
-        }
+        DrawGUI(path, "Udx", "Network/Udx~", "Network/Udx");
+        
         EditorGUILayout.HelpBox("Kcp模块 可用于帧同步 即时游戏", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/Network/Kcp";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Kcp模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Kcp模块"))
-        {
-            Import("Network/Kcp~", "Network/Kcp");
-        }
+        DrawGUI(path, "Kcp", "Network/Kcp~", "Network/Kcp");
+        
         EditorGUILayout.HelpBox("Web模块 可用于网页游戏 WebGL", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/Network/Web";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Web模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Web模块"))
-        {
-            Import("Network/Web~", "Network/Web");
-        }
+        DrawGUI(path, "Web", "Network/Web~", "Network/Web");
+        
         EditorGUILayout.HelpBox("StateMachine模块 可用格斗游戏，或基础游戏动作设计", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/StateMachine";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除StateMachine模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入StateMachine模块"))
-        {
-            Import("StateMachine~", "StateMachine");
-        }
+        DrawGUI(path, "StateMachine", "StateMachine~", "StateMachine");
+        
         EditorGUILayout.HelpBox("NetworkComponents模块 封装了一套完整的客户端网络组件", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/Component";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Network组件"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Network组件"))
-        {
+        DrawGUI(path, "NetworkComponent", "Component~", "Component", ()=> {
             Import("Common~", "Common");//依赖
-            Import("Component~", "Component");
-        }
+        });
+
         EditorGUILayout.HelpBox("MVC模块 可用于帧同步设计，视图，逻辑分离", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/MVC";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除MVC模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入MVC模块"))
-        {
-            Import("MVC~", "MVC");
-        }
+        DrawGUI(path, "MVC", "MVC~", "MVC"); 
+        
         EditorGUILayout.HelpBox("ECS模块 可用于双端的独立代码运行", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/ECS";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除ECS模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入ECS模块"))
-        {
-            Import("ECS~", "ECS");
-        }
-        EditorGUILayout.HelpBox("Common模块 通用模块", MessageType.Info);
+        DrawGUI(path, "ECS", "ECS~", "ECS");
+        
+        EditorGUILayout.HelpBox("Common模块 常用模块", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/Common";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除Common模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入Common模块"))
-        {
-            Import("Common~", "Common");
-        }
+        DrawGUI(path, "Common", "Common~", "Common");
+        
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/AOI";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除AOI模块"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入AOI模块"))
-        {
-            Import("AOI~", "AOI");
-        }
+        DrawGUI(path, "AOI", "AOI~", "AOI");
+        
         EditorGUILayout.HelpBox("Framework模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
-
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("HyBridCLR地址,下载或Git导入包"))
         {
             Application.OpenURL(@"https://gitee.com/focus-creative-games/hybridclr_unity");
         }
         path = "Assets/Plugins/GameDesigner/Framework";
-        if (Directory.Exists(path))
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button("移除客户端框架"))
-            {
-                Directory.Delete(path, true);
-                File.Delete(path + ".meta");
-                AssetDatabase.Refresh();
-            }
-            GUI.color = Color.white;
-        }
-        else if (GUILayout.Button("导入客户端框架"))
-        {
-            Import("Framework~", "Framework");
-        }
+        DrawGUI(path, "Framework", "Framework~", "Framework");
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);

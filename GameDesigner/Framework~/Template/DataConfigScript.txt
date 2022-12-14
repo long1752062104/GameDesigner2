@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Framework;
 using System.Data;
 
@@ -14,3 +15,4 @@ SPLIT
 SPLIT
     }
 }
+#endif

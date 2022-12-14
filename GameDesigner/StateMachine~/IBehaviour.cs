@@ -1,5 +1,6 @@
 ﻿namespace GameDesigner
 {
+    using Net.Helper;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -76,7 +77,7 @@
         {
             get {
                 if (_type == null)
-                    _type = Net.Serialize.NetConvertOld.GetType(typeName);
+                    _type = AssemblyHelper.GetType(typeName);
                 return _type;
             }
         }
@@ -294,7 +295,7 @@
         /// 状态管理器转换组建
         /// </summary>
         public Transform transform => stateManager.transform;
-        public Type Type { get { return Net.Serialize.NetConvertOld.GetType(name); } }
+        public Type Type { get { return AssemblyHelper.GetType(name); } }
         public void InitMetadatas(StateMachine stateMachine)
         {
             var type = GetType();

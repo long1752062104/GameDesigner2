@@ -1,5 +1,6 @@
 ﻿namespace GameDesigner
 {
+    using Net.Helper;
     using System;
 
     /// <summary>
@@ -14,7 +15,7 @@
         public virtual void OnUpdate(ref bool isEnterNextState) { }
         public TransitionBehaviour InitBehaviour()
         {
-            var type = Net.Serialize.NetConvertOld.GetType(name);
+            var type = AssemblyHelper.GetType(name);
             var runtimeBehaviour = (TransitionBehaviour)Activator.CreateInstance(type);
             runtimeBehaviour.stateMachine = stateMachine;
             runtimeBehaviour.Active = Active;

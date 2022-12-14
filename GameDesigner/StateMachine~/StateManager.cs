@@ -1,5 +1,6 @@
 ﻿namespace GameDesigner
 {
+    using Net.Helper;
     using System;
     using System.Collections.Generic;
     using UnityEngine;
@@ -208,7 +209,7 @@
             {
                 for (int i = 0; i < s.behaviours.Count; i++)
                 {
-                    var type = Net.Serialize.NetConvertOld.GetType(s.behaviours[i].name);
+                    var type = AssemblyHelper.GetType(s.behaviours[i].name);
                     var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
                     s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
                     s.behaviours[i].Reload(type, stateMachine, metadatas);
@@ -218,7 +219,7 @@
                 {
                     for (int i = 0; i < t.behaviours.Count; i++)
                     {
-                        var type = Net.Serialize.NetConvertOld.GetType(t.behaviours[i].name);
+                        var type = AssemblyHelper.GetType(t.behaviours[i].name);
                         var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
                         t.behaviours[i].Reload(type, stateMachine, metadatas);
@@ -229,7 +230,7 @@
                 {
                     for (int i = 0; i < a.behaviours.Count; i++)
                     {
-                        var type = Net.Serialize.NetConvertOld.GetType(a.behaviours[i].name);
+                        var type = AssemblyHelper.GetType(a.behaviours[i].name);
                         var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
                         a.behaviours[i].Reload(type, stateMachine, metadatas);

@@ -81,8 +81,9 @@ namespace Framework
                     return _client;
                 var typeName = $"Net.Client.{protocol}Client";
                 var type = AssemblyHelper.GetType(typeName);
-                if (type != null)
-                    _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
+                if (type == null)
+                    throw new Exception($"请导入:{protocol}协议!!!");
+                _client = Activator.CreateInstance(type, new object[] { true }) as ClientBase;
                 _client.host = ip;
                 _client.port = port;
                 _client.LogRpc = debugRpc;

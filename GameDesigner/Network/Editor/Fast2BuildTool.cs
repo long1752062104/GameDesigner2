@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using Net.Helper;
 
 public class Fast2BuildTools2 : EditorWindow
 {
@@ -320,7 +321,7 @@ public class Fast2BuildTools2 : EditorWindow
             List<Type> types = new List<Type>();
             foreach (var type1 in data.typeNames)
             {
-                Type type = Net.Serialize.NetConvertOld.GetType(type1.name);
+                Type type = AssemblyHelper.GetType(type1.name);
                 if (type == null)
                 {
                     Debug.Log($"类型:{type1.name}已不存在!");
@@ -339,7 +340,7 @@ public class Fast2BuildTools2 : EditorWindow
             }
             if (!string.IsNullOrEmpty(data.typeEntry)) 
             {
-                var types1 = (Type[])Net.Serialize.NetConvertOld.GetType(data.typeEntry).GetMethod(data.methodEntry).Invoke(null, null);
+                var types1 = (Type[])AssemblyHelper.GetType(data.typeEntry).GetMethod(data.methodEntry).Invoke(null, null);
                 foreach (var type in types1)
                 {
                     if (type.IsGenericType)
