@@ -26,6 +26,7 @@ namespace Framework
             Global.UI.Loading.ShowUI("º”‘ÿÕÍ≥…", 1f);
             yield return new WaitForSeconds(1f);
             op.allowSceneActivation = true;
+            Global.UI.Loading.HideUI();
         }
     }
 }

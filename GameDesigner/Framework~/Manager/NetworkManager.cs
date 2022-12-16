@@ -276,7 +276,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// 移除指定索引的客户端rpc, 如果索引小于0则为全部添加
+        /// 移除指定索引的客户端rpc, 如果索引小于0则为全部移除
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <param name="target"></param>

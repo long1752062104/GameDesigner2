@@ -17,6 +17,7 @@ namespace Framework
             item1.info.text = info;
             item1.time = hideTime;
             item1.gameObject.SetActive(true);
+            item1.transform.SetAsLastSibling();
         }
     }
 }

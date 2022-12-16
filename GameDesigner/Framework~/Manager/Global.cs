@@ -6,8 +6,7 @@ namespace Framework
     [DefaultExecutionOrder(-50)]
     public partial class Global : SingleCase<Global>
     {
-        public Camera MainCamera, UICamera;
-
+        [SerializeField] private Camera mainCamera, uiCamera;
         [SerializeField] private ResourcesManager resources;
         [SerializeField] private UIManager ui;
         [SerializeField] private AssetBundleCheckUpdate checkUpdate;
@@ -31,6 +30,9 @@ namespace Framework
         public static NetworkManager Network => Instance.network;
         public static Logger Logger => Instance.logger;
         public static ObjectPool Pool => Instance.pool;
+
+        public static Camera MainCamera { get => Instance.mainCamera; set => Instance.mainCamera = value; }
+        public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
 
         void Awake()
         {

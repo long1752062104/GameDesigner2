@@ -9,22 +9,22 @@ using UnityEngine;
 [InitializeOnLoad]
 public class DisableScripReloadInPlayMode
 {
-	static DisableScripReloadInPlayMode()
-	{
-		EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-	}
+	//static DisableScripReloadInPlayMode()
+	//{
+	//	EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+	//}
 
-	static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
-	{
-		switch (stateChange)
-		{
-			case PlayModeStateChange.EnteredPlayMode:
-				EditorApplication.LockReloadAssemblies();
-				break;
-			case PlayModeStateChange.ExitingPlayMode:
-				EditorApplication.UnlockReloadAssemblies();
-				break;
-		}
-	}
+	//static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
+	//{
+	//	switch (stateChange)
+	//	{
+	//		case PlayModeStateChange.EnteredPlayMode:
+	//			EditorApplication.LockReloadAssemblies();
+	//			break;
+	//		case PlayModeStateChange.ExitingPlayMode:
+	//			EditorApplication.UnlockReloadAssemblies();
+	//			break;
+	//	}
+	//}
 }
 #endif

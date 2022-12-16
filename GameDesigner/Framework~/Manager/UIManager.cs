@@ -51,11 +51,7 @@ namespace Framework
             if (formDict.TryGetValue(formName, out var form))
                 if (form != null)
                     goto J;
-            var dataTable = Global.Table.GetTable(sheetName);
-            var dataRows = dataTable.Select($"Name = '{formName}'");
-            var path = dataRows[0]["Path"].AsString();
-            var level = dataRows[0]["Level"].AsInt();
-            form = Global.Resources.Instantiate<UIFormBase>(path, Levels[level]);
+            form = InstantiateForm(formName);
             formDict[formName] = form;
         J: if (formStack.Count > 0)
             {
@@ -77,6 +73,16 @@ namespace Framework
             form.ShowUI(onBack);
             form.transform.SetAsLastSibling();
             formStack.Push(form);//如果是消息框, 一定会关闭了才能再次打开, 不存在多次压入
+            return form;
+        }
+
+        private UIFormBase InstantiateForm(string formName) 
+        {
+            var dataTable = Global.Table.GetTable(sheetName);
+            var dataRows = dataTable.Select($"Name = '{formName}'");
+            var path = dataRows[0]["Path"].AsString();
+            var level = dataRows[0]["Level"].AsInt();
+            var form = Global.Resources.Instantiate<UIFormBase>(path, Levels[level]);
             return form;
         }
 
@@ -120,6 +126,22 @@ namespace Framework
         public UIFormBase GetForm(string formName) 
         {
             formDict.TryGetValue(formName, out var form);
+            return form;
+        }
+
+        public T GetFormOrCreate<T>(bool isShow = false) where T : UIFormBase
+        {
+            var formName = typeof(T).Name;
+            return GetFormOrCreate(formName, isShow) as T;
+        }
+
+        public UIFormBase GetFormOrCreate(string formName, bool isShow = false)
+        {
+            var form = GetForm(formName);
+            if (form != null)
+                return form;
+            form = InstantiateForm(formName);
+            form.gameObject.SetActive(isShow);
             return form;
         }
     }

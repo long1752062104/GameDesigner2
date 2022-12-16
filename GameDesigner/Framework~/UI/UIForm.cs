@@ -111,4 +111,55 @@ namespace Framework
         public Transform itemRoot;
         public List<Item> items = new List<Item>();
     }
+
+    /// <summary>
+    /// UI界面基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class NetworkOneUIFormBase<T> : UIFormBase<T> where T : NetworkOneUIFormBase<T>
+    {
+        public virtual void Awake()
+        {
+            Global.Network.AddRpcOne(this);
+        }
+
+        public virtual void OnDestroy()
+        {
+            Global.Network.RemoveRpcOne(this);
+        }
+    }
+
+    /// <summary>
+    /// UI界面基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class NetworkTwoUIFormBase<T> : UIFormBase<T> where T : NetworkTwoUIFormBase<T>
+    {
+        public virtual void Awake()
+        {
+            Global.Network.AddRpcTwo(this);
+        }
+
+        public virtual void OnDestroy()
+        {
+            Global.Network.RemoveRpcTwo(this);
+        }
+    }
+
+    /// <summary>
+    /// UI界面基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class NetworkAllUIFormBase<T> : UIFormBase<T> where T : NetworkAllUIFormBase<T>
+    {
+        public virtual void Awake()
+        {
+            Global.Network.AddRpc(-1, this);
+        }
+
+        public virtual void OnDestroy()
+        {
+            Global.Network.RemoveRpc(-1, this);
+        }
+    }
 }
