@@ -45,7 +45,17 @@ namespace Framework
 
     public enum AssetBundleMode
     {
+        /// <summary>
+        /// 本机路径, 也就是编辑器路径
+        /// </summary>
         LocalPath,
+        /// <summary>
+        /// 流路径, 不需要网络下载的模式
+        /// </summary>
+        StreamingAssetsPath,
+        /// <summary>
+        /// HFS服务器下载资源更新
+        /// </summary>
         HFSPath,
     }
 
@@ -61,10 +71,12 @@ namespace Framework
         public void InitAssetBundleInfos()
         {
             string abPath;
-            if (Mode == AssetBundleMode.LocalPath)
+            if (Mode == AssetBundleMode.StreamingAssetsPath)
                 abPath = Application.streamingAssetsPath + "/";
-            else
+            else if (Mode == AssetBundleMode.HFSPath)
                 abPath = Application.persistentDataPath + "/";
+            else
+                return;
             foreach (var info in assetBundleInfos)
             {
                 assetBundleDict[info.type] = info;
@@ -79,21 +91,29 @@ namespace Framework
 
         public T LoadAsset<T>(AssetBundleType type, string assetPath) where T : Object
         {
+            T assetObj;
             if (assetBundleDict.TryGetValue(type, out var assetBundleInfo))
             {
                 if (assetBundleInfo.assetBundle != null)
                 {
-                    var assetObj = assetBundleInfo.assetBundle.LoadAsset<T>(assetPath);
-                    return assetObj;
+                    assetObj = assetBundleInfo.assetBundle.LoadAsset<T>(assetPath);
+                    if(assetObj != null)
+                        return assetObj;
                 }
             }
-            if (assetPath.Contains("Resources/"))
-            {
-                var path = assetPath.Split(new string[] { "Resources/" }, 0);
-                var resPath = path[1].Split('.');
-                var resObj = Resources.Load<T>(resPath[0]);
-                return resObj;
-            }
+            //if (assetPath.Contains("Resources/"))
+            //{
+            //    var path = assetPath.Split(new string[] { "Resources/" }, 0);
+            //    var resPath = path[1].Split('.');
+            //    var resObj = Resources.Load<T>(resPath[0]);
+            //    if(resObj != null)
+            //        return resObj;
+            //}
+#if UNITY_EDITOR
+            assetObj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
+            if (assetObj != null)
+                return assetObj;
+#endif
             throw new Exception("找不到资源:" + assetPath);
         }
 

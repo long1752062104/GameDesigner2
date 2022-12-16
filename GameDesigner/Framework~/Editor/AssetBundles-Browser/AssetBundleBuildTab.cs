@@ -404,6 +404,8 @@ namespace AssetBundleBrowser
 
             if (m_CopyToStreaming.state)
                 DirectoryCopy("AssetBundles", m_streamingPath);
+
+            AssetDatabase.Refresh();
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)

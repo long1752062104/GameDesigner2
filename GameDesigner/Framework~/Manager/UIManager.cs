@@ -14,14 +14,16 @@ namespace Framework
         public string sheetName = "UI";
         public Dictionary<string, UIFormBase> formDict = new Dictionary<string, UIFormBase>();
         public Stack<UIFormBase> formStack = new Stack<UIFormBase>();
-        public IForm Loading, Message;
+        public IForm Loading, Message, Tips;
         [SerializeField] private UI_Loading _Loading;
         [SerializeField] private UI_Message _Message;
+        [SerializeField] private UI_Tips _Tips;
 
         private void Awake()
         {
             Loading = _Loading;
             Message = _Message;
+            Tips = _Tips;
         }
 
         /// <summary>

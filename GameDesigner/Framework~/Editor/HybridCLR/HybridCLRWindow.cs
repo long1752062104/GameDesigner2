@@ -14,6 +14,8 @@ public class HybridCLREntity
     public string hotfixPath = "AssetBundles/Hotfix/";
     [Header("拷贝dll到编译exe目录")]
     public string buildPath;// = $"build/{Application.productName}_Data/StreamingAssets/AssetBundles/Hotfix/";
+    [Header("拷贝dll到StreamingAssetsPath目录")]
+    public string streamingAssetsPath;
 
     [Header("补充元数据")]
     public List<string> AOTMetaAssemblyNames = new List<string>()
@@ -56,6 +58,8 @@ public class HybridCLREdit : EditorWindow
         Scriptable.entity = PersistHelper.Deserialize<HybridCLREntity>("HybridCLR.json");
         if (string.IsNullOrEmpty(Scriptable.entity.buildPath))
             Scriptable.entity.buildPath = $"build/{Application.productName}_Data/StreamingAssets/AssetBundles/Hotfix/";
+        if (string.IsNullOrEmpty(Scriptable.entity.streamingAssetsPath))
+            Scriptable.entity.streamingAssetsPath = $"Assets/StreamingAssets/AssetBundles/Hotfix/";
         serializedObject = new SerializedObject(Scriptable);
     }
 
@@ -86,6 +90,11 @@ public class HybridCLREdit : EditorWindow
         {
             CompileDllCommand.CompileDllActiveBuildTarget();
             CopyHotUpdateAssembliesToStreamingAssets(Scriptable.entity.buildPath);
+        }
+        if (GUILayout.Button("生成dll到StreamingAssets"))
+        {
+            CompileDllCommand.CompileDllActiveBuildTarget();
+            CopyHotUpdateAssembliesToStreamingAssets(Scriptable.entity.streamingAssetsPath);
         }
         if (GUILayout.Button("清除持久路径缓存"))
         {
@@ -155,5 +164,6 @@ public class HybridCLREdit : EditorWindow
             Debug.Log($"复制热更新dll到目录: {dllPath} -> {dllBytesPath}");
         }
         GlobalSetting.Instance.SaveVersionDict(dict);
+        AssetDatabase.Refresh();
     }
 }

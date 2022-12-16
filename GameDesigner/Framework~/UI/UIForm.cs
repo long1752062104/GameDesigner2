@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Framework
@@ -36,6 +37,11 @@ namespace Framework
             transform.SetAsLastSibling();
             if (onBack != null)
                 this.onBack = onBack;
+        }
+
+        public void ShowUI(string info)
+        {
+            ShowUI(string.Empty, info, null, null);
         }
 
         public void ShowUI(string title, string info, Action<bool> action, Action onBack = null)
@@ -93,5 +99,16 @@ namespace Framework
         {
             Global.UI.CloseForm<T>(isBack);
         }
+    }
+
+    /// <summary>
+    /// UI界面基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class UIFormBase<T, Item> : UIFormBase<T> where T : UIFormBase<T, Item>
+    {
+        public Item item;
+        public Transform itemRoot;
+        public List<Item> items = new List<Item>();
     }
 }

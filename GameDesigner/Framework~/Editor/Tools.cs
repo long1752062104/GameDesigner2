@@ -60,7 +60,7 @@ public class Tools
 			"Assets/Scripts/Data/DB/", "Assets/Scripts/Data/DBExt/", "Assets/Scripts/Data/Proto/",
 			"Assets/Scripts/Data/Binding/", "Assets/Scripts/Data/BindingExt/", "Assets/Resources/Audio",
 			"Assets/Resources/Prefabs", "Assets/Resources/UI", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
-
+			"Assets/Scripts/Framework/Manager",
 		};
 
         foreach (var item in paths)
@@ -70,7 +70,23 @@ public class Tools
 			Debug.Log($"创建的脚本路径:{item}");
 		}
 
+		path = "Assets/Plugins/GameDesigner/Framework/Template/GlobalExt.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/GlobalExt.cs";
+		if(!File.Exists(excelPath1))
+			File.Copy(path, excelPath1);
+
+		path = "Assets/Plugins/GameDesigner/Framework/Template/UIManagerExt.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/UIManagerExt.cs";
+		if (!File.Exists(excelPath1))
+			File.Copy(path, excelPath1);
+
+		path = "Assets/Plugins/GameDesigner/Framework/Template/TableManagerExt.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/TableManagerExt.cs";
+		if (!File.Exists(excelPath1))
+			File.Copy(path, excelPath1);
+
 		Debug.Log($"请生成ab文件!!!!!!!!");
+		AssetDatabase.Refresh();
 	}
 }
 #endif

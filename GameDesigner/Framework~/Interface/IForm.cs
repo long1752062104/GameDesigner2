@@ -13,6 +13,11 @@ namespace Framework
         /// <param name="onBack"></param>
         void ShowUI(Action onBack = null);
         /// <summary>
+        /// 屏幕中间提示
+        /// </summary>
+        /// <param name="info"></param>
+        void ShowUI(string info);
+        /// <summary>
         /// 显示一个ui界面, 带消息提示信息参数
         /// </summary>
         /// <param name="title"></param>

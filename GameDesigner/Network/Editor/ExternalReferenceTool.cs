@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
@@ -126,7 +127,7 @@ public class ExternalReferenceTool : EditorWindow
                         var node_child = node.ChildNodes;
                         foreach (XmlNode child_node in node_child)
                         {
-                            if (child_node.LocalName != "Compile")
+                            if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
                                 continue;
                             var value = child_node.Attributes["Include"].Value;
                             if (value.Contains(path1))
@@ -137,26 +138,50 @@ public class ExternalReferenceTool : EditorWindow
                         }
                         if (exist == true)
                         {
-                            node.RemoveAll();
                             foreach (var file in files)
                             {
-                                if (file.EndsWith(".cs"))
+                                bool isExist = false;
+                                foreach (XmlNode child_node in node_child)
                                 {
-                                    var e = xml.CreateElement("Compile", namespaceURI);
-                                    e.SetAttribute("Include", file);
-                                    var e1 = xml.CreateElement("Link", namespaceURI);
-                                    e1.InnerText = file.Replace(dirName, "");
-                                    e.AppendChild(e1);
-                                    node.AppendChild(e);
+                                    if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
+                                        continue;
+                                    var value = child_node.Attributes["Include"].Value;
+                                    if (file == value) //必须一致性
+                                    {
+                                        isExist = true;
+                                        break;
+                                    }
                                 }
-                                else
+                                if (!isExist) 
                                 {
-                                    var e = xml.CreateElement("Content", namespaceURI);
-                                    e.SetAttribute("Include", file);
-                                    var e1 = xml.CreateElement("Link", namespaceURI);
-                                    e1.InnerText = file.Replace(dirName, "");
-                                    e.AppendChild(e1);
-                                    node.AppendChild(e);
+                                    if (file.EndsWith(".cs"))
+                                    {
+                                        var e = xml.CreateElement("Compile", namespaceURI);
+                                        e.SetAttribute("Include", file);
+                                        var e1 = xml.CreateElement("Link", namespaceURI);
+                                        e1.InnerText = file.Replace(dirName, "");
+                                        e.AppendChild(e1);
+                                        node.AppendChild(e);
+                                    }
+                                    else
+                                    {
+                                        var e = xml.CreateElement("Content", namespaceURI);
+                                        e.SetAttribute("Include", file);
+                                        var e1 = xml.CreateElement("Link", namespaceURI);
+                                        e1.InnerText = file.Replace(dirName, "");
+                                        e.AppendChild(e1);
+                                        node.AppendChild(e);
+                                    }
+                                }
+                            }
+                            foreach (XmlNode child_node in node_child) //检查移除的文件
+                            {
+                                if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
+                                    continue;
+                                var value = child_node.Attributes["Include"].Value;
+                                if (!files.Contains(value))
+                                {
+                                    node.RemoveChild(child_node);
                                 }
                             }
                             break;
