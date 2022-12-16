@@ -37,6 +37,7 @@ public class ImportSettingWindow : EditorWindow
         }
         else if (GUILayout.Button($"µ¼Èë{name}Ä£¿é"))
         {
+            import?.Invoke();
             Import(sourceProtocolName, copyToProtocolName, pluginsPath);
         }
     }
