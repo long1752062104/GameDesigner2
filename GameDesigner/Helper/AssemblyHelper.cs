@@ -14,7 +14,7 @@ namespace Net.Helper
         /// <param name="type"></param>
         public static void AddFindType(Type type) 
         {
-            TypeDict[type.FullName] = type;
+            TypeDict[type.ToString()] = type;
         }
 
         /// <summary>
