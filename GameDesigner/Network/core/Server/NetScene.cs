@@ -122,6 +122,10 @@
         {
             if (client.SceneHash == hash)
                 return;
+            //如果已经在场景里面, 必须要先退出, 否则会发生一个玩家在多个场景的重大问题, 当玩家在多个场景后, 客户端被移除就找不到这个玩家进行移除,就会导致内存泄露问题
+            var preScene = client.Scene as NetScene<Player>;
+            if (preScene != null)
+                preScene.Remove(client);
             client.SceneName = Name;
             client.Scene = this;
             if (Group != null)

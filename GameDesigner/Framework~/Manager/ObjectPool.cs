@@ -36,17 +36,22 @@ namespace Framework
             var type = typeof(T);
             if (!pool.TryGetValue(type, out var queue))
                 pool.Add(type, queue = new Queue<Object>());
-            if (queue.Count > 0)
-                return queue.Dequeue() as T;
-            var insObj = Instantiate(ifCreatObject as T, ifCreatObjectParent);
-            return insObj;
+            T poolObj;
+            while (queue.Count > 0) //如果池内的物体被意外删除了, 就会被清除忽略掉
+            {
+                poolObj = queue.Dequeue() as T;
+                if (poolObj != null)
+                    return poolObj;
+            }
+            poolObj = Object.Instantiate(ifCreatObject as T, ifCreatObjectParent);
+            return poolObj;
         }
 
         public void Recycling(Object obj)
         {
             var type = obj.GetType();
             if (!pool.TryGetValue(type, out var queue))
-                pool.Add(type, new Queue<Object>());
+                pool.Add(type, queue = new Queue<Object>());
             queue.Enqueue(obj);
         }
     }
