@@ -154,7 +154,15 @@ public class ImportSettingWindow : EditorWindow
 
     private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
     {
-        var path = $"Packages/com.gamedesigner.network/{sourceProtocolName}/";
+        var rootPath = "Packages/com.gamedesigner.network";//包的根路径
+        if (!Directory.Exists(rootPath))
+            rootPath = Application.dataPath + "/GameDesigner";//直接放Assets目录的路径
+        if (!Directory.Exists(rootPath))
+        {
+            Debug.LogError("找不到根路径, 无法执行, 请使用包管理器添加gdnet, 或者根路径必须在Assets目录下!");
+            return;
+        }
+        var path = $"{rootPath}/{sourceProtocolName}/";
         if (!Directory.Exists(path))
         {
             Debug.LogError("找不到路径:" + path);

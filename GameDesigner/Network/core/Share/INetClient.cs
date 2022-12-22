@@ -10,38 +10,38 @@
         /// <summary>
         /// 当连接服务器成功事件
         /// </summary>
-        event Action OnConnectedHandle;
+        Action OnConnectedHandle { get; set; }
         /// <summary>
         /// 当连接失败事件
         /// </summary>
-        event Action OnConnectFailedHandle;
+        Action OnConnectFailedHandle { get; set; }
         /// <summary>
         /// 当尝试连接服务器事件
         /// </summary>
-        event Action OnTryToConnectHandle;
+        Action OnTryToConnectHandle { get; set; }
         /// <summary>
         /// 当连接中断 (异常) 事件
         /// </summary>
-        event Action OnConnectLostHandle;
+        Action OnConnectLostHandle { get; set; }
         /// <summary>
         /// 当断开连接事件
         /// </summary>
-        event Action OnDisconnectHandle;
+        Action OnDisconnectHandle { get; set; }
         /// <summary>
         /// 当接收到网络数据处理事件
         /// </summary>
-        event Action<RPCModel> OnRevdBufferHandle;
+        Action<RPCModel> OnRevdBufferHandle { get; set; }
         /// <summary>
         /// 当断线重连成功触发事件
         /// </summary>
-        event Action OnReconnectHandle;
+        Action OnReconnectHandle { get; set; }
         /// <summary>
         /// 当关闭连接事件
         /// </summary>
-        event Action OnCloseConnectHandle;
+        Action OnCloseConnectHandle { get; set; }
         /// <summary>
         /// 当统计网络流量时触发
         /// </summary>
-        event NetworkDataTraffic OnNetworkDataTraffic;
+        NetworkDataTraffic OnNetworkDataTraffic { get; set; }
     }
 }

@@ -118,10 +118,6 @@ namespace Net.Client
         /// </summary>
         public bool UseUnityThread { get; set; }
         /// <summary>
-        /// 当前客户端网络状态
-        /// </summary>
-        protected NetworkState networkState = NetworkState.None;
-        /// <summary>
         /// 每秒发送数据长度
         /// </summary>
         protected int sendCount;
@@ -181,47 +177,47 @@ namespace Net.Client
         /// <summary>
         /// 当连接服务器成功事件
         /// </summary>
-        public event Action OnConnectedHandle;
+        public Action OnConnectedHandle { get; set; }
         /// <summary>
         /// 当连接失败事件
         /// </summary>
-        public event Action OnConnectFailedHandle;
+        public Action OnConnectFailedHandle { get; set; }
         /// <summary>
         /// 当尝试连接服务器事件
         /// </summary>
-        public event Action OnTryToConnectHandle;
+        public Action OnTryToConnectHandle { get; set; }
         /// <summary>
         /// 当尝试连接失败
         /// </summary>
-        public event Action TryToConnectFailedHandle;
+        public Action TryToConnectFailedHandle { get; set; }
         /// <summary>
         /// 当连接中断 (异常) 事件
         /// </summary>
-        public event Action OnConnectLostHandle;
+        public Action OnConnectLostHandle { get; set; }
         /// <summary>
         /// 当断开连接事件
         /// </summary>
-        public event Action OnDisconnectHandle;
+        public Action OnDisconnectHandle { get; set; }
         /// <summary>
         /// 当接收到自定义的cmd指令时调用事件
         /// </summary>
-        public event Action<RPCModel> OnRevdBufferHandle;
+        public Action<RPCModel> OnRevdBufferHandle { get; set; }
         /// <summary>
         /// 当断线重连成功触发事件
         /// </summary>
-        public event Action OnReconnectHandle;
+        public Action OnReconnectHandle { get; set; }
         /// <summary>
         /// 当关闭连接事件
         /// </summary>
-        public event Action OnCloseConnectHandle;
+        public Action OnCloseConnectHandle { get; set; }
         /// <summary>
         /// 当统计网络流量时触发
         /// </summary>
-        public event NetworkDataTraffic OnNetworkDataTraffic;
+        public NetworkDataTraffic OnNetworkDataTraffic { get; set; }
         /// <summary>
         /// 当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
         /// </summary>
-        public event Action<OperationList> OnOperationSync;
+        public Action<OperationList> OnOperationSync { get; set; }
         /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
@@ -400,15 +396,13 @@ namespace Net.Client
         /// <summary>
         /// 采用md5 + 随机种子校验
         /// </summary>
-        public virtual bool MD5CRC {
+        public virtual bool MD5CRC
+        {
             get => md5crc;
             set
             {
                 md5crc = value;
-                if (value)
-                    frame = 1 + 16;
-                else
-                    frame = 1;
+                frame = value ? 1 + 16 : 1;
             }
         }
         /// <summary>
@@ -431,7 +425,7 @@ namespace Net.Client
         /// </summary>
         public int ReconnectCount { get; set; } = 10;
         /// <summary>
-        /// 断下重连间隔, 默认间隔2秒
+        /// 断线重连间隔, 默认间隔2秒
         /// </summary>
         public int ReconnectInterval { get; set; } = 2000;
         private int sendInterval = 1;
@@ -517,29 +511,6 @@ namespace Net.Client
             }
         }
 
-        //private bool CheckIsClass(Type type, ref int layer, bool root = true)
-        //{
-        //    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-        //    foreach (var field in fields)
-        //    {
-        //        var code = Type.GetTypeCode(field.FieldType);
-        //        if (code == TypeCode.Object)
-        //        {
-        //            if (field.FieldType.IsClass)
-        //                return true;
-        //            if (root)
-        //                layer = 0;
-        //            if (layer++ < 5)
-        //            {
-        //                var isClass = CheckIsClass(field.FieldType, ref layer, false);
-        //                if (isClass)
-        //                    return true;
-        //            }
-        //        }
-        //    }
-        //    return false;
-        //}
-
         /// <summary>
         /// 移除客户端的Rpc方法
         /// </summary>
@@ -564,15 +535,6 @@ namespace Net.Client
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         public void BindRpc(object target) => AddRpcHandle(target);
-
-        /// <summary>
-        /// 绑定网络调式信息处理接口
-        /// </summary>
-        /// <param name="debug"></param>
-        [Obsolete("请使用NDebug类输出调式信息!")]
-        public void BindLogHandle(IDebugHandle debug)
-        {
-        }
 
         /// <summary>
         /// 绑定网络状态处理接口
@@ -716,23 +678,19 @@ namespace Net.Client
         /// </summary>
         protected bool UpdateHandler()
         {
-            try { NetworkEventUpdate(); } catch { }
+            try { NetworkTick(); } catch { }
             return openClient;
         }
 
         /// <summary>
         /// 网络数据更新
         /// </summary>
-        public void NetworkEventUpdate()
+        public void NetworkTick()
         {
             int count = WorkerQueue.Count;
             for (int i = 0; i < count; i++)
-            {
                 if (WorkerQueue.TryDequeue(out var callback))
-                {
-                    callback();
-                }
-            }
+                    callback?.Invoke();
             count = RpcWorkQueue.Count;
             for (int i = 0; i < count; i++)
             {
@@ -780,7 +738,6 @@ namespace Net.Client
                     }
                 }
             }
-            StateHandle();
         }
 
         /// <summary>
@@ -790,41 +747,6 @@ namespace Net.Client
         public virtual void OnInvokeRpc(IRPCData rpc)
         {
             rpc.Invoke();
-        }
-
-        //状态处理
-        protected void StateHandle()
-        {
-            if (networkState == NetworkState.None)
-                return;
-            switch (networkState)
-            {
-                case NetworkState.Connected:
-                    OnConnectedHandle?.Invoke();
-                    break;
-                case NetworkState.ConnectFailed:
-                    OnConnectFailedHandle?.Invoke();
-                    break;
-                case NetworkState.TryToConnect:
-                    OnTryToConnectHandle?.Invoke();
-                    break;
-                case NetworkState.TryToConnectFailed:
-                    TryToConnectFailedHandle?.Invoke();
-                    break;
-                case NetworkState.ConnectLost:
-                    OnConnectLostHandle?.Invoke();
-                    break;
-                case NetworkState.Disconnect:
-                    OnDisconnectHandle?.Invoke();
-                    break;
-                case NetworkState.ConnectClosed:
-                    OnCloseConnectHandle?.Invoke();
-                    break;
-                case NetworkState.Reconnect:
-                    OnReconnectHandle?.Invoke();
-                    break;
-            }
-            networkState = NetworkState.None;
         }
 
         /// <summary>
@@ -875,7 +797,7 @@ namespace Net.Client
         /// <param name="result">连接结果</param>
         public virtual Task<bool> Connect(string host, int port, int localPort, Action<bool> result)
         {
-            if (networkState == NetworkState.Connection)
+            if (NetworkState == NetworkState.Connection)
             {
                 NDebug.Log("连接服务器中,请稍等...");
                 return Task.FromResult(false);
@@ -886,7 +808,7 @@ namespace Net.Client
                 NDebug.Log("连接服务器中,请稍等...");
             }
             openClient = true;
-            networkState = NetworkState.Connection;
+            NetworkState = NetworkState.Connection;
             if (Instance == null)
                 Instance = this;
             if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;
@@ -901,17 +823,14 @@ namespace Net.Client
             {
                 this.host = host;
                 this.port = port;
-                return ConnectResult(host, port, localPort, result1 =>
-                {
-                    OnConnected(result1);
-                    result(result1);
-                });
+                return ConnectResult(host, port, localPort, isConnected => OnConnected(isConnected, result));
             }
             else if (!Connected)
             {
                 Client.Close();
                 Client = null;
-                NetworkState = networkState = NetworkState.ConnectLost;
+                NetworkState = NetworkState.ConnectLost;
+                InvokeInMainThread(OnConnectLostHandle);
                 NDebug.LogError("服务器连接中断!");
                 AbortedThread();
                 result(false);
@@ -943,7 +862,6 @@ namespace Net.Client
             catch (Exception ex)
             {
                 NDebug.LogError("连接失败原因:" + ex.ToString());
-                networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
                 result(false);
                 return Task.FromResult(false);
             }
@@ -960,8 +878,7 @@ namespace Net.Client
                     var tick1 = (uint)Environment.TickCount;
                     while (UID == 0)
                     {
-                        Receive(false);
-                        Thread.Sleep(1);
+                        Receive(true);
                         if ((uint)Environment.TickCount >= tick)
                             throw new Exception("uid赋值失败!");
                         if (!openClient)
@@ -977,10 +894,7 @@ namespace Net.Client
                     }
                     Connected = true;
                     StartupThread();
-                    InvokeContext(() => {
-                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
-                        result(true);
-                    });
+                    result(true);
                     return true;
                 }
                 catch (Exception ex)
@@ -989,16 +903,13 @@ namespace Net.Client
                     Connected = false;
                     Client?.Close();
                     Client = null;
-                    InvokeContext(() => {
-                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
-                        result(false);
-                    });
+                    result(false);
                     return false;
                 }
             });
         }
 
-        protected void InvokeContext(Action action)
+        protected void InvokeInMainThread(Action action)
         {
             WorkerQueue.Enqueue(action);
         }
@@ -1019,8 +930,8 @@ namespace Net.Client
         /// <param name="result">连接结果</param>
         public Task Broadcast(int port = 9543, Action<bool, string> result = null)
         {
-            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Broadcast, port);
+            var client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var ipEndPoint = new IPEndPoint(IPAddress.Broadcast, port);
             client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
             client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 5000);
             bool isDone = false;
@@ -1043,14 +954,14 @@ namespace Net.Client
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeContext(() => { result(true, ip); });
+                    InvokeInMainThread(() => { result(true, ip); });
                 }
                 catch (Exception ex)
                 {
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeContext(() => { result(false, ex.ToString()); });
+                    InvokeInMainThread(() => { result(false, ex.ToString()); });
                 }
             });
         }
@@ -1080,16 +991,25 @@ namespace Net.Client
         /// 连接结果处理
         /// </summary>
         /// <param name="result">结果</param>
-        protected virtual void OnConnected(bool result)
+        protected virtual void OnConnected(bool isConnect, Action<bool> action)
         {
-            if (result)
+            if (isConnect)
             {
-                NetworkState = networkState = NetworkState.Connected;
+                NetworkState = NetworkState.Connected;
+                InvokeInMainThread(()=> {
+                    action?.Invoke(true);
+                    OnConnectedHandle?.Invoke();
+                });
                 NDebug.Log("成功连接服务器...");
+                
             }
             else
             {
-                NetworkState = networkState = NetworkState.ConnectFailed;
+                NetworkState = NetworkState.ConnectFailed;
+                InvokeInMainThread(() => {
+                    action?.Invoke(false);
+                    OnConnectFailedHandle?.Invoke();
+                });
                 NDebug.LogError("服务器尚未开启或连接IP端口错误!");
                 if (!UseUnityThread)
                     ThreadManager.Invoke("UpdateHandle", UpdateHandler);
@@ -1102,11 +1022,12 @@ namespace Net.Client
         /// <param name="reuseSocket">断开连接后还能重新使用？</param>
         public void Disconnect(bool reuseSocket)
         {
-            NetworkState = networkState = NetworkState.Disconnect;
-            Client.Disconnect(reuseSocket);
+            NetworkState = NetworkState.Disconnect;
             Send(NetCmd.Disconnect, new byte[0]);
             SendDirect();
             Connected = false;
+            Client.Disconnect(reuseSocket);
+            InvokeInMainThread(OnDisconnectHandle);
         }
 
         /// <summary>
@@ -1375,14 +1296,12 @@ namespace Net.Client
             {
                 var segment = BufferPool.Take(65507);
                 segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
-                if (error != SocketError.Success)
+                if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
-                    return;
-                }
-                if (segment.Count == 0)
-                {
-                    BufferPool.Push(segment);
+                    Connected = false;
+                    NetworkState = NetworkState.ConnectLost;
+                    InvokeInMainThread(OnConnectLostHandle);
                     return;
                 }
                 receiveCount += segment.Count;
@@ -1420,7 +1339,8 @@ namespace Net.Client
             if (ex is SocketException)
             {
                 Connected = false;
-                NetworkState = networkState = NetworkState.ConnectLost;
+                NetworkState = NetworkState.ConnectLost;
+                InvokeInMainThread(OnConnectLostHandle);
                 rtRPCModels = new QueueSafe<RPCModel>();
                 rPCModels = new QueueSafe<RPCModel>();
                 NDebug.LogError("连接中断!" + ex);
@@ -1522,49 +1442,49 @@ namespace Net.Client
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Local:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.LocalRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Scene:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.SceneRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.Notice:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.NoticeRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.ThreadRpc:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
@@ -1581,7 +1501,7 @@ namespace Net.Client
                     break;
                 case NetCmd.SwitchPort:
                     Task.Run(() => {
-                        InvokeContext(() => {
+                        InvokeInMainThread(() => {
                             if (OnSwitchPortHandle != null)
                                 OnSwitchPortHandle(model.pars[0].ToString(), (ushort)model.pars[1]);
                             else
@@ -1595,7 +1515,7 @@ namespace Net.Client
                     break;
                 case NetCmd.OperationSync:
                     var list = OnDeserializeOPT(model.buffer, model.index, model.count);
-                    InvokeContext(()=> { OnOperationSync?.Invoke(list); });
+                    InvokeInMainThread(()=> { OnOperationSync?.Invoke(list); });
                     break;
                 case NetCmd.Ping:
                     rPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -1603,14 +1523,14 @@ namespace Net.Client
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
                     var delayTime = (uint)Environment.TickCount - ticks;
-                    InvokeContext(() => { OnPingCallback?.Invoke(delayTime); });
+                    InvokeInMainThread(() => { OnPingCallback?.Invoke(delayTime); });
                     break;
                 case NetCmd.P2P:
                     {
                         var address = segment.ReadInt64();
                         var port = segment.ReadInt32();
                         var endPoint = new IPEndPoint(address, port);
-                        InvokeContext(() => { OnP2PCallback?.Invoke(endPoint); });
+                        InvokeInMainThread(() => { OnP2PCallback?.Invoke(endPoint); });
                     }
                     break;
                 case NetCmd.SyncVarP2P:
@@ -1639,7 +1559,12 @@ namespace Net.Client
                             else
                             {
                                 int count = 0;
-                                var downloadPath = Environment.CurrentDirectory + "/download/";
+                                string downloadPath;
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+                                downloadPath = Net.Config.Config.BasePath
+#else
+                                downloadPath = Environment.CurrentDirectory + "/download/";
+#endif
                                 if (!Directory.Exists(downloadPath))
                                     Directory.CreateDirectory(downloadPath);
                                 do
@@ -1660,18 +1585,16 @@ namespace Net.Client
                         {
                             ftpDic.Remove(key);
                             fileData.fileStream.Position = 0;
-                            InvokeContext(() => 
+                            InvokeInMainThread(() => 
                             {
+                                OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete));
                                 var isDelete = true;
                                 if (OnReceiveFileHandle != null)
                                     isDelete = OnReceiveFileHandle(fileData);
+                                fileData.fileStream.Close();
                                 if (isDelete)
-                                {
-                                    fileData.fileStream.Close();
                                     File.Delete(fileData.fileStream.Name);
-                                }
                             });
-                            InvokeContext(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete)); });
                         }
                         else
                         {
@@ -1683,7 +1606,7 @@ namespace Net.Client
                             if (Environment.TickCount >= recvFileTick)
                             {
                                 recvFileTick = Environment.TickCount + 1000;
-                                InvokeContext(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
+                                InvokeInMainThread(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
                             }
                         }
                     }
@@ -1699,21 +1622,21 @@ namespace Net.Client
                     {
                         var totalCount = segment.ReadInt32();
                         var queueUpCount = segment.ReadInt32();
-                        InvokeContext(() => { OnWhenQueuing?.Invoke(totalCount, queueUpCount); });
+                        InvokeInMainThread(() => { OnWhenQueuing?.Invoke(totalCount, queueUpCount); });
                     }
                     break;
                 case NetCmd.QueueCancellation:
                     {
-                        InvokeContext(() => { OnQueueCancellation?.Invoke(); });
+                        InvokeInMainThread(() => { OnQueueCancellation?.Invoke(); });
                     }
                     break;
                 case NetCmd.ServerFull:
                     {
-                        InvokeContext(() => { OnServerFull?.Invoke(); });
+                        InvokeInMainThread(() => { OnServerFull?.Invoke(); });
                     }
                     break;
                 default:
-                    InvokeContext(() => { OnRevdBufferHandle?.Invoke(model); });
+                    InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
                     break;
             }
         }
@@ -1728,7 +1651,7 @@ namespace Net.Client
         {
             float bfb = currValue / (float)dataCount * 100f;
             var progress = new RTProgress(bfb, RTState.Sending);
-            InvokeContext(() => { OnRevdRTProgress?.Invoke(progress); });
+            InvokeInMainThread(() => { OnRevdRTProgress?.Invoke(progress); });
         }
 
         /// <summary>
@@ -1824,7 +1747,8 @@ namespace Net.Client
                 }
                 else//连接中断事件执行
                 {
-                    NetworkState = networkState = NetworkState.ConnectLost;
+                    NetworkState = NetworkState.ConnectLost;
+                    InvokeInMainThread(OnConnectLostHandle);
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
                     Connected = false;
@@ -1858,12 +1782,9 @@ namespace Net.Client
         /// </summary>
         protected virtual void Reconnection()
         {
-            if (NetworkState == NetworkState.Connection 
-                | NetworkState == NetworkState.ConnectClosed 
-                | NetworkState == NetworkState.Reconnect
-                | NetworkState == NetworkState.TryToConnectFailed)
+            if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.TryToConnect |
+                NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
                 return;
-            NetworkState = NetworkState.Connection;
             if (Client != null)
                 Client.Close();
             if (CurrReconnect >= ReconnectCount)//如果想断线不需要重连,则直接返回
@@ -1873,35 +1794,39 @@ namespace Net.Client
                 return;
             }
             UID = 0;
-            NDebug.Log($"尝试重连:{CurrReconnect + 1}...");
-            ConnectResult(host, port, localPort, result =>
+            CurrReconnect++;
+            NetworkState = NetworkState.TryToConnect;
+            SetHeartInterval(ReconnectInterval);
+            InvokeInMainThread(OnTryToConnectHandle);
+            NDebug.Log($"尝试重连:{CurrReconnect}...");
+            ConnectResult(host, port, localPort, OnReconnectConnected);
+        }
+
+        private void OnReconnectConnected(bool isConnect)
+        {
+            if (!openClient)
+                return;
+            if (isConnect)
             {
-                if (!openClient)
-                    return;
-                CurrReconnect++;
-                if (result)
-                {
-                    CurrReconnect = 0;
-                    heart = 0;
-                    NetworkState = networkState = NetworkState.Reconnect;
-                    rtRPCModels = new QueueSafe<RPCModel>();
-                    rPCModels = new QueueSafe<RPCModel>();
-                    NDebug.Log("重连成功...");
-                }
-                else if (CurrReconnect >= ReconnectCount)//尝试maxFrequency次重连，如果失败则退出线程
-                {
-                    Close();
-                    NDebug.LogError($"连接失败!请检查网络是否异常");
-                }
-                else
-                {
-                    NetworkState = networkState = NetworkState.TryToConnectFailed;
-                    ThreadManager.Event.AddEvent(ReconnectInterval / 1000f, () =>
-                    {
-                        NetworkState = networkState = NetworkState.TryToConnect;
-                    });
-                }
-            });
+                CurrReconnect = 0;
+                heart = 0;
+                NetworkState = NetworkState.Reconnect;
+                rtRPCModels = new QueueSafe<RPCModel>();
+                rPCModels = new QueueSafe<RPCModel>();
+                SetHeartInterval(HeartInterval);
+                InvokeInMainThread(OnReconnectHandle);
+                NDebug.Log("重连成功...");
+            }
+            else if (CurrReconnect >= ReconnectCount)//尝试maxFrequency次重连，如果失败则退出线程
+            {
+                Close();
+                NDebug.LogError($"连接失败!请检查网络是否异常");
+            }
+            else
+            {
+                NetworkState = NetworkState.TryToConnectFailed;
+                InvokeInMainThread(TryToConnectFailedHandle);
+            }
         }
 
         /// <summary>
@@ -1918,7 +1843,8 @@ namespace Net.Client
             }
             Connected = false;
             openClient = false;
-            NetworkState = networkState = NetworkState.ConnectClosed;
+            NetworkState = NetworkState.ConnectClosed;
+            InvokeInMainThread(OnCloseConnectHandle);
             if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
             AbortedThread();
             Client?.Close();
@@ -2713,6 +2639,11 @@ namespace Net.Client
         {
             HeartLimit = timeoutLimit;
             HeartInterval = interval;
+            SetHeartInterval(interval);
+        }
+
+        protected void SetHeartInterval(int interval) 
+        {
             var evt = ThreadManager.Event.GetEvent(heartHandlerID);
             if (evt != null)
                 evt.timeMax = (ulong)interval;
@@ -2889,7 +2820,7 @@ namespace Net.Client
             if (complete)
             {
                 if (OnSendFileProgress != null)
-                    InvokeContext(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)); });
+                    InvokeInMainThread(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)); });
                 ftpDic.Remove(key);
                 fileData.fileStream.Close();
             }
@@ -2897,7 +2828,7 @@ namespace Net.Client
             {
                 sendFileTick = Environment.TickCount + 1000;
                 if (OnSendFileProgress != null)
-                    InvokeContext(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)); });
+                    InvokeInMainThread(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)); });
             }
         }
 

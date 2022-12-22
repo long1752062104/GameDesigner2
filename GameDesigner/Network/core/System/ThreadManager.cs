@@ -1,8 +1,10 @@
 ﻿using Net.Event;
 using System;
-using System.Collections.Generic;
 using System.Threading;
+#if UNITY_WEBGL
 using UnityEngine.LowLevel;
+using System.Collections.Generic;
+#endif
 
 namespace Net.System
 {
@@ -24,7 +26,6 @@ namespace Net.System
         /// </summary>
         public static bool IsRuning { get; set; }
 
-        
         static ThreadManager()
         {
             Init();
@@ -36,7 +37,6 @@ namespace Net.System
             IsRuning = true;
         }
 
-#if UNITY_WEBGL
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Initialize()
         {
@@ -54,6 +54,7 @@ namespace Net.System
                 }
             };
 #endif
+#if UNITY_WEBGL
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             var runner = new PlayerLoopRunner();
             var runnerLoop = new PlayerLoopSystem
@@ -67,8 +68,8 @@ namespace Net.System
             };
             playerLoop.subSystemList = copyList.ToArray();
             PlayerLoop.SetPlayerLoop(playerLoop);
-        }
 #endif
+        }
 
         private static void Start()
         {

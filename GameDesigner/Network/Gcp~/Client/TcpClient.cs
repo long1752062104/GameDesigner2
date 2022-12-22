@@ -86,9 +86,20 @@
                     }
                     StackStream = new MemoryStream(Config.Config.BaseCapacity);
                     StartupThread();
-                    InvokeContext(() => {
-                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
-                        result(true);
+                    InvokeInMainThread(() => 
+                    {
+                        if (!openClient)//如果在连接过程中, 突然调用Close
+                        {
+                            NetworkState = NetworkState.ConnectClosed;
+                            InvokeInMainThread(OnCloseConnectHandle);
+                            result(false);
+                        }
+                        else
+                        {
+                            NetworkState = NetworkState.Connected;
+                            InvokeInMainThread(OnConnectedHandle);
+                            result(true);
+                        }
                     });
                     return true;
                 }
@@ -98,8 +109,18 @@
                     Connected = false;
                     Client?.Close();
                     Client = null;
-                    InvokeContext(() => {
-                        networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.ConnectFailed;
+                    InvokeInMainThread(() => 
+                    {
+                        if (!openClient)//如果在连接过程中, 突然调用Close
+                        {
+                            InvokeInMainThread(OnCloseConnectHandle);
+                            NetworkState = NetworkState.ConnectClosed;
+                        }
+                        else
+                        {
+                            InvokeInMainThread(OnConnectFailedHandle);
+                            NetworkState = NetworkState.ConnectFailed;
+                        }
                         result(false);
                     });
                     return false;
@@ -291,7 +312,8 @@
         {
             Connected = false;
             openClient = false;
-            NetworkState = networkState = NetworkState.ConnectClosed;
+            NetworkState = NetworkState.ConnectClosed;
+            InvokeInMainThread(OnCloseConnectHandle);
             if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
             AbortedThread();
             Client?.Close();
@@ -392,7 +414,7 @@
                                         //client.AddOperation(new Operation(66, buffer));
                                         client.SendDirect();
                                     }
-                                    client.NetworkEventUpdate();
+                                    client.NetworkTick();
                                 }
                                 catch (Exception ex)
                                 {
@@ -441,7 +463,7 @@
         }
         protected override void StartupThread() { }
 
-        protected override void OnConnected(bool result) { }
+        //protected override void OnConnected(bool result) { }
 
         //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         //{

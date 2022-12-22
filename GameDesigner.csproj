@@ -244,7 +244,6 @@
     <Compile Include="GameDesigner\Network\core\Unity\Vector3.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector4.cs" />
     <Compile Include="GameDesigner\Network\Editor\DebugTools.cs" />
-    <Compile Include="GameDesigner\Network\Editor\DisableScripReloadInPlayMode.cs" />
     <Compile Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs" />
     <Compile Include="GameDesigner\Network\Editor\Fast2BuildTool.cs" />
     <Compile Include="GameDesigner\Network\Editor\InvokeHelperTools.cs" />

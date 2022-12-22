@@ -60,7 +60,8 @@
                 WSClient.OnClose += (sender, e) =>
                 {
                     Connected = false;
-                    NetworkState = networkState = NetworkState.ConnectLost;
+                    NetworkState = NetworkState.ConnectLost;
+                    InvokeInMainThread(OnConnectLostHandle);
                     rtRPCModels = new QueueSafe<RPCModel>();
                     rPCModels = new QueueSafe<RPCModel>();
                     NDebug.Log("websocket关闭！");
@@ -102,11 +103,7 @@
                 }
                 Connected = true;
                 StartupThread();
-                InvokeContext(() =>
-                {
-                    networkState = !openClient ? NetworkState.ConnectClosed : NetworkState.Connected;
-                    result(true);
-                });
+                result(true);
                 return await Task.FromResult(true);
             }
             catch (Exception ex)
@@ -192,7 +189,8 @@
         {
             Connected = false;
             openClient = false;
-            NetworkState = networkState = NetworkState.ConnectClosed;
+            NetworkState = NetworkState.ConnectClosed;
+            InvokeInMainThread(OnCloseConnectHandle);
             AbortedThread();
             if (WSClient != null)
             {

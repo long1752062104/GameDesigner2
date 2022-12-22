@@ -36,17 +36,7 @@ namespace Net.Helper
             get
             {
                 if (cache == null)
-                {
-                    var path = Environment.CurrentDirectory + "/ScriptHelper.txt";
-                    if (File.Exists(path)) 
-                    {
-                        var json = File.ReadAllText(path);
-                        cache = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, SequencePoint>>(json);
-                        if (cache == null)
-                            cache = new Dictionary<string, SequencePoint>();
-                    }
-                    else cache = new Dictionary<string, SequencePoint>();
-                }
+                    cache = PersistHelper.Deserialize<Dictionary<string, SequencePoint>>("sourceCodeTextPoint.json");
                 return cache;
             }
         }
@@ -792,8 +782,8 @@ internal static class SyncVarGetSetHelperGenerate
                     continue;
                 if (!File.Exists(file))
                     continue;
-                ModuleContext modCtx = ModuleDef.CreateModuleContext();
-                ModuleDefMD module = ModuleDefMD.Load(file, modCtx);
+                var modCtx = ModuleDef.CreateModuleContext();
+                var module = ModuleDefMD.Load(file, modCtx);
                 streams.Add(module);
                 var types = module.Types;
                 foreach (var type in types.Where(t => !t.IsInterface & !t.IsEnum))

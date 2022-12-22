@@ -25,7 +25,7 @@
 
         public override void Start(ushort port = 9543)
         {
-#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
+#if SERVICE
             string path = AppDomain.CurrentDomain.BaseDirectory;
             if (!File.Exists(path + "\\kcp.dll"))
                 throw new FileNotFoundException($"kcp.dll没有在程序根目录中! 请从GameDesigner文件夹下找到kcp.dll复制到{path}目录下.");
@@ -34,15 +34,15 @@
 
             ikcp_Malloc = Ikcp_malloc_hook;
             ikcp_Free = Ikcp_Free;
-            IntPtr mallocPtr = Marshal.GetFunctionPointerForDelegate(ikcp_Malloc);
-            IntPtr freePtr = Marshal.GetFunctionPointerForDelegate(ikcp_Free);
+            var mallocPtr = Marshal.GetFunctionPointerForDelegate(ikcp_Malloc);
+            var freePtr = Marshal.GetFunctionPointerForDelegate(ikcp_Free);
             ikcp_allocator(mallocPtr, freePtr);
         }
 
         protected override void CreateServerSocket(ushort port)
         {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
+            var ip = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(ip);
 #if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
@@ -65,8 +65,8 @@
         protected override void AcceptHander(Player client)
         {
             client.Server = Server;
-            IntPtr kcp = ikcp_create(1400, (IntPtr)1);
-            IntPtr output = Marshal.GetFunctionPointerForDelegate(client.output);
+            var kcp = ikcp_create(1400, (IntPtr)1);
+            var output = Marshal.GetFunctionPointerForDelegate(client.output);
             ikcp_setoutput(kcp, output);
             ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
             ikcp_nodelay(kcp, 1, 10, 2, 1);

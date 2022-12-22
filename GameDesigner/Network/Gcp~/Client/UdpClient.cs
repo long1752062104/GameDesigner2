@@ -211,7 +211,7 @@
         }
         protected override void StartupThread() { }
 
-        protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
+        //protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
 
         //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         //{
@@ -245,7 +245,7 @@
                 return;
             Receive(false);
             SendDirect();
-            NetworkEventUpdate();
+            NetworkTick(); 
         }
         public override string ToString()
         {

@@ -91,7 +91,10 @@
         protected override void ResolveDataQueue(Player client, ref bool isSleep)
         {
             if (!client.Client.Connected)
+            {
+                RemoveClient(client);
                 return;
+            }
             if (client.Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
@@ -99,6 +102,7 @@
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
+                    RemoveClient(client);
                     return;
                 }
                 receiveCount += segment.Count;

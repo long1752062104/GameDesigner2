@@ -95,17 +95,13 @@
                     }
                     if (UID == 0)
                         throw new Exception("uid赋值失败!");
-                    InvokeContext(() => {
-                        networkState = Connected ? NetworkState.Connected : NetworkState.ConnectFailed;
-                        result(Connected); 
-                    });
+                    result(Connected);
                     return Connected;
                 });
             }
             catch (Exception ex)
             {
                 NDebug.Log("连接错误: " + ex.ToString());
-                networkState = NetworkState.ConnectFailed;
                 result(false);
                 return Task.FromResult(false);
             }
@@ -140,7 +136,8 @@
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         Connected = false;
-                        NetworkState = networkState = NetworkState.ConnectLost;
+                        NetworkState = NetworkState.ConnectLost;
+                        InvokeInMainThread(OnConnectLostHandle);
                         rtRPCModels = new QueueSafe<RPCModel>();
                         rPCModels = new QueueSafe<RPCModel>();
                         NDebug.Log("断开连接！");
@@ -200,7 +197,8 @@
         {
             Connected = false;
             openClient = false;
-            NetworkState = networkState = NetworkState.ConnectClosed;
+            NetworkState = NetworkState.ConnectClosed;
+            InvokeInMainThread(OnCloseConnectHandle);
             if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
             AbortedThread();
             StackStream?.Close();
@@ -309,7 +307,7 @@
                                         client.AddOperation(new Operation(66, buffer));
                                         client.SendDirect();
                                     }
-                                    client.NetworkEventUpdate();
+                                    client.NetworkTick();
                                 }
                                 catch (Exception ex)
                                 {
@@ -358,7 +356,7 @@
         }
         protected override void StartupThread() { }
 
-        protected override void OnConnected(bool result) { }
+        //protected override void OnConnected(bool result) { }
 
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {

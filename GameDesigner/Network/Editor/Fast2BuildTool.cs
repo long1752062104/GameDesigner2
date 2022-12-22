@@ -109,64 +109,14 @@ public class Fast2BuildTools2 : EditorWindow
         if (GUILayout.Button("引用文件夹"))
         {
             var path = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
+            var files = Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly);
+            AddSerTypeInDirectory(files);
+        }
+        if (GUILayout.Button("引用文件夹(全部)"))
+        {
+            var path = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
             var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                var texts = File.ReadLines(file);
-                var nameSpace = "";
-                var typeName = "";
-                foreach (var text in texts)
-                {
-                    if (text.Contains("namespace"))
-                    {
-                        nameSpace = text.Replace("namespace", "").Trim();
-                        continue;
-                    }
-                    var index = 0;
-                    var has = false;
-                    if (text.Contains("class"))
-                    {
-                        index = text.IndexOf("class") + 6;
-                        has = true;
-                    }
-                    if (text.Contains("struct"))
-                    {
-                        index = text.IndexOf("struct") + 7;
-                        has = true;
-                    }
-                    if (has)
-                    {
-                        var end = text.Length - index;
-                        var typeName1 = text.Substring(index, end);
-                        var typeName2 = typeName1.Split(':');
-                        typeName = typeName2[0].Trim();
-                        string typeFull;
-                        if (nameSpace == "")
-                            typeFull = typeName;
-                        else
-                            typeFull = $"{nameSpace}.{typeName}";
-                        foreach (var type1 in types)
-                        {
-                            if (type1.name != typeFull)
-                                continue;
-                            AddSerType(type1);
-                            break;
-                        }
-                        typeName = "";
-                    }
-                }
-                if (typeName.Length > 0) 
-                {
-                    var typeFull = $"{nameSpace}.{typeName}";
-                    foreach (var type1 in types)
-                    {
-                        if (type1.name != typeFull)
-                            continue;
-                        AddSerType(type1);
-                        break;
-                    }
-                }
-            }
+            AddSerTypeInDirectory(files);
         }
         EditorGUILayout.EndHorizontal();
         scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
@@ -377,6 +327,67 @@ public class Fast2BuildTools2 : EditorWindow
         }
         if (EditorGUI.EndChangeCheck())
             SaveData();
+    }
+
+    private void AddSerTypeInDirectory(string[] files)
+    {
+        foreach (var file in files)
+        {
+            var texts = File.ReadLines(file);
+            var nameSpace = "";
+            var typeName = "";
+            foreach (var text in texts)
+            {
+                if (text.Contains("namespace"))
+                {
+                    nameSpace = text.Replace("namespace", "").Trim();
+                    continue;
+                }
+                var index = 0;
+                var has = false;
+                if (text.Contains("class"))
+                {
+                    index = text.IndexOf("class") + 6;
+                    has = true;
+                }
+                if (text.Contains("struct"))
+                {
+                    index = text.IndexOf("struct") + 7;
+                    has = true;
+                }
+                if (has)
+                {
+                    var end = text.Length - index;
+                    var typeName1 = text.Substring(index, end);
+                    var typeName2 = typeName1.Split(':');
+                    typeName = typeName2[0].Trim();
+                    string typeFull;
+                    if (nameSpace == "")
+                        typeFull = typeName;
+                    else
+                        typeFull = $"{nameSpace}.{typeName}";
+                    foreach (var type1 in types)
+                    {
+                        if (type1.name != typeFull)
+                            continue;
+                        AddSerType(type1);
+                        break;
+                    }
+                    typeName = "";
+                }
+            }
+            if (typeName.Length > 0)
+            {
+                var typeFull = $"{nameSpace}.{typeName}";
+                foreach (var type1 in types)
+                {
+                    if (type1.name != typeFull)
+                        continue;
+                    AddSerType(type1);
+                    break;
+                }
+            }
+        }
     }
 
     private void AddSerType(TypeData type1)

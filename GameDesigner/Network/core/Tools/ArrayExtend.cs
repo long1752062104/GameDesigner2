@@ -310,6 +310,15 @@ public static class ArrayExtend
         }
         self.Clear();
     }
+    public static void ClearObjects(this List<GameObject> self)
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            if (self[i] != null)
+                Object.Destroy(self[i]);
+        }
+        self.Clear();
+    }
     public static void ClearChildObjects(this GameObject self)
     {
         ClearChildObjects(self.transform);

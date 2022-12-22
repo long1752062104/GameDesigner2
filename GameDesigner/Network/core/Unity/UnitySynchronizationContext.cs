@@ -60,9 +60,10 @@ namespace Net.Unity
                 return d();
             bool complete = false;
             T result = default;
-            Context.Post(new SendOrPostCallback((o)=> {
-                result = d();
-                complete = true;
+            Context.Post(new SendOrPostCallback((o)=> 
+            {
+                try { result = d(); }
+                finally { complete = true; }
             }), null);
             while (!complete)
                 Thread.Sleep(1);
