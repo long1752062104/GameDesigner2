@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System;
 using Net.Helper;
+using Net.System;
 
 namespace Net.Component
 {
@@ -24,6 +25,7 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
+        public bool singleThread;
         [Header("序列化适配器")]
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
@@ -42,6 +44,7 @@ namespace Net.Component
                 _client.port = port;
                 _client.LogRpc = debugRpc;
                 _client.MD5CRC = md5CRC;
+                _client.IsMultiThread = !singleThread;
                 return _client;
             }
             set { _client = value; }
@@ -152,7 +155,7 @@ namespace Net.Component
             {
                 if (clients[i]._client == null)
                     continue;
-                clients[i]._client.NetworkEventUpdate();
+                clients[i]._client.NetworkTick();
             }
         }
 

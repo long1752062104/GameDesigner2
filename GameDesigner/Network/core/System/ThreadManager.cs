@@ -1,15 +1,13 @@
-﻿using Net.Event;
-using System;
+﻿using System;
 using System.Threading;
-#if UNITY_WEBGL
+using Net.Event;
 using UnityEngine.LowLevel;
 using System.Collections.Generic;
-#endif
 
 namespace Net.System
 {
     /// <summary>
-    /// 主线程管理中心
+    /// 事件线程管理
     /// </summary>
     public static class ThreadManager
     {
@@ -54,30 +52,38 @@ namespace Net.System
                 }
             };
 #endif
-#if UNITY_WEBGL
-            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            var runner = new PlayerLoopRunner();
-            var runnerLoop = new PlayerLoopSystem
-            {
-                type = typeof(PlayerLoopRunner),
-                updateDelegate = runner.Run
-            };
-            var copyList = new List<PlayerLoopSystem>(playerLoop.subSystemList)
-            {
-                runnerLoop
-            };
-            playerLoop.subSystemList = copyList.ToArray();
-            PlayerLoop.SetPlayerLoop(playerLoop);
+#if !UNITY_WEBGL //在webgl平台下 必须是主线程
+            if (Config.Config.MainThreadTick)
 #endif
+            {
+                var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+                var runner = new PlayerLoopRunner();
+                var runnerLoop = new PlayerLoopSystem
+                {
+                    type = typeof(PlayerLoopRunner),
+                    updateDelegate = runner.Run
+                };
+                var copyList = new List<PlayerLoopSystem>(playerLoop.subSystemList)
+                {
+                    runnerLoop
+                };
+                playerLoop.subSystemList = copyList.ToArray();
+                PlayerLoop.SetPlayerLoop(playerLoop);
+            }
         }
 
         private static void Start()
         {
 #if !UNITY_WEBGL
-            MainThread = new Thread(Execute);
-            MainThread.Name = "网络主线程";
-            MainThread.IsBackground = true;
-            MainThread.Start();
+            if (!Config.Config.MainThreadTick)
+            {
+                MainThread = new Thread(Execute)
+                {
+                    Name = "事件线程",
+                    IsBackground = true
+                };
+                MainThread.Start();
+            }
 #endif
         }
 
@@ -120,11 +126,11 @@ namespace Net.System
                 }
                 catch (ThreadAbortException ex)
                 {
-                    NDebug.LogWarning("主线程:" + ex.Message);
+                    NDebug.LogWarning("事件线程:" + ex.Message);
                 }
                 catch (Exception ex)
                 {
-                    NDebug.LogError("主线程异常:" + ex);
+                    NDebug.LogError("事件线程异常:" + ex);
                 }
             }
         }

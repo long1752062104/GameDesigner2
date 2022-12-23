@@ -39,28 +39,66 @@ namespace Net.Config
             }
             set
             {
+                if (baseCapacity == value)
+                    return;
                 baseCapacity = value;
                 Save();
             }
         }
 
+        /// <summary>
+        /// 项目的持久路径, 网络需要处理文件时的目录
+        /// </summary>
         public static string BasePath
         {
             get
             {
-#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
                 var path = Unity.UnitySynchronizationContext.Get(() => {
-                    var streamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
-                    if (!Directory.Exists(streamingAssetsPath))
-                        Directory.CreateDirectory(streamingAssetsPath);
-                    return streamingAssetsPath;
+                    return UnityEngine.Application.persistentDataPath;
                 });
-#elif UNITY_ANDROID || UNITY_IOS
-                var path = Unity.UnitySynchronizationContext.Get(()=> { return UnityEngine.Application.persistentDataPath; });
 #else
                 var path = AppDomain.CurrentDomain.BaseDirectory;
 #endif
                 return path;
+            }
+        }
+
+        /// <summary>
+        /// 配置文件的目录
+        /// </summary>
+        public static string ConfigPath
+        {
+            get 
+            {
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
+                var path = Unity.UnitySynchronizationContext.Get(() => { //根路径必须保证在项目内, 这样编译之后才能读取
+                    return UnityEngine.Application.streamingAssetsPath; 
+                });
+#else
+                var path = AppDomain.CurrentDomain.BaseDirectory;
+#endif
+                return path;
+            }
+        }
+
+        private static bool mainThreadTick = false;
+        /// <summary>
+        /// 在主线程处理所有网络功能? 否则会在多线程进行
+        /// </summary>
+        public static bool MainThreadTick 
+        {
+            get
+            {
+                Init();
+                return mainThreadTick;
+            }
+            set
+            {
+                if (mainThreadTick == value)
+                    return;
+                mainThreadTick = value;
+                Save();
             }
         }
 
@@ -69,7 +107,7 @@ namespace Net.Config
             if (init)
                 return;
             init = true;
-            var configPath = BasePath + "/network.config";
+            var configPath = ConfigPath + "/network.config";
             if (File.Exists(configPath))
             {
                 var textRows = File.ReadAllLines(configPath);
@@ -86,10 +124,19 @@ namespace Net.Config
                     switch (key)
                     {
                         case "usememorystream":
-                            useMemoryStream = bool.Parse(value);
+                            if (bool.TryParse(value, out var value1))
+                                useMemoryStream = value1;
+                            else
+                                useMemoryStream = value != "0";
                             break;
                         case "basecapacity":
                             baseCapacity = int.Parse(value);
+                            break;
+                        case "mainthreadtick":
+                            if (bool.TryParse(value, out var value2))
+                                mainThreadTick = value2;
+                            else
+                                mainThreadTick = value != "0";
                             break;
                     }
                 }
@@ -107,7 +154,9 @@ namespace Net.Config
             list.Add(text);
             text = $"baseCapacity={baseCapacity}#当客户端连接时分配的初始缓冲区大小";
             list.Add(text);
-            var configPath = BasePath + "/network.config";
+            text = $"mainThreadTick={mainThreadTick}#在主线程处理所有网络功能? 否则会在多线程进行";
+            list.Add(text);
+            var configPath = ConfigPath + "/network.config";
             File.WriteAllLines(configPath, list);
         }
     }

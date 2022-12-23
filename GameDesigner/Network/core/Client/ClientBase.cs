@@ -414,7 +414,7 @@ namespace Net.Client
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
-        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID;//事件id
+        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID, singleReceiveHandlerID;//事件id
         private int sendFileTick, recvFileTick;
         /// <summary>
         /// 当前尝试重连次数
@@ -442,6 +442,10 @@ namespace Net.Client
         }
         protected readonly object SyncRoot = new object();
         public IGcp Gcp { get; set; }
+        /// <summary>
+        /// 是否使用多线程来接收网络数据? 默认是多线程
+        /// </summary>
+        public bool IsMultiThread { get; set; } = true;
 
         /// <summary>
         /// 构造函数
@@ -671,6 +675,7 @@ namespace Net.Client
             ThreadManager.Event.RemoveEvent(heartHandlerID);
             ThreadManager.Event.RemoveEvent(syncVarHandlerID);
             ThreadManager.Event.RemoveEvent(updateHandlerID);
+            ThreadManager.Event.RemoveEvent(singleReceiveHandlerID);
         }
 
         /// <summary>
@@ -978,7 +983,10 @@ namespace Net.Client
         {
             AbortedThread();//断线重连处理
             Connected = true;
-            StartThread("ReceiveHandle", ReceiveHandle);
+            if (IsMultiThread)
+                StartThread("ReceiveHandle", ReceiveHandle);
+            else
+                singleReceiveHandlerID = ThreadManager.Invoke("SingleReceiveHandler", SingleReceiveHandler);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
@@ -1288,6 +1296,23 @@ namespace Net.Client
                     NetworkException(ex);
                 }
             }
+        }
+
+        /// <summary>
+        /// 单线程接收处理
+        /// </summary>
+        /// <returns></returns>
+        protected virtual bool SingleReceiveHandler()
+        {
+            try
+            {
+                Receive(false);
+            }
+            catch (Exception ex)
+            {
+                NetworkException(ex);
+            }
+            return Connected;
         }
 
         public virtual void Receive(bool isSleep)

@@ -118,17 +118,17 @@
         {
         }
 
-        protected override void StartupThread()
-        {
-            AbortedThread();//断线重连处理
-            Connected = true;
-            networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
-            syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
-            if (!UseUnityThread)
-                ThreadManager.Invoke("UpdateHandle", UpdateHandler);
-        }
+        //protected override void StartupThread()
+        //{
+        //    AbortedThread();//断线重连处理
+        //    Connected = true;
+        //    networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
+        //    heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
+        //    syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+        //    sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
+        //    if (!UseUnityThread)
+        //        ThreadManager.Invoke("UpdateHandle", UpdateHandler);
+        //}
 
         protected override bool HeartHandler()
         {

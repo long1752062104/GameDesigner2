@@ -107,17 +107,17 @@
             }
         }
 
-        protected override void StartupThread()
-        {
-            AbortedThread();//断线重连处理
-            Connected = true;
-            networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
-            syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
-            if (!UseUnityThread)
-                updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
-        }
+        //protected override void StartupThread()
+        //{
+        //    AbortedThread();//断线重连处理
+        //    Connected = true;
+        //    networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
+        //    heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
+        //    syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+        //    sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
+        //    if (!UseUnityThread)
+        //        updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
+        //}
 
         protected void ProcessReceive(UDXEVENT_TYPE type, int erro, IntPtr cli, IntPtr pData, int len)//cb回调
         {

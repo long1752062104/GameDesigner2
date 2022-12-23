@@ -155,7 +155,7 @@ namespace Net.Component
         {
             if (_client == null)
                 return;
-            _client.NetworkEventUpdate();
+            _client.NetworkTick();
         }
 
         void OnDestroy()
