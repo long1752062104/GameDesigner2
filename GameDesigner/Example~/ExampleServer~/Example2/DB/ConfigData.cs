@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Net.System;
 using System.Collections.Generic;
 using System.Text;
+using Net.Share;
 #if SERVER
 using System.Data.SQLite;
 #endif
-using Net.Share;
 
 #if ANTICHEAT
 using Boolean = CodeStage.AntiCheat.ObscuredTypes.ObscuredBool;
@@ -95,7 +95,7 @@ using String = System.String;
     #if SERVER
         private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
     #endif
-
+        
         private Int64 id;
         /// <summary>{KEYNOTE}</summary>
         public Int64 Id
@@ -164,14 +164,14 @@ using String = System.String;
         public void NameCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, (System.String)name);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, (System.String)name);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncNameCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, (System.Int64)id, (System.String)name);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NAME, (System.Int64)id, (System.String)name);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.NAME)]
@@ -244,14 +244,14 @@ using String = System.String;
         public void NumberCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, (System.Int64)number);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, (System.Int64)number);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncNumberCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, (System.Int64)id, (System.Int64)number);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.NUMBER, (System.Int64)id, (System.Int64)number);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.NUMBER)]
@@ -300,6 +300,8 @@ using String = System.String;
                 return;
             for (int i = 0; i < parms.Length; i++)
             {
+                if (parms[i] == null)
+                    continue;
                 this[i] = parms[i];
                 columns.Add(i);
             }

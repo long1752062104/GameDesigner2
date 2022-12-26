@@ -485,11 +485,6 @@
             False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出现错误问题!
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.networkState">
-            <summary>
-            当前客户端网络状态
-            </summary>
-        </member>
         <member name="F:Net.Client.ClientBase.sendCount">
             <summary>
             每秒发送数据长度
@@ -560,57 +555,57 @@
             输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行输出
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnConnectedHandle">
+        <member name="P:Net.Client.ClientBase.OnConnectedHandle">
             <summary>
             当连接服务器成功事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnConnectFailedHandle">
+        <member name="P:Net.Client.ClientBase.OnConnectFailedHandle">
             <summary>
             当连接失败事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnTryToConnectHandle">
+        <member name="P:Net.Client.ClientBase.OnTryToConnectHandle">
             <summary>
             当尝试连接服务器事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.TryToConnectFailedHandle">
+        <member name="P:Net.Client.ClientBase.TryToConnectFailedHandle">
             <summary>
             当尝试连接失败
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnConnectLostHandle">
+        <member name="P:Net.Client.ClientBase.OnConnectLostHandle">
             <summary>
             当连接中断 (异常) 事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnDisconnectHandle">
+        <member name="P:Net.Client.ClientBase.OnDisconnectHandle">
             <summary>
             当断开连接事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnRevdBufferHandle">
+        <member name="P:Net.Client.ClientBase.OnRevdBufferHandle">
             <summary>
             当接收到自定义的cmd指令时调用事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnReconnectHandle">
+        <member name="P:Net.Client.ClientBase.OnReconnectHandle">
             <summary>
             当断线重连成功触发事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnCloseConnectHandle">
+        <member name="P:Net.Client.ClientBase.OnCloseConnectHandle">
             <summary>
             当关闭连接事件
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnNetworkDataTraffic">
+        <member name="P:Net.Client.ClientBase.OnNetworkDataTraffic">
             <summary>
             当统计网络流量时触发
             </summary>
         </member>
-        <member name="E:Net.Client.ClientBase.OnOperationSync">
+        <member name="P:Net.Client.ClientBase.OnOperationSync">
             <summary>
             当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
             </summary>
@@ -845,12 +840,17 @@
         </member>
         <member name="P:Net.Client.ClientBase.ReconnectInterval">
             <summary>
-            断下重连间隔, 默认间隔2秒
+            断线重连间隔, 默认间隔2秒
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.SendInterval">
             <summary>
             每次发送数据间隔，每秒发送30次，每次间隔33毫秒
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.IsMultiThread">
+            <summary>
+            是否使用多线程来接收网络数据? 默认是多线程
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.#ctor">
@@ -899,12 +899,6 @@
             绑定Rpc函数
             </summary>
             <param name="target">注册的对象实例</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.BindLogHandle(Net.Share.IDebugHandle)">
-            <summary>
-            绑定网络调式信息处理接口
-            </summary>
-            <param name="debug"></param>
         </member>
         <member name="M:Net.Client.ClientBase.BindNetworkHandle(Net.Share.INetworkHandle)">
             <summary>
@@ -955,7 +949,7 @@
             每一帧执行线程
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.NetworkEventUpdate">
+        <member name="M:Net.Client.ClientBase.NetworkTick">
             <summary>
             网络数据更新
             </summary>
@@ -1029,7 +1023,7 @@
             连接成功处理
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.OnConnected(System.Boolean)">
+        <member name="M:Net.Client.ClientBase.OnConnected(System.Boolean,System.Action{System.Boolean})">
             <summary>
             连接结果处理
             </summary>
@@ -1096,6 +1090,12 @@
             <summary>
             后台线程接收数据
             </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.SingleReceiveHandler">
+            <summary>
+            单线程接收处理
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Net.Client.ClientBase.NetworkException(System.Exception)">
             <summary>
@@ -1864,6 +1864,21 @@
         <member name="P:Net.Config.Config.BaseCapacity">
             <summary>
             内存接收缓冲区基础容量 默认1024
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.BasePath">
+            <summary>
+            项目的持久路径, 网络需要处理文件时的目录
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.ConfigPath">
+            <summary>
+            配置文件的目录
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.MainThreadTick">
+            <summary>
+            在主线程处理所有网络功能? 否则会在多线程进行
             </summary>
         </member>
         <member name="T:Net.Event.EventSystem">
@@ -4616,47 +4631,47 @@
             网络客户端接口处理 2019.7.9
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnConnectedHandle">
+        <member name="P:Net.Share.INetClient.OnConnectedHandle">
             <summary>
             当连接服务器成功事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnConnectFailedHandle">
+        <member name="P:Net.Share.INetClient.OnConnectFailedHandle">
             <summary>
             当连接失败事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnTryToConnectHandle">
+        <member name="P:Net.Share.INetClient.OnTryToConnectHandle">
             <summary>
             当尝试连接服务器事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnConnectLostHandle">
+        <member name="P:Net.Share.INetClient.OnConnectLostHandle">
             <summary>
             当连接中断 (异常) 事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnDisconnectHandle">
+        <member name="P:Net.Share.INetClient.OnDisconnectHandle">
             <summary>
             当断开连接事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnRevdBufferHandle">
+        <member name="P:Net.Share.INetClient.OnRevdBufferHandle">
             <summary>
             当接收到网络数据处理事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnReconnectHandle">
+        <member name="P:Net.Share.INetClient.OnReconnectHandle">
             <summary>
             当断线重连成功触发事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnCloseConnectHandle">
+        <member name="P:Net.Share.INetClient.OnCloseConnectHandle">
             <summary>
             当关闭连接事件
             </summary>
         </member>
-        <member name="E:Net.Share.INetClient.OnNetworkDataTraffic">
+        <member name="P:Net.Share.INetClient.OnNetworkDataTraffic">
             <summary>
             当统计网络流量时触发
             </summary>
@@ -7188,7 +7203,7 @@
         </member>
         <member name="T:Net.System.ThreadManager">
             <summary>
-            主线程管理中心
+            事件线程管理
             </summary>
         </member>
         <member name="P:Net.System.ThreadManager.Interval">

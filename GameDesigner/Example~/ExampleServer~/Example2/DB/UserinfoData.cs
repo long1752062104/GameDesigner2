@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Net.System;
 using System.Collections.Generic;
 using System.Text;
+using Net.Share;
 #if SERVER
 using System.Data.SQLite;
 #endif
-using Net.Share;
 
 #if ANTICHEAT
 using Boolean = CodeStage.AntiCheat.ObscuredTypes.ObscuredBool;
@@ -80,13 +80,14 @@ using String = CodeStage.AntiCheat.ObscuredTypes.ObscuredString;
 using String = System.String;
 #endif
 
-/// <summary>
-/// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
-/// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
-/// <para><see href="此脚本支持unity的CodeStage.AntiCheat防修改数值插件, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
-/// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
-/// </summary>
-public partial class UserinfoData : IDataRow
+
+    /// <summary>
+    /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
+    /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
+    /// <para><see href="此脚本支持unity的CodeStage.AntiCheat防修改数值插件, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
+    /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
+    /// </summary>
+    public partial class UserinfoData : IDataRow
     {
         [Net.Serialize.NonSerialized]
         [Newtonsoft_X.Json.JsonIgnore]
@@ -94,7 +95,7 @@ public partial class UserinfoData : IDataRow
     #if SERVER
         private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
     #endif
-
+        
         private Int64 id;
         /// <summary>{KEYNOTE}</summary>
         public Int64 Id
@@ -163,14 +164,14 @@ public partial class UserinfoData : IDataRow
         public void AccountCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.String)account);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.String)account);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncAccountCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.Int64)id, (System.String)account);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.Int64)id, (System.String)account);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.ACCOUNT)]
@@ -243,14 +244,14 @@ public partial class UserinfoData : IDataRow
         public void PasswordCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.String)password);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.String)password);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncPasswordCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.Int64)id, (System.String)password);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.Int64)id, (System.String)password);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.PASSWORD)]
@@ -323,14 +324,14 @@ public partial class UserinfoData : IDataRow
         public void MoveSpeedCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Double)moveSpeed);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Double)moveSpeed);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncMoveSpeedCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Int64)id, (System.Double)moveSpeed);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Int64)id, (System.Double)moveSpeed);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.MOVESPEED)]
@@ -403,14 +404,14 @@ public partial class UserinfoData : IDataRow
         public void PositionCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.String)position);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.String)position);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncPositionCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.Int64)id, (System.String)position);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.Int64)id, (System.String)position);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.POSITION)]
@@ -483,14 +484,14 @@ public partial class UserinfoData : IDataRow
         public void RotationCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.String)rotation);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.String)rotation);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncRotationCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.Int64)id, (System.String)rotation);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.Int64)id, (System.String)rotation);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.ROTATION)]
@@ -563,14 +564,14 @@ public partial class UserinfoData : IDataRow
         public void HealthCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)health);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)health);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncHealthCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)id, (System.Int64)health);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)id, (System.Int64)health);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTH)]
@@ -643,14 +644,14 @@ public partial class UserinfoData : IDataRow
         public void HealthMaxCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)healthMax);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)healthMax);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncHealthMaxCall()
         {
             
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)id, (System.Int64)healthMax);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)id, (System.Int64)healthMax);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTHMAX)]
@@ -723,14 +724,14 @@ public partial class UserinfoData : IDataRow
         public void BufferBytesCall()
         {
             object bytes = buffer;
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Byte[])bytes);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Byte[])bytes);
         }
 
 	    /// <summary>{NOTE4}</summary>
         public void SyncBufferBytesCall()
         {
             object bytes = buffer;
-            Net.Client.ClientBase.Instance.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Int64)id, (System.Byte[])bytes);
+            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Int64)id, (System.Byte[])bytes);
         }
 
         [Net.Share.Rpc(hash = (ushort)Example2HashProto.BUFFER)]
@@ -779,6 +780,8 @@ public partial class UserinfoData : IDataRow
                 return;
             for (int i = 0; i < parms.Length; i++)
             {
+                if (parms[i] == null)
+                    continue;
                 this[i] = parms[i];
                 columns.Add(i);
             }

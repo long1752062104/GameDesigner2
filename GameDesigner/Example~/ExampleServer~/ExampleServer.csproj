@@ -53,6 +53,7 @@
     <Compile Include="Example2\DB\Example2DB.cs" />
     <Compile Include="Example2\DB\Example2HashProto.cs" />
     <Compile Include="Example2\DB\Example2RpcMaskType.cs" />
+    <Compile Include="Example2\DB\Example2Sync.cs" />
     <Compile Include="Example2\DB\UserinfoData.cs" />
     <Compile Include="Example2\Player.cs" />
     <Compile Include="Example2\Scene.cs" />
@@ -87,7 +88,6 @@
     <Compile Include="Form4.Designer.cs">
       <DependentUpon>Form4.cs</DependentUpon>
     </Compile>
-    <Compile Include="D:\MMORPG\Assets\Samples\GameDesigner\2022.10.5\Example\ExampleServer~\Invoke\InvokeHelperGenerate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
