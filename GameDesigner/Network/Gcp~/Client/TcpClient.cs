@@ -12,7 +12,6 @@
     using Net.System;
     using global::System.Security.Cryptography;
     using Net.Helper;
-    using global::System.Text;
 
     /// <summary>
     /// TCP客户端类型 
@@ -31,10 +30,7 @@
             set
             {
                 md5crc = value;
-                if (value)
-                    frame = 5 + 16;
-                else
-                    frame = 5;
+                frame = value ? 5 + 16 : 5;
             }
         }
         public override int HeartInterval { get; set; } = 1000;

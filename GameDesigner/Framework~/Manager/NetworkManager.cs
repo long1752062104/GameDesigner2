@@ -189,7 +189,7 @@ namespace Framework
             {
                 if (clients[i]._client == null)
                     continue;
-                clients[i]._client.NetworkEventUpdate();
+                clients[i]._client.NetworkTick();
             }
         }
 

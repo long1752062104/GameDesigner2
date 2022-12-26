@@ -35,19 +35,21 @@ namespace Net.System
             {
                 try
                 {
-                    for (int i = 0; i < STACKS.Length; i++)
+                    lock (SyncRoot) 
                     {
-                        foreach (var stack in STACKS[i])
+                        for (int i = 0; i < STACKS.Length; i++)
                         {
-                            if (stack == null)
-                                continue;
-                            if (stack.referenceCount == 0) 
-                                stack.Close();
-                            stack.referenceCount = 0;
+                            foreach (var stack in STACKS[i])
+                            {
+                                if (stack == null)
+                                    continue;
+                                if (stack.referenceCount == 0)
+                                    stack.Close();
+                                stack.referenceCount = 0;
+                            }
                         }
                     }
-                }
-                catch { }
+                } catch { }
                 return true;
             }, true);
         }
