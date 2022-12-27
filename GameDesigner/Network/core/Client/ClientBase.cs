@@ -1586,7 +1586,7 @@ namespace Net.Client
                                 int count = 0;
                                 string downloadPath;
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-                                downloadPath = Net.Config.Config.BasePath
+                                downloadPath = Net.Config.Config.BasePath + "/download/";
 #else
                                 downloadPath = Environment.CurrentDirectory + "/download/";
 #endif

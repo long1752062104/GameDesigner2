@@ -73,7 +73,11 @@ namespace Net.Config
             {
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
                 var path = Unity.UnitySynchronizationContext.Get(() => { //根路径必须保证在项目内, 这样编译之后才能读取
-                    return UnityEngine.Application.streamingAssetsPath; 
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_EDITOR
+                    return UnityEngine.Application.streamingAssetsPath;//在编辑器时都是流路径
+#elif UNITY_ANDROID || UNITY_IOS
+                    return UnityEngine.Application.persistentDataPath;//编译之后才是持久路径
+#endif
                 });
 #else
                 var path = AppDomain.CurrentDomain.BaseDirectory;
@@ -157,6 +161,9 @@ namespace Net.Config
             text = $"mainThreadTick={mainThreadTick}#在主线程处理所有网络功能? 否则会在多线程进行";
             list.Add(text);
             var configPath = ConfigPath + "/network.config";
+            var path = Path.GetDirectoryName(configPath);
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
             File.WriteAllLines(configPath, list);
         }
     }

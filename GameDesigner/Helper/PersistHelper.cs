@@ -8,7 +8,11 @@ public class PersistHelper
 {
     public static T Deserialize<T>(string name) where T : class, new()
     {
+#if UNITY_EDITOR
         var path = "ProjectSettings/gdnet/";
+#else
+        var path = Net.Config.Config.BasePath + "/ProjectSettings/gdnet/";
+#endif
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
         var file = path + name;
@@ -20,7 +24,11 @@ public class PersistHelper
 
     public static void Serialize<T>(T obj, string name)
     {
+#if UNITY_EDITOR
         var path = "ProjectSettings/gdnet/";
+#else
+        var path = Net.Config.Config.BasePath + "/ProjectSettings/gdnet/";
+#endif
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
         var file = path + name;
