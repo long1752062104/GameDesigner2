@@ -34,15 +34,21 @@ public class Fast2BuildTools2 : EditorWindow
     {
         var types1 = new List<TypeData>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        Assembly assembly = null;
         foreach (var assemblie in assemblies)
         {
-            if (assemblie.GetName().Name == "Assembly-CSharp")
+            var name = assemblie.GetName().Name;
+            if (name == "Assembly-CSharp" | name == "Assembly-CSharp-firstpass")
             {
-                assembly = assemblie;
-                break;
+                types1.AddRange(AddTypes(assemblie));
             }
         }
+        types = types1.ToArray();
+        LoadData();
+    }
+
+    private List<TypeData> AddTypes(Assembly assembly)
+    {
+        var types1 = new List<TypeData>();
         var types2 = assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
         var types3 = typeof(Vector2).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
         var typeslist = new List<Type>(types2);
@@ -52,8 +58,7 @@ public class Fast2BuildTools2 : EditorWindow
             var str = obj.FullName;
             types1.Add(new TypeData() { name = str, type = obj });
         }
-        types = types1.ToArray();
-        LoadData();
+        return types1;
     }
 
     private void OnGUI()
