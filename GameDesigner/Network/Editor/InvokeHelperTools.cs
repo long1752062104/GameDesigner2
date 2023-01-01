@@ -198,7 +198,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
             return configObject;
         }
     }
-    internal static InvokeHelperConfig Config = new InvokeHelperConfig();
+    internal static InvokeHelperConfig Config { get => ConfigObject.Config; set => ConfigObject.Config = value; }
     private Vector2 scrollPosition;
 
     internal static void LoadData()
