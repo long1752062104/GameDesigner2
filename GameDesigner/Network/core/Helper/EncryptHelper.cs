@@ -77,14 +77,16 @@ namespace Net.Helper
         {
             if (string.IsNullOrEmpty(text))
                 return string.Empty;
-            byte[] keyArray = Encoding.UTF8.GetBytes(encryptKey);
-            byte[] toEncryptArray = Encoding.UTF8.GetBytes(text);
-            RijndaelManaged rDel = new RijndaelManaged();
-            rDel.Key = keyArray;
-            rDel.Mode = CipherMode.ECB;
-            rDel.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cTransform = rDel.CreateEncryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            var keyArray = Encoding.UTF8.GetBytes(encryptKey);
+            var toEncryptArray = Encoding.UTF8.GetBytes(text);
+            var rDel = new RijndaelManaged
+            {
+                Key = keyArray,
+                Mode = CipherMode.ECB,
+                Padding = PaddingMode.PKCS7
+            };
+            var cTransform = rDel.CreateEncryptor();
+            var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
             return Convert.ToBase64String(resultArray, 0, resultArray.Length);
         }
 
@@ -95,14 +97,18 @@ namespace Net.Helper
         /// <returns>解密后的字符串</returns>   
         public static string DESDecrypt(string encryptKey, string text)
         {
-            byte[] keyArray = Encoding.UTF8.GetBytes(encryptKey);
-            byte[] toEncryptArray = Convert.FromBase64String(text);
-            RijndaelManaged rDel = new RijndaelManaged();
-            rDel.Key = keyArray;
-            rDel.Mode = CipherMode.ECB;
-            rDel.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cTransform = rDel.CreateDecryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            if (text.Length < 2)
+                return string.Empty;
+            var keyArray = Encoding.UTF8.GetBytes(encryptKey);
+            var toEncryptArray = Convert.FromBase64String(text);
+            var rDel = new RijndaelManaged
+            {
+                Key = keyArray,
+                Mode = CipherMode.ECB,
+                Padding = PaddingMode.PKCS7
+            };
+            var cTransform = rDel.CreateDecryptor();
+            var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
             return Encoding.UTF8.GetString(resultArray);
         }
 

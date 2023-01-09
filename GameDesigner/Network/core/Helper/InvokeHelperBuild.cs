@@ -737,7 +737,9 @@ internal static class SyncVarGetSetHelperGenerate
                     var sequence = pdb.Scope.Start.SequencePoint;
                     if (sequence == null)// async方法得不到源码行
                         continue;
-                    cache[type.FullName + "." + method.Name] = new SequencePoint(sequence.Document.Url, sequence.StartLine - 1);
+                    var path = sequence.Document.Url;
+                    path = "Assets" + path.Replace('\\', '/').Split(new string[] { "Assets" }, 0)[1];
+                    cache[type.FullName + "." + method.Name] = new SequencePoint(path, sequence.StartLine - 1);
                 }
                 //状态机部分
                 {
@@ -763,7 +765,9 @@ internal static class SyncVarGetSetHelperGenerate
                     var sequence = pdb.Scope.Start.SequencePoint;
                     if (sequence == null)// async方法得不到源码行
                         continue;
-                    cache[type.FullName] = new SequencePoint(sequence.Document.Url, sequence.StartLine - 1);
+                    var path = sequence.Document.Url;
+                    path = "Assets" + path.Replace('\\', '/').Split(new string[] { "Assets" }, 0)[1];
+                    cache[type.FullName] = new SequencePoint(path, sequence.StartLine - 1);
                 }
             }
             //var path = Environment.CurrentDirectory + "/ScriptHelper.txt";
