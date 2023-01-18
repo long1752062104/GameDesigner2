@@ -124,7 +124,7 @@ public static class ArrayExtend
     }
 
     /// <summary>
-    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 负责!active
+    /// 循环全部并且设置, 如果指定的start和end内的物体则active, 否则!active
     /// </summary>
     public static void SetActiveAll<T>(this T[] self, bool active, int start, int end) where T : Object
     {

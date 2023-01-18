@@ -412,6 +412,21 @@ namespace Net.Event
                 }
             }
         }
+
+        /// <summary>
+        /// 重置计时器事件间隔
+        /// </summary>
+        /// <param name="eventID"></param>
+        /// <param name="interval"></param>
+        public void ResetTimeInterval(int eventID, ulong interval)
+        {
+            var evt = GetEvent(eventID);
+            if (evt != null)
+            {
+                evt.time = time + interval;
+                evt.timeMax = interval;
+            }
+        }
     }
 
     public class TimerTick 

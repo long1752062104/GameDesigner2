@@ -1326,6 +1326,7 @@ namespace Net.Client
                     BufferPool.Push(segment);
                     Connected = false;
                     NetworkState = NetworkState.ConnectLost;
+                    SetHeartInterval(ReconnectInterval);
                     InvokeInMainThread(OnConnectLostHandle);
                     return;
                 }
@@ -2669,9 +2670,7 @@ namespace Net.Client
 
         protected void SetHeartInterval(int interval) 
         {
-            var evt = ThreadManager.Event.GetEvent(heartHandlerID);
-            if (evt != null)
-                evt.timeMax = (ulong)interval;
+            ThreadManager.Event.ResetTimeInterval(heartHandlerID, (ulong)interval);
         }
 
         /// <summary>

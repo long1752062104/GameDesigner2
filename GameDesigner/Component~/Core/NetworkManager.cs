@@ -8,7 +8,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System;
 using Net.Helper;
-using Net.System;
 
 namespace Net.Component
 {
@@ -26,6 +25,10 @@ namespace Net.Component
         public bool startConnect = true;
         public bool md5CRC;
         public bool singleThread;
+        public int reconnectCount = 10;
+        public int reconnectInterval = 2000;
+        public byte heartLimit = 5;
+        public int heartInterval = 1000;
         [Header("序列化适配器")]
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
@@ -45,6 +48,9 @@ namespace Net.Component
                 _client.LogRpc = debugRpc;
                 _client.MD5CRC = md5CRC;
                 _client.IsMultiThread = !singleThread;
+                _client.ReconnectCount = reconnectCount;
+                _client.ReconnectInterval = reconnectInterval;
+                _client.SetHeartTime(heartLimit, heartInterval);
                 return _client;
             }
             set { _client = value; }
@@ -111,14 +117,9 @@ namespace Net.Component
             set { clients[index].Client = value; }
         }
 
-        void Awake()
+        protected override void Awake()
         {
-            if (instance != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
             DontDestroyOnLoad(gameObject);
             Application.runInBackground = true;
         }
@@ -139,6 +140,12 @@ namespace Net.Component
                     break;
                 case LogMode.WarnAndError:
                     NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
+                case LogMode.OnlyError:
+                    NDebug.BindLogAll(null, null, Debug.LogError);
+                    break;
+                case LogMode.OnlyWarnAndError:
+                    NDebug.BindLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
             foreach (var client in clients)
@@ -180,6 +187,12 @@ namespace Net.Component
                     break;
                 case LogMode.WarnAndError:
                     NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
+                case LogMode.OnlyError:
+                    NDebug.RemoveLogAll(null, null, Debug.LogError);
+                    break;
+                case LogMode.OnlyWarnAndError:
+                    NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
         }
@@ -238,7 +251,10 @@ namespace Net.Component
         /// <param name="target"></param>
         public static void RemoveRpcTwo(object target)
         {
-            I.clients[1].Client.RemoveRpc(target);
+            var i = Instance;
+            if (i == null)
+                return;
+            i.clients[1].Client.RemoveRpc(target);
         }
 
         /// <summary>
@@ -248,10 +264,13 @@ namespace Net.Component
         /// <param name="target"></param>
         public static void RemoveRpc(int clientIndex, object target)
         {
+            var i = Instance;
+            if (i == null)
+                return;
             if (clientIndex < 0)
-                foreach (var item in I.clients)
+                foreach (var item in i.clients)
                     item.Client.RemoveRpc(target);
-            else I.clients[clientIndex].Client.RemoveRpc(target);
+            else i.clients[clientIndex].Client.RemoveRpc(target);
         }
 
         public static void Close(bool v1, int v2)

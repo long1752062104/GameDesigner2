@@ -509,14 +509,23 @@ namespace Binding
         str.AppendLine("{");
         str.AppendLine("    public class BindingType : IBindingType");
         str.AppendLine("    {");
-        str.AppendLine("        public Type[] TYPES { get; } = new Type[]");
+        str.AppendLine("        public int SortingOrder { get; } = 1;");
+        str.AppendLine("        public Dictionary<Type, Type> BindTypes { get; } = new Dictionary<Type, Type>");
         str.AppendLine("        {");
         foreach (var item in types)
         {
-            if(item.IsGenericType & item.GenericTypeArguments.Length == 2)
-                str.AppendLine($"\t\t\ttypeof(Dictionary<{item.GenericTypeArguments[0].FullName},{item.GenericTypeArguments[1].FullName}>),");
+            if (item.IsGenericType & item.GenericTypeArguments.Length == 2)
+            {
+                var key = item.GenericTypeArguments[0].FullName;
+                var value = item.GenericTypeArguments[1].FullName;
+                str.AppendLine($"\t\t\t{{ typeof(Dictionary<{key},{value}>), typeof(Dictionary_{key}_{value}_Bind) }},");
+            }
             else
-                str.AppendLine($"\t\t\ttypeof({item.FullName}),");
+            {
+                str.AppendLine($"\t\t\t{{ typeof({item.FullName}), typeof({item.FullName.Replace(".", "")}Bind) }},");
+                str.AppendLine($"\t\t\t{{ typeof({item.FullName}[]), typeof({item.FullName.Replace(".", "")}ArrayBind) }},");
+                str.AppendLine($"\t\t\t{{ typeof(List<{item.FullName}>), typeof({item.FullName.Replace(".", "")}GenericBind) }},");
+            }
         }
         str.AppendLine("        };");
         str.AppendLine("    }");

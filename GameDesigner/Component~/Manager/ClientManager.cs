@@ -35,6 +35,14 @@ namespace Net.Component
         /// 警告和错误都输出为红色提示
         /// </summary>
         WarnAndError,
+        /// <summary>
+        /// 只输出错误日志
+        /// </summary>
+        OnlyError,
+        /// <summary>
+        /// 只输入警告和错误日志
+        /// </summary>
+        OnlyWarnAndError,
     }
 
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
@@ -91,14 +99,9 @@ namespace Net.Component
         /// </summary>
         public static int UID { get { return Instance.client.UID; } }
 
-        void Awake()
+        protected override void Awake()
         {
-            if (instance != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
             mainInstance = true;
             DontDestroyOnLoad(gameObject);
             Application.targetFrameRate = frameRate;
@@ -121,6 +124,12 @@ namespace Net.Component
                     break;
                 case LogMode.WarnAndError:
                     NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
+                case LogMode.OnlyError:
+                    NDebug.BindLogAll(null, null, Debug.LogError);
+                    break;
+                case LogMode.OnlyWarnAndError:
+                    NDebug.BindLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
             if (startConnect)
@@ -176,6 +185,12 @@ namespace Net.Component
                     break;
                 case LogMode.WarnAndError:
                     NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
+                    break;
+                case LogMode.OnlyError:
+                    NDebug.RemoveLogAll(null, null, Debug.LogError);
+                    break;
+                case LogMode.OnlyWarnAndError:
+                    NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
         }

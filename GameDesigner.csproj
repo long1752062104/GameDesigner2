@@ -111,7 +111,7 @@
     <Compile Include="GameDesigner\Network\Adapter\CallSiteRpcAdapter.cs" />
     <Compile Include="GameDesigner\Network\Adapter\ListenerAdapter.cs" />
     <Compile Include="GameDesigner\Network\Adapter\SerializeAdapter.cs" />
-    <Compile Include="GameDesigner\Network\Binding\BindingEntry.cs" />
+    <Compile Include="GameDesigner\Network\Binding\BindingType.cs" />
     <Compile Include="GameDesigner\Network\Binding\CustomBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\Fast2BuildMethod.cs" />
     <Compile Include="GameDesigner\Network\Binding\NetColor32Bind.cs" />

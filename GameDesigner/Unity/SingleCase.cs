@@ -22,21 +22,9 @@ namespace Net.Component
         {
             get
             {
-                if (instance == null)
-                {
-                    var ts = Resources.FindObjectsOfTypeAll<T>();
-                    foreach (var t in ts)
-                    {
-                        if (t.gameObject.scene.isLoaded)
-                        {
-                            instance = t;
-                            break;
-                        }
-                    }
-                }
+                if (instance == null) instance = FindObjectOfType<T>(true);
                 return instance;
             }
-            set { instance = value; }
         }
         /// <summary>
         /// 单例实例
@@ -44,7 +32,18 @@ namespace Net.Component
         public static T I
         {
             get { return Instance; }
-            set { instance = value; }
+        }
+
+        protected virtual void Awake()
+        {
+            if (instance != null && instance != this)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                instance = GetComponent<T>();
+            }
         }
 
         public Stack<Action> OnBack = new Stack<Action>();
@@ -56,7 +55,7 @@ namespace Net.Component
                 return null;
             i.gameObject.SetActive(true);
             //i.transform.SetAsLastSibling();
-            if(onBack != null)
+            if (onBack != null)
                 i.OnBack.Push(onBack);
             return i;
         }

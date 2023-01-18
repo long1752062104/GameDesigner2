@@ -15,14 +15,9 @@ namespace Net.Component
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
 
-        void Awake()
+        protected override void Awake()
         {
-            if (instance != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            instance = this;
+            base.Awake();
             Init();
         }
 

@@ -26,8 +26,9 @@ namespace Net.UnityComponent
         public Dictionary<Object, ObjectRecord> dic = new Dictionary<Object, ObjectRecord>();
         public Dictionary<string, ObjectRecord> dic1 = new Dictionary<string, ObjectRecord>();
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             var objects = Resources.LoadAll<Object>("");
             objectRecords = new ObjectRecord[objects.Length];
             for (int i = 0; i < objects.Length; i++)

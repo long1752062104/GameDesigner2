@@ -49,9 +49,13 @@
     public interface IBindingType
     {
         /// <summary>
+        /// 收集序列化类型的顺序 -!!!!- 如果有多个项目继承绑定类型时, 必须设置顺序, 否则会出现, 后端和前端收集的传输类型不一样的问题
+        /// </summary>
+        int SortingOrder { get; }
+        /// <summary>
         /// 收集的绑定类型列表
         /// </summary>
-        Type[] TYPES { get; }
+        Dictionary<Type, Type> BindTypes { get; }
     }
 
     /// <summary>
@@ -78,8 +82,8 @@
             Types1.Clear();
             Types2.Clear();
             BindTypes.Clear();
-            InitBindInterfaces();
             AddBaseType();
+            InitBindInterfaces();
             return true;
         }
 
@@ -88,40 +92,22 @@
         /// </summary>
         public static void AddBaseType()
         {
-            AddBaseType3<short>();
-            AddBaseType3<int>();
-            AddBaseType3<long>();
-            AddBaseType3<ushort>();
-            AddBaseType3<uint>();
-            AddBaseType3<ulong>();
-            AddBaseType3<float>();
-            AddBaseType3<double>();
-            AddBaseType3<bool>();
-            AddBaseType3<char>();
-            AddBaseType3<string>();
             AddBaseType3<byte>();
             AddBaseType3<sbyte>();
+            AddBaseType3<bool>();
+            AddBaseType3<short>();
+            AddBaseType3<ushort>();
+            AddBaseType3<char>();
+            AddBaseType3<int>();
+            AddBaseType3<uint>();
+            AddBaseType3<float>();
+            AddBaseType3<long>();
+            AddBaseType3<ulong>();
+            AddBaseType3<double>();
+            AddBaseType3<string>();
             AddBaseType3<DateTime>();
             AddBaseType3<decimal>();
             AddBaseType3<DBNull>();
-            //其他可能用到的
-            AddSerializeType3<Vector2>();
-            AddSerializeType3<Vector3>();
-            AddSerializeType3<Vector4>();
-            AddSerializeType3<Quaternion>();
-            AddSerializeType3<Rect>();
-            AddSerializeType3<Color>();
-            AddSerializeType3<Color32>();
-            AddSerializeType3<UnityEngine.Vector2>();
-            AddSerializeType3<UnityEngine.Vector3>();
-            AddSerializeType3<UnityEngine.Vector4>();
-            AddSerializeType3<UnityEngine.Quaternion>();
-            AddSerializeType3<UnityEngine.Rect>();
-            AddSerializeType3<UnityEngine.Color>();
-            AddSerializeType3<UnityEngine.Color32>();
-            //框架操作同步用到
-            AddSerializeType3<Operation>();
-            AddSerializeType3<OperationList>();
         }
 
         /// <summary>
@@ -228,29 +214,25 @@
         public static void InitBindInterfaces()
         { 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Type[] bindTypes = null;
+            var bindTypes = new List<IBindingType>();
             foreach (Assembly assembly in assemblies)
             {
-                var types = assembly.GetTypes();
-                foreach (var type in types)
+                var type = assembly.GetType("Binding.BindingType");
+                if (type != null)
                 {
-                    var serType = type.GetInterface(typeof(ISerialize<>).FullName);
-                    if (serType != null)
-                    {
-                        var itemType = serType.GetGenericArguments()[0];
-                        BindTypes.Add(itemType, type);
-                        continue;
-                    }
-                    serType = type.GetInterface(typeof(IBindingType).FullName);
-                    if (serType != null)
-                    {
-                        var bindObj = (IBindingType)Activator.CreateInstance(type);
-                        bindTypes = bindObj.TYPES;
-                    }
+                    var bindObj = (IBindingType)Activator.CreateInstance(type);
+                    bindTypes.Add(bindObj);
                 }
             }
-            if(bindTypes != null)
-                AddSerializeType3s(bindTypes);
+            bindTypes.Sort((a, b)=> a.SortingOrder.CompareTo(b.SortingOrder));
+            foreach (var bindObj in bindTypes)
+            {
+                foreach (var bindType in bindObj.BindTypes)
+                {
+                    BindTypes.Add(bindType.Key, bindType.Value);
+                    AddSerializeType(bindType.Key);
+                }
+            }
         }
 
         /// <summary>

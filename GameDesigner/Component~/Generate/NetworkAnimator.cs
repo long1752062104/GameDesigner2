@@ -43,7 +43,7 @@ namespace BuildComponent
             fields[16] = self.layersAffectMassCenter;
             fields[17] = self.logWarnings;
             fields[18] = self.fireEvents;
-            fields[19] = self.keepAnimatorControllerStateOnDisable;
+            fields[19] = self.keepAnimatorStateOnDisable;
         }
 
         public UnityEngine.Vector3 rootPosition
@@ -446,14 +446,14 @@ namespace BuildComponent
         {
             get
             {
-                return self.keepAnimatorControllerStateOnDisable;
+                return self.keepAnimatorStateOnDisable;
             }
             set
             {
                 if (value.Equals(fields[19]))
                     return;
                 fields[19] = value;
-                self.keepAnimatorControllerStateOnDisable = value;
+                self.keepAnimatorStateOnDisable = value;
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
@@ -1840,7 +1840,7 @@ namespace BuildComponent
 							return;
 						var keepAnimatorControllerStateOnDisable = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
 						fields[19] = keepAnimatorControllerStateOnDisable;
-						self.keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable;
+						self.keepAnimatorStateOnDisable = keepAnimatorControllerStateOnDisable;
 					}
                     break;
                 case 20:
