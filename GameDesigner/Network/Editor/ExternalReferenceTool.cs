@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,7 +38,12 @@ public class ExternalReferenceTool : EditorWindow
         {
             var csprojPath = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
             if (!string.IsNullOrEmpty(csprojPath))
-                config.csprojPaths.Add(csprojPath);
+            {
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(csprojPath));
+                config.csprojPaths.Add(relativeUri.ToString());
+            }
             SaveData();
         }
         GUILayout.EndHorizontal();
@@ -63,7 +69,12 @@ public class ExternalReferenceTool : EditorWindow
             if (!string.IsNullOrEmpty(path))
             {
                 if (!config.paths.Contains(path))
-                    config.paths.Add(path);
+                {
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                    config.paths.Add(relativeUri.ToString());
+                }
             }
             SaveData();
         }
@@ -102,19 +113,32 @@ public class ExternalReferenceTool : EditorWindow
                 else node_list = xml.SelectNodes("/Project/ItemGroup");
                 foreach (var path in config.paths)
                 {
-                    var path1 = path.Replace("/", "\\");
-                    var dir = new DirectoryInfo(path);
+                    var path1 = Path.GetFullPath(path);
+                    var dir = new DirectoryInfo(path1);
                     var dirName = dir.Parent.FullName + "\\";
                     var files = Directory.GetFiles(path1, "*.*", SearchOption.AllDirectories);
                     var patterns = config.searchPattern.Replace("*", "").Split('|');
                     var fileList = new List<string>();
+                    //相对于服务器路径
+                    var csPath = Path.GetFullPath(csprojPath);
+                    var uri = new Uri(csPath);
+                    var uri1 = new Uri(path1);
+                    var relativeUri = uri.MakeRelativeUri(uri1);
+                    path1 = relativeUri.ToString().Replace('/', '\\');
+                    //只包含三级目录的相对路径
+                    uri1 = new Uri(dirName);
+                    relativeUri = uri.MakeRelativeUri(uri1);
+                    dirName = relativeUri.ToString().Replace('/', '\\');
                     foreach (var file in files)
                     {
                         foreach (var pattern in patterns)
                         {
                             if (file.EndsWith(pattern)) 
                             {
-                                fileList.Add(file);
+                                uri1 = new Uri(file);
+                                relativeUri = uri.MakeRelativeUri(uri1);
+                                var rPath = relativeUri.ToString().Replace('/', '\\');
+                                fileList.Add(rPath);
                                 break;
                             }
                         }
