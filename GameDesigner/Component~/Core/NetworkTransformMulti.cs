@@ -41,7 +41,7 @@ namespace Net.UnityComponent
                 Check();
                 for (int i = 0; i < childs.Length; i++)
                 {
-                    childs[i].Check(netObj.Identity, netObj.registerObjectIndex, Index);
+                    childs[i].Check(netObj.Identity, netObj.registerObjectIndex, NetComponentID);
                 }
                 sendTime = Time.time + (1f / rate);
             }
@@ -53,7 +53,7 @@ namespace Net.UnityComponent
             {
                 cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 uid = ClientBase.Instance.UID
             });
         }

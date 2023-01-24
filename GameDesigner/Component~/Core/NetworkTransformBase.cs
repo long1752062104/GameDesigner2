@@ -95,7 +95,7 @@ namespace Net.UnityComponent
             {
                 cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 uid = ClientBase.Instance.UID
             });
         }

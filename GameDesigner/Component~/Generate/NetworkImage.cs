@@ -60,7 +60,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 1,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -82,7 +82,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 2,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -104,7 +104,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 3,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -126,7 +126,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 4,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -148,7 +148,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 5,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -170,7 +170,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 6,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -192,7 +192,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 7,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -214,7 +214,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 8,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -236,7 +236,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 9,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -258,7 +258,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 10,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -280,7 +280,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 11,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -302,7 +302,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 12,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -324,7 +324,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 13,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -346,7 +346,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 14,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -368,7 +368,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 15,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -390,7 +390,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 16,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -434,7 +434,7 @@ namespace BuildComponent
                 ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
-                    index1 = Index,
+                    index1 = NetComponentID,
                     index2 = 18,
                     buffer = SerializeObject(value).ToArray(true),
                     uid = ClientBase.Instance.UID
@@ -474,7 +474,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 19,
                 buffer = buffer
             });
@@ -494,7 +494,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 20,
                 buffer = buffer
             });
@@ -514,7 +514,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 21,
                 buffer = buffer
             });
@@ -534,7 +534,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 22,
                 buffer = buffer
             });
@@ -554,7 +554,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 23,
                 buffer = buffer
             });
@@ -574,7 +574,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 24,
                 buffer = buffer
             });
@@ -595,7 +595,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 25,
                 buffer = buffer
             });
@@ -616,7 +616,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 28,
                 buffer = buffer
             });
@@ -636,7 +636,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 31,
                 buffer = buffer
             });
@@ -656,7 +656,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 33,
                 buffer = buffer
             });
@@ -676,7 +676,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 34,
                 buffer = buffer
             });
@@ -696,7 +696,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 35,
                 buffer = buffer
             });
@@ -716,7 +716,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 36,
                 buffer = buffer
             });
@@ -736,7 +736,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 37,
                 buffer = buffer
             });
@@ -756,7 +756,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 38,
                 buffer = buffer
             });
@@ -776,7 +776,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 39,
                 buffer = buffer
             });
@@ -796,7 +796,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 40,
                 buffer = buffer
             });
@@ -816,7 +816,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 42,
                 buffer = buffer
             });
@@ -836,7 +836,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 43,
                 buffer = buffer
             });
@@ -856,7 +856,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 45,
                 buffer = buffer
             });
@@ -883,7 +883,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 47,
                 buffer = buffer
             });
@@ -907,7 +907,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 52,
                 buffer = buffer
             });
@@ -929,7 +929,7 @@ namespace BuildComponent
             ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
-                index1 = Index,
+                index1 = NetComponentID,
                 index2 = 58,
                 buffer = buffer
             });

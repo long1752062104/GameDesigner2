@@ -12,18 +12,19 @@ namespace Net.UnityComponent
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         public NetworkObject netObj;
-        private int index = -1;
+        [Tooltip("网络组件的ID,当FPS游戏时,自己身上只有一双手和枪,而其他客户端要显示完整模型时,用到另外的预制体,就会出现组件获取不一致问题,所以这里提供了网络组件ID,即可解决此问题")]
+        [SerializeField] private int netComponentID = -1;
         /// <summary>
-        /// 此组件是netobj的第几个组件
+        /// 网络组件id, 此组件是netobj的第几个组件
         /// </summary>
-        public int Index
+        public int NetComponentID
         {
-            get { return index; }
+            get { return netComponentID > 10 ? -1 : netComponentID; }
             set
             {
                 if (value > 10)
                     throw new Exception("组件最多不能超过10个");
-                index = value;
+                netComponentID = value;
             }
         }
         /// <summary>
@@ -53,16 +54,16 @@ namespace Net.UnityComponent
                 return;
             isInit = true;
             netObj = GetComponentInParent<NetworkObject>();
-            if (Index == -1)
+            if (NetComponentID == -1)
             {
-                Index = netObj.networkBehaviours.Count;
+                NetComponentID = netObj.networkBehaviours.Count;
                 netObj.networkBehaviours.Add(this);
             }
             else
             {
-                while (netObj.networkBehaviours.Count <= Index)
+                while (netObj.networkBehaviours.Count <= NetComponentID)
                     netObj.networkBehaviours.Add(null);
-                netObj.networkBehaviours[Index] = this;
+                netObj.networkBehaviours[NetComponentID] = this;
             }
             netObj.InitSyncVar(this);
             if (IsLocal)
@@ -109,7 +110,7 @@ namespace Net.UnityComponent
             for (int i = 0; i < nbs.Count; i++)
             {
                 var nb = nbs[i];
-                nb.Index = i;
+                nb.NetComponentID = i;
                 if (nb == this)
                 {
                     nbs.RemoveAt(i);

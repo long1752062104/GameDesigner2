@@ -242,6 +242,22 @@ namespace Net.UnityComponent
             //每个玩家可以实例化5000个网络物体，并且id都是唯一的，如果超出则报错
             return 10000 + ((uid + 1 - 10000) * Capacity);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            var networkBehaviours = GetComponents<NetworkBehaviour>();
+            for (int i = 0; i < networkBehaviours.Length; i++)
+            {
+                var networkBehaviour = networkBehaviours[i];
+                if (networkBehaviour.NetComponentID == -1)
+                {
+                    networkBehaviour.NetComponentID = i;
+                    UnityEditor.EditorUtility.SetDirty(networkBehaviour);
+                }
+            }
+        }
+#endif
     }
 }
 #endif
