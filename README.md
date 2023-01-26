@@ -387,6 +387,7 @@ static void Main(string[] args)
 <br>5.[一介散修](https://www.taptap.com/app/234010)</br>
 <br>6.[无限升级](https://www.taptap.cn/app/241449)</br>
 <br>7.[零灵：天运防线](https://www.taptap.cn/app/269522)</br>
+<br>8.[神之刃](https://www.taptap.cn/app/243180)</br>
 
 ## 使用到的第三方库和一些推荐的库
 <br>1.udx: 超强的一个udp可靠协议库,实力大于名气 www.goodudx.com</br>
@@ -428,6 +429,7 @@ static void Main(string[] args)
 <br>11 走在冷风中. ¥ 1000</br>
 <br>12 非非有非非无 ¥ 100</br>
 <br>13 克里斯 ¥ 200 + 1000</br>
+<br>14 Maple ¥ 200</br>
 
 <br>不留名的大佬们 微信总资助 ¥ 653</br>
 
