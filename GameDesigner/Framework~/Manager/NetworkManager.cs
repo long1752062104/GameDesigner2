@@ -4,10 +4,10 @@ using Net.Share;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
-using System.Threading.Tasks;
 using System;
 using Net.Adapter;
 using Net.Helper;
+using Cysharp.Threading.Tasks;
 
 namespace Framework
 {
@@ -96,7 +96,7 @@ namespace Framework
             set { _client = value; }
         }
 
-        public Task<bool> Connect()
+        public UniTask<bool> Connect()
         {
             _client = Client;
             if (!localTest)
@@ -135,7 +135,7 @@ namespace Framework
             });
         }
 
-        public Task<bool> Connect(string ip, int port)
+        public UniTask<bool> Connect(string ip, int port)
         {
             this.ip = ip;
             this.port = port;

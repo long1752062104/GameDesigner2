@@ -12,6 +12,7 @@
     using Net.System;
     using global::System.Security.Cryptography;
     using Net.Helper;
+    using Cysharp.Threading.Tasks;
 
     /// <summary>
     /// TCP客户端类型 
@@ -59,9 +60,13 @@
 #endif
         }
 
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
-            return Task.Run(() =>
+#if SERVICE
+            return UniTask.Run(() =>
+#else
+            return UniTask.RunOnThreadPool(() =>
+#endif
             {
                 try
                 {
@@ -431,7 +436,7 @@
             OnRevdBufferHandle += (model) => { fps++; };
             OnOperationSync += (list) => { fps++; };
         }
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.localPort = localPort;
@@ -442,7 +447,7 @@
             SendDirect();
             Connected = true;
             StackStream = new MemoryStream(Config.Config.BaseCapacity);
-            return Task.FromResult(Connected);
+            return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
 

@@ -297,23 +297,16 @@ namespace Net.Adapter
             handle.RemoveRpc(target);
         }
 
-        //public void CheckRpc()
-        //{
-        //    handle.CheckRpc();
-        //}
-
-        public RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc)
+        public RPCMethodBody OnRpcTaskRegister(ushort methodHash, string callbackFunc)
         {
-            RPCModelTask model;
+            RPCMethodBody model;
             if (methodHash != 0)
             {
-                if (!handle.RpcTasks1.TryGetValue(methodHash, out model))
-                    handle.RpcTasks1.TryAdd(methodHash, model = new RPCModelTask());
+                handle.RpcHashDic.TryGetValue(methodHash, out model);
             }
             else
             {
-                if (!handle.RpcTasks.TryGetValue(callbackFunc, out model))
-                    handle.RpcTasks.TryAdd(callbackFunc, model = new RPCModelTask());
+                handle.RpcDic.TryGetValue(callbackFunc, out model);
             }
             return model;
         }

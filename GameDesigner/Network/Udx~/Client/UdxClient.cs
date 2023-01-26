@@ -14,6 +14,7 @@
     using global::System.Net.Sockets;
     using global::System.Collections.Concurrent;
 #endif
+    using Cysharp.Threading.Tasks;
 
     /// <summary>
     /// udx客户端类型 -> 只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
@@ -49,7 +50,7 @@
 #endif
         }
 
-        public override Task<bool> Connect(string host, int port, int localPort, Action<bool> result)
+        public override UniTask<bool> Connect(string host, int port, int localPort, Action<bool> result)
         {
             if (!UdxLib.INIT)
             {
@@ -66,7 +67,7 @@
             return base.Connect(host, port, localPort, result);
         }
 
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
             {
@@ -79,7 +80,11 @@
                 if (host == "127.0.0.1")
                     host1 = Server.NetPort.GetIP();
                 UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
-                return Task.Run(() =>
+#if SERVICE
+                return UniTask.Run(() =>
+#else
+                return UniTask.RunOnThreadPool(() =>
+#endif
                 {
                     var timeout = DateTime.Now.AddSeconds(5);
                     while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
@@ -103,7 +108,7 @@
             {
                 NDebug.Log("连接错误: " + ex.ToString());
                 result(false);
-                return Task.FromResult(false);
+                return UniTask.FromResult(false);
             }
         }
 
@@ -341,7 +346,7 @@
             OnRevdBufferHandle += (model) => { fps++; };
             OnOperationSync += (list) => { fps++; };
         }
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             udxObj = UdxLib.UCreateFUObj();
             UdxLib.UBind(udxObj, null, 0);
@@ -352,7 +357,7 @@
             if (host == "127.0.0.1")
                 host1 = Server.NetPort.GetIP();
             UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
-            return Task.FromResult(true);
+            return UniTask.FromResult(true);
         }
         protected override void StartupThread() { }
 

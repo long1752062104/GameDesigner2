@@ -213,6 +213,19 @@ namespace Net.System
             }
         }
 
+        public void Add(T item, out int index)
+        {
+            lock (SyncRoot)
+            {
+                if (_size == _items.Length)
+                    EnsureCapacity(_size + 1);
+                index = _size;
+                _items[_size] = item;
+                _size++;
+                _version++;
+            }
+        }
+
         int IList.Add(object item)
         {
             ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
@@ -828,19 +841,29 @@ namespace Net.System
             lock (SyncRoot)
             {
                 if (index >= _size)
-                {
                     return;
-                }
                 _size--;
                 if (index < _size)
-                {
                     _items[index] = _items[_size];
-                }
                 _items[_size] = default;
                 _version++;
             }
         }
 
+        public void RemoveAt(int index, out T value)
+        {
+            lock (SyncRoot)
+            {
+                value = _items[index];
+                if (index >= _size)
+                    return;
+                _size--;
+                if (index < _size)
+                    _items[index] = _items[_size];
+                _items[_size] = default;
+                _version++;
+            }
+        }
 
         public void RemoveRange(int index, int count)
         {

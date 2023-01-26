@@ -8,8 +8,8 @@ namespace Net.Component
     using global::System.Threading;
     using UnityEngine;
     using global::System.Net;
-    using global::System.Threading.Tasks;
     using Net.Helper;
+    using Cysharp.Threading.Tasks;
 
     public enum TransportProtocol
     {
@@ -136,7 +136,7 @@ namespace Net.Component
                 Connect();
         }
 
-        public Task<bool> Connect()
+        public UniTask<bool> Connect()
         {
             _client = client;
             if (!localTest)

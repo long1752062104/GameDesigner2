@@ -10,6 +10,7 @@
     using global::System.Threading.Tasks;
     using Net.System;
     using UnityWebSocket;
+    using Cysharp.Threading.Tasks;
 #if COCOS2D_JS
     using global::System.Text;
     using Net.Serialize;
@@ -47,7 +48,7 @@
 #endif
         }
 
-        protected override async Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override async UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
             {
@@ -117,18 +118,6 @@
         public override void Receive(bool isSleep)
         {
         }
-
-        //protected override void StartupThread()
-        //{
-        //    AbortedThread();//断线重连处理
-        //    Connected = true;
-        //    networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-        //    heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
-        //    syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-        //    sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
-        //    if (!UseUnityThread)
-        //        ThreadManager.Invoke("UpdateHandle", UpdateHandler);
-        //}
 
         protected override bool HeartHandler()
         {

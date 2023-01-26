@@ -42,11 +42,7 @@ namespace Net.Share
         void OnRpcExecute(RPCModel model);
 
         void RemoveRpc(object target);
-        /// <summary>
-        /// 每50毫秒调用检查rpc是否被释放
-        /// </summary>
-        //void CheckRpc();
-        RPCModelTask OnRpcTaskRegister(ushort methodHash, string callbackFunc);
+        RPCMethodBody OnRpcTaskRegister(ushort methodHash, string callbackFunc);
     }
 
     /// <summary>

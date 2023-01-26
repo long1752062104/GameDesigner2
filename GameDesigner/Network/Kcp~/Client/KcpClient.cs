@@ -14,6 +14,7 @@
     using Net.System;
     using AOT;
     using global::System.Collections.Generic;
+    using Cysharp.Threading.Tasks;
 
     /// <summary>
     /// kcp客户端
@@ -254,7 +255,7 @@
             OnRevdBufferHandle += (model) => { fps++; };
             OnOperationSync += (list) => { fps++; };
         }
-        protected override Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             this.localPort = localPort;
@@ -268,7 +269,7 @@
             SendDirect();
             Connected = true;
             result(true);
-            return Task.FromResult(Connected);
+            return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
 

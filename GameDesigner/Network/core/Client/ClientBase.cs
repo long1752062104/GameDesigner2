@@ -35,6 +35,7 @@ namespace Net.Client
     using Net.Helper;
     using global::System.Security.Cryptography;
     using global::System.Text.RegularExpressions;
+    using Cysharp.Threading.Tasks;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -64,11 +65,11 @@ namespace Net.Client
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<object, IRPCMethod>>();
+        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        public MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<object, IRPCMethod>>();
+        public MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; } = new MyDictionary<ushort, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -81,14 +82,6 @@ namespace Net.Client
         /// 字段同步信息
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
-        /// <summary>
-        /// 可等待异步的Rpc
-        /// </summary>
-        public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; } = new ConcurrentDictionary<string, RPCModelTask>();
-        /// <summary>
-        /// 可等待异步的Rpc
-        /// </summary>
-        public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; } = new ConcurrentDictionary<ushort, RPCModelTask>();
         /// <summary>
         /// Rpc任务队列
         /// </summary>
@@ -261,7 +254,7 @@ namespace Net.Client
         /// <summary>
         /// 当可等待的rpc方法被注册, 用于Rpc适配器上
         /// </summary>
-        public Func<ushort, string, RPCModelTask> OnRpcTaskRegister;
+        public Func<ushort, string, RPCMethodBody> OnRpcTaskRegister;
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
@@ -757,7 +750,7 @@ namespace Net.Client
         /// <summary>
         /// 连接服务器
         /// </summary>
-        public Task<bool> Connect()
+        public UniTask<bool> Connect()
         {
             return Connect(connected => { });
         }
@@ -767,7 +760,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="result">连接结果</param>
         /// <returns></returns>
-        public Task<bool> Connect(Action<bool> result)
+        public UniTask<bool> Connect(Action<bool> result)
         {
             return Connect(host, port, result);
         }
@@ -777,7 +770,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="host">IP地址</param>
         /// <param name="port">端口号</param>
-        public virtual Task<bool> Connect(string host, int port)
+        public virtual UniTask<bool> Connect(string host, int port)
         {
             return Connect(host, port, result => { });
         }
@@ -788,7 +781,7 @@ namespace Net.Client
         /// <param name="host">IP地址</param>
         /// <param name="port">端口号</param>
         /// <param name="result">连接结果</param>
-        public virtual Task<bool> Connect(string host, int port, Action<bool> result)
+        public virtual UniTask<bool> Connect(string host, int port, Action<bool> result)
         {
             return Connect(host, port, -1, result);
         }
@@ -800,12 +793,12 @@ namespace Net.Client
         /// <param name="port">端口号</param>
         /// <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
         /// <param name="result">连接结果</param>
-        public virtual Task<bool> Connect(string host, int port, int localPort, Action<bool> result)
+        public virtual UniTask<bool> Connect(string host, int port, int localPort, Action<bool> result)
         {
             if (NetworkState == NetworkState.Connection)
             {
                 NDebug.Log("连接服务器中,请稍等...");
-                return Task.FromResult(false);
+                return UniTask.FromResult(false);
             }
             if (openClient)
             {
@@ -844,7 +837,7 @@ namespace Net.Client
             {
                 result(true);
             }
-            return Task.FromResult(Connected);
+            return UniTask.FromResult(Connected);
         }
 
         /// <summary>
@@ -854,7 +847,7 @@ namespace Net.Client
         /// <param name="port">连接的服务器主机端口号</param>
         /// <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
         /// <param name="result">连接结果</param>
-        protected virtual Task<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected virtual UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
             {
@@ -868,13 +861,17 @@ namespace Net.Client
             {
                 NDebug.LogError("连接失败原因:" + ex.ToString());
                 result(false);
-                return Task.FromResult(false);
+                return UniTask.FromResult(false);
             }
         }
 
-        protected virtual Task<bool> CheckIdentity(Action begin, Action<bool> result)
+        protected virtual UniTask<bool> CheckIdentity(Action begin, Action<bool> result)
         {
-            return Task.Run(() =>
+#if SERVICE
+            return UniTask.Run(() =>
+#else
+            return UniTask.RunOnThreadPool(() =>
+#endif
             {
                 try
                 {
@@ -1967,105 +1964,6 @@ namespace Net.Client
             rPCModels.Enqueue(model);
         }
 
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void Send(string func, string funcCB, Delegate callback, params object[] pars)
-        {
-            Send(NetCmd.CallRpc, func, funcCB, callback, 10000, null, pars);
-        }
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void Send(string func, string funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
-        {
-            Send(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, null, pars);
-        }
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void Send(string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
-        {
-            Send(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, outTimeAct, pars);
-        }
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void Send(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
-        {
-            Send(cmd, func, funcCB, callback, millisecondsDelay, outTimeAct, SynchronizationContext.Current, pars);
-        }
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="context">调用上下文线程对象</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void Send(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars)
-        {
-            if (!Connected)
-                return;
-            if (rtRPCModels.Count >= LimitQueueCount)
-            {
-                NDebug.LogError("数据缓存列表超出限制!");
-                return;
-            }
-            rPCModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
-            if (!RpcTasks.TryGetValue(funcCB, out RPCModelTask model))
-                RpcTasks.TryAdd(funcCB, model = new RPCModelTask());
-            Task.Run(() =>
-            {
-                var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
-                while ((uint)Environment.TickCount < timeout)
-                {
-                    Thread.Sleep(1);
-                    if (model.IsCompleted)
-                    {
-                        if (context != null)
-                            context.Post((state) => { callback.DynamicInvoke(model.model.pars); }, null);
-                        else
-                            callback.DynamicInvoke(model.model.pars);
-                        return;
-                    }
-                }
-                if (context != null)
-                    context.Post((state) => { outTimeAct?.Invoke(); }, null);
-                else
-                    outTimeAct?.Invoke();
-            });
-        }
-
 #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
@@ -2073,7 +1971,7 @@ namespace Net.Client
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string funcAndCb, params object[] pars)
+        public UniTask<RPCModelTask> Call(string funcAndCb, params object[] pars)
         {
             return Call(funcAndCb, funcAndCb, 5000, pars);
         }
@@ -2085,7 +1983,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, params object[] pars)
         {
             return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
         }
@@ -2098,7 +1996,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
         }
@@ -2111,7 +2009,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, params object[] pars)
         {
             return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
         }
@@ -2125,7 +2023,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, millisecondsDelay, intercept, pars);
         }
@@ -2137,7 +2035,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort funcAndCb, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort funcAndCb, params object[] pars)
         {
             return Call(funcAndCb, funcAndCb, 5000, pars);
         }
@@ -2149,7 +2047,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, params object[] pars)
         {
             return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
         }
@@ -2162,7 +2060,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
         }
@@ -2175,7 +2073,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, params object[] pars)
         {
             return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
         }
@@ -2189,7 +2087,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
         }
@@ -2203,7 +2101,7 @@ namespace Net.Client
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string func, string callbackFunc, params object[] pars)
+        public UniTask<RPCModelTask> Call(string func, string callbackFunc, params object[] pars)
         {
             return Call(func, callbackFunc, 5000, pars);
         }
@@ -2216,7 +2114,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, params object[] pars)
         {
             return Call(func, callbackFunc, millisecondsDelay, true, pars);
         }
@@ -2230,7 +2128,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, intercept, pars);
         }
@@ -2244,7 +2142,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, params object[] pars)
         {
             return Call(cmd, func, callbackFunc, millisecondsDelay, true, pars);
         }
@@ -2259,7 +2157,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(cmd, func, callbackFunc, (ushort)0, 0, millisecondsDelay, intercept, pars);
         }
@@ -2272,7 +2170,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort func, ushort callbackFunc, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, params object[] pars)
         {
             return Call(func, callbackFunc, 5000, pars);
         }
@@ -2285,7 +2183,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
         {
             return Call(func, callbackFunc, millisecondsDelay, true, pars);
         }
@@ -2299,7 +2197,7 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, intercept, pars);
         }
@@ -2313,7 +2211,7 @@ namespace Net.Client
         /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
         {
             return Call(cmd, func, callbackFunc, millisecondsDelay, true, pars);
         }
@@ -2328,35 +2226,37 @@ namespace Net.Client
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Task<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
         {
             return Call(cmd, string.Empty, string.Empty, func, callbackFunc, millisecondsDelay, intercept, pars);
         }
 #endregion
 
-        private async Task<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int millisecondsDelay, bool intercept, params object[] pars)
+        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int millisecondsDelay, bool intercept, params object[] pars)
         {
-            if(func1 != 0)
+            if (func1 != 0)
                 SendRT(cmd, func1, pars);
             else
                 SendRT(cmd, func, pars);
-            RPCModelTask model;
+            var model = new RPCModelTask();
+            RPCMethodBody body;
             if (OnRpcTaskRegister == null)
             {
                 if (callbackFunc1 != 0)
                 {
-                    if (!RpcTasks1.TryGetValue(callbackFunc1, out model))
-                        RpcTasks1.TryAdd(callbackFunc1, model = new RPCModelTask());
+                    if (!RpcHashDic.TryGetValue(callbackFunc1, out body))
+                        RpcHashDic.Add(callbackFunc1, body = new RPCMethodBody());
                 }
                 else
                 {
-                    if (!RpcTasks.TryGetValue(callbackFunc, out model))
-                        RpcTasks.TryAdd(callbackFunc, model = new RPCModelTask());
+                    if (!RpcDic.TryGetValue(callbackFunc, out body))
+                        RpcDic.Add(callbackFunc, body = new RPCMethodBody());
                 }
             }
-            else model = OnRpcTaskRegister(callbackFunc1, callbackFunc);
-            model.referenceCount++;
+            else body = OnRpcTaskRegister(callbackFunc1, callbackFunc);
             model.intercept = intercept;
+            model.tick = (uint)Environment.TickCount;
+            body.TaskQueue.Enqueue(model);
             if (millisecondsDelay == -1)
                 millisecondsDelay = int.MaxValue;
             else if (millisecondsDelay == 0)
@@ -2364,9 +2264,9 @@ namespace Net.Client
             var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
             while ((uint)Environment.TickCount < timeout)
             {
-                await Task.Yield();
+                await UniTask.Yield();
                 if (model.IsCompleted)
-                    return model;
+                    break;
             }
             return model;
         }
@@ -2429,6 +2329,7 @@ namespace Net.Client
             rtRPCModels.Enqueue(model);
         }
 
+#region 异步回调方式
         /// <summary>
         /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
         /// </summary>
@@ -2438,7 +2339,7 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(string func, string funcCB, Delegate callback, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, 10000, null, pars);
+            SendRT(func, funcCB, callback, 8000, pars);
         }
 
         /// <summary>
@@ -2451,7 +2352,7 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(string func, string funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, null, pars);
+            SendRT(func, funcCB, callback, millisecondsDelay, null, pars);
         }
 
         /// <summary>
@@ -2480,23 +2381,7 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
         {
-            SendRT(cmd, func, funcCB, callback, millisecondsDelay, outTimeAct, SynchronizationContext.Current, pars);
-        }
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="context">调用上下文线程</param>
-        /// <param name="pars">远程参数</param>
-        public virtual void SendRT(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars)
-        {
-            SendRT(new RPCModel(cmd, func, pars, true, true), funcCB, callback, millisecondsDelay, outTimeAct, context, pars);
+            SendRT(new RPCModel(cmd, func, pars, true, true), funcCB, 0, callback, millisecondsDelay, outTimeAct);
         }
 
         /// <summary>
@@ -2508,7 +2393,7 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, 10000, null, pars);
+            SendRT(func, funcCB, callback, 8000, pars);
         }
 
         /// <summary>
@@ -2521,7 +2406,7 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, null, pars);
+            SendRT(func, funcCB, callback, millisecondsDelay, null, pars);
         }
 
         /// <summary>
@@ -2550,21 +2435,10 @@ namespace Net.Client
         /// <param name="pars">远程参数</param>
         public virtual void SendRT(byte cmd, ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
         {
-            SendRT(cmd, func, funcCB, callback, millisecondsDelay, outTimeAct, SynchronizationContext.Current, pars);
+            SendRT(new RPCModel(cmd, null, pars, true, true, func), null, funcCB, callback, millisecondsDelay, outTimeAct);
         }
 
-        public virtual void SendRT(byte cmd, ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars)
-        {
-            if (!RpcHashDic.TryGetValue(funcCB, out var list))
-            {
-                NDebug.LogError($"回调方法没有定义! 请在回调方法添加[Rpc(hash = {funcCB})]");
-                return;
-            }
-            var funcCB1 = list[0].method.Name;
-            SendRT(new RPCModel(cmd, string.Empty, pars, true, true, func), funcCB1, callback, millisecondsDelay, outTimeAct, context, pars);
-        }
-
-        private async void SendRT(RPCModel model, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars)
+        private async UniTaskVoid SendRT(RPCModel model, string cb, ushort cb1, Delegate callback, int millisecondsDelay, Action outTimeAct)
         {
             if (!Connected)
                 return;
@@ -2574,26 +2448,37 @@ namespace Net.Client
                 return;
             }
             rtRPCModels.Enqueue(model);
-            if (!RpcTasks.TryGetValue(funcCB, out RPCModelTask model1))
-                RpcTasks.TryAdd(funcCB, model1 = new RPCModelTask());
+            RPCMethodBody body;
+            if (cb1 != 0)
+            {
+                if (!RpcHashDic.TryGetValue(cb1, out body))
+                    RpcHashDic.Add(cb1, body = new RPCMethodBody());
+            }
+            else
+            {
+                if (!RpcDic.TryGetValue(cb, out body))
+                    RpcDic.Add(cb, body = new RPCMethodBody());
+            }
+            var model1 = new RPCModelTask();
+            model1.callback = callback;
+            model1.tick = (uint)Environment.TickCount;
+            body.TaskQueue.Enqueue(model1);
+            if (outTimeAct == null)
+                return;
+            if (millisecondsDelay == -1)
+                millisecondsDelay = int.MaxValue;
+            else if (millisecondsDelay == 0)
+                millisecondsDelay = 5000;
             var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
             while ((uint)Environment.TickCount < timeout)
             {
-                await Task.Yield();
+                await UniTask.Yield();
                 if (model1.IsCompleted)
-                {
-                    if (context != null)
-                        context.Post((state) => { callback.DynamicInvoke(model1.model.pars); }, null);
-                    else
-                        callback.DynamicInvoke(model1.model.pars);
                     return;
-                }
             }
-            if (context != null)
-                context.Post((state) => { outTimeAct?.Invoke(); }, null);
-            else
-                outTimeAct?.Invoke();
+            WorkerQueue.Enqueue(outTimeAct);
         }
+#endregion
 
         /// <summary>
         /// 发送可靠的网络数据

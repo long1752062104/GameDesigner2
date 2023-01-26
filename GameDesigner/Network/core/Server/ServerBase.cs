@@ -66,11 +66,11 @@ namespace Net.Server
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; } = new MyDictionary<string, MyDictionary<object, IRPCMethod>>();
+        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>();
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        public MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; } = new MyDictionary<ushort, MyDictionary<object, IRPCMethod>>();
+        public MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; } = new MyDictionary<ushort, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -83,14 +83,6 @@ namespace Net.Server
         /// 字段同步信息
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
-        /// <summary>
-        /// 可等待异步的Rpc
-        /// </summary>
-        public ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; } = new ConcurrentDictionary<string, RPCModelTask>();
-        /// <summary>
-        /// 可等待异步的Rpc
-        /// </summary>
-        public ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; } = new ConcurrentDictionary<ushort, RPCModelTask>();
         /// <summary>
         /// Rpc任务队列
         /// </summary>

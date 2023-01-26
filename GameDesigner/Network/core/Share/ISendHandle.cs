@@ -106,61 +106,6 @@ namespace Net.Share
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
         /// <param name="pars">远程参数</param>
-        void Send(string func, string funcCB, Delegate callback, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="pars">远程参数</param>
-        void Send(string func, string funcCB, Delegate callback, int millisecondsDelay, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="pars">远程参数</param>
-        void Send(string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="pars">远程参数</param>
-        void Send(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 异步回调
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="context">调用上下文线程对象</param>
-        /// <param name="pars">远程参数</param>
-        void Send(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="pars">远程参数</param>
         void SendRT(string func, string funcCB, Delegate callback, params object[] pars);
 
         /// <summary>
@@ -195,18 +140,5 @@ namespace Net.Share
         /// <param name="outTimeAct">异步超时调用</param>
         /// <param name="pars">远程参数</param>
         void SendRT(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars);
-
-        /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-        /// </summary>
-        /// <param name="cmd">指令</param>
-        /// <param name="func">服务器函数名</param>
-        /// <param name="funcCB">服务器回调函数名</param>
-        /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
-        /// <param name="outTimeAct">异步超时调用</param>
-        /// <param name="context">调用上下文线程</param>
-        /// <param name="pars">远程参数</param>
-        void SendRT(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, SynchronizationContext context, params object[] pars);
     }
 }

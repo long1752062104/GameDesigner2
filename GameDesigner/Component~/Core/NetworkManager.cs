@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System;
 using Net.Helper;
+using Cysharp.Threading.Tasks;
 
 namespace Net.Component
 {
@@ -56,7 +57,7 @@ namespace Net.Component
             set { _client = value; }
         }
 
-        public Task<bool> Connect()
+        public UniTask<bool> Connect()
         {
             _client = Client;
             if (!localTest)
@@ -95,7 +96,7 @@ namespace Net.Component
             });
         }
 
-        public Task<bool> Connect(string ip, int port)
+        public UniTask<bool> Connect(string ip, int port)
         {
             this.ip = ip;
             this.port = port;

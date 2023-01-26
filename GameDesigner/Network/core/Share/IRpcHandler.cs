@@ -1,20 +1,36 @@
 ﻿using Net.System;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Net.Share
 {
+    public class RPCMethodBody
+    {
+        public QueueSafe<RPCModelTask> TaskQueue = new QueueSafe<RPCModelTask>();
+        public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>();
+        public int Count => RpcDict.Count;
+
+        internal void Add(object key, IRPCMethod value)
+        {
+            RpcDict.Add(key, value);
+        }
+
+        internal void Remove(object target)
+        {
+            RpcDict.Remove(target);
+        }
+    }
+
     public interface IRpcHandler
     {
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        MyDictionary<string, MyDictionary<object, IRPCMethod>> RpcDic { get; set; }
+        MyDictionary<string, RPCMethodBody> RpcDic { get; set; }
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
-        MyDictionary<ushort, MyDictionary<object, IRPCMethod>> RpcHashDic { get; set; }
+        MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; }
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -28,14 +44,6 @@ namespace Net.Share
         /// </summary>
         MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; }
         /// <summary>
-        /// 等待回调的异步Rpc
-        /// </summary>
-        ConcurrentDictionary<string, RPCModelTask> RpcTasks { get; set; }
-        /// <summary>
-        /// 等待回调的异步Rpc
-        /// </summary>
-        ConcurrentDictionary<ushort, RPCModelTask> RpcTasks1 { get; set; }
-        /// <summary>
         /// Rpc任务队列
         /// </summary>
         QueueSafe<IRPCData> RpcWorkQueue { get; set; }
@@ -44,9 +52,5 @@ namespace Net.Share
         /// </summary>
         /// <param name="target"></param>
         void RemoveRpc(object target);
-        /// <summary>
-        /// 检查rpc对象或方法是否已被销毁（释放）
-        /// </summary>
-        //void CheckRpc();
     }
 }

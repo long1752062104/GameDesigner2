@@ -118,7 +118,7 @@ public class HybridCLREdit : EditorWindow
         if (!Directory.Exists(hotfixAssembliesDstDir))
             Directory.CreateDirectory(hotfixAssembliesDstDir);
         var assemblyNames = new List<string>(Scriptable.entity.AOTMetaAssemblyNames);
-        assemblyNames.AddRange(SettingsUtil.HotUpdateAssemblyFiles);
+        assemblyNames.AddRange(SettingsUtil.HotUpdateAssemblyFilesExcludePreserved);//.HotUpdateAssemblyFiles);
         var xml = new XmlDocument();
         xml.Load("Assembly-CSharp.csproj");
         XmlNodeList node_list;
