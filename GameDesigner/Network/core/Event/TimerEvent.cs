@@ -1,4 +1,5 @@
-﻿using Net.System;
+﻿using Cysharp.Threading.Tasks;
+using Net.System;
 using System;
 using System.Threading;
 #if !UNITY_WEBGL
@@ -267,11 +268,15 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-                                Task.Factory.StartNew(WorkExecute1, evt);
+#if SERVICE
+                                UniTask.Run(WorkExecute1, evt, false);
+#else
+                                _ = UniTask.RunOnThreadPool(WorkExecute1, evt, false);
+#endif
                             }
                             else
 #endif
-                            evt.ptr1();
+                                evt.ptr1();
                         }
                         else if (evt.ptr2 != null)
                         {
@@ -281,7 +286,11 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-                                Task.Factory.StartNew(WorkExecute2, evt);
+#if SERVICE
+                                UniTask.Run(WorkExecute2, evt, false);
+#else
+                                _ = UniTask.RunOnThreadPool(WorkExecute2, evt, false);
+#endif
                             }
                             else
 #endif
@@ -295,7 +304,11 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-                                Task.Factory.StartNew(WorkExecute3, evt);
+#if SERVICE
+                                UniTask.Run(WorkExecute3, evt, false);
+#else
+                                _ = UniTask.RunOnThreadPool(WorkExecute3, evt, false);
+#endif
                                 continue;
                             }
 #endif
@@ -310,7 +323,11 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-                                Task.Factory.StartNew(WorkExecute4, evt);
+#if SERVICE
+                                UniTask.Run(WorkExecute4, evt, false);
+#else
+                                _ = UniTask.RunOnThreadPool(WorkExecute4, evt, false);
+#endif
                                 continue;
                             }
 #endif

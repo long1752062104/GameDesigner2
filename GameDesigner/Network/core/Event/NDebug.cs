@@ -1,12 +1,15 @@
 ﻿namespace Net.Event
 {
     using global::System;
+    using global::System.IO;
 #if SERVICE
     using global::System.Drawing;
+    using global::System.IO.Pipes;
+    using global::System.Text;
     using global::System.Windows.Forms;
 #endif
     using Net.System;
-
+    
     public enum LogType
     {
         Log,
@@ -24,7 +27,7 @@
 
         public override string ToString()
         {
-            return $"[{time.ToString("yyyy-MM-dd HH:mm:ss:ms")}][{log}] {msg}";
+            return $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][{log}] {msg}";
         }
     }
 
@@ -33,7 +36,7 @@
     /// </summary>
     public class ConsoleDebug : IDebug
     {
-        private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
+        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
         public int count = 1000;
         private int cursorTop;
 
@@ -57,7 +60,7 @@
             {
                 Console.SetCursorPosition(0, entity.row);
             }
-            var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss:ms")}][";
+            var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][";
             Console.Write(info);
             Console.ForegroundColor = log == LogType.Log ? ConsoleColor.Green : log == LogType.Warning ? ConsoleColor.Yellow : ConsoleColor.Red;
             info = $"{log}";
@@ -114,7 +117,7 @@
             e.DrawBackground();
             e.DrawFocusRectangle();
             var y = e.Bounds.Y;
-            var msg = $"[{entity.time.ToString("yyyy-MM-dd HH:mm:ss:ms")}][";
+            var msg = $"[{entity.time.ToString("yyyy-MM-dd HH:mm:ss")}][";
             e.Graphics.DrawString(msg, e.Font, Brushes.Black, 0, y);
             var x = msg.Length * 6;
             msg = $"{entity.log}";
@@ -133,6 +136,37 @@
     public interface IDebug 
     {
         void Output(DateTime time, LogType log, string msg);
+    }
+
+    /// <summary>
+    /// 写入日志模式
+    /// </summary>
+    public enum WriteLogMode 
+    {
+        /// <summary>
+        /// 啥都不干
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// 写入普通日志
+        /// </summary>
+        Log,
+        /// <summary>
+        /// 写入警告日志
+        /// </summary>
+        Warn,
+        /// <summary>
+        /// 写入错误日志
+        /// </summary>
+        Error,
+        /// <summary>
+        /// 三种日志全部写入
+        /// </summary>
+        All,
+        /// <summary>
+        /// 只写入警告日志和错误日志
+        /// </summary>
+        WarnAndError,
     }
 
     /// <summary>
@@ -168,12 +202,39 @@
         /// 输出警告日志最多容纳条数
         /// </summary>
         public static int LogWarningMax { get; set; } = 10000;
-
-        private static QueueSafe<object> logQueue = new QueueSafe<object>();
-        private static QueueSafe<object> errorQueue = new QueueSafe<object>();
-        private static QueueSafe<object> warningQueue = new QueueSafe<object>();
-
+        private static readonly QueueSafe<object> logQueue = new QueueSafe<object>();
+        private static readonly QueueSafe<object> errorQueue = new QueueSafe<object>();
+        private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
         private static IDebug debug;
+        private static FileStream fileStream;
+        private static WriteLogMode writeFileMode;
+        /// <summary>
+        /// 写入日志到文件模式
+        /// </summary>
+        public static WriteLogMode WriteFileMode
+        {
+            get { return writeFileMode; }
+            set 
+            {
+                writeFileMode = value;
+                if (value != WriteLogMode.None & fileStream == null)
+                {
+                    var now = DateTime.Now;
+                    var path = Config.Config.ConfigPath + $"/Log/{now.Year}/{now.Month.ToString("00")}/";
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+                    path += $"{now.Year}{now.Month.ToString("00")}{now.Day}.txt";
+                    fileStream = new FileStream(path, FileMode.OpenOrCreate);
+                    var position = fileStream.Length;
+                    fileStream.Seek(position, SeekOrigin.Begin);
+                }
+                else if (value == WriteLogMode.None & fileStream != null)
+                {
+                    fileStream.Close();
+                    fileStream = null;
+                }
+            }
+        }
 
 #if SERVICE
         static NDebug()
@@ -187,20 +248,39 @@
             {
                 try
                 {
+                    var sb = new StringBuilder();
+                    var isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Log;
                     if (logQueue.TryDequeue(out object message))
                     {
-                        LogHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Log] {message}");
+                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Log] {message}";
+                        LogHandle?.Invoke(log);
                         Output?.Invoke(DateTime.Now, LogType.Log, message.ToString());
+                        if (isWrite)
+                            sb.AppendLine(log);
                     }
+                    isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Warn | writeFileMode == WriteLogMode.WarnAndError;
                     if (warningQueue.TryDequeue(out message))
                     {
-                        LogWarningHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Warning] {message}");
+                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Warning] {message}";
+                        LogWarningHandle?.Invoke(log);
                         Output?.Invoke(DateTime.Now, LogType.Warning, message.ToString());
+                        if (isWrite)
+                            sb.AppendLine(log);
                     }
+                    isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Error | writeFileMode == WriteLogMode.WarnAndError;
                     if (errorQueue.TryDequeue(out message))
                     {
-                        LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Error] {message}");
+                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Error] {message}";
+                        LogErrorHandle?.Invoke(log);
                         Output?.Invoke(DateTime.Now, LogType.Error, message.ToString());
+                        if (isWrite)
+                            sb.AppendLine(log);
+                    }
+                    if (sb.Length > 0) //肯定有写入长度才大于0
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+                        fileStream.Write(bytes, 0, bytes.Length);
+                        fileStream.Flush();
                     }
                 }
                 catch (Exception ex)
@@ -223,7 +303,7 @@
 #if SERVICE
             logQueue.Enqueue(message);
 #else
-            LogHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Log] {message}");
+            LogHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Log] {message}");
             Output?.Invoke(DateTime.Now, LogType.Log, message.ToString());
 #endif
         }
@@ -239,7 +319,7 @@
 #if SERVICE
             errorQueue.Enqueue(message);
 #else
-            LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Error] {message}");
+            LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Error] {message}");
             Output?.Invoke(DateTime.Now, LogType.Error, message.ToString());
 #endif
         }
@@ -255,7 +335,7 @@
 #if SERVICE
             warningQueue.Enqueue(message);
 #else
-            LogWarningHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms")}][Warning] {message}");
+            LogWarningHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Warning] {message}");
             Output?.Invoke(DateTime.Now, LogType.Warning, message.ToString());
 #endif
         }
@@ -292,7 +372,7 @@
             if (debug != null)
                 RemoveDebug(debug);
             debug = new ConsoleDebug();
-            NDebug.Output += debug.Output;
+            Output += debug.Output;
         }
 
         /// <summary>
@@ -312,7 +392,7 @@
             if (debug != null)
                 RemoveDebug(debug);
             debug = new FormDebug(listBox);
-            NDebug.Output += debug.Output;
+            Output += debug.Output;
         }
 
         /// <summary>
@@ -330,7 +410,7 @@
         /// <param name="log"></param>
         public static void BindDebug(IDebug debug)
         {
-            NDebug.Output += debug.Output;
+            Output += debug.Output;
         }
 
         /// <summary>
@@ -338,7 +418,7 @@
         /// </summary>
         public static void RemoveDebug(IDebug debug)
         {
-            NDebug.Output -= debug.Output;
+            Output -= debug.Output;
         }
     }
 }
