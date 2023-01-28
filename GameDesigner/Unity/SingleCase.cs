@@ -22,7 +22,8 @@ namespace Net.Component
         {
             get
             {
-                if (instance == null) instance = FindObjectOfType<T>(true);
+                if (instance == null)
+                    instance = FindObjectOfType<T>(true);
                 return instance;
             }
         }
