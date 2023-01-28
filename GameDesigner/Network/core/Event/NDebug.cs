@@ -2,10 +2,9 @@
 {
     using global::System;
     using global::System.IO;
-#if SERVICE
-    using global::System.Drawing;
-    using global::System.IO.Pipes;
     using global::System.Text;
+#if SERVICE && WINDOWS
+    using global::System.Drawing;
     using global::System.Windows.Forms;
 #endif
     using Net.System;
@@ -75,7 +74,7 @@
         }
     }
 
-#if SERVICE
+#if SERVICE && WINDOWS
     /// <summary>
     /// Form窗口程序输出帮助类
     /// </summary>
@@ -199,6 +198,10 @@
         /// </summary>
         public static int LogErrorMax { get; set; } = 10000;
         /// <summary>
+        /// 每次执行可连续输出多少条日志, 默认输出300 * 3条
+        /// </summary>
+        public static int LogOutputMax { get; set; } = 300;
+        /// <summary>
         /// 输出警告日志最多容纳条数
         /// </summary>
         public static int LogWarningMax { get; set; } = 10000;
@@ -239,56 +242,70 @@
 #if SERVICE
         static NDebug()
         {
-            Handler();
+            ThreadManager.Invoke("OutputLog", OutputLog, true);
         }
 
-        private static void Handler()
+        private static bool OutputLog()
         {
-            ThreadManager.Invoke("Debug-Log", ()=> 
+            try
             {
-                try
+                var sb = new StringBuilder();
+                var isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Log;
+                var currTime = DateTime.Now;
+                var logTime = currTime.ToString("yyyy-MM-dd HH:mm:ss");
+                var msg = string.Empty;
+                var log = string.Empty;
+                object message;
+                var output = LogOutputMax;
+                while (logQueue.TryDequeue(out message))
                 {
-                    var sb = new StringBuilder();
-                    var isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Log;
-                    if (logQueue.TryDequeue(out object message))
-                    {
-                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Log] {message}";
-                        LogHandle?.Invoke(log);
-                        Output?.Invoke(DateTime.Now, LogType.Log, message.ToString());
-                        if (isWrite)
-                            sb.AppendLine(log);
-                    }
-                    isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Warn | writeFileMode == WriteLogMode.WarnAndError;
-                    if (warningQueue.TryDequeue(out message))
-                    {
-                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Warning] {message}";
-                        LogWarningHandle?.Invoke(log);
-                        Output?.Invoke(DateTime.Now, LogType.Warning, message.ToString());
-                        if (isWrite)
-                            sb.AppendLine(log);
-                    }
-                    isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Error | writeFileMode == WriteLogMode.WarnAndError;
-                    if (errorQueue.TryDequeue(out message))
-                    {
-                        var log = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Error] {message}";
-                        LogErrorHandle?.Invoke(log);
-                        Output?.Invoke(DateTime.Now, LogType.Error, message.ToString());
-                        if (isWrite)
-                            sb.AppendLine(log);
-                    }
-                    if (sb.Length > 0) //肯定有写入长度才大于0
-                    {
-                        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-                        fileStream.Write(bytes, 0, bytes.Length);
-                        fileStream.Flush();
-                    }
+                    msg = message.ToString();
+                    log = $"[{logTime}][Log] {msg}";
+                    LogHandle?.Invoke(log);
+                    Output?.Invoke(currTime, LogType.Log, msg);
+                    if (isWrite)
+                        sb.AppendLine(log);
+                    if (--output <= 0)
+                        break;
                 }
-                catch (Exception ex)
+                isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Warn | writeFileMode == WriteLogMode.WarnAndError;
+                output = LogOutputMax;
+                while (warningQueue.TryDequeue(out message))
                 {
-                    errorQueue.Enqueue(ex.Message);
+                    msg = message.ToString();
+                    log = $"[{logTime}][Warning] {msg}";
+                    LogWarningHandle?.Invoke(log);
+                    Output?.Invoke(currTime, LogType.Warning, msg);
+                    if (isWrite)
+                        sb.AppendLine(log);
+                    if (--output <= 0)
+                        break;
                 }
-                return true;
-            }, true);
+                isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Error | writeFileMode == WriteLogMode.WarnAndError;
+                output = LogOutputMax;
+                while (errorQueue.TryDequeue(out message))
+                {
+                    msg = message.ToString();
+                    log = $"[{logTime}][Error] {msg}";
+                    LogErrorHandle?.Invoke(log);
+                    Output?.Invoke(currTime, LogType.Error, msg);
+                    if (isWrite)
+                        sb.AppendLine(log);
+                    if (--output <= 0)
+                        break;
+                }
+                if (sb.Length > 0) //肯定有写入长度才大于0
+                {
+                    var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+                    fileStream.Write(bytes, 0, bytes.Length);
+                    fileStream.Flush();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorQueue.Enqueue(ex.Message);
+            }
+            return true;
         }
 #endif
 
@@ -383,7 +400,7 @@
             RemoveDebug(debug);
         }
 
-#if SERVICE
+#if SERVICE && WINDOWS
         /// <summary>
         /// 绑定控制台输出
         /// </summary>

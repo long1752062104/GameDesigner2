@@ -444,6 +444,17 @@ namespace Net.Event
                 evt.timeMax = interval;
             }
         }
+
+        /// <summary>
+        /// 重置事件
+        /// </summary>
+        public void ResetEvents()
+        {
+            for (int i = 0; i < events.Count; i++)
+            {
+                events[i].complete = true;
+            }
+        }
     }
 
     public class TimerTick 

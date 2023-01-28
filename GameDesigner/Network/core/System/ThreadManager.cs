@@ -112,6 +112,7 @@ namespace Net.System
             {
                 MainThread.Abort();
                 MainThread = null;
+                Event.ResetEvents();//当线程直接结束, 也会中断当前异步执行的代码, 导致没有设置完成字段为true问题
             }
 #endif
         }
