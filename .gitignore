@@ -1,7 +1,7 @@
 .vs/
 .git/
 bin/Debug/
+bin/Release/
 obj/
-packages/
 *.stream
 *.pool
