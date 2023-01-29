@@ -43,7 +43,6 @@ namespace BuildComponent
             fields[16] = self.layersAffectMassCenter;
             fields[17] = self.logWarnings;
             fields[18] = self.fireEvents;
-            fields[19] = self.keepAnimatorControllerStateOnDisable;
         }
 
         public UnityEngine.Vector3 rootPosition
@@ -442,28 +441,6 @@ namespace BuildComponent
                 });
             }
         }
-        public System.Boolean keepAnimatorControllerStateOnDisable
-        {
-            get
-            {
-                return self.keepAnimatorControllerStateOnDisable;
-            }
-            set
-            {
-                if (value.Equals(fields[19]))
-                    return;
-                fields[19] = value;
-                self.keepAnimatorControllerStateOnDisable = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
-                {
-                    index = netObj.registerObjectIndex,
-                    index1 = NetComponentID,
-                    index2 = 19,
-                    buffer = SerializeObject(value).ToArray(true),
-                    uid = ClientBase.Instance.UID
-                });
-            }
-        }
         public override void OnPropertyAutoCheck()
         {
             if (!autoCheck)
@@ -487,7 +464,6 @@ namespace BuildComponent
             layersAffectMassCenter = layersAffectMassCenter;
             logWarnings = logWarnings;
             fireEvents = fireEvents;
-            keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable;
         }
 
 		public System.Single GetFloat(System.String name)
@@ -1832,15 +1808,6 @@ namespace BuildComponent
 						var fireEvents = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
 						fields[18] = fireEvents;
 						self.fireEvents = fireEvents;
-					}
-                    break;
-                case 19:
-                    {
-						if (opt.uid == ClientBase.Instance.UID)
-							return;
-						var keepAnimatorControllerStateOnDisable = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
-						fields[19] = keepAnimatorControllerStateOnDisable;
-						self.keepAnimatorControllerStateOnDisable = keepAnimatorControllerStateOnDisable;
 					}
                     break;
                 case 20:
