@@ -65,6 +65,7 @@ namespace Net.Helper
                     {
                         if (!handle.RpcHashDic.TryGetValue(rpc.hash, out body))
                             handle.RpcHashDic.Add(rpc.hash, body = new RPCMethodBody());
+                        body.Add(target, item);
                     }
                     if (!handle.RpcDic.TryGetValue(item.method.Name, out body))
                         handle.RpcDic.Add(item.method.Name, body = new RPCMethodBody());
