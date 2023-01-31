@@ -124,6 +124,8 @@
             e.Graphics.DrawString(msg, e.Font, color, x, y);
             x += msg.Length * 6;
             msg = entity.msg.Split('\r', '\n')[0];
+            if (msg.Length >= byte.MaxValue) //文字过多会报异常
+                msg = msg.Substring(0, byte.MaxValue);
             if (entity.count > 1)
                 e.Graphics.DrawString($"] ({entity.count}) {msg}", e.Font, Brushes.Black, x, y);
             else
