@@ -34,8 +34,8 @@
                 frame = value ? 5 + 16 : 5;
             }
         }
-        public override int HeartInterval { get; set; } = 1000;
-        public override byte HeartLimit { get; set; } = 5;
+        public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
+        public override byte HeartLimit { get; set; } = 2;//确认两次
 
         /// <summary>
         /// 构造可靠传输客户端
@@ -76,6 +76,9 @@
                     if (localPort != -1)
                         Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
                     Client.Connect(host, port);
+                    var segment = BufferPool.Take();
+                    segment.Write(PreUserId);
+                    Client.Send(segment.ToArray(true));
                     var tick = Environment.TickCount + 8000;
                     while (UID == 0)
                     {
@@ -219,12 +222,6 @@
                 StackStream = BufferStreamShare.Take();
 #endif
             heart = 0;
-            //if (stack > StackNumberMax)//不能一直叠包
-            //{
-            //    stack = 0;
-            //    NDebug.LogError($"请设置StackNumberMax属性, 叠包次数过高, 叠包数量达到{StackNumberMax}次以上...");
-            //    return;
-            //}
             if (stack > 0)
             {
                 stack++;
@@ -298,6 +295,8 @@
 
         public override void Close(bool await = true, int millisecondsTimeout = 1000)
         {
+            SendRT(NetCmd.Disconnect, new byte[0]);
+            SendDirect();
             Connected = false;
             openClient = false;
             NetworkState = NetworkState.ConnectClosed;
@@ -443,8 +442,9 @@
             Client.Connect(host, port);
             Client.Blocking = false;
             Client.NoDelay = true;
-            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
-            SendDirect();
+            var segment = BufferPool.Take();
+            segment.Write(PreUserId);
+            Client.Send(segment.ToArray(true));
             Connected = true;
             StackStream = new MemoryStream(Config.Config.BaseCapacity);
             return UniTask.FromResult(Connected);

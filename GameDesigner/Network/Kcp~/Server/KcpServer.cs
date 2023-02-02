@@ -73,7 +73,7 @@
             client.Kcp = kcp;
         }
 
-        protected unsafe override void ResolveDataQueue(Player client, ref bool isSleep)
+        protected unsafe override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
             while (client.RevdQueue.TryDequeue(out var segment))
             {
@@ -81,7 +81,7 @@
                 {
                     ikcp_input(client.Kcp, p, segment.Count);
                 }
-                ikcp_update(client.Kcp, (uint)Environment.TickCount);
+                ikcp_update(client.Kcp, tick);
                 int len;
                 while ((len = ikcp_peeksize(client.Kcp)) > 0)
                 {

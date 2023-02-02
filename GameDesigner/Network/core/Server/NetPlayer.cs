@@ -11,6 +11,7 @@
     using Net.Helper;
     using global::System.Collections.Concurrent;
     using global::System.IO;
+    using UnityEngine;
 
     /// <summary>
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -122,6 +123,10 @@
         /// 客户端连接时间
         /// </summary>
         public DateTime ConnectTime { get; set; }
+        /// <summary>
+        /// 断线重连等待时间
+        /// </summary>
+        public uint ReconnectTimeout { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>
@@ -269,6 +274,7 @@
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Obsolete("此方法存在严重漏洞, 已被弃用, 统一使用Server类的OnUnClientRequest方法处理", true)]
         public virtual bool OnUnClientRequest(RPCModel model)
         {
             return true;
@@ -297,6 +303,16 @@
         /// </summary>
         /// <param name="model"></param>
         public virtual void OnWSRevdBuffer(MessageModel model) { }
+
+        /// <summary>
+        /// 当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
+        /// </summary>
+        public virtual void OnConnectLost() { }
+
+        /// <summary>
+        /// 当断线重连成功触发
+        /// </summary>
+        public virtual void OnReconnecting() { }
 
         /// <summary>
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
@@ -384,7 +400,7 @@
 
         public override string ToString()
         {
-            return $"[玩家ID:{PlayerID} 用户ID:{UserID} 场景ID:{SceneName} 登录:{Login}]";
+            return $"玩家ID:{PlayerID} 用户ID:{UserID} 场景ID:{SceneName} 登录:{Login}";
         }
     }
 }

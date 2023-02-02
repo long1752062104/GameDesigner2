@@ -326,6 +326,10 @@ namespace Net.Client
         /// </summary>
         public int UID { get; protected set; }
         /// <summary>
+        /// 上次的用户id, 断线重连时用到
+        /// </summary>
+        protected int PreUserId { get; set; }
+        /// <summary>
         /// 同步线程上下文任务队列
         /// </summary>
         public QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
@@ -1533,7 +1537,7 @@ namespace Net.Client
                     });
                     break;
                 case NetCmd.Identify:
-                    UID = segment.ReadInt32();
+                    UID = PreUserId = segment.ReadInt32();
                     Identify = segment.ReadString();
                     break;
                 case NetCmd.OperationSync:

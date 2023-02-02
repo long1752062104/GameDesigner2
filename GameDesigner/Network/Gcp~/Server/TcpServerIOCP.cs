@@ -106,31 +106,6 @@
                     break;
             }
         }
-
-        //protected override void SendByteData(Player client, byte[] buffer, bool reliable)
-        //{
-        //    if (!client.Client.Connected)
-        //        return;
-        //    if (buffer.Length <= frame)//解决长度==6的问题(没有数据)
-        //        return;
-        //    if (client.Client.Poll(1, SelectMode.SelectWrite))
-        //    {
-        //        using (var args = new SocketAsyncEventArgs())
-        //        {
-        //            args.SetBuffer(buffer, 0, buffer.Length);
-        //            args.RemoteEndPoint = client.RemotePoint;
-        //            args.Completed += OnIOCompleted;
-        //            if (!client.Client.SendAsync(args))
-        //                OnIOCompleted(client, args);
-        //        }
-        //        sendAmount++;
-        //        sendCount += buffer.Length;
-        //    }
-        //    else
-        //    {
-        //        Debug.LogError($"[{client}]发送缓冲列表已经超出限制!");
-        //    }
-        //}
     }
 
     /// <summary>

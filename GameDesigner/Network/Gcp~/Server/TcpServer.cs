@@ -2,7 +2,6 @@
 {
     using Net.Share;
     using global::System;
-    using global::System.Linq;
     using global::System.Net;
     using global::System.Net.Sockets;
     using global::System.Threading;
@@ -10,8 +9,6 @@
     using Net.System;
     using global::System.Security.Cryptography;
     using Net.Helper;
-    using Net.Event;
-    using global::System.Text;
 
     /// <summary>
     /// TCP服务器类型
@@ -37,9 +34,9 @@
                     frame = 5;
             }
         }
-        public override int HeartInterval { get; set; } = 1000;
-        public override byte HeartLimit { get; set; } = 5;
-
+        public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
+        public override byte HeartLimit { get; set; } = 2;//确认两次
+        
         protected override void CreateOtherThread()
         {
             var thread = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
@@ -62,16 +59,67 @@
 
         private void ProcessAcceptConnect()
         {
+            var acceptList = new FastList<Socket>();
             while (IsRunServer)
             {
                 try
                 {
-                    var socket = Server.Accept();
-                    AcceptHander(socket, socket.RemoteEndPoint);
+                    if (Server.Poll(0, SelectMode.SelectRead))
+                    {
+                        var socket = Server.Accept();
+                        socket.ReceiveTimeout = 10000;
+                        acceptList.Add(socket);
+                    }
+                    else Thread.Sleep(1);
+                    CheckAcceptList(acceptList);
                 }
                 catch (Exception ex)
                 {
                     Debug.LogError($"接受异常:{ex}");
+                }
+            }
+        }
+
+        private void CheckAcceptList(FastList<Socket> acceptList)
+        {
+            Socket client;
+            for (int i = 0; i < acceptList.Count; i++)
+            {
+                client = acceptList[i];
+                if (!client.Connected)
+                {
+                    client.Close();
+                    acceptList.RemoveAt(i);
+                    continue;
+                }
+                if (client.Poll(0, SelectMode.SelectRead))
+                {
+                    using (var segment = BufferPool.Take())
+                    {
+                        segment.Count = client.Receive(segment, 0, segment.Length, SocketFlags.None, out var error);
+                        if (segment.Count == 0 | error != SocketError.Success) //当等待10秒超时
+                        {
+                            client.Close();
+                            acceptList.RemoveAt(i);
+                            continue;
+                        }
+                        client.ReceiveTimeout = 0;
+                        var userID = segment.ReadInt32();
+                        if (!UIDClients.TryGetValue(userID, out var client1))
+                        {
+                            client1 = AcceptHander(client, client.RemoteEndPoint);
+                            goto J;
+                        }
+                        if (!client1.Client.Connected) //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
+                        {
+                            client1.Client = client;
+                            SetClientIdentity(client1);
+                            client1.OnReconnecting();
+                            OnReconnecting(client1);
+                        }
+                        else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
+                        J: acceptList.RemoveAt(i);
+                    }
                 }
             }
         }
@@ -88,11 +136,12 @@
             scene.Group = ThreadGroups[value % ThreadGroups.Count];
         }
 
-        protected override void ResolveDataQueue(Player client, ref bool isSleep)
+        protected override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
-            if (!client.Client.Connected)
+            if (!client.Client.Connected) //当socket断开后, 需要重连, 所以会等待一段重连时间
             {
-                RemoveClient(client);
+                if (tick >= client.ReconnectTimeout)
+                    RemoveClient(client);
                 return;
             }
             if (client.Client.Poll(0, SelectMode.SelectRead))
@@ -102,7 +151,10 @@
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
-                    RemoveClient(client);
+                    client.Client.Disconnect(false);//标记为断开状态
+                    client.ReconnectTimeout = tick + ReconnectionTimeout;
+                    client.OnConnectLost();
+                    OnConnectLost(client);
                     return;
                 }
                 receiveCount += segment.Count;
@@ -197,11 +249,12 @@
             }
         }
 
-        protected override void CheckHeart(Player client)
+        protected override void CheckHeart(Player client, uint tick)
         {
             if (!client.Client.Connected)
             {
-                RemoveClient(client);
+                if (tick >= client.ReconnectTimeout)
+                    RemoveClient(client);
                 return;
             }
             if (client.heart > HeartLimit * 5)

@@ -314,6 +314,10 @@ namespace Net.Server
         /// </summary>
         protected readonly object SyncRoot = new object();
         protected int[] taskIDs = new int[4];
+        /// <summary>
+        /// 断线重连等待时间内, 默认10秒内进行重连成功, 否则断线处理
+        /// </summary>
+        public uint ReconnectionTimeout { get; set; } = 10000;
         #endregion
 
         #region 服务器事件处理
@@ -523,13 +527,19 @@ namespace Net.Server
         /// 当有客户端连接
         /// </summary>
         /// <param name="client">客户端套接字</param>
-        protected virtual void OnHasConnect(Player client)
-        {
-            if (client.RemotePoint != null)
-                Debug.Log("有客户端连接:" + client.RemotePoint.ToString());
-            else if (client.Client != null)
-                Debug.Log("有客户端连接:" + client.Client.RemoteEndPoint.ToString());
-        }
+        protected virtual void OnHasConnect(Player client) => Debug.Log($"[{client} {client.RemotePoint}]连接服务器!");
+
+        /// <summary>
+        /// 当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
+        /// </summary>
+        /// <param name="client"></param>
+        protected virtual void OnConnectLost(Player client) => Debug.Log($"[{client}]连接中断!");
+
+        /// <summary>
+        /// 当断线重连成功触发
+        /// </summary>
+        /// <param name="client"></param>
+        public virtual void OnReconnecting(Player client) => Debug.Log($"[{client}]断线重连成功");
 
         /// <summary>
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
@@ -908,7 +918,7 @@ namespace Net.Server
             uint heartTick = tick + (uint)HeartInterval;
             var group = obj as ThreadGroup;
             EndPoint remotePoint = null;
-            if (Server != null)
+            if (Server != null) //其他协议Server字段不使用
                 remotePoint = Server.LocalEndPoint;
             while (IsRunServer)
             {
@@ -933,10 +943,10 @@ namespace Net.Server
                         if (client.isDispose)
                             continue;
                         if (isCheckHeart)
-                            CheckHeart(client);
+                            CheckHeart(client, tick);
                         if (client.CloseReceive)
                             goto J;
-                        ResolveDataQueue(client, ref isSleep);
+                        ResolveDataQueue(client, ref isSleep, tick);
                         J: OnClientTick(client);
                     }
                     if(isSleep)
@@ -954,7 +964,7 @@ namespace Net.Server
         {
         }
 
-        protected virtual void ResolveDataQueue(Player client, ref bool isSleep)
+        protected virtual void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
             while (client.RevdQueue.TryDequeue(out var segment))
             {
@@ -1251,11 +1261,6 @@ namespace Net.Server
                     break;
                 case NetCmd.Download:
                     DownloadHandler(client, segment.ReadInt32());
-                    break;
-                case NetCmd.EntityRpc:
-                    if (CheckIsQueueUp(client))
-                        return;
-                    client.Login = client.OnUnClientRequest(model);
                     break;
                 default:
                     if (CheckIsQueueUp(client))
@@ -1748,7 +1753,7 @@ namespace Net.Server
         /// 检查心跳
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void CheckHeart(Player client) 
+        protected virtual void CheckHeart(Player client, uint tick)
         {
             client.heart++;
             if (client.heart <= HeartLimit)//有5次确认心跳包

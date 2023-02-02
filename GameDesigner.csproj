@@ -252,7 +252,6 @@
     <Compile Include="GameDesigner\Network\Gcp~\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Plugins\GcpKernel.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Server\TcpServer.cs" />
-    <Compile Include="GameDesigner\Network\Gcp~\Server\TcpServerEpoll.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Server\TcpServerIOCP.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Server\UdpServer.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Server\UdpServerIOCP.cs" />
