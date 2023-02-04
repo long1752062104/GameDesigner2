@@ -28,7 +28,7 @@ public class ImportSettingWindow : EditorWindow
             if (GUILayout.Button($"反导{name}模块", GUILayout.Width(200)))
             {
                 import?.Invoke();
-                Import(copyToProtocolName, sourceProtocolName, pluginsPath);
+                ReverseImport(sourceProtocolName, copyToProtocolName, pluginsPath);
             }
             GUI.color = Color.red;
             if (GUILayout.Button($"移除{name}模块"))
@@ -176,11 +176,29 @@ public class ImportSettingWindow : EditorWindow
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
         foreach (var file in files)
         {
-            var item = file.Split(new string[] { sourceProtocolName }, System.StringSplitOptions.RemoveEmptyEntries);
+            var item = file.Split(new string[] { sourceProtocolName }, StringSplitOptions.RemoveEmptyEntries);
             var newPath = $"{pluginsPath}{copyToProtocolName}/{item[1]}";
             var path1 = Path.GetDirectoryName(newPath);
             if (!Directory.Exists(path1))
                 Directory.CreateDirectory(path1);
+            File.Copy(file, newPath, true);
+        }
+        AssetDatabase.Refresh();
+    }
+
+    private static void ReverseImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
+    {
+        var path = $"{pluginsPath}{copyToProtocolName}/";
+        if (!Directory.Exists(path))
+        {
+            Debug.LogError("找不到导入路径!");
+            return;
+        }
+        var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+        foreach (var file in files)
+        {
+            var item = file.Split(new string[] { copyToProtocolName }, StringSplitOptions.RemoveEmptyEntries);
+            var newPath = $"Packages/com.gamedesigner.network/{sourceProtocolName}/{item[1]}";
             File.Copy(file, newPath, true);
         }
         AssetDatabase.Refresh();

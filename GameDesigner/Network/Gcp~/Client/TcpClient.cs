@@ -90,21 +90,7 @@
                     }
                     StackStream = new MemoryStream(Config.Config.BaseCapacity);
                     StartupThread();
-                    InvokeInMainThread(() => 
-                    {
-                        if (!openClient)//如果在连接过程中, 突然调用Close
-                        {
-                            NetworkState = NetworkState.ConnectClosed;
-                            InvokeInMainThread(OnCloseConnectHandle);
-                            result(false);
-                        }
-                        else
-                        {
-                            NetworkState = NetworkState.Connected;
-                            InvokeInMainThread(OnConnectedHandle);
-                            result(true);
-                        }
-                    });
+                    result(true);
                     return true;
                 }
                 catch(Exception ex)
@@ -113,20 +99,7 @@
                     Connected = false;
                     Client?.Close();
                     Client = null;
-                    InvokeInMainThread(() => 
-                    {
-                        if (!openClient)//如果在连接过程中, 突然调用Close
-                        {
-                            InvokeInMainThread(OnCloseConnectHandle);
-                            NetworkState = NetworkState.ConnectClosed;
-                        }
-                        else
-                        {
-                            InvokeInMainThread(OnConnectFailedHandle);
-                            NetworkState = NetworkState.ConnectFailed;
-                        }
-                        result(false);
-                    });
+                    result(false);
                     return false;
                 }
             });
