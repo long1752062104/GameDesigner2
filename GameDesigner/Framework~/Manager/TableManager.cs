@@ -1,8 +1,9 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Framework
 {
@@ -11,16 +12,26 @@ namespace Framework
         private DataSet dataSet;
         private readonly Dictionary<Type, Dictionary<string, IDataConfig[]>> directory = new Dictionary<Type, Dictionary<string, IDataConfig[]>>();
 
-        internal void Init()
+        internal async void Init()
         {
             string path;
             if (Global.Resources.Mode == AssetBundleMode.LocalPath)
                 path = Application.streamingAssetsPath + $"/AssetBundles/Table/GameConfig.json";
             else
                 path = Application.persistentDataPath + $"/AssetBundles/Table/GameConfig.json";
-            if (File.Exists(path)) 
+            using (var request = UnityWebRequest.Get(path)) 
             {
-                var jsonStr = File.ReadAllText(path);
+                var oper = request.SendWebRequest();
+                while (!oper.isDone)
+                {
+                    await UniTask.Yield();
+                }
+                if (!string.IsNullOrEmpty(request.error))
+                {
+                    Global.Logger.LogError(request.error);
+                    return;
+                }
+                var jsonStr = request.downloadHandler.text;
                 dataSet = Newtonsoft_X.Json.JsonConvert.DeserializeObject<DataSet>(jsonStr);
                 foreach (DataTable table in dataSet.Tables)
                 {

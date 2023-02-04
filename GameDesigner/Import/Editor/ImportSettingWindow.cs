@@ -197,8 +197,8 @@ public class ImportSettingWindow : EditorWindow
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
         foreach (var file in files)
         {
-            var item = file.Split(new string[] { copyToProtocolName }, StringSplitOptions.RemoveEmptyEntries);
-            var newPath = $"Packages/com.gamedesigner.network/{sourceProtocolName}/{item[1]}";
+            var newFile = file.Replace(path, "");
+            var newPath = $"Packages/com.gamedesigner.network/{sourceProtocolName}/{newFile}";
             File.Copy(file, newPath, true);
         }
         AssetDatabase.Refresh();

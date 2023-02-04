@@ -101,14 +101,6 @@ namespace Framework
                         return assetObj;
                 }
             }
-            //if (assetPath.Contains("Resources/"))
-            //{
-            //    var path = assetPath.Split(new string[] { "Resources/" }, 0);
-            //    var resPath = path[1].Split('.');
-            //    var resObj = Resources.Load<T>(resPath[0]);
-            //    if(resObj != null)
-            //        return resObj;
-            //}
 #if UNITY_EDITOR
             assetObj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
             if (assetObj != null)

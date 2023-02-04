@@ -43,7 +43,7 @@ namespace Framework
                 if (poolObj != null)
                     return poolObj;
             }
-            poolObj = Object.Instantiate(ifCreatObject as T, ifCreatObjectParent);
+            poolObj = Instantiate(ifCreatObject as T, ifCreatObjectParent);
             return poolObj;
         }
 
