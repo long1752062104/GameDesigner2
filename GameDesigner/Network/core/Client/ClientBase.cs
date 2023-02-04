@@ -1325,10 +1325,13 @@ namespace Net.Client
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
-                    Connected = false;
-                    NetworkState = NetworkState.ConnectLost;
-                    SetHeartInterval(ReconnectInterval);
-                    InvokeInMainThread(OnConnectLostHandle);
+                    if (Connected & openClient) //导致的问题是当调用Client.Close时, 线程并行到这里导致已经关闭客户端, 但是还是提示连接中断
+                    {
+                        Connected = false;
+                        NetworkState = NetworkState.ConnectLost;
+                        SetHeartInterval(ReconnectInterval);
+                        InvokeInMainThread(OnConnectLostHandle);
+                    }
                     return;
                 }
                 receiveCount += segment.Count;

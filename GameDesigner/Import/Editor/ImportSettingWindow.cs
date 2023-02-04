@@ -25,6 +25,11 @@ public class ImportSettingWindow : EditorWindow
                 import?.Invoke();
                 Import(sourceProtocolName, copyToProtocolName, pluginsPath);
             }
+            if (GUILayout.Button($"反导{name}模块", GUILayout.Width(200)))
+            {
+                import?.Invoke();
+                Import(copyToProtocolName, sourceProtocolName, pluginsPath);
+            }
             GUI.color = Color.red;
             if (GUILayout.Button($"移除{name}模块"))
             {

@@ -8,7 +8,7 @@
     using global::System.Windows.Forms;
 #endif
     using Net.System;
-    
+
     public enum LogType
     {
         Log,
@@ -212,6 +212,7 @@
         private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
         private static IDebug debug;
         private static FileStream fileStream;
+        private static int writeFileModeID;
         private static WriteLogMode writeFileMode;
         /// <summary>
         /// 写入日志到文件模式
@@ -224,21 +225,35 @@
                 writeFileMode = value;
                 if (value != WriteLogMode.None & fileStream == null)
                 {
+                    CreateLogFile();
                     var now = DateTime.Now;
-                    var path = Config.Config.ConfigPath + $"/Log/{now.Year}/{now.Month.ToString("00")}/";
-                    if (!Directory.Exists(path))
-                        Directory.CreateDirectory(path);
-                    path += $"{now.Year}{now.Month.ToString("00")}{now.Day}.txt";
-                    fileStream = new FileStream(path, FileMode.OpenOrCreate);
-                    var position = fileStream.Length;
-                    fileStream.Seek(position, SeekOrigin.Begin);
+                    var day = now.AddDays(1);
+                    day = new DateTime(day.Year, day.Month, day.Day, 0, 0, 0);//明天0点
+                    var time = (day - now).TotalMilliseconds;
+                    writeFileModeID = ThreadManager.Invoke("CreateLogFile", (float)time, CreateLogFile);//每0点会创建新的日志文件
                 }
                 else if (value == WriteLogMode.None & fileStream != null)
                 {
                     fileStream.Close();
                     fileStream = null;
+                    ThreadManager.Event.RemoveEvent(writeFileModeID);
                 }
             }
+        }
+
+        private static bool CreateLogFile()
+        {
+            var now = DateTime.Now;
+            var path = Config.Config.ConfigPath + $"\\Log\\{now.Year}\\{now.Month.ToString("00")}\\";
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
+            if (fileStream != null)
+                fileStream.Close();
+            fileStream = new FileStream(path, FileMode.OpenOrCreate);
+            var position = fileStream.Length;
+            fileStream.Seek(position, SeekOrigin.Begin);
+            return false;
         }
 
 #if SERVICE
