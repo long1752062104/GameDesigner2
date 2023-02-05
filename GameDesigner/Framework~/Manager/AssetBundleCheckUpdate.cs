@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using HybridCLR;
 using Net.Share;
 using System.Collections;
@@ -20,9 +21,9 @@ namespace Framework
                 StartCoroutine(CheckUpdate());
         }
 
-        private void LocalLoadAB()
+        private async void LocalLoadAB()
         {
-            Global.Table.Init();
+            await Global.Table.Init();
             Global.Resources.InitAssetBundleInfos();
             LoadMetadataForAOTAssemblies();
             Global.Resources.Instantiate(entryRes);

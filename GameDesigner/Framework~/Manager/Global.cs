@@ -19,29 +19,35 @@ namespace Framework
         [SerializeField] private Logger logger;
         [SerializeField] private ObjectPool pool;
 
-        public static ResourcesManager Resources => Instance.resources;
-        public static UIManager UI => Instance.ui;
-        public static AssetBundleCheckUpdate CheckUpdate => Instance.checkUpdate;
-        public static TableManager Table => Instance.table;
-        public static SceneManager Scene => Instance.scene;
-        public static AudioManager Audio => Instance.audio;
-        public static TimerManager Timer => Instance.timer;
-        public static ConfigManager Config => Instance.config;
-        public static NetworkManager Network => Instance.network;
-        public static Logger Logger => Instance.logger;
-        public static ObjectPool Pool => Instance.pool;
+        public static ResourcesManager Resources;
+        public static UIManager UI;
+        public static AssetBundleCheckUpdate CheckUpdate;
+        public static TableManager Table;
+        public static SceneManager Scene;
+        public static AudioManager Audio;
+        public static TimerManager Timer;
+        public static ConfigManager Config;
+        public static NetworkManager Network;
+        public static Logger Logger;
+        public static ObjectPool Pool;
 
         public static Camera MainCamera { get => Instance.mainCamera; set => Instance.mainCamera = value; }
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
 
-        void Awake()
+        protected override void Awake()
         {
-            if (instance != null)
-            {
-                DestroyImmediate(gameObject);
-                return;
-            }
-            instance = this;
+            base.Awake();
+            Resources = resources;
+            UI = ui;
+            CheckUpdate = checkUpdate;
+            Table = table;
+            Scene = scene;
+            Audio = audio;
+            Timer = timer;
+            Config = config;
+            Network = network;
+            Logger = logger;
+            Pool = pool;
             DontDestroyOnLoad(gameObject);
         }
     }

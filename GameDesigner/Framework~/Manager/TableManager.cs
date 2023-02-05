@@ -12,7 +12,7 @@ namespace Framework
         private DataSet dataSet;
         private readonly Dictionary<Type, Dictionary<string, IDataConfig[]>> directory = new Dictionary<Type, Dictionary<string, IDataConfig[]>>();
 
-        internal async void Init()
+        internal async UniTask Init()
         {
             string path;
             if (Global.Resources.Mode == AssetBundleMode.LocalPath)
