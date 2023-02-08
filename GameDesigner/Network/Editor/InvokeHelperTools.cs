@@ -222,8 +222,17 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
             Config.savePath = path;
             change++;
         }
+        bool contains = false;
         path = Application.dataPath + "/../Library/ScriptAssemblies/Assembly-CSharp.dll";
-        if (!Config.dllPaths.Contains("Assembly-CSharp.dll"))//如果没有这个程序集就需要添加, 这个是默认的, 如果克隆了项目或者移植项目出现路径不对需要移除清除dllPaths
+        foreach (var dllPath in Config.dllPaths)
+        {
+            if (dllPath.Contains("Assembly-CSharp.dll"))//如果没有这个程序集就需要添加, 这个是默认的, 如果克隆了项目或者移植项目出现路径不对需要移除清除dllPaths
+            {
+                contains = true;
+                break;
+            }
+        }
+        if (!contains)
         {
             Config.dllPaths.Add(path);
             change++;

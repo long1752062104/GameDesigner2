@@ -185,12 +185,15 @@ namespace Net.UnityComponent
             IsDispose = true;
             if (m_identity == -1)
                 return;
+            var sm = NetworkSceneManager.Instance;
+            if (sm == null)
+                return;
             if (!isLocal | m_identity < 10000)//0-10000是场景可用标识
             {
-                NetworkSceneManager.I.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
+                sm.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
                 return;
             }
-            NetworkSceneManager.I.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
+            sm.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
             if (ClientBase.Instance == null)
                 return;
             if (!ClientBase.Instance.Connected)
