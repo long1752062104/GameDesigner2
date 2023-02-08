@@ -69,6 +69,15 @@
             st.milliseconds = Convert.ToUInt16(newdatetime.Millisecond);
             return SetSystemTime(st);
         }
+
+        /// <summary>
+        /// 调用系统蜂鸣，警报声
+        /// </summary>
+        /// <param name="frequency">声音频率（从37Hz到32767Hz）。在windows95中忽略</param>
+        /// <param name="duration">声音的持续时间，以毫秒为单位。</param>
+        /// <returns></returns>
+        [DllImport("Kernel32.dll")]
+        public static extern bool Beep(int frequency, int duration);
     }
 
     public struct TimeValue
