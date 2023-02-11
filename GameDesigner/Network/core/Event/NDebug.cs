@@ -200,13 +200,13 @@
         /// </summary>
         public static int LogErrorMax { get; set; } = 10000;
         /// <summary>
-        /// 每次执行可连续输出多少条日志, 默认输出300 * 3条
-        /// </summary>
-        public static int LogOutputMax { get; set; } = 300;
-        /// <summary>
         /// 输出警告日志最多容纳条数
         /// </summary>
         public static int LogWarningMax { get; set; } = 10000;
+        /// <summary>
+        /// 每次执行可连续输出多少条日志, 默认输出300 * 3条
+        /// </summary>
+        public static int LogOutputMax { get; set; } = 300;
         private static readonly QueueSafe<object> logQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> errorQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
@@ -229,7 +229,7 @@
                     var now = DateTime.Now;
                     var day = now.AddDays(1);
                     day = new DateTime(day.Year, day.Month, day.Day, 0, 0, 0);//明天0点
-                    var time = (day - now).TotalMilliseconds;
+                    var time = (day - now).TotalMilliseconds / 1000d;//转换成0.x秒
                     writeFileModeID = ThreadManager.Invoke("CreateLogFile", (float)time, CreateLogFile);//每0点会创建新的日志文件
                 }
                 else if (value == WriteLogMode.None & fileStream != null)
@@ -419,7 +419,7 @@
 
 #if SERVICE && WINDOWS
         /// <summary>
-        /// 绑定控制台输出
+        /// 绑定窗体程序输出
         /// </summary>
         public static void BindFormLog(ListBox listBox)
         {
@@ -430,7 +430,7 @@
         }
 
         /// <summary>
-        /// 移除控制台输出
+        /// 移除窗体程序输出
         /// </summary>
         public static void RemoveFormLog()
         {
