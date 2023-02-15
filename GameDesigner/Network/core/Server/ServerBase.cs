@@ -422,7 +422,6 @@ namespace Net.Server
         /// </summary>
         protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();
         private int sendFileTick, recvFileTick;
-        private int checkPlayersEventID;
         #endregion
 
         /// <summary>
@@ -669,6 +668,7 @@ namespace Net.Server
             taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
             taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
             taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
+            taskIDs[id++] = ThreadManager.Invoke("CheckOnLinePlayers", 1000 * 60 * 10, CheckOnLinePlayers);
         }
 
         protected virtual void CreateSenderThread()
@@ -2687,9 +2687,6 @@ namespace Net.Server
         {
             HeartLimit = timeoutLimit;
             HeartInterval = interval;
-            var evt = ThreadManager.Event.GetEvent(taskIDs[3]);
-            if(evt != null)
-                evt.timeMax = (ulong)interval;
         }
 
         /// <summary>
@@ -2883,28 +2880,18 @@ namespace Net.Server
         }
 
         /// <summary>
-        /// 检查在线人数，当服务器长时间运行，显示的在线人数不对时，可以调用此方法进行设置每millisecond毫秒检查一次 默认是一小时检查一次
+        /// 检查在线人数，当服务器长时间运行，显示的在线人数不对时，默认是十分钟检查一次
         /// </summary>
-        /// <param name="millisecond"></param>
-        public void CheckOnLinePlayers(int millisecond = 1000 * 60 * 60)
+        protected virtual bool CheckOnLinePlayers()
         {
-            var @event = ThreadManager.Event.GetEvent(checkPlayersEventID);
-            if (@event != null)
+            foreach (var item in Players)
             {
-                @event.SetIntervalTime((uint)millisecond);
-                return;
-            }
-            checkPlayersEventID = ThreadManager.Event.AddEvent("CheckOnLinePlayers", millisecond, () =>
-            {
-                foreach (var item in Players)
+                if (item.Value.isDispose | !item.Value.Login)
                 {
-                    if (item.Value.isDispose | !item.Value.Login)
-                    {
-                        Players.TryRemove(item.Key, out _);
-                    }
+                    Players.TryRemove(item.Key, out _);
                 }
-                return true;
-            });
+            }
+            return IsRunServer;
         }
     }
 }

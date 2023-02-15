@@ -243,16 +243,23 @@
 
         private static bool CreateLogFile()
         {
-            var now = DateTime.Now;
-            var path = Config.Config.ConfigPath + $"\\Log\\{now.Year}\\{now.Month.ToString("00")}\\";
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-            path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
-            if (fileStream != null)
-                fileStream.Close();
-            fileStream = new FileStream(path, FileMode.OpenOrCreate);
-            var position = fileStream.Length;
-            fileStream.Seek(position, SeekOrigin.Begin);
+            try
+            {
+                var now = DateTime.Now;
+                var path = Config.Config.ConfigPath + $"\\Log\\{now.Year}\\{now.Month.ToString("00")}\\";
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
+                if (fileStream != null)
+                    fileStream.Close();
+                fileStream = new FileStream(path, FileMode.OpenOrCreate); //不加try会导致服务器崩溃闪退问题
+                var position = fileStream.Length;
+                fileStream.Seek(position, SeekOrigin.Begin);
+            }
+            catch (Exception ex)
+            {
+                NDebug.LogError(ex);
+            }
             return false;
         }
 

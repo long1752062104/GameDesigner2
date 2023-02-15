@@ -1005,24 +1005,26 @@ namespace Net.Client
             if (isConnect)
             {
                 NetworkState = NetworkState.Connected;
-                InvokeInMainThread(()=> {
-                    action?.Invoke(true);
-                    OnConnectedHandle?.Invoke();
-                });
+                InvokeNetworkEvent(OnConnectedHandle, action, true);
                 NDebug.Log("成功连接服务器...");
-                
             }
             else
             {
                 NetworkState = NetworkState.ConnectFailed;
-                InvokeInMainThread(() => {
-                    action?.Invoke(false);
-                    OnConnectFailedHandle?.Invoke();
-                });
+                InvokeNetworkEvent(OnConnectFailedHandle, action, false);
                 NDebug.LogError("服务器尚未开启或连接IP端口错误!");
                 if (!UseUnityThread)
                     ThreadManager.Invoke("UpdateHandle", UpdateHandler);
             }
+        }
+
+        protected void InvokeNetworkEvent(Action action, Action<bool> action1, bool isConnect) 
+        {
+            InvokeInMainThread(() => 
+            {
+                action?.Invoke();
+                action1?.Invoke(true);
+            });
         }
 
         /// <summary>
@@ -1819,6 +1821,8 @@ namespace Net.Client
                 Client.Close();
             if (CurrReconnect >= ReconnectCount)//如果想断线不需要重连,则直接返回
             {
+                NetworkState = NetworkState.ConnectFailed;
+                InvokeInMainThread(OnConnectFailedHandle);
                 Close();
                 NDebug.LogError($"连接失败!请检查网络是否异常(无重连次数)");
                 return;
@@ -1849,6 +1853,8 @@ namespace Net.Client
             }
             else if (CurrReconnect >= ReconnectCount)//尝试maxFrequency次重连，如果失败则退出线程
             {
+                NetworkState = NetworkState.ConnectFailed;
+                InvokeInMainThread(OnConnectFailedHandle);
                 Close();
                 NDebug.LogError($"连接失败!请检查网络是否异常");
             }

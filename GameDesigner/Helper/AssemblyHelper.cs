@@ -44,6 +44,39 @@ namespace Net.Helper
                     return type;
                 }
             }
+            if (typeName.IndexOf("[") >= 0) //虽然支持了泛型和字典检测, 但是不要搞的太复杂花里胡哨的会影响性能和产生bug, 这里还有一个问题, 就是当编译il2cpp后可能也会获取不到
+            {
+                var index = typeName.IndexOf("[");
+                var itemTypeName = typeName.Substring(0, index);
+                var genericType = GetType(itemTypeName);
+                if (genericType == null)
+                    goto JMP;
+                itemTypeName = typeName.Remove(0, index + 1);
+                index = StringHelper.FindHitCount(itemTypeName, '[');
+                StringHelper.RemoveHit(ref itemTypeName, ']', index);
+                var itemTypeList = new List<Type>();
+                if (genericType.GetGenericArguments().Length == 1)
+                {
+                    var itemType = GetType(itemTypeName);
+                    if (itemType == null)
+                        goto JMP;
+                    itemTypeList.Add(itemType);
+                }
+                else
+                {
+                    var itemTypeNames = itemTypeName.Split(',');
+                    foreach (var itemTypeNameN in itemTypeNames)
+                    {
+                        var itemType = GetType(itemTypeNameN);
+                        if (itemType == null)
+                            goto JMP;
+                        itemTypeList.Add(itemType);
+                    }
+                }
+                type = genericType.MakeGenericType(itemTypeList.ToArray());
+                TypeDict[typeName] = type;
+                return type;
+            }
             NotTypes.Add(typeName);
         JMP: Event.NDebug.LogError($"找不到类型:{typeName}, 类型太复杂时需要使用 AssemblyHelper.AddFindType(type) 标记后面要查找的类");
             return null;

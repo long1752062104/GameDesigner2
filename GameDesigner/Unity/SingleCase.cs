@@ -37,14 +37,12 @@ namespace Net.Component
 
         protected virtual void Awake()
         {
-            if (instance != null && instance != this)
+            if (instance != null & instance != this)
             {
                 Destroy(gameObject);
+                return;
             }
-            else
-            {
-                instance = GetComponent<T>();
-            }
+            instance = this as T;
         }
 
         public Stack<Action> OnBack = new Stack<Action>();
