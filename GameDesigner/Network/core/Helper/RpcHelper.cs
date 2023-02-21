@@ -1,4 +1,5 @@
-﻿using Net.Share;
+﻿using Net.Server;
+using Net.Share;
 using Net.System;
 using System;
 using System.Collections.Generic;
@@ -110,14 +111,14 @@ namespace Net.Helper
             }
         }
 
-        public static void Invoke(IRpcHandler handle, RPCModel model, Action<MyDictionary<object, IRPCMethod>> action, Action<int> log)
+        public static void Invoke(IRpcHandler handle, NetPlayer client, RPCModel model, Action<MyDictionary<object, IRPCMethod>, NetPlayer, RPCModel> action, Action<int, NetPlayer, RPCModel> log)
         {
             RPCMethodBody body;
             if (model.methodHash != 0)
             {
                 if (!handle.RpcHashDic.TryGetValue(model.methodHash, out body))
                 {
-                    log(0);
+                    log(0, client, model);
                     return;
                 }
             }
@@ -127,7 +128,7 @@ namespace Net.Helper
                     return;
                 if (!handle.RpcDic.TryGetValue(model.func, out body))
                 {
-                    log(1);
+                    log(1, client, model);
                     return;
                 }
             }
@@ -147,10 +148,10 @@ namespace Net.Helper
             }
             if (body.Count <= 0)
             {
-                log(2);
+                log(2, client, model);
                 return;
             }
-            action(body.RpcDict);
+            action(body.RpcDict, client, model);
         }
     }
 }

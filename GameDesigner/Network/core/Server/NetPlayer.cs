@@ -323,29 +323,32 @@
         /// 当执行Rpc(远程过程调用函数)时, 提高性能可重写此方法进行指定要调用的函数
         /// </summary>
         /// <param name="model"></param>
-        public virtual void OnRpcExecute(RPCModel model)
+        public virtual void OnRpcExecute(RPCModel model) => RpcHelper.Invoke(this, this, model, AddRpcWorkQueue, RpcLog);
+
+        private void RpcLog(int log, NetPlayer client, RPCModel model)
         {
-            RpcHelper.Invoke(this, model, (methods) =>
+            switch (log)
             {
-                foreach (RPCMethod rpc in methods.Values)
-                {
-                    rpc.Invoke(model.pars);
-                }
-            }, log => {
-                switch (log)
-                {
-                    case 0:
-                        NDebug.LogWarning($"{this} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 1:
-                        NDebug.LogWarning($"{this} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 2:
-                        NDebug.LogWarning($"{this} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                }
-            });
+                case 0:
+                    NDebug.LogWarning($"{this} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 1:
+                    NDebug.LogWarning($"{this} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 2:
+                    NDebug.LogWarning($"{this} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+            }
         }
+
+        private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
+        {
+            foreach (RPCMethod rpc in methods.Values)
+            {
+                rpc.Invoke(model.pars);
+            }
+        }
+
         #endregion
 
         #region 提供简便的重写方法

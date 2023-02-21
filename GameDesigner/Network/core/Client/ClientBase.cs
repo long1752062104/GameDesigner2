@@ -36,6 +36,7 @@ namespace Net.Client
     using global::System.Security.Cryptography;
     using global::System.Text.RegularExpressions;
     using Cysharp.Threading.Tasks;
+    using Net.Server;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -597,36 +598,38 @@ namespace Net.Client
         /// 压入远程过程调用方法(RPC)， 将在NetworkEventUpdate线程调用
         /// </summary>
         /// <param name="model"></param>
-        public void PushRpcData(RPCModel model)
+        public void PushRpcData(RPCModel model) => RpcHelper.Invoke(this, null, model, AddRpcWorkQueue, RpcLog);
+
+        private void RpcLog(int log, NetPlayer client, RPCModel model)
         {
-            RpcHelper.Invoke(this, model, (methods) =>
+            switch (log)
             {
-                foreach (RPCMethod rpc in methods.Values)
+                case 0:
+                    NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 1:
+                    NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 2:
+                    NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+            }
+        }
+
+        private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
+        {
+            foreach (RPCMethod rpc in methods.Values)
+            {
+                if (rpc.cmd == NetCmd.ThreadRpc)
                 {
-                    if (rpc.cmd == NetCmd.ThreadRpc)
-                    {
-                        rpc.Invoke(model.pars);
-                    }
-                    else
-                    {
-                        var data = new RPCData(rpc.target, rpc.method, model.pars);
-                        RpcWorkQueue.Enqueue(data);
-                    }
+                    rpc.Invoke(model.pars);
                 }
-            }, log => {
-                switch (log)
+                else
                 {
-                    case 0:
-                        NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 1:
-                        NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 2:
-                        NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
+                    var data = new RPCData(rpc.target, rpc.method, model.pars);
+                    RpcWorkQueue.Enqueue(data);
                 }
-            });
+            }
         }
 
         /// <summary>

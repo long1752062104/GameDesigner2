@@ -137,55 +137,51 @@ namespace Net.Adapter
         {
         }
 
-        public void OnRpcExecute(Player client, RPCModel model)
+        public void OnRpcExecute(Player client, RPCModel model) => RpcHelper.Invoke(handle, client, model, AddRpcWorkQueue, RpcLog);
+
+        private void RpcLog(int log, NetPlayer client, RPCModel model)
         {
-            RpcHelper.Invoke(handle, model, methods =>
+            switch (log)
             {
-                foreach (RPCMethodPtr rpc in methods.Values)
+                case 0:
+                    NDebug.LogWarning($"{client} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    break;
+                case 1:
+                    NDebug.LogWarning($"{client} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    break;
+                case 2:
+                    NDebug.LogWarning($"{client} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    break;
+            }
+        }
+
+        private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
+        {
+            foreach (RPCMethodPtr rpc in methods.Values)
+            {
+                try
                 {
-                    try
+                    if (rpc.cmd == NetCmd.SafeCall)
                     {
-                        if (rpc.cmd == NetCmd.SafeCall)
-                        {
-                            object[] pars = new object[model.pars.Length + 1];
-                            pars[0] = client;
-                            Array.Copy(model.pars, 0, pars, 1, model.pars.Length);
-                            rpc.Invoke(pars);
-                        }
-                        else if (rpc.cmd == NetCmd.SingleCall)
-                        {
-                            ThreadManager.Invoke(() =>
-                            {
-                                object[] pars = new object[model.pars.Length + 1];
-                                pars[0] = client;
-                                Array.Copy(model.pars, 0, pars, 1, model.pars.Length);
-                                rpc.Invoke(pars);
-                            });
-                        }
-                        else
-                        {
-                            rpc.Invoke(model.pars);
-                        }
+                        rpc.Invoke(client, model.pars);
                     }
-                    catch (Exception ex)
+                    else if (rpc.cmd == NetCmd.SingleCall)
                     {
-                        NDebug.LogError($"方法:{rpc.method} {model} 详细信息:{ex}");
+                        ThreadManager.Invoke(() =>
+                        {
+                            rpc.Invoke(client, model.pars);
+                        });
+                    }
+                    else
+                    {
+                        rpc.Invoke(model.pars);
                     }
                 }
-            }, log => {
-                switch (log)
+                catch (Exception ex)
                 {
-                    case 0:
-                        NDebug.LogWarning($"{client} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
-                        break;
-                    case 1:
-                        NDebug.LogWarning($"{client} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用server.AddRpc方法收集rpc方法!");
-                        break;
-                    case 2:
-                        NDebug.LogWarning($"{client} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
-                        break;
+                    NDebug.LogError($"方法:{rpc.method} {model} 详细信息:{ex}");
                 }
-            });
+            }
         }
     }
 
@@ -260,36 +256,38 @@ namespace Net.Adapter
             }, (member) => new RPCMethodPtr(target, member.member as MethodInfo, member.rpc.cmd, member.ptr));
         }
 
-        public void OnRpcExecute(RPCModel model)
+        public void OnRpcExecute(RPCModel model) => RpcHelper.Invoke(handle, null, model, AddRpcWorkQueue, RpcLog);
+
+        private void RpcLog(int log, NetPlayer client, RPCModel model)
         {
-            RpcHelper.Invoke(handle, model, (methods) => 
+            switch (log)
             {
-                foreach (RPCMethodPtr rpc in methods.Values)
+                case 0:
+                    NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 1:
+                    NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+                case 2:
+                    NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    break;
+            }
+        }
+
+        private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
+        {
+            foreach (RPCMethodPtr rpc in methods.Values)
+            {
+                if (rpc.cmd == NetCmd.ThreadRpc)
                 {
-                    if (rpc.cmd == NetCmd.ThreadRpc)
-                    {
-                        rpc.Invoke(model.pars);
-                    }
-                    else
-                    {
-                        var data = new RPCDataPtr(rpc.target, rpc.method, rpc.ptr, model.pars);
-                        handle.RpcWorkQueue.Enqueue(data);
-                    }
+                    rpc.Invoke(model.pars);
                 }
-            }, log=> {
-                switch (log)
+                else
                 {
-                    case 0:
-                        NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 1:
-                        NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
-                    case 2:
-                        NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
-                        break;
+                    var data = new RPCDataPtr(rpc.target, rpc.method, rpc.ptr, model.pars);
+                    handle.RpcWorkQueue.Enqueue(data);
                 }
-            });
+            }
         }
 
         public void RemoveRpc(object target)
