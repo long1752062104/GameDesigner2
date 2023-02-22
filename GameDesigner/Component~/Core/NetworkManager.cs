@@ -107,6 +107,7 @@ namespace Net.Component
     public class NetworkManager : SingleCase<NetworkManager>
     {
         public LogMode logMode = LogMode.Default;
+        public bool dontDestroyOnLoad = true;
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
@@ -121,7 +122,7 @@ namespace Net.Component
         protected override void Awake()
         {
             base.Awake();
-            DontDestroyOnLoad(gameObject);
+            if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             Application.runInBackground = true;
         }
 

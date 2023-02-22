@@ -1907,6 +1907,9 @@ namespace Net.Server
             oldScene = player.Scene as Scene;
             if (string.IsNullOrEmpty(name))
                 return null;
+            if (oldScene != null)
+                if (oldScene.Name == name) //如果已经在这个场景, 直接返回对象
+                    return oldScene;
             if (Scenes.TryGetValue(name, out Scene scene1))
                 return SwitchScene(player, scene1, out _);
             return null;

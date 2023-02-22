@@ -1,9 +1,9 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 namespace Net.UnityComponent
 {
+    using Cysharp.Threading.Tasks;
     using global::System;
     using global::System.Collections.Generic;
-    using global::System.Threading.Tasks;
     using Net.Client;
     using Net.Component;
     using Net.Share;
@@ -35,21 +35,22 @@ namespace Net.UnityComponent
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
         internal List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
+        protected ClientBase client; //当多场景时, 退出战斗场景, 回主场景时, 先进入主场景再卸载战斗场景, 而ClientBase.Instance被赋值到其他多连接客户端对象上就会出现OnDestry时没有正确移除OnOperationSync事件
 
         public virtual void Start()
         {
-            WaitConnecting();
+            _ = WaitConnecting();
         }
 
-        public virtual async void WaitConnecting()
+        public virtual async UniTaskVoid WaitConnecting()
         {
             var outTime = DateTime.Now.AddSeconds(10);
             while (DateTime.Now < outTime)
             {
                 if (ClientBase.Instance == null)
-                    await Task.Yield();
+                    await UniTask.Yield();
                 else if (!ClientBase.Instance.Connected)
-                    await Task.Yield();
+                    await UniTask.Yield();
                 else
                     break;
             }
@@ -59,7 +60,8 @@ namespace Net.UnityComponent
                 return;
             }
             OnConnected();
-            ClientBase.Instance.OnOperationSync += OperationSync;
+            client = ClientBase.Instance;
+            client.OnOperationSync += OperationSync;
         }
 
         public virtual void OnConnected()
@@ -130,11 +132,11 @@ namespace Net.UnityComponent
                     SyncVarGetHandler(opt);
                     break;
                 case NetCmd.CallRpc:
-                    var data = ClientBase.Instance.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
+                    var data = client.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
                     if(!string.IsNullOrEmpty(data.name))
-                        ClientBase.Instance.DispatchRpc(data.name, data.pars);
+                        client.DispatchRpc(data.name, data.pars);
                     else if(data.hash != 0)
-                        ClientBase.Instance.DispatchRpc(data.hash, data.pars);
+                        client.DispatchRpc(data.hash, data.pars);
                     break;
                 default:
                     OnOtherOperator(opt);
@@ -298,9 +300,9 @@ namespace Net.UnityComponent
         public virtual void OnDestroy()
         {
             NetworkObject.UnInit();//每次离开战斗场景都要清除初始化identity
-            if (ClientBase.Instance == null)
+            if (client == null)
                 return;
-            ClientBase.Instance.OnOperationSync -= OperationSync;
+            client.OnOperationSync -= OperationSync;
         }
     }
 }
