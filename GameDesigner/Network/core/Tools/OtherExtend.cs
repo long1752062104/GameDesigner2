@@ -1,5 +1,4 @@
-﻿using System.Data;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class OtherExtend
 {

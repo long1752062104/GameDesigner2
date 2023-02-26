@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -31,7 +30,7 @@ namespace Net.Helper
         {
             if (password < 10000000)
                 throw new Exception("密码值不能小于10000000");
-            Random random = new Random(password);
+            var random = new Random(password);
             for (int i = index; i < index + count; i++)
             {
                 buffer[i] += (byte)random.Next(0, 255);
@@ -60,7 +59,7 @@ namespace Net.Helper
         {
             if (password < 10000000)
                 throw new Exception("密码值不能小于10000000");
-            Random random = new Random(password);
+            var random = new Random(password);
             for (int i = index; i < index + count; i++)
             {
                 buffer[i] -= (byte)random.Next(0, 255);
@@ -112,11 +111,11 @@ namespace Net.Helper
             return Encoding.UTF8.GetString(resultArray);
         }
 
-        public static string GetMD5(string sDataIn)
+        public static string GetMD5(string text)
         {
             var md5 = new MD5CryptoServiceProvider();
             byte[] bytValue, bytHash;
-            bytValue = Encoding.UTF8.GetBytes(sDataIn);
+            bytValue = Encoding.UTF8.GetBytes(text);
             bytHash = md5.ComputeHash(bytValue);
             md5.Clear();
             string sTemp = "";

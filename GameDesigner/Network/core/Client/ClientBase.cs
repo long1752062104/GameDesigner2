@@ -37,6 +37,7 @@ namespace Net.Client
     using global::System.Text.RegularExpressions;
     using Cysharp.Threading.Tasks;
     using Net.Server;
+    using Net.Adapter;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -232,10 +233,6 @@ namespace Net.Client
         /// 当执行调用远程过程方法时触发
         /// </summary>
         public Action<RPCModel> OnRPCExecute { get; set; }
-        /// <summary>
-        /// 检查rpc对象，如果对象被释放则自动移除
-        /// </summary>
-        //private Action OnCheckRpc;
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
         /// </summary>
@@ -444,6 +441,10 @@ namespace Net.Client
         /// 是否使用多线程来接收网络数据? 默认是多线程
         /// </summary>
         public bool IsMultiThread { get; set; } = true;
+        /// <summary>
+        /// 序列化适配器
+        /// </summary>
+        public ISerializeAdapter SerializeAdapter { get; set; }
 
         /// <summary>
         /// 构造函数
@@ -1547,6 +1548,26 @@ namespace Net.Client
                 case NetCmd.Identify:
                     UID = PreUserId = segment.ReadInt32();
                     Identify = segment.ReadString();
+                    if (segment.Position >= segment.Count) //此代码是兼容旧版本写法
+                        return;
+                    var adapterType = segment.ReadByte();
+                    var isEncrypt = segment.ReadBoolean();
+                    var password = segment.ReadInt32();
+                    switch (adapterType)
+                    {
+                        case 1:
+                            AddAdapter(new SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
+                            break;
+                        case 2:
+                            AddAdapter(new SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
+                            break;
+                        case 3:
+                            AddAdapter(new SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
+                            break;
+                        case 4:
+                            AddAdapter(new SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
+                            break;
+                    }
                     break;
                 case NetCmd.OperationSync:
                     var list = OnDeserializeOPT(model.buffer, model.index, model.count);
@@ -2619,18 +2640,17 @@ namespace Net.Client
             switch (type)
             {
                 case AdapterType.Serialize:
-                    var ser = (ISerializeAdapter)adapter;
-                    OnSerializeRPC = ser.OnSerializeRpc;
-                    OnDeserializeRPC = ser.OnDeserializeRpc;
-                    OnSerializeOPT = ser.OnSerializeOpt;
-                    OnDeserializeOPT = ser.OnDeserializeOpt;
+                    SerializeAdapter = (ISerializeAdapter)adapter;
+                    OnSerializeRPC = SerializeAdapter.OnSerializeRpc;
+                    OnDeserializeRPC = SerializeAdapter.OnDeserializeRpc;
+                    OnSerializeOPT = SerializeAdapter.OnSerializeOpt;
+                    OnDeserializeOPT = SerializeAdapter.OnDeserializeOpt;
                     break;
                 case AdapterType.RPC:
                     var rpc = (IRPCAdapter)adapter;
                     OnAddRpcHandle = rpc.AddRpcHandle;
                     OnRPCExecute = rpc.OnRpcExecute;
                     OnRemoveRpc = rpc.RemoveRpc;
-                    //OnCheckRpc = rpc.CheckRpc;
                     OnRpcTaskRegister = rpc.OnRpcTaskRegister;
                     break;
                 case AdapterType.NetworkEvt:

@@ -5,7 +5,6 @@ using Net.Share;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
-using System.Threading.Tasks;
 using System;
 using Net.Helper;
 using Cysharp.Threading.Tasks;
@@ -33,6 +32,7 @@ namespace Net.Component
         [Header("序列化适配器")]
         public SerializeAdapterType type;
         public bool isEncrypt = false;//数据加密?
+        public int password = 758426581;
 
         public ClientBase Client
         {
@@ -75,16 +75,16 @@ namespace Net.Component
                 case SerializeAdapterType.Default:
                     break;
                 case SerializeAdapterType.PB_JSON_FAST:
-                    _client.AddAdapter(new Adapter.SerializeFastAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
                     break;
                 case SerializeAdapterType.Binary:
-                    _client.AddAdapter(new Adapter.SerializeAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
                     break;
                 case SerializeAdapterType.Binary2:
-                    _client.AddAdapter(new Adapter.SerializeAdapter2() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
                     break;
                 case SerializeAdapterType.Binary3:
-                    _client.AddAdapter(new Adapter.SerializeAdapter3() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new Adapter.SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
                     break;
             }
             return _client.Connect(result =>

@@ -37,6 +37,7 @@ namespace Net.Server
     using Net.Event;
 #if WINDOWS
     using Microsoft.Win32;
+    using Net.Adapter;
 #endif
 
     /// <summary>
@@ -422,6 +423,10 @@ namespace Net.Server
         /// </summary>
         protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();
         private int sendFileTick, recvFileTick;
+        /// <summary>
+        /// 序列化适配器
+        /// </summary>
+        public ISerializeAdapter SerializeAdapter { get; set; }
         #endregion
 
         /// <summary>
@@ -1052,6 +1057,18 @@ namespace Net.Server
             var segment = BufferPool.Take(50);
             segment.Write(client.UserID);
             segment.Write(client.PlayerID);
+            byte adapterType = 0;
+            bool isEncrypt = false;
+            int password = 0;
+            if (SerializeAdapter != null)
+            {
+                adapterType = SerializeAdapter.Type;
+                isEncrypt = SerializeAdapter.IsEncrypt;
+                password = SerializeAdapter.Password;
+            }
+            segment.Write(adapterType);
+            segment.Write(isEncrypt);
+            segment.Write(password);
             SendRT(client, NetCmd.Identify, segment.ToArray(true));
         }
 
@@ -2739,11 +2756,11 @@ namespace Net.Server
             switch (type)
             {
                 case AdapterType.Serialize:
-                    var ser = (ISerializeAdapter)adapter;
-                    OnSerializeRPC = ser.OnSerializeRpc;
-                    OnDeserializeRPC = ser.OnDeserializeRpc;
-                    OnSerializeOPT = ser.OnSerializeOpt;
-                    OnDeserializeOPT = ser.OnDeserializeOpt;
+                    SerializeAdapter = (ISerializeAdapter)adapter;
+                    OnSerializeRPC = SerializeAdapter.OnSerializeRpc;
+                    OnDeserializeRPC = SerializeAdapter.OnDeserializeRpc;
+                    OnSerializeOPT = SerializeAdapter.OnSerializeOpt;
+                    OnDeserializeOPT = SerializeAdapter.OnDeserializeOpt;
                     break;
                 case AdapterType.RPC:
                     var rpc = (IRPCAdapter<Player>)adapter;

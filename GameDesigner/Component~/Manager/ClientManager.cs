@@ -56,7 +56,6 @@ namespace Net.Component
         public bool localTest;
         public LogMode logMode = LogMode.Default;
         public bool debugRpc = true;
-        public int frameRate = 60;
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
@@ -64,6 +63,7 @@ namespace Net.Component
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
+        public bool dontDestroyOnLoad = true;
 
 #pragma warning disable IDE1006 // 命名样式
         public ClientBase client
@@ -103,8 +103,7 @@ namespace Net.Component
         {
             base.Awake();
             mainInstance = true;
-            DontDestroyOnLoad(gameObject);
-            Application.targetFrameRate = frameRate;
+            if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             Application.runInBackground = true;
         }
 

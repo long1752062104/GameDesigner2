@@ -430,6 +430,7 @@ static void Main(string[] args)
 <br>12 非非有非非无 ¥ 100</br>
 <br>13 克里斯 ¥ 200 + 1000</br>
 <br>14 Maple ¥ 200 + 200</br>
+<br>15 蓝色冰点 ¥ 10</br>
 
 <br>不留名的大佬们 微信总资助 ¥ 653</br>
 
