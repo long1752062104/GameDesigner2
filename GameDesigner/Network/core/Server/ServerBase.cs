@@ -1741,13 +1741,21 @@ namespace Net.Server
                 {
                     if (rpc.cmd == NetCmd.SafeCall)
                     {
-                        rpc.Invoke(client, model.pars);
+                        var len = model.pars.Length;
+                        var array = new object[len + 1];
+                        array[0] = client;
+                        Array.Copy(model.pars, 0, array, 1, len);
+                        rpc.Invoke(array);
                     }
                     else if (rpc.cmd == NetCmd.SingleCall)
                     {
                         SingleCallQueue.Enqueue(() =>
                         {
-                            rpc.Invoke(client, model.pars);
+                            var len = model.pars.Length;
+                            var array = new object[len + 1];
+                            array[0] = client;
+                            Array.Copy(model.pars, 0, array, 1, len);
+                            rpc.Invoke(array);
                         });
                     }
                     else
