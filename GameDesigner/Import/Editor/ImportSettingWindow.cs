@@ -103,6 +103,10 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "Framework", "Framework~", "Framework");
         EditorGUILayout.EndHorizontal();
 
+        EditorGUILayout.HelpBox("ParrelSync插件, 可以克隆两个一模一样的项目进行网络同步调式, 极快解决联机同步问题", MessageType.Info);
+        path = "Assets/Plugins/GameDesigner/ParrelSync";
+        DrawGUI(path, "ParrelSync", "ParrelSync~", "ParrelSync");
+
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
@@ -183,6 +187,7 @@ public class ImportSettingWindow : EditorWindow
                 Directory.CreateDirectory(path1);
             File.Copy(file, newPath, true);
         }
+        Debug.Log($"导入{Path.GetFileName(copyToProtocolName)}完成!");
         AssetDatabase.Refresh();
     }
 
@@ -209,6 +214,7 @@ public class ImportSettingWindow : EditorWindow
             var newPath = $"{rootPath}/{sourceProtocolName}/{newFile}";
             File.Copy(file, newPath, true);
         }
+        Debug.Log($"反导出{Path.GetFileName(copyToProtocolName)}完成!");
         AssetDatabase.Refresh();
     }
 }

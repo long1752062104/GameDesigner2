@@ -94,7 +94,7 @@
             method.Invoke(target, null);
         }
 
-        public void Invoke(params object[] pars)
+        public void Invoke(object[] pars)
         {
             method.Invoke(target, pars);
         }

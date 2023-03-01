@@ -114,16 +114,16 @@ namespace Framework
                 case SerializeAdapterType.Default:
                     break;
                 case SerializeAdapterType.PB_JSON_FAST:
-                    _client.AddAdapter(new SerializeFastAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new SerializeFastAdapter() { IsEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary:
-                    _client.AddAdapter(new SerializeAdapter() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new SerializeAdapter() { IsEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary2:
-                    _client.AddAdapter(new SerializeAdapter2() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new SerializeAdapter2() { IsEncrypt = isEncrypt });
                     break;
                 case SerializeAdapterType.Binary3:
-                    _client.AddAdapter(new SerializeAdapter3() { isEncrypt = isEncrypt });
+                    _client.AddAdapter(new SerializeAdapter3() { IsEncrypt = isEncrypt });
                     break;
             }
             return _client.Connect(result =>
