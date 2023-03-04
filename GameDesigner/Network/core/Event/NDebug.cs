@@ -260,7 +260,7 @@
             {
                 NDebug.LogError(ex);
             }
-            return false;
+            return true;
         }
 
 #if SERVICE

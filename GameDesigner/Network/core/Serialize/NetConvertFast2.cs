@@ -484,7 +484,14 @@
                 if (hasMask) stream.WriteValue(model.methodHash);
                 foreach (var obj in model.pars)
                 {
-                    Type type = obj.GetType();
+                    Type type;
+                    if (obj == null)
+                    {
+                        type = typeof(DBNull);
+                        stream.Write(TypeToIndex(type));
+                        continue;
+                    }
+                    type = obj.GetType();
                     stream.WriteValue(TypeToIndex(type));
                     if (Types2.TryGetValue(type, out TypeBind typeBind))
                     {
@@ -522,7 +529,17 @@
                 while (segment.Position < count)
                 {
                     ushort typeIndex = segment.ReadUInt16();
-                    Type type = IndexToType(typeIndex);
+                    var type = IndexToType(typeIndex);
+                    if (type == null)
+                    {
+                        obj.error = true;
+                        break;
+                    }
+                    if (type == typeof(DBNull))
+                    {
+                        list.Add(null);
+                        continue;
+                    }
                     var obj1 = DeserializeObject(type, segment, false);
                     list.Add(obj1);
                 }
@@ -532,8 +549,8 @@
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"解析func:[{obj.name}]hash:[{obj.hash}]出错 详细信息:" + ex);
                 obj.error = true;
+                NDebug.LogError($"解析func:[{obj.name}]hash:[{obj.hash}]出错 详细信息:" + ex);
             }
             return obj;
         }

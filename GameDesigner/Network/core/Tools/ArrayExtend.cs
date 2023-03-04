@@ -330,6 +330,13 @@ public static class ArrayExtend
             Object.Destroy(self.GetChild(i).gameObject);
         }
     }
+    public static void SortTransforms<T>(this List<T> self, int offset = 0) where T : Component
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            self[i].transform.SetSiblingIndex(i + offset);
+        }
+    }
 #endif
 
     public static void For<T>(this HashSet<T> self, Action<T> action)

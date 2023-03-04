@@ -19,7 +19,9 @@ namespace Net.Component
         public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 9543;
+#if UNITY_EDITOR
         public bool localTest;//±¾»ú²âÊÔ
+#endif
         public bool debugRpc = true;
         public bool authorize;
         public bool startConnect = true;
@@ -61,15 +63,14 @@ namespace Net.Component
         public UniTask<bool> Connect()
         {
             _client = Client;
-            if (!localTest)
-            {
-                var ips = Dns.GetHostAddresses(ip);
-                if (ips.Length > 0)
-                    _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
-                else
-                    _client.host = ip;
-            }
-            else _client.host = "127.0.0.1";
+            var ips = Dns.GetHostAddresses(ip);
+            if (ips.Length > 0)
+                _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
+            else
+                _client.host = ip;
+#if UNITY_EDITOR
+            if (localTest) _client.host = "127.0.0.1";
+#endif
             _client.port = port;
             switch (type)
             {

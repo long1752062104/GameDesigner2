@@ -382,7 +382,14 @@
                 if (hasMask) stream.Write(model.methodHash);
                 foreach (var obj in model.pars)
                 {
-                    var type = obj.GetType();
+                    Type type;
+                    if (obj == null)
+                    {
+                        type = typeof(DBNull);
+                        stream.Write(TypeToIndex(type));
+                        continue;
+                    }
+                    type = obj.GetType();
                     stream.Write(TypeToIndex(type));
                     WriteObject(stream, type, obj, recordType, false);
                 }
@@ -999,6 +1006,11 @@
                     var type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
+                    if (type == typeof(DBNull))
+                    {
+                        list.Add(null);
+                        continue;
+                    }
                     var obj1 = ReadObject(segment, type, recordType, ignore);
                     list.Add(obj1);
                 }
@@ -1006,8 +1018,8 @@
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"解析[{obj.name}]出错 详细信息:" + ex);
                 obj.error = true;
+                NDebug.LogError($"解析[{obj.name}]出错 详细信息:" + ex);
             }
             return obj;
         }

@@ -33,7 +33,14 @@
                 segment.Write(model.methodHash);
             foreach (object obj in model.pars)
             {
-                var type = obj.GetType();
+                Type type;
+                if (obj == null)
+                {
+                    type = typeof(DBNull);
+                    segment.Write(type.ToString());
+                    continue;
+                }
+                type = obj.GetType();
                 segment.Write(type.ToString());
                 NetConvertBinary.SerializeObject(segment, obj, recordType, true);
             }
@@ -78,6 +85,11 @@
                     {
                         fdata.error = true;
                         break;
+                    }
+                    if (type == typeof(DBNull))
+                    {
+                        list.Add(null);
+                        continue;
                     }
                     var obj = NetConvertBinary.DeserializeObject(segment, type, false, recordType, true);
                     list.Add(obj);

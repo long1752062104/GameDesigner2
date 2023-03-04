@@ -53,7 +53,9 @@ namespace Net.Component
         public TransportProtocol protocol = TransportProtocol.Tcp;
         public string ip = "127.0.0.1";
         public int port = 9543;
+#if UNITY_EDITOR
         public bool localTest;
+#endif
         public LogMode logMode = LogMode.Default;
         public bool debugRpc = true;
         public bool authorize;
@@ -139,15 +141,14 @@ namespace Net.Component
         public UniTask<bool> Connect()
         {
             _client = client;
-            if (!localTest)
-            {
-                var ips = Dns.GetHostAddresses(ip);
-                if (ips.Length > 0)
-                    _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
-                else
-                    _client.host = ip;
-            }
-            else _client.host = "127.0.0.1";
+            var ips = Dns.GetHostAddresses(ip);
+            if (ips.Length > 0)
+                _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
+            else
+                _client.host = ip;
+#if UNITY_EDITOR
+            if (localTest) _client.host = "127.0.0.1";
+#endif
             _client.port = port;
             _client.AddRpcHandle(this);
             return _client.Connect(result =>

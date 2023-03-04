@@ -98,6 +98,7 @@
     <Compile Include="GameDesigner\Common~\Command.cs" />
     <Compile Include="GameDesigner\Common~\NTransform.cs" />
     <Compile Include="GameDesigner\Common~\RoomData.cs" />
+    <Compile Include="GameDesigner\Common~\PropertyObserver.cs" />
     <Compile Include="GameDesigner\ECS~\ArrayPool.cs" />
     <Compile Include="GameDesigner\ECS~\Component.cs" />
     <Compile Include="GameDesigner\ECS~\Entity.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="GameDesigner\ECS~\GSystem.cs" />
     <Compile Include="GameDesigner\ECS~\IUpdate.cs" />
     <Compile Include="GameDesigner\ECS~\UpdateComponent.cs" />
+    <Compile Include="GameDesigner\Helper\AntiCheatHelper.cs" />
     <Compile Include="GameDesigner\Helper\AssemblyHelper.cs" />
     <Compile Include="GameDesigner\Helper\CloneHelper.cs" />
     <Compile Include="GameDesigner\Helper\FilterTextHelper.cs" />
