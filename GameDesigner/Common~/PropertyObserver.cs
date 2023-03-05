@@ -1,6 +1,7 @@
 ﻿using Net.Helper;
 using Net.Share;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Net.Common
 {
@@ -13,39 +14,43 @@ namespace Net.Common
         protected T value;
         public T Value { get => GetValue(); set => SetValue(value); }
         public Action<T> OnValueChanged { get; set; }
-
         public PropertyObserver() { }
         public PropertyObserver(T value) : this(value, null) { }
         public PropertyObserver(T value, Action<T> onValueChanged)
         {
             this.value = value;
-            this.OnValueChanged = onValueChanged;
+            OnValueChanged = onValueChanged;
         }
 
         public virtual T GetValue()
         {
-            return this.value;
+            return value;
         }
 
         public virtual void SetValue(T value, bool isNotify = true)
         {
-            if (Object.Equals(this.value, value))
+            if (Equals(this.value, value))
                 return;
             this.value = value;
             if (isNotify) OnValueChanged?.Invoke(value);
         }
 
         public void SetValueWithoutNotify(T value) => SetValue(value, false);
+
+        public override string ToString()
+        {
+            return $"{value}";
+        }
     }
 
     /// <summary>
     /// 模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObscuredPropertyObserver<T> : PropertyObserver<T> where T : struct
+    public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
-        private string name;
-        private long valueAtk, valueAtkKey, valueCrc;
+        protected string name;
+        private long valueAtk, valueAtkKey;
 
         public ObscuredPropertyObserver() { }
         public ObscuredPropertyObserver(T value) : this(null, value) { }
@@ -54,30 +59,64 @@ namespace Net.Common
         {
             this.name = name;
             Value = value;
-            this.OnValueChanged = onValueChanged;
+            OnValueChanged = onValueChanged;
         }
 
-        public override unsafe T GetValue()
+        public override T GetValue()
         {
-            var atkValue = this.valueAtk ^ this.valueAtkKey;
-            var crcValue = this.valueCrc ^ this.valueAtkKey;
-            var value = *(T*)&atkValue;
-            if (!Object.Equals(value, this.value) | !Object.Equals(crcValue, this.valueAtk))
+            var atkValue = valueAtk ^ valueAtkKey;
+            var value = Unsafe.As<long, T>(ref atkValue);
+            if (!Equals(value, this.value))
             {
-                AntiCheatHelper.OnDetected?.Invoke(name);
+                AntiCheatHelper.OnDetected?.Invoke(name, value, this.value);
                 this.value = value;
             }
-            return this.value;
+            return value;
         }
 
-        public override unsafe void SetValue(T value, bool isNotify = true)
+        public override void SetValue(T value, bool isNotify = true)
         {
-            if (Object.Equals(this.value, value))
+            if (Equals(this.value, value))
                 return;
             this.value = value;
-            this.valueAtkKey = RandomHelper.Range(0, int.MaxValue);
-            this.valueAtk = *(long*)&value ^ this.valueAtkKey;
-            this.valueCrc = this.valueAtk ^ this.valueAtkKey;
+            valueAtkKey = RandomHelper.Range(0, int.MaxValue);
+            var value3 = Unsafe.As<T, long>(ref this.value);
+            valueAtk = value3 ^ valueAtkKey;
+            if (isNotify) OnValueChanged?.Invoke(value);
+        }
+    }
+
+    public class PropertyObserverAuto<T> : ObscuredPropertyObserver<T>
+    {
+        private readonly bool available;
+        public PropertyObserverAuto() { }
+        public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged)
+        {
+            this.name = name;
+            this.available = available;
+            OnValueChanged = onValueChanged;
+        }
+
+        public override T GetValue()
+        {
+            if (available & AntiCheatHelper.IsActive) 
+                return base.GetValue();
+            return value;
+        }
+
+        public override void SetValue(T value, bool isNotify = true)
+        {
+            if (available & AntiCheatHelper.IsActive)
+                base.SetValue(value, isNotify);
+            else
+                SetValue1(value, isNotify);
+        }
+
+        private void SetValue1(T value, bool isNotify = true)
+        {
+            if (Equals(this.value, value))
+                return;
+            this.value = value;
             if (isNotify) OnValueChanged?.Invoke(value);
         }
     }

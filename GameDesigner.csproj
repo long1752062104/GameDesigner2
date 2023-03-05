@@ -82,9 +82,10 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GameDesigner\Network\dnlib.dll" />
+    <Content Include="GameDesigner\Network\Library\dnlib.dll" />
     <Content Include="GameDesigner\Network\Kcp~\Plugins\Windows\kcp.dll" />
     <Content Include="GameDesigner\Network\Kcp~\使用说明.txt" />
+    <Content Include="GameDesigner\Network\Library\System.Runtime.CompilerServices.Unsafe.dll" />
     <Content Include="GameDesigner\Network\Udx~\Plugins\Windows\FastUdxApi.dll" />
     <Content Include="GameDesigner\Network\Udx~\使用说明.txt" />
     <Content Include="GameDesigner\Network\Web~\使用说明.txt" />
