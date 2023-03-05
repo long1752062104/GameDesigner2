@@ -1057,12 +1057,12 @@ namespace Net.Server
             var segment = BufferPool.Take(50);
             segment.Write(client.UserID);
             segment.Write(client.PlayerID);
-            byte adapterType = 0;
+            string adapterType = string.Empty;
             bool isEncrypt = false;
             int password = 0;
             if (SerializeAdapter != null)
             {
-                adapterType = SerializeAdapter.Type;
+                adapterType = SerializeAdapter.GetType().ToString();
                 isEncrypt = SerializeAdapter.IsEncrypt;
                 password = SerializeAdapter.Password;
             }

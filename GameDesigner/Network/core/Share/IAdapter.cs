@@ -24,11 +24,6 @@ namespace Net.Share
     public interface ISerializeAdapter : IAdapter
     {
         /// <summary>
-        /// 序列化适配器类型
-        /// </summary>
-        byte Type { get; }
-
-        /// <summary>
         /// 是否加密传输?
         /// </summary>
         bool IsEncrypt { get; set; }

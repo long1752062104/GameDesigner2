@@ -9,7 +9,6 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter : ISerializeAdapter
     {
-        public byte Type => 1;
         public bool IsEncrypt { get; set; }
         public int Password { get; set; } = 758426581;
 
@@ -44,7 +43,6 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeFastAdapter : ISerializeAdapter
     {
-        public byte Type => 2;
         public bool IsEncrypt { get; set; }
         public int Password { get; set; } = 758426581;
 
@@ -80,7 +78,6 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter2 : ISerializeAdapter
     {
-        public byte Type => 3;
         public bool IsEncrypt { get; set; }
         public int Password { get; set; } = 758426581;
 
@@ -116,7 +113,6 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter3 : ISerializeAdapter
     {
-        public byte Type => 4;
         public bool IsEncrypt { get; set; }
         public int Password { get; set; } = 758426581;
 

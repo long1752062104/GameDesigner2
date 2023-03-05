@@ -1550,24 +1550,16 @@ namespace Net.Client
                     Identify = segment.ReadString();
                     if (segment.Position >= segment.Count) //此代码是兼容旧版本写法
                         return;
-                    var adapterType = segment.ReadByte();
+                    var adapterType = segment.ReadString();
                     var isEncrypt = segment.ReadBoolean();
                     var password = segment.ReadInt32();
-                    switch (adapterType)
-                    {
-                        case 1:
-                            AddAdapter(new SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
-                            break;
-                        case 2:
-                            AddAdapter(new SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
-                            break;
-                        case 3:
-                            AddAdapter(new SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
-                            break;
-                        case 4:
-                            AddAdapter(new SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
-                            break;
-                    }
+                    if (string.IsNullOrEmpty(adapterType))
+                        return;
+                    var type = AssemblyHelper.GetType(adapterType);
+                    var adapter = (ISerializeAdapter)Activator.CreateInstance(type);
+                    adapter.IsEncrypt = isEncrypt;
+                    adapter.Password = password;
+                    AddAdapter(adapter);
                     break;
                 case NetCmd.OperationSync:
                     var list = OnDeserializeOPT(model.buffer, model.index, model.count);
