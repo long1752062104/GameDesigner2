@@ -89,9 +89,7 @@ namespace Net.Helper
             {
                 var type = assembly.GetType(typeName);
                 if (type != null)
-                {
                     return type;
-                }
             }
             return null;
         }

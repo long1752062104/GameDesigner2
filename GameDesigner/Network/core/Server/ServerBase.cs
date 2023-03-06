@@ -1054,12 +1054,12 @@ namespace Net.Server
 
         protected void SetClientIdentity(Player client)
         {
-            var segment = BufferPool.Take(50);
+            var segment = BufferPool.Take(byte.MaxValue);
             segment.Write(client.UserID);
             segment.Write(client.PlayerID);
-            string adapterType = string.Empty;
-            bool isEncrypt = false;
-            int password = 0;
+            var adapterType = string.Empty;
+            var isEncrypt = false;
+            var password = 0;
             if (SerializeAdapter != null)
             {
                 adapterType = SerializeAdapter.GetType().ToString();
