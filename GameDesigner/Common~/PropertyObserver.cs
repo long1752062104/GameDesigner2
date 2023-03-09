@@ -50,12 +50,13 @@ namespace Net.Common
     public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
         protected string name;
-        private long valueAtk, valueAtkKey;
+        private long valueAtk;
+        private readonly long valueAtkKey;
 
-        public ObscuredPropertyObserver() { }
+        public ObscuredPropertyObserver() { valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
-        public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
+        public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged) : this()
         {
             this.name = name;
             Value = value;
@@ -79,7 +80,6 @@ namespace Net.Common
             if (Equals(this.value, value))
                 return;
             this.value = value;
-            valueAtkKey = RandomHelper.Range(0, int.MaxValue);
             var value3 = Unsafe.As<T, long>(ref this.value);
             valueAtk = value3 ^ valueAtkKey;
             if (isNotify) OnValueChanged?.Invoke(value);
