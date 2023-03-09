@@ -43,7 +43,6 @@ namespace Net.Event
         private uint frame;
         private uint startTick;
         private uint nextTick;
-        private uint complement;
 
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
@@ -196,7 +195,7 @@ namespace Net.Event
 
         public TimerEvent() 
         {
-            frame = 0;//一秒60次
+            frame = 0u;//一秒60次
             startTick = (uint)Environment.TickCount;
             nextTick = startTick + 1000u;
         }
@@ -211,34 +210,34 @@ namespace Net.Event
             var frameRate = 1000u / interval;
             if (tick >= nextTick)
             {
-                if (complement > 0)
-                {
-                    nextTick = tick + complement;
-                    complement = 0;
-                    return;
-                }
                 if (frame < frameRate)
                 {
                     var step = (frameRate - frame) * interval;
                     UpdateEvent(step);
                 }
-                frame = 0;
+                frame = 0u;
                 startTick = tick;
                 nextTick = tick + 1000u;
                 if (startTick >= nextTick)
-                {
-                    complement = uint.MaxValue - tick;
                     nextTick = uint.MaxValue;
-                }
             }
             else if (frame < frameRate & (tick - startTick) >= frame * interval)
             {
                 UpdateEvent(interval);
                 frame++;
             }
-            else if(sleep)
+            else if (sleep)
             {
                 Thread.Sleep(1);
+                var total = nextTick - tick;
+                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
+                    nextTick = tick;
+            }
+            else
+            {
+                var total = nextTick - tick;
+                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
+                    nextTick = tick;
             }
         }
 

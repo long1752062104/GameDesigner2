@@ -14,6 +14,9 @@ namespace Net.System
 #if !UNITY_WEBGL
         private static Thread MainThread;
 #endif
+        /// <summary>
+        /// 计时器对象
+        /// </summary>
         public static TimerEvent Event { get; private set; } = new TimerEvent();
         /// <summary>
         /// 时间计数间隔
