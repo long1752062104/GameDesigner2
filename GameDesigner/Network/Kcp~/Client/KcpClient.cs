@@ -1,20 +1,20 @@
 ﻿namespace Net.Client
 {
-    using Net.Share;
     using global::System;
     using global::System.IO;
     using global::System.Net.Sockets;
     using global::System.Runtime.InteropServices;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using Kcp;
-    using static Kcp.KcpLib;
     using global::System.Net;
     using global::System.Reflection;
+    using global::System.Collections.Generic;
+    using Kcp;
+    using Net.Share;
     using Net.System;
     using AOT;
-    using global::System.Collections.Generic;
     using Cysharp.Threading.Tasks;
+    using static Kcp.KcpLib;
 
     /// <summary>
     /// kcp客户端
@@ -67,7 +67,7 @@
 #if WINDOWS
             return Win32KernelAPI.sendto(client.Client.Handle, (byte*)buf, len, SocketFlags.None, client.RemoteAddressBuffer(), 16);
 #else
-            byte[] buff = new byte[len];
+            var buff = new byte[len];
             Marshal.Copy(buf, buff, 0, len);
             return client.Client.Send(buff, 0, len, SocketFlags.None);
 #endif
@@ -109,7 +109,7 @@
                 }
                 BufferPool.Push(segment);
             }
-            else
+            else if (isSleep)
             {
                 Thread.Sleep(1);
             }
@@ -135,24 +135,6 @@
         {
             base.Close(await);
             addressBuffer = null;
-        }
-
-        private class KcpCallback
-        {
-            public Socket Client;
-
-            public KcpCallback(Socket Client)
-            {
-                this.Client = Client;
-            }
-
-            public unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
-            {
-                byte[] buff = new byte[len];
-                Marshal.Copy(buf, buff, 0, len);
-                Client.Send(buff, 0, len, SocketFlags.None);
-                return 0;
-            }
         }
 
         /// <summary>

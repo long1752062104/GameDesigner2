@@ -1,8 +1,8 @@
 ﻿namespace Net.Server
 {
-    using Net.Share;
     using global::System;
     using global::System.Collections.Generic;
+    using Net.Share;
     using Net.System;
     using Net.Event;
     using Net.Serialize;

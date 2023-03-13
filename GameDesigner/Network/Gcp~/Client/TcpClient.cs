@@ -1,7 +1,5 @@
 ﻿namespace Net.Client
 {
-    using Net.Event;
-    using Net.Share;
     using global::System;
     using global::System.Collections.Generic;
     using global::System.IO;
@@ -9,8 +7,10 @@
     using global::System.Net.Sockets;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using Net.System;
     using global::System.Security.Cryptography;
+    using Net.Share;
+    using Net.System;
+    using Net.Event;
     using Net.Helper;
     using Cysharp.Threading.Tasks;
 

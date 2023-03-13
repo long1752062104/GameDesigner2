@@ -17,7 +17,7 @@
 */
 namespace Net.Server
 {
-    using Net.Share;
+    
     using global::System;
     using global::System.Collections.Concurrent;
     using global::System.Collections.Generic;
@@ -29,16 +29,17 @@ namespace Net.Server
     using global::System.Text;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using Debug = Event.NDebug;
+    using global::System.Security.Cryptography;
+    using Net.Share;
     using Net.System;
     using Net.Serialize;
     using Net.Helper;
-    using global::System.Security.Cryptography;
     using Net.Event;
 #if WINDOWS
     using Microsoft.Win32;
     using Net.Adapter;
 #endif
+    using Debug = Event.NDebug;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -274,10 +275,7 @@ namespace Net.Server
             set 
             {
                 md5crc = value;
-                if (value)
-                    frame = 1 + 16;
-                else
-                    frame = 1;
+                frame = (byte)(value ? 1 + 16 : 1);
             }
         }
         /// <summary>

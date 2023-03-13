@@ -28,10 +28,7 @@
             set
             {
                 md5crc = value;
-                if (value)
-                    frame = 5 + 16;
-                else
-                    frame = 5;
+                frame = (byte)(value ? 5 + 16 : 5);
             }
         }
         public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次

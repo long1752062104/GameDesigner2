@@ -191,7 +191,7 @@
     <Compile Include="GameDesigner\Network\core\Share\NetworkDataTraffic.cs" />
     <Compile Include="GameDesigner\Network\core\Share\Operation.cs" />
     <Compile Include="GameDesigner\Network\core\Share\OperationList.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\Random.cs" />
+    <Compile Include="GameDesigner\Helper\RandomHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReceiveBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ReliableTemp.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs" />
@@ -207,7 +207,7 @@
     <Compile Include="GameDesigner\Network\core\Share\SyncVarInfo.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ThreadGroup.cs" />
     <Compile Include="GameDesigner\Network\core\Share\TransportMode.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\UnZipHelper.cs" />
+    <Compile Include="GameDesigner\Helper\UnZipHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\Win32KernelAPI.cs" />
     <Compile Include="GameDesigner\Network\core\System\ArraySegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\BufferPool.cs" />
