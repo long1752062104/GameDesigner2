@@ -13,7 +13,7 @@ namespace Net.Common
     {
         protected T value;
         public T Value { get => GetValue(); set => SetValue(value); }
-        public Action<T> OnValueChanged { get; set; }
+        public Action<T>? OnValueChanged { get; set; }
         public PropertyObserver() { }
         public PropertyObserver(T value) : this(value, null) { }
         public PropertyObserver(T value, Action<T> onValueChanged)
@@ -49,15 +49,16 @@ namespace Net.Common
     /// <typeparam name="T"></typeparam>
     public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
-        protected string name;
-        private long valueAtk;
-        private readonly long valueAtkKey;
+        protected string? name;
+        protected long? valueAtk;
+        protected long? valueAtkKey;
 
-        public ObscuredPropertyObserver() { valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
+        public ObscuredPropertyObserver() {}
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
-        public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged) : this()
+        public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
         {
+            valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue);
             this.name = name;
             Value = value;
             OnValueChanged = onValueChanged;
@@ -65,7 +66,7 @@ namespace Net.Common
 
         public override T GetValue()
         {
-            var atkValue = valueAtk ^ valueAtkKey;
+            var atkValue = (long)(valueAtk ^ valueAtkKey);
             var value = Unsafe.As<long, T>(ref atkValue);
             if (!Equals(value, this.value))
             {
@@ -86,15 +87,26 @@ namespace Net.Common
         }
     }
 
+    /// <summary>
+    /// 属性观察自动类, 可模糊,不模糊
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PropertyObserverAuto<T> : ObscuredPropertyObserver<T>
     {
         private readonly bool available;
         public PropertyObserverAuto() { }
+        /// <summary>
+        /// 属性观察自动类构造
+        /// </summary>
+        /// <param name="name">当属性被发现修改时提示名称</param>
+        /// <param name="available">使用模糊属性?</param>
+        /// <param name="onValueChanged">当属性被修改事件</param>
         public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged)
         {
             this.name = name;
             this.available = available;
             OnValueChanged = onValueChanged;
+            if (available) valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue);
         }
 
         public override T GetValue()
