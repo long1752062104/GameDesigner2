@@ -13,7 +13,7 @@ namespace Net.Common
     {
         protected T value;
         public T Value { get => GetValue(); set => SetValue(value); }
-        public Action<T>? OnValueChanged { get; set; }
+        public Action<T> OnValueChanged { get; set; }
         public PropertyObserver() { }
         public PropertyObserver(T value) : this(value, null) { }
         public PropertyObserver(T value, Action<T> onValueChanged)
@@ -21,7 +21,8 @@ namespace Net.Common
             this.value = value;
             OnValueChanged = onValueChanged;
         }
-
+        public PropertyObserver(string name, bool available, Action<T> onValueChanged) { }
+        
         public virtual T GetValue()
         {
             return value;
@@ -49,16 +50,15 @@ namespace Net.Common
     /// <typeparam name="T"></typeparam>
     public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
-        protected string? name;
-        protected long? valueAtk;
-        protected long? valueAtkKey;
+        protected string name;
+        protected long valueAtk;
+        protected long valueAtkKey;
 
-        public ObscuredPropertyObserver() {}
+        public ObscuredPropertyObserver() { valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
         public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
         {
-            valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue);
             this.name = name;
             Value = value;
             OnValueChanged = onValueChanged;
@@ -66,7 +66,7 @@ namespace Net.Common
 
         public override T GetValue()
         {
-            var atkValue = (long)(valueAtk ^ valueAtkKey);
+            var atkValue = valueAtk ^ valueAtkKey;
             var value = Unsafe.As<long, T>(ref atkValue);
             if (!Equals(value, this.value))
             {
@@ -103,10 +103,11 @@ namespace Net.Common
         /// <param name="onValueChanged">当属性被修改事件</param>
         public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged)
         {
+            if (!AntiCheatHelper.IsActive | !available)
+                return;
             this.name = name;
             this.available = available;
             OnValueChanged = onValueChanged;
-            if (available) valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue);
         }
 
         public override T GetValue()

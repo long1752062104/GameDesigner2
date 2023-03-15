@@ -1312,7 +1312,7 @@ namespace Net.Server
         /// 主动登录服务器, 类似OnUnClientRequest重写方法的返回值为true
         /// </summary>
         /// <param name="client"></param>
-        protected void LoginHandle(Player client)
+        protected void LoginHandler(Player client)
         {
             if (!client.Login)
             {
