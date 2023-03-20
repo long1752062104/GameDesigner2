@@ -64,6 +64,15 @@
         /// </summary>
         public const byte OtherCmd = 12;
         /// <summary>
+        /// 安全调用服务器函数(<see langword="针对Client独立调用"/>),当多线程并行时会有概率发生资源竞争，导致数据错乱！
+        /// 如果在RPC函数内部调用client时是其他客户端的client对象。出现这种情况时建议使用此命令，
+        /// 否则可以使用CallRpc命令，
+        /// 使用此命令时,函数第一个参数必须是派生于<see cref="Net.Server.NetPlayer"/>类型的参数.
+        /// 此指令是线程池执行
+        /// </summary>
+        public const byte SafeCallAsync = 13;
+
+        /// <summary>
         /// Gcp可靠传输协议指令. 内部命令
         /// </summary>
         public const byte ReliableTransport = 15;

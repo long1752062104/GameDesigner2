@@ -195,6 +195,20 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="T:Net.Common.PropertyObserverAuto`1">
+            <summary>
+            属性观察自动类, 可模糊,不模糊
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.Common.PropertyObserverAuto`1.#ctor(System.String,System.Boolean,System.Action{`0})">
+            <summary>
+            属性观察自动类构造
+            </summary>
+            <param name="name">当属性被发现修改时提示名称</param>
+            <param name="available">使用模糊属性?</param>
+            <param name="onValueChanged">当属性被修改事件</param>
+        </member>
         <member name="P:Net.Helper.AntiCheatHelper.IsActive">
             <summary>
             是否激活防作弊检测
@@ -670,89 +684,94 @@
             当执行调用远程过程方法时触发
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnSerializeRPC">
+        <member name="P:Net.Client.ClientBase.OnSerializeRPC">
             <summary>
             当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnDeserializeRPC">
+        <member name="P:Net.Client.ClientBase.OnDeserializeRPC">
             <summary>
             当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnSerializeOPT">
+        <member name="P:Net.Client.ClientBase.OnSerializeOPT">
             <summary>
             当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnDeserializeOPT">
+        <member name="P:Net.Client.ClientBase.OnDeserializeOPT">
             <summary>
             当内部解析帧操作列表时调用  !!!!!只允许一个委托
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnRpcTaskRegister">
+        <member name="P:Net.Client.ClientBase.OnRpcTaskRegister">
             <summary>
             当可等待的rpc方法被注册, 用于Rpc适配器上
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnPingCallback">
+        <member name="P:Net.Client.ClientBase.OnPingCallback">
             <summary>
             ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnSendErrorHandle">
+        <member name="P:Net.Client.ClientBase.OnSendErrorHandle">
             <summary>
             当socket发送失败调用. 参数1:发送的字节数组, 参数2:发送标志(可靠和不可靠)  ->可通过SendByteData方法重新发送
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnP2PCallback">
+        <member name="P:Net.Client.ClientBase.OnP2PCallback">
             <summary>
             当从服务器获取的客户端地址点对点
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnSwitchPortHandle">
+        <member name="P:Net.Client.ClientBase.OnSwitchPortHandle">
             <summary>
             当网关服务器指定这个客户端连接到一个游戏服务器时调用,回调有游戏服务器的ip和端口
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnDownloadFileHandle">
+        <member name="P:Net.Client.ClientBase.OnDownloadFileHandle">
             <summary>
             当开始下载文件时调用, 参数1(string):服务器发送的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnReceiveFileHandle">
+        <member name="P:Net.Client.ClientBase.OnReceiveFileHandle">
             <summary>
             当服务器发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnRevdFileProgress">
+        <member name="P:Net.Client.ClientBase.OnRevdFileProgress">
             <summary>
             当接收到发送的文件进度
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnSendFileProgress">
+        <member name="P:Net.Client.ClientBase.OnSendFileProgress">
             <summary>
             当发送的文件进度
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnRegisterNetworkIdentity">
+        <member name="P:Net.Client.ClientBase.OnRegisterNetworkIdentity">
             <summary>
             当注册网络物体唯一标识
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnWhenQueuing">
+        <member name="P:Net.Client.ClientBase.OnWhenQueuing">
             <summary>
             当排队等待中
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnQueueCancellation">
+        <member name="P:Net.Client.ClientBase.OnQueueCancellation">
             <summary>
             当排队解除调用
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.OnServerFull">
+        <member name="P:Net.Client.ClientBase.OnServerFull">
             <summary>
             当服务器爆满，服务器积极拒绝客户端请求
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnUpdateVersion">
+            <summary>
+            当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.frame">
@@ -896,6 +915,11 @@
         <member name="P:Net.Client.ClientBase.SerializeAdapter">
             <summary>
             序列化适配器
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Version">
+            <summary>
+            版本号
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.#ctor">
@@ -1629,12 +1653,12 @@
         </member>
         <member name="M:Net.Client.ClientBase.Ping">
             <summary>
-            ping测试网络延迟, 通过<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件回调
+            ping测试网络延迟, 通过<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件回调
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.Ping(System.Action{System.UInt32})">
             <summary>
-            ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
+            ping测试网络延迟, 此方法帮你监听<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
             </summary>
             <param name="callback"></param>
         </member>
@@ -3299,11 +3323,6 @@
             程序根路径, 网络数据缓存读写路径
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.SingleCallQueue">
-            <summary>
-            单线程调用队列
-            </summary>
-        </member>
         <member name="F:Net.Server.ServerBase`2.ThreadGroups">
             <summary>
             线程组, 优化多线程资源竞争问题
@@ -3457,6 +3476,11 @@
         <member name="P:Net.Server.ServerBase`2.SerializeAdapter">
             <summary>
             序列化适配器
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Version">
+            <summary>
+            版本号
             </summary>
         </member>
         <member name="M:Net.Server.ServerBase`2.#ctor">
@@ -3660,12 +3684,6 @@
             流量统计线程
             </summary>
         </member>
-        <member name="M:Net.Server.ServerBase`2.SingleHandler">
-            <summary>
-            单线程处理
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Net.Server.ServerBase`2.StartSocketHandler">
             <summary>
             开始接收数据
@@ -3677,7 +3695,7 @@
             </summary>
             <param name="obj"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.LoginHandle(`0)">
+        <member name="M:Net.Server.ServerBase`2.LoginHandler(`0)">
             <summary>
             主动登录服务器, 类似OnUnClientRequest重写方法的返回值为true
             </summary>
@@ -4159,7 +4177,7 @@
         </member>
         <member name="M:Net.Server.ServerBase`2.SendFile(`0,System.String,System.Int32)">
             <summary>
-            发送文件, 客户端可以使用事件<see cref="F:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
+            发送文件, 客户端可以使用事件<see cref="P:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
             </summary>
             <param name="client"></param>
             <param name="filePath"></param>
@@ -5468,6 +5486,15 @@
         <member name="F:Net.Share.NetCmd.OtherCmd">
             <summary>
             其他命令或用户自定义命令
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.SafeCallAsync">
+            <summary>
+            安全调用服务器函数(<see langword="针对Client独立调用"/>),当多线程并行时会有概率发生资源竞争，导致数据错乱！
+            如果在RPC函数内部调用client时是其他客户端的client对象。出现这种情况时建议使用此命令，
+            否则可以使用CallRpc命令，
+            使用此命令时,函数第一个参数必须是派生于<see cref="T:Net.Server.NetPlayer"/>类型的参数.
+            此指令是线程池执行
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.ReliableTransport">
@@ -7181,6 +7208,11 @@
         <member name="T:Net.System.ThreadManager">
             <summary>
             事件线程管理
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.Event">
+            <summary>
+            计时器对象
             </summary>
         </member>
         <member name="P:Net.System.ThreadManager.Interval">

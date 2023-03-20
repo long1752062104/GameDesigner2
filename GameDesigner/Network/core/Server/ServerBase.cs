@@ -290,10 +290,6 @@ namespace Net.Server
         /// 程序根路径, 网络数据缓存读写路径
         /// </summary>
         protected string rootPath;
-        /// <summary>
-        /// 单线程调用队列
-        /// </summary>
-        protected ConcurrentQueue<Action> SingleCallQueue { get; set; } = new ConcurrentQueue<Action>();
         protected volatile int threadNum;
         protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
         /// <summary>
@@ -312,7 +308,7 @@ namespace Net.Server
         /// 同步锁对象
         /// </summary>
         protected readonly object SyncRoot = new object();
-        protected int[] taskIDs = new int[4];
+        protected int[] taskIDs = new int[3];
         /// <summary>
         /// 断线重连等待时间内, 默认10秒内进行重连成功, 否则断线处理
         /// </summary>
@@ -425,6 +421,10 @@ namespace Net.Server
         /// 序列化适配器
         /// </summary>
         public ISerializeAdapter SerializeAdapter { get; set; }
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public int Version { get; set; } = 1;
         #endregion
 
         /// <summary>
@@ -669,7 +669,6 @@ namespace Net.Server
         {
             int id = 0;
             taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SingleHandler", SingleHandler);
             taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             taskIDs[id++] = ThreadManager.Invoke("CheckOnLinePlayers", 1000 * 60 * 10, CheckOnLinePlayers);
         }
@@ -835,26 +834,6 @@ namespace Net.Server
                 receiveCount = 0;
                 sendLoopNum = 0;
                 revdLoopNum = 0;
-            }
-            return IsRunServer;
-        }
-
-        /// <summary>
-        /// 单线程处理
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool SingleHandler() 
-        {
-            try
-            {
-                while (SingleCallQueue.TryDequeue(out Action action))
-                {
-                    action();
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("单线程异常:" + ex);
             }
             return IsRunServer;
         }
@@ -1067,6 +1046,7 @@ namespace Net.Server
             segment.Write(adapterType);
             segment.Write(isEncrypt);
             segment.Write(password);
+            segment.Write(Version);
             SendRT(client, NetCmd.Identify, segment.ToArray(true));
         }
 
@@ -1733,39 +1713,41 @@ namespace Net.Server
 
         private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
         {
-            foreach (RPCMethod rpc in methods.Values)
+            foreach (RPCMethod method in methods.Values)
             {
                 try
                 {
-                    if (rpc.cmd == NetCmd.SafeCall)
+                    switch (method.cmd)
                     {
-                        var len = model.pars.Length;
-                        var array = new object[len + 1];
-                        array[0] = client;
-                        Array.Copy(model.pars, 0, array, 1, len);
-                        rpc.Invoke(array);
-                    }
-                    else if (rpc.cmd == NetCmd.SingleCall)
-                    {
-                        SingleCallQueue.Enqueue(() =>
-                        {
-                            var len = model.pars.Length;
-                            var array = new object[len + 1];
-                            array[0] = client;
-                            Array.Copy(model.pars, 0, array, 1, len);
-                            rpc.Invoke(array);
-                        });
-                    }
-                    else
-                    {
-                        rpc.Invoke(model.pars);
+                        case NetCmd.SafeCall:
+                            InvokeSafeMethod(client, method, model.pars);
+                            break;
+                        case NetCmd.SingleCall:
+                            ThreadManager.Invoke(() => InvokeSafeMethod(client, method, model.pars));
+                            break;
+                        case NetCmd.SafeCallAsync:
+                            var workCallback = new RpcWorkParameter(client, method, model.pars);
+                            ThreadPool.UnsafeQueueUserWorkItem(workCallback.RpcWorkCallback, workCallback);
+                            break;
+                        default:
+                            method.Invoke(model.pars);
+                            break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"方法:{rpc.method} {model} 详细信息:{ex}");
+                    Debug.LogError($"方法:{method.method} {model} 详细信息:{ex}");
                 }
             }
+        }
+
+        protected void InvokeSafeMethod(NetPlayer client, IRPCMethod method, object[] pars)
+        {
+            var len = pars.Length;
+            var array = new object[len + 1];
+            array[0] = client;
+            Array.Copy(pars, 0, array, 1, len);
+            method.Invoke(array);
         }
 
         /// <summary>

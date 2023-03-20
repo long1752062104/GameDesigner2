@@ -770,9 +770,6 @@ internal static class SyncVarGetSetHelperGenerate
                     cache[type.FullName] = new SequencePoint(path, sequence.StartLine - 1);
                 }
             }
-            //var path = Environment.CurrentDirectory + "/ScriptHelper.txt";
-            //var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(cache);
-            //File.WriteAllText(path, json);
             PersistHelper.Serialize(cache, "sourceCodeTextPoint.json");
         }
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ServiceTools
 {
-    [MenuItem("GameDesigner/Example/Example1_Service")]
+    [MenuItem("GameDesigner/Example/Example1_Service", priority = 1)]
     static void Init() 
     {
         var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
@@ -18,7 +18,7 @@ public class ServiceTools
         p.StartInfo.Arguments = "Example1";
         p.Start();
     }
-    [MenuItem("GameDesigner/Example/Example2_Service")]
+    [MenuItem("GameDesigner/Example/Example2_Service", priority = 2)]
     static void Init1()
     {
         var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
@@ -30,7 +30,7 @@ public class ServiceTools
         p.StartInfo.Arguments = "Example2";
         p.Start();
     }
-    [MenuItem("GameDesigner/Example/LockStepService")]
+    [MenuItem("GameDesigner/Example/LockStepService", priority = 3)]
     static void Init2()
     {
         var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
@@ -42,7 +42,7 @@ public class ServiceTools
         p.StartInfo.Arguments = "Example3";
         p.Start();
     }
-    [MenuItem("GameDesigner/Example/AOIService")]
+    [MenuItem("GameDesigner/Example/AOIService", priority = 4)]
     static void Init3()
     {
         var files = Directory.GetFiles(Application.dataPath, "ExampleServer.exe", SearchOption.AllDirectories);
@@ -52,6 +52,17 @@ public class ServiceTools
         Process p = new Process();
         p.StartInfo.FileName = exe;
         p.StartInfo.Arguments = "Example4";
+        p.Start();
+    }
+    [MenuItem("GameDesigner/Example/Server Source Project")]
+    static void Init4()
+    {
+        var files = Directory.GetFiles(Application.dataPath, "ExampleServer.sln", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
+        Process p = new Process();
+        p.StartInfo.FileName = exe;
         p.Start();
     }
 }

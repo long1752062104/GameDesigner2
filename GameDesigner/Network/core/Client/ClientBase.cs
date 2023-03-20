@@ -236,71 +236,75 @@ namespace Net.Client
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
         /// </summary>
-        public Func<RPCModel, byte[]> OnSerializeRPC;
+        public Func<RPCModel, byte[]> OnSerializeRPC { get; set; }
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
         /// </summary>
-        public Func<byte[], int, int, FuncData> OnDeserializeRPC;
+        public Func<byte[], int, int, FuncData> OnDeserializeRPC { get; set; }
         /// <summary>
         /// 当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
         /// </summary>
-        public Func<OperationList, byte[]> OnSerializeOPT;
+        public Func<OperationList, byte[]> OnSerializeOPT { get; set; }
         /// <summary>
         /// 当内部解析帧操作列表时调用  !!!!!只允许一个委托
         /// </summary>
-        public Func<byte[], int, int, OperationList> OnDeserializeOPT;
+        public Func<byte[], int, int, OperationList> OnDeserializeOPT { get; set; }
         /// <summary>
         /// 当可等待的rpc方法被注册, 用于Rpc适配器上
         /// </summary>
-        public Func<ushort, string, RPCMethodBody> OnRpcTaskRegister;
+        public Func<ushort, string, RPCMethodBody> OnRpcTaskRegister { get; set; }
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
-        public Action<uint> OnPingCallback;
+        public Action<uint> OnPingCallback { get; set; }
         /// <summary>
         /// 当socket发送失败调用. 参数1:发送的字节数组, 参数2:发送标志(可靠和不可靠)  ->可通过SendByteData方法重新发送
         /// </summary>
-        public Action<byte[], bool> OnSendErrorHandle;
+        public Action<byte[], bool> OnSendErrorHandle { get; set; }
         /// <summary>
         /// 当从服务器获取的客户端地址点对点
         /// </summary>
-        public Action<IPEndPoint> OnP2PCallback;
+        public Action<IPEndPoint> OnP2PCallback { get; set; }
         /// <summary>
         /// 当网关服务器指定这个客户端连接到一个游戏服务器时调用,回调有游戏服务器的ip和端口
         /// </summary>
-        public Action<string, ushort> OnSwitchPortHandle;
+        public Action<string, ushort> OnSwitchPortHandle { get; set; }
         /// <summary>
         /// 当开始下载文件时调用, 参数1(string):服务器发送的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
         /// </summary>
-        public Func<string, string> OnDownloadFileHandle;
+        public Func<string, string> OnDownloadFileHandle { get; set; }
         /// <summary>
         /// 当服务器发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
         /// </summary>
-        public Func<FileData, bool> OnReceiveFileHandle;
+        public Func<FileData, bool> OnReceiveFileHandle { get; set; }
         /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
-        public Action<RTProgress> OnRevdFileProgress;
+        public Action<RTProgress> OnRevdFileProgress { get; set; }
         /// <summary>
         /// 当发送的文件进度
         /// </summary>
-        public Action<RTProgress> OnSendFileProgress;
+        public Action<RTProgress> OnSendFileProgress { get; set; }
         /// <summary>
         /// 当注册网络物体唯一标识
         /// </summary>
-        public Action<int, int> OnRegisterNetworkIdentity;
+        public Action<int, int> OnRegisterNetworkIdentity { get; set; }
         /// <summary>
         /// 当排队等待中
         /// </summary>
-        public Action<int, int> OnWhenQueuing;
+        public Action<int, int> OnWhenQueuing { get; set; }
         /// <summary>
         /// 当排队解除调用
         /// </summary>
-        public Action OnQueueCancellation;
+        public Action OnQueueCancellation { get; set; }
         /// <summary>
         /// 当服务器爆满，服务器积极拒绝客户端请求
         /// </summary>
-        public Action OnServerFull;
+        public Action OnServerFull { get; set; }
+        /// <summary>
+        /// 当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
+        /// </summary>
+        public Action<int> OnUpdateVersion { get; set; }
         /// <summary>
         /// 1CRC协议
         /// </summary>
@@ -445,6 +449,10 @@ namespace Net.Client
         /// 序列化适配器
         /// </summary>
         public ISerializeAdapter SerializeAdapter { get; set; }
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public int Version { get; set; } = 1;
 
         /// <summary>
         /// 构造函数
@@ -896,7 +904,9 @@ namespace Net.Client
                         if ((uint)Environment.TickCount >= tick1)
                         {
                             tick1 = (uint)Environment.TickCount + 1000u;
-                            rPCModels.Enqueue(new RPCModel(NetCmd.Identify, new byte[0]));
+                            var segment = BufferPool.Take();
+                            segment.Write(PreUserId);
+                            rPCModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
                             SendDirect();
                         }
                         if (Gcp != null)
@@ -1553,6 +1563,9 @@ namespace Net.Client
                     var adapterType = segment.ReadString();
                     var isEncrypt = segment.ReadBoolean();
                     var password = segment.ReadInt32();
+                    var version = segment.ReadInt32();
+                    if (version != Version)
+                        OnUpdateVersion?.Invoke(version);
                     if (string.IsNullOrEmpty(adapterType))
                         return;
                     var type = AssemblyHelper.GetType(adapterType);

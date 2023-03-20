@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using Net.Helper;
 using Net.Client;
 using System.Collections.Concurrent;
+using Cysharp.Threading.Tasks;
 
 namespace Net.Adapter
 {
@@ -157,31 +158,41 @@ namespace Net.Adapter
 
         private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
         {
-            foreach (RPCMethodPtr rpc in methods.Values)
+            foreach (RPCMethodPtr method in methods.Values)
             {
                 try
                 {
-                    if (rpc.cmd == NetCmd.SafeCall)
+                    switch (method.cmd)
                     {
-                        rpc.Invoke(client, model.pars);
-                    }
-                    else if (rpc.cmd == NetCmd.SingleCall)
-                    {
-                        ThreadManager.Invoke(() =>
-                        {
-                            rpc.Invoke(client, model.pars);
-                        });
-                    }
-                    else
-                    {
-                        rpc.Invoke(model.pars);
+                        case NetCmd.SafeCall:
+                            InvokeSafeMethod(client, method, model.pars);
+                            break;
+                        case NetCmd.SingleCall:
+                            ThreadManager.Invoke(() => InvokeSafeMethod(client, method, model.pars));
+                            break;
+                        case NetCmd.SafeCallAsync:
+                            var workCallback = new RpcWorkParameter(client, method, model.pars);
+                            ThreadPool.UnsafeQueueUserWorkItem(workCallback.RpcWorkCallback, workCallback);
+                            break;
+                        default:
+                            method.Invoke(model.pars);
+                            break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    NDebug.LogError($"方法:{rpc.method} {model} 详细信息:{ex}");
+                    NDebug.LogError($"方法:{method.method} {model} 详细信息:{ex}");
                 }
             }
+        }
+
+        protected void InvokeSafeMethod(NetPlayer client, IRPCMethod method, object[] pars)
+        {
+            var len = pars.Length;
+            var array = new object[len + 1];
+            array[0] = client;
+            Array.Copy(pars, 0, array, 1, len);
+            method.Invoke(array);
         }
     }
 
