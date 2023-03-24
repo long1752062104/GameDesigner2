@@ -1305,7 +1305,8 @@ namespace Net.Server
         {
             //如果一个账号快速登录断开,再登录断开,心跳检查断线会延迟,导致无法移除掉已在游戏的客户端对象
             //如果此账号的玩家已经登录游戏, 则会先进行退出登录, 此客户端才能登录进来
-            if (Players.TryRemove(client.PlayerID, out var client1)) 
+            //注意:如果移除了自己,就不需要调用退出登录处理
+            if (Players.TryRemove(client.PlayerID, out var client1) & client1 != client)
                 SignOutInternal(client1);
             //当此玩家一直从登录到被退出登录, 再登录后PlayerID被清除了, 如果是这种情况下, 开发者也没有给PlayerID赋值, 那么默认就需要给uid得值
             if (string.IsNullOrEmpty(client.PlayerID))
