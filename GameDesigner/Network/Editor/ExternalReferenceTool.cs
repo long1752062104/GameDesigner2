@@ -153,7 +153,10 @@ public class ExternalReferenceTool : EditorWindow
                         {
                             if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
                                 continue;
-                            var value = child_node.Attributes["Include"].Value;
+                            var attribute = child_node.Attributes.GetNamedItem("Include");
+                            if (attribute == null)
+                                continue;
+                            var value = attribute.Value;
                             if (value.Contains(path1))
                             {
                                 exist = true;
@@ -169,7 +172,10 @@ public class ExternalReferenceTool : EditorWindow
                                 {
                                     if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
                                         continue;
-                                    var value = child_node.Attributes["Include"].Value;
+                                    var attribute = child_node.Attributes.GetNamedItem("Include");
+                                    if (attribute == null)
+                                        continue;
+                                    var value = attribute.Value;
                                     if (file == value) //必须一致性
                                     {
                                         isExist = true;
@@ -202,7 +208,10 @@ public class ExternalReferenceTool : EditorWindow
                             {
                                 if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
                                     continue;
-                                var value = child_node.Attributes["Include"].Value;
+                                var attribute = child_node.Attributes.GetNamedItem("Include");
+                                if (attribute == null)
+                                    continue;
+                                var value = attribute.Value;
                                 if (!files.Contains(value))
                                 {
                                     node.RemoveChild(child_node);

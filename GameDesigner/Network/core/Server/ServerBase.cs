@@ -1260,12 +1260,9 @@ namespace Net.Server
                 default:
                     if (CheckIsQueueUp(client))
                         return;
-                    client.Login = OnUnClientRequest(client, model);
+                    if (OnUnClientRequest(client, model))//当有客户端连接时,如果允许用户添加此客户端
+                        LoginHandler(client);
                     break;
-            }
-            if (client.Login)//当有客户端连接时,如果允许用户添加此客户端
-            {
-                LoginInternal(client);
             }
         }
 
