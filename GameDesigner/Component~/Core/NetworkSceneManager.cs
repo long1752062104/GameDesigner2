@@ -1,7 +1,6 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 namespace Net.UnityComponent
 {
-    using Cysharp.Threading.Tasks;
     using global::System;
     using global::System.Collections.Generic;
     using Net.Client;
@@ -9,6 +8,7 @@ namespace Net.UnityComponent
     using Net.Share;
     using Net.System;
     using UnityEngine;
+    using Cysharp.Threading.Tasks;
 
     [Serializable]
     public class WaitDestroy
@@ -25,7 +25,6 @@ namespace Net.UnityComponent
         }
     }
 
-    [RequireComponent(typeof(NetworkTime))]
     [DefaultExecutionOrder(1)]
     public class NetworkSceneManager : SingleCase<NetworkSceneManager>
     {
@@ -40,6 +39,8 @@ namespace Net.UnityComponent
         public virtual void Start()
         {
             _ = WaitConnecting();
+            if (NetworkTime.Instance == null)
+                gameObject.AddComponent<NetworkTime>();
         }
 
         public virtual async UniTaskVoid WaitConnecting()

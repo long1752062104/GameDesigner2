@@ -19,7 +19,7 @@ namespace AOIExample
         void Start()
         {
             Position = transform.position;
-            AOIComponent.I.gridManager.Insert(this);
+            AOIManager.I.gridManager.Insert(this);
             if (Grid != null)
             {
                 if (!IsLocal)//如果是其他玩家
@@ -46,7 +46,7 @@ namespace AOIExample
 
         void OnDestroy()
         {
-            AOIComponent.I.gridManager.Remove(this);
+            AOIManager.I.gridManager.Remove(this);
         }
 
         void OnDrawGizmos() 
@@ -68,7 +68,7 @@ namespace AOIExample
                 return;
             if (!Application.isPlaying)
                 return;
-            if (AOIComponent.I.gridManager == null)
+            if (AOIManager.I.gridManager == null)
                 return;
             if (Grid == null)
                 return;
@@ -83,7 +83,7 @@ namespace AOIExample
         {
             var pos = grid.rect.center;
             var size = grid.rect.size;
-            if (AOIComponent.I.gridManager.gridType == GridType.Horizontal)
+            if (AOIManager.I.gridManager.gridType == GridType.Horizontal)
                 Gizmos.DrawWireCube(new Vector3(pos.x, 0.5f, pos.y), new Vector3(size.x, 0.5f, size.y));
             else 
             {
@@ -93,7 +93,7 @@ namespace AOIExample
                     Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
             }
 #if UNITY_EDITOR
-            if (AOIComponent.I.gridManager.gridType == GridType.Horizontal)
+            if (AOIManager.I.gridManager.gridType == GridType.Horizontal)
             {
                 if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, 0.5f, grid.rect.y), grid.rect.position.ToString());
             }

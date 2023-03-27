@@ -57,7 +57,7 @@ namespace AOIExample
                 if (player == null)
                     continue;
                 player.OnUpdate();
-                List<Operation> opts = new List<Operation>();
+                var opts = new List<Operation>();
                 var grid = players[i].Grid;
                 if (grid == null)
                     continue;
@@ -73,12 +73,11 @@ namespace AOIExample
                 }
                 if (opts.Count == 0)
                     continue;
-                OperationList list = ObjectPool<OperationList>.Take();
+                var list = new OperationList();
                 list.frame = frame;
                 list.operations = opts.ToArray();
                 var buffer = onSerializeOpt(list);
                 handle.Send(player, cmd, buffer, false, false);
-                ObjectPool<OperationList>.Push(list);
             }
             int count = operations.Count;//不管aoi, 整个场景的同步在这里, 如玩家退出操作
             if (count > 0)
@@ -98,7 +97,6 @@ namespace AOIExample
                 players[i].operations.RemoveRange(0, players[i].getLen);
             }
             gridManager.UpdateHandler();
-            //Event.UpdateEventFixed();
         }
     }
 }

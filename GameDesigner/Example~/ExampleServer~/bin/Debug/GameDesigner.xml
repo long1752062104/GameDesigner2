@@ -15,6 +15,21 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:Net.AOI.GridType">
+            <summary>
+            格子类型 -- 支持2D和3D游戏
+            </summary>
+        </member>
+        <member name="F:Net.AOI.GridType.Horizontal">
+            <summary>
+            水平方式的格子, 用于3D游戏
+            </summary>
+        </member>
+        <member name="F:Net.AOI.GridType.Vertical">
+            <summary>
+            垂直方式的格子, 适用2D游戏
+            </summary>
+        </member>
         <member name="T:Net.AOI.GridManager">
             <summary>
             九宫格网络同步管理器
@@ -59,6 +74,11 @@
         <member name="T:Net.AOI.IGridBody">
             <summary>
             九宫格格子物体接口
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridBody.Grid">
+            <summary>
+            当前所在的格子
             </summary>
         </member>
         <member name="M:Net.AOI.IGridBody.OnBodyUpdate">

@@ -91,7 +91,6 @@
     <Content Include="GameDesigner\Network\Web~\使用说明.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameDesigner\AOI~\AOIComponent.cs" />
     <Compile Include="GameDesigner\AOI~\Grid.cs" />
     <Compile Include="GameDesigner\AOI~\GridData.cs" />
     <Compile Include="GameDesigner\AOI~\GridManager.cs" />

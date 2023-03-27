@@ -4,9 +4,18 @@ using Net.System;
 
 namespace Net.AOI
 {
+    /// <summary>
+    /// 格子类型 -- 支持2D和3D游戏
+    /// </summary>
     public enum GridType
     {
+        /// <summary>
+        /// 水平方式的格子, 用于3D游戏
+        /// </summary>
         Horizontal,
+        /// <summary>
+        /// 垂直方式的格子, 适用2D游戏
+        /// </summary>
         Vertical
     }
 
@@ -17,7 +26,7 @@ namespace Net.AOI
     public class GridManager
     {
         public List<Grid> grids = new List<Grid>();
-        public HashSetSafe<IGridBody> gridBodies = new HashSetSafe<IGridBody>();
+        public FastList<IGridBody> gridBodies = new FastList<IGridBody>();
         public Rect worldSize;
         public GridType gridType = GridType.Horizontal;
 
@@ -169,11 +178,7 @@ namespace Net.AOI
             body.Grid.gridBodies.Remove(body);
             body.Grid = null;
             goto JMP;
-#if UNITY_EDITOR
-        J: UnityEngine.Debug.Log($"{body.ID}越界了,位置:{body.Position}");
-#else
         J: Event.NDebug.LogError($"{body.ID}越界了,位置:{body.Position}");
-#endif
             return null;
         }
         /// <summary>

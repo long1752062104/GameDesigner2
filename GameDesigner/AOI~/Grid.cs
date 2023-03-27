@@ -10,7 +10,7 @@ namespace Net.AOI
     {
         public Rect rect;
         public List<Grid> grids = new List<Grid>();//九宫格列表
-        public HashSetSafe<IGridBody> gridBodies = new HashSetSafe<IGridBody>();//格子的物体
+        public FastList<IGridBody> gridBodies = new FastList<IGridBody>();//格子的物体
         public override string ToString()
         {
             return $"{rect}";

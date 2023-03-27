@@ -5,20 +5,21 @@ using Grid = Net.AOI.Grid;
 
 namespace Net.Component
 {
-    public class AOIComponent : SingleCase<AOIComponent>
+    public class AOIManager : SingleCase<AOIManager>
     {
         public GridManager gridManager = new GridManager();
-        public float xPos = -100f;
-        public float zPos = -100f;
-        public uint xMax = 100;
-        public uint zMax = 100;
+        public float xPos = -500f;
+        public float zPos = -500f;
+        public uint xMax = 50;
+        public uint zMax = 50;
         public int width = 20;
         public int height = 20;
         public bool EditInit;
         public bool showText;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             gridManager.Init(xPos, zPos, xMax, zMax, width, height);
         }
 

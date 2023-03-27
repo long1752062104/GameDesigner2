@@ -7,6 +7,9 @@
     {
         int ID { get; set; }
         Vector3 Position { get; set; }
+        /// <summary>
+        /// 当前所在的格子
+        /// </summary>
         Grid Grid { get; set; }
         /// <summary>
         /// 当更新方法, 可以更新位置=unity的transform.position
