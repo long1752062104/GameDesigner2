@@ -83,10 +83,29 @@
         private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
         public int count = 1000;
         public ListBox listBox;
+        /// <summary>
+        /// 字体颜色
+        /// </summary>
+        public Brush BackgroundColor;
+        /// <summary>
+        /// 日志颜色
+        /// </summary>
+        public Brush LogColor = Brushes.Blue;
+        /// <summary>
+        /// 警告颜色
+        /// </summary>
+        public Brush WarningColor = Brushes.Yellow;
+        /// <summary>
+        /// 错误颜色
+        /// </summary>
+        public Brush ErrorColor = Brushes.Red;
 
-        public FormDebug(ListBox listBox) 
+        public FormDebug(ListBox listBox, Brush backgroundColor) 
         {
+            if (backgroundColor == null)
+                backgroundColor = Brushes.Black;
             this.listBox = listBox;
+            this.BackgroundColor = backgroundColor;
             listBox.DrawMode = DrawMode.OwnerDrawFixed;
             listBox.DrawItem += DrawItem;
         }
@@ -117,19 +136,19 @@
             e.DrawFocusRectangle();
             var y = e.Bounds.Y;
             var msg = $"[{entity.time.ToString("yyyy-MM-dd HH:mm:ss")}][";
-            e.Graphics.DrawString(msg, e.Font, Brushes.Black, 0, y);
+            e.Graphics.DrawString(msg, e.Font, BackgroundColor, 0, y);
             var x = msg.Length * 6;
             msg = $"{entity.log}";
-            var color = entity.log == LogType.Log ? Brushes.Blue : entity.log == LogType.Warning ? Brushes.Yellow : Brushes.Red;
+            var color = entity.log == LogType.Log ? LogColor : entity.log == LogType.Warning ? WarningColor : ErrorColor;
             e.Graphics.DrawString(msg, e.Font, color, x, y);
             x += msg.Length * 6;
             msg = entity.msg.Split('\r', '\n')[0];
             if (msg.Length >= byte.MaxValue) //文字过多会报异常
                 msg = msg.Substring(0, byte.MaxValue);
             if (entity.count > 1)
-                e.Graphics.DrawString($"] ({entity.count}) {msg}", e.Font, Brushes.Black, x, y);
+                e.Graphics.DrawString($"] ({entity.count}) {msg}", e.Font, BackgroundColor, x, y);
             else
-                e.Graphics.DrawString($"] {msg}", e.Font, Brushes.Black, x, y);
+                e.Graphics.DrawString($"] {msg}", e.Font, BackgroundColor, x, y);
         }
     }
 #endif
@@ -210,7 +229,10 @@
         private static readonly QueueSafe<object> logQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> errorQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
-        private static IDebug debug;
+        /// <summary>
+        /// 绑定的输入输出对象
+        /// </summary>
+        public static IDebug Debug { get; set; }
         private static FileStream fileStream;
         private static int writeFileModeID;
         private static WriteLogMode writeFileMode;
@@ -410,10 +432,7 @@
         /// </summary>
         public static void BindConsoleLog()
         {
-            if (debug != null)
-                RemoveDebug(debug);
-            debug = new ConsoleDebug();
-            Output += debug.Output;
+            BindDebug(new ConsoleDebug());
         }
 
         /// <summary>
@@ -421,19 +440,16 @@
         /// </summary>
         public static void RemoveConsoleLog()
         {
-            RemoveDebug(debug);
+            RemoveDebug();
         }
 
 #if SERVICE && WINDOWS
         /// <summary>
         /// 绑定窗体程序输出
         /// </summary>
-        public static void BindFormLog(ListBox listBox)
+        public static void BindFormLog(ListBox listBox, Brush backgroundColor = null)
         {
-            if (debug != null)
-                RemoveDebug(debug);
-            debug = new FormDebug(listBox);
-            Output += debug.Output;
+            BindDebug(new FormDebug(listBox, backgroundColor));
         }
 
         /// <summary>
@@ -441,7 +457,7 @@
         /// </summary>
         public static void RemoveFormLog()
         {
-            RemoveDebug(debug);
+            RemoveDebug();
         }
 #endif
 
@@ -451,15 +467,21 @@
         /// <param name="log"></param>
         public static void BindDebug(IDebug debug)
         {
+            if (NDebug.Debug != null)
+                RemoveDebug();
+            NDebug.Debug = debug;
             Output += debug.Output;
         }
 
         /// <summary>
         /// 移除输出接口
         /// </summary>
-        public static void RemoveDebug(IDebug debug)
+        public static void RemoveDebug()
         {
-            Output -= debug.Output;
+            if (Debug == null)
+                return;
+            Output -= Debug.Output;
+            Debug = null;
         }
     }
 }
