@@ -2022,25 +2022,25 @@ namespace Net.Client
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(string funcAndCb, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+            return Call(funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(string funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
@@ -2048,12 +2048,12 @@ namespace Net.Client
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+            return Call(cmd, funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2061,20 +2061,20 @@ namespace Net.Client
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, millisecondsDelay, intercept, pars);
+            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(ushort funcAndCb, params object[] pars)
@@ -2086,25 +2086,25 @@ namespace Net.Client
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort funcAndCb, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+            return Call(funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
@@ -2112,12 +2112,12 @@ namespace Net.Client
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(cmd, funcAndCb, funcAndCb, millisecondsDelay, true, pars);
+            return Call(cmd, funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2125,13 +2125,13 @@ namespace Net.Client
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, millisecondsDelay, intercept, pars);
+            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
         }
 #endregion
 
@@ -2153,12 +2153,12 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(func, callbackFunc, millisecondsDelay, true, pars);
+            return Call(func, callbackFunc, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2166,13 +2166,13 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, intercept, pars);
+            return Call(NetCmd.CallRpc, func, callbackFunc, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
@@ -2181,12 +2181,12 @@ namespace Net.Client
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(cmd, func, callbackFunc, millisecondsDelay, true, pars);
+            return Call(cmd, func, callbackFunc, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2195,13 +2195,13 @@ namespace Net.Client
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, func, callbackFunc, (ushort)0, 0, millisecondsDelay, intercept, pars);
+            return Call(cmd, func, callbackFunc, (ushort)0, 0, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
@@ -2209,7 +2209,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, params object[] pars)
@@ -2222,12 +2222,12 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(func, callbackFunc, millisecondsDelay, true, pars);
+            return Call(func, callbackFunc, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2235,13 +2235,13 @@ namespace Net.Client
         /// </summary>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(NetCmd.CallRpc, func, callbackFunc, millisecondsDelay, intercept, pars);
+            return Call(NetCmd.CallRpc, func, callbackFunc, timeoutMilliseconds, intercept, pars);
         }
 
         /// <summary>
@@ -2250,12 +2250,12 @@ namespace Net.Client
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int timeoutMilliseconds, params object[] pars)
         {
-            return Call(cmd, func, callbackFunc, millisecondsDelay, true, pars);
+            return Call(cmd, func, callbackFunc, timeoutMilliseconds, true, pars);
         }
 
         /// <summary>
@@ -2264,17 +2264,17 @@ namespace Net.Client
         /// <param name="cmd"></param>
         /// <param name="func"></param>
         /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="millisecondsDelay">需要等待的时间,毫秒单位</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int millisecondsDelay, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, millisecondsDelay, intercept, pars);
+            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, timeoutMilliseconds, intercept, pars);
         }
 #endregion
 
-        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int millisecondsDelay, bool intercept, params object[] pars)
+        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort func1, ushort callbackFunc1, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
             if (func1 != 0)
                 SendRT(cmd, func1, pars);
@@ -2299,11 +2299,11 @@ namespace Net.Client
             model.intercept = intercept;
             model.tick = (uint)Environment.TickCount;
             body.TaskQueue.Enqueue(model);
-            if (millisecondsDelay == -1)
-                millisecondsDelay = int.MaxValue;
-            else if (millisecondsDelay == 0)
-                millisecondsDelay = 5000;
-            var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
+            if (timeoutMilliseconds == -1)
+                timeoutMilliseconds = int.MaxValue;
+            else if (timeoutMilliseconds == 0)
+                timeoutMilliseconds = 5000;
+            var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
             while ((uint)Environment.TickCount < timeout)
             {
                 await UniTask.Yield();
@@ -2373,7 +2373,7 @@ namespace Net.Client
 
 #region 异步回调方式
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
@@ -2385,49 +2385,49 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(string func, string funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
+        public virtual void SendRT(string func, string funcCB, Delegate callback, int timeoutMilliseconds, params object[] pars)
         {
-            SendRT(func, funcCB, callback, millisecondsDelay, null, pars);
+            SendRT(func, funcCB, callback, timeoutMilliseconds, null, pars);
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="outTimeAct">异步超时调用</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
+        public virtual void SendRT(string func, string funcCB, Delegate callback, int timeoutMilliseconds, Action outTimeAct, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, outTimeAct, pars);
+            SendRT(NetCmd.CallRpc, func, funcCB, callback, timeoutMilliseconds, outTimeAct, pars);
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="cmd">指令</param>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="outTimeAct">异步超时调用</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(byte cmd, string func, string funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
+        public virtual void SendRT(byte cmd, string func, string funcCB, Delegate callback, int timeoutMilliseconds, Action outTimeAct, params object[] pars)
         {
-            SendRT(new RPCModel(cmd, func, pars, true, true), funcCB, 0, callback, millisecondsDelay, outTimeAct);
+            SendRT(new RPCModel(cmd, func, pars, true, true), funcCB, 0, callback, timeoutMilliseconds, outTimeAct);
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
@@ -2439,48 +2439,48 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, params object[] pars)
+        public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, int timeoutMilliseconds, params object[] pars)
         {
-            SendRT(func, funcCB, callback, millisecondsDelay, null, pars);
+            SendRT(func, funcCB, callback, timeoutMilliseconds, null, pars);
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="outTimeAct">异步超时调用</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
+        public virtual void SendRT(ushort func, ushort funcCB, Delegate callback, int timeoutMilliseconds, Action outTimeAct, params object[] pars)
         {
-            SendRT(NetCmd.CallRpc, func, funcCB, callback, millisecondsDelay, outTimeAct, pars);
+            SendRT(NetCmd.CallRpc, func, funcCB, callback, timeoutMilliseconds, outTimeAct, pars);
         }
 
         /// <summary>
-        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
+        /// 发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
         /// </summary>
         /// <param name="cmd">指令</param>
         /// <param name="func">服务器函数名</param>
         /// <param name="funcCB">服务器回调函数名</param>
         /// <param name="callback">回调接收委托</param>
-        /// <param name="millisecondsDelay">异步时间</param>
+        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
         /// <param name="outTimeAct">异步超时调用</param>
         /// <param name="pars">远程参数</param>
-        public virtual void SendRT(byte cmd, ushort func, ushort funcCB, Delegate callback, int millisecondsDelay, Action outTimeAct, params object[] pars)
+        public virtual void SendRT(byte cmd, ushort func, ushort funcCB, Delegate callback, int timeoutMilliseconds, Action outTimeAct, params object[] pars)
         {
-            SendRT(new RPCModel(cmd, null, pars, true, true, func), null, funcCB, callback, millisecondsDelay, outTimeAct);
+            SendRT(new RPCModel(cmd, null, pars, true, true, func), null, funcCB, callback, timeoutMilliseconds, outTimeAct);
         }
 
-        private async UniTaskVoid SendRT(RPCModel model, string cb, ushort cb1, Delegate callback, int millisecondsDelay, Action outTimeAct)
+        private async UniTaskVoid SendRT(RPCModel model, string cb, ushort cb1, Delegate callback, int timeoutMilliseconds, Action outTimeAct)
         {
             if (!Connected)
                 return;
@@ -2507,11 +2507,11 @@ namespace Net.Client
             body.TaskQueue.Enqueue(model1);
             if (outTimeAct == null)
                 return;
-            if (millisecondsDelay == -1)
-                millisecondsDelay = int.MaxValue;
-            else if (millisecondsDelay == 0)
-                millisecondsDelay = 5000;
-            var timeout = (uint)Environment.TickCount + (uint)millisecondsDelay;
+            if (timeoutMilliseconds == -1)
+                timeoutMilliseconds = int.MaxValue;
+            else if (timeoutMilliseconds == 0)
+                timeoutMilliseconds = 5000;
+            var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
             while ((uint)Environment.TickCount < timeout)
             {
                 await UniTask.Yield();
