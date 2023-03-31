@@ -2094,7 +2094,7 @@ namespace Net.Server
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
             foreach (var item in threads)
-                item.Value.Abort();
+                item.Value.Interrupt();
             threads.Clear();
             RcvQueues.Clear();
             OnStartingHandle -= OnStarting;

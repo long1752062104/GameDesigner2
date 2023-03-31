@@ -70,12 +70,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="GameDesigner\GameDesigner.asmdef" />
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\arm64-v8a\libudxapi.so" />
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi-v7a\libudxapi.so" />
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi\libudxapi.so" />
     <None Include="GameDesigner\Network\Web~\UnityWebSocket\Plugins\WebGL\WebSocket.jslib" />
-    <None Include="GameDesigner\package.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

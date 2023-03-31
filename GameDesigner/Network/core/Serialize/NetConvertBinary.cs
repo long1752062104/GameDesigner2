@@ -302,11 +302,10 @@
                 SetBit(ref bits[bitPos], bitInx1 + 1, true);
                 if (recordType)
                 {
-                    var type = arr1.GetType();
-                    stream.Write(TypeToIndex(type));
-                    WriteObject(stream, type, arr1, recordType, ignore);
+                    itemType = arr1.GetType();
+                    stream.Write(TypeToIndex(itemType));
                 }
-                else WriteObject(stream, itemType, arr1, recordType, ignore);
+                WriteObject(stream, itemType, arr1, recordType, ignore);
             }
             int strLen = stream.Position;
             stream.Position = strPos;
@@ -331,11 +330,8 @@
                 if (!GetBit(bits[bitPos], (byte)(++bitInx1)))
                     continue;
                 if (recordType)
-                {
-                    var type = IndexToType(segment.ReadUInt16());
-                    array[i] = ReadObject(segment, type, recordType, ignore);
-                }
-                else array[i] = ReadObject(segment, itemType, recordType, ignore);
+                    itemType = IndexToType(segment.ReadUInt16());
+                array[i] = ReadObject(segment, itemType, recordType, ignore);
             }
         }
 
@@ -937,7 +933,17 @@
                             {
                                 segment.WriteValue(enumerator.Value);
                             }
-                            else WriteObject(segment, member.ItemType1, enumerator.Value, recordType, ignore);
+                            else 
+                            {
+                                Type memberType;
+                                if (recordType)
+                                {
+                                    memberType = enumerator.Value.GetType();
+                                    segment.Write(TypeToIndex(memberType));
+                                }
+                                else memberType = member.ItemType1;
+                                WriteObject(segment, memberType, enumerator.Value, recordType, ignore);
+                            }
                         }
                     }
                 }
@@ -1146,7 +1152,7 @@
                         else 
                         {
                             var array1 = Activator.CreateInstance(member.Type);
-                            var addMethod = member.Type.GetMethod("Add", new Type[] {  member.ItemType });
+                            var addMethod = member.Type.GetMethod("Add", new Type[] { member.ItemType });
                             foreach (var item in array)
                             {
                                 addMethod.Invoke(array1, new object[] { item });
@@ -1174,7 +1180,15 @@
                             {
                                 value = segment.ReadValue(member.ItemType1);
                             }
-                            else value = ReadObject(segment, member.ItemType1, recordType, ignore);
+                            else
+                            {
+                                Type memberType;
+                                if (recordType)
+                                    memberType = IndexToType(segment.ReadUInt16());
+                                else
+                                    memberType = member.ItemType1;
+                                value = ReadObject(segment, memberType, recordType, ignore);
+                            }
                             dict.Add(key, value);
                         }
                         member.SetValue(ref obj, dict);
