@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
+using ErrorEventArgs = Newtonsoft_X.Json.Serialization.ErrorEventArgs;
 
 namespace Newtonsoft_X.Json
 {
