@@ -7,7 +7,7 @@
     /// 连接行为--用户可以继承此类添加组件 2017年12月6日(星期三)
     /// </summary>
     [Serializable]
-    public class TransitionBehaviour : IBehaviour
+    public class TransitionBehaviour : BehaviourBase
     {
         [HideField]
         public int transitionID;

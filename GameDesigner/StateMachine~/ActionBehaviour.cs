@@ -7,7 +7,7 @@
     /// 动作行为--用户添加的组件 v2017/12/6
     /// </summary>
     [Serializable]
-    public class ActionBehaviour : IBehaviour
+    public class ActionBehaviour : BehaviourBase
     {
         /// <summary>
         /// 当进入状态

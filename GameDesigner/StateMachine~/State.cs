@@ -112,15 +112,7 @@ namespace GameDesigner
         /// <summary>
         /// 当前状态动作
         /// </summary>
-        public StateAction Action
-        {
-            get
-            {
-                if (actionIndex >= actions.Count)
-                    actionIndex = 0;
-                return actions[actionIndex];
-            }
-        }
+        public StateAction Action => actions[actionIndex % actions.Count];
 
         /// <summary>
         /// 进入状态
@@ -130,7 +122,7 @@ namespace GameDesigner
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
                 actionIndex = Random.Range(0, actions.Count);
             else
-                actionIndex = (actionIndex < actions.Count - 1) ? actionIndex + 1 : 0;
+                actionIndex++;
             foreach (var behaviour in Action.behaviours) //当子动作的动画开始进入时调用
                 if (behaviour.Active)
                     behaviour.OnEnter(Action);
@@ -158,7 +150,8 @@ namespace GameDesigner
             switch (stateMachine.animMode)
             {
                 case AnimationMode.Animation:
-                    Action.animTime = stateMachine.animation[Action.clipName].time / stateMachine.animation[Action.clipName].length * 100f;
+                    var animState = stateMachine.animation[Action.clipName];
+                    Action.animTime = animState.time / animState.length * 100f;
                     isPlaying = stateMachine.animation.isPlaying;
                     break;
                 case AnimationMode.Animator:
@@ -176,7 +169,7 @@ namespace GameDesigner
                 {
                     OnExitState();//退出函数
                     OnActionExit();
-                    if (stateMachine.stateID == ID)//如果在动作行为里面有却换状态代码, 则不需要重载函数了, 否则重载当前状态
+                    if (stateMachine.stateID == ID)//如果在动作行为里面有切换状态代码, 则不需要重载函数了, 否则重载当前状态
                         OnEnterState();//重载进入函数
                     return;
                 }

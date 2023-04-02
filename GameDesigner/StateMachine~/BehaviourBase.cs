@@ -265,7 +265,7 @@
     /// 状态行为基类 2019.3.3
     /// </summary>
     [Serializable]
-    public class IBehaviour
+    public class BehaviourBase
     {
         [HideField]
         public string name;
@@ -321,36 +321,36 @@
             if (code == System.TypeCode.Object)
             {
                 if (field.FieldType.IsSubclassOf(typeof(Object)) | field.FieldType == typeof(Object))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Object, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Object, this, field));
                 else if (field.FieldType == typeof(Vector2))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Vector2, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector2, this, field));
                 else if (field.FieldType == typeof(Vector3))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Vector3, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector3, this, field));
                 else if (field.FieldType == typeof(Vector4))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Vector4, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector4, this, field));
                 else if (field.FieldType == typeof(Quaternion))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Quaternion, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Quaternion, this, field));
                 else if (field.FieldType == typeof(Rect))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Rect, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Rect, this, field));
                 else if (field.FieldType == typeof(Color))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Color, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color, this, field));
                 else if (field.FieldType == typeof(Color32))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Color32, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color32, this, field));
                 else if (field.FieldType == typeof(AnimationCurve))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.AnimationCurve, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.AnimationCurve, this, field));
                 else if (field.FieldType.IsGenericType)
                 {
                     var gta = field.FieldType.GenericTypeArguments;
                     if (gta.Length > 1)
                         return;
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.GenericType, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.GenericType, this, field));
                 }
                 else if (field.FieldType.IsArray)
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Array, this, field));
+                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Array, this, field));
             }
             else if (field.FieldType.IsEnum)
-                metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, TypeCode.Enum, this, field));
-            else metadatas.Add(new Metadata(field.Name, field.FieldType.FullName, (TypeCode)code, this, field));
+                metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Enum, this, field));
+            else metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), (TypeCode)code, this, field));
         }
 
         public void Reload(Type type, StateMachine stateMachine, List<Metadata> metadatas)

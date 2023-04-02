@@ -44,7 +44,7 @@
             }
             if (stateMachine.GetComponentInParent<StateManager>() == null)//当使用本地公用状态机时
             {
-                StateMachine sm = Instantiate(stateMachine, transform);
+                var sm = Instantiate(stateMachine, transform);
                 sm.name = stateMachine.name;
                 sm.transform.localPosition = Vector3.zero;
                 if (sm.animation == null)
@@ -102,10 +102,10 @@
         {
             if (state.actionSystem)
                 state.OnUpdateState();
-            for (int i = 0; i < state.behaviours.Count; ++i) //用户自定义脚本行为
+            for (int i = 0; i < state.behaviours.Count; i++) //用户自定义脚本行为
                 if (state.behaviours[i].Active)
                     state.behaviours[i].OnUpdate();
-            for (int i = 0; i < state.transitions.Count; ++i)
+            for (int i = 0; i < state.transitions.Count; i++)
                 OnTransition(state.transitions[i]);
         }
 
@@ -138,7 +138,7 @@
         /// <param name="state">要退出的状态</param>
         public void OnStateTransitionExit(State state)
         {
-            foreach (Transition transition in state.transitions)
+            foreach (var transition in state.transitions)
                 if (transition.model == TransitionModel.ExitTime)
                     transition.time = 0;
         }
@@ -150,11 +150,11 @@
         /// <param name="enterState">要进入的状态</param>
         public void EnterNextState(State currState, State enterState)
         {
-            foreach (StateBehaviour behaviour in currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
+            foreach (var behaviour in currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
                 if (behaviour.Active)
                     behaviour.OnExit();
             OnStateTransitionExit(currState);
-            foreach (StateBehaviour behaviour in enterState.behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
+            foreach (var behaviour in enterState.behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
                 if (behaviour.Active)
                     behaviour.OnEnter();
             if (currState.actionSystem)
@@ -170,11 +170,11 @@
         /// <param name="nextStateIndex">下一个状态的ID</param>
 		public void EnterNextState(int nextStateIndex)
         {
-            foreach (StateBehaviour behaviour in stateMachine.currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
+            foreach (var behaviour in stateMachine.currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
                 if (behaviour.Active)
                     behaviour.OnExit();
             OnStateTransitionExit(stateMachine.states[nextStateIndex]);
-            foreach (StateBehaviour behaviour in stateMachine.states[nextStateIndex].behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
+            foreach (var behaviour in stateMachine.states[nextStateIndex].behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
                 if (behaviour.Active)
                     behaviour.OnEnter();
             if (stateMachine.currState.actionSystem)

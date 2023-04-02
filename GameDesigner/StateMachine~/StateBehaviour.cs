@@ -7,7 +7,7 @@ namespace GameDesigner
     /// 状态行为脚本 v2017/12/6 - 2020.6.7
     /// </summary>
     [Serializable]
-    public class StateBehaviour : IBehaviour
+    public class StateBehaviour : BehaviourBase
     {
         /// <summary>
         /// 当状态进入时
