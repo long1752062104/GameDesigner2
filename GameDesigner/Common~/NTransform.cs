@@ -150,8 +150,8 @@
 
         public void LookAt(Vector3 position)
         {
-            Vector3 v = (position - this.position).normalized;
-            forward = v;
+            var normalized = (position - this.position).normalized;
+            forward = normalized;
         }
     }
 }

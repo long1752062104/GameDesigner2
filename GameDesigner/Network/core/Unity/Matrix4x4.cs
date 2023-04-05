@@ -326,46 +326,29 @@ namespace Net
         // Token: 0x060048C6 RID: 18630 RVA: 0x0007CF0C File Offset: 0x0007B10C
         public static Matrix4x4 Scale(Vector3 vector)
         {
-            Matrix4x4 result;
-            result.m00 = vector.x;
-            result.m01 = 0f;
-            result.m02 = 0f;
-            result.m03 = 0f;
-            result.m10 = 0f;
-            result.m11 = vector.y;
-            result.m12 = 0f;
-            result.m13 = 0f;
-            result.m20 = 0f;
-            result.m21 = 0f;
-            result.m22 = vector.z;
-            result.m23 = 0f;
-            result.m30 = 0f;
-            result.m31 = 0f;
-            result.m32 = 0f;
-            result.m33 = 1f;
+            var result = new Matrix4x4() 
+            {
+                m00 = vector.x,
+                m11 = vector.y,
+                m22 = vector.z,
+                m33 = 1f
+            };
             return result;
         }
 
         // Token: 0x060048C7 RID: 18631 RVA: 0x0007CFE8 File Offset: 0x0007B1E8
         public static Matrix4x4 Translate(Vector3 vector)
         {
-            Matrix4x4 result;
-            result.m00 = 1f;
-            result.m01 = 0f;
-            result.m02 = 0f;
-            result.m03 = vector.x;
-            result.m10 = 0f;
-            result.m11 = 1f;
-            result.m12 = 0f;
-            result.m13 = vector.y;
-            result.m20 = 0f;
-            result.m21 = 0f;
-            result.m22 = 1f;
-            result.m23 = vector.z;
-            result.m30 = 0f;
-            result.m31 = 0f;
-            result.m32 = 0f;
-            result.m33 = 1f;
+            var result = new Matrix4x4()
+            {
+                m00 = 1f,
+                m03 = vector.x,
+                m11 = 1f,
+                m13 = vector.y,
+                m22 = 1f,
+                m23 = vector.z,
+                m33 = 1f
+            };
             return result;
         }
 

@@ -100,7 +100,7 @@
         /// </summary>
         public Brush ErrorColor = Brushes.Red;
 
-        public FormDebug(ListBox listBox, Brush backgroundColor) 
+        public FormDebug(ListBox listBox, Brush backgroundColor = null) 
         {
             if (backgroundColor == null)
                 backgroundColor = Brushes.Black;
