@@ -115,7 +115,7 @@
         /// <param name="transition">要执行的连接线条</param>
         public void OnTransition(Transition transition)
         {
-            for (int i = 0; i < transition.behaviours.Count; ++i)
+            for (int i = 0; i < transition.behaviours.Count; i++)
                 if (transition.behaviours[i].Active)
                     transition.behaviours[i].OnUpdate(ref transition.isEnterNextState);
             if (transition.model == TransitionModel.ExitTime)
@@ -170,18 +170,7 @@
         /// <param name="nextStateIndex">下一个状态的ID</param>
 		public void EnterNextState(int nextStateIndex)
         {
-            foreach (var behaviour in stateMachine.currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
-                if (behaviour.Active)
-                    behaviour.OnExit();
-            OnStateTransitionExit(stateMachine.states[nextStateIndex]);
-            foreach (var behaviour in stateMachine.states[nextStateIndex].behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
-                if (behaviour.Active)
-                    behaviour.OnEnter();
-            if (stateMachine.currState.actionSystem)
-                stateMachine.currState.OnExitState();
-            if (stateMachine.states[nextStateIndex].actionSystem)
-                stateMachine.states[nextStateIndex].OnEnterState();
-            stateMachine.stateID = nextStateIndex;
+            EnterNextState(stateMachine.currState, stateMachine.states[nextStateIndex]);
         }
 
         /// <summary>

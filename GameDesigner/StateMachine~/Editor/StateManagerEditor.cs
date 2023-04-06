@@ -171,44 +171,13 @@ namespace GameDesigner
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            try
-                            {
-                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[25], "clipIndex"), act.clipIndex, Array.ConvertAll(s.stateMachine.clipNames.ToArray(), new Converter<string, GUIContent>(delegate (string input)
-                                { return new GUIContent(input); })));
+                            try {
+                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[25], "clipIndex"), act.clipIndex, Array.ConvertAll(s.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
                                 act.clipName = s.stateMachine.clipNames[act.clipIndex];
                             } catch { }
-                            //s.actions[a].isPlayAudio = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[26], "isPlayAudio"), s.actions[a].isPlayAudio);
-                            //if (s.actions[a].isPlayAudio)
-                            //{
-                            //    act.audioModel = (AudioMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[27], "audioModel"), (int)act.audioModel,
-                            //    new GUIContent[]{ new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[28],"EnterPlayAudio") ,
-                            //        new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[29],"AnimEventPlayAudio") ,
-                            //        new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[30],"ExitPlayAudio") }
-                            //    );
-                            //    EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("audioClips"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[31], "audioClips"), true);
-                            //}
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[32], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[33], "animTimeMax"));
-                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animEventTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "animEventTime"));
-                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectSpwan"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[35], "effectSpwan"));
-                            //act.activeMode = (ActiveMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[36], "activeModel"), (int)act.activeMode, new GUIContent[]{
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[37],"Instantiate"),
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[38],"SetActive"),
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[115],"Active")
-                            //});
-                            //if (act.activeMode == ActiveMode.ObjectPool)
-                            //    EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("activeObjs"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[39], "activeObjs"), true);
-                            //act.spwanmode = (SpwanMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[40], "spwanmode"), (int)act.spwanmode, new GUIContent[]{
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[116],"none"),
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[41],"TransformPoint"),
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[42],"SetParent"),
-                            //    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[43],"localPosition")
-                            //});
-                            //if (act.spwanmode != SpwanMode.localPosition & act.spwanmode != SpwanMode.None)
-                            //    act.parent = EditorGUILayout.ObjectField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[44], "parent"), act.parent, typeof(Transform), true) as Transform;
-                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectPostion"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[45], "effectPostion"));
-                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("effectEulerAngles"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[113], "effectEulerAngles"));
-                            //EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("spwanTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[46], "spwanTime"));
+                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("rewind"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "rewind"));
                             for (int i = 0; i < act.behaviours.Count; ++i)
                             {
                                 EditorGUILayout.BeginHorizontal();

@@ -119,24 +119,25 @@ namespace GameDesigner
         /// </summary>
 		public void OnEnterState()
         {
+            var action = Action;
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
                 actionIndex = Random.Range(0, actions.Count);
             else
                 actionIndex++;
-            foreach (var behaviour in Action.behaviours) //当子动作的动画开始进入时调用
+            foreach (var behaviour in action.behaviours) //当子动作的动画开始进入时调用
                 if (behaviour.Active)
                     behaviour.OnEnter(Action);
             switch (stateMachine.animMode)
             {
                 case AnimationMode.Animation:
-                    stateMachine.animation[Action.clipName].speed = animSpeed;
-                    //stateMachine.animation.Rewind(Action.clipName);
-                    stateMachine.animation.Play(Action.clipName);
+                    stateMachine.animation[action.clipName].speed = animSpeed;
+                    if (action.rewind) stateMachine.animation.Rewind(action.clipName);
+                    stateMachine.animation.Play(action.clipName);
                     break;
                 case AnimationMode.Animator:
                     stateMachine.animator.speed = animSpeed;
-                    //stateMachine.animator.Rebind();
-                    stateMachine.animator.Play(Action.clipName);
+                    if(action.rewind) stateMachine.animator.Rebind();
+                    stateMachine.animator.Play(action.clipName);
                     break;
             }
         }
@@ -147,18 +148,19 @@ namespace GameDesigner
 		public void OnUpdateState()
         {
             bool isPlaying = true;
+            var action = Action;
             switch (stateMachine.animMode)
             {
                 case AnimationMode.Animation:
-                    var animState = stateMachine.animation[Action.clipName];
-                    Action.animTime = animState.time / animState.length * 100f;
+                    var animState = stateMachine.animation[action.clipName];
+                    action.animTime = animState.time / animState.length * 100f;
                     isPlaying = stateMachine.animation.isPlaying;
                     break;
                 case AnimationMode.Animator:
-                    Action.animTime = stateMachine.animator.GetCurrentAnimatorStateInfo(0).normalizedTime / 1f * 100f;
+                    action.animTime = stateMachine.animator.GetCurrentAnimatorStateInfo(0).normalizedTime / 1f * 100f;
                     break;
             }
-            if (Action.animTime >= Action.animTimeMax | !isPlaying)
+            if (action.animTime >= action.animTimeMax | !isPlaying)
             {
                 if (isExitState & transitions.Count > 0)
                 {
@@ -175,9 +177,9 @@ namespace GameDesigner
                 }
                 else OnStop();
             }
-            foreach (var behaviour in Action.behaviours)
+            foreach (var behaviour in action.behaviours)
                 if (behaviour.Active)
-                    behaviour.OnUpdate(Action);
+                    behaviour.OnUpdate(action);
         }
 
         /// <summary>

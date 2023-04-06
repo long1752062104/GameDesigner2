@@ -24,6 +24,10 @@ namespace GameDesigner
         /// 动画结束时间
         /// </summary>
 		public float animTimeMax = 100;
+        /// <summary>
+        /// 动画倒入, 当在一帧内调用了多次Play方法，只会应用前一次调用的动画，最后要播放的动画没有真正被播放出来的问题
+        /// </summary>
+        public bool rewind;
 
         /// <summary>
         /// ARPG动作行为
