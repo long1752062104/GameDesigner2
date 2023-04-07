@@ -89,6 +89,10 @@ public class ImportSettingWindow : EditorWindow
         path = "Assets/Plugins/GameDesigner/Common";
         DrawGUI(path, "Common", "Common~", "Common");
         
+        EditorGUILayout.HelpBox("MMORPG模块 用于MMORPG设计怪物点, 巡逻点, 地图数据等", MessageType.Info);
+        path = "Assets/Plugins/GameDesigner/MMORPG";
+        DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG");
+
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/AOI";
         DrawGUI(path, "AOI", "AOI~", "AOI");

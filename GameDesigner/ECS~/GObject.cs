@@ -38,7 +38,7 @@ namespace ECS
                 entity.OnDestroy();
                 while (entity.components.Count > 0)
                 {
-                    Component component1 = entity.components[0];
+                    var component1 = entity.components[0];
                     entity.components.RemoveAt(0);
                     component1.OnDestroy();
                     if (reuse) entity.system.Push(component1);
@@ -50,9 +50,9 @@ namespace ECS
 
         public T FindObjectOfType<T>() where T : GObject
         {
-            Type type = typeof(T);
-            var items = system.entities.ToArray();
-            for (int i = 0; i < items.Length; i++)
+            var type = typeof(T);
+            var items = system.entities;
+            for (int i = 0; i < items.Count; i++)
             {
                 if (items[i].GetType() == type)
                     return items[i] as T;
@@ -65,10 +65,10 @@ namespace ECS
 
         public T[] FindObjectsOfType<T>() where T : GObject
         {
-            Type type = typeof(T);
-            var items = system.entities.ToArray();
-            List<T> objs = new List<T>();
-            for (int i = 0; i < items.Length; i++)
+            var type = typeof(T);
+            var items = system.entities;
+            var objs = new List<T>();
+            for (int i = 0; i < items.Count; i++)
             {
                 if (items[i].GetType() == type)
                     objs.Add(items[i] as T);

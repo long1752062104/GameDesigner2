@@ -17,7 +17,7 @@ namespace ECS
         /// </summary>
         public static GSystem Instance = new GSystem();
         private readonly MyDictionary<int, Stack<GObject>> objectPool = new MyDictionary<int, Stack<GObject>>();
-        internal readonly ArrayPool<Entity> entities = new ArrayPool<Entity>();
+        internal readonly FastList<Entity> entities = new FastList<Entity>();
         private bool isDispose;
 
         /// <summary>
@@ -28,12 +28,13 @@ namespace ECS
         {
             entity.system = this;
             entity.Awake();
-            entities.Add(entity);
+            entities.Add(entity, out var index);
+            entity.Index = index;
         }
 
         internal void RemoveEntity(Entity entity)
         {
-            entities.Remove(entity);
+            entities.RemoveAt(entity.Index);
         }
 
         /// <summary>
@@ -125,8 +126,6 @@ namespace ECS
             {
                 for (int i = 0; i < count; i++)
                 {
-                    if (!entities.buckets[i])
-                        continue;
                     if (!entities[i].inactive)
                         continue;
                     entities[i].Execute();
@@ -136,8 +135,6 @@ namespace ECS
             {
                 Parallel.For(0, count, i =>
                 {
-                    if (!entities.buckets[i])
-                        return;
                     if (!entities[i].inactive)
                         return;
                     entities[i].Execute();

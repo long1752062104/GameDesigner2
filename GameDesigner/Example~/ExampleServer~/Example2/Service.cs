@@ -1,6 +1,7 @@
 ﻿namespace Example2
 {
     using Net.Event;
+    using Net.MMORPG;
     using Net.Server;
     using Net.Share;
     using System;
@@ -23,7 +24,6 @@
         protected override void OnStartupCompleted()
         {
             base.OnStartupCompleted();
-            RemoveScene(MainSceneName, false);
 #if !UNITY_EDITOR
             var path = AppDomain.CurrentDomain.BaseDirectory + "/Data/";
 #else
@@ -32,9 +32,9 @@
             var files = Directory.GetFiles(path, "*.sceneData");
             foreach (var flie in files)
             {
-                var sceneData = SceneData.ReadData(flie);
-                var scene = CreateScene(sceneData.name);
-                scene.sceneData = sceneData;
+                var mapData = MapData.ReadData(flie);
+                var scene = CreateScene(mapData.name);
+                scene.mapData = mapData;
                 scene.Init();
                 NDebug.Log("创建地图:" + scene.Name);
             }
@@ -48,8 +48,7 @@
         /// <returns></returns>
         protected override Scene OnAddDefaultScene()
         {
-            //我们创建了一个名为 "主场景" 的一个场景对象, 并且可以容纳1000的场景
-            return new Scene() { Name = "主场景", sceneCapacity = 1000 };
+            return null; //我们不添加默认场景
         }
 
         /// <summary>

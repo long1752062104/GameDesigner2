@@ -57,7 +57,6 @@
     <Compile Include="Example2\DB\UserinfoData.cs" />
     <Compile Include="Example2\Player.cs" />
     <Compile Include="Example2\Scene.cs" />
-    <Compile Include="Example2\SceneData.cs" />
     <Compile Include="Example2\Service.cs" />
     <Compile Include="Example3\Player.cs" />
     <Compile Include="Example3\Scene.cs" />

@@ -1,6 +1,7 @@
 ﻿using ECS;
 using Net;
 using Net.Component;
+using Net.MMORPG;
 using Net.Server;
 using Net.Share;
 using Net.System;
@@ -12,26 +13,26 @@ namespace Example2
     /// </summary>
     public class Scene : NetScene<Player>
     {
-        internal SceneData sceneData = new SceneData();
+        internal MapData mapData = new MapData();
         internal readonly MyDictionary<int, AIMonster> monsters = new MyDictionary<int, AIMonster>();
         internal GSystem ecsSystem = new GSystem();
 
         public void Init()
         {
             int id = 1;
-            foreach (var item in sceneData.monsterPoints)
+            foreach (var item in mapData.monsterPoints)
             {
                 if (item.monsters == null)
                     continue;
-                RoamingPath1 roamingPath = item.roamingPath;
+                var patrolPath = item.patrolPath;
                 for (int i = 0; i < item.monsters.Length; i++)
                 {
-                    var point = roamingPath.waypointsList[RandomHelper.Range(0, roamingPath.waypointsList.Count)];
+                    var point = patrolPath.waypoints[RandomHelper.Range(0, patrolPath.waypoints.Count)];
                     var monster1 = ecsSystem.Create<Entity>().AddComponent<AIMonster>();
                     monster1.transform = new NTransform();
                     monster1.transform.position = point;
                     monster1.transform.rotation = Quaternion.identity;
-                    monster1.roamingPath = roamingPath;
+                    monster1.patrolPath = patrolPath;
                     monster1.scene = this;
                     monster1.id = id++;
                     monster1.mid = item.monsters[i].id;

@@ -97,7 +97,6 @@
     <Compile Include="GameDesigner\Common~\NTransform.cs" />
     <Compile Include="GameDesigner\Common~\RoomData.cs" />
     <Compile Include="GameDesigner\Common~\PropertyObserver.cs" />
-    <Compile Include="GameDesigner\ECS~\ArrayPool.cs" />
     <Compile Include="GameDesigner\ECS~\Component.cs" />
     <Compile Include="GameDesigner\ECS~\Entity.cs" />
     <Compile Include="GameDesigner\ECS~\GObject.cs" />
@@ -110,6 +109,15 @@
     <Compile Include="GameDesigner\Helper\FilterTextHelper.cs" />
     <Compile Include="GameDesigner\Helper\PersistHelper.cs" />
     <Compile Include="GameDesigner\Helper\StringHelper.cs" />
+    <Compile Include="GameDesigner\MMORPG~\Editor\LineOfSightEdit.cs" />
+    <Compile Include="GameDesigner\MMORPG~\Editor\RoamingPathEdit.cs" />
+    <Compile Include="GameDesigner\MMORPG~\LineOfSight.cs" />
+    <Compile Include="GameDesigner\MMORPG~\MapData.cs" />
+    <Compile Include="GameDesigner\MMORPG~\MapMonsterPoint.cs" />
+    <Compile Include="GameDesigner\MMORPG~\MonsterData.cs" />
+    <Compile Include="GameDesigner\MMORPG~\MonsterPoint.cs" />
+    <Compile Include="GameDesigner\MMORPG~\PatrolPath.cs" />
+    <Compile Include="GameDesigner\MMORPG~\RoamingPath.cs" />
     <Compile Include="GameDesigner\Network\Adapter\CallSiteRpcAdapter.cs" />
     <Compile Include="GameDesigner\Network\Adapter\ListenerAdapter.cs" />
     <Compile Include="GameDesigner\Network\Adapter\SerializeAdapter.cs" />

@@ -2129,6 +2129,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stateMachine: {fileID: 5536536416161697124}
+  initMode: 0
 --- !u!136 &1340070763303181046
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2168,11 +2169,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 4615171339904707045}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a48cced2c5daec54ca171d7bcc560745, type: 3}
+  m_Script: {fileID: 11500000, guid: 4bc71154e3969ea439bc48937665983f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   viewAngle: 120
   detectionRadius: 3
+  offset:
+    x: 0
+    y: 1
+    z: 0
 --- !u!1 &5536536416161697127
 GameObject:
   m_ObjectHideFlags: 0
@@ -2251,7 +2256,6 @@ MonoBehaviour:
     animLoop: 1
     animPlayMode: 0
     actionIndex: 0
-    audioIndex: 0
     animSpeed: 1
     isExitState: 0
     DstStateID: 0
@@ -2259,21 +2263,8 @@ MonoBehaviour:
     - clipName: idle
       clipIndex: 11
       animTime: 0
-      animEventTime: 50
       animTimeMax: 100
-      eventEnter: 0
-      effectSpwan: {fileID: 0}
-      activeMode: 0
-      spwanTime: 1
-      activeObjs: []
-      spwanmode: 0
-      parent: {fileID: 0}
-      effectPostion: {x: 0, y: 1.5, z: 2}
-      effectEulerAngles: {x: 0, y: 0, z: 0}
-      isPlayAudio: 0
-      audioModel: 1
-      audioClips:
-      - {fileID: 0}
+      rewind: 0
       behaviours: []
       foldout: 1
       audiofoldout: 0
@@ -2306,7 +2297,7 @@ MonoBehaviour:
     transitions: []
     behaviours:
     - name: Example2.MonsterIdle
-      ID: 0
+      ID: 1
       show: 1
       Active: 1
       metadatas: []
@@ -2315,7 +2306,6 @@ MonoBehaviour:
     animLoop: 1
     animPlayMode: 0
     actionIndex: 0
-    audioIndex: 0
     animSpeed: 1
     isExitState: 0
     DstStateID: 0
@@ -2323,21 +2313,8 @@ MonoBehaviour:
     - clipName: walk
       clipIndex: 22
       animTime: 0
-      animEventTime: 50
       animTimeMax: 100
-      eventEnter: 0
-      effectSpwan: {fileID: 0}
-      activeMode: 0
-      spwanTime: 1
-      activeObjs: []
-      spwanmode: 0
-      parent: {fileID: 0}
-      effectPostion: {x: 0, y: 1.5, z: 2}
-      effectEulerAngles: {x: 0, y: 0, z: 0}
-      isPlayAudio: 0
-      audioModel: 1
-      audioClips:
-      - {fileID: 0}
+      rewind: 0
       behaviours: []
       foldout: 1
       audiofoldout: 0
@@ -2370,7 +2347,7 @@ MonoBehaviour:
     transitions: []
     behaviours:
     - name: Example2.MonsterRun
-      ID: 0
+      ID: 2
       show: 1
       Active: 1
       metadatas: []
@@ -2379,7 +2356,6 @@ MonoBehaviour:
     animLoop: 1
     animPlayMode: 0
     actionIndex: 0
-    audioIndex: 0
     animSpeed: 1
     isExitState: 0
     DstStateID: 0
@@ -2387,21 +2363,8 @@ MonoBehaviour:
     - clipName: run
       clipIndex: 14
       animTime: 0
-      animEventTime: 50
       animTimeMax: 100
-      eventEnter: 0
-      effectSpwan: {fileID: 0}
-      activeMode: 0
-      spwanTime: 1
-      activeObjs: []
-      spwanmode: 0
-      parent: {fileID: 0}
-      effectPostion: {x: 0, y: 1.5, z: 2}
-      effectEulerAngles: {x: 0, y: 0, z: 0}
-      isPlayAudio: 0
-      audioModel: 1
-      audioClips:
-      - {fileID: 0}
+      rewind: 0
       behaviours: []
       foldout: 1
       audiofoldout: 0
@@ -2464,7 +2427,6 @@ MonoBehaviour:
     animLoop: 0
     animPlayMode: 0
     actionIndex: 0
-    audioIndex: 0
     animSpeed: 1
     isExitState: 1
     DstStateID: 0
@@ -2472,24 +2434,11 @@ MonoBehaviour:
     - clipName: frenzied_slash
       clipIndex: 6
       animTime: 0
-      animEventTime: 50
       animTimeMax: 100
-      eventEnter: 0
-      effectSpwan: {fileID: 0}
-      activeMode: 0
-      spwanTime: 1
-      activeObjs: []
-      spwanmode: 0
-      parent: {fileID: 0}
-      effectPostion: {x: 0, y: 1.5, z: 2}
-      effectEulerAngles: {x: 0, y: 0, z: 0}
-      isPlayAudio: 1
-      audioModel: 1
-      audioClips:
-      - {fileID: 8300000, guid: 52fa067c25c5c401b811eb86d142287e, type: 3}
+      rewind: 0
       behaviours:
       - name: Example2.MonsterAttack
-        ID: 0
+        ID: 3
         show: 1
         Active: 1
         metadatas:
@@ -2525,6 +2474,102 @@ MonoBehaviour:
           values: []
           arraySize: 0
           foldout: 0
+        - name: animEventTime
+          type: 13
+          typeName: System.Single
+          data: 50
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: effectSpwan
+          type: 1
+          typeName: UnityEngine.GameObject
+          data: 
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: activeMode
+          type: 29
+          typeName: GameDesigner.ActiveMode
+          data: Instantiate
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: spwanTime
+          type: 13
+          typeName: System.Single
+          data: 1
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: activeObjs
+          type: 27
+          typeName: System.Collections.Generic.List`1[UnityEngine.GameObject]
+          data: 
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: spwanmode
+          type: 29
+          typeName: GameDesigner.SpwanMode
+          data: localPosition
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: parent
+          type: 1
+          typeName: UnityEngine.Transform
+          data: 
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: effectPostion
+          type: 20
+          typeName: UnityEngine.Vector3
+          data: 0,1.5,2
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: effectEulerAngles
+          type: 20
+          typeName: UnityEngine.Vector3
+          data: 0,0,0
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: isPlayAudio
+          type: 3
+          typeName: System.Boolean
+          data: False
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: audioModel
+          type: 29
+          typeName: GameDesigner.AudioMode
+          data: AnimEvent
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
+        - name: audioClips
+          type: 27
+          typeName: System.Collections.Generic.List`1[UnityEngine.AudioClip]
+          data: 
+          Value: {fileID: 0}
+          values: []
+          arraySize: 0
+          foldout: 0
         stateMachine: {fileID: 5536536416161697124}
       foldout: 1
       audiofoldout: 0
@@ -2557,7 +2602,7 @@ MonoBehaviour:
     transitions: []
     behaviours:
     - name: Example2.MonsterDie
-      ID: 0
+      ID: 4
       show: 1
       Active: 1
       metadatas: []
@@ -2566,7 +2611,6 @@ MonoBehaviour:
     animLoop: 0
     animPlayMode: 0
     actionIndex: 0
-    audioIndex: 0
     animSpeed: 1
     isExitState: 0
     DstStateID: 0
@@ -2574,21 +2618,8 @@ MonoBehaviour:
     - clipName: die
       clipIndex: 5
       animTime: 0
-      animEventTime: 50
       animTimeMax: 100
-      eventEnter: 0
-      effectSpwan: {fileID: 0}
-      activeMode: 0
-      spwanTime: 1
-      activeObjs: []
-      spwanmode: 0
-      parent: {fileID: 0}
-      effectPostion: {x: 0, y: 1.5, z: 2}
-      effectEulerAngles: {x: 0, y: 0, z: 0}
-      isPlayAudio: 0
-      audioModel: 1
-      audioClips:
-      - {fileID: 0}
+      rewind: 0
       behaviours: []
       foldout: 1
       audiofoldout: 0

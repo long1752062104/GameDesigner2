@@ -6,7 +6,7 @@ namespace ECS
     /// <summary>
     /// ecs实体类, 实体类管理组件的集合 当不使用的时候会丢入system对象池, 给之后创建实体时再次复用
     /// </summary>
-    public class Entity : GObject, IIndex
+    public class Entity : GObject
     {
         internal List<Component> components = new List<Component>();
         internal List<IUpdate> updates = new List<IUpdate>();
@@ -14,11 +14,10 @@ namespace ECS
         public int Index { get; set; } = -1;
 
         /// <summary>
-        /// 创建实体, 默认是GSystem的单例
+        /// 需要通过GSystem.Create创建
         /// </summary>
         public Entity()
         {
-            system = GSystem.Instance;
         }
 
         internal void Execute()
@@ -79,7 +78,7 @@ namespace ECS
 
         public T[] GetComponents<T>() where T : Component
         {
-            List<T> ts = new List<T>();
+            var ts = new List<T>();
             for (int i = 0; i < components.Count; i++)
             {
                 if (components[i] is T t)
@@ -90,7 +89,7 @@ namespace ECS
 
         public Component[] GetComponents(Type comType)
         {
-            List<Component> ts = new List<Component>();
+            var ts = new List<Component>();
             for (int i = 0; i < components.Count; i++)
             {
                 if (components[i].GetType() == comType)

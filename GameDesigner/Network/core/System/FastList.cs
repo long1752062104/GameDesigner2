@@ -201,11 +201,15 @@ namespace Net.System
 
         public void Add(T item)
         {
-            if (_size == _items.Length)
-            {
-                EnsureCapacity(_size + 1);
-            }
-            _items[_size] = item;
+            Add(item, out _);
+        }
+
+        public void Add(T item, out int index)
+        {
+            index = _size;
+            if (index == _items.Length)
+                EnsureCapacity(index + 1);
+            _items[index] = item;
             _size++;
             _version++;
         }
@@ -740,41 +744,22 @@ namespace Net.System
 
         public bool Remove(T item)
         {
-            if (_size == _items.Length)
-            {
-                EnsureCapacity(_size + 1);
-            }
             int index = IndexOf(item);
-            if (index >= 0)
-            {
-                _size--;
-                if (index < _size)
-                {
-                    _items[index] = _items[_size];
-                }
-                _items[_size] = default;
-                _version++;
-                return true;
-            }
-            return false;
+            return RemoveAtInternal(index);
         }
 
 
         void IList.Remove(object item)
         {
             if (IsCompatibleObject(item))
-            {
                 Remove((T)item);
-            }
         }
 
 
         public int RemoveAll(Predicate<T> match)
         {
             if (match == null)
-            {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-            }
             int num = 0;
             while (num < _size && !match(_items[num]))
             {
@@ -806,33 +791,31 @@ namespace Net.System
 
         public void RemoveAt(int index)
         {
-            if (index >= _size)
-            {
-                return;
-            }
+            RemoveAtInternal(index);
+        }
+
+        private bool RemoveAtInternal(int index)
+        {
+            if (index >= _size | index < 0)
+                return false;
             _size--;
             if (index < _size)
-            {
                 _items[index] = _items[_size];
-            }
             _items[_size] = default;
             _version++;
+            return true;
         }
 
 
         public void RemoveRange(int index, int count)
         {
             if (_size - index < count)
-            {
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
-            }
             if (count > 0)
             {
                 _size -= count;
                 if (index < _size)
-                {
                     Array.Copy(_items, index + count, _items, index, _size - index);
-                }
                 Array.Clear(_items, _size, count);
                 _version++;
             }

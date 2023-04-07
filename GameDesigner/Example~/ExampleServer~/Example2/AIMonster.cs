@@ -1,6 +1,7 @@
 ﻿using ECS;
 using Net;
 using Net.Component;
+using Net.MMORPG;
 using Net.Share;
 using Net.System;
 
@@ -9,7 +10,7 @@ namespace Example2
     public class AIMonster : Component, IUpdate
     {
         internal NTransform transform;
-        internal RoamingPath1 roamingPath;
+        internal PatrolPath patrolPath;
         internal Scene scene;
         internal byte state;
         internal byte state1;
@@ -67,14 +68,14 @@ namespace Example2
                     }
                     break;
                 case 1:
-                    var dis = Vector3.Distance(transform.position, roamingPath.waypointsList[pointIndex]);
+                    var dis = Vector3.Distance(transform.position, patrolPath.waypoints[pointIndex]);
                     if (dis < 0.1f)
                     {
-                        pointIndex = RandomHelper.Range(0, roamingPath.waypointsList.Count);
+                        pointIndex = RandomHelper.Range(0, patrolPath.waypoints.Count);
                         state1 = 0;
                         idleTime = Time.time + RandomHelper.Range(0f, 2f);
                     }
-                    transform.LookAt(roamingPath.waypointsList[pointIndex]);
+                    transform.LookAt(patrolPath.waypoints[pointIndex]);
                     transform.Translate(0, 0, walkSpeed * Time.deltaTime);
                     break;
             }
