@@ -152,11 +152,11 @@
         {
             foreach (var p in GameManager.I.players)
             {
-                Vector3 targetDir = p.transform.position - transform.position;
+                var targetDir = p.transform.position - transform.position; //必须是 攻击对象 - 自身对象
                 if (targetDir.magnitude > distance)
                     continue;
-                Vector3 forward = transform.forward;
-                float angle = Vector3.Angle(targetDir, forward);
+                var forward = transform.forward;
+                var angle = Vector3.Angle(targetDir, forward); //最高是180
                 if (angle < range & !p.isDead)//只能攻击本机玩家
                 {
                     var effect = Object.Instantiate(damageEffect, p.transform.position, p.transform.rotation);
