@@ -5,20 +5,53 @@ using System.Collections.Generic;
 using Net.Component;
 using Net.Event;
 using Net.System;
+using ECS;
+using Example1;
+using Net;
 
 namespace AOIExample
 {
-    internal class Scene:NetScene<Client>
+    internal class Scene : NetScene<Client>
     {
-        internal GridManager gridManager = new GridManager();
+        internal GridWorld gridWorld = new GridWorld();
+        internal GSystem gSystem = new GSystem();
+
+        public int spawnAmount = 10000;
+        public float interleave = 5;
 
         public Scene() 
         {
-            gridManager.Init(-500, -500, 20, 20, 50, 50);
+            gridWorld.Init(-500, -500, 50, 50, 20, 20);
+
+            float sqrt = Mathf.Sqrt(spawnAmount);
+            float offset = -sqrt / 2 * interleave;
+            int spawned = 0;
+            for (int spawnX = 0; spawnX < sqrt; ++spawnX)
+            {
+                for (int spawnZ = 0; spawnZ < sqrt; ++spawnZ)
+                {
+                    if (spawned < spawnAmount)
+                    {
+                        var entity = gSystem.Create<Entity>();
+                        var robot = entity.AddComponent<Robot>();
+
+                        float x = offset + spawnX * interleave;
+                        float z = offset + spawnZ * interleave;
+                        robot.transform.position = new Vector3(x, 0, z);
+                        ++spawned;
+
+                        robot.Identity = spawned;
+                        robot.Start();
+                        gridWorld.Insert(robot);
+                    }
+                }
+            }
         }
         public override void OnEnter(Client client)
         {
-            gridManager.Insert(client);
+            client.Identity = client.UserID;
+            client.MainRole = true;
+            gridWorld.Insert(client);
         }
         public override void OnExit(Client client)
         {
@@ -26,7 +59,7 @@ namespace AOIExample
                 operations.Clear();
             else
                 AddOperation(new Operation(Command.OnPlayerExit, client.UserID));
-            gridManager.Remove(client);
+            gridWorld.Remove(client);
         }
         public override void OnOperationSync(Client client, OperationList list)
         {
@@ -51,52 +84,60 @@ namespace AOIExample
             if (playerCount <= 0)
                 return;
             frame++;
+            int count;
             for (int i = 0; i < players.Count; i++)
             {
                 var player = players[i];
                 if (player == null)
                     continue;
+                if (player.isSending)
+                {
+                    player.isSending = false;
+                    continue;
+                }
                 player.OnUpdate();
-                var opts = new List<Operation>();
+                var operations = new FastList<Operation>();
                 var grid = players[i].Grid;
                 if (grid == null)
                     continue;
-                foreach (var item in grid.grids)
+                var gridBodies = grid.GetGridBodiesAll();
+                var players1 = new FastList<Client>();
+                foreach (var item1 in gridBodies)
                 {
-                    foreach (var item1 in item.gridBodies)
+                    if (item1 is Client player1)
                     {
-                        var player1 = item1 as Client;
-                        var opts1 = player1.operations.GetRange(0, player1.operations.Count);
-                        player1.getLen = opts1.Length;
-                        opts.AddRange(opts1);
+                        var opts1 = player1.operations.GetRemoveRange(0, player1.operations.Count);
+                        operations.AddRange(opts1);
+                        player1.isSending = true;
+                        players1.Add(player1);
+                    }
+                    else if (item1 is Robot robot)
+                    {
+                        operations.Add(new Operation(Command.RobotUpdate, robot.Identity, robot.Position, robot.transform.rotation)
+                        {
+                            index = robot.ActorID,
+                        });
                     }
                 }
-                if (opts.Count == 0)
-                    continue;
-                var list = new OperationList();
-                list.frame = frame;
-                list.operations = opts.ToArray();
-                var buffer = onSerializeOpt(list);
-                handle.Send(player, cmd, buffer, false, false);
-            }
-            int count = operations.Count;//不管aoi, 整个场景的同步在这里, 如玩家退出操作
-            if (count > 0)
-            {
+                count = operations.Count;
                 while (count > Split)
                 {
-                    OnPacket(handle, cmd, Split);
+                    OnPacket(handle, cmd, Split, players1, operations);
                     count -= Split;
                 }
                 if (count > 0)
-                    OnPacket(handle, cmd, count);
+                    OnPacket(handle, cmd, count, players1, operations);
             }
-            for (int i = 0; i < players.Count; i++)
+            count = operations.Count;//不管aoi, 整个场景的同步在这里, 如玩家退出操作
+            while (count > Split)
             {
-                if (players[i] == null)
-                    continue;
-                players[i].operations.RemoveRange(0, players[i].getLen);
+                OnPacket(handle, cmd, Split);
+                count -= Split;
             }
-            gridManager.UpdateHandler();
+            if (count > 0)
+                OnPacket(handle, cmd, count);
+            gridWorld.UpdateHandler();
+            gSystem.Update();
         }
     }
 }

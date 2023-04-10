@@ -7,9 +7,9 @@ namespace Net.Example
     {
         public float speed = 1;
         public float movementDistance = 20;
-        bool moving;
-        Vector3 start;
-        Vector3 destination;
+        private bool moving;
+        private Vector3 start;
+        private Vector3 destination;
 
         void Start()
         {

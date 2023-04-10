@@ -30,12 +30,12 @@
             垂直方式的格子, 适用2D游戏
             </summary>
         </member>
-        <member name="T:Net.AOI.GridManager">
+        <member name="T:Net.AOI.GridWorld">
             <summary>
-            九宫格网络同步管理器
+            九宫格世界
             </summary>
         </member>
-        <member name="M:Net.AOI.GridManager.Init(System.Single,System.Single,System.UInt32,System.UInt32,System.Int32,System.Int32)">
+        <member name="M:Net.AOI.GridWorld.Init(System.Single,System.Single,System.UInt32,System.UInt32,System.Int32,System.Int32)">
             <summary>
             初始化九宫格
             </summary>
@@ -46,29 +46,74 @@
             <param name="width">格子长度</param>
             <param name="height">格子高度</param>
         </member>
-        <member name="M:Net.AOI.GridManager.Insert(Net.AOI.IGridBody)">
+        <member name="M:Net.AOI.GridWorld.Insert(Net.AOI.IGridBody)">
             <summary>
             插入物体到九宫格感兴趣区域
             </summary>
             <param name="body"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.AOI.GridManager.TryGetGrid(Net.AOI.IGridBody)">
+        <member name="M:Net.AOI.GridWorld.TryGetGrid(Net.AOI.IGridBody)">
             <summary>
             获取物体的感兴趣九宫格区域
             </summary>
             <param name="body"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.AOI.GridManager.Remove(Net.AOI.IGridBody)">
+        <member name="M:Net.AOI.GridWorld.Remove(Net.AOI.IGridBody)">
             <summary>
             移除感兴趣物体
             </summary>
             <param name="body"></param>
         </member>
-        <member name="M:Net.AOI.GridManager.UpdateHandler">
+        <member name="M:Net.AOI.GridWorld.UpdateHandler">
             <summary>
             更新感兴趣的移除和添加物体
+            </summary>
+        </member>
+        <member name="T:Net.AOI.IGridActor">
+            <summary>
+            格子演员接口, 怪物, 角色都属于演员
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.ActorID">
+            <summary>
+            演员ID 可用于实例化客户端哪个id的预制体
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Hair">
+            <summary>
+            头发
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Head">
+            <summary>
+            头部
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Jacket">
+            <summary>
+            上衣
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Belt">
+            <summary>
+            腰带
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Pants">
+            <summary>
+            裤子
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Shoe">
+            <summary>
+            鞋子
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridActor.Weapon">
+            <summary>
+            武器
             </summary>
         </member>
         <member name="T:Net.AOI.IGridBody">
@@ -76,9 +121,29 @@
             九宫格格子物体接口
             </summary>
         </member>
+        <member name="P:Net.AOI.IGridBody.ID">
+            <summary>
+            格子的ID
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridBody.Identity">
+            <summary>
+            唯一标识
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridBody.Position">
+            <summary>
+            格子的位置
+            </summary>
+        </member>
         <member name="P:Net.AOI.IGridBody.Grid">
             <summary>
             当前所在的格子
+            </summary>
+        </member>
+        <member name="P:Net.AOI.IGridBody.MainRole">
+            <summary>
+            主角? true:其他演员进入或退出都会通知自己 false:当自己进入新的格子时, 别人会通知你进来了, 当你退出旧的格子时, 别人也会通知你退出了旧的格子, 而你是无感知的
             </summary>
         </member>
         <member name="M:Net.AOI.IGridBody.OnBodyUpdate">
@@ -3091,6 +3156,14 @@
             </summary>
         </member>
         <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32)">
+            <summary>
+            当封包数据时调用
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="count"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,Net.System.FastList{`0},Net.System.FastList{Net.Share.Operation})">
             <summary>
             当封包数据时调用
             </summary>

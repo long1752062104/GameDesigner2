@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using Net.System;
 
 namespace Net.AOI
@@ -20,10 +21,10 @@ namespace Net.AOI
     }
 
     /// <summary>
-    /// 九宫格网络同步管理器
+    /// 九宫格世界
     /// </summary>
     [Serializable]
-    public class GridManager
+    public class GridWorld
     {
         public List<Grid> grids = new List<Grid>();
         public FastList<IGridBody> gridBodies = new FastList<IGridBody>();
@@ -107,7 +108,9 @@ namespace Net.AOI
         /// <returns></returns>
         public Grid TryGetGrid(IGridBody body)
         {
-        JMP: if (body.Grid == null)
+        JMP:
+            var currGrid = body.Grid;
+            if (currGrid == null)
             {
                 if (gridType == GridType.Horizontal)
                     if (!worldSize.ContainsXZ(body.Position))
@@ -128,14 +131,14 @@ namespace Net.AOI
                                 item2.OnEnter(body);
                             }
                         }
-                        return body.Grid;
+                        return grid;
                     }
                 }
                 goto J;
             }
-            if (Contains(body.Grid, body))
-                return body.Grid;
-            var oldGrids = body.Grid.grids;
+            if (Contains(currGrid, body))
+                return currGrid;
+            var oldGrids = currGrid.grids;
             foreach (var grid in oldGrids)//遍历当前物体所在的九宫格
             {
                 if (Contains(grid, body))//如果物体还在九宫格的其中一个格子
@@ -147,7 +150,10 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                             {
-                                item2.OnEnter(body);
+                                if (body.MainRole) //当以自己为主角时, 这样通知
+                                    body.OnEnter(item2);
+                                else
+                                    item2.OnEnter(body);
                             }
                         }
                     }
@@ -157,25 +163,31 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知离开的格子的所有物体, 此物体离开了
                             {
-                                item2.OnExit(body);
+                                if (body.MainRole) //当以自己为主角时, 这样通知
+                                    body.OnExit(item2);
+                                else
+                                    item2.OnExit(body);
                             }
                         }
                     }
                     //更新物体所在的格子
-                    body.Grid.gridBodies.Remove(body);
+                    currGrid.gridBodies.Remove(body);
                     grid.gridBodies.Add(body);
                     body.Grid = grid;
-                    return body.Grid;
+                    return grid;
                 }
             }
             foreach (var grid in oldGrids)//拖拽瞬移过程
             {
                 foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
                 {
-                    item2.OnExit(body);
+                    if (body.MainRole) //当以自己为主角时, 这样通知
+                        body.OnExit(item2);
+                    else
+                        item2.OnExit(body);
                 }
             }
-            body.Grid.gridBodies.Remove(body);
+            currGrid.gridBodies.Remove(body);
             body.Grid = null;
             goto JMP;
         J: Event.NDebug.LogError($"{body.ID}越界了,位置:{body.Position}");

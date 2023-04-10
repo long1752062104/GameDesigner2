@@ -4,12 +4,14 @@ namespace AOIExample
     using Net.Client;
     using Net.Component;
     using Net.Share;
+    using Net.System;
     using Net.UnityComponent;
     using UnityEngine;
 
     public class SceneManager : NetworkSceneManager
     {
-        public GameObject player;
+        public GameObject player, robot;
+        public MyDictionary<int, GameObject> robots = new MyDictionary<int, GameObject>();
 
         public override void OnConnected()
         {
@@ -31,6 +33,39 @@ namespace AOIExample
             if (opt.identity == ClientBase.Instance.UID)//服务器延迟检测连接断开时,网络场景会将移除cmd插入同步队列, 当你再次进入如果uid是上次的uid, 则会发送下来,会删除刚生成的玩家对象
                 return;
             base.OnPlayerExit(opt);
+        }
+        public override void OnOtherOperator(Operation opt)
+        {
+            switch (opt.cmd)
+            {
+                case Command.EnterArea:
+                    {
+                        if (!robots.TryGetValue(opt.identity, out _)) 
+                        {
+                            var gameObject = Instantiate(robot, opt.position, opt.rotation);
+                            gameObject.name = opt.identity.ToString();
+                            robots[opt.identity] = gameObject;
+                        }
+                    }
+                    break;
+                case Command.ExitArea:
+                    {
+                        if (robots.TryRemove(opt.identity, out var gameObject))
+                        {
+                            //Destroy(gameObject);
+                            gameObject.SetActive(false);
+                        }
+                    }
+                    break;
+                case Command.RobotUpdate:
+                    {
+                        if (robots.TryGetValue(opt.identity, out var gameObject))
+                        {
+                            gameObject.transform.SetPositionAndRotation(opt.position, opt.rotation);
+                        }
+                    }
+                    break;
+            }
         }
     }
 }

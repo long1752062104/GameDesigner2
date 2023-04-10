@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="AOIExample\Client.cs" />
     <Compile Include="AOIExample\Command.cs" />
+    <Compile Include="AOIExample\Robot.cs" />
     <Compile Include="AOIExample\Scene.cs" />
     <Compile Include="AOIExample\Service.cs" />
     <Compile Include="Example1\Client.cs" />

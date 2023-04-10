@@ -222,6 +222,17 @@
         /// <param name="count"></param>
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count)
         {
+            OnPacket(handle, cmd, count, Players, operations);
+        }
+
+        /// <summary>
+        /// 当封包数据时调用
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="cmd"></param>
+        /// <param name="count"></param>
+        public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count, FastList<Player> players, FastList<Operation> operations)
+        {
             var opts = operations.GetRemoveRange(0, count);
             var operList = new OperationList()
             {
@@ -229,7 +240,7 @@
                 operations = opts
             };
             var buffer = onSerializeOpt(operList);
-            handle.Multicast(Players, SendOperationReliable, cmd, buffer, false, false);
+            handle.Multicast(players, SendOperationReliable, cmd, buffer, false, false);
         }
 
         /// <summary>

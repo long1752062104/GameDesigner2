@@ -91,7 +91,8 @@
   <ItemGroup>
     <Compile Include="GameDesigner\AOI~\Grid.cs" />
     <Compile Include="GameDesigner\AOI~\GridData.cs" />
-    <Compile Include="GameDesigner\AOI~\GridManager.cs" />
+    <Compile Include="GameDesigner\AOI~\GridWorld.cs" />
+    <Compile Include="GameDesigner\AOI~\IGridActor.cs" />
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
     <Compile Include="GameDesigner\Common~\Command.cs" />
     <Compile Include="GameDesigner\Common~\NTransform.cs" />

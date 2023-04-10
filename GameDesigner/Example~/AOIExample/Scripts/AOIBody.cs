@@ -9,8 +9,10 @@ namespace AOIExample
     public class AOIBody : MonoBehaviour, IGridBody
     {
         public int ID { get; set; }
+        public int Identity { get; set; }
         public Net.Vector3 Position { get; set; }
         public Grid Grid { get; set; }
+        public bool MainRole { get; set; }
 
         public bool IsLocal;
         public bool ShowText = true;
@@ -19,7 +21,7 @@ namespace AOIExample
         void Start()
         {
             Position = transform.position;
-            AOIManager.I.gridManager.Insert(this);
+            AOIManager.I.world.Insert(this);
             if (Grid != null)
             {
                 if (!IsLocal)//如果是其他玩家
@@ -46,7 +48,7 @@ namespace AOIExample
 
         void OnDestroy()
         {
-            AOIManager.I.gridManager.Remove(this);
+            AOIManager.I.world.Remove(this);
         }
 
         void OnDrawGizmos() 
@@ -68,7 +70,7 @@ namespace AOIExample
                 return;
             if (!Application.isPlaying)
                 return;
-            if (AOIManager.I.gridManager == null)
+            if (AOIManager.I.world == null)
                 return;
             if (Grid == null)
                 return;
@@ -83,7 +85,7 @@ namespace AOIExample
         {
             var pos = grid.rect.center;
             var size = grid.rect.size;
-            if (AOIManager.I.gridManager.gridType == GridType.Horizontal)
+            if (AOIManager.I.world.gridType == GridType.Horizontal)
                 Gizmos.DrawWireCube(new Vector3(pos.x, 0.5f, pos.y), new Vector3(size.x, 0.5f, size.y));
             else 
             {
@@ -93,7 +95,7 @@ namespace AOIExample
                     Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
             }
 #if UNITY_EDITOR
-            if (AOIManager.I.gridManager.gridType == GridType.Horizontal)
+            if (AOIManager.I.world.gridType == GridType.Horizontal)
             {
                 if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, 0.5f, grid.rect.y), grid.rect.position.ToString());
             }
