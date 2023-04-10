@@ -23,7 +23,21 @@ namespace Net.Component
             get
             {
                 if (instance == null)
+                {
+#if UNITY_2020_1_OR_NEWER
                     instance = FindObjectOfType<T>(true);
+#else
+                    var ts = Resources.FindObjectsOfTypeAll<T>();
+                    foreach (var t in ts)
+                    {
+                        if (t.gameObject.scene.isLoaded)
+                        {
+                            instance = t;
+                            break;
+                        }
+                    }
+#endif
+                }
                 return instance;
             }
         }
