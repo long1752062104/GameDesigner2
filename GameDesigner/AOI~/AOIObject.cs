@@ -1,12 +1,12 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-namespace AOIExample
+namespace Net.Component
 {
     using Net.AOI;
-    using Net.Component;
     using UnityEngine;
-    using Grid = Net.AOI.Grid;
+    using UnityEngine.Events;
+    using Grid = AOI.Grid;
 
-    public class AOIBody : MonoBehaviour, IGridBody
+    public class AOIObject : MonoBehaviour, IGridBody
     {
         public int ID { get; set; }
         public int Identity { get; set; }
@@ -15,11 +15,22 @@ namespace AOIExample
         public bool MainRole { get; set; }
 
         public bool IsLocal;
+        public bool DrawWire = true;
         public bool ShowText = true;
+
+        /// <summary>
+        /// 当主角进入这个物体所在区域触发
+        /// </summary>
+        public UnityEvent OnMainRoleEnter;
+        /// <summary>
+        /// 当主角离开这个物体的区域触发
+        /// </summary>
+        public UnityEvent OnMainRoleExit;
 
         // Start is called before the first frame update
         void Start()
         {
+            MainRole = IsLocal;
             Position = transform.position;
             AOIManager.I.world.Insert(this);
             if (Grid != null)
@@ -27,18 +38,16 @@ namespace AOIExample
                 if (!IsLocal)//如果是其他玩家
                 {
                     bool hasLocal = false;
-                    foreach (var grid in Grid.grids)
+                    var gridBodies = Grid.GetGridBodiesAll();
+                    foreach (var body in gridBodies)
                     {
-                        foreach (var body in grid.gridBodies)
+                        var node = body as AOIObject;
+                        if (node == null)
+                            continue;
+                        if (node.IsLocal)//如果在这里9宫格范围有本机玩家, 显示出来
                         {
-                            var node = body as AOIBody;
-                            if (node == null)
-                                continue;
-                            if (node.IsLocal)//如果在这里9宫格范围有本机玩家, 显示出来
-                            {
-                                hasLocal = true;
-                                break;
-                            }
+                            hasLocal = true;
+                            break;
                         }
                     }
                     GetComponent<MeshRenderer>().enabled = hasLocal;
@@ -51,6 +60,7 @@ namespace AOIExample
             AOIManager.I.world.Remove(this);
         }
 
+#if UNITY_EDITOR
         void OnDrawGizmos() 
         {
             if (!IsLocal)
@@ -86,25 +96,23 @@ namespace AOIExample
             var pos = grid.rect.center;
             var size = grid.rect.size;
             if (AOIManager.I.world.gridType == GridType.Horizontal)
-                Gizmos.DrawWireCube(new Vector3(pos.x, 0.5f, pos.y), new Vector3(size.x, 0.5f, size.y));
-            else 
             {
-                if (ShowText)
+                if (DrawWire)
+                    Gizmos.DrawWireCube(new Vector3(pos.x, 0.5f, pos.y), new Vector3(size.x, 0.5f, size.y));
+                else
+                    Gizmos.DrawCube(new Vector3(pos.x, 0.1f, pos.y), new Vector3(size.x, 0.01f, size.y));
+                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, 0.5f, grid.rect.y), grid.rect.position.ToString());
+            }
+            else
+            {
+                if (DrawWire)
                     Gizmos.DrawWireCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
                 else
                     Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
-            }
-#if UNITY_EDITOR
-            if (AOIManager.I.world.gridType == GridType.Horizontal)
-            {
-                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, 0.5f, grid.rect.y), grid.rect.position.ToString());
-            }
-            else 
-            {
                 if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, grid.rect.y, 0f), grid.rect.position.ToString());
             }
-#endif
         }
+#endif
 
         public void OnBodyUpdate()
         {
@@ -113,28 +121,20 @@ namespace AOIExample
 
         public void OnEnter(IGridBody body)
         {
-            var node = body as AOIBody;
-            if (IsLocal)//主角进来了
-            {
-                node.GetComponent<MeshRenderer>().enabled = true;
-            }
-            else if (node.IsLocal) 
-            {
-                GetComponent<MeshRenderer>().enabled = true;
-            }
+            if (!MainRole)
+                return;
+            var node = body as AOIObject;
+            //node.GetComponent<MeshRenderer>().enabled = true;
+            node.OnMainRoleEnter.Invoke();
         }
 
         public void OnExit(IGridBody body)
         {
-            var node = body as AOIBody;
-            if (IsLocal)//如果退出主角范围, 则隐藏
-            {
-                node.GetComponent<MeshRenderer>().enabled = false;
-            }
-            else if (node.IsLocal) 
-            {
-                GetComponent<MeshRenderer>().enabled = false;
-            }
+            if (!MainRole)
+                return;
+            var node = body as AOIObject;
+            //node.GetComponent<MeshRenderer>().enabled = false;
+            node.OnMainRoleExit.Invoke();
         }
     }
 }

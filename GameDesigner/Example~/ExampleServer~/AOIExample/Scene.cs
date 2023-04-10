@@ -23,29 +23,29 @@ namespace AOIExample
         {
             gridWorld.Init(-500, -500, 50, 50, 20, 20);
 
-            float sqrt = Mathf.Sqrt(spawnAmount);
-            float offset = -sqrt / 2 * interleave;
-            int spawned = 0;
-            for (int spawnX = 0; spawnX < sqrt; ++spawnX)
-            {
-                for (int spawnZ = 0; spawnZ < sqrt; ++spawnZ)
-                {
-                    if (spawned < spawnAmount)
-                    {
-                        var entity = gSystem.Create<Entity>();
-                        var robot = entity.AddComponent<Robot>();
+            //float sqrt = Mathf.Sqrt(spawnAmount);
+            //float offset = -sqrt / 2 * interleave;
+            //int spawned = 0;
+            //for (int spawnX = 0; spawnX < sqrt; ++spawnX)
+            //{
+            //    for (int spawnZ = 0; spawnZ < sqrt; ++spawnZ)
+            //    {
+            //        if (spawned < spawnAmount)
+            //        {
+            //            var entity = gSystem.Create<Entity>();
+            //            var robot = entity.AddComponent<Robot>();
 
-                        float x = offset + spawnX * interleave;
-                        float z = offset + spawnZ * interleave;
-                        robot.transform.position = new Vector3(x, 0, z);
-                        ++spawned;
+            //            float x = offset + spawnX * interleave;
+            //            float z = offset + spawnZ * interleave;
+            //            robot.transform.position = new Vector3(x, 0, z);
+            //            ++spawned;
 
-                        robot.Identity = spawned;
-                        robot.Start();
-                        gridWorld.Insert(robot);
-                    }
-                }
-            }
+            //            robot.Identity = spawned;
+            //            robot.Start();
+            //            gridWorld.Insert(robot);
+            //        }
+            //    }
+            //}
         }
         public override void OnEnter(Client client)
         {

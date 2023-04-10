@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using Net.System;
+using UnityEngine;
 
 namespace Net.AOI
 {
@@ -86,7 +87,10 @@ namespace Net.AOI
                     {
                         foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                         {
-                            item2.OnEnter(body);
+                            if (body.MainRole) //当以自己为主角时, 这样通知
+                                body.OnEnter(item2);
+                            else
+                                item2.OnEnter(body);
                         }
                     }
                     return true;
@@ -128,7 +132,10 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                             {
-                                item2.OnEnter(body);
+                                if (body.MainRole) //当以自己为主角时, 这样通知
+                                    body.OnEnter(item2);
+                                else
+                                    item2.OnEnter(body);
                             }
                         }
                         return grid;
@@ -199,9 +206,21 @@ namespace Net.AOI
         /// <param name="body"></param>
         public void Remove(IGridBody body)
         {
-            if (body.Grid == null)
-                return;
-            body.Grid.gridBodies.Remove(body);
+            var currGrid = body.Grid;
+            if (currGrid == null)
+                return; 
+            var grids = currGrid.grids;
+            foreach (var grid in grids)
+            {
+                foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                {
+                    if (body.MainRole) //当以自己为主角时, 这样通知
+                        body.OnExit(item2);
+                    else
+                        item2.OnExit(body);
+                }
+            }
+            currGrid.gridBodies.Remove(body);
             gridBodies.Remove(body);
         }
         /// <summary>
