@@ -480,8 +480,8 @@
                 SetBit(ref head, 1, hasFunc);
                 SetBit(ref head, 2, hasMask);
                 stream.WriteByte(head);
-                if (hasFunc) stream.WriteValue(model.func);
-                if (hasMask) stream.WriteValue(model.methodHash);
+                if (hasFunc) stream.Write(model.func);
+                if (hasMask) stream.Write(model.methodHash);
                 foreach (var obj in model.pars)
                 {
                     Type type;
@@ -492,7 +492,7 @@
                         continue;
                     }
                     type = obj.GetType();
-                    stream.WriteValue(TypeToIndex(type));
+                    stream.Write(TypeToIndex(type));
                     if (Types2.TryGetValue(type, out TypeBind typeBind))
                     {
                         var bind = (ISerialize)typeBind.bind;

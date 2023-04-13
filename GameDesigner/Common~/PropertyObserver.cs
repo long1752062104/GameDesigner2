@@ -2,6 +2,7 @@
 using Net.Share;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Net.Common
 {
@@ -51,10 +52,11 @@ namespace Net.Common
     public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
         protected string name;
-        protected long valueAtk;
+        protected long valueAtk; 
+        protected long valueAtk1;
         protected long valueAtkKey;
 
-        public ObscuredPropertyObserver() { valueAtk = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
+        public ObscuredPropertyObserver() { valueAtk = valueAtk1 = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
         public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
@@ -67,22 +69,21 @@ namespace Net.Common
         public override T GetValue()
         {
             var atkValue = valueAtk ^ valueAtkKey;
+            var atkValue1 = valueAtk1 ^ atkValue;
             var value = Unsafe.As<long, T>(ref atkValue);
-            if (!Equals(value, this.value))
+            if (atkValue1 != valueAtk)
             {
                 AntiCheatHelper.OnDetected?.Invoke(name, value, this.value);
-                this.value = value;
+                return default;
             }
             return value;
         }
 
         public override void SetValue(T value, bool isNotify = true)
         {
-            if (Equals(this.value, value))
-                return;
-            this.value = value;
-            var value3 = Unsafe.As<T, long>(ref this.value);
+            var value3 = Unsafe.As<T, long>(ref value);
             valueAtk = value3 ^ valueAtkKey;
+            valueAtk1 = value3 ^ valueAtk;
             if (isNotify) OnValueChanged?.Invoke(value);
         }
     }
