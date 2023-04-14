@@ -42,5 +42,15 @@
             }
             return crc;
         }
+
+        public unsafe static byte CRC8(byte* buffer, int off, int len)
+        {
+            byte crc = 0;
+            for (int i = off; i < len; i++)
+            {
+                crc = CRCCode[crc ^ buffer[i]];
+            }
+            return crc;
+        }
     }
 }

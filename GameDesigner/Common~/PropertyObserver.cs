@@ -52,11 +52,15 @@ namespace Net.Common
     public class ObscuredPropertyObserver<T> : PropertyObserver<T>
     {
         protected string name;
-        protected long valueAtk; 
-        protected long valueAtk1;
+        protected long valueAtk;
         protected long valueAtkKey;
+        private byte crcValue;
 
-        public ObscuredPropertyObserver() { valueAtk = valueAtk1 = valueAtkKey = RandomHelper.Range(0, int.MaxValue); }
+        public ObscuredPropertyObserver() 
+        { 
+            valueAtkKey = RandomHelper.Range(0, int.MaxValue);
+            Value = default;
+        }
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
         public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
@@ -66,24 +70,26 @@ namespace Net.Common
             OnValueChanged = onValueChanged;
         }
 
-        public override T GetValue()
+        public unsafe override T GetValue()
         {
-            var atkValue = valueAtk ^ valueAtkKey;
-            var atkValue1 = valueAtk1 ^ atkValue;
-            var value = Unsafe.As<long, T>(ref atkValue);
-            if (atkValue1 != valueAtk)
+            var value = valueAtk ^ valueAtkKey;
+            var ptr = (byte*)&value;
+            var crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8);
+            if (this.crcValue != crcValue)
             {
-                AntiCheatHelper.OnDetected?.Invoke(name, value, this.value);
+                AntiCheatHelper.OnDetected?.Invoke(name, value, value);
                 return default;
             }
-            return value;
+            var value1 = Unsafe.As<long, T>(ref value);
+            return value1;
         }
 
-        public override void SetValue(T value, bool isNotify = true)
+        public unsafe override void SetValue(T value, bool isNotify = true)
         {
-            var value3 = Unsafe.As<T, long>(ref value);
-            valueAtk = value3 ^ valueAtkKey;
-            valueAtk1 = value3 ^ valueAtk;
+            var value1 = Unsafe.As<T, long>(ref value);
+            valueAtk = value1 ^ valueAtkKey;
+            var ptr = (byte*)&value1;
+            crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8);
             if (isNotify) OnValueChanged?.Invoke(value);
         }
     }
@@ -108,6 +114,7 @@ namespace Net.Common
                 return;
             this.name = name;
             this.available = available;
+            this.Value = default;
             OnValueChanged = onValueChanged;
         }
 
