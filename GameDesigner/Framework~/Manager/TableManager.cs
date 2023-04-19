@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -15,7 +16,9 @@ namespace Framework
         internal async UniTask Init()
         {
             string path;
-            if (Global.Resources.Mode == AssetBundleMode.LocalPath)
+            if (Global.I.Mode == AssetBundleMode.LocalPath)
+                path = Directory.GetCurrentDirectory() + $"/AssetBundles/Table/GameConfig.json";
+            else if (Global.I.Mode == AssetBundleMode.StreamingAssetsPath)
                 path = Application.streamingAssetsPath + $"/AssetBundles/Table/GameConfig.json";
             else
                 path = Application.persistentDataPath + $"/AssetBundles/Table/GameConfig.json";
@@ -28,7 +31,7 @@ namespace Framework
                 }
                 if (!string.IsNullOrEmpty(request.error))
                 {
-                    Global.Logger.LogError(request.error);
+                    Global.Logger.LogError("点击菜单GameDesigner/Framework/GenerateExcelData生成execl表数据! " + request.error);
                     return;
                 }
                 var jsonStr = request.downloadHandler.text;

@@ -57,11 +57,14 @@ namespace Framework
         /// HFS服务器下载资源更新
         /// </summary>
         HFSPath,
+        /// <summary>
+        /// 内部资源加载模式
+        /// </summary>
+        Resources,
     }
 
     public class ResourcesManager : MonoBehaviour
     {
-        public AssetBundleMode Mode = AssetBundleMode.LocalPath;
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
@@ -71,9 +74,9 @@ namespace Framework
         public void InitAssetBundleInfos()
         {
             string abPath;
-            if (Mode == AssetBundleMode.StreamingAssetsPath)
+            if (Global.I.Mode == AssetBundleMode.StreamingAssetsPath)
                 abPath = Application.streamingAssetsPath + "/";
-            else if (Mode == AssetBundleMode.HFSPath)
+            else if (Global.I.Mode == AssetBundleMode.HFSPath)
                 abPath = Application.persistentDataPath + "/";
             else
                 return;

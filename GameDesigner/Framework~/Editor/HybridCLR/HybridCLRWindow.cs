@@ -1,3 +1,4 @@
+#if HYBRIDCLR
 using Framework;
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
@@ -167,3 +168,4 @@ public class HybridCLREdit : EditorWindow
         AssetDatabase.Refresh();
     }
 }
+#endif

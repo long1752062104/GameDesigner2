@@ -1,10 +1,12 @@
 using Cysharp.Threading.Tasks;
-using HybridCLR;
 using Net.Share;
 using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
+#if HYBRIDCLR
+using HybridCLR;
+#endif
 
 namespace Framework
 {
@@ -15,13 +17,14 @@ namespace Framework
 
         void Start()
         {
-            if (Global.Resources.Mode == AssetBundleMode.LocalPath)
-                LocalLoadAB();
+            var mode = Global.I.Mode;
+            if (mode == AssetBundleMode.LocalPath | mode == AssetBundleMode.StreamingAssetsPath)
+                _ = LocalLoadAB();
             else
                 StartCoroutine(CheckUpdate());
         }
 
-        private async void LocalLoadAB()
+        private async UniTaskVoid LocalLoadAB()
         {
             await Global.Table.Init();
             Global.Resources.InitAssetBundleInfos();
@@ -106,7 +109,7 @@ namespace Framework
                 GlobalSetting.Instance.SaveVersionDict(dict, abPath);
                 yield return new WaitForSeconds(1f);
             }
-            LocalLoadAB();
+            _ = LocalLoadAB();
         }
 
         /// <summary>
@@ -115,8 +118,9 @@ namespace Framework
         /// </summary>
         private static void LoadMetadataForAOTAssemblies()
         {
+#if HYBRIDCLR
             string path;
-            if (Global.Resources.Mode == AssetBundleMode.LocalPath)
+            if (Global.I.Mode == AssetBundleMode.LocalPath)
                 path = Application.streamingAssetsPath + "/AssetBundles/Hotfix/";
             else
                 path = Application.persistentDataPath + "/AssetBundles/Hotfix/";
@@ -140,6 +144,7 @@ namespace Framework
             var hotfixDll = path + "Assembly-CSharp.dll.bytes";
             if (File.Exists(hotfixDll))
                 System.Reflection.Assembly.Load(File.ReadAllBytes(hotfixDll));
+#endif
 #endif
         }
     }

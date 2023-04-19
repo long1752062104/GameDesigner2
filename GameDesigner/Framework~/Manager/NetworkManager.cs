@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
 using System;
-using Net.Adapter;
 using Net.Helper;
 using Cysharp.Threading.Tasks;
 
@@ -65,9 +64,6 @@ namespace Framework
         public bool authorize;
         public bool startConnect = true;
         public bool md5CRC;
-        [Header("序列化适配器")]
-        public SerializeAdapterType type;
-        public bool isEncrypt = false;//数据加密?
         public int reconnectCount = 10;
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
@@ -109,23 +105,6 @@ namespace Framework
             }
             else _client.host = "127.0.0.1";
             _client.port = port;
-            switch (type)
-            {
-                case SerializeAdapterType.Default:
-                    break;
-                case SerializeAdapterType.PB_JSON_FAST:
-                    _client.AddAdapter(new SerializeFastAdapter() { IsEncrypt = isEncrypt });
-                    break;
-                case SerializeAdapterType.Binary:
-                    _client.AddAdapter(new SerializeAdapter() { IsEncrypt = isEncrypt });
-                    break;
-                case SerializeAdapterType.Binary2:
-                    _client.AddAdapter(new SerializeAdapter2() { IsEncrypt = isEncrypt });
-                    break;
-                case SerializeAdapterType.Binary3:
-                    _client.AddAdapter(new SerializeAdapter3() { IsEncrypt = isEncrypt });
-                    break;
-            }
             return _client.Connect(result =>
             {
                 if (result)

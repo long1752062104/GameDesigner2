@@ -26,7 +26,7 @@ public class ExcelTools
                     var dataSet = reader.AsDataSet();
                     var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(dataSet);
                     File.WriteAllText(path, jsonStr);
-                    Debug.Log("生成表格数据完成!!!!!" + Environment.CurrentDirectory + "/" + path);
+                    Debug.Log("生成表格数据完成! " + Environment.CurrentDirectory + "/" + path);
                 }
             }
         }
