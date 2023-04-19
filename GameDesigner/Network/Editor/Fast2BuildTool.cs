@@ -12,6 +12,7 @@ public class Fast2BuildTools2 : EditorWindow
 {
     private string search = "", search1 = "";
     private string searchBind = "", searchBind1 = "";
+    private string searchAssemblies = "";
     private DateTime searchTime;
     private TypeData[] types;
     private Vector2 scrollPosition;
@@ -32,18 +33,18 @@ public class Fast2BuildTools2 : EditorWindow
 
     private void OnEnable()
     {
+        LoadData();
+        searchAssemblies = data.searchAssemblies;
+        var assemblyNames = searchAssemblies.Split('|');
         var types1 = new List<TypeData>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
         {
             var name = assemblie.GetName().Name;
-            if (name == "Assembly-CSharp" | name == "Assembly-CSharp-firstpass")
-            {
+            if (assemblyNames.Contains(name))
                 types1.AddRange(AddTypes(assemblie));
-            }
         }
         types = types1.ToArray();
-        LoadData();
     }
 
     private List<TypeData> AddTypes(Assembly assembly)
@@ -64,8 +65,26 @@ public class Fast2BuildTools2 : EditorWindow
     private void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
-        search = EditorGUILayout.TextField("搜索绑定类型", search);
-        searchBind = EditorGUILayout.TextField("搜索已绑定类型", searchBind);
+        EditorGUILayout.BeginHorizontal();
+        search = EditorGUILayout.TextField("搜索绑定类型", search, GUI.skin.FindStyle("SearchTextField"));
+        if (GUILayout.Button("搜索", GUILayout.Width(50f)))
+            search1 = string.Empty;
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        searchBind = EditorGUILayout.TextField("搜索已绑定类型", searchBind, GUI.skin.FindStyle("SearchTextField"));
+        if (GUILayout.Button("搜索", GUILayout.Width(50f)))
+            searchBind1 = string.Empty;
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        data.searchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.searchAssemblies);
+        if (data.searchAssemblies != searchAssemblies)
+        {
+            searchAssemblies = data.searchAssemblies;
+            SaveData();
+        }
+        if (GUILayout.Button("刷新", GUILayout.Width(50f)))
+            OnEnable();
+        EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("全部展开")) 
             foreach (var type1 in data.typeNames)
@@ -514,6 +533,7 @@ public class Fast2BuildTools2 : EditorWindow
         public string typeEntry;
         public string methodEntry;
         public int showType;
+        public string searchAssemblies = "Assembly-CSharp|Assembly-CSharp-firstpass";
     }
 }
 #endif
