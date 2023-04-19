@@ -13,8 +13,7 @@ namespace Framework
     public class AssetBundleCheckUpdate : MonoBehaviour
     {
         public string url = "http://192.168.1.5/";
-        public string entryRes = "Assets/Resources/Prefabs/GameEntry.prefab";
-
+        
         void Start()
         {
             var mode = Global.I.Mode;
@@ -29,7 +28,7 @@ namespace Framework
             await Global.Table.Init();
             Global.Resources.InitAssetBundleInfos();
             LoadMetadataForAOTAssemblies();
-            Global.Resources.Instantiate(entryRes);
+            Global.I.OnInit();
         }
 
         private IEnumerator CheckUpdate()

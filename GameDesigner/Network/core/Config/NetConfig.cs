@@ -86,6 +86,29 @@ namespace Net.Config
             }
         }
 
+        private static string dataPath;
+        /// <summary>
+        /// 获取项目路径
+        /// </summary>
+        public static string DataPath 
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(dataPath))
+                    return dataPath;
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
+                dataPath = Unity.UnitySynchronizationContext.Get(() => { //根路径必须保证在项目内, 这样编译之后才能读取
+#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_EDITOR
+                    return UnityEngine.Application.dataPath;
+#endif
+                });
+#else
+                dataPath = AppDomain.CurrentDomain.BaseDirectory;
+#endif
+                return dataPath;
+            }
+        }
+
         private static bool mainThreadTick = false;
         /// <summary>
         /// 在主线程处理所有网络功能? 否则会在多线程进行

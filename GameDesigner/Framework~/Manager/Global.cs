@@ -18,9 +18,7 @@ namespace Framework
         [SerializeField] private NetworkManager network;
         [SerializeField] private Logger logger;
         [SerializeField] private ObjectPool pool;
-
-        public AssetBundleMode Mode = AssetBundleMode.LocalPath;
-
+        
         public static ResourcesManager Resources;
         public static UIManager UI;
         public static AssetBundleCheckUpdate CheckUpdate;
@@ -32,6 +30,9 @@ namespace Framework
         public static NetworkManager Network;
         public static Logger Logger;
         public static ObjectPool Pool;
+
+        public AssetBundleMode Mode = AssetBundleMode.LocalPath;
+        public string entryRes = "Assets/Resources/Prefabs/GameEntry.prefab";
 
         //public static Camera MainCamera { get => Instance.mainCamera; set => Instance.mainCamera = value; }
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
@@ -51,6 +52,14 @@ namespace Framework
             Logger = logger;
             Pool = pool;
             DontDestroyOnLoad(gameObject);
+        }
+
+        /// <summary>
+        /// 当初始化完成，初始化包括检查热更新，文件下载等等
+        /// </summary>
+        public virtual void OnInit()
+        {
+            Resources.Instantiate(entryRes);
         }
     }
 }

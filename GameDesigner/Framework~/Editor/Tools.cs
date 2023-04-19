@@ -70,22 +70,22 @@ public class Tools
 			Debug.Log($"创建的脚本路径:{item}");
 		}
 
-		path = "Assets/Plugins/GameDesigner/Framework/Template/GlobalExt.txt";
-		excelPath1 = "Assets/Scripts/Framework/Manager/GlobalExt.cs";
+		path = "Assets/Plugins/GameDesigner/Framework/Template/Global.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/Global.cs";
 		if(!File.Exists(excelPath1))
 			File.Copy(path, excelPath1);
 
-		path = "Assets/Plugins/GameDesigner/Framework/Template/UIManagerExt.txt";
-		excelPath1 = "Assets/Scripts/Framework/Manager/UIManagerExt.cs";
+		path = "Assets/Plugins/GameDesigner/Framework/Template/UIManager.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/UIManager.cs";
 		if (!File.Exists(excelPath1))
 			File.Copy(path, excelPath1);
 
-		path = "Assets/Plugins/GameDesigner/Framework/Template/TableManagerExt.txt";
-		excelPath1 = "Assets/Scripts/Framework/Manager/TableManagerExt.cs";
+		path = "Assets/Plugins/GameDesigner/Framework/Template/TableManager.txt";
+		excelPath1 = "Assets/Scripts/Framework/Manager/TableManager.cs";
 		if (!File.Exists(excelPath1))
 			File.Copy(path, excelPath1);
 
-		Debug.Log($"请生成ab文件!!!!!!!!");
+		Debug.Log($"环境安装完成!");
 		AssetDatabase.Refresh();
 	}
 }

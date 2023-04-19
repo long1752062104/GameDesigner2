@@ -15,9 +15,9 @@ namespace Framework
         public Dictionary<string, UIFormBase> formDict = new Dictionary<string, UIFormBase>();
         public Stack<UIFormBase> formStack = new Stack<UIFormBase>();
         public IForm Loading, Message, Tips;
-        [SerializeField] private UI_Loading _Loading;
-        [SerializeField] private UI_Message _Message;
-        [SerializeField] private UI_Tips _Tips;
+        [SerializeField] private UIFormBase _Loading;
+        [SerializeField] private UIFormBase _Message;
+        [SerializeField] private UIFormBase _Tips;
 
         private void Awake()
         {
@@ -80,6 +80,8 @@ namespace Framework
         {
             var dataTable = Global.Table.GetTable(sheetName);
             var dataRows = dataTable.Select($"Name = '{formName}'");
+            if (dataRows.Length == 0)
+                throw new Exception($"找不到界面:{formName}, 请配置!");
             var path = dataRows[0]["Path"].AsString();
             var level = dataRows[0]["Level"].AsInt();
             var form = Global.Resources.Instantiate<UIFormBase>(path, Levels[level]);
