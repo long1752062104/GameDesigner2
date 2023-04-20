@@ -11,7 +11,7 @@ SPLIT
     public void Init(DataRow row)
     {
 SPLIT
-        NAME = row["NAME"].AsTYPE();
+        NAME = ObjectConverter.AsTYPE(row["NAME"]);
 SPLIT
     }
 }

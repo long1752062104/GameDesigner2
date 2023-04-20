@@ -82,8 +82,8 @@ namespace Framework
             var dataRows = dataTable.Select($"Name = '{formName}'");
             if (dataRows.Length == 0)
                 throw new Exception($"找不到界面:{formName}, 请配置!");
-            var path = dataRows[0]["Path"].AsString();
-            var level = dataRows[0]["Level"].AsInt();
+            var path = ObjectConverter.AsString(dataRows[0]["Path"]);
+            var level = ObjectConverter.AsInt(dataRows[0]["Level"]);
             var form = Global.Resources.Instantiate<UIFormBase>(path, Levels[level]);
             return form;
         }
