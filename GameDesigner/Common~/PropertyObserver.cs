@@ -7,10 +7,37 @@ using System.Threading.Tasks;
 namespace Net.Common
 {
     /// <summary>
+    /// 属性观察接口
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IPropertyObserver<T>
+    {
+        /// <summary>
+        /// 属性值
+        /// </summary>
+        T Value { get; set; }
+        /// <summary>
+        /// 当属性被修改事件
+        /// </summary>
+        Action<T> OnValueChanged { get; set; }
+        /// <summary>
+        /// 获取属性值
+        /// </summary>
+        /// <returns></returns>
+        T GetValue();
+        /// <summary>
+        /// 设置属性值
+        /// </summary>
+        /// <param name="value">新的属性值</param>
+        /// <param name="isNotify">是否通知事件</param>
+        void SetValue(T value, bool isNotify = true);
+    }
+
+    /// <summary>
     /// 属性观察类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PropertyObserver<T>
+    public class PropertyObserver<T> : IPropertyObserver<T>
     {
         protected T value;
         public T Value { get => GetValue(); set => SetValue(value); }
@@ -22,7 +49,6 @@ namespace Net.Common
             this.value = value;
             OnValueChanged = onValueChanged;
         }
-        public PropertyObserver(string name, bool available, Action<T> onValueChanged) { }
         
         public virtual T GetValue()
         {
@@ -37,8 +63,6 @@ namespace Net.Common
             if (isNotify) OnValueChanged?.Invoke(value);
         }
 
-        public void SetValueWithoutNotify(T value) => SetValue(value, false);
-
         public override string ToString()
         {
             return $"{value}";
@@ -49,48 +73,30 @@ namespace Net.Common
     /// 模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ObscuredPropertyObserver<T> : PropertyObserver<T>
+    public class ObscuredPropertyObserver<T> : IPropertyObserver<T>
     {
-        protected string name;
-        protected long valueAtk;
-        protected long valueAtkKey;
-        private byte crcValue;
+        protected PropertyDynamic<T> property;
 
-        public ObscuredPropertyObserver() 
-        { 
-            valueAtkKey = RandomHelper.Range(0, int.MaxValue);
-            Value = default;
-        }
+        public T Value { get => GetValue(); set => SetValue(value); }
+        public Action<T> OnValueChanged { get => property.OnValueChanged; set => property.OnValueChanged = value; }
+
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
         public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
         {
-            this.name = name;
-            Value = value;
-            OnValueChanged = onValueChanged;
+            property = new PropertyDynamic<T>(name, value, onValueChanged);
         }
 
-        public unsafe override T GetValue()
+        public unsafe T GetValue()
         {
-            var value = valueAtk ^ valueAtkKey;
-            var ptr = (byte*)&value;
-            var crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8);
-            if (this.crcValue != crcValue)
-            {
-                AntiCheatHelper.OnDetected?.Invoke(name, value, value);
-                return default;
-            }
-            var value1 = Unsafe.As<long, T>(ref value);
-            return value1;
+            property = property.Clone();
+            return property.GetValue();
         }
 
-        public unsafe override void SetValue(T value, bool isNotify = true)
+        public unsafe void SetValue(T value, bool isNotify = true)
         {
-            var value1 = Unsafe.As<T, long>(ref value);
-            valueAtk = value1 ^ valueAtkKey;
-            var ptr = (byte*)&value1;
-            crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8);
-            if (isNotify) OnValueChanged?.Invoke(value);
+            property = property.Clone();
+            property.SetValue(value, isNotify);
         }
     }
 
@@ -98,9 +104,13 @@ namespace Net.Common
     /// 属性观察自动类, 可模糊,不模糊
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PropertyObserverAuto<T> : ObscuredPropertyObserver<T>
+    public class PropertyObserverAuto<T> : IPropertyObserver<T>
     {
         private readonly bool available;
+        private IPropertyObserver<T> binding;
+        public T Value { get => GetValue(); set => SetValue(value); }
+        public Action<T> OnValueChanged { get => binding.OnValueChanged; set => binding.OnValueChanged = value; }
+
         public PropertyObserverAuto() { }
         /// <summary>
         /// 属性观察自动类构造
@@ -110,35 +120,21 @@ namespace Net.Common
         /// <param name="onValueChanged">当属性被修改事件</param>
         public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged)
         {
-            if (!AntiCheatHelper.IsActive | !available)
-                return;
-            this.name = name;
             this.available = available;
-            this.Value = default;
-            OnValueChanged = onValueChanged;
-        }
-
-        public override T GetValue()
-        {
-            if (available & AntiCheatHelper.IsActive) 
-                return base.GetValue();
-            return value;
-        }
-
-        public override void SetValue(T value, bool isNotify = true)
-        {
-            if (available & AntiCheatHelper.IsActive)
-                base.SetValue(value, isNotify);
+            if (!AntiCheatHelper.IsActive | !available)
+                binding = new PropertyObserver<T>(default, onValueChanged);
             else
-                SetValue1(value, isNotify);
+                binding = new ObscuredPropertyObserver<T>(name, default, onValueChanged);
         }
 
-        private void SetValue1(T value, bool isNotify = true)
+        public T GetValue()
         {
-            if (Equals(this.value, value))
-                return;
-            this.value = value;
-            if (isNotify) OnValueChanged?.Invoke(value);
+            return binding.GetValue();
+        }
+
+        public void SetValue(T value, bool isNotify = true)
+        {
+            binding.SetValue(value, isNotify);
         }
     }
 }

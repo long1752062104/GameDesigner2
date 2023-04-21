@@ -38,7 +38,7 @@
             byte crc = 0;
             for (int i = off; i < len; i++)
             {
-                crc = CRCCode[crc ^ buffer[i]];
+                crc ^= CRCCode[crc ^ buffer[i]];
             }
             return crc;
         }
@@ -48,7 +48,19 @@
             byte crc = 0;
             for (int i = off; i < len; i++)
             {
-                crc = CRCCode[crc ^ buffer[i]];
+                var value = buffer[i];
+                crc ^= CRCCode[crc ^ value];
+            }
+            return crc;
+        }
+
+        public unsafe static byte CRC8(byte* buffer, int off, int len, byte mask)
+        {
+            byte crc = 0;
+            for (int i = off; i < len; i++)
+            {
+                var value = buffer[i];
+                crc = (byte)(crc ^ CRCCode[crc ^ value] ^ mask);
             }
             return crc;
         }

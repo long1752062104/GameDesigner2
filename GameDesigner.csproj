@@ -96,6 +96,7 @@
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
     <Compile Include="GameDesigner\Common~\Command.cs" />
     <Compile Include="GameDesigner\Common~\NTransform.cs" />
+    <Compile Include="GameDesigner\Common~\PropertyDynamic.cs" />
     <Compile Include="GameDesigner\Common~\RoomData.cs" />
     <Compile Include="GameDesigner\Common~\PropertyObserver.cs" />
     <Compile Include="GameDesigner\ECS~\Component.cs" />

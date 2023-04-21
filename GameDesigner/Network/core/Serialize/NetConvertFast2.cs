@@ -6,6 +6,7 @@
     using Net.System;
     using Net.Share;
     using Net.Event;
+    using Binding;
 
     /// <summary>
     /// 快速序列化2接口--动态匹配
@@ -56,72 +57,6 @@
         /// 收集的绑定类型列表
         /// </summary>
         Dictionary<Type, Type> BindTypes { get; }
-    }
-
-    public struct BaseBind<T> : ISerialize<T>, ISerialize
-    {
-        public void Write(T value, Segment stream)
-        {
-            stream.WriteValue(value);
-        }
-        public T Read(Segment stream)
-        {
-            return stream.ReadValue<T>();
-        }
-
-        public void WriteValue(object value, Segment stream)
-        {
-            stream.WriteValue(value);
-        }
-
-        object ISerialize.ReadValue(Segment stream)
-        {
-            return stream.ReadValue<T>();
-        }
-    }
-
-    public struct BaseArrayBind<T> : ISerialize<T[]>, ISerialize
-    {
-        public void Write(T[] value, Segment stream)
-        {
-            stream.WriteArray(value);
-        }
-        public T[] Read(Segment stream)
-        {
-            return stream.ReadArray<T>();
-        }
-
-        public void WriteValue(object value, Segment stream)
-        {
-            stream.WriteArray(value);
-        }
-
-        object ISerialize.ReadValue(Segment stream)
-        {
-            return stream.ReadArray<T>();
-        }
-    }
-
-    public struct BaseListBind<T> : ISerialize<List<T>>, ISerialize
-    {
-        public void Write(List<T> value, Segment stream)
-        {
-            stream.WriteList(value);
-        }
-        public List<T> Read(Segment stream)
-        {
-            return stream.ReadList<T>();
-        }
-
-        public void WriteValue(object value, Segment stream)
-        {
-            stream.WriteList(value);
-        }
-
-        object ISerialize.ReadValue(Segment stream)
-        {
-            return stream.ReadList<T>();
-        }
     }
 
     internal class TypeBind
