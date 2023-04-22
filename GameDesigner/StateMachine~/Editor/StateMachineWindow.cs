@@ -293,7 +293,7 @@ namespace GameDesigner
             if (state == null)
                 return;
 
-            if (state.makeTransition)
+            if (makeTransition)
             {
                 Vector2 startpos = new Vector2(state.rect.x + 80, state.rect.y + 15);
                 Vector2 endpos = currentEvent.mousePosition;
@@ -308,7 +308,7 @@ namespace GameDesigner
                             {
                                 if (t.nextState == s)// 如果拖动的线包含在自身状态盒矩形内,则不添加连接线
                                 { 
-                                    state.makeTransition = false;
+                                    makeTransition = false;
                                     return;
                                 }
                             }
@@ -316,7 +316,7 @@ namespace GameDesigner
                             break;
                         }
                     }
-                    state.makeTransition = false;
+                    makeTransition = false;
                 }
             }
         }
@@ -341,7 +341,7 @@ namespace GameDesigner
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, delegate
                 {
-                    state.makeTransition = true;
+                    makeTransition = true;
                 });
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, delegate
@@ -515,6 +515,8 @@ namespace GameDesigner
         }
 
         bool dragState = false;
+        private bool makeTransition;
+
         protected Rect DragStateBoxPosition(Rect dragRect, string name, GUIStyle style = null, int eventButton = 0)
         {
             GUI.Box(dragRect, name, style);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -37,20 +38,13 @@ namespace GameDesigner
     /// <summary>
     /// 状态 -- v2017/12/6
     /// </summary>
-    [System.Serializable]
-    public sealed class State : IState
+    [Serializable]
+    public sealed class State : StateBase
     {
         /// <summary>
         /// 状态连接集合
         /// </summary>
 		public List<Transition> transitions = new List<Transition>();
-        /// <summary>
-        /// 状态行为集合
-        /// </summary>
-#if UNITY_2020_1_OR_NEWER
-        [NonReorderable]
-#endif
-        public List<StateBehaviour> behaviours = new List<StateBehaviour>();
         /// <summary>
         /// 动作系统 使用为真 , 不使用为假
         /// </summary>
@@ -86,26 +80,28 @@ namespace GameDesigner
 
         public State() { }
 
+#if UNITY_EDITOR
         /// <summary>
         /// 创建状态
         /// </summary>
-		public static State CreateStateInstance(StateMachine stateMachine, string stateName, Vector2 position)
+        public static State CreateStateInstance(StateMachine stateMachine, string stateName, Vector2 position)
         {
-            State state = new State(stateMachine);
+            var state = new State(stateMachine);
             state.name = stateName;
             state.rect.position = position;
             return state;
         }
+#endif
 
         /// <summary>
         /// 构造函数
         /// </summary>
-		public State(StateMachine _stateMachine)
+        public State(StateMachine _stateMachine)
         {
             stateMachine = _stateMachine;
             ID = stateMachine.states.Count;
             stateMachine.states.Add(this);
-            actions.Add(new StateAction() { stateMachine = stateMachine });
+            actions.Add(new StateAction() { ID = ID, stateMachine = stateMachine });
             stateMachine.UpdateStates();
         }
 
@@ -124,7 +120,7 @@ namespace GameDesigner
                 actionIndex = Random.Range(0, actions.Count);
             else
                 actionIndex++;
-            foreach (var behaviour in action.behaviours) //当子动作的动画开始进入时调用
+            foreach (ActionBehaviour behaviour in action.behaviours) //当子动作的动画开始进入时调用
                 if (behaviour.Active)
                     behaviour.OnEnter(Action);
             switch (stateMachine.animMode)
@@ -177,7 +173,7 @@ namespace GameDesigner
                 }
                 else OnStop();
             }
-            foreach (var behaviour in action.behaviours)
+            foreach (ActionBehaviour behaviour in action.behaviours)
                 if (behaviour.Active)
                     behaviour.OnUpdate(action);
         }
@@ -187,7 +183,7 @@ namespace GameDesigner
         /// </summary>
 		public void OnExitState()
         {
-            foreach (var behaviour in Action.behaviours) //当子动作结束
+            foreach (ActionBehaviour behaviour in Action.behaviours) //当子动作结束
                 if (behaviour.Active)
                     behaviour.OnExit(Action);
         }
@@ -197,7 +193,7 @@ namespace GameDesigner
         /// </summary>
         private void OnActionExit()
         {
-            foreach (var behaviour in behaviours) //当子动作停止
+            foreach (StateBehaviour behaviour in behaviours) //当子动作停止
                 if (behaviour.Active)
                     behaviour.OnActionExit();
         }
@@ -207,10 +203,10 @@ namespace GameDesigner
         /// </summary>
         public void OnStop()
         {
-            foreach (var behaviour in behaviours) //当子动作停止
+            foreach (StateBehaviour behaviour in behaviours) //当子动作停止
                 if (behaviour.Active)
                     behaviour.OnStop();
-            foreach (var behaviour in Action.behaviours) //当子动作停止
+            foreach (ActionBehaviour behaviour in Action.behaviours) //当子动作停止
                 if (behaviour.Active)
                     behaviour.OnStop(Action);
         }

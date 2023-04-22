@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -16,7 +15,15 @@ namespace GameDesigner
     public class StateManagerEditor : Editor
     {
         private static StateManager stateManager = null;
-
+        public static string createScriptName = "NewStateBehaviour";
+		public static string stateActionScriptPath = "/Actions/StateActions";
+		public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
+		public static string transitionScriptPath = "/Actions/Transitions";
+        private static bool findBehaviours;
+        private static bool findBehaviours1;
+        private static bool findBehaviours2;
+        private static bool compiling;
+        
         void OnEnable()
         {
             stateManager = target as StateManager;
@@ -119,7 +126,7 @@ namespace GameDesigner
 
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[18]))
                 {
-                    s.actions.Add(new StateAction() { stateMachine = s.stateMachine });
+                    s.actions.Add(new StateAction() { ID = s.ID, stateMachine = s.stateMachine });
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[19]))
                 {
@@ -141,31 +148,30 @@ namespace GameDesigner
                         act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[20] + a, "actions[" + a + "]"), true);
                         if (foldoutRect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                         {
-                            s.actionMenuIndex = a;
-                            GenericMenu menu = new GenericMenu();
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[21]), false, delegate ()
+                            var menu = new GenericMenu();
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[21]), false, (obj) =>
                             {
-                                s.actions.RemoveAt(s.actionMenuIndex);
-                                return;
-                            });
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[22]), false, delegate ()
+                                s.actions.RemoveAt((int)obj);
+                            }, a);
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[22]), false, (obj) =>
                             {
-                                StateSystem.Component = s.actions[s.actionMenuIndex];
-                            });
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[23]), StateSystem.CopyComponent!=null ? true : false, ()=>
+                                StateSystem.Component = s.actions[(int)obj];
+                            }, a);
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[23]), StateSystem.CopyComponent != null, () =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
                                     s.actions.Add(Net.CloneHelper.DeepCopy<StateAction>(stateAction));
                             });
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[24]), StateSystem.CopyComponent!=null ? true : false, () =>
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[24]), StateSystem.CopyComponent != null, (obj) =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
                                 {
-                                    if (stateAction == s.actions[s.actionMenuIndex])//如果要黏贴的动作是复制的动作则返回
+                                    var index = (int)obj;
+                                    if (stateAction == s.actions[index])//如果要黏贴的动作是复制的动作则返回
                                         return;
-                                    s.actions[s.actionMenuIndex] = Net.CloneHelper.DeepCopy<StateAction>(stateAction);
+                                    s.actions[index] = Net.CloneHelper.DeepCopy<StateAction>(stateAction);
                                 }
-                            });
+                            }, a);
                             menu.ShowAsContext();
                         }
                         if (act.foldout)
@@ -187,24 +193,26 @@ namespace GameDesigner
                                 EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), act.behaviours[i].name, GUI.skin.GetStyle("BoldLabel"));
                                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                                 {
-                                    act.behaviours[act.behaviourMenuIndex].OnDestroyComponent();
+                                    act.behaviours[i].OnDestroyComponent();
                                     act.behaviours.RemoveAt(i);
                                     continue;
                                 }
                                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                                 {
                                     var menu = new GenericMenu();
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[47]), false, delegate ()
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[47]), false, (obj) =>
                                     {
-                                        act.behaviours[act.behaviourMenuIndex].OnDestroyComponent();
-                                        act.behaviours.RemoveAt(act.behaviourMenuIndex);
+                                        var index = (int)obj;
+                                        act.behaviours[index].OnDestroyComponent();
+                                        act.behaviours.RemoveAt(index);
                                         return;
-                                    });
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[48]), false, delegate ()
+                                    }, i);
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[48]), false, (obj) =>
                                     {
-                                        StateSystem.CopyComponent = act.behaviours[act.behaviourMenuIndex];
-                                    });
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[49]), StateSystem.CopyComponent != null ? true : false, delegate ()
+                                        var index = (int)obj;
+                                        StateSystem.CopyComponent = act.behaviours[index];
+                                    }, i);
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[49]), StateSystem.CopyComponent != null, ()=>
                                     {
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
@@ -212,23 +220,24 @@ namespace GameDesigner
                                             act.behaviours.Add(ab);
                                         }
                                     });
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[50]), StateSystem.CopyComponent!=null ? true : false, delegate ()
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[50]), StateSystem.CopyComponent != null, (obj) =>
                                     {
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
-                                            if (behaviour.name == act.behaviours[act.behaviourMenuIndex].name)
-                                                act.behaviours[act.behaviourMenuIndex] = (ActionBehaviour)Net.CloneHelper.DeepCopy(StateSystem.CopyComponent);
+                                            var index = (int)obj;
+                                            if (behaviour.name == act.behaviours[index].name)
+                                                act.behaviours[index] = (ActionBehaviour)Net.CloneHelper.DeepCopy(StateSystem.CopyComponent);
                                         }
-                                    });
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[78]), false, delegate ()
+                                    }, i);
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[78]), false, (obj) =>
                                     {
-                                        string scriptName = act.behaviours[act.behaviourMenuIndex].name;
+                                        var index = (int)obj;
+                                        var scriptName = act.behaviours[index].name;
                                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                                             sequence = new Net.Helper.SequencePoint();
                                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
-                                    });
+                                    }, i);
                                     menu.ShowAsContext();
-                                    act.behaviourMenuIndex = i;
                                 }
                                 EditorGUILayout.EndHorizontal();
                                 if (act.behaviours[i].show)
@@ -246,8 +255,8 @@ namespace GameDesigner
                             Rect r = EditorGUILayout.GetControlRect();
                             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
                             if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[51]))
-                                act.findBehaviours = true;
-                            if (act.findBehaviours)
+                                findBehaviours1 = true;
+                            if (findBehaviours1)
                             {
                                 EditorGUILayout.Space();
                                 try
@@ -261,17 +270,17 @@ namespace GameDesigner
                                             stb.InitMetadatas(act.stateMachine);
                                             stb.ID = s.ID;
                                             act.behaviours.Add(stb);
-                                            act.findBehaviours = false;
+                                            findBehaviours1 = false;
                                             EditorUtility.SetDirty(act.stateMachine);
                                         }
-                                        if (s.compiling & type.Name == act.createScriptName)
+                                        if (compiling & type.Name == createScriptName)
                                         {
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas(sm.stateMachine);
                                             stb.ID = s.ID;
                                             act.behaviours.Add(stb);
-                                            act.findBehaviours = false;
-                                            s.compiling = false;
+                                            findBehaviours1 = false;
+                                            compiling = false;
                                             EditorUtility.SetDirty(act.stateMachine);
                                         }
                                     }
@@ -280,19 +289,19 @@ namespace GameDesigner
                                 EditorGUILayout.Space();
                                 EditorGUI.indentLevel = 0;
                                 EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[52]);
-                                IState.StateActionScriptPath = EditorGUILayout.TextField(IState.StateActionScriptPath);
+                                stateActionScriptPath = EditorGUILayout.TextField(stateActionScriptPath);
                                 Rect addRect = EditorGUILayout.GetControlRect();
-                                act.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), act.createScriptName);
+                                createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
                                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 100f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[53]))
                                 {
                                     var text = Resources.Load<TextAsset>("ActionBehaviourScript");
-                                    var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);// File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/ActionBehaviourScript.script");
-                                    scriptCode[7] = scriptCode[7].Replace("ActionBehaviourScript", act.createScriptName);
-                                    ScriptTools.CreateScript(Application.dataPath + IState.StateActionScriptPath, act.createScriptName, scriptCode);
-                                    s.compiling = true;
+                                    var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
+                                    scriptCode[7] = scriptCode[7].Replace("ActionBehaviourScript", createScriptName);
+                                    ScriptTools.CreateScript(Application.dataPath + stateActionScriptPath, createScriptName, scriptCode);
+                                    compiling = true;
                                 }
                                 if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[54]))
-                                    act.findBehaviours = false;
+                                    findBehaviours1 = false;
                             }
                             EditorGUILayout.Space();
                         }
@@ -326,24 +335,26 @@ namespace GameDesigner
                 EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), s.behaviours[i].name, GUI.skin.GetStyle("BoldLabel"));
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
-                    s.behaviours[s.behaviourMenuIndex].OnDestroyComponent();
+                    s.behaviours[i].OnDestroyComponent();
                     s.behaviours.RemoveAt(i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                 {
                     var menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[55]), false, delegate ()
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[55]), false, (obj) =>
                     {
-                        s.behaviours[s.behaviourMenuIndex].OnDestroyComponent();
-                        s.behaviours.RemoveAt(s.behaviourMenuIndex);
+                        var index = (int)obj;
+                        s.behaviours[index].OnDestroyComponent();
+                        s.behaviours.RemoveAt(index);
                         return;
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[56]), false, delegate ()
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[56]), false, (obj) =>
                     {
-                        StateSystem.CopyComponent = s.behaviours[s.behaviourMenuIndex];
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[57]), StateSystem.CopyComponent!=null ? true : false, delegate ()
+                        var index = (int)obj;
+                        StateSystem.CopyComponent = s.behaviours[index];
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[57]), StateSystem.CopyComponent != null, delegate ()
                     {
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
@@ -351,23 +362,24 @@ namespace GameDesigner
                             s.behaviours.Add(ab);
                         }
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[58]), StateSystem.CopyComponent!=null ? true : false, delegate ()
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[58]), StateSystem.CopyComponent != null, (obj) =>
                     {
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
-                            if (behaviour.name == s.behaviours[s.behaviourMenuIndex].name)
-                                s.behaviours[s.behaviourMenuIndex] = (StateBehaviour)Net.CloneHelper.DeepCopy(behaviour);
+                            var index = (int)obj;
+                            if (behaviour.name == s.behaviours[index].name)
+                                s.behaviours[index] = (StateBehaviour)Net.CloneHelper.DeepCopy(behaviour);
                         }
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[79]), false, delegate ()
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[79]), false, (obj) =>
                     {
-                        string scriptName = s.behaviours[s.behaviourMenuIndex].name;
+                        var index = (int)obj;
+                        var scriptName = s.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                             sequence = new Net.Helper.SequencePoint();
                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
-                    });
+                    }, i);
                     menu.ShowAsContext();
-                    s.behaviourMenuIndex = i;
                 }
                 EditorGUILayout.EndHorizontal();
                 if (s.behaviours[i].show)
@@ -389,11 +401,8 @@ namespace GameDesigner
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
             if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[59]))
-            {
-                s.findBehaviours = true;
-            }
-
-            if (s.findBehaviours)
+                findBehaviours = true;
+            if (findBehaviours)
             {
                 try
                 {
@@ -407,17 +416,17 @@ namespace GameDesigner
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             s.behaviours.Add(stb);
-                            s.findBehaviours = false;
+                            findBehaviours = false;
                             EditorUtility.SetDirty(s.stateMachine);
                         }
-                        if (s.compiling & type.Name == s.createScriptName)
+                        if (compiling & type.Name == createScriptName)
                         {
                             StateBehaviour stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             s.behaviours.Add(stb);
-                            s.findBehaviours = false;
-                            s.compiling = false;
+                            findBehaviours = false;
+                            compiling = false;
                             EditorUtility.SetDirty(s.stateMachine);
                         }
                     }
@@ -426,22 +435,19 @@ namespace GameDesigner
                 EditorGUILayout.Space();
                 EditorGUI.indentLevel = 0;
                 EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[60]);
-                IState.StateBehaviourScriptPath = EditorGUILayout.TextField(IState.StateBehaviourScriptPath);
+                stateBehaviourScriptPath = EditorGUILayout.TextField(stateBehaviourScriptPath);
                 Rect addRect = EditorGUILayout.GetControlRect();
-                s.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), s.createScriptName);
+                createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[61]))
                 {
                     var text = Resources.Load<TextAsset>("StateBehaviourScript");
                     var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
-                    //string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/StateBehaviourScript.script");
-                    scriptCode[7] = scriptCode[7].Replace("StateBehaviourScript", s.createScriptName);
-                    ScriptTools.CreateScript(Application.dataPath + IState.StateBehaviourScriptPath, s.createScriptName, scriptCode);
-                    s.compiling = true;
+                    scriptCode[7] = scriptCode[7].Replace("StateBehaviourScript", createScriptName);
+                    ScriptTools.CreateScript(Application.dataPath + stateBehaviourScriptPath, createScriptName, scriptCode);
+                    compiling = true;
                 }
                 if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[62]))
-                {
-                    s.findBehaviours = false;
-                }
+                    findBehaviours = false;
             }
         }
 
@@ -639,24 +645,26 @@ namespace GameDesigner
                 tr.behaviours[i].Active = EditorGUI.ToggleLeft(new Rect(rect.x + 5, rect.y, 30, 20), GUIContent.none, tr.behaviours[i].Active);
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
-                    tr.behaviours[tr.behaviourMenuIndex].OnDestroyComponent();
+                    tr.behaviours[i].OnDestroyComponent();
                     tr.behaviours.RemoveAt(i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                 {
-                    GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[69]), false, delegate ()
+                    var menu = new GenericMenu();
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[69]), false, (obj) =>
                     {
-                        tr.behaviours[tr.behaviourMenuIndex].OnDestroyComponent();
-                        tr.behaviours.RemoveAt(tr.behaviourMenuIndex);
+                        var index = (int)obj;
+                        tr.behaviours[index].OnDestroyComponent();
+                        tr.behaviours.RemoveAt(index);
                         return;
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[70]), false, delegate ()
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[70]), false, (obj) =>
                     {
-                        StateSystem.CopyComponent = tr.behaviours[tr.behaviourMenuIndex];
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[71]), StateSystem.CopyComponent!=null ? true : false, () =>
+                        var index = (int)obj;
+                        StateSystem.CopyComponent = tr.behaviours[index];
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[71]), StateSystem.CopyComponent != null, () =>
                     {
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
                         {
@@ -664,21 +672,22 @@ namespace GameDesigner
                             tr.behaviours.Add(ab);
                         }
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[72]), StateSystem.CopyComponent!=null ? true : false, ()=>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[72]), StateSystem.CopyComponent != null, (obj) =>
                     {
+                        var index = (int)obj;
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
-                            if (behaviour.name == tr.behaviours[tr.behaviourMenuIndex].name)
-                                tr.behaviours[tr.behaviourMenuIndex] = (TransitionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                    });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[80]), false, () =>
+                            if (behaviour.name == tr.behaviours[index].name)
+                                tr.behaviours[index] = (TransitionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
+                    }, i);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[80]), false, (obj) =>
                     {
-                        string scriptName = tr.behaviours[tr.behaviourMenuIndex].name;
+                        var index = (int)obj;
+                        var scriptName = tr.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                             sequence = new Net.Helper.SequencePoint();
                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
-                    });
+                    }, i);
                     menu.ShowAsContext();
-                    tr.behaviourMenuIndex = i;
                 }
                 EditorGUILayout.EndHorizontal();
                 if (tr.behaviours[i].show)
@@ -702,11 +711,8 @@ namespace GameDesigner
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
             if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[73]))
-            {
-                tr.findBehaviours = true;
-            }
-
-            if (tr.findBehaviours)
+                findBehaviours2 = true;
+            if (findBehaviours2)
             {
                 Type[] types = Assembly.Load("Assembly-CSharp").GetTypes().Where(t => t.IsSubclassOf(typeof(TransitionBehaviour))).ToArray();
                 EditorGUILayout.Space();
@@ -717,36 +723,33 @@ namespace GameDesigner
                         TransitionBehaviour stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         tr.behaviours.Add(stb);
-                        tr.findBehaviours = false;
+                        findBehaviours2 = false;
                     }
-                    if (tr.compiling & type.Name == tr.createScriptName)
+                    if (compiling & type.Name == createScriptName)
                     {
                         TransitionBehaviour stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         tr.behaviours.Add(stb);
-                        tr.findBehaviours = false;
-                        tr.compiling = false;
+                        findBehaviours2 = false;
+                        compiling = false;
                     }
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[74]);
-                IState.TransitionScriptPath = EditorGUILayout.TextField(IState.TransitionScriptPath);
+                transitionScriptPath = EditorGUILayout.TextField(transitionScriptPath);
                 Rect addRect = EditorGUILayout.GetControlRect();
-                tr.createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), tr.createScriptName);
+                createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
                 if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[75]))
                 {
                     var text = Resources.Load<TextAsset>("TransitionBehaviorScript");
                     var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
-                    //string[] scriptCode = File.ReadAllLines(GetGameDesignerPath + "/Editor/Resources/TransitionBehaviorScript.script");
-                    scriptCode[7] = scriptCode[7].Replace("TransitionBehaviorScript", tr.createScriptName);
-                    ScriptTools.CreateScript(Application.dataPath + IState.TransitionScriptPath, tr.createScriptName, scriptCode);
-                    tr.compiling = true;
+                    scriptCode[7] = scriptCode[7].Replace("TransitionBehaviorScript", createScriptName);
+                    ScriptTools.CreateScript(Application.dataPath + transitionScriptPath, createScriptName, scriptCode);
+                    compiling = true;
                 }
                 if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[76]))
-                {
-                    tr.findBehaviours = false;
-                }
+                    findBehaviours2 = false;
             }
             GUILayout.Space(10);
             EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.LANGUAGE[77], MessageType.Info);

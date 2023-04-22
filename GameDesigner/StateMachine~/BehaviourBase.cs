@@ -304,7 +304,7 @@
         public void InitMetadatas(StateMachine stateMachine, Type type)
         {
             this.stateMachine = stateMachine;
-            name = type.FullName;
+            name = type.ToString();
             var fields = type.GetFields();
             metadatas.Clear();
             foreach (var field in fields)
@@ -427,6 +427,32 @@
         public ClassFileInfo GetClassFileInfo([CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             return new ClassFileInfo(memberName, sourceFilePath, sourceLineNumber);
+        }
+
+        /// <summary>
+        /// 初始化真实类型并且赋值记录的值
+        /// </summary>
+        /// <returns></returns>
+        public BehaviourBase InitBehaviour()
+        {
+            var type = AssemblyHelper.GetType(name);
+            var runtimeBehaviour = (BehaviourBase)Activator.CreateInstance(type);
+            runtimeBehaviour.stateMachine = stateMachine;
+            runtimeBehaviour.Active = Active;
+            runtimeBehaviour.ID = ID;
+            runtimeBehaviour.name = name;
+            runtimeBehaviour.metadatas = metadatas;
+            foreach (var metadata in metadatas)
+            {
+                var field = type.GetField(metadata.name);
+                if (field == null)
+                    continue;
+                var value = metadata.Read();//必须先读值才能赋值下面字段和对象
+                metadata.field = field;
+                metadata.target = runtimeBehaviour;
+                field.SetValue(runtimeBehaviour, value);
+            }
+            return runtimeBehaviour;
         }
     }
 

@@ -1,6 +1,5 @@
 ﻿namespace GameDesigner
 {
-    using Net.Helper;
     using System;
 
     /// <summary>
@@ -32,27 +31,5 @@
         /// </summary>
         /// <param name="action"></param>
         public virtual void OnStop(StateAction action) { }
-
-        public ActionBehaviour InitBehaviour()
-        {
-            var type = AssemblyHelper.GetType(name);
-            var runtimeBehaviour = (ActionBehaviour)Activator.CreateInstance(type);
-            runtimeBehaviour.stateMachine = stateMachine;
-            runtimeBehaviour.Active = Active;
-            runtimeBehaviour.ID = ID;
-            runtimeBehaviour.name = name;
-            runtimeBehaviour.metadatas = metadatas;
-            foreach (var metadata in metadatas)
-            {
-                var field = type.GetField(metadata.name);
-                if (field == null)
-                    continue;
-                var value = metadata.Read();//必须先读值才能赋值下面字段和对象
-                metadata.field = field;
-                metadata.target = runtimeBehaviour;
-                field.SetValue(runtimeBehaviour, value);
-            }
-            return runtimeBehaviour;
-        }
     }
 }

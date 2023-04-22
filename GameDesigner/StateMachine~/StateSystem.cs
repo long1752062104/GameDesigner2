@@ -1,6 +1,4 @@
-﻿using Object = UnityEngine.Object;
-
-namespace GameDesigner
+﻿namespace GameDesigner
 {
     /// <summary>
     /// 状态机系统

@@ -61,16 +61,18 @@
             {
                 for (int i = 0; i < state.behaviours.Count; i++)
                 {
-                    state.behaviours[i] = state.behaviours[i].InitBehaviour();
-                    state.behaviours[i].OnInit();
+                    var behaviour = (StateBehaviour)state.behaviours[i].InitBehaviour();
+                    state.behaviours[i] = behaviour;
+                    behaviour.OnInit();
                 }
                 foreach (var t in state.transitions)
                 {
                     for (int i = 0; i < t.behaviours.Count; i++)
                     {
-                        t.behaviours[i] = t.behaviours[i].InitBehaviour();
-                        t.behaviours[i].transitionID = i;
-                        t.behaviours[i].OnInit();
+                        var behaviour = (TransitionBehaviour)t.behaviours[i].InitBehaviour();
+                        behaviour.transitionID = i;
+                        t.behaviours[i] = behaviour;
+                        behaviour.OnInit();
                     }
                 }
                 if (state.actionSystem)
@@ -79,8 +81,9 @@
                     {
                         for (int i = 0; i < action.behaviours.Count; i++)
                         {
-                            action.behaviours[i] = action.behaviours[i].InitBehaviour();
-                            action.behaviours[i].OnInit();
+                            var behaviour = (ActionBehaviour)action.behaviours[i].InitBehaviour();
+                            action.behaviours[i] = behaviour;
+                            behaviour.OnInit();
                         }
                     }
                 }
@@ -102,9 +105,9 @@
         {
             if (state.actionSystem)
                 state.OnUpdateState();
-            for (int i = 0; i < state.behaviours.Count; i++) //用户自定义脚本行为
-                if (state.behaviours[i].Active)
-                    state.behaviours[i].OnUpdate();
+            foreach (StateBehaviour behaviour in state.behaviours)
+                if (behaviour.Active)
+                    behaviour.OnUpdate();
             for (int i = 0; i < state.transitions.Count; i++)
                 OnTransition(state.transitions[i]);
         }
@@ -115,9 +118,9 @@
         /// <param name="transition">要执行的连接线条</param>
         public void OnTransition(Transition transition)
         {
-            for (int i = 0; i < transition.behaviours.Count; i++)
-                if (transition.behaviours[i].Active)
-                    transition.behaviours[i].OnUpdate(ref transition.isEnterNextState);
+            foreach (TransitionBehaviour behaviour in transition.behaviours)
+                if (behaviour.Active)
+                    behaviour.OnUpdate(ref transition.isEnterNextState);
             if (transition.model == TransitionModel.ExitTime)
             {
                 transition.time += Time.deltaTime;
@@ -150,11 +153,11 @@
         /// <param name="enterState">要进入的状态</param>
         public void EnterNextState(State currState, State enterState)
         {
-            foreach (var behaviour in currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
+            foreach (StateBehaviour behaviour in currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
                 if (behaviour.Active)
                     behaviour.OnExit();
             OnStateTransitionExit(currState);
-            foreach (var behaviour in enterState.behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
+            foreach (StateBehaviour behaviour in enterState.behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
                 if (behaviour.Active)
                     behaviour.OnEnter();
             if (currState.actionSystem)

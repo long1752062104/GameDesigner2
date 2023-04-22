@@ -1,20 +1,20 @@
 ﻿namespace GameDesigner
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// 状态连接组件 2017年12月6日
     /// 版本修改2019.8.27
     /// </summary>
     [System.Serializable]
-    public sealed class Transition : IState
+    public sealed class Transition : StateBase
     {
         public int currStateID, nextStateID;
         /// <summary>
         /// 当前状态
         /// </summary>
-		public State currState { 
-            get {
+		public State currState 
+        { 
+            get 
+            {
                 foreach (var item in stateMachine.states)
                     if (item.ID == currStateID)
                         return item;
@@ -24,7 +24,8 @@
         /// <summary>
         /// 下一个状态
         /// </summary>
-		public State nextState {
+		public State nextState 
+        {
             get
             {
                 foreach (var item in stateMachine.states)
@@ -40,15 +41,11 @@
         /// <summary>
         /// 当前时间
         /// </summary>
-		public float time = 0;
+		public float time;
         /// <summary>
         /// 结束时间
         /// </summary>
-		public float exitTime = 1;
-        /// <summary>
-        /// 连接行为
-        /// </summary>
-		public List<TransitionBehaviour> behaviours = new List<TransitionBehaviour>();
+		public float exitTime = 1f;
         /// <summary>
         /// 是否进入下一个状态?
         /// </summary>
@@ -65,11 +62,13 @@
         /// <returns></returns>
 		public static Transition CreateTransitionInstance(State state, State nextState, string transitionName = "New Transition")
         {
-            Transition t = new Transition();
-            t.name = transitionName;
-            t.currStateID = state.ID;
-            t.nextStateID = nextState.ID;
-            t.stateMachine = state.stateMachine;
+            var t = new Transition
+            {
+                name = transitionName,
+                currStateID = state.ID,
+                nextStateID = nextState.ID,
+                stateMachine = state.stateMachine
+            };
             state.transitions.Add(t);
             for (int i = 0; i < state.transitions.Count; i++)
                 state.transitions[i].ID = i;

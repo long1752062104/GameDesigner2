@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace GameDesigner
 {
@@ -6,69 +7,72 @@ namespace GameDesigner
     /// 状态基类
     /// </summary>
     [System.Serializable]
-    public class IState
+    public class StateBase
     {
         public string name;
         public int ID, perID;
-#if UNITY_EDITOR || DEBUG || DEBUG
-        /// <summary>
-        /// 查找行为组件
-        /// </summary>
-        [HideInInspector]
-        public bool findBehaviours = false;
-        /// <summary>
-        /// 绘制状态连接线条
-        /// </summary>
-		[HideInInspector]
-        public bool makeTransition = false;
-        /// <summary>
-        /// 绘制蓝图获得值线条
-        /// </summary>
-		[HideInInspector]
-        public bool makeGetValueTransition = false;
-        /// <summary>
-        /// 绘制蓝图运行下一个节点线条
-        /// </summary>
-		[HideInInspector]
-        public bool makeRuntimeTransition = false;
-        /// <summary>
-        /// 绘制蓝图运行线条
-        /// </summary>
-		[HideInInspector]
-        public bool makeOutRuntimeTransition = false;
-        /// <summary>
-        /// 创建脚本名称
-        /// </summary>
-		[HideInInspector]
-        public string createScriptName = "NewStateBehaviour";
-        /// <summary>
-        /// 创建脚本路径
-        /// </summary>
-		public static string StateActionScriptPath = "/Actions/StateActions";
-        /// <summary>
-        /// 创建脚本路径
-        /// </summary>
-		public static string StateBehaviourScriptPath = "/Actions/StateBehaviours";
-        /// <summary>
-        /// 创建脚本路径
-        /// </summary>
-		public static string TransitionScriptPath = "/Actions/Transitions";
-        /// <summary>
-        /// 展开编辑器 和 添加脚本编译状态
-        /// </summary>
-		[HideInInspector]
-        public bool foldout = true, compiling = false;
-        /// <summary>
-        /// 右键行为脚本存储行为的索引 和 动作菜单索引
-        /// </summary>
-		[HideInInspector]
-        public int behaviourMenuIndex = 0, actionMenuIndex = 0;
+#if UNITY_2020_1_OR_NEWER
+        [NonReorderable]
 #endif
-        /// <summary>
-        /// 蓝图 和 状态 的编辑器矩形
-        /// </summary>
-        public Rect rect = new Rect(10, 10, 150, 30);
+        public List<BehaviourBase> behaviours = new List<BehaviourBase>();
         public StateMachine stateMachine = null;
-        public StateManager stateManager { get { return stateMachine.stateManager; } }
+        public StateManager stateManager => stateMachine.stateManager;
+
+#if UNITY_EDITOR
+        [HideInInspector]
+        public bool foldout = true;
+        public Rect rect = new Rect(10, 10, 150, 30);
+#endif
+
+        /// <summary>
+        /// 添加状态行为组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T AddComponent<T>() where T : BehaviourBase, new()
+        {
+            return AddComponent(new T());
+        }
+
+        /// <summary>
+        /// 添加状态行为组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="component"></param>
+        /// <returns></returns>
+        public T AddComponent<T>(T component) where T : BehaviourBase
+        {
+            component.stateMachine = stateMachine;
+            component.ID = ID;
+            component.name = component.GetType().ToString();
+            return component;
+        }
+
+        /// <summary>
+        /// 获取状态组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetComponent<T>() where T : BehaviourBase
+        {
+            for (int i = 0; i < behaviours.Count; i++)
+                if (behaviours[i] is T component)
+                    return component;
+            return null;
+        }
+
+        /// <summary>
+        /// 获取多个状态组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T[] GetComponents<T>() where T : BehaviourBase
+        {
+            var components = new List<T>();
+            for (int i = 0; i < behaviours.Count; i++)
+                if (behaviours[i] is T component)
+                    components.Add(component);
+            return components.ToArray();
+        }
     }
 }
