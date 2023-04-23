@@ -122,7 +122,7 @@ namespace Framework
         }
     }
 
-    public partial class NetworkManager : MonoBehaviour
+    public class NetworkManager : MonoBehaviour
     {
         public LogMode logMode = LogMode.Default;
 #if UNITY_2020_1_OR_NEWER

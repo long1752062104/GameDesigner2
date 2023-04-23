@@ -7,7 +7,7 @@ namespace Framework
     /// <summary>
     /// ui管理器, 内置两个基础界面 Message和Loading, 请分写此组件定义你的其他界面
     /// </summary>
-    public partial class UIManager : MonoBehaviour
+    public class UIManager : MonoBehaviour
     {
         public Transform UIRoot;
         public Transform[] Levels;
@@ -19,11 +19,23 @@ namespace Framework
         [SerializeField] private UIFormBase _Message;
         [SerializeField] private UIFormBase _Tips;
 
-        private void Awake()
+        public virtual void Awake()
         {
             Loading = _Loading;
             Message = _Message;
             Tips = _Tips;
+            AddForm(_Loading); 
+            AddForm(_Message);
+            AddForm(_Tips);
+        }
+
+        /// <summary>
+        /// 将form界面添加到所有界面字典里面
+        /// </summary>
+        /// <param name="form"></param>
+        public void AddForm(UIFormBase form)
+        {
+            formDict[form.GetType().Name] = form;
         }
 
         /// <summary>
@@ -107,7 +119,10 @@ namespace Framework
             if (formStack.Count > 0)
             {
                 if (form != formStack.Peek())
+                {
+                    form.HideUI(isBack);
                     return;
+                }
                 form = formStack.Pop();//弹出自己的面板
                 form.HideUI(isBack);
                 if (formStack.Count > 0)
@@ -116,6 +131,10 @@ namespace Framework
                     form.ShowUI();
                     form.transform.SetAsLastSibling();
                 }
+            }
+            else 
+            {
+                form.HideUI(isBack);
             }
         }
 

@@ -52,7 +52,8 @@ namespace Framework
             request.Dispose();
             var abPath = Application.persistentDataPath + "/";
             var oldDict = GlobalSetting.Instance.GetVersionPathDict(abPath);
-            if (text != oldDict["Version"])
+            var newDict = GlobalSetting.Instance.GetVersionDict(text);
+            if (newDict["Version"] != oldDict["Version"])
             {
                 bool msgClose = false;
                 bool msgResult = false;
@@ -72,8 +73,7 @@ namespace Framework
                     yield return null;
                 if (!msgResult)
                     yield break;
-                var dict = GlobalSetting.Instance.GetVersionDict(text);
-                foreach (var item in dict)
+                foreach (var item in newDict)
                 {
                     if (item.Key == "Version")
                         continue;
@@ -105,7 +105,7 @@ namespace Framework
                     Global.UI.Loading.ShowUI(progressText, request.downloadProgress);
                     request.Dispose();
                 }
-                GlobalSetting.Instance.SaveVersionDict(dict, abPath);
+                GlobalSetting.Instance.SaveVersionDict(newDict, abPath);
                 yield return new WaitForSeconds(1f);
             }
             _ = LocalLoadAB();

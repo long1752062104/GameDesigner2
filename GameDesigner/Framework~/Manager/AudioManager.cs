@@ -12,7 +12,7 @@ namespace Framework
         private readonly List<AudioSource> sources = new List<AudioSource>();
         private readonly List<AudioSource> destroyPlayingSources = new List<AudioSource>();
 
-        void Update()
+        public virtual void Update()
         {
             for (int i = 0; i < destroyPlayingSources.Count; ++i)
             {

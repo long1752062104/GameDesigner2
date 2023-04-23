@@ -83,6 +83,8 @@ namespace Framework
     /// <typeparam name="T"></typeparam>
     public class UIFormBase<T> : UIFormBase where T : UIFormBase<T>
     {
+        public static T I => Global.UI.GetFormOrCreate<T>();
+
         public static T Show(Action onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm)
         {
             var form = Global.UI.OpenForm<T>(onBack, formMode);

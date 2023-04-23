@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 
 namespace Framework
 {
-    public partial class TableManager : MonoBehaviour
+    public class TableManager : MonoBehaviour
     {
         private DataSet dataSet;
         private readonly Dictionary<Type, Dictionary<string, IDataConfig[]>> directory = new Dictionary<Type, Dictionary<string, IDataConfig[]>>();
@@ -59,7 +59,10 @@ namespace Framework
         /// <returns></returns>
         public T GetDataConfig<T>(string filterExpression) where T : IDataConfig, new()
         {
-            return GetDataConfigs<T>(filterExpression)[0];
+            var datas = GetDataConfigs<T>(filterExpression);
+            if (datas == null)
+                return default;
+            return datas[0];
         }
 
         /// <summary>
@@ -70,23 +73,31 @@ namespace Framework
         /// <returns></returns>
         public T[] GetDataConfigs<T>(string filterExpression) where T : IDataConfig, new()
         {
-            var type = typeof(T);
-            if (!directory.TryGetValue(type, out var dict)) 
-                directory.Add(type, dict = new Dictionary<string, IDataConfig[]>());
-            if (dict.TryGetValue(filterExpression, out var datas))
-                return datas as T[];
-            var sheetName = type.Name.Replace("DataConfig", "");
-            var table = GetTable(sheetName);
-            var rows = table.Select(filterExpression);
-            var items = new T[rows.Length];
-            for (int i = 0; i < rows.Length; i++)
+            try 
             {
-                var t = new T();
-                t.Init(rows[i]);
-                items[i] = t;
+                var type = typeof(T);
+                if (!directory.TryGetValue(type, out var dict))
+                    directory.Add(type, dict = new Dictionary<string, IDataConfig[]>());
+                if (dict.TryGetValue(filterExpression, out var datas))
+                    return datas as T[];
+                var sheetName = type.Name.Replace("DataConfig", "");
+                var table = GetTable(sheetName);
+                var rows = table.Select(filterExpression);
+                var items = new T[rows.Length];
+                for (int i = 0; i < rows.Length; i++)
+                {
+                    var t = new T();
+                    t.Init(rows[i]);
+                    items[i] = t;
+                }
+                dict.Add(filterExpression, items as IDataConfig[]);
+                return items;
             }
-            dict.Add(filterExpression, items as IDataConfig[]);
-            return items;
+            catch (Exception ex) 
+            {
+                Global.Logger.LogError("获取Excel表数据异常: " + ex);
+            }
+            return null;
         }
     }
 }

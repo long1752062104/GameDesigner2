@@ -4,20 +4,20 @@ using UnityEngine;
 namespace Framework
 {
     [DefaultExecutionOrder(-50)]
-    public partial class Global : SingleCase<Global>
+    public class Global : SingleCase<Global>
     {
-        [SerializeField] private Camera /*mainCamera,*/ uiCamera;
-        [SerializeField] private ResourcesManager resources;
-        [SerializeField] private UIManager ui;
-        [SerializeField] private AssetBundleCheckUpdate checkUpdate;
-        [SerializeField] private TableManager table;
-        [SerializeField] private SceneManager scene;
-        [SerializeField] private new AudioManager audio;
-        [SerializeField] private TimerManager timer;
-        [SerializeField] private ConfigManager config;
-        [SerializeField] private NetworkManager network;
-        [SerializeField] private Logger logger;
-        [SerializeField] private ObjectPool pool;
+        [SerializeField] protected Camera uiCamera;
+        [SerializeField] protected ResourcesManager resources;
+        [SerializeField] protected UIManager ui;
+        [SerializeField] protected AssetBundleCheckUpdate checkUpdate;
+        [SerializeField] protected TableManager table;
+        [SerializeField] protected SceneManager scene;
+        [SerializeField] protected new AudioManager audio;
+        [SerializeField] protected TimerManager timer;
+        [SerializeField] protected ConfigManager config;
+        [SerializeField] protected NetworkManager network;
+        [SerializeField] protected Logger logger;
+        [SerializeField] protected ObjectPool pool;
         
         public static ResourcesManager Resources;
         public static UIManager UI;
@@ -34,7 +34,6 @@ namespace Framework
         public AssetBundleMode Mode = AssetBundleMode.LocalPath;
         public string entryRes = "Assets/Resources/Prefabs/GameEntry.prefab";
 
-        //public static Camera MainCamera { get => Instance.mainCamera; set => Instance.mainCamera = value; }
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
 
         protected override void Awake()
