@@ -98,9 +98,7 @@ namespace Net.Config
                     return dataPath;
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
                 dataPath = Unity.UnitySynchronizationContext.Get(() => { //根路径必须保证在项目内, 这样编译之后才能读取
-#if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_EDITOR
                     return UnityEngine.Application.dataPath;
-#endif
                 });
 #else
                 dataPath = AppDomain.CurrentDomain.BaseDirectory;
