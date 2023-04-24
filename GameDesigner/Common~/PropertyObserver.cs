@@ -75,28 +75,46 @@ namespace Net.Common
     /// <typeparam name="T"></typeparam>
     public class ObscuredPropertyObserver<T> : IPropertyObserver<T>
     {
-        protected PropertyDynamic<T> property;
-
+        private string name;
+        private long valueAtk;
+        private long valueAtkKey;
+        private byte crcValue;
         public T Value { get => GetValue(); set => SetValue(value); }
-        public Action<T> OnValueChanged { get => property.OnValueChanged; set => property.OnValueChanged = value; }
+        public Action<T> OnValueChanged { get; set; }
 
         public ObscuredPropertyObserver(T value) : this(null, value) { }
         public ObscuredPropertyObserver(string name, T value) : this(name, value, null) { }
         public ObscuredPropertyObserver(string name, T value, Action<T> onValueChanged)
         {
-            property = new PropertyDynamic<T>(name, value, onValueChanged);
+            this.name = name;
+            valueAtkKey = RandomHelper.Range(0, int.MaxValue);
+            SetValue(value);
+            OnValueChanged = onValueChanged;
         }
 
         public unsafe T GetValue()
         {
-            property = property.Clone();
-            return property.GetValue();
+            var value = valueAtk ^ valueAtkKey;
+            var ptr = (byte*)&value;
+            var crcIndex = (byte)(valueAtk % 247);
+            crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8, crcIndex);
+            if (this.crcValue != crcValue)
+            {
+                AntiCheatHelper.OnDetected?.Invoke(name, value, value);
+                return default;
+            }
+            var value1 = Unsafe.As<long, T>(ref value);
+            return value1;
         }
 
         public unsafe void SetValue(T value, bool isNotify = true)
         {
-            property = property.Clone();
-            property.SetValue(value, isNotify);
+            var value1 = Unsafe.As<T, long>(ref value);
+            valueAtk = value1 ^ valueAtkKey;
+            var ptr = (byte*)&value1;
+            var crcIndex = (byte)(valueAtk % 247);
+            crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8, crcIndex);
+            if (isNotify) OnValueChanged?.Invoke(value);
         }
     }
 
