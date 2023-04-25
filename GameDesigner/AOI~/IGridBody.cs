@@ -26,6 +26,10 @@
         /// </summary>
         bool MainRole { get; set; }
         /// <summary>
+        /// 当初始化完成后调用
+        /// </summary>
+        void OnStart();
+        /// <summary>
         /// 当更新方法, 可以更新位置=unity的transform.position
         /// </summary>
         void OnBodyUpdate();

@@ -75,6 +75,7 @@ namespace Net.AOI
         /// <returns></returns>
         public bool Insert(IGridBody body)
         {
+            body.OnStart();
             foreach (var grid in grids)
             {
                 if (Contains(grid, body))
