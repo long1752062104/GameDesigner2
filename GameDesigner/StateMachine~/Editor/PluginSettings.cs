@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,18 +14,21 @@ public class PluginSettings : EditorWindow
 
     public static void InitPlugin()
     {
+        string text;
         if (BlueprintSetting.Instance.language == PluginLanguage.Chinese)
         {
             var obj = Resources.Load<TextAsset>("ChineseLanguage");
-            var text = System.Text.Encoding.UTF8.GetString(obj.bytes);
-            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\r\n" }, 0);
+            text = System.Text.Encoding.UTF8.GetString(obj.bytes);
         }
         else
         {
             var obj = Resources.Load<TextAsset>("EnglishLanguage");
-            var text = System.Text.Encoding.UTF8.GetString(obj.bytes);
-            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\r\n" }, 0);
+            text = System.Text.Encoding.UTF8.GetString(obj.bytes);
         }
+        if (text.Contains("\r\n")) //个别机器不知道什么情况, 只有\n
+            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\r\n" }, 0);
+        else
+            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\n" }, 0);
     }
 
     [MenuItem("GameDesigner/PluginSettings")]

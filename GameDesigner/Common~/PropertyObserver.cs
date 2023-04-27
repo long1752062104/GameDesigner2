@@ -65,7 +65,29 @@ namespace Net.Common
 
         public override string ToString()
         {
-            return $"{value}";
+            return $"{Value}";
+        }
+
+        public static implicit operator PropertyObserver<T>(T value)
+        {
+            return new PropertyObserver<T>(value, null);
+        }
+
+        public static implicit operator T(PropertyObserver<T> value)
+        {
+            return value.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is PropertyObserver<T> value)
+                return Equals(value);
+            return false;
+        }
+
+        public bool Equals(PropertyObserver<T> obj)
+        {
+            return Value.Equals(obj.Value);
         }
     }
 
@@ -116,6 +138,33 @@ namespace Net.Common
             crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8, crcIndex);
             if (isNotify) OnValueChanged?.Invoke(value);
         }
+
+        public override string ToString()
+        {
+            return $"{Value}";
+        }
+
+        public static implicit operator ObscuredPropertyObserver<T>(T value)
+        {
+            return new ObscuredPropertyObserver<T>(string.Empty, value, null);
+        }
+
+        public static implicit operator T(ObscuredPropertyObserver<T> value)
+        {
+            return value.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ObscuredPropertyObserver<T> value)
+                return Equals(value);
+            return false;
+        }
+
+        public bool Equals(ObscuredPropertyObserver<T> obj)
+        {
+            return Value.Equals(obj.Value);
+        }
     }
 
     /// <summary>
@@ -136,13 +185,17 @@ namespace Net.Common
         /// <param name="name">当属性被发现修改时提示名称</param>
         /// <param name="available">使用模糊属性?</param>
         /// <param name="onValueChanged">当属性被修改事件</param>
-        public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged)
+        public PropertyObserverAuto(string name, bool available, Action<T> onValueChanged) : this(name, available, default, onValueChanged)
+        {
+        }
+
+        public PropertyObserverAuto(string name, bool available, T value, Action<T> onValueChanged)
         {
             this.available = available;
             if (!AntiCheatHelper.IsActive | !available)
-                binding = new PropertyObserver<T>(default, onValueChanged);
+                binding = new PropertyObserver<T>(value, onValueChanged);
             else
-                binding = new ObscuredPropertyObserver<T>(name, default, onValueChanged);
+                binding = new ObscuredPropertyObserver<T>(name, value, onValueChanged);
         }
 
         public T GetValue()
@@ -153,6 +206,33 @@ namespace Net.Common
         public void SetValue(T value, bool isNotify = true)
         {
             binding.SetValue(value, isNotify);
+        }
+
+        public override string ToString()
+        {
+            return $"{Value}";
+        }
+
+        public static implicit operator PropertyObserverAuto<T>(T value)
+        {
+            return new PropertyObserverAuto<T>(string.Empty, true, value, null);
+        }
+
+        public static implicit operator T(PropertyObserverAuto<T> value)
+        {
+            return value.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is PropertyObserverAuto<T> value)
+                return Equals(value);
+            return false;
+        }
+
+        public bool Equals(PropertyObserverAuto<T> obj)
+        {
+            return Value.Equals(obj.Value);
         }
     }
 }

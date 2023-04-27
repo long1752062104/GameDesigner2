@@ -114,6 +114,10 @@ namespace Net.Component
         }
 #endif
 
+        public void OnStart() 
+        {
+        }
+
         public void OnBodyUpdate()
         {
             Position = transform.position;
@@ -124,7 +128,6 @@ namespace Net.Component
             if (!MainRole)
                 return;
             var node = body as AOIObject;
-            //node.GetComponent<MeshRenderer>().enabled = true;
             node.OnMainRoleEnter.Invoke();
         }
 
@@ -133,7 +136,6 @@ namespace Net.Component
             if (!MainRole)
                 return;
             var node = body as AOIObject;
-            //node.GetComponent<MeshRenderer>().enabled = false;
             node.OnMainRoleExit.Invoke();
         }
     }
