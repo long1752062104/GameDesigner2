@@ -149,6 +149,7 @@
     <Compile Include="GameDesigner\Network\core\Config\App.cs" />
     <Compile Include="GameDesigner\Network\core\Config\InvokeHelperConfigObject.cs" />
     <Compile Include="GameDesigner\Network\core\Config\NetConfig.cs" />
+    <Compile Include="GameDesigner\Network\core\Config\TableConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Event\EventSystem.cs" />
     <Compile Include="GameDesigner\Network\core\Event\NDebug.cs" />
     <Compile Include="GameDesigner\Network\core\Event\PlayerLoopRunner.cs" />
@@ -176,6 +177,7 @@
     <Compile Include="GameDesigner\Network\core\Share\FileData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\FuncData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IAdapter.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\IDataConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDataRow.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDebugHandle.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IGcp.cs" />

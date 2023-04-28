@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace Framework
+namespace Net.Share
 {
     /// <summary>
     /// 游戏数据配置接口
