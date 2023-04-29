@@ -50,7 +50,10 @@ namespace Net.Component
                             break;
                         }
                     }
-                    GetComponent<MeshRenderer>().enabled = hasLocal;
+					if (hasLocal)
+						OnMainRoleEnter.Invoke();
+					else
+						OnMainRoleExit.Invoke();
                 }
             }
         }
