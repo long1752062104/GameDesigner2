@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -23,7 +23,10 @@ namespace GameDesigner
         private static bool findBehaviours1;
         private static bool findBehaviours2;
         private static bool compiling;
-        
+        private static List<Type> findBehaviourTypes;
+        private static List<Type> findBehaviourTypes1;
+        private static List<Type> findBehaviourTypes2;
+
         void OnEnable()
         {
             stateManager = target as StateManager;
@@ -60,6 +63,31 @@ namespace GameDesigner
                 }
             }
             StateMachineWindow.stateMachine = stateManager.stateMachine;
+            if (findBehaviourTypes == null) 
+            {
+                findBehaviourTypes = new List<Type>();
+                AddBehaviourTypes(findBehaviourTypes, typeof(StateBehaviour));
+            }
+            if (findBehaviourTypes1 == null)
+            {
+                findBehaviourTypes1 = new List<Type>();
+                AddBehaviourTypes(findBehaviourTypes1, typeof(ActionBehaviour));
+            }
+            if (findBehaviourTypes2 == null)
+            {
+                findBehaviourTypes2 = new List<Type>();
+                AddBehaviourTypes(findBehaviourTypes2, typeof(TransitionBehaviour));
+            }
+        }
+
+        private void AddBehaviourTypes(List<Type> types, Type type) 
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                var types1 = assembly.GetTypes().Where(t => t.IsSubclassOf(type)).ToArray();
+                types.AddRange(types1);
+            }
         }
 
         public override void OnInspectorGUI()
@@ -261,8 +289,7 @@ namespace GameDesigner
                                 EditorGUILayout.Space();
                                 try
                                 {
-                                    Type[] types = Assembly.Load("Assembly-CSharp").GetTypes().Where(t => t.IsSubclassOf(typeof(ActionBehaviour))).ToArray();
-                                    foreach (Type type in types)
+                                    foreach (var type in findBehaviourTypes1)
                                     {
                                         if (GUILayout.Button(type.Name))
                                         {
@@ -406,13 +433,12 @@ namespace GameDesigner
             {
                 try
                 {
-                    Type[] types = Assembly.Load("Assembly-CSharp").GetTypes().Where(t => t.IsSubclassOf(typeof(StateBehaviour))).ToArray();
                     EditorGUILayout.Space();
-                    foreach (Type type in types)
+                    foreach (var type in findBehaviourTypes)
                     {
                         if (GUILayout.Button(type.Name))
                         {
-                            StateBehaviour stb = (StateBehaviour)Activator.CreateInstance(type);
+                            var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             s.behaviours.Add(stb);
@@ -421,7 +447,7 @@ namespace GameDesigner
                         }
                         if (compiling & type.Name == createScriptName)
                         {
-                            StateBehaviour stb = (StateBehaviour)Activator.CreateInstance(type);
+                            var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             s.behaviours.Add(stb);
@@ -714,20 +740,19 @@ namespace GameDesigner
                 findBehaviours2 = true;
             if (findBehaviours2)
             {
-                Type[] types = Assembly.Load("Assembly-CSharp").GetTypes().Where(t => t.IsSubclassOf(typeof(TransitionBehaviour))).ToArray();
                 EditorGUILayout.Space();
-                foreach (Type type in types)
+                foreach (var type in findBehaviourTypes2)
                 {
                     if (GUILayout.Button(type.Name))
                     {
-                        TransitionBehaviour stb = (TransitionBehaviour)Activator.CreateInstance(type);
+                        var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         tr.behaviours.Add(stb);
                         findBehaviours2 = false;
                     }
                     if (compiling & type.Name == createScriptName)
                     {
-                        TransitionBehaviour stb = (TransitionBehaviour)Activator.CreateInstance(type);
+                        var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         tr.behaviours.Add(stb);
                         findBehaviours2 = false;
