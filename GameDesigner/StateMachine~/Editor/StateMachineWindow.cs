@@ -19,6 +19,9 @@ namespace GameDesigner
             }
         }
 
+        private bool dragState = false;
+        private State makeTransition;
+
         [MenuItem("GameDesigner/StateMachine/StateMachine")]
         public static void Init()
         {
@@ -292,11 +295,10 @@ namespace GameDesigner
         {
             if (state == null)
                 return;
-
-            if (makeTransition)
+            if (makeTransition == state)
             {
-                Vector2 startpos = new Vector2(state.rect.x + 80, state.rect.y + 15);
-                Vector2 endpos = currentEvent.mousePosition;
+                var startpos = new Vector2(state.rect.x + 80, state.rect.y + 15);
+                var endpos = currentEvent.mousePosition;
                 DrawConnection(startpos, endpos, Color.white, 1, true);
                 if (currentEvent.button == 0 & currentType == EventType.MouseDown)
                 {
@@ -308,7 +310,7 @@ namespace GameDesigner
                             {
                                 if (t.nextState == s)// 如果拖动的线包含在自身状态盒矩形内,则不添加连接线
                                 { 
-                                    makeTransition = false;
+                                    makeTransition = null;
                                     return;
                                 }
                             }
@@ -316,7 +318,7 @@ namespace GameDesigner
                             break;
                         }
                     }
-                    makeTransition = false;
+                    makeTransition = null;
                 }
             }
         }
@@ -338,22 +340,22 @@ namespace GameDesigner
             }
             else if (currentType == EventType.MouseDown & currentEvent.button == 1)
             {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, delegate
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, ()=>
                 {
-                    makeTransition = true;
+                    makeTransition = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, delegate
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, () =>
                 {
                     stateMachine.defaultState = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[93]), false, delegate
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[93]), false, () =>
                 {
                     stateMachine.selectState = state;
                 });
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[94]), false, delegate { DeletedState(); });
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[94]), false, () => { DeletedState(); });
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -513,9 +515,6 @@ namespace GameDesigner
                 }
             }
         }
-
-        bool dragState = false;
-        private bool makeTransition;
 
         protected Rect DragStateBoxPosition(Rect dragRect, string name, GUIStyle style = null, int eventButton = 0)
         {
