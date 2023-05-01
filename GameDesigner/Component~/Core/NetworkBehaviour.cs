@@ -41,10 +41,9 @@ namespace Net.UnityComponent
         }
         private void OnValidate()
         {
-            netObj = GetComponent<NetworkObject>();//在预制体上用GetComponentInParent获取不到自身组件，所以需要这样
-            if (netObj != null)
+            if (TryGetComponent(out netObj))
                 return;
-            netObj = GetComponentInParent<NetworkObject>();
+            netObj = GetComponentInParent<NetworkObject>(true); //此次需要加上参数true, 否则做成预制体时会找不到父组件
             if (netObj == null)
                 netObj = gameObject.AddComponent<NetworkObject>();
         }
