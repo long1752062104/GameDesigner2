@@ -19,6 +19,9 @@ namespace GameDesigner
             }
         }
 
+        private bool dragState = false;
+        private State makeTransition;
+
         [MenuItem("GameDesigner/StateMachine/StateMachine")]
         public static void Init()
         {
@@ -138,8 +141,10 @@ namespace GameDesigner
                         stateMachine.selectState = state;
                     else if (!stateMachine.selectStates.Contains(state.ID))
                     {
-                        stateMachine.selectStates = new List<int>();
-                        stateMachine.selectStates.Add(state.ID);
+                        stateMachine.selectStates = new List<int>
+                        {
+                            state.ID
+                        };
                     }
                     if (state.transitions.Count == 0)
                         selectTransition = null;
@@ -213,7 +218,7 @@ namespace GameDesigner
             switch (mode)
             {
                 case SelectMode.dragState:
-                    if (stateMachine.selectState!=null)
+                    if (stateMachine.selectState != null)
                         DragStateBoxPosition(stateMachine.selectState.rect, stateMachine.selectState.name, StateMachineSetting.Instance.selectStateStyle);
                     break;
                 case SelectMode.selectState:
@@ -292,11 +297,10 @@ namespace GameDesigner
         {
             if (state == null)
                 return;
-
-            if (makeTransition)
+            if (makeTransition == state)
             {
-                Vector2 startpos = new Vector2(state.rect.x + 80, state.rect.y + 15);
-                Vector2 endpos = currentEvent.mousePosition;
+                var startpos = new Vector2(state.rect.x + 80, state.rect.y + 15);
+                var endpos = currentEvent.mousePosition;
                 DrawConnection(startpos, endpos, Color.white, 1, true);
                 if (currentEvent.button == 0 & currentType == EventType.MouseDown)
                 {
@@ -307,8 +311,8 @@ namespace GameDesigner
                             foreach (var t in state.transitions)
                             {
                                 if (t.nextState == s)// 如果拖动的线包含在自身状态盒矩形内,则不添加连接线
-                                { 
-                                    makeTransition = false;
+                                {
+                                    makeTransition = null;
                                     return;
                                 }
                             }
@@ -316,7 +320,7 @@ namespace GameDesigner
                             break;
                         }
                     }
-                    makeTransition = false;
+                    makeTransition = null;
                 }
             }
         }
@@ -338,22 +342,22 @@ namespace GameDesigner
             }
             else if (currentType == EventType.MouseDown & currentEvent.button == 1)
             {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, delegate
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, () =>
                 {
-                    makeTransition = true;
+                    makeTransition = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, delegate
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, () =>
                 {
                     stateMachine.defaultState = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[93]), false, delegate
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[93]), false, () =>
                 {
                     stateMachine.selectState = state;
                 });
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[94]), false, delegate { DeletedState(); });
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[94]), false, () => { DeletedState(); });
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -414,12 +418,12 @@ namespace GameDesigner
                             return;
                     }
                     GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[95]), false, ()=> {
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[95]), false, () => {
                         State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.LANGUAGE[96] + stateMachine.states.Count, mousePosition);
                     });
                     if (stateMachine.selectState != null)
                     {
-                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[97]), false, ()=>
+                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[97]), false, () =>
                         {
                             List<State> states = new List<State>();
                             var seles = stateMachine.selectStates;
@@ -454,51 +458,49 @@ namespace GameDesigner
                     }
                     menu.AddSeparator("");
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[99]), false, delegate
-                {
-                    if (Selection.activeGameObject == null)
                     {
-                        EditorUtility.DisplayDialog(
-                            BlueprintGUILayout.Instance.LANGUAGE[100],
-                            BlueprintGUILayout.Instance.LANGUAGE[101],
-                            BlueprintGUILayout.Instance.LANGUAGE[102],
-                            BlueprintGUILayout.Instance.LANGUAGE[103]);
-                        return;
-                    }
-                    StateManager manager = Selection.activeGameObject.GetComponent<StateManager>();
-                    if (manager == null)
-                        manager = Selection.activeGameObject.AddComponent<StateManager>();
-                    else if (manager.stateMachine != null)
-                        Undo.DestroyObjectImmediate(manager.stateMachine.gameObject);
-                    StateMachine machine = StateMachine.CreateStateMachineInstance();
-                    Undo.RegisterCreatedObjectUndo(machine.gameObject, machine.name);
-                    manager.stateMachine = machine;
-                    machine.transform.SetParent(manager.transform);
-                });
+                        if (Selection.activeGameObject == null)
+                        {
+                            EditorUtility.DisplayDialog(
+                                BlueprintGUILayout.Instance.LANGUAGE[100],
+                                BlueprintGUILayout.Instance.LANGUAGE[101],
+                                BlueprintGUILayout.Instance.LANGUAGE[102],
+                                BlueprintGUILayout.Instance.LANGUAGE[103]);
+                            return;
+                        }
+                        if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
+                            manager = Selection.activeGameObject.AddComponent<StateManager>();
+                        else if (manager.stateMachine != null)
+                            Undo.DestroyObjectImmediate(manager.stateMachine.gameObject);
+                        StateMachine machine = StateMachine.CreateStateMachineInstance();
+                        Undo.RegisterCreatedObjectUndo(machine.gameObject, machine.name);
+                        manager.stateMachine = machine;
+                        machine.transform.SetParent(manager.transform);
+                    });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[104]), false, () =>
-                {
-                    if (Selection.activeGameObject == null)
                     {
-                        EditorUtility.DisplayDialog(
-                            BlueprintGUILayout.Instance.LANGUAGE[105],
-                            BlueprintGUILayout.Instance.LANGUAGE[106],
-                            BlueprintGUILayout.Instance.LANGUAGE[107],
-                            BlueprintGUILayout.Instance.LANGUAGE[108]);
-                        return;
-                    }
-                    StateManager manager = Selection.activeGameObject.GetComponent<StateManager>();
-                    if (manager == null)
-                        manager = Selection.activeGameObject.AddComponent<StateManager>();
-                    StateMachine machine = StateMachine.CreateStateMachineInstance(BlueprintGUILayout.Instance.LANGUAGE[109]);
-                    Undo.RegisterCreatedObjectUndo(machine.gameObject, machine.name);
-                    manager.stateMachine = machine;
-                    machine.transform.SetParent(manager.transform);
-                });
+                        if (Selection.activeGameObject == null)
+                        {
+                            EditorUtility.DisplayDialog(
+                                BlueprintGUILayout.Instance.LANGUAGE[105],
+                                BlueprintGUILayout.Instance.LANGUAGE[106],
+                                BlueprintGUILayout.Instance.LANGUAGE[107],
+                                BlueprintGUILayout.Instance.LANGUAGE[108]);
+                            return;
+                        }
+                        if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
+                            manager = Selection.activeGameObject.AddComponent<StateManager>();
+                        StateMachine machine = StateMachine.CreateStateMachineInstance(BlueprintGUILayout.Instance.LANGUAGE[109]);
+                        Undo.RegisterCreatedObjectUndo(machine.gameObject, machine.name);
+                        manager.stateMachine = machine;
+                        machine.transform.SetParent(manager.transform);
+                    });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[110]), false, () =>
-                {
-                    if (stateMachine == null)
-                        return;
-                    Undo.DestroyObjectImmediate(stateMachine.gameObject);
-                });
+                    {
+                        if (stateMachine == null)
+                            return;
+                        Undo.DestroyObjectImmediate(stateMachine.gameObject);
+                    });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[111]), false, () =>
                     {
                         if (stateMachine == null)
@@ -513,9 +515,6 @@ namespace GameDesigner
                 }
             }
         }
-
-        bool dragState = false;
-        private bool makeTransition;
 
         protected Rect DragStateBoxPosition(Rect dragRect, string name, GUIStyle style = null, int eventButton = 0)
         {
