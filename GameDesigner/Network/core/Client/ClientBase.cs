@@ -17,8 +17,6 @@
 */
 namespace Net.Client
 {
-    using Net.Event;
-    using Net.Share;
     using global::System;
     using global::System.Collections.Concurrent;
     using global::System.Collections.Generic;
@@ -30,12 +28,14 @@ namespace Net.Client
     using global::System.Text;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using Net.System;
-    using Net.Serialize;
-    using Net.Helper;
     using global::System.Security.Cryptography;
     using global::System.Text.RegularExpressions;
     using Cysharp.Threading.Tasks;
+    using Net.Event;
+    using Net.Share;
+    using Net.System;
+    using Net.Serialize;
+    using Net.Helper;
     using Net.Server;
     using Net.Adapter;
 
@@ -196,7 +196,7 @@ namespace Net.Client
         /// <summary>
         /// 当接收到自定义的cmd指令时调用事件
         /// </summary>
-        public Action<RPCModel> OnRevdBufferHandle { get; set; }
+        public Action<RPCModel> OnReceiveDataHandle { get; set; }
         /// <summary>
         /// 当断线重连成功触发事件
         /// </summary>
@@ -305,6 +305,10 @@ namespace Net.Client
         /// 当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
         /// </summary>
         public Action<int> OnUpdateVersion { get; set; }
+        /// <summary>
+        /// 当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
+        /// </summary>
+        public Action<RPCModel> OnSyncPropertyHandle { get; set; }
         /// <summary>
         /// 1CRC协议
         /// </summary>
@@ -974,14 +978,14 @@ namespace Net.Client
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeInMainThread(() => { result(true, ip); });
+                    InvokeInMainThread(() => result(true, ip));
                 }
                 catch (Exception ex)
                 {
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeInMainThread(() => { result(false, ex.ToString()); });
+                    InvokeInMainThread(() => result(false, ex.ToString()));
                 }
             });
         }
@@ -1488,49 +1492,49 @@ namespace Net.Client
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.Local:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.LocalRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.Scene:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.SceneRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.Notice:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.NoticeRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.ThreadRpc:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
@@ -1576,7 +1580,7 @@ namespace Net.Client
                     break;
                 case NetCmd.OperationSync:
                     var list = OnDeserializeOPT(model.buffer, model.index, model.count);
-                    InvokeInMainThread(()=> { OnOperationSync?.Invoke(list); });
+                    InvokeInMainThread(()=> OnOperationSync?.Invoke(list));
                     break;
                 case NetCmd.Ping:
                     rPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -1584,14 +1588,14 @@ namespace Net.Client
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
                     var delayTime = (uint)Environment.TickCount - ticks;
-                    InvokeInMainThread(() => { OnPingCallback?.Invoke(delayTime); });
+                    InvokeInMainThread(() => OnPingCallback?.Invoke(delayTime));
                     break;
                 case NetCmd.P2P:
                     {
                         var address = segment.ReadInt64();
                         var port = segment.ReadInt32();
                         var endPoint = new IPEndPoint(address, port);
-                        InvokeInMainThread(() => { OnP2PCallback?.Invoke(endPoint); });
+                        InvokeInMainThread(() => OnP2PCallback?.Invoke(endPoint));
                     }
                     break;
                 case NetCmd.SyncVarP2P:
@@ -1667,7 +1671,7 @@ namespace Net.Client
                             if (Environment.TickCount >= recvFileTick)
                             {
                                 recvFileTick = Environment.TickCount + 1000;
-                                InvokeInMainThread(() => { OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)); });
+                                InvokeInMainThread(() => OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)));
                             }
                         }
                     }
@@ -1683,21 +1687,26 @@ namespace Net.Client
                     {
                         var totalCount = segment.ReadInt32();
                         var queueUpCount = segment.ReadInt32();
-                        InvokeInMainThread(() => { OnWhenQueuing?.Invoke(totalCount, queueUpCount); });
+                        InvokeInMainThread(() => OnWhenQueuing?.Invoke(totalCount, queueUpCount));
                     }
                     break;
                 case NetCmd.QueueCancellation:
                     {
-                        InvokeInMainThread(() => { OnQueueCancellation?.Invoke(); });
+                        InvokeInMainThread(() => OnQueueCancellation?.Invoke());
                     }
                     break;
                 case NetCmd.ServerFull:
                     {
-                        InvokeInMainThread(() => { OnServerFull?.Invoke(); });
+                        InvokeInMainThread(() => OnServerFull?.Invoke());
+                    }
+                    break;
+                case NetCmd.SyncPropertyData:
+                    {
+                        InvokeInMainThread(() => OnSyncPropertyHandle?.Invoke(model));
                     }
                     break;
                 default:
-                    InvokeInMainThread(() => { OnRevdBufferHandle?.Invoke(model); });
+                    InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
                     break;
             }
         }
@@ -1712,7 +1721,7 @@ namespace Net.Client
         {
             float bfb = currValue / (float)dataCount * 100f;
             var progress = new RTProgress(bfb, RTState.Sending);
-            InvokeInMainThread(() => { OnRevdRTProgress?.Invoke(progress); });
+            InvokeInMainThread(() => OnRevdRTProgress?.Invoke(progress));
         }
 
         /// <summary>
@@ -2770,7 +2779,7 @@ namespace Net.Client
             if (complete)
             {
                 if (OnSendFileProgress != null)
-                    InvokeInMainThread(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)); });
+                    InvokeInMainThread(() => OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)));
                 ftpDic.Remove(key);
                 fileData.fileStream.Close();
             }
@@ -2778,7 +2787,7 @@ namespace Net.Client
             {
                 sendFileTick = Environment.TickCount + 1000;
                 if (OnSendFileProgress != null)
-                    InvokeInMainThread(() => { OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)); });
+                    InvokeInMainThread(() => OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)));
             }
         }
 

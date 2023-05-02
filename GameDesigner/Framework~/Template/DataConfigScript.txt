@@ -1,4 +1,3 @@
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Net.Share;
 using System.Data;
 
@@ -15,4 +14,3 @@ SPLIT
 SPLIT
     }
 }
-#endif

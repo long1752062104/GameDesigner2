@@ -8,7 +8,7 @@ using Net.Share;
 namespace Net.Config
 {
     /// <summary>
-    /// 表配置类, 可双端共用
+    /// 表配置类, 可双端使用
     /// </summary>
     public class TableConfig
     {
@@ -61,6 +61,8 @@ namespace Net.Config
         {
             var datas = GetDataConfigs<T>(filterExpression);
             if (datas == null)
+                return default;
+            if (datas.Length == 0)
                 return default;
             return datas[0];
         }

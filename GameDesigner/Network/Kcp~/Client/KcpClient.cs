@@ -234,7 +234,7 @@
         private byte[] addressBuffer;
         public KcpClientTest() : base()
         {
-            OnRevdBufferHandle += (model) => { fps++; };
+            OnReceiveDataHandle += (model) => { fps++; };
             OnOperationSync += (list) => { fps++; };
         }
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)

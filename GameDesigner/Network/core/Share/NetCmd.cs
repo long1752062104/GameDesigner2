@@ -71,7 +71,10 @@
         /// 此指令是线程池执行
         /// </summary>
         public const byte SafeCallAsync = 13;
-
+        /// <summary>
+        /// 同步MySqlBuild生成的类, 当属性被修改后同步给客户端
+        /// </summary>
+        public const byte SyncPropertyData = 14;
         /// <summary>
         /// Gcp可靠传输协议指令. 内部命令
         /// </summary>
