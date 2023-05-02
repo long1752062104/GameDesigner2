@@ -43,7 +43,7 @@ namespace Net.UnityComponent
         {
             if (TryGetComponent(out netObj))
                 return;
-            netObj = GetComponentInParent<NetworkObject>(true); //此次需要加上参数true, 否则做成预制体时会找不到父组件
+            netObj = gameObject.GetComponentInParent<NetworkObject>(true); //此处需要加上参数true, 否则做成预制体时会找不到父组件
             if (netObj == null)
                 netObj = gameObject.AddComponent<NetworkObject>();
         }
