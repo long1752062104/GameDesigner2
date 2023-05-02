@@ -1479,6 +1479,9 @@ namespace Net.Server
                 case NetCmd.Identify:
                     SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
                     break;
+                case NetCmd.SyncPropertyData:
+                    client.OnSyncPropertyHandler(model);
+                    break;
                 default:
                     client.OnRevdBufferHandle(model);
                     OnRevdBufferHandle(client, model);

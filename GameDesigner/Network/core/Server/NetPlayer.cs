@@ -394,6 +394,12 @@
         /// <param name="list"></param>
         /// <returns></returns>
         public virtual bool OnOperationSync(OperationList list) { return false; }
+
+        /// <summary>
+        /// 当属性同步-- 当MysqlBuild生成的类属性在客户端被修改后同步上来会调用此方法
+        /// </summary>
+        /// <param name="model"></param>
+        public virtual void OnSyncPropertyHandler(RPCModel model) { }
         #endregion
 
         /// <summary>

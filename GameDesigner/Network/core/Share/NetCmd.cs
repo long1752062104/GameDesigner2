@@ -72,7 +72,7 @@
         /// </summary>
         public const byte SafeCallAsync = 13;
         /// <summary>
-        /// 同步MySqlBuild生成的类, 当属性被修改后同步给客户端
+        /// 同步MySqlBuild生成的类, 当属性被修改后同步给(客户端/服务器)
         /// </summary>
         public const byte SyncPropertyData = 14;
         /// <summary>
