@@ -4,14 +4,12 @@ namespace AOIExample
     using Net.Client;
     using Net.Component;
     using Net.Share;
-    using Net.System;
     using Net.UnityComponent;
     using UnityEngine;
 
     public class SceneManager : NetworkSceneManager
     {
-        public GameObject player, robot;
-        public MyDictionary<int, GameObject> robots = new MyDictionary<int, GameObject>();
+        public GameObject player;
 
         public override void OnConnected()
         {
@@ -19,6 +17,7 @@ namespace AOIExample
             var player1 = Instantiate(player, new Vector3(Random.Range(-20, 20), 1, Random.Range(-20, 20)), Quaternion.identity);
             player1.AddComponent<PlayerControl>();
             player1.name = ClientBase.Instance.Identify;
+            player1.GetComponent<NetworkObject>().Identity = ClientBase.Instance.UID;
             player1.GetComponent<AOIObject>().IsLocal = true;
             player1.GetComponent<PlayerControl>().moveSpeed = 20f;
             FindObjectOfType<ARPGcamera>().target = player1.transform;
@@ -40,28 +39,31 @@ namespace AOIExample
             {
                 case Command.EnterArea:
                     {
-                        if (!robots.TryGetValue(opt.identity, out _)) 
-                        {
-                            var gameObject = Instantiate(robot, opt.position, opt.rotation);
-                            gameObject.name = opt.identity.ToString();
-                            robots[opt.identity] = gameObject;
-                        }
+                        var identity = OnCheckIdentity(opt);
+                        if (identity == null)
+                            return;
+                        if (identity.IsDispose)
+                            return;
+                        identity.name = opt.identity.ToString();
+                        if (identity.TryGetComponent<NetworkTransform>(out var nt))
+                            nt.SetNetworkPositionAndRotation(opt.position, opt.rotation);
+                        identity.transform.SetPositionAndRotation(opt.position, opt.rotation);
+                        identity.gameObject.SetActive(true);
                     }
                     break;
                 case Command.ExitArea:
                     {
-                        if (robots.TryRemove(opt.identity, out var gameObject))
+                        if (identitys.TryGetValue(opt.identity, out var netObj))
                         {
-                            //Destroy(gameObject);
-                            gameObject.SetActive(false);
+                            netObj.gameObject.SetActive(false);
                         }
                     }
                     break;
                 case Command.RobotUpdate:
                     {
-                        if (robots.TryGetValue(opt.identity, out var gameObject))
+                        if (identitys.TryGetValue(opt.identity, out var netObj))
                         {
-                            gameObject.transform.SetPositionAndRotation(opt.position, opt.rotation);
+                            netObj.transform.SetPositionAndRotation(opt.position, opt.rotation);
                         }
                     }
                     break;

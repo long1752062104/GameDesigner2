@@ -60,7 +60,10 @@ namespace Net.Component
 
         void OnDestroy()
         {
-            AOIManager.I.world.Remove(this);
+            var instance = AOIManager.Instance;
+            if (instance == null)
+                return;
+            instance.world.Remove(this);
         }
 
 #if UNITY_EDITOR

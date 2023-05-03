@@ -146,7 +146,7 @@ namespace Net.UnityComponent
         }
 
         /// <summary>
-        /// 当检查网络标识物体，如果不存在就会实例化
+        /// 当检查网络标识物体，如果不存在就会实例化 --- 在这里用到了<see cref="Operation.identity"/>作为网络物体标识, <see cref="Operation.index"/>作为要实例化<see cref="registerObjects"/>的物体索引
         /// </summary>
         /// <param name="opt"></param>
         /// <returns></returns>

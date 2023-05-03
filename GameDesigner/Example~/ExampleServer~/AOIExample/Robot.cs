@@ -35,25 +35,27 @@ namespace AOIExample
         private Vector3 start;
         private Vector3 destination;
 
+        internal int roleCount;
+
         public void OnStart()
         {
-            start = transform.position;
-            OnBodyUpdate();
+            Position = start = transform.position;
         }
 
         public void OnBodyUpdate()
         {
             Position = transform.position;
+            if (roleCount <= 0)
+                return;
+            OnUpdate();
         }
 
         public void OnEnter(IGridBody body)
         {
-            
         }
 
         public void OnExit(IGridBody body)
         {
-            
         }
 
         public void OnUpdate()

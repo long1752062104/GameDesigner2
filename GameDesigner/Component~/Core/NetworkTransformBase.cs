@@ -5,6 +5,7 @@ namespace Net.UnityComponent
     using Net.Component;
     using Net.Share;
     using UnityEngine;
+    using UnityEngine.UIElements;
 
     public enum SyncMode
     {
@@ -169,6 +170,22 @@ namespace Net.UnityComponent
                 else
                     currMode = SyncMode.Synchronized;
             }
+        }
+
+        public void SetNetworkPosition(Net.Vector3 position) 
+        {
+            netPosition = position;
+        }
+
+        public void SetNetworkRotation(Net.Quaternion rotation)
+        {
+            netRotation = rotation;
+        }
+
+        public void SetNetworkPositionAndRotation(Net.Vector3 position, Net.Quaternion rotation)
+        {
+            netPosition = position;
+            netRotation = rotation;
         }
 
         public override void OnDestroy()

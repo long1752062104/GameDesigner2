@@ -48,7 +48,8 @@ namespace ExampleServer
                 $"流入:{df.receiveNumber}次/{ByteHelper.ToString(df.receiveCount)} " +
                 $"发送fps:{df.sendLoopNum} 接收fps:{df.revdLoopNum} 解析:{df.resolveNumber}次 " +
                 $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)} " +
-                $"登录:{server.OnlinePlayers} 未登录:{server.UnClientNumber}";
+                $"登录:{server.OnlinePlayers} 未登录:{server.UnClientNumber}" +
+                $"主场景FPS:{server.Scenes[server.MainSceneName].FPS}";
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter2());
             server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Client>(server));

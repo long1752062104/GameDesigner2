@@ -155,9 +155,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   registerObjects:
   - {fileID: 2055221911180507620, guid: 1c2e5388b3468234093d087d330af306, type: 3}
+  - {fileID: 84683430617567000, guid: 1ca7be3eeb571ca4a9e47b5d207190de, type: 3}
   onExitDelectAll: 1
   player: {fileID: 4766264212541958773, guid: 1c2e5388b3468234093d087d330af306, type: 3}
-  robot: {fileID: 808043455022888984, guid: 1ca7be3eeb571ca4a9e47b5d207190de, type: 3}
 --- !u!114 &579301004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,7 +274,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &782153280
 MonoBehaviour:
   m_ObjectHideFlags: 0

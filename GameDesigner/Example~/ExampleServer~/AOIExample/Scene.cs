@@ -14,38 +14,35 @@ namespace AOIExample
     internal class Scene : NetScene<Client>
     {
         internal GridWorld gridWorld = new GridWorld();
-        internal GSystem gSystem = new GSystem();
-
-        public int spawnAmount = 10000;
+        public int spawnAmount = 100000;
         public float interleave = 5;
 
         public Scene() 
         {
-            gridWorld.Init(-500, -500, 50, 50, 20, 20);
+            gridWorld.Init(-1000, -1000, 100, 100, 20, 20);
 
-            //float sqrt = Mathf.Sqrt(spawnAmount);
-            //float offset = -sqrt / 2 * interleave;
-            //int spawned = 0;
-            //for (int spawnX = 0; spawnX < sqrt; ++spawnX)
-            //{
-            //    for (int spawnZ = 0; spawnZ < sqrt; ++spawnZ)
-            //    {
-            //        if (spawned < spawnAmount)
-            //        {
-            //            var entity = gSystem.Create<Entity>();
-            //            var robot = entity.AddComponent<Robot>();
+            float sqrt = Mathf.Sqrt(spawnAmount);
+            float offset = -sqrt / 2 * interleave;
+            int spawned = 0;
+            for (int spawnX = 0; spawnX < sqrt; ++spawnX)
+            {
+                for (int spawnZ = 0; spawnZ < sqrt; ++spawnZ)
+                {
+                    if (spawned < spawnAmount)
+                    {
+                        var robot = new Robot();
 
-            //            float x = offset + spawnX * interleave;
-            //            float z = offset + spawnZ * interleave;
-            //            robot.transform.position = new Vector3(x, 0, z);
-            //            ++spawned;
+                        float x = offset + spawnX * interleave;
+                        float z = offset + spawnZ * interleave;
+                        robot.transform.position = new Vector3(x, 0, z);
+                        ++spawned;
 
-            //            robot.Identity = spawned;
-            //            robot.Start();
-            //            gridWorld.Insert(robot);
-            //        }
-            //    }
-            //}
+                        robot.Identity = 10000000 + spawned;
+                        robot.ActorID = 1;
+                        gridWorld.Insert(robot);
+                    }
+                }
+            }
         }
         public override void OnEnter(Client client)
         {
@@ -69,10 +66,10 @@ namespace AOIExample
                 {
                     case Command.Transform:
                         client.Position = item.position;
-                        client.operations.Add(item);
+                        client.currOpers.Add(item);
                         break;
                     default:
-                        client.operations.Add(item);
+                        client.currOpers.Add(item);
                         break;
                 }
             }
@@ -85,50 +82,49 @@ namespace AOIExample
                 return;
             frame++;
             int count;
+            var operations = new FastList<Operation>();
             for (int i = 0; i < players.Count; i++)
             {
                 var player = players[i];
                 if (player == null)
                     continue;
-                if (player.isSending)
-                {
-                    player.isSending = false;
-                    continue;
-                }
                 player.OnUpdate();
-                var operations = new FastList<Operation>();
                 var grid = players[i].Grid;
                 if (grid == null)
                     continue;
-                var gridBodies = grid.GetGridBodiesAll();
-                var players1 = new FastList<Client>();
-                foreach (var item1 in gridBodies)
+                operations.AddRange(player.selfOpers.GetRemoveRange(0, player.selfOpers.Count));
+                foreach (var item in grid.grids)
                 {
-                    if (item1 is Client player1)
+                    foreach (var item1 in item.gridBodies)
                     {
-                        var opts1 = player1.operations.GetRemoveRange(0, player1.operations.Count);
-                        operations.AddRange(opts1);
-                        player1.isSending = true;
-                        players1.Add(player1);
-                    }
-                    else if (item1 is Robot robot)
-                    {
-                        operations.Add(new Operation(Command.RobotUpdate, robot.Identity, robot.Position, robot.transform.rotation)
+                        if (item1 is Client player1)
                         {
-                            index = robot.ActorID,
-                        });
+                            if (player1.frame != frame)
+                            {
+                                player1.preOpers = player1.currOpers.GetRemoveRange(0, player1.currOpers.Count);
+                                player1.frame = frame;
+                            }
+                            operations.AddRange(player1.preOpers);
+                        }
+                        else if (item1 is Robot robot)
+                        {
+                            operations.Add(new Operation(Command.RobotUpdate, robot.Identity, robot.Position, robot.transform.rotation)
+                            {
+                                index = robot.ActorID,
+                            });
+                        }
                     }
                 }
                 count = operations.Count;
                 while (count > Split)
                 {
-                    OnPacket(handle, cmd, Split, players1, operations);
+                    OnPacket(handle, cmd, Split, player, operations);
                     count -= Split;
                 }
                 if (count > 0)
-                    OnPacket(handle, cmd, count, players1, operations);
+                    OnPacket(handle, cmd, count, player, operations);
             }
-            count = operations.Count;//不管aoi, 整个场景的同步在这里, 如玩家退出操作
+            count = this.operations.Count;//不管aoi, 整个场景的同步在这里, 如玩家退出操作
             while (count > Split)
             {
                 OnPacket(handle, cmd, Split);
@@ -137,7 +133,6 @@ namespace AOIExample
             if (count > 0)
                 OnPacket(handle, cmd, count);
             gridWorld.UpdateHandler();
-            gSystem.Update();
         }
     }
 }

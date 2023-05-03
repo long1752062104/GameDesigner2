@@ -66,6 +66,20 @@
             </summary>
             <param name="body"></param>
         </member>
+        <member name="M:Net.AOI.GridWorld.EnterHandler(Net.AOI.IGridBody,Net.AOI.IGridBody)">
+            <summary>
+            当一个物体进入另外一个物体处理
+            </summary>
+            <param name="body"></param>
+            <param name="other"></param>
+        </member>
+        <member name="M:Net.AOI.GridWorld.ExitHandler(Net.AOI.IGridBody,Net.AOI.IGridBody)">
+            <summary>
+            当一个物体退出另外一个物体处理
+            </summary>
+            <param name="body"></param>
+            <param name="other"></param>
+        </member>
         <member name="M:Net.AOI.GridWorld.UpdateHandler">
             <summary>
             更新感兴趣的移除和添加物体
@@ -219,6 +233,14 @@
         <member name="F:Net.Component.Command.Transform">
             <summary>
             Transform同步指令
+            <code><see cref="F:Net.Share.Operation.identity"/> 作为网络物体标识</code>
+            <code><see cref="F:Net.Share.Operation.index"/> 作为要实例化registerObjects的物体索引</code>
+            <code><see cref="F:Net.Share.Operation.index1"/> 用作NetComponentID区分</code> 
+            <code><see cref="F:Net.Share.Operation.index2"/> 作为父子转换组件索引</code>
+            <code><see cref="F:Net.Share.Operation.cmd1"/> 作为SyncMode(同步模式)</code>
+            <code><see cref="F:Net.Share.Operation.position"/> 作为位置同步</code>
+            <code><see cref="F:Net.Share.Operation.rotation"/> 作为旋转同步</code>
+            <code><see cref="F:Net.Share.Operation.direction"/> 作为缩放同步</code>
             </summary>
         </member>
         <member name="F:Net.Component.Command.Destroy">
@@ -3226,6 +3248,11 @@
             线程群组, 解决多线程竞争, Addopt方法, removeopt方法
             </summary>
         </member>
+        <member name="P:Net.Server.NetScene`1.FPS">
+            <summary>
+            场景帧数
+            </summary>
+        </member>
         <member name="M:Net.Server.NetScene`1.#ctor">
             <summary>
             构造网络场景
@@ -3305,6 +3332,16 @@
             <param name="handle"></param>
             <param name="cmd"></param>
             <param name="count"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,`0,Net.System.FastList{Net.Share.Operation})">
+            <summary>
+            当封包数据时调用
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="count"></param>
+            <param name="client"></param>
+            <param name="operations"></param>
         </member>
         <member name="M:Net.Server.NetScene`1.AddOperation(System.String,System.Object[])">
             <summary>
