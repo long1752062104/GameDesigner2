@@ -461,7 +461,6 @@ namespace Net.Event
         private uint frame;
         private uint startTick;
         private uint nextTick;
-        private uint complement;
 
         public TimerTick()
         {
@@ -475,20 +474,11 @@ namespace Net.Event
             var frameRate = 1000u / interval;
             if (tick >= nextTick)
             {
-                if (complement > 0)
-                {
-                    nextTick = tick + complement;
-                    complement = 0;
-                    return false;
-                }
-                frame = 0;
+                frame = 0u;
                 startTick = tick;
                 nextTick = tick + 1000u;
                 if (startTick >= nextTick)
-                {
-                    complement = uint.MaxValue - tick;
                     nextTick = uint.MaxValue;
-                }
                 return true;
             }
             else if (frame < frameRate & (tick - startTick) >= frame * interval)
@@ -499,6 +489,15 @@ namespace Net.Event
             else if (sleep)
             {
                 Thread.Sleep(1);
+                var total = nextTick - tick;
+                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
+                    nextTick = tick;
+            }
+            else
+            {
+                var total = nextTick - tick;
+                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
+                    nextTick = tick;
             }
             return false;
         }

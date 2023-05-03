@@ -146,6 +146,11 @@
             主角? true:其他演员进入或退出都会通知自己 false:当自己进入新的格子时, 别人会通知你进来了, 当你退出旧的格子时, 别人也会通知你退出了旧的格子, 而你是无感知的
             </summary>
         </member>
+        <member name="M:Net.AOI.IGridBody.OnStart">
+            <summary>
+            当初始化完成后调用
+            </summary>
+        </member>
         <member name="M:Net.AOI.IGridBody.OnBodyUpdate">
             <summary>
             当更新方法, 可以更新位置=unity的transform.position
@@ -268,6 +273,35 @@
             竞技模式 1:个人 2:团队
             </summary>
         </member>
+        <member name="T:Net.Common.IPropertyObserver`1">
+            <summary>
+            属性观察接口
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.Value">
+            <summary>
+            属性值
+            </summary>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.OnValueChanged">
+            <summary>
+            当属性被修改事件
+            </summary>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.GetValue">
+            <summary>
+            获取属性值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.SetValue(`0,System.Boolean)">
+            <summary>
+            设置属性值
+            </summary>
+            <param name="value">新的属性值</param>
+            <param name="isNotify">是否通知事件</param>
+        </member>
         <member name="T:Net.Common.PropertyObserver`1">
             <summary>
             属性观察类
@@ -349,6 +383,11 @@
             </summary>
             <param name="text"></param>
             <returns></returns>
+        </member>
+        <member name="T:Net.Helper.PersistHelper">
+            <summary>
+            持久化数据记录帮助类
+            </summary>
         </member>
         <member name="M:Net.Helper.StringHelper.CheckSqlString(System.String@,System.Int32)">
             <summary>
@@ -484,6 +523,41 @@
             <param name="target"></param>
             <returns></returns>
         </member>
+        <member name="T:Net.MMORPG.MapAOIData">
+            <summary>
+            地图九宫格初始化数据
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.xPos">
+            <summary>
+            x开始位置
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.zPos">
+            <summary>
+            z开始位置
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.xMax">
+            <summary>
+            x列最大值
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.zMax">
+            <summary>
+            z列最大值
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.width">
+            <summary>
+            格子宽度
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapAOIData.height">
+            <summary>
+            格子高度
+            </summary>
+        </member>
         <member name="T:Net.MMORPG.MapData">
             <summary>
             地图数据
@@ -497,6 +571,11 @@
         <member name="F:Net.MMORPG.MapData.monsterPoints">
             <summary>
             地图的所有怪物点
+            </summary>
+        </member>
+        <member name="F:Net.MMORPG.MapData.aoiData">
+            <summary>
+            地图九宫格数据
             </summary>
         </member>
         <member name="M:Net.MMORPG.MapData.ReadData(System.String)">
@@ -797,7 +876,7 @@
             当断开连接事件
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.OnRevdBufferHandle">
+        <member name="P:Net.Client.ClientBase.OnReceiveDataHandle">
             <summary>
             当接收到自定义的cmd指令时调用事件
             </summary>
@@ -935,6 +1014,11 @@
         <member name="P:Net.Client.ClientBase.OnUpdateVersion">
             <summary>
             当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSyncPropertyHandle">
+            <summary>
+            当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.frame">
@@ -2045,10 +2129,55 @@
             配置文件的目录
             </summary>
         </member>
+        <member name="P:Net.Config.Config.DataPath">
+            <summary>
+            获取项目路径
+            </summary>
+        </member>
         <member name="P:Net.Config.Config.MainThreadTick">
             <summary>
             在主线程处理所有网络功能? 否则会在多线程进行
             </summary>
+        </member>
+        <member name="T:Net.Config.TableConfig">
+            <summary>
+            表配置类, 可双端使用
+            </summary>
+        </member>
+        <member name="M:Net.Config.TableConfig.LoadTableFile(System.String)">
+            <summary>
+            加载表文件
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="M:Net.Config.TableConfig.LoadTable(System.String)">
+            <summary>
+            加载表数据
+            </summary>
+            <param name="jsonStr"></param>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetTable(System.String)">
+            <summary>
+            获取某个表
+            </summary>
+            <param name="sheetName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetDataConfig``1(System.String)">
+            <summary>
+            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
+            </summary>
+            <typeparam name="T">要获取的类型</typeparam>
+            <param name="filterExpression">过滤表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetDataConfigs``1(System.String)">
+            <summary>
+            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
+            </summary>
+            <typeparam name="T">要获取的类型</typeparam>
+            <param name="filterExpression">过滤表达式</param>
+            <returns></returns>
         </member>
         <member name="T:Net.Event.EventSystem">
             <summary>
@@ -2988,6 +3117,12 @@
             </summary>
             <param name="list"></param>
             <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnSyncPropertyHandler(Net.Share.RPCModel)">
+            <summary>
+            当属性同步-- 当MysqlBuild生成的类属性在客户端被修改后同步上来会调用此方法
+            </summary>
+            <param name="model"></param>
         </member>
         <member name="M:Net.Server.NetPlayer.Close">
             <summary>
@@ -4792,6 +4927,17 @@
             网络事件适配器
             </summary>
         </member>
+        <member name="T:Net.Share.IDataConfig">
+            <summary>
+            游戏数据配置接口
+            </summary>
+        </member>
+        <member name="M:Net.Share.IDataConfig.Init(System.Data.DataRow)">
+            <summary>
+            初始化表格行数据转实体对象
+            </summary>
+            <param name="row"></param>
+        </member>
         <member name="T:Net.Share.IDataRow">
             <summary>
             数据行接口
@@ -4917,7 +5063,7 @@
             当断开连接事件
             </summary>
         </member>
-        <member name="P:Net.Share.INetClient.OnRevdBufferHandle">
+        <member name="P:Net.Share.INetClient.OnReceiveDataHandle">
             <summary>
             当接收到网络数据处理事件
             </summary>
@@ -5691,6 +5837,11 @@
             否则可以使用CallRpc命令，
             使用此命令时,函数第一个参数必须是派生于<see cref="T:Net.Server.NetPlayer"/>类型的参数.
             此指令是线程池执行
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetCmd.SyncPropertyData">
+            <summary>
+            同步MySqlBuild生成的类, 当属性被修改后同步给(客户端/服务器)
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.ReliableTransport">
@@ -7591,11 +7742,6 @@
         <member name="T:ECS.UpdateComponent">
             <summary>
             热更层借助此组件进行更新, ilr不支持多继承, 接口继承
-            </summary>
-        </member>
-        <member name="T:PersistHelper">
-            <summary>
-            持久化数据记录帮助类
             </summary>
         </member>
         <member name="T:Binding.BaseBind`1">

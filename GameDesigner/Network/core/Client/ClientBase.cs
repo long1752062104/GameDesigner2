@@ -1569,7 +1569,7 @@ namespace Net.Client
                     var password = segment.ReadInt32();
                     var version = segment.ReadInt32();
                     if (version != Version)
-                        OnUpdateVersion?.Invoke(version);
+                        InvokeInMainThread(() => OnUpdateVersion?.Invoke(version));
                     if (string.IsNullOrEmpty(adapterType))
                         return;
                     var type = AssemblyHelper.GetType(adapterType);

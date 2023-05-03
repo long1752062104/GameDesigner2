@@ -35,6 +35,12 @@ namespace AOIExample
         private Vector3 start;
         private Vector3 destination;
 
+        public void OnStart()
+        {
+            start = transform.position;
+            OnBodyUpdate();
+        }
+
         public void OnBodyUpdate()
         {
             Position = transform.position;
@@ -48,12 +54,6 @@ namespace AOIExample
         public void OnExit(IGridBody body)
         {
             
-        }
-
-        internal void Start()
-        {
-            start = transform.position;
-            OnBodyUpdate();
         }
 
         public void OnUpdate()

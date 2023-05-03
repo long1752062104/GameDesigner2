@@ -10,8 +10,6 @@ public static class ImportSetting
         //1 = Recompile After Finished Playing
         //2 = Stop Playing And Recompile
         EditorPrefs.SetInt("ScriptCompilationDuringPlay", 1);
-
-
     }
 }
 #endif

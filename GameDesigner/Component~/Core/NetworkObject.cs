@@ -249,7 +249,7 @@ namespace Net.UnityComponent
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            var networkBehaviours = GetComponents<NetworkBehaviour>();
+            var networkBehaviours = gameObject.GetComponentsInChildren<NetworkBehaviour>(true);
             for (int i = 0; i < networkBehaviours.Length; i++)
             {
                 var networkBehaviour = networkBehaviours[i];

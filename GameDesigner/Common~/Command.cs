@@ -43,6 +43,14 @@
         public const byte EnemySwitchState = 108;
         /// <summary>
         /// Transform同步指令
+        /// <code><see cref="Net.Share.Operation.identity"/> 作为网络物体标识</code>
+        /// <code><see cref="Net.Share.Operation.index"/> 作为要实例化registerObjects的物体索引</code>
+        /// <code><see cref="Net.Share.Operation.index1"/> 用作NetComponentID区分</code> 
+        /// <code><see cref="Net.Share.Operation.index2"/> 作为父子转换组件索引</code>
+        /// <code><see cref="Net.Share.Operation.cmd1"/> 作为SyncMode(同步模式)</code>
+        /// <code><see cref="Net.Share.Operation.position"/> 作为位置同步</code>
+        /// <code><see cref="Net.Share.Operation.rotation"/> 作为旋转同步</code>
+        /// <code><see cref="Net.Share.Operation.direction"/> 作为缩放同步</code>
         /// </summary>
         public const byte Transform = 109;
         /// <summary>

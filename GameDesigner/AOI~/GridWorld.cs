@@ -68,6 +68,7 @@ namespace Net.AOI
                 }
             }
         }
+
         /// <summary>
         /// 插入物体到九宫格感兴趣区域
         /// </summary>
@@ -88,10 +89,7 @@ namespace Net.AOI
                     {
                         foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                         {
-                            if (body.MainRole) //当以自己为主角时, 这样通知
-                                body.OnEnter(item2);
-                            else
-                                item2.OnEnter(body);
+                            EnterHandler(body, item2);
                         }
                     }
                     return true;
@@ -99,6 +97,7 @@ namespace Net.AOI
             }
             return false;
         }
+
         public bool Contains(Grid grid, IGridBody body) 
         {
             if (gridType == GridType.Horizontal)
@@ -133,10 +132,7 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                             {
-                                if (body.MainRole) //当以自己为主角时, 这样通知
-                                    body.OnEnter(item2);
-                                else
-                                    item2.OnEnter(body);
+                                EnterHandler(body, item2);
                             }
                         }
                         return grid;
@@ -158,10 +154,7 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
                             {
-                                if (body.MainRole) //当以自己为主角时, 这样通知
-                                    body.OnEnter(item2);
-                                else
-                                    item2.OnEnter(body);
+                                EnterHandler(body, item2);
                             }
                         }
                     }
@@ -171,10 +164,7 @@ namespace Net.AOI
                         {
                             foreach (var item2 in grid1.gridBodies)//通知离开的格子的所有物体, 此物体离开了
                             {
-                                if (body.MainRole) //当以自己为主角时, 这样通知
-                                    body.OnExit(item2);
-                                else
-                                    item2.OnExit(body);
+                                ExitHandler(body, item2);
                             }
                         }
                     }
@@ -189,10 +179,7 @@ namespace Net.AOI
             {
                 foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
                 {
-                    if (body.MainRole) //当以自己为主角时, 这样通知
-                        body.OnExit(item2);
-                    else
-                        item2.OnExit(body);
+                    ExitHandler(body, item2);
                 }
             }
             currGrid.gridBodies.Remove(body);
@@ -201,6 +188,7 @@ namespace Net.AOI
         J: Event.NDebug.LogError($"{body.ID}越界了,位置:{body.Position}");
             return null;
         }
+
         /// <summary>
         /// 移除感兴趣物体
         /// </summary>
@@ -215,15 +203,51 @@ namespace Net.AOI
             {
                 foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
                 {
-                    if (body.MainRole) //当以自己为主角时, 这样通知
-                        body.OnExit(item2);
-                    else
-                        item2.OnExit(body);
+                    ExitHandler(body, item2);
                 }
             }
             currGrid.gridBodies.Remove(body);
             gridBodies.Remove(body);
         }
+
+        /// <summary>
+        /// 当一个物体进入另外一个物体处理
+        /// </summary>
+        /// <param name="body"></param>
+        /// <param name="other"></param>
+        private void EnterHandler(IGridBody body, IGridBody other) 
+        {
+            if (body.MainRole & other.MainRole) //如果两个都是主角, 则相互通知
+            {
+                body.OnEnter(other);
+                other.OnEnter(body);
+            }
+            else if (body.MainRole) //当以自己为主角时, 这样通知
+            {
+                body.OnEnter(other);
+            }
+            else other.OnEnter(body);
+        }
+
+        /// <summary>
+        /// 当一个物体退出另外一个物体处理
+        /// </summary>
+        /// <param name="body"></param>
+        /// <param name="other"></param>
+        private void ExitHandler(IGridBody body, IGridBody other)
+        {
+            if (body.MainRole & other.MainRole) //如果两个都是主角, 则相互通知
+            {
+                body.OnExit(other);
+                other.OnExit(body);
+            }
+            else if (body.MainRole) //当以自己为主角时, 这样通知
+            {
+                body.OnExit(other);
+            }
+            else other.OnExit(body);
+        }
+
         /// <summary>
         /// 更新感兴趣的移除和添加物体
         /// </summary>

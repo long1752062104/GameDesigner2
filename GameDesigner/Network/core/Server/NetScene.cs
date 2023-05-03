@@ -77,7 +77,12 @@
         /// </summary>
         public ThreadGroup Group;
         private int hash;
-        
+        internal int preFps, currFps;
+        /// <summary>
+        /// 场景帧数
+        /// </summary>
+        public int FPS { get => preFps; }
+
         /// <summary>
         /// 构造网络场景
         /// </summary>
@@ -241,6 +246,26 @@
             };
             var buffer = onSerializeOpt(operList);
             handle.Multicast(players, SendOperationReliable, cmd, buffer, false, false);
+        }
+
+        /// <summary>
+        /// 当封包数据时调用
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="cmd"></param>
+        /// <param name="count"></param>
+        /// <param name="client"></param>
+        /// <param name="operations"></param>
+        public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count, Player client, FastList<Operation> operations)
+        {
+            var opts = operations.GetRemoveRange(0, count);
+            var operList = new OperationList()
+            {
+                frame = frame,
+                operations = opts
+            };
+            var buffer = onSerializeOpt(operList);
+            handle.SendRT(client, cmd, buffer, false, false);
         }
 
         /// <summary>

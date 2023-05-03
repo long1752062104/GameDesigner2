@@ -580,8 +580,7 @@ namespace Net.Server
         {
             if (client.OnOperationSync(list))
                 return;
-            var scene = client.Scene as Scene;
-            if (scene != null)
+            if (client.Scene is Scene scene)
                 scene.OnOperationSync(client, list);
         }
 
@@ -743,6 +742,7 @@ namespace Net.Server
         {
             var timer = new TimerTick();
             uint tick = (uint)Environment.TickCount;
+            uint fpsTick = tick + 1000;
             while (IsRunServer)
             {
                 try
@@ -753,11 +753,21 @@ namespace Net.Server
                         var result = Parallel.ForEach(Scenes.Values, scene =>
                         {
                             scene.UpdateLock(this, NetCmd.OperationSync);
+                            scene.currFps++;
                         });
                         while (!result.IsCompleted)
                         {
                             Thread.Sleep(1);
                         }
+                    }
+                    if (tick >= fpsTick) 
+                    {
+                        foreach (var scene in Scenes.Values)
+                        {
+                            scene.preFps = scene.currFps;
+                            scene.currFps = 0;
+                        }
+                        fpsTick = tick + 1000;
                     }
                 }
                 catch (Exception ex)
@@ -931,7 +941,7 @@ namespace Net.Server
                         ResolveDataQueue(client, ref isSleep, tick);
                         J: OnClientTick(client);
                     }
-                    if(isSleep)
+                    if (isSleep)
                         Thread.Sleep(1);
                     revdLoopNum++;
                 }

@@ -130,6 +130,7 @@ public class ImportSettingWindow : EditorWindow
             Import("MVC~", "MVC");
             Import("ECS~", "ECS");
             Import("Common~", "Common");
+            Import("MMORPG~", "MMORPG");
             Import("AOI~", "AOI");
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
@@ -144,6 +145,7 @@ public class ImportSettingWindow : EditorWindow
             Import("MVC~", "MVC");
             Import("ECS~", "ECS");
             Import("Common~", "Common");
+            Import("MMORPG~", "MMORPG");
             Import("AOI~", "AOI");
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
