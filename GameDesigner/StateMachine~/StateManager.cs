@@ -187,6 +187,34 @@
             EnterNextState(stateID);
         }
 
+        private void OnDestroy()
+        {
+            if (stateMachine != null)
+            {
+                foreach (var state in stateMachine.states)
+                {
+                    foreach (var behaviour in state.behaviours)
+                    {
+                        behaviour.OnDestroyComponent();
+                    }
+                    foreach (var transition in state.transitions)
+                    {
+                        foreach (var behaviour in transition.behaviours)
+                        {
+                            behaviour.OnDestroyComponent();
+                        }
+                    }
+                    foreach (var action in state.actions)
+                    {
+                        foreach (var behaviour in action.behaviours)
+                        {
+                            behaviour.OnDestroyComponent();
+                        }
+                    }
+                }
+            }
+        }
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
@@ -203,9 +231,13 @@
                 {
                     var type = AssemblyHelper.GetType(s.behaviours[i].name);
                     var metadatas = new List<Metadata>(s.behaviours[i].metadatas);
+                    var active = s.behaviours[i].Active;
+                    var show = s.behaviours[i].show;
                     s.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
                     s.behaviours[i].Reload(type, stateMachine, metadatas);
                     s.behaviours[i].ID = s.ID;
+                    s.behaviours[i].Active = active;
+                    s.behaviours[i].show = show;
                 }
                 foreach (var t in s.transitions)
                 {
@@ -213,9 +245,13 @@
                     {
                         var type = AssemblyHelper.GetType(t.behaviours[i].name);
                         var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
+                        var active = t.behaviours[i].Active;
+                        var show = t.behaviours[i].show;
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
                         t.behaviours[i].Reload(type, stateMachine, metadatas);
                         t.behaviours[i].ID = s.ID;
+                        t.behaviours[i].Active = active;
+                        t.behaviours[i].show = show;
                     }
                 }
                 foreach (var a in s.actions)
@@ -224,9 +260,13 @@
                     {
                         var type = AssemblyHelper.GetType(a.behaviours[i].name);
                         var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
+                        var active = a.behaviours[i].Active;
+                        var show = a.behaviours[i].show;
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
                         a.behaviours[i].Reload(type, stateMachine, metadatas);
                         a.behaviours[i].ID = s.ID;
+                        a.behaviours[i].Active = active;
+                        a.behaviours[i].show = show;
                     }
                 }
             }

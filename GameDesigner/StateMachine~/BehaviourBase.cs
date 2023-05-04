@@ -442,6 +442,7 @@
             runtimeBehaviour.ID = ID;
             runtimeBehaviour.name = name;
             runtimeBehaviour.metadatas = metadatas;
+            runtimeBehaviour.show = show;
             foreach (var metadata in metadatas)
             {
                 var field = type.GetField(metadata.name);

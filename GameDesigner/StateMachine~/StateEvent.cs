@@ -81,10 +81,8 @@ namespace GameDesigner
                 if (Time.time >= events[i].time) 
                 {
                     try {
-                        if (events[i].action != null)
-                            events[i].action();
-                        if (events[i].action1 != null)
-                            events[i].action1(events[i].obj);
+                        events[i].action?.Invoke();
+                        events[i].action1?.Invoke(events[i].obj);
                     } catch (Exception ex) {
                         Debug.LogError(ex);
                     } finally {

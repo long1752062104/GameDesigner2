@@ -165,18 +165,18 @@ namespace GameDesigner
                                 active = true;
                                 StateEvent.AddEvent(spwanTime, () =>
                                 {
-                                    go.SetActive(false);
+                                    if (go != null) go.SetActive(false);
                                 });
                                 break;
                             }
                         }
                         if (!active)
                         {
-                            GameObject go = InstantiateSpwan(stateManager);
+                            var go = InstantiateSpwan(stateManager);
                             activeObjs.Add(go);
                             StateEvent.AddEvent(spwanTime, () =>
                             {
-                                go.SetActive(false);
+                                if(go != null) go.SetActive(false);
                             });
                         }
                     }
@@ -257,6 +257,14 @@ namespace GameDesigner
                 AudioManager.Play(audioClips[audioIndex]);
             }
             eventEnter = false;
+        }
+
+        public override void OnDestroyComponent()
+        {
+            foreach (var obj in activeObjs)
+            {
+                Object.Destroy(obj);
+            }
         }
     }
 }

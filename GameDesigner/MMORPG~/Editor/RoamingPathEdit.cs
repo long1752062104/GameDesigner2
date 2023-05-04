@@ -52,7 +52,8 @@ namespace Net.MMORPG
                         GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.19f);
                         EditorGUILayout.LabelField("路点 " + (j + 1), EditorStyles.toolbarButton);
                         GUI.backgroundColor = Color.white;
-
+                        self.waypointsList[j] = EditorGUILayout.Vector3Field("世界坐标", self.waypointsList[j]);
+                        self.localWaypoints[j] = EditorGUILayout.Vector3Field("局部坐标", self.localWaypoints[j]);
                         if (GUILayout.Button("移除", EditorStyles.miniButton, GUILayout.Height(18)))
                         {
                             self.waypointsList.RemoveAt(j);

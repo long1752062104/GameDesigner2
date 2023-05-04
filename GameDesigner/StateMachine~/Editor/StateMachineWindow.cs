@@ -8,16 +8,6 @@ namespace GameDesigner
     public class StateMachineWindow : GraphEditor
     {
         public static StateMachine stateMachine;
-        private static StateMachineWindow instance;
-        public static StateMachineWindow Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
-                return instance;
-            }
-        }
 
         private bool dragState = false;
         private State makeTransition;
@@ -25,11 +15,11 @@ namespace GameDesigner
         [MenuItem("GameDesigner/StateMachine/StateMachine")]
         public static void Init()
         {
-            instance = GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
+            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
         }
         public static void Init(StateMachine stateMachine)
         {
-            instance = GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
+            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
             StateMachineWindow.stateMachine = stateMachine;
         }
 
