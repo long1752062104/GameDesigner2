@@ -103,7 +103,7 @@ namespace Net.MMORPG
             }
             var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(sceneData);
             File.WriteAllText(path, jsonStr);
-            UnityEngine.Debug.Log($"地图数据生成成功!--{path}");
+            UnityEngine.Debug.Log($"地图数据生成成功: {new DirectoryInfo(path).FullName}");
 #else
             Net.Event.NDebug.LogError("只有Unity编辑器能用!!!");
 #endif

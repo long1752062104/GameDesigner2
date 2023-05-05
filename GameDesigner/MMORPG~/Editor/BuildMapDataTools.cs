@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Net.Helper;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,7 +30,14 @@ namespace Net.MMORPG
             EditorGUILayout.LabelField("生成路径:", data.savePath);
             if (GUILayout.Button("选择路径", GUILayout.Width(100)))
             {
-                data.savePath = EditorUtility.OpenFolderPanel("地图数据路径", "", "");
+                var savePath = EditorUtility.OpenFolderPanel("地图数据路径", "", "");
+                if (!string.IsNullOrEmpty(savePath))
+                {
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                    var relativeUri = uri.MakeRelativeUri(new Uri(savePath));
+                    data.savePath = relativeUri.ToString();
+                }
                 SaveData();
             }
             GUILayout.EndHorizontal();
