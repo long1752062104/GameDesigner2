@@ -82,7 +82,7 @@ namespace Net.Config
                     directory.Add(type, dict = new Dictionary<string, IDataConfig[]>());
                 if (dict.TryGetValue(filterExpression, out var datas))
                     return datas as T[];
-                var sheetName = type.Name.Replace("DataConfig", "");
+                var sheetName = type.Name.Replace("DataConfig", string.Empty);
                 var table = GetTable(sheetName);
                 var rows = table.Select(filterExpression);
                 var items = new T[rows.Length];
@@ -92,6 +92,11 @@ namespace Net.Config
                     t.Init(rows[i]);
                     items[i] = t;
                 }
+                foreach (var items1 in dict.Values)
+                    for (int i = 0; i < items1.Length; i++)
+                        for (int x = 0; x < items.Length; x++)
+                            if (items[x].ID == items1[i].ID) //相同的行, 不同的查询语句必须保证只需要一个对象
+                                items[x] = (T)items1[i];
                 dict.Add(filterExpression, items as IDataConfig[]);
                 return items;
             }
