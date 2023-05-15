@@ -156,7 +156,7 @@ namespace Net.System
             {
                 if (index >= _size)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException();
+                    return default;
                 }
                 return _items[index];
             }
