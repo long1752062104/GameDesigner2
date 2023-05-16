@@ -1692,21 +1692,24 @@ namespace Net.Client
                     break;
                 case NetCmd.QueueCancellation:
                     {
-                        InvokeInMainThread(() => OnQueueCancellation?.Invoke());
+                        InvokeInMainThread(OnQueueCancellation);
                     }
                     break;
                 case NetCmd.ServerFull:
                     {
-                        InvokeInMainThread(() => OnServerFull?.Invoke());
+                        InvokeInMainThread(OnServerFull);
                     }
                     break;
                 case NetCmd.SyncPropertyData:
                     {
-                        InvokeInMainThread(() => OnSyncPropertyHandle?.Invoke(model));
+                        InvokeInMainThread(() => OnSyncPropertyHandle?.Invoke(model)); //属性同步没有用到Buffer
                     }
                     break;
                 default:
-                    InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                    {
+                        model.Flush(); //先缓存起来, 当切换到主线程后才能得到正确的数据
+                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                    }
                     break;
             }
         }

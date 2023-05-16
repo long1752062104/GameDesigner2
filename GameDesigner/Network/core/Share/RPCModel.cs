@@ -1,4 +1,6 @@
-﻿namespace Net.Share
+﻿using System;
+
+namespace Net.Share
 {
     /// <summary>
     /// 远程过程调用模型,此类负责网络通讯中数据解析临时存储的对象
@@ -27,7 +29,7 @@
             {
                 if (count == 0)
                     return new byte[0];//byte[]不能为空,否则出错
-                byte[] buffer1 = new byte[count];
+                var buffer1 = new byte[count];
                 global::System.Buffer.BlockCopy(buffer, index, buffer1, 0, count);
                 return buffer1;
             }
@@ -294,6 +296,12 @@
                 }
             }
             return $"指令:{cmdStr} 内核:{kernel} 方法:{func} Mask:{methodHash} 数据:{(buffer != null ? buffer.Length : 0)}";
+        }
+
+        public void Flush()
+        {
+            buffer = Buffer;
+            index = 0;
         }
     }
 }
