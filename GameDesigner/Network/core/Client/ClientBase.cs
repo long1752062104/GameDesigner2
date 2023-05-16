@@ -1534,7 +1534,7 @@ namespace Net.Client
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        OnReceiveDataHandle?.Invoke(model); //这里是多线程调用,不切换到主线程了
                     break;
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
@@ -1550,13 +1550,12 @@ namespace Net.Client
                     Connected = true;
                     break;
                 case NetCmd.SwitchPort:
-                    Task.Run(() => {
-                        InvokeInMainThread(() => {
-                            if (OnSwitchPortHandle != null)
-                                OnSwitchPortHandle(model.pars[0].ToString(), (ushort)model.pars[1]);
-                            else
-                                OnSwitchPortInternal(model.pars[0].ToString(), (ushort)model.pars[1]);
-                        });
+                    InvokeInMainThread(() =>
+                    {
+                        if (OnSwitchPortHandle != null)
+                            OnSwitchPortHandle(model.pars[0].ToString(), (ushort)model.pars[1]);
+                        else
+                            OnSwitchPortInternal(model.pars[0].ToString(), (ushort)model.pars[1]);
                     });
                     break;
                 case NetCmd.Identify:
