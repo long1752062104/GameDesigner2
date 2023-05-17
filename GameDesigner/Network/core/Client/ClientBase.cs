@@ -1492,43 +1492,43 @@ namespace Net.Client
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.Local:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.LocalRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.Scene:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.SceneRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.Notice:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.NoticeRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     break;
                 case NetCmd.ThreadRpc:
                     if (model.kernel)
@@ -1553,9 +1553,9 @@ namespace Net.Client
                     InvokeInMainThread(() =>
                     {
                         if (OnSwitchPortHandle != null)
-                            OnSwitchPortHandle(model.pars[0].ToString(), (ushort)model.pars[1]);
+                            OnSwitchPortHandle(model.AsString, model.AsUshort);
                         else
-                            OnSwitchPortInternal(model.pars[0].ToString(), (ushort)model.pars[1]);
+                            OnSwitchPortInternal(model.AsString, model.AsUshort);
                     });
                     break;
                 case NetCmd.Identify:
@@ -1706,11 +1706,16 @@ namespace Net.Client
                     break;
                 default:
                     {
-                        model.Flush(); //先缓存起来, 当切换到主线程后才能得到正确的数据
-                        InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+                        InvokeInMainThread(model);
                     }
                     break;
             }
+        }
+
+        protected virtual void InvokeInMainThread(RPCModel model) 
+        {
+            model.Flush(); //先缓存起来, 当切换到主线程后才能得到正确的数据
+            InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
         }
 
         protected virtual void OnSwitchPortInternal(string host, ushort port)
