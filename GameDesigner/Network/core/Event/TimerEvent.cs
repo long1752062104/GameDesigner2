@@ -250,6 +250,8 @@ namespace Net.Event
                 try
                 {
                     var evt = events._items[i];
+                    if (evt == null) //当unity关闭客户端也会导致这里null
+                        continue;
                     if (evt.isRemove)
                     {
                         events.RemoveAt(i);
