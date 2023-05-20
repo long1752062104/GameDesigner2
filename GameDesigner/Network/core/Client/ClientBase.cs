@@ -2313,13 +2313,13 @@ namespace Net.Client
             }
             else body = OnRpcTaskRegister(callbackFunc1, callbackFunc);
             model.intercept = intercept;
-            model.tick = (uint)Environment.TickCount;
             body.TaskQueue.Enqueue(model);
             if (timeoutMilliseconds == -1)
                 timeoutMilliseconds = int.MaxValue;
             else if (timeoutMilliseconds == 0)
                 timeoutMilliseconds = 5000;
             var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
+            model.tick = timeout;
             while ((uint)Environment.TickCount < timeout)
             {
                 await UniTask.Yield();
@@ -2519,7 +2519,6 @@ namespace Net.Client
             }
             var model1 = new RPCModelTask();
             model1.callback = callback;
-            model1.tick = (uint)Environment.TickCount;
             body.TaskQueue.Enqueue(model1);
             if (outTimeAct == null)
                 return;
@@ -2528,6 +2527,7 @@ namespace Net.Client
             else if (timeoutMilliseconds == 0)
                 timeoutMilliseconds = 5000;
             var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
+            model1.tick = timeout;
             while ((uint)Environment.TickCount < timeout)
             {
                 await UniTask.Yield();
