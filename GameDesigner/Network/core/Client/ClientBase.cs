@@ -433,7 +433,7 @@ namespace Net.Client
         public int ReconnectInterval { get; set; } = 2000;
         private int sendInterval = 1;
         /// <summary>
-        /// 每次发送数据间隔，每秒发送30次，每次间隔33毫秒
+        /// 每次发送数据间隔，每秒大概执行1000次
         /// </summary>
         public int SendInterval {
             get => sendInterval;

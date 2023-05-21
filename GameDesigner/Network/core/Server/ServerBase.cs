@@ -1558,27 +1558,36 @@ namespace Net.Server
         protected virtual void SendDataHandle()//发送线程
         {
             var allClients = new Player[0];
-            var timer = new TimerTick();
-            var tick = (uint)Environment.TickCount;
             while (IsRunServer)
             {
                 try
                 {
+                    Thread.Sleep(1);
                     if (allClients.Length != AllClients.Count)
                         allClients = AllClients.Values.ToArray();
-                    tick = (uint)Environment.TickCount;
-                    if (timer.CheckTimeout(tick, (uint)16, true)) 
+                    for (int i = 0; i < allClients.Length; i++)
                     {
-                        var result = Parallel.ForEach(allClients, client => SendDirect(client));
-                        while (!result.IsCompleted)
-                            Thread.Sleep(1);
-                        sendLoopNum++;
+                        if (!allClients[i].IsSending)
+                        {
+                            allClients[i].IsSending = true;
+                            ThreadPool.UnsafeQueueUserWorkItem(SendWorkCallback, allClients[i]);
+                        }
                     }
+                    sendLoopNum++;
                 }
                 catch (Exception ex)
                 {
                     Debug.LogWarning("发送异常:" + ex);
                 }
+            }
+        }
+
+        private void SendWorkCallback(object state)
+        {
+            if (state is Player client)
+            {
+                client.IsSending = false; //避免不必要的问题发生, 放在前面比较安全
+                SendDirect(client);
             }
         }
 

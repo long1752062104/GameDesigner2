@@ -228,6 +228,7 @@ namespace Net.Event
             }
             else if (sleep)
             {
+                UpdateEvent(0); //需要执行那些没有延迟的事件
                 Thread.Sleep(1);
                 var total = nextTick - tick;
                 if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
@@ -235,6 +236,7 @@ namespace Net.Event
             }
             else
             {
+                UpdateEvent(0); //需要执行那些没有延迟的事件
                 var total = nextTick - tick;
                 if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
                     nextTick = tick;
@@ -269,11 +271,7 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-#if SERVICE
-                                UniTask.Run(WorkExecute1, evt, false);
-#else
-                                _ = UniTask.RunOnThreadPool(WorkExecute1, evt, false);
-#endif
+                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute1, evt);
                             }
                             else
 #endif
@@ -287,15 +285,11 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-#if SERVICE
-                                UniTask.Run(WorkExecute2, evt, false);
-#else
-                                _ = UniTask.RunOnThreadPool(WorkExecute2, evt, false);
-#endif
+                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute2, evt);
                             }
                             else
 #endif
-                            evt.ptr2(evt.obj);
+                                evt.ptr2(evt.obj);
                         }
                         else if (evt.ptr3 != null)
                         {
@@ -305,11 +299,7 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-#if SERVICE
-                                UniTask.Run(WorkExecute3, evt, false);
-#else
-                                _ = UniTask.RunOnThreadPool(WorkExecute3, evt, false);
-#endif
+                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute3, evt);
                                 continue;
                             }
 #endif
@@ -324,11 +314,7 @@ namespace Net.Event
                                 if (!evt.complete)
                                     continue;
                                 evt.complete = false;
-#if SERVICE
-                                UniTask.Run(WorkExecute4, evt, false);
-#else
-                                _ = UniTask.RunOnThreadPool(WorkExecute4, evt, false);
-#endif
+                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute4, evt);
                                 continue;
                             }
 #endif
