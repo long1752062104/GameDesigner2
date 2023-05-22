@@ -30,21 +30,24 @@ namespace Net.UnityComponent
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
         internal MyDictionary<ushort, SyncVarInfo> syncVarInfos = new MyDictionary<ushort, SyncVarInfo>();
         private int syncVarID = 1;
-        internal bool isInit;
+        [Tooltip("是否初始化? 如果不想让Identity在Start被自动分配ID, 则可以设置此字段为true")]
+        [SerializeField] internal bool isInit;
         public bool IsDispose { get; internal set; }
         /// <summary>
         /// 此物体是否是本机实例化？
         /// </summary>
-        public bool IsLocal { get { return isLocal; } set { isLocal = value; } }
+        public bool IsLocal { get => isLocal; set => isLocal = value; }
 
         /// <summary>
         /// 每个网络对象的唯一标识
         /// </summary>
-        public int Identity
-        {
-            get{ return m_identity; }
-            set { m_identity = value; }
-        }
+        public int Identity { get => m_identity; set => m_identity = value; }
+
+        /// <summary>
+        /// 获取或设置是否初始化
+        /// </summary>
+        public bool IsInitialize { get => isInit; set => isInit = value; }
+
         public virtual void Start()
         {
             Init();

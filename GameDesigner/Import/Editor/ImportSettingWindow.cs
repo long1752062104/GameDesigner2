@@ -91,7 +91,9 @@ public class ImportSettingWindow : EditorWindow
         
         EditorGUILayout.HelpBox("MMORPG模块 用于MMORPG设计怪物点, 巡逻点, 地图数据等", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/MMORPG";
-        DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG");
+        DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () => {
+            Import("AOI~", "AOI");//依赖
+        });
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
         path = "Assets/Plugins/GameDesigner/AOI";
@@ -149,6 +151,21 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI~", "AOI");
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
+        EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
+        if (GUILayout.Button("重新导入已导入的模块", GUILayout.Height(20)))
+        {
+            ReImport("Network/Gcp~", "Network/Gcp");
+            ReImport("Network/Udx~", "Network/Udx");
+            ReImport("Network/Kcp~", "Network/Kcp");
+            ReImport("Network/Web~", "Network/Web");
+            ReImport("Component~", "Component");
+            ReImport("StateMachine~", "StateMachine");
+            ReImport("MVC~", "MVC");
+            ReImport("ECS~", "ECS");
+            ReImport("Common~", "Common");
+            ReImport("MMORPG~", "MMORPG");
+            ReImport("AOI~", "AOI");
+        }
         GUILayout.EndScrollView();
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
@@ -165,6 +182,22 @@ public class ImportSettingWindow : EditorWindow
         }
         GUILayout.EndHorizontal(); 
         GUILayout.Space(10);
+    }
+
+    private static void ReImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
+    {
+        var rootPath = "Packages/com.gamedesigner.network";//包的根路径
+        if (!Directory.Exists(rootPath))
+            rootPath = Application.dataPath + "/GameDesigner";//直接放Assets目录的路径
+        if (!Directory.Exists(rootPath))
+        {
+            Debug.LogError("找不到根路径, 无法执行, 请使用包管理器添加gdnet, 或者根路径必须在Assets目录下!");
+            return;
+        }
+        var path = $"{pluginsPath}{copyToProtocolName}/";
+        if (!Directory.Exists(path))
+            return;
+        Import(sourceProtocolName, copyToProtocolName, pluginsPath);
     }
 
     private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
