@@ -1,5 +1,6 @@
 ﻿using Microsoft.CSharp;
 using Net.Event;
+using Net.Helper;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -401,7 +402,7 @@ namespace Binding
                     templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
 
-                    var key = members[i].ItemType.FullName;
+                    var key = members[i].ItemType.FullName;  
                     string bindType;
                     string value;
                     if (members[i].ItemType1.IsArray)
@@ -518,11 +519,10 @@ namespace Binding
         {
             if (item.IsGenericType & item.GenericTypeArguments.Length == 2)
             {
-                var key = item.GenericTypeArguments[0].FullName;
-                var value = item.GenericTypeArguments[1].FullName;
-                var key1 = key.Replace(".", "");
-                var value1 = value.Replace(".", "");
-                str.AppendLine($"\t\t\t{{ typeof(Dictionary<{key},{value}>), typeof(Dictionary_{key1}_{value1}Bind_Bind) }},");
+                var typeName = AssemblyHelper.GetTypeName(item);
+                //var bindType = AssemblyHelper.GetTypeName(item, "BaseBind<", ">", "", "Bind", "BaseArrayBind<", ">", "", "ArrayBind", "BaseListBind<", ">", "", "GenericBind"); //GetDictionaryBindTypeName(item);
+                var bindType = GetDictionaryBindTypeName(item);
+                str.AppendLine($"\t\t\t{{ typeof({typeName}), typeof({bindType}) }},");
             }
             else
             {
@@ -725,7 +725,8 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
                 bindType = $"BaseArrayBind<{type1.FullName}>";
                 typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
             }
-            keyRead = $"{Type.GetTypeCode(args[0])}Array";
+            //keyRead = $"{Type.GetTypeCode(args[0])}Array";
+            keyRead = $"{Type.GetTypeCode(args[0])}";
         }
         else if (args[1].IsGenericType)
         {
@@ -743,7 +744,8 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
                 bindType = $"BaseListBind<{type1.FullName}>";
                 typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
             }
-            keyRead = $"{Type.GetTypeCode(args[0])}List";
+            //keyRead = $"{Type.GetTypeCode(args[0])}List"; 
+            keyRead = $"{Type.GetTypeCode(args[0])}";
         }
         else
         {
@@ -770,5 +772,59 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
         text = text.Replace("{READ}", $"{keyRead}");
         fileTypeName = $"Dictionary_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
         return text;
+    }
+
+    public static string GetDictionaryBindTypeName(Type type)
+    {
+        TypeCode typecode;
+        var args = type.GenericTypeArguments;
+        string bindType;
+        string value;
+        string typeBindName;
+        if (args[1].IsArray)
+        {
+            var serType = args[1].GetInterface(typeof(IList<>).FullName);
+            var type1 = serType.GetGenericArguments()[0];
+            typecode = Type.GetTypeCode(type1);
+            if (typecode == TypeCode.Object)
+            {
+                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
+                typeBindName = bindType;
+            }
+            else
+            {
+                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
+            }
+        }
+        else if (args[1].IsGenericType)
+        {
+            var type1 = args[1].GenericTypeArguments[0];
+            typecode = Type.GetTypeCode(type1);
+            if (typecode == TypeCode.Object)
+            {
+                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
+                typeBindName = bindType;
+            }
+            else
+            {
+                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
+            }
+        }
+        else
+        {
+            typecode = Type.GetTypeCode(args[1]);
+            if (typecode == TypeCode.Object)
+            {
+                bindType = args[1].FullName.Replace(".", "").Replace("+", "") + "Bind";
+                typeBindName = bindType;
+            }
+            else
+            {
+                value = args[1].FullName;
+                typeBindName = value.Replace(".", "").Replace("+", "");
+            }
+        }
+        var fileTypeName = $"Dictionary_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
+        return fileTypeName;
     }
 }

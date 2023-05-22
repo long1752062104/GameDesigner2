@@ -300,7 +300,7 @@ public class Fast2BuildTools2 : EditorWindow
             }
             if (!string.IsNullOrEmpty(data.typeEntry)) 
             {
-                var types1 = (Type[])AssemblyHelper.GetType(data.typeEntry).GetMethod(data.methodEntry).Invoke(null, null);
+                var types1 = AssemblyHelper.GetType(data.typeEntry).GetMethod(data.methodEntry).Invoke(null, null) as Type[];
                 foreach (var type in types1)
                 {
                     if (type.IsGenericType)
