@@ -50,14 +50,11 @@ public class Fast2BuildTools2 : EditorWindow
     private List<TypeData> AddTypes(Assembly assembly)
     {
         var types1 = new List<TypeData>();
-        var types2 = assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
-        var types3 = typeof(Vector2).Assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
-        var typeslist = new List<Type>(types2);
-        typeslist.AddRange(types3);
-        foreach (var obj in typeslist)
+        var types2 = assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
+        foreach (var type in types2)
         {
-            var str = obj.FullName;
-            types1.Add(new TypeData() { name = str, type = obj });
+            var str = type.FullName;
+            types1.Add(new TypeData() { name = str, type = type });
         }
         return types1;
     }
@@ -143,7 +140,7 @@ public class Fast2BuildTools2 : EditorWindow
             AddSerTypeInDirectory(files);
         }
         EditorGUILayout.EndHorizontal();
-        scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
+        scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(search.Length > 0 ? position.height / 2 : position.height));
         for (int i = 0; i < data.typeNames.Count; i++)
         {
             var type1 = data.typeNames[i];
@@ -513,7 +510,7 @@ public class Fast2BuildTools2 : EditorWindow
         public string typeEntry;
         public string methodEntry;
         public int showType;
-        public string searchAssemblies = "Assembly-CSharp|Assembly-CSharp-firstpass";
+        public string searchAssemblies = "UnityEngine.CoreModule|Assembly-CSharp|Assembly-CSharp-firstpass";
     }
 }
 #endif

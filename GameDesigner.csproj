@@ -249,7 +249,6 @@
     <Compile Include="GameDesigner\Network\core\Unity\Color.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Color32.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Mathf.cs" />
-    <Compile Include="GameDesigner\Network\core\Unity\Matrix3x3.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Matrix4Utils.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Matrix4x4.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Quaternion.cs" />

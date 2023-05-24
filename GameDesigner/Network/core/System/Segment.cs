@@ -1093,7 +1093,7 @@ namespace Net.System
             var count = ReadInt32();
             if (count == 0)
                 return string.Empty;
-            var value = global::System.Text.Encoding.UTF8.GetString(Buffer, Position, count);
+            var value = Encoding.UTF8.GetString(Buffer, Position, count);
             Position += count;
             return value;
         }
