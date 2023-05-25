@@ -82,6 +82,19 @@ namespace Net
             }
         }
 
+        public Vector3 eulerAngles
+        {
+            get
+            {
+                Matrix4x4 m = QuaternionToMatrix(this);
+                return MatrixToEuler(m) * 180f / Mathf.PI;
+            }
+            set
+            {
+                this = Euler(value);
+            }
+        }
+
         // Token: 0x06004930 RID: 18736 RVA: 0x0007E708 File Offset: 0x0007C908
         public static Quaternion operator *(Quaternion lhs, Quaternion rhs)
         {
@@ -594,6 +607,133 @@ namespace Net
             }
         }
 
+        private Vector3 MatrixToEuler(Matrix4x4 m)
+        {
+            Vector3 v = new Vector3();
+            if (m[1, 2] < 1)
+            {
+                if (m[1, 2] > -1)
+                {
+                    v.x = Mathf.Asin(-m[1, 2]);
+                    v.y = Mathf.Atan2(m[0, 2], m[2, 2]);
+                    v.z = Mathf.Atan2(m[1, 0], m[1, 1]);
+                }
+                else
+                {
+                    v.x = Mathf.PI * 0.5f;
+                    v.y = Mathf.Atan2(m[0, 1], m[0, 0]);
+                    v.z = 0;
+                }
+            }
+            else
+            {
+                v.x = -Mathf.PI * 0.5f;
+                v.y = Mathf.Atan2(-m[0, 1], m[0, 0]);
+                v.z = 0;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (v[i] < 0)
+                {
+                    v[i] += 2 * Mathf.PI;
+                }
+                else if (v[i] > 2 * Mathf.PI)
+                {
+                    v[i] -= 2 * Mathf.PI;
+                }
+            }
+
+            return v;
+        }
+
+        public static Matrix4x4 QuaternionToMatrix(Quaternion quat)
+        {
+            Matrix4x4 m = new Matrix4x4();
+
+            float x = quat.x * 2;
+            float y = quat.y * 2;
+            float z = quat.z * 2;
+            float xx = quat.x * x;
+            float yy = quat.y * y;
+            float zz = quat.z * z;
+            float xy = quat.x * y;
+            float xz = quat.x * z;
+            float yz = quat.y * z;
+            float wx = quat.w * x;
+            float wy = quat.w * y;
+            float wz = quat.w * z;
+
+            m[0] = 1.0f - (yy + zz);
+            m[1] = xy + wz;
+            m[2] = xz - wy;
+            m[3] = 0.0F;
+
+            m[4] = xy - wz;
+            m[5] = 1.0f - (xx + zz);
+            m[6] = yz + wx;
+            m[7] = 0.0F;
+
+            m[8] = xz + wy;
+            m[9] = yz - wx;
+            m[10] = 1.0f - (xx + yy);
+            m[11] = 0.0F;
+
+            m[12] = 0.0F;
+            m[13] = 0.0F;
+            m[14] = 0.0F;
+            m[15] = 1.0F;
+
+            return m;
+        }
+
+        private static Quaternion MatrixToQuaternion(Matrix4x4 m)
+        {
+            Quaternion quat = new Quaternion();
+
+            float fTrace = m[0, 0] + m[1, 1] + m[2, 2];
+            float root;
+
+            if (fTrace > 0)
+            {
+                root = Mathf.Sqrt(fTrace + 1);
+                quat.w = 0.5f * root;
+                root = 0.5f / root;
+                quat.x = (m[2, 1] - m[1, 2]) * root;
+                quat.y = (m[0, 2] - m[2, 0]) * root;
+                quat.z = (m[1, 0] - m[0, 1]) * root;
+            }
+            else
+            {
+                int[] s_iNext = new int[] { 1, 2, 0 };
+                int i = 0;
+                if (m[1, 1] > m[0, 0])
+                {
+                    i = 1;
+                }
+                if (m[2, 2] > m[i, i])
+                {
+                    i = 2;
+                }
+                int j = s_iNext[i];
+                int k = s_iNext[j];
+
+                root = Mathf.Sqrt(m[i, i] - m[j, j] - m[k, k] + 1);
+                if (root < 0)
+                {
+                    throw new IndexOutOfRangeException("error!");
+                }
+                quat[i] = 0.5f * root;
+                root = 0.5f / root;
+                quat.w = (m[k, j] - m[j, k]) * root;
+                quat[j] = (m[j, i] + m[i, j]) * root;
+                quat[k] = (m[k, i] + m[i, k]) * root;
+            }
+            float nor = Mathf.Sqrt(Dot(quat, quat));
+            quat = new Quaternion(quat.x / nor, quat.y / nor, quat.z / nor, quat.w / nor);
+
+            return quat;
+        }
 
         public static void Dot(ref Quaternion quaternion1, ref Quaternion quaternion2, out float result)
         {
@@ -755,7 +895,6 @@ namespace Net
             result.z = -value.z;
             result.w = value.w;
         }
-
 
         private static void Angle(ref Quaternion a, ref Quaternion b, out float result)
         {

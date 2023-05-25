@@ -39,6 +39,18 @@
             set { rotation = value; }
         }
 
+        public Vector3 eulerAngles
+        {
+            get
+            {
+                return rotation.eulerAngles;
+            }
+            set
+            {
+                rotation = Quaternion.Euler(value);
+            }
+        }
+
         public Vector3 left
         {
             get => matrix.left;
