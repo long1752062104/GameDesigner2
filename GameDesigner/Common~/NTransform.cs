@@ -155,5 +155,10 @@
     }
 
     [Serializable]
-    public class NTransform : EntityTransform { }
+    public class NTransform : EntityTransform 
+    {
+        public NTransform() : base() { }
+
+        public NTransform(Vector3 position, Quaternion rotation) : base(position, rotation) { }
+    }
 }
