@@ -41,14 +41,8 @@
 
         public Vector3 eulerAngles
         {
-            get
-            {
-                return rotation.eulerAngles;
-            }
-            set
-            {
-                rotation = Quaternion.Euler(value);
-            }
+            get => rotation.eulerAngles;
+            set => rotation = Quaternion.Euler(value);
         }
 
         public Vector3 left
@@ -146,6 +140,11 @@
         public void Rotate(float xAngle, float yAngle, float zAngle)
         {
             Rotate(new Vector3(xAngle, yAngle, zAngle), Space.Self);
+        }
+
+        public void LookAt(Vector3 worldPosition)
+        {
+            LookAt(worldPosition, Vector3.up);
         }
 
         public void LookAt(Vector3 worldPosition, Vector3 worldUp)

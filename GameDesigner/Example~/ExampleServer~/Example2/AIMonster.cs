@@ -75,7 +75,7 @@ namespace Example2
                         state1 = 0;
                         idleTime = Time.time + RandomHelper.Range(0f, 2f);
                     }
-                    transform.LookAt(patrolPath.waypoints[pointIndex]);
+                    transform.LookAt(patrolPath.waypoints[pointIndex], Vector3.up);
                     transform.Translate(0, 0, walkSpeed * Time.deltaTime);
                     break;
             }

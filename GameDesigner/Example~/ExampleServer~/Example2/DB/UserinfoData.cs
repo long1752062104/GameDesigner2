@@ -1,90 +1,36 @@
 using System;
 using System.Data;
-using System.Threading.Tasks;
-using Net.System;
 using System.Collections.Generic;
 using System.Text;
 using Net.Share;
+using Net.Event;
 #if SERVER
+using Net.System;
+using Cysharp.Threading.Tasks;
 using System.Data.SQLite;
 #endif
+using BooleanObs = Net.Common.PropertyObserverAuto<bool>;
+using ByteObs = Net.Common.PropertyObserverAuto<byte>;
+using SByteObs = Net.Common.PropertyObserverAuto<sbyte>;
+using Int16Obs = Net.Common.PropertyObserverAuto<short>;
+using UInt16Obs = Net.Common.PropertyObserverAuto<ushort>;
+using CharObs = Net.Common.PropertyObserverAuto<char>;
+using Int32Obs = Net.Common.PropertyObserverAuto<int>;
+using UInt32Obs = Net.Common.PropertyObserverAuto<uint>;
+using SingleObs = Net.Common.PropertyObserverAuto<float>;
+using Int64Obs = Net.Common.PropertyObserverAuto<long>;
+using UInt64Obs = Net.Common.PropertyObserverAuto<ulong>;
+using DoubleObs = Net.Common.PropertyObserverAuto<double>;
+using DateTimeObs = Net.Common.PropertyObserverAuto<System.DateTime>;
+using BytesObs = Net.Common.PropertyObserverAuto<byte[]>;
+using StringObs = Net.Common.PropertyObserverAuto<string>;
 
-#if ANTICHEAT
-using Boolean = CodeStage.AntiCheat.ObscuredTypes.ObscuredBool;
-#else
-using Boolean = System.Boolean;
-#endif
-#if ANTICHEAT
-using Char = CodeStage.AntiCheat.ObscuredTypes.ObscuredChar;
-#else
-using Char = System.Char;
-#endif
-#if ANTICHEAT
-using SByte = CodeStage.AntiCheat.ObscuredTypes.ObscuredSByte;
-#else
-using SByte = System.SByte;
-#endif
-#if ANTICHEAT
-using Byte = CodeStage.AntiCheat.ObscuredTypes.ObscuredByte;
-#else
-using Byte = System.Byte;
-#endif
-#if ANTICHEAT
-using Int16 = CodeStage.AntiCheat.ObscuredTypes.ObscuredShort;
-#else
-using Int16 = System.Int16;
-#endif
-#if ANTICHEAT
-using UInt16 = CodeStage.AntiCheat.ObscuredTypes.ObscuredUShort;
-#else
-using UInt16 = System.UInt16;
-#endif
-#if ANTICHEAT
-using Int32 = CodeStage.AntiCheat.ObscuredTypes.ObscuredInt;
-#else
-using Int32 = System.Int32;
-#endif
-#if ANTICHEAT
-using UInt32 = CodeStage.AntiCheat.ObscuredTypes.ObscuredUInt;
-#else
-using UInt32 = System.UInt32;
-#endif
-#if ANTICHEAT
-using Int64 = CodeStage.AntiCheat.ObscuredTypes.ObscuredLong;
-#else
-using Int64 = System.Int64;
-#endif
-#if ANTICHEAT
-using UInt64 = CodeStage.AntiCheat.ObscuredTypes.ObscuredULong;
-#else
-using UInt64 = System.UInt64;
-#endif
-#if ANTICHEAT
-using Single = CodeStage.AntiCheat.ObscuredTypes.ObscuredFloat;
-#else
-using Single = System.Single;
-#endif
-#if ANTICHEAT
-using Double = CodeStage.AntiCheat.ObscuredTypes.ObscuredDouble;
-#else
-using Double = System.Double;
-#endif
-#if ANTICHEAT
-using Decimal = CodeStage.AntiCheat.ObscuredTypes.ObscuredDecimal;
-#else
-using Decimal = System.Decimal;
-#endif
-#if ANTICHEAT
-using String = CodeStage.AntiCheat.ObscuredTypes.ObscuredString;
-#else
-using String = System.String;
-#endif
-
-
+namespace Example2
+{
     /// <summary>
     /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
     /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
-    /// <para><see href="此脚本支持unity的CodeStage.AntiCheat防修改数值插件, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
+    /// <para><see href="此脚本支持防内存修改器, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
     /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
     /// </summary>
     public partial class UserinfoData : IDataRow
@@ -93,678 +39,435 @@ using String = System.String;
         [Newtonsoft_X.Json.JsonIgnore]
         public DataRowState RowState { get; set; }
     #if SERVER
-        private readonly HashSetSafe<int> columns = new HashSetSafe<int>();
+        internal Net.Server.NetPlayer client;
     #endif
-        
+        /// <summary>当属性被修改时调用, 参数1: 哪个字段被修改(表名_字段名), 参数2:被修改的值</summary>
+        [Net.Serialize.NonSerialized]
+        [Newtonsoft_X.Json.JsonIgnore]
+        public Action<Example2HashProto, object> OnValueChanged;
+
         private Int64 id;
-        /// <summary>{KEYNOTE}</summary>
-        public Int64 Id
+        /// <summary></summary>
+        public Int64 Id { get { return id; } set { this.id = value; } }
+
+     // -- 1
+        private readonly StringObs account = new StringObs("UserinfoData_account", false, null);
+
+        /// <summary> --获得属性观察对象</summary>
+        internal StringObs AccountObserver => account;
+
+        /// <summary></summary>
+        public String Account { get => GetAccountValue(); set => CheckAccountValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal String SyncAccount { get => GetAccountValue(); set => CheckAccountValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal String SyncIDAccount { get => GetAccountValue(); set => CheckAccountValue(value, 2); }
+
+        private String GetAccountValue() => this.account.Value;
+
+        private void CheckAccountValue(String value, int type) 
         {
-            get { return id; }
-            set { this.id = value; }
+            if (this.account.Value == value)
+                return;
+            this.account.Value = value;
+            if (type == 0)
+                CheckUpdate(1);
+            else if (type == 1)
+                AccountCall(false);
+            else if (type == 2)
+                AccountCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_ACCOUNT, value);
         }
 
-    
-        private String account;
-        /// <summary>{NOTE}</summary>
-        public String Account
-        {
-            get { return account; }
-            set
-            {
-                if (this.account == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.account = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(1);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                AccountCall();
-    #endif
-            }
-        }
-
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncAccount
-        {
-            get { return account; }
-            set
-            {
-                if (this.account == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.account = value;
-                AccountCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncIDAccount
-        {
-            get { return account; }
-            set
-            {
-                if (this.account == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.account = value;
-                SyncAccountCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void AccountCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void AccountCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.String)account);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], account.Value };
+            else objects = new object[] { account.Value };
+#if SERVER
+            CheckUpdate(1);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncAccountCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ACCOUNT, (System.Int64)id, (System.String)account);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.ACCOUNT)]
-        private void AccountCall(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_ACCOUNT)]
+        private void AccountRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Account = value;
-            OnAccount?.Invoke();
         }
+     // -- 1
+        private readonly StringObs password = new StringObs("UserinfoData_password", false, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnAccount;
-    
-        private String password;
-        /// <summary>{NOTE}</summary>
-        public String Password
+        /// <summary> --获得属性观察对象</summary>
+        internal StringObs PasswordObserver => password;
+
+        /// <summary></summary>
+        public String Password { get => GetPasswordValue(); set => CheckPasswordValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal String SyncPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal String SyncIDPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 2); }
+
+        private String GetPasswordValue() => this.password.Value;
+
+        private void CheckPasswordValue(String value, int type) 
         {
-            get { return password; }
-            set
-            {
-                if (this.password == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.password = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(2);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                PasswordCall();
-    #endif
-            }
+            if (this.password.Value == value)
+                return;
+            this.password.Value = value;
+            if (type == 0)
+                CheckUpdate(2);
+            else if (type == 1)
+                PasswordCall(false);
+            else if (type == 2)
+                PasswordCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_PASSWORD, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncPassword
-        {
-            get { return password; }
-            set
-            {
-                if (this.password == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.password = value;
-                PasswordCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncIDPassword
-        {
-            get { return password; }
-            set
-            {
-                if (this.password == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.password = value;
-                SyncPasswordCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void PasswordCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void PasswordCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.String)password);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], password.Value };
+            else objects = new object[] { password.Value };
+#if SERVER
+            CheckUpdate(2);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncPasswordCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.PASSWORD, (System.Int64)id, (System.String)password);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.PASSWORD)]
-        private void PasswordCall(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_PASSWORD)]
+        private void PasswordRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Password = value;
-            OnPassword?.Invoke();
         }
+     // -- 1
+        private readonly DoubleObs moveSpeed = new DoubleObs("UserinfoData_moveSpeed", true, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnPassword;
-    
-        private Double moveSpeed;
-        /// <summary>{NOTE}</summary>
-        public Double MoveSpeed
+        /// <summary> --获得属性观察对象</summary>
+        internal DoubleObs MoveSpeedObserver => moveSpeed;
+
+        /// <summary></summary>
+        public Double MoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal Double SyncMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal Double SyncIDMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 2); }
+
+        private Double GetMoveSpeedValue() => this.moveSpeed.Value;
+
+        private void CheckMoveSpeedValue(Double value, int type) 
         {
-            get { return moveSpeed; }
-            set
-            {
-                if (this.moveSpeed == value)
-                    return;
-                
-                this.moveSpeed = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(3);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                MoveSpeedCall();
-    #endif
-            }
+            if (this.moveSpeed.Value == value)
+                return;
+            this.moveSpeed.Value = value;
+            if (type == 0)
+                CheckUpdate(3);
+            else if (type == 1)
+                MoveSpeedCall(false);
+            else if (type == 2)
+                MoveSpeedCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_MOVESPEED, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Double SyncMoveSpeed
-        {
-            get { return moveSpeed; }
-            set
-            {
-                if (this.moveSpeed == value)
-                    return;
-                
-                this.moveSpeed = value;
-                MoveSpeedCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Double SyncIDMoveSpeed
-        {
-            get { return moveSpeed; }
-            set
-            {
-                if (this.moveSpeed == value)
-                    return;
-                
-                this.moveSpeed = value;
-                SyncMoveSpeedCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void MoveSpeedCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void MoveSpeedCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Double)moveSpeed);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], moveSpeed.Value };
+            else objects = new object[] { moveSpeed.Value };
+#if SERVER
+            CheckUpdate(3);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncMoveSpeedCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.MOVESPEED, (System.Int64)id, (System.Double)moveSpeed);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.MOVESPEED)]
-        private void MoveSpeedCall(Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_MOVESPEED)]
+        private void MoveSpeedRpc(Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             MoveSpeed = value;
-            OnMoveSpeed?.Invoke();
         }
+     // -- 1
+        private readonly StringObs position = new StringObs("UserinfoData_position", false, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnMoveSpeed;
-    
-        private String position;
-        /// <summary>{NOTE}</summary>
-        public String Position
+        /// <summary> --获得属性观察对象</summary>
+        internal StringObs PositionObserver => position;
+
+        /// <summary></summary>
+        public String Position { get => GetPositionValue(); set => CheckPositionValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal String SyncPosition { get => GetPositionValue(); set => CheckPositionValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal String SyncIDPosition { get => GetPositionValue(); set => CheckPositionValue(value, 2); }
+
+        private String GetPositionValue() => this.position.Value;
+
+        private void CheckPositionValue(String value, int type) 
         {
-            get { return position; }
-            set
-            {
-                if (this.position == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.position = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(4);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                PositionCall();
-    #endif
-            }
+            if (this.position.Value == value)
+                return;
+            this.position.Value = value;
+            if (type == 0)
+                CheckUpdate(4);
+            else if (type == 1)
+                PositionCall(false);
+            else if (type == 2)
+                PositionCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_POSITION, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncPosition
-        {
-            get { return position; }
-            set
-            {
-                if (this.position == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.position = value;
-                PositionCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncIDPosition
-        {
-            get { return position; }
-            set
-            {
-                if (this.position == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.position = value;
-                SyncPositionCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void PositionCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void PositionCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.String)position);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], position.Value };
+            else objects = new object[] { position.Value };
+#if SERVER
+            CheckUpdate(4);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncPositionCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.POSITION, (System.Int64)id, (System.String)position);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.POSITION)]
-        private void PositionCall(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_POSITION)]
+        private void PositionRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Position = value;
-            OnPosition?.Invoke();
         }
+     // -- 1
+        private readonly StringObs rotation = new StringObs("UserinfoData_rotation", false, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnPosition;
-    
-        private String rotation;
-        /// <summary>{NOTE}</summary>
-        public String Rotation
+        /// <summary> --获得属性观察对象</summary>
+        internal StringObs RotationObserver => rotation;
+
+        /// <summary></summary>
+        public String Rotation { get => GetRotationValue(); set => CheckRotationValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal String SyncRotation { get => GetRotationValue(); set => CheckRotationValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal String SyncIDRotation { get => GetRotationValue(); set => CheckRotationValue(value, 2); }
+
+        private String GetRotationValue() => this.rotation.Value;
+
+        private void CheckRotationValue(String value, int type) 
         {
-            get { return rotation; }
-            set
-            {
-                if (this.rotation == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.rotation = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(5);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                RotationCall();
-    #endif
-            }
+            if (this.rotation.Value == value)
+                return;
+            this.rotation.Value = value;
+            if (type == 0)
+                CheckUpdate(5);
+            else if (type == 1)
+                RotationCall(false);
+            else if (type == 2)
+                RotationCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_ROTATION, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncRotation
-        {
-            get { return rotation; }
-            set
-            {
-                if (this.rotation == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.rotation = value;
-                RotationCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public String SyncIDRotation
-        {
-            get { return rotation; }
-            set
-            {
-                if (this.rotation == value)
-                    return;
-                if(value==null) value = string.Empty;
-                this.rotation = value;
-                SyncRotationCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void RotationCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void RotationCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.String)rotation);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], rotation.Value };
+            else objects = new object[] { rotation.Value };
+#if SERVER
+            CheckUpdate(5);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncRotationCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.ROTATION, (System.Int64)id, (System.String)rotation);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.ROTATION)]
-        private void RotationCall(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_ROTATION)]
+        private void RotationRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Rotation = value;
-            OnRotation?.Invoke();
         }
+     // -- 1
+        private readonly Int64Obs health = new Int64Obs("UserinfoData_health", true, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnRotation;
-    
-        private Int64 health;
-        /// <summary>{NOTE}</summary>
-        public Int64 Health
+        /// <summary> --获得属性观察对象</summary>
+        internal Int64Obs HealthObserver => health;
+
+        /// <summary></summary>
+        public Int64 Health { get => GetHealthValue(); set => CheckHealthValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal Int64 SyncHealth { get => GetHealthValue(); set => CheckHealthValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal Int64 SyncIDHealth { get => GetHealthValue(); set => CheckHealthValue(value, 2); }
+
+        private Int64 GetHealthValue() => this.health.Value;
+
+        private void CheckHealthValue(Int64 value, int type) 
         {
-            get { return health; }
-            set
-            {
-                if (this.health == value)
-                    return;
-                
-                this.health = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(6);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                HealthCall();
-    #endif
-            }
+            if (this.health.Value == value)
+                return;
+            this.health.Value = value;
+            if (type == 0)
+                CheckUpdate(6);
+            else if (type == 1)
+                HealthCall(false);
+            else if (type == 2)
+                HealthCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTH, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Int64 SyncHealth
-        {
-            get { return health; }
-            set
-            {
-                if (this.health == value)
-                    return;
-                
-                this.health = value;
-                HealthCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Int64 SyncIDHealth
-        {
-            get { return health; }
-            set
-            {
-                if (this.health == value)
-                    return;
-                
-                this.health = value;
-                SyncHealthCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void HealthCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void HealthCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)health);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], health.Value };
+            else objects = new object[] { health.Value };
+#if SERVER
+            CheckUpdate(6);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncHealthCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTH, (System.Int64)id, (System.Int64)health);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTH)]
-        private void HealthCall(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTH)]
+        private void HealthRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Health = value;
-            OnHealth?.Invoke();
         }
+     // -- 1
+        private readonly Int64Obs healthMax = new Int64Obs("UserinfoData_healthMax", true, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnHealth;
-    
-        private Int64 healthMax;
-        /// <summary>{NOTE}</summary>
-        public Int64 HealthMax
+        /// <summary> --获得属性观察对象</summary>
+        internal Int64Obs HealthMaxObserver => healthMax;
+
+        /// <summary></summary>
+        public Int64 HealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal Int64 SyncHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal Int64 SyncIDHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 2); }
+
+        private Int64 GetHealthMaxValue() => this.healthMax.Value;
+
+        private void CheckHealthMaxValue(Int64 value, int type) 
         {
-            get { return healthMax; }
-            set
-            {
-                if (this.healthMax == value)
-                    return;
-                
-                this.healthMax = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(7);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                HealthMaxCall();
-    #endif
-            }
+            if (this.healthMax.Value == value)
+                return;
+            this.healthMax.Value = value;
+            if (type == 0)
+                CheckUpdate(7);
+            else if (type == 1)
+                HealthMaxCall(false);
+            else if (type == 2)
+                HealthMaxCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTHMAX, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Int64 SyncHealthMax
-        {
-            get { return healthMax; }
-            set
-            {
-                if (this.healthMax == value)
-                    return;
-                
-                this.healthMax = value;
-                HealthMaxCall();
-            }
-        }
-
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Int64 SyncIDHealthMax
-        {
-            get { return healthMax; }
-            set
-            {
-                if (this.healthMax == value)
-                    return;
-                
-                this.healthMax = value;
-                SyncHealthMaxCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void HealthMaxCall()
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void HealthMaxCall(bool syncId = false)
         {
             
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)healthMax);
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], healthMax.Value };
+            else objects = new object[] { healthMax.Value };
+#if SERVER
+            CheckUpdate(7);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
+#endif
         }
 
-	    /// <summary>{NOTE4}</summary>
-        public void SyncHealthMaxCall()
-        {
-            
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.HEALTHMAX, (System.Int64)id, (System.Int64)healthMax);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.HEALTHMAX)]
-        private void HealthMaxCall(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTHMAX)]
+        private void HealthMaxRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             HealthMax = value;
-            OnHealthMax?.Invoke();
         }
+     // -- 1
+        private readonly BytesObs buffer = new BytesObs("UserinfoData_buffer", false, null);
 
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnHealthMax;
-    
-        private System.Byte[] buffer;
-        /// <summary>{NOTE}</summary>
-        internal System.Byte[] BufferBytes
+        /// <summary> --获得属性观察对象</summary>
+        internal BytesObs BufferBytesObserver => buffer;
+
+        /// <summary></summary>
+        internal System.Byte[] BufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 0); }
+
+        /// <summary> --同步到数据库</summary>
+        internal System.Byte[] SyncBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 1); }
+
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal System.Byte[] SyncIDBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 2); }
+
+        private System.Byte[] GetBufferBytesValue() => this.buffer.Value;
+
+        private void CheckBufferBytesValue(System.Byte[] value, int type) 
         {
-            get { return buffer; }
-            set
-            {
-                if (this.buffer == value)
-                    return;
-                if(value==null) value = new byte[0];
-                this.buffer = value;
-    #if SERVER
-                if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
-                columns.Add(8);
-                if(RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
-                    RowState = DataRowState.Modified;
-                Example2DB.I.Update(this);
-    #elif CLIENT
-                BufferBytesCall();
-    #endif
-            }
+            
+            this.buffer.Value = value;
+            if (type == 0)
+                CheckUpdate(8);
+            else if (type == 1)
+                BufferBytesCall(false);
+            else if (type == 2)
+                BufferBytesCall(true);
+            OnValueChanged?.Invoke(Example2HashProto.USERINFO_BUFFER, value);
         }
 
-        /// <summary>{NOTE1}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public System.Byte[] SyncBufferBytes
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void BufferBytesCall(bool syncId = false)
         {
-            get { return buffer; }
-            set
-            {
-                if (this.buffer == value)
-                    return;
-                if(value==null) value = new byte[0];
-                this.buffer = value;
-                BufferBytesCall();
-            }
+            object bytes = buffer.Value;
+            object[] objects;
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], bytes };
+            else objects = new object[] { bytes };
+#if SERVER
+            CheckUpdate(8);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
+#else
+            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
+#endif
         }
 
-        /// <summary>{NOTE2}</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public System.Byte[] SyncIDBufferBytes
-        {
-            get { return buffer; }
-            set
-            {
-                if (this.buffer == value)
-                    return;
-                if(value==null) value = new byte[0];
-                this.buffer = value;
-                SyncBufferBytesCall();
-            }
-        }
-
-        /// <summary>{NOTE3}</summary>
-        public void BufferBytesCall()
-        {
-            object bytes = buffer;
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Byte[])bytes);
-        }
-
-	    /// <summary>{NOTE4}</summary>
-        public void SyncBufferBytesCall()
-        {
-            object bytes = buffer;
-            Example2Sync.Client.SendRT(Net.Share.NetCmd.EntityRpc, (ushort)Example2HashProto.BUFFER, (System.Int64)id, (System.Byte[])bytes);
-        }
-
-        [Net.Share.Rpc(hash = (ushort)Example2HashProto.BUFFER)]
-        private void BufferBytesCall(System.Byte[] value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        [Rpc(hash = (ushort)Example2HashProto.USERINFO_BUFFER)]
+        private void BufferBytesRpc(System.Byte[] value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             BufferBytes = value;
-            OnBufferBytes?.Invoke();
         }
-
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action OnBufferBytes;
-    
+     // -- 2
 
         public UserinfoData() { }
 
     #if SERVER
-        public UserinfoData(params object[] parms)
+        public UserinfoData(params object[] parms) : base()
         {
             NewTableRow(parms);
         }
         public void NewTableRow()
         {
-            for (int i = 0; i < 9; i++)
-            {
-                var obj = this[i];
-                if (obj == null)
-                    continue;
-                var defaultVal = GetDefaultValue(obj.GetType());
-                if (obj.Equals(defaultVal))
-                    continue;
-                columns.Add(i);
-            }
             RowState = DataRowState.Added;
             Example2DB.I.Update(this);
         }
@@ -783,80 +486,63 @@ using String = System.String;
                 if (parms[i] == null)
                     continue;
                 this[i] = parms[i];
-                columns.Add(i);
             }
             RowState = DataRowState.Added;
             Example2DB.I.Update(this);
         }
-        public string GetCellName(int index)
+        public string GetCellNameAndTextLength(int index, out int length)
         {
             switch (index)
             {
-    
-                case 0:
-                    return "id";
-    
-                case 1:
-                    return "account";
-    
-                case 2:
-                    return "password";
-    
-                case 3:
-                    return "moveSpeed";
-    
-                case 4:
-                    return "position";
-    
-                case 5:
-                    return "rotation";
-    
-                case 6:
-                    return "health";
-    
-                case 7:
-                    return "healthMax";
-    
-                case 8:
-                    return "buffer";
-    
+     // -- 3
+                case 0: length = 65536; return "id";
+     // -- 3
+                case 1: length = 65536; return "account";
+     // -- 3
+                case 2: length = 65536; return "password";
+     // -- 3
+                case 3: length = 65536; return "moveSpeed";
+     // -- 3
+                case 4: length = 65536; return "position";
+     // -- 3
+                case 5: length = 65536; return "rotation";
+     // -- 3
+                case 6: length = 65536; return "health";
+     // -- 3
+                case 7: length = 65536; return "healthMax";
+     // -- 3
+                case 8: length = 65536; return "buffer";
+     // -- 4
             }
             throw new Exception("错误");
         }
+    #endif
+
         public object this[int index]
         {
             get
             {
                 switch (index)
                 {
-    
-                    case 0:
-                        return this.id;
-    
-                    case 1:
-                        return this.account;
-    
-                    case 2:
-                        return this.password;
-    
-                    case 3:
-                        return this.moveSpeed;
-    
-                    case 4:
-                        return this.position;
-    
-                    case 5:
-                        return this.rotation;
-    
-                    case 6:
-                        return this.health;
-    
-                    case 7:
-                        return this.healthMax;
-    
-                    case 8:
-                        return this.buffer;
-    
+     // -- 5
+                    case 0: return this.id;
+     // -- 5
+                    case 1: return this.account.Value;
+     // -- 5
+                    case 2: return this.password.Value;
+     // -- 5
+                    case 3: return this.moveSpeed.Value;
+     // -- 5
+                    case 4: return this.position.Value;
+     // -- 5
+                    case 5: return this.rotation.Value;
+     // -- 5
+                    case 6: return this.health.Value;
+     // -- 5
+                    case 7: return this.healthMax.Value;
+     // -- 5
+                    case 8: return this.buffer.Value;
+     // -- 6
                 }
                 throw new Exception("错误");
             }
@@ -864,51 +550,61 @@ using String = System.String;
             {
                 switch (index)
                 {
-    
+     // -- 7
                     case 0:
                         this.id = (Int64)value;
                         break;
-    
+     // -- 7
                     case 1:
-                        this.account = (String)value;
+                        CheckAccountValue((String)value, -1);
                         break;
-    
+     // -- 7
                     case 2:
-                        this.password = (String)value;
+                        CheckPasswordValue((String)value, -1);
                         break;
-    
+     // -- 7
                     case 3:
-                        this.moveSpeed = (Double)value;
+                        CheckMoveSpeedValue((Double)value, -1);
                         break;
-    
+     // -- 7
                     case 4:
-                        this.position = (String)value;
+                        CheckPositionValue((String)value, -1);
                         break;
-    
+     // -- 7
                     case 5:
-                        this.rotation = (String)value;
+                        CheckRotationValue((String)value, -1);
                         break;
-    
+     // -- 7
                     case 6:
-                        this.health = (Int64)value;
+                        CheckHealthValue((Int64)value, -1);
                         break;
-    
+     // -- 7
                     case 7:
-                        this.healthMax = (Int64)value;
+                        CheckHealthMaxValue((Int64)value, -1);
                         break;
-    
+     // -- 7
                     case 8:
-                        this.buffer = (System.Byte[])value;
+                        CheckBufferBytesValue((System.Byte[])value, -1);
                         break;
-    
+     // -- 8
                 }
             }
         }
 
-        public void Delete()
+    #if SERVER
+        public void Delete(bool immediately = false)
         {
-            RowState = DataRowState.Detached;
-            Example2DB.I.Update(this);
+            if (immediately)
+            {
+                var sb = new StringBuilder();
+                DeletedSql(sb);
+                _ = Example2DB.I.ExecuteNonQuery(sb.ToString(), null);
+            }
+            else
+            {
+                RowState = DataRowState.Detached;
+                Example2DB.I.Update(this);
+            }
         }
 
         /// <summary>
@@ -923,7 +619,7 @@ using String = System.String;
         public static UserinfoData Query(string filterExpression)
         {
             var cmdText = $"select * from userinfo where {filterExpression}; ";
-            var data = Example2DB.ExecuteQuery<UserinfoData>(cmdText);
+            var data = Example2DB.I.ExecuteQuery<UserinfoData>(cmdText);
             return data;
         }
         /// <summary>
@@ -935,131 +631,83 @@ using String = System.String;
         /// </summary>
         /// <param name="filterExpression"></param>
         /// <returns></returns>
-        public static async Task<UserinfoData> QueryAsync(string filterExpression)
+        public static async UniTask<UserinfoData> QueryAsync(string filterExpression)
         {
             var cmdText = $"select * from userinfo where {filterExpression}; ";
-            var data = await Example2DB.ExecuteQueryAsync<UserinfoData>(cmdText);
+            var data = await Example2DB.I.ExecuteQueryAsync<UserinfoData>(cmdText);
             return data;
         }
         public static UserinfoData[] QueryList(string filterExpression)
         {
             var cmdText = $"select * from userinfo where {filterExpression}; ";
-            var datas = Example2DB.ExecuteQueryList<UserinfoData>(cmdText);
+            var datas = Example2DB.I.ExecuteQueryList<UserinfoData>(cmdText);
             return datas;
         }
-        public static async Task<UserinfoData[]> QueryListAsync(string filterExpression)
+        public static async UniTask<UserinfoData[]> QueryListAsync(string filterExpression)
         {
             var cmdText = $"select * from userinfo where {filterExpression}; ";
-            var datas = await Example2DB.ExecuteQueryListAsync<UserinfoData>(cmdText);
+            var datas = await Example2DB.I.ExecuteQueryListAsync<UserinfoData>(cmdText);
             return datas;
         }
-        public void Update() => Update(0, 9);
-        public void Update(int start, int end)
+        public void Update()
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-    
-            for (int i = start; i < end; i++)
-                columns.Add(i);
+     // -- 9
             RowState = DataRowState.Modified;
             Example2DB.I.Update(this);
-    
+     // -- 10
         }
     #endif
 
         public void Init(DataRow row)
         {
             RowState = DataRowState.Unchanged;
-    
+     // -- 11
             if (row[0] is Int64 id)
                 this.id = id;
-    
+     // -- 11
             if (row[1] is String account)
-                this.account = account;
-    
+                CheckAccountValue(account, -1);
+     // -- 11
             if (row[2] is String password)
-                this.password = password;
-    
+                CheckPasswordValue(password, -1);
+     // -- 11
             if (row[3] is Double moveSpeed)
-                this.moveSpeed = moveSpeed;
-    
+                CheckMoveSpeedValue(moveSpeed, -1);
+     // -- 11
             if (row[4] is String position)
-                this.position = position;
-    
+                CheckPositionValue(position, -1);
+     // -- 11
             if (row[5] is String rotation)
-                this.rotation = rotation;
-    
+                CheckRotationValue(rotation, -1);
+     // -- 11
             if (row[6] is Int64 health)
-                this.health = health;
-    
+                CheckHealthValue(health, -1);
+     // -- 11
             if (row[7] is Int64 healthMax)
-                this.healthMax = healthMax;
-    
+                CheckHealthMaxValue(healthMax, -1);
+     // -- 11
             if (row[8] is System.Byte[] buffer)
-                this.buffer = buffer;
-    
+                CheckBufferBytesValue(Convert.FromBase64String(Encoding.ASCII.GetString(buffer)), -1);
+     // -- 12
         }
 
-        public void AddedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen)
+        public void AddedSql(StringBuilder sb)
         {
     #if SERVER
-            if(columns.Count == 0)//如果没有修改一个字段是不允许提交的
-                return;
     
-            string cmdText = "REPLACE INTO userinfo(";
-            string cmdText1 = "VALUES(";
-            foreach (var column in columns)
-            {
-                var name = GetCellName(column);
-                cmdText += $"`{name}`,";
-                var value = this[column];
-                if (value is string | value is DateTime)
-                    cmdText1 += $"'{value}',";
-                else if (value is byte[] buffer)
-                {
-                    var count = parms.Count;
-                    cmdText1 += $"@buffer{count},";
-                    parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
-                    parmsLen += buffer.Length;
-                }
-                else cmdText1 += $"{value},";
-                columns.Remove(column);
-            }
-            cmdText = cmdText.TrimEnd(',');
-            cmdText1 = cmdText1.TrimEnd(',');
-            cmdText += ")" + cmdText1 + "); ";
+            BulkLoaderBuilder(sb);
     
-            sb.Append(cmdText);
             RowState = DataRowState.Unchanged;
     #endif
         }
 
-        public void ModifiedSql(StringBuilder sb, List<IDbDataParameter> parms, ref int parmsLen)
+        public void ModifiedSql(StringBuilder sb)
         {
     #if SERVER
             if (RowState == DataRowState.Detached | RowState == DataRowState.Deleted | RowState == DataRowState.Added | RowState == 0)
                 return;
-            if(columns.Count == 0)//如果没有修改一个字段是不允许提交的
-                return;
-            string cmdText = $"UPDATE userinfo SET ";
-            foreach (var column in columns)
-            {
-                var name = GetCellName(column);
-                var value = this[column];
-                if (value is string | value is DateTime)
-                    cmdText += $"`{name}`='{value}',";
-                else if (value is byte[] buffer)
-                {
-                    var count = parms.Count;
-                    cmdText += $"`{name}`=@buffer{count},";
-                    parms.Add(new SQLiteParameter($"@buffer{count}", buffer));
-                    parmsLen += buffer.Length;
-                }
-                else cmdText += $"`{name}`={value},";
-                columns.Remove(column);
-            }
-            cmdText = cmdText.TrimEnd(',');
-            cmdText += $" WHERE `id`={id}; ";
-            sb.Append(cmdText);
+            BulkLoaderBuilder(sb);
             RowState = DataRowState.Unchanged;
     #endif
         }
@@ -1069,9 +717,91 @@ using String = System.String;
     #if SERVER
             if (RowState == DataRowState.Deleted)
                 return;
-            string cmdText = $"DELETE FROM userinfo WHERE `id` = {id}; ";
+            string cmdText = $"DELETE FROM userinfo {CheckSqlKey(0, id)}";
             sb.Append(cmdText);
             RowState = DataRowState.Deleted;
     #endif
         }
+
+    #if SERVER
+        public void BulkLoaderBuilder(StringBuilder sb)
+        {
+ // -- 14
+            string keyText = "";
+            string valueText = "";
+            for (int i = 0; i < 9; i++)
+            {
+                var name = GetCellNameAndTextLength(i, out var length);
+                var value = this[i];
+                if (value == null) //空的值会导致sql语句错误
+                    continue;
+                keyText += $"`{name}`,";
+                if (value is string text)
+                {
+                    Example2DB.I.CheckStringValue(ref text, length);
+                    valueText += $"'{text}',";
+                }
+                else if (value is DateTime dateTime)
+                {
+                    valueText += $"'{dateTime.ToString("G")}',";
+                }
+                else if (value is bool boolVal)
+                {
+                    valueText += $"'{boolVal}',";
+                }
+                else if (value is byte[] buffer)
+                {
+                    var base64Str = Convert.ToBase64String(buffer, Base64FormattingOptions.None);
+                    if (buffer.Length >= length)
+                    {
+                        NDebug.LogError($"userinfo表{name}列长度溢出!");
+                        continue;
+                    }
+                    valueText += $"'{base64Str}',";
+                }
+                else 
+                {
+                    valueText += $"{value},";
+                }
+            }
+            keyText = keyText.TrimEnd(',');
+            valueText = valueText.TrimEnd(',');
+            if (!string.IsNullOrEmpty(keyText) & !string.IsNullOrEmpty(valueText))
+            {
+                sb.Append($"REPLACE INTO userinfo ({keyText}) VALUES ({valueText});");
+                sb.AppendLine();
+            }
+ // -- 15
+        }
+    #endif
+
+    #if SERVER
+        private string CheckSqlKey(int column, object value)
+        {
+            var name = GetCellNameAndTextLength(column, out var length);
+            if (value == null) //空的值会导致sql语句错误
+                return "";
+            if (value is string text)
+            {
+                Example2DB.I.CheckStringValue(ref text, length);
+                return $" WHERE `{name}`='{text}'; ";
+            }
+            else if (value is DateTime)
+                return $" WHERE `{name}`='{value}'; ";
+            else if (value is byte[])
+                return "";
+            return $" WHERE `{name}`={value}; ";
+        }
+    #endif
+
+        private void CheckUpdate(int cellIndex)
+        {
+#if SERVER
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            if (RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
+                RowState = DataRowState.Modified;
+            Example2DB.I.Update(this);
+#endif
+        }
     }
+}

@@ -1,28 +1,31 @@
-﻿using Example2;
-using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-public partial class Example2DB
+namespace Example2
 {
-    public ConcurrentDictionary<string, UserinfoData> UserinfoDatas = new ConcurrentDictionary<string, UserinfoData>();
-    public ConcurrentDictionary<int, ConfigData> Configs = new ConcurrentDictionary<int, ConfigData>();
-
-    public void OnInit(List<object> data)
+    /// <summary>
+    /// Example2DB数据库管理类
+    /// 此类由MySqlDataBuild工具生成, 请不要在此类编辑代码! 请新建一个类文件进行分写
+    /// <para>MySqlDataBuild工具提供Rpc自动同步到mysql数据库的功能, 提供数据库注释功能</para>
+    /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
+    /// </summary>
+    public partial class Example2DB
     {
-        foreach (var item in data)
+        public ConcurrentDictionary<string, UserinfoData> UserinfoDatas = new ConcurrentDictionary<string, UserinfoData>();
+        public ConcurrentDictionary<int, ConfigData> Configs = new ConcurrentDictionary<int, ConfigData>();
+
+        public void OnInit(List<object> data)
         {
-            if (item is UserinfoData data1)
+            foreach (var item in data)
             {
-                UserinfoDatas.TryAdd(data1.Account, data1);
-            }
-            if (item is ConfigData data2)
-            {
-                Configs.TryAdd((int)data2.Id, data2);
+                if (item is UserinfoData data1)
+                {
+                    UserinfoDatas.TryAdd(data1.Account, data1);
+                }
+                if (item is ConfigData data2)
+                {
+                    Configs.TryAdd((int)data2.Id, data2);
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
-
+namespace Example2
+{
     public class Example2Sync
     {
         private static Net.Client.ClientBase client;
@@ -16,3 +17,4 @@
             set => client = value;
         }
     }
+}

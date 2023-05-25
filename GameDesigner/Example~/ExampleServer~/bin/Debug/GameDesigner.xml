@@ -258,7 +258,7 @@
             网络组件生成工具同步指令
             </summary>
         </member>
-        <member name="T:Net.Component.NTransform">
+        <member name="T:Net.Component.EntityTransform">
             <summary>
             游戏物体转换实体组建
             作者:彼岸流年  QQ:317392507
@@ -371,6 +371,13 @@
             获取类型， 如果类型已经获取过一次则直接取，否则或查找所有程序集获取类型，如果查找到则会添加到缓存字典中，下次不需要再遍历所有程序集
             </summary>
             <param name="typeName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.AssemblyHelper.GetTypeName(System.Type,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            获取代码形式的类型名称, 包括泛型,数组
+            </summary>
+            <param name="type"></param>
             <returns></returns>
         </member>
         <member name="T:Net.Helper.FilterTextHelper">
@@ -489,6 +496,16 @@
             </summary> 
             <param name="text">要解密的字符串</param> 
             <returns>解密后的字符串</returns>   
+        </member>
+        <member name="T:Net.Helper.SyncVarGetSetHelper">
+            <summary>
+            字段和属性同步帮助类
+            </summary>
+        </member>
+        <member name="F:Net.Helper.SyncVarGetSetHelper.Cache">
+            <summary>
+            收集的字段和属性同步缓存
+            </summary>
         </member>
         <member name="T:Net.Helper.RpcHelper">
             <summary>
@@ -1173,7 +1190,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.SendInterval">
             <summary>
-            每次发送数据间隔，每秒发送30次，每次间隔33毫秒
+            每次发送数据间隔，每秒大概执行1000次
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.IsMultiThread">
@@ -3004,6 +3021,11 @@
             断线重连等待时间
             </summary>
         </member>
+        <member name="F:Net.Server.NetPlayer.IsSending">
+            <summary>
+            是否在发送中, 避免客户端循环压入任务过多导致线程池处理不过来的问题
+            </summary>
+        </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
             <summary>
             构造网络客户端
@@ -4002,6 +4024,18 @@
             <param name="buffer"></param>
             <returns></returns>
         </member>
+        <member name="M:Net.Server.ServerBase`2.OnSceneRelay(`0,Net.Share.RPCModel,System.Boolean)">
+            <summary>
+            当客户端使用场景转发命令会调用此方法
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnNoticeRelay(`0,Net.Share.RPCModel,System.Boolean)">
+            <summary>
+            当客户端使用公告转发命令会调用此方法
+            </summary>
+            <param name="client"></param>
+        </member>
         <member name="M:Net.Server.ServerBase`2.Run(System.UInt16)">
             <summary>
             运行服务器
@@ -4969,6 +5003,11 @@
             游戏数据配置接口
             </summary>
         </member>
+        <member name="P:Net.Share.IDataConfig.ID">
+            <summary>
+            唯一ID
+            </summary>
+        </member>
         <member name="M:Net.Share.IDataConfig.Init(System.Data.DataRow)">
             <summary>
             初始化表格行数据转实体对象
@@ -4991,7 +5030,7 @@
             </summary>
             <param name="row"></param>
         </member>
-        <member name="M:Net.Share.IDataRow.AddedSql(System.Text.StringBuilder,System.Collections.Generic.List{System.Data.IDbDataParameter},System.Int32@)">
+        <member name="M:Net.Share.IDataRow.AddedSql(System.Text.StringBuilder)">
             <summary>
             sql的插入语句处理
             </summary>
@@ -4999,7 +5038,7 @@
             <param name="parms"></param>
             <param name="parmsLen"></param>
         </member>
-        <member name="M:Net.Share.IDataRow.ModifiedSql(System.Text.StringBuilder,System.Collections.Generic.List{System.Data.IDbDataParameter},System.Int32@)">
+        <member name="M:Net.Share.IDataRow.ModifiedSql(System.Text.StringBuilder)">
             <summary>
             sql的修改语句处理
             </summary>
@@ -6754,6 +6793,11 @@
             参数To或As调用一次+1
             </summary>
         </member>
+        <member name="F:Net.Share.RPCModel.isFill">
+            <summary>
+            当数据已经填充, 获取Buffer可直接返回真正数据
+            </summary>
+        </member>
         <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[])">
             <summary>
             构造
@@ -7632,11 +7676,6 @@
         <member name="M:Net.System.ThreadManager.Run(System.UInt32)">
             <summary>
             unity update每帧调用
-            </summary>
-        </member>
-        <member name="T:Net.Matrix3x3">
-            <summary>
-            3x3矩阵
             </summary>
         </member>
         <member name="T:Net.Unity.UnitySynchronizationContext">
