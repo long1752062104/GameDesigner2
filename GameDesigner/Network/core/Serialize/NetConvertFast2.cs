@@ -170,9 +170,36 @@
         {
             if (Types2.ContainsKey(type))
                 throw new Exception($"已经添加{type}键，不需要添加了!");
+            if (type.IsArray)
+            {
+                var itemType = type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                if (itemType.IsEnum)
+                {
+                    AddBaseArrayType(type);
+                    return;
+                }
+            }
+            else if (type.IsGenericType) 
+            {
+                var arguments = type.GenericTypeArguments;
+                if (arguments.Length == 1)
+                {
+                    var itemType = arguments[0];
+                    if (itemType.IsEnum)
+                    {
+                        AddBaseListType(type);
+                        return;
+                    }
+                }
+            }
+            else if (type.IsEnum)
+            {
+                AddBaseType(type);
+                return;
+            }
             if (!BindTypes.TryGetValue(type, out Type bindType))
                 throw new Exception($"类型{type}尚未实现绑定类型,请使用工具生成绑定类型!");
-            ushort hashType = (ushort)Types.Count;
+            var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
             Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(bindType), hashCode = hashType } );
@@ -180,42 +207,57 @@
 
         private static void AddBaseType3<T>()
         {
-            AddBaseType<T>();
-            AddBaseArrayType<T>();
-            AddBaseListType<T>();
+            AddBaseType(typeof(T));
+            AddBaseArrayType(typeof(T[]));
+            AddBaseListType(typeof(List<T>));
         }
 
         private static void AddBaseType<T>()
         {
             var type = typeof(T);
+            AddBaseType(type);
+        }
+
+        private static void AddBaseType(Type type)
+        {
             if (Types2.ContainsKey(type))
                 return;
-            ushort hashType = (ushort)Types.Count;
+            var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
-            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseBind<T>)), hashCode = hashType });
+            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseBind<>).MakeGenericType(type)), hashCode = hashType });
         }
 
         private static void AddBaseArrayType<T>()
         {
             var type = typeof(T[]);
+            AddBaseArrayType(type);
+        }
+
+        private static void AddBaseArrayType(Type type)
+        {
             if (Types2.ContainsKey(type))
                 return;
-            ushort hashType = (ushort)Types.Count;
+            var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
-            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseArrayBind<T>)), hashCode = hashType });
+            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseArrayBind<>).MakeGenericType(type)), hashCode = hashType });
         }
 
         private static void AddBaseListType<T>()
         {
             var type = typeof(List<T>);
+            AddBaseListType(type);
+        }
+
+        private static void AddBaseListType(Type type)
+        {
             if (Types2.ContainsKey(type))
                 return;
-            ushort hashType = (ushort)Types.Count;
+            var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
-            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseListBind<T>)), hashCode = hashType });
+            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseListBind<>).MakeGenericType(type)), hashCode = hashType });
         }
 
         public static void InitBindInterfaces()
@@ -265,11 +307,6 @@
                     var bind = (ISerialize<T>)typeBind.bind;
                     bind.Write(value, stream);
                 }
-                else if (type.IsEnum)
-                {
-                    var bind = new BaseBind<int>();
-                    bind.Write(value.GetHashCode(), stream);
-                }
                 else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
             }
             catch (Exception ex)
@@ -295,11 +332,6 @@
                     var bind = (ISerialize<T>)typeBind.bind;
                     bind.Write(value, stream);
                 }
-                else if (type.IsEnum)
-                {
-                    var bind = new BaseBind<int>();
-                    bind.Write(value.GetHashCode(), stream);
-                }
                 else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
             }
             catch (Exception ex)
@@ -319,11 +351,6 @@
                 {
                     var bind = (ISerialize)typeBind.bind;
                     bind.WriteValue(value, stream);
-                }
-                else if (type.IsEnum) 
-                {
-                    var bind = new BaseBind<int>();
-                    bind.Write(value.GetHashCode(), stream);
                 }
                 else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
             }
@@ -350,13 +377,6 @@
                 if (isPush) BufferPool.Push(segment);
                 return value;
             }
-            else if (type.IsEnum)
-            {
-                var bind = new BaseBind<int>();
-                T value = (T)(object)bind.Read(segment);
-                if (isPush) BufferPool.Push(segment);
-                return value;
-            }
             else throw new Exception($"请注册或绑定:{type}类型后才能反序列化!");
         }
 
@@ -367,13 +387,6 @@
                 var bind = (ISerialize)typeBind.bind;
                 object value = bind.ReadValue(segment);
                 if(isPush) BufferPool.Push(segment);
-                return value;
-            }
-            else if (type.IsEnum)
-            {
-                var bind = new BaseBind<int>();
-                object value = bind.Read(segment);
-                if (isPush) BufferPool.Push(segment);
                 return value;
             }
             throw new Exception($"请注册或绑定:{type}类型后才能反序列化!");
@@ -432,11 +445,6 @@
                     {
                         var bind = (ISerialize)typeBind.bind;
                         bind.WriteValue(obj, stream);
-                    }
-                    else if (type.IsEnum)
-                    {
-                        var bind = new BaseBind<int>();
-                        bind.Write(obj.GetHashCode(), stream);
                     }
                     else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
                 }

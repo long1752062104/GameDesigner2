@@ -198,7 +198,7 @@
         {
             if (Types1.TryGetValue(type, out var typeHash))
                 return typeHash;
-            throw new IOException($"参数类型:[{type}]没有被注册! 请使用NetConvertFast.AddNetworkType<{type}>()添加序列化类型! 双端都要添加");
+            throw new IOException($"参数类型:[{type}]没有被注册! 请使用NetConvertFast.AddSerializeType<{type}>()添加序列化类型! 双端都要添加");
         }
 
         public static Type GetTypeHash(ushort hashCode)

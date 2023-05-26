@@ -174,4 +174,15 @@ namespace Net.System
             return Event.AddEvent(name, time, ptr, isAsync);
         }
     }
+
+    /// <summary>
+    /// 事件管理器
+    /// </summary>
+    public class EventManager 
+    {
+        /// <summary>
+        /// 计时事件属性
+        /// </summary>
+        public static TimerEvent Event => ThreadManager.Event;
+    }
 }
