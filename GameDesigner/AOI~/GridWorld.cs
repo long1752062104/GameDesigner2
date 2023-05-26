@@ -208,6 +208,7 @@ namespace Net.AOI
             }
             currGrid.gridBodies.Remove(body);
             gridBodies.Remove(body);
+            body.Grid = null; //防止执行两次
         }
 
         /// <summary>
