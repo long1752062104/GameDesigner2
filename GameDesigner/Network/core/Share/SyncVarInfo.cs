@@ -74,5 +74,10 @@ namespace Net.Share
         {
             return this.target.Equals(target);
         }
+
+        public override string ToString()
+        {
+            return $"ID: {id} authorize: {authorize} target: {target.GetType().Name}.{action.Method.Name}";
+        }
     }
 }

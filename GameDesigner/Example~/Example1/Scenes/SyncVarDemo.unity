@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.3069224, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -154,7 +154,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ff0785b8cdf8e3428c69c95bb7f6386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoCheck: 1
 --- !u!114 &76004472
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,10 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: 0
-  identity: 126
-  registerObjectIndex: 0
-  isLocal: 1
 --- !u!108 &76004473
 Light:
   m_ObjectHideFlags: 0
@@ -440,6 +435,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 3
   isEncrypt: 0
+  password: 758426581
 --- !u!114 &643538766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,7 +454,6 @@ MonoBehaviour:
   localTest: 0
   logMode: 1
   debugRpc: 1
-  frameRate: 60
   authorize: 0
   startConnect: 1
   md5CRC: 0
@@ -466,6 +461,7 @@ MonoBehaviour:
   reconnectInterval: 2000
   heartLimit: 5
   heartInterval: 1000
+  dontDestroyOnLoad: 1
 --- !u!4 &643538767
 Transform:
   m_ObjectHideFlags: 0
@@ -635,6 +631,7 @@ GameObject:
   - component: {fileID: 1826353260}
   - component: {fileID: 1826353262}
   - component: {fileID: 1826353261}
+  - component: {fileID: 1826353265}
   m_Layer: 0
   m_Name: syncvartest
   m_TagString: Untagged
@@ -669,6 +666,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   netObj: {fileID: 1826353262}
+  netComponentID: 0
   structTest:
     number: 0
     position: {x: 0, y: 0, z: 0}
@@ -719,6 +717,35 @@ MonoBehaviour:
   identity: 123
   registerObjectIndex: 0
   isLocal: 1
+  isInit: 0
+--- !u!114 &1826353265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826353259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17572e32b54cd004eb3d181b56756e47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  netObj: {fileID: 1826353262}
+  netComponentID: 1
+  test:
+    value: 0
+  test1:
+    value: 0
+  test2:
+    value: 0
+  test3:
+    value: 0
+  test4:
+    serializedVersion: 2
+    x: 1.64
+    y: 2.64
+    width: 0
+    height: 0
 --- !u!1 &1902338648
 GameObject:
   m_ObjectHideFlags: 0
@@ -875,7 +902,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca6fbe544b1ef4e4e843bdfb03386350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoCheck: 1
 --- !u!114 &1945691131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -888,7 +914,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6645ea1fd90e6214b879d297083f266a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: 0
-  identity: 125
-  registerObjectIndex: 0
-  isLocal: 1

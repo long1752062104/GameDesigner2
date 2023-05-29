@@ -25,19 +25,19 @@ namespace Example1
 #endif
         public SyncVarClassTest classField;
 
-        public override bool Equals(object obj)
-        {
-            var other = (SyncVarStructTest1)obj;
-            if (number != other.number | !position.Equals(other.position) | !quaternion.Equals(other.quaternion))//position == other.position判断会出问题,想知道为什么,需要用反编译工具查看源码
-                return false;
-            if (classField != null & other.classField != null)
-                return classField.Equals(other.classField);
-            return false;
-        }
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        //public override bool Equals(object obj)
+        //{
+        //    var other = (SyncVarStructTest1)obj;
+        //    if (number != other.number | !position.Equals(other.position) | !quaternion.Equals(other.quaternion))//position == other.position判断会出问题,想知道为什么,需要用反编译工具查看源码
+        //        return false;
+        //    if (classField != null & other.classField != null)
+        //        return classField.Equals(other.classField);
+        //    return false;
+        //}
+        //public override int GetHashCode()
+        //{
+        //    return base.GetHashCode();
+        //}
     }
 
     [System.Serializable]
@@ -47,19 +47,19 @@ namespace Example1
         public Vector3 position;
         public Quaternion quaternion;
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as SyncVarClassTest;
-            if (other == null)
-                return false;
-            if (number == other.number & position.Equals(other.position) & quaternion.Equals(other.quaternion))//position == other.position判断会出问题,想知道为什么,需要用反编译工具查看源码
-                return true;
-            return false;
-        }
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        //public override bool Equals(object obj)
+        //{
+        //    var other = obj as SyncVarClassTest;
+        //    if (other == null)
+        //        return false;
+        //    if (number == other.number & position.Equals(other.position) & quaternion.Equals(other.quaternion))//position == other.position判断会出问题,想知道为什么,需要用反编译工具查看源码
+        //        return true;
+        //    return false;
+        //}
+        //public override int GetHashCode()
+        //{
+        //    return base.GetHashCode();
+        //}
     }
 
     public class SyncVarDemo : NetworkBehaviour

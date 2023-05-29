@@ -248,12 +248,16 @@ internal static class SyncVarGetSetHelperGenerate
         }
     }
 --
+
+--
 }";
 
             var codes = str.Split(new string[] { "--" }, 0);
             var sb = new StringBuilder();
             var setgetSb = new StringBuilder();
             sb.Append(codes[0]);
+            var equalsSbs = new HashSet<string>();
+            var streams = new Dictionary<string, ModuleDefMD>();
             foreach (var type in types)
             {
                 var dictSB = new StringBuilder();
@@ -443,6 +447,59 @@ internal static class SyncVarGetSetHelperGenerate
                             code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, false, false, true);");
                         }
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+
+                        void AddEquals(TypeSig typeSig, HashSet<string> equalsSbs)
+                        {
+                            var typeDef = typeSig.TryGetTypeDef();
+                            J: if (typeDef != null)
+                            {
+                                var equalsSb = new StringBuilder();
+                                equalsSb.AppendLine($"\tinternal static bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
+                                equalsSb.AppendLine("\t{");
+                                if (typeSig.IsClassSig)
+                                    equalsSb.AppendLine($"\t\tif ((a == null & b != null) | (a != null & b == null)) return false;");
+                                bool nullEquals = true;
+                                foreach (var ft1 in typeDef.Fields)
+                                {
+                                    if (!ft1.IsPublic | ft1.IsStatic)
+                                        continue;
+                                    nullEquals = false;
+                                    if (ft1.FieldType.IsPrimitive)
+                                    {
+                                        equalsSb.AppendLine($"\t\tif (a.{ft1.Name} != b.{ft1.Name}) return false;");
+                                    }
+                                    else
+                                    {
+                                        equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
+                                        AddEquals(ft1.FieldType, equalsSbs);
+                                    }
+                                }
+                                if (nullEquals)
+                                    return;
+                                equalsSb.AppendLine("\t\treturn true;");
+                                equalsSb.AppendLine("\t}");
+                                equalsSbs.Add(equalsSb.ToString());
+                            }
+                            else if (streams.TryGetValue(typeSig.DefinitionAssembly.Name, out var module))
+                            {
+                                typeDef = module.FindReflection(typeSig.FullName);
+                                if (typeDef != null)
+                                    goto J;
+                            }
+                            else
+                            {
+                                var path = "Library\\ScriptAssemblies\\" + typeSig.DefinitionAssembly.Name + ".dll";
+                                if (File.Exists(path))
+                                {
+                                    module = ModuleDefMD.Load(path, typeSig.Module.Context);
+                                    streams.Add(typeSig.DefinitionAssembly.Name, module);
+                                    typeDef = module.FindReflection(typeSig.FullName);
+                                    if (typeDef != null)
+                                        goto J;
+                                }
+                            }
+                        }
+                        AddEquals(ft, equalsSbs);
                     }
                     setgetSb.Append(code);
                 }
@@ -458,10 +515,24 @@ internal static class SyncVarGetSetHelperGenerate
                     sb.Append(dictSB1.ToString());
                 }
             }
+
+            var equalsSb = new StringBuilder();
+            equalsSb.AppendLine();
+            foreach (var item in equalsSbs)
+            {
+                equalsSb.AppendLine(item);
+            }
+            codes[7] = equalsSb.ToString();
+
             sb.Append(codes[4]);
             sb.Append(setgetSb.ToString());
-            sb.Append(codes[7]);
+            sb.Append(codes[7]); 
+            sb.Append(codes[8]);
             var text = sb.ToString();
+
+            foreach (var item in streams.Values)
+                item?.Dispose();
+
             return text;
         }
 
@@ -789,6 +860,19 @@ internal static class SyncVarGetSetHelperGenerate
 
         public static void OnScriptCompilation(InvokeHelperConfig config, bool generateClientSyncVar, bool generateServerSyncVar)
         {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var item in assemblies)
+            {
+                if (string.IsNullOrEmpty(item.Location))
+                    continue;
+                if (item.Location.Contains("Library\\ScriptAssemblies\\"))
+                    continue;
+                var path = "Library\\ScriptAssemblies\\" + Path.GetFileName(item.Location);
+                if (File.Exists(path))
+                    continue;
+                File.Copy(item.Location, path, true);
+            }
+
             var streams = new List<ModuleDefMD>();
             var clientTypes = new List<TypeDef>();
             foreach (var file in config.dllPaths)
@@ -822,6 +906,7 @@ internal static class SyncVarGetSetHelperGenerate
                     clientTypes.Add(type);
                 }
             }
+
             var serverTypes = new List<List<TypeDef>>();
             foreach (var data in config.rpcConfig)
             {

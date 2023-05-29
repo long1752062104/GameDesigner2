@@ -8,6 +8,7 @@ using UnityEngine;
 public class NetworkObjectEdit : Editor
 {
     private NetworkObject no;
+    private Vector2 scrollPosition;
 
     private void OnEnable()
     {
@@ -18,6 +19,14 @@ public class NetworkObjectEdit : Editor
     {
         base.OnInspectorGUI();
         GUI.enabled = false;
+        GUI.color = Color.green;
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+        foreach (var item in no.syncVarInfos.Values)
+        {
+            EditorGUILayout.LabelField(item.ToString());
+        }
+        EditorGUILayout.EndScrollView();
+        GUI.color = Color.yellow;
         EditorGUILayout.LabelField("Network Identity", no.Identity.ToString());
         GUI.enabled = true;
     }

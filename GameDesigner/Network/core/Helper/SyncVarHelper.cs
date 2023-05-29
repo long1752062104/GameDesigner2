@@ -19,8 +19,12 @@ namespace Net.Helper
                 dict.TryGetValue(info.Name, out syncVarInfo);
             if (syncVarInfo == null)
                 throw new Exception("请使用unity菜单GameDesigner/Network/InvokeHelper工具生成字段，属性同步辅助类!");
-            if(!string.IsNullOrEmpty(syncVar.hook))
+            if (!string.IsNullOrEmpty(syncVar.hook) & syncVarInfo.onValueChanged == null)
+            {
                 syncVarInfo.onValueChanged = type.GetMethod(syncVar.hook, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                if (syncVarInfo.onValueChanged.GetParameters().Length != 2)
+                    throw new Exception($"{type}.{syncVarInfo.onValueChanged.Name} 方法必须有两个参数, 第一个是oldValue, 第二个是newValue!");
+            }
             syncVarInfo.id = syncVar.id;
             syncVarInfo.authorize = syncVar.authorize;
             onSyncVarCollect(syncVarInfo);

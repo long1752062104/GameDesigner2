@@ -28,8 +28,7 @@ namespace Net.UnityComponent
         public int registerObjectIndex;
         [SerializeField] internal bool isLocal = true;
         internal List<NetworkBehaviour> networkBehaviours = new List<NetworkBehaviour>();
-        internal MyDictionary<ushort, SyncVarInfo> syncVarInfos = new MyDictionary<ushort, SyncVarInfo>();
-        private int syncVarID = 1;
+        public MyDictionary<ushort, SyncVarInfo> syncVarInfos = new MyDictionary<ushort, SyncVarInfo>();
         [Tooltip("是否初始化? 如果不想让Identity在Start被自动分配ID, 则可以设置此字段为true")]
         [SerializeField] internal bool isInit;
         public bool IsDispose { get; internal set; }
@@ -122,8 +121,9 @@ namespace Net.UnityComponent
                 np.Init(opt);
             }
         }
-        internal void InitSyncVar(object target)
+        internal void InitSyncVar(object target, int netComponentId)
         {
+            int syncVarID = netComponentId * 50; //每个组件和定义[SyncVar]同步字段和属性最多50个
             ClientBase.Instance.AddRpcHandle(target, false, (info) =>
             {
                 info.id = (ushort)syncVarID++;
