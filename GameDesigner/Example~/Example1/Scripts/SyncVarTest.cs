@@ -1,5 +1,6 @@
 using Net.Share;
 using Net.UnityComponent;
+using System;
 using UnityEngine;
 
 public class SyncVarTest : NetworkBehaviour
@@ -13,9 +14,30 @@ public class SyncVarTest : NetworkBehaviour
     [SyncVar]
     public SyncVarClass test3;
 
+    public SyncVariable<SyncVarClass> test4 = new SyncVariable<SyncVarClass>();
+
+    public SyncVariable<int> test5  = new SyncVariable<int>();
+
+    public SyncVariable<string> test6 = new SyncVariable<string>();
+
+    public SyncVariable<Vector2> test7 = new SyncVariable<Vector2>();
+
+    public SyncVariable<Rect> test8 = new SyncVariable<Rect>();
+
+    public void OnTest4Value(int old, int value)
+    {
+        Debug.Log(value);
+    }
+
     public void OnTest2Value(SyncVarClass old, SyncVarClass value) 
     {
         Debug.Log(value);
+    }
+
+    public override void Start()
+    {
+        base.Start();
+        test5.OnValueChanged = OnTest4Value;
     }
 
     private void Update()
@@ -25,12 +47,14 @@ public class SyncVarTest : NetworkBehaviour
             test = new SyncVarClass();
             test1 = new SyncVarClass();
             test2 = new SyncVarClass();
+            test5.Value = RandomHelper.Range(0, 1000);
+            test4.Value = new SyncVarClass() { value = RandomHelper.Range(0, 1000) };
         }
     }
 }
 
-[System.Serializable]
-public class SyncVarClass 
+[Serializable]
+public class SyncVarClass
 {
     public int value;
 

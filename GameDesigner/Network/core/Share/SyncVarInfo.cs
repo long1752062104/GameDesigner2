@@ -4,30 +4,33 @@ using System.Reflection;
 
 namespace Net.Share
 {
+    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, bool isWrite, Action<V, V> onValueChanged);
+
     [Serializable]
     public class SyncVarInfo
     {
         public ushort id;
         public bool authorize;
-        public MethodInfo onValueChanged;
-        public bool isDispose;
-        public uint tick;
+        internal MethodInfo onValueChanged;
+        internal bool isDispose;
+        internal uint tick;
 
-        public virtual void SetTarget(object target) { }
+        internal virtual void SetTarget(object target) { }
         public virtual void SetDefaultValue() { }
-        public virtual void CheckHandlerValue(ref Segment segment, bool isWrite)
+        internal virtual void CheckHandlerValue(ref Segment segment, bool isWrite)
         {
         }
-        public virtual SyncVarInfo Clone(object target)
+        internal virtual SyncVarInfo Clone(object target)
         {
             return null;
         }
-        public virtual bool EqualsTarget(object target)
+        internal virtual bool EqualsTarget(object target)
         {
             return false;
         }
+        internal virtual void SetMemberInfo(MemberInfo memberInfo) { }
     }
-    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, bool isWrite, Action<V, V> onValueChanged);
+    
     public class SyncVarInfoPtr<T, V> : SyncVarInfo
     {
         internal T target;
@@ -40,7 +43,7 @@ namespace Net.Share
             this.action = action;
         }
 
-        public override SyncVarInfo Clone(object target)
+        internal override SyncVarInfo Clone(object target)
         {
             Action<V, V> action2 = null;
             if (onValueChanged != null)
@@ -55,7 +58,7 @@ namespace Net.Share
             };
         }
 
-        public override void SetTarget(object target)
+        internal override void SetTarget(object target)
         {
             this.target = (T)target;
         }
@@ -65,12 +68,12 @@ namespace Net.Share
             value = default;
         }
 
-        public override void CheckHandlerValue(ref Segment segment, bool isWrite)
+        internal override void CheckHandlerValue(ref Segment segment, bool isWrite)
         {
             action(target, ref value, id, ref segment, isWrite, action1);
         }
 
-        public override bool EqualsTarget(object target)
+        internal override bool EqualsTarget(object target)
         {
             return this.target.Equals(target);
         }

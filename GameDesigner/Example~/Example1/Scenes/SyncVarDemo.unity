@@ -739,13 +739,33 @@ MonoBehaviour:
   test2:
     value: 0
   test3:
-    value: 0
+    value: 6
   test4:
-    serializedVersion: 2
-    x: 1.64
-    y: 2.64
-    width: 0
-    height: 0
+    id: 0
+    authorize: 0
+    value:
+      value: 292
+  test5:
+    id: 0
+    authorize: 0
+    value: 0
+  test6:
+    id: 0
+    authorize: 0
+    value: 
+  test7:
+    id: 0
+    authorize: 0
+    value: {x: 0, y: 0}
+  test8:
+    id: 0
+    authorize: 0
+    value:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
 --- !u!1 &1902338648
 GameObject:
   m_ObjectHideFlags: 0

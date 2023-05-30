@@ -8,15 +8,35 @@ namespace Net.Helper
 {
     public class SyncVarHelper
     {
-        public static void InitSyncVar(MemberInfo info, object target, Action<SyncVarInfo> onSyncVarCollect)
+        public static void InitSyncVar(MemberInfo member, object target, Action<SyncVarInfo> onSyncVarCollect)
         {
-            var syncVar = info.GetCustomAttribute<SyncVar>();
+            SyncVarInfo syncVarInfo = null;
+            if (member is FieldInfo fieldInfo)
+            {
+                if (fieldInfo.FieldType.IsSubclassOf(typeof(SyncVarInfo)))
+                {
+                    syncVarInfo = Activator.CreateInstance(fieldInfo.FieldType) as SyncVarInfo;
+                    syncVarInfo.SetMemberInfo(member);
+                    onSyncVarCollect(syncVarInfo);
+                    return;
+                }
+            }
+            if (member is PropertyInfo propertyInfo)
+            {
+                if (propertyInfo.PropertyType.IsSubclassOf(typeof(SyncVarInfo)))
+                {
+                    syncVarInfo = Activator.CreateInstance(propertyInfo.PropertyType) as SyncVarInfo;
+                    syncVarInfo.SetMemberInfo(member);
+                    onSyncVarCollect(syncVarInfo);
+                    return;
+                }
+            }
+            var syncVar = member.GetCustomAttribute<SyncVar>();
             if (syncVar == null)
                 return;
             var type = target.GetType();
-            SyncVarInfo syncVarInfo = null;
             if (SyncVarGetSetHelper.Cache.TryGetValue(type, out var dict))
-                dict.TryGetValue(info.Name, out syncVarInfo);
+                dict.TryGetValue(member.Name, out syncVarInfo);
             if (syncVarInfo == null)
                 throw new Exception("请使用unity菜单GameDesigner/Network/InvokeHelper工具生成字段，属性同步辅助类!");
             if (!string.IsNullOrEmpty(syncVar.hook) & syncVarInfo.onValueChanged == null)
