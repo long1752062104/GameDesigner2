@@ -6,6 +6,8 @@ namespace MVC.View
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Text;
     using UnityEditor;
     using UnityEditor.Callbacks;
     using UnityEngine;
@@ -116,7 +118,6 @@ namespace MVC.View
         internal string search = "", search1 = "", fieldName = "";
         private string[] types = new string[0];
         private DateTime searchTime;
-        private int deleteArrayIndex = -1;
         private string selectTypeName;
         internal Object selectObject;
         internal JsonSave data = new JsonSave();
@@ -133,6 +134,8 @@ namespace MVC.View
             public bool changeField;
             public bool addField;
             public bool seleAddField;
+            public bool genericType = true;
+            public string inheritType = "Net.Component.SingleCase";
         }
 
         private void OnEnable()
@@ -251,14 +254,6 @@ namespace MVC.View
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
             for (int i = 0; i < field.fields.Count; i++)
             {
-                if (deleteArrayIndex != -1)
-                {
-                    field.fields.RemoveAt(deleteArrayIndex);
-                    deleteArrayIndex = -1;
-                    EditorUtility.SetDirty(field);
-                    break;
-                }
-
                 EditorGUILayout.BeginHorizontal();
                 EditorGUI.BeginChangeCheck();
                 field.fields[i].name = EditorGUILayout.TextField(field.fields[i].name, GUI.skin.label, GUILayout.MaxWidth(100));
@@ -267,6 +262,12 @@ namespace MVC.View
                 field.fields[i].componentIndex = EditorGUILayout.Popup(field.fields[i].componentIndex, field.fields[i].typeNames, GUILayout.MaxWidth(200));
                 field.fields[i].typeName = field.fields[i].typeNames[field.fields[i].componentIndex];
                 field.fields[i].target = EditorGUILayout.ObjectField(field.fields[i].target, field.fields[i].Type, true);
+                if (GUILayout.Button("x", GUILayout.Width(50)))
+                {
+                    field.fields.RemoveAt(i);
+                    EditorUtility.SetDirty(field);
+                    return;
+                }
                 if (EditorGUI.EndChangeCheck())
                 {
                     field.fields[i].Update();
@@ -284,8 +285,8 @@ namespace MVC.View
             //        search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
             //    }
             //}
-            data.nameSpace = EditorGUILayout.TextField("namespace", data.nameSpace);
-            if (data.nameSpace != data.nameSpace1) 
+            data.nameSpace = EditorGUILayout.TextField("命名空间", data.nameSpace);
+            if (data.nameSpace != data.nameSpace1)
             {
                 data.nameSpace1 = data.nameSpace;
                 SaveData();
@@ -302,24 +303,11 @@ namespace MVC.View
                 }
                 else 
                 {
-                    data.savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    var strs = data.savePath.ToCharArray();
-                    var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
-                    int index = 0;
-                    for (int i = 0; i < strs.Length; i++)
-                    {
-                        if (i >= strs1.Length)
-                        {
-                            index = i;
-                            break;
-                        }
-                        if (strs[i] != strs1[i])
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
-                    data.savePath = data.savePath.Remove(0, index);
+                    var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                    data.savePath = relativeUri.ToString();
                     SaveData();
                 }
             }
@@ -334,24 +322,11 @@ namespace MVC.View
                 }
                 else
                 {
-                    data.savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    var strs = data.savePathExt.ToCharArray();
-                    var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
-                    int index = 0;
-                    for (int i = 0; i < strs.Length; i++)
-                    {
-                        if (i >= strs1.Length)
-                        {
-                            index = i;
-                            break;
-                        }
-                        if (strs[i] != strs1[i])
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
-                    data.savePathExt = data.savePathExt.Remove(0, index);
+                    var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                    data.savePathExt = relativeUri.ToString();
                     SaveData();
                 }
             }
@@ -366,188 +341,173 @@ namespace MVC.View
                 }
                 else
                 {
-                    data.csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                    var strs = data.csprojFile.ToCharArray();
-                    var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
-                    int index = 0;
-                    for (int i = 0; i < strs.Length; i++)
-                    {
-                        if (i >= strs1.Length)
-                        {
-                            index = i;
-                            break;
-                        }
-                        if (strs[i] != strs1[i])
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
-                    data.csprojFile = data.csprojFile.Remove(0, index);
+                    var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                    data.csprojFile = relativeUri.ToString();
                     SaveData();
                 }
             }
+
+            data.genericType = EditorGUILayout.Toggle("继承泛型", data.genericType);
+            data.inheritType = EditorGUILayout.TextField("继承类型", "Net.Component.SingleCase");
+
             if (GUILayout.Button("生成脚本(hotfix)"))
             {
-                bool hasns = !string.IsNullOrEmpty(data.nameSpace);
-                Func<string> action = new Func<string>(()=> {
-                    string str = "";
-                    for (int i = 0; i < field.fields.Count; i++) 
-                    {
-                        str += $"{(hasns ? "\t\t" : "\t")}" + $"public {field.fields[i].Type.Name} {field.fields[i].name};\n";
-                    }
-                    return str + "\n";
-                });
-                Func<string> action1 = new Func<string>(() => {
-                    string str = "";
+                var codeTemplate = @"namespace {nameSpace} 
+{
+--
+    public partial class {typeName} : {inherit}
+    {
+        public UnityEngine.GameObject panel;
+--
+        public {fieldType} {fieldName};
+--
+        public void Init(MVC.View.FieldCollection fc)
+        {
+            panel = fc.gameObject;
+--
+            {fieldName} = fc[""{fieldName}""].target as {fieldType};
+--
+        }
+    }
+--
+}";
+                var codeTemplate1 = @"namespace {nameSpace} 
+{
+--
+    public partial class {typeName} : {inherit}
+    {
+--
+        public void InitListener()
+        {
+--
+            {AddListener}
+--
+        }
+--
+        private void {methodEvent}
+        {
+        }
+--
+    }
+--
+}";
+                string scriptCode;
+                {
+                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                    if (string.IsNullOrEmpty(field.fieldName))
+                        field.fieldName = field.name;
+                    codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
+                    var typeName = field.fieldName;
+                    codeTemplate = codeTemplate.Replace("{typeName}", typeName);
+                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
+                    var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                    var sb = new StringBuilder();
+                    var sb1 = new StringBuilder();
+                    if (hasns)
+                        sb.Append(codes[0]);
+                    sb.Append(codes[1]);
                     for (int i = 0; i < field.fields.Count; i++)
                     {
-                        str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name} = fc[\"{field.fields[i].name}\"].target as {field.fields[i].Type.Name};\n";
+                        var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                        sb.Append(fieldCode);
+
+                        fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                        fieldCode = fieldCode.Replace("{index}", i.ToString());
+                        sb1.Append(fieldCode);
                     }
-                    return str;
-                });
-                Func<string> action2 = new Func<string>(() => {
-                    string str = "";
+                    sb.AppendLine();
+                    sb.Append(codes[3]);
+                    sb.Append(sb1.ToString());
+                    sb.Append(codes[5]);
+                    if (hasns)
+                        sb.Append(codes[6]);
+                    scriptCode = sb.ToString();
+                    if (!hasns)
+                    {
+                        var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                        sb.Clear();
+                        for (int i = 0; i < scriptCodes.Length; i++)
+                        {
+                            if (scriptCodes[i].StartsWith("        "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            else if (scriptCodes[i].StartsWith("    "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            sb.AppendLine(scriptCodes[i]);
+                        }
+                        scriptCode = sb.ToString();
+                    }
+                    while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
+                        scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
+                }
+
+                string scriptCode1;
+                {
+                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                    if (string.IsNullOrEmpty(field.fieldName))
+                        field.fieldName = field.name;
+                    codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
+                    var typeName = field.fieldName;
+                    codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
+                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
+                    var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                    var sb = new StringBuilder();
+                    var sb1 = new StringBuilder();
+                    if (hasns)
+                        sb.Append(codes[0]);
+                    sb.Append(codes[1]);
+                    sb.Append(codes[2]);
                     for (int i = 0; i < field.fields.Count; i++)
                     {
                         if (field.fields[i].Type == typeof(Button))
                         {
-                            str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name}.onClick.AddListener(() => " + "{" + "});\n";
+                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
+                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                            sb.Append(fieldCode);
+
+                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
+                            sb1.Append(fieldCode);
                         }
                         else if (field.fields[i].Type == typeof(Toggle))
                         {
-                            str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name}.onValueChanged.AddListener((value) => " + "{" + "});\n";
+                            var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
+                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                            sb.Append(fieldCode);
+
+                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
+                            sb1.Append(fieldCode);
                         }
                     }
-                    return str;
-                });
-                if (string.IsNullOrEmpty(field.fieldName))
-                    field.fieldName = field.name;
-                var scriptStr = "using MVC.View;\n" +
-                "using UnityEngine;\n" +
-                "using UnityEngine.UI;\n\n" +
-                (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
-                $"{(hasns ? "\t" : "")}" + $"//热更新生成的脚本, 请看gitee的mvc模块使用介绍图示\n" +
-                $"{(hasns ? "\t" : "")}" + $"public class {field.fieldName}\n" +
-                $"{(hasns ? "\t" : "")}" + "{\n" +
-                $"{(hasns ? "\t\t" : "\t")}" + $"public static {field.fieldName} Instance = new {field.fieldName}();\n" +
-                $"{(hasns ? "\t\t" : "\t")}" + "public GameObject panel;\n" +
-                action() +
-                $"{(hasns ? "\t\t" : "\t")}" + "public void Init(FieldCollection fc)\n" +
-                $"{(hasns ? "\t\t" : "\t")}" + "{\n" +
-                $"{(hasns ? "\t\t\t" : "\t\t")}" + "panel = fc.gameObject;\n" +
-                action1() +
-                action2() +
-                $"{(hasns ? "\t\t" : "\t")}" + "}\n" +
-                $"{(hasns ? "\t" : "")}" + "}" +
-                (hasns ? "\n}" : "");
-                string path;
-                string path1;
-                if (data.fullPath)
-                {
-                    path = data.savePath + $"/{field.fieldName}.cs";
-                    path1 = data.csprojFile;
+                    sb.Append(codes[4]);
+                    sb.AppendLine();
+                    sb.Append(sb1.ToString());
+                    sb.Append(codes[6]);
+                    if (hasns)
+                        sb.Append(codes[7]);
+                    scriptCode1 = sb.ToString();
+                    if (!hasns)
+                    {
+                        var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                        sb.Clear();
+                        for (int i = 0; i < scriptCodes.Length; i++)
+                        {
+                            if (scriptCodes[i].StartsWith("        "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            else if (scriptCodes[i].StartsWith("    "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            sb.AppendLine(scriptCodes[i]);
+                        }
+                        scriptCode1 = sb.ToString();
+                    }
+                    while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
+                        scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-                else
-                {
-                    path = Application.dataPath.Replace("Assets", "") + data.savePath + $"/{field.fieldName}.cs";
-                    path1 = Application.dataPath.Replace("Assets", "") + data.csprojFile;
-                }
-                if (File.Exists(path)) 
-                {
-                    if(!EditorUtility.DisplayDialog("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "尾部添加"))
-                        File.AppendAllText(path, scriptStr);
-                    else File.WriteAllText(path, scriptStr);
-                } else File.WriteAllText(path, scriptStr);
-                if (File.Exists(path1)) 
-                {
-                    var rows = File.ReadAllLines(path1);
-                    foreach (var row in rows)
-                    {
-                        if (row.Contains("<Compile Include=\"")) 
-                        {
-                            var row1 = row.Replace("<Compile Include=\"", "");
-                            row1 = row1.Replace("\" />", "");
-                            var csName = Path.GetFileName(row1);
-                            var csName1 = Path.GetFileName(path);
-                            if (csName == csName1)
-                                goto J;
-                        }
-                    }
-                    var cspath = Path.GetDirectoryName(path1).Replace("\\", "/");
-                    var path2 = path.Replace(cspath, "").TrimStart('/').Replace("/", "\\");
-                    List<string> rows1 = new List<string>(rows);
-                    rows1.Insert(rows.Length - 3, $"    <Compile Include=\"{path2}\" />");
-                    File.WriteAllLines(path1, rows1);
-                }
-                J: AssetDatabase.Refresh();
-                Debug.Log($"生成成功:{path}");
-            }
-            if (GUILayout.Button("生成脚本(主工程)"))
-            {
-                bool hasns = !string.IsNullOrEmpty(data.nameSpace);
-                var action = new Func<string>(() => {
-                    string str = "";
-                    for (int i = 0; i < field.fields.Count; i++)
-                    {
-                        str += $"{(hasns ? "\t\t" : "\t")}" + $"public {field.fields[i].Type.Name} {field.fields[i].name};\n";
-                    }
-                    return str;
-                });
-                var action1 = new Func<string>(() => {
-                    string str = "";
-                    int index = 0;
-                    for (int i = 0; i < field.fields.Count; i++)
-                    {
-                        if (field.fields[i].Type == typeof(GameObject))
-                            continue;
-                        if (field.fields[i].Type == typeof(Object))
-                            continue;
-                        if (!field.fields[i].Type.IsSubclassOf(typeof(Component)))
-                            continue;
-                        var comps = field.transform.GetComponentsInChildren(field.fields[i].Type, true);
-                        for (int ii = 0; ii < comps.Length; ii++)
-                        {
-                            var comp = field.fields[i].target as Component;
-                            if (comp == comps[ii]) {
-                                index = ii;
-                                break;
-                            }
-                        }
-                        str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name} = transform.GetComponentsInChildren<{field.fields[i].Type.Name}>(true)[{index}];\n";
-                    }
-                    return str;
-                });
-                var action2 = new Func<string>(() => {
-                    string str = "";
-                    for (int i = 0; i < field.fields.Count; i++)
-                    {
-                        if (field.fields[i].Type == typeof(Button))
-                        {
-                            str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name}.onClick.AddListener(() => " + "{" + "});\n";
-                        }
-                        else if (field.fields[i].Type == typeof(Toggle))
-                        {
-                            str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name}.onValueChanged.AddListener((value) => " + "{" + "});\n";
-                        }
-                    }
-                    return str;
-                });
-                if (string.IsNullOrEmpty(field.fieldName))
-                    field.fieldName = field.name;
-                var scriptStr = "using Net.Component;\n" +
-                "using UnityEngine;\n" +
-                "using UnityEngine.UI;\n\n" +
-                (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
-                $"{(hasns ? "\t" : "")}public partial class {field.fieldName} : SingleCase<{field.fieldName}>\n" +
-                $"{(hasns ? "\t" : "")}" + "{\n" +
-                action() +
-                $"\n{(hasns ? "\t\t" : "\t")}void OnValidate()\n" +
-                $"{(hasns ? "\t\t" : "\t")}" + "{\n" +
-                action1() +
-                $"{(hasns ? "\t\t" : "\t")}" + "}\n" +
-                $"{(hasns ? "\t" : "")}" + "}" +
-                (hasns ? "\n}" : "");
                 string path;
                 string path1;
                 if (data.fullPath)
@@ -557,30 +517,223 @@ namespace MVC.View
                 }
                 else
                 {
-                    path = Application.dataPath.Replace("Assets", "") + data.savePath + $"/{field.fieldName}.cs";
-                    path1 = Application.dataPath.Replace("Assets", "") + data.savePathExt + $"/{field.fieldName}Ext.cs";
+                    path = data.savePath + $"/{field.fieldName}.cs";
+                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
                 }
-                if (File.Exists(path)) 
+                File.WriteAllText(path, scriptCode);
+                if (!string.IsNullOrEmpty(path1))
                 {
-                    if(!EditorUtility.DisplayDialog("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "尾部添加"))
-                        File.AppendAllText(path, scriptStr);
-                    else File.WriteAllText(path, scriptStr);
-                } else File.WriteAllText(path, scriptStr);
-                if (!File.Exists(path1))
+                    if (!File.Exists(path1))
+                    {
+                        File.WriteAllText(path1, scriptCode1);
+                    }
+                    else
+                    {
+                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", string.Empty, "尾部添加");
+                        switch (code)
+                        {
+                            case 0:
+                                File.WriteAllText(path1, scriptCode1);
+                                break;
+                            case 2:
+                                File.AppendAllText(path1, scriptCode1);
+                                break;
+                            default:
+                                return;
+                        }
+                    }
+                }
+                //csproj对主工程无效
+                AssetDatabase.Refresh();
+                Debug.Log($"生成成功:{path}");
+            }
+            if (GUILayout.Button("生成脚本(主工程)"))
+            {
+                var codeTemplate = @"namespace {nameSpace} 
+{
+--
+    public partial class {typeName} : {inherit}
+    {
+--
+        public {fieldType} {fieldName};
+--
+        void OnValidate()
+        {
+--
+            {fieldName} = transform.GetComponentsInChildren<{fieldType}>(true)[{index}];
+--
+        }
+    }
+--
+}";
+                var codeTemplate1 = @"namespace {nameSpace} 
+{
+--
+    public partial class {typeName} : {inherit}
+    {
+--
+        private void Start()
+        {
+--
+            {AddListener}
+--
+        }
+--
+        private void {methodEvent}
+        {
+        }
+--
+    }
+--
+}";
+                string scriptCode;
                 {
-                    var scriptStr1 = "using Net.Component;\n" +
-                    "using UnityEngine;\n" +
-                    "using UnityEngine.UI;\n\n" +
-                    (hasns ? "namespace " + data.nameSpace + "\n{\n" : "") +
-                    $"{(hasns ? "\t" : "")}public partial class {field.fieldName} : SingleCase<{field.fieldName}>\n" +
-                    $"{(hasns ? "\t" : "")}" + "{\n" +
-                    $"\n{(hasns ? "\t\t" : "\t")}void Start()\n" +
-                    $"{(hasns ? "\t\t" : "\t")}" + "{\n" +
-                    action2() +
-                    $"{(hasns ? "\t\t" : "\t")}" + "}\n" +
-                    $"{(hasns ? "\t" : "")}" + "}" +
-                    (hasns ? "\n}" : "");
-                    File.WriteAllText(path1, scriptStr1);
+                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                    if (string.IsNullOrEmpty(field.fieldName))
+                        field.fieldName = field.name;
+                    codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
+                    var typeName = field.fieldName;
+                    codeTemplate = codeTemplate.Replace("{typeName}", typeName);
+                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
+                    var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                    var sb = new StringBuilder();
+                    var sb1 = new StringBuilder();
+                    if (hasns)
+                        sb.Append(codes[0]);
+                    sb.Append(codes[1]);
+                    for (int i = 0; i < field.fields.Count; i++)
+                    {
+                        var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                        sb.Append(fieldCode);
+
+                        fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                        fieldCode = fieldCode.Replace("{index}", i.ToString());
+                        sb1.Append(fieldCode);
+                    }
+                    sb.AppendLine();
+                    sb.Append(codes[3]);
+                    sb.Append(sb1.ToString());
+                    sb.Append(codes[5]);
+                    if (hasns)
+                        sb.Append(codes[6]);
+                    scriptCode = sb.ToString();
+                    if (!hasns)
+                    {
+                        var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                        sb.Clear();
+                        for (int i = 0; i < scriptCodes.Length; i++)
+                        {
+                            if (scriptCodes[i].StartsWith("        "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            else if (scriptCodes[i].StartsWith("    "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            sb.AppendLine(scriptCodes[i]);
+                        }
+                        scriptCode = sb.ToString();
+                    }
+                    while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
+                        scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
+                }
+
+                string scriptCode1;
+                {
+                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                    if (string.IsNullOrEmpty(field.fieldName))
+                        field.fieldName = field.name;
+                    codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
+                    var typeName = field.fieldName;
+                    codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
+                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
+                    var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                    var sb = new StringBuilder();
+                    var sb1 = new StringBuilder();
+                    if (hasns)
+                        sb.Append(codes[0]);
+                    sb.Append(codes[1]);
+                    sb.Append(codes[2]);
+                    for (int i = 0; i < field.fields.Count; i++)
+                    {
+                        if (field.fields[i].Type == typeof(Button))
+                        {
+                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
+                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                            sb.Append(fieldCode);
+
+                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
+                            sb1.Append(fieldCode);
+                        }
+                        else if (field.fields[i].Type == typeof(Toggle))
+                        {
+                            var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
+                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                            sb.Append(fieldCode);
+
+                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
+                            sb1.Append(fieldCode);
+                        }
+                    }
+                    sb.Append(codes[4]);
+                    sb.AppendLine();
+                    sb.Append(sb1.ToString());
+                    sb.Append(codes[6]);
+                    if (hasns)
+                        sb.Append(codes[7]);
+                    scriptCode1 = sb.ToString();
+                    if (!hasns)
+                    {
+                        var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                        sb.Clear();
+                        for (int i = 0; i < scriptCodes.Length; i++)
+                        {
+                            if (scriptCodes[i].StartsWith("        "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            else if (scriptCodes[i].StartsWith("    "))
+                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                            sb.AppendLine(scriptCodes[i]);
+                        }
+                        scriptCode1 = sb.ToString();
+                    }
+                    while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
+                        scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
+                }
+                string path;
+                string path1;
+                if (data.fullPath)
+                {
+                    path = data.savePath + $"/{field.fieldName}.cs";
+                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                }
+                else
+                {
+                    path = data.savePath + $"/{field.fieldName}.cs";
+                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                }
+                File.WriteAllText(path, scriptCode);
+                if (!string.IsNullOrEmpty(path1))
+                {
+                    if (!File.Exists(path1))
+                    {
+                        File.WriteAllText(path1, scriptCode1);
+                    }
+                    else
+                    {
+                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", string.Empty, "尾部添加");
+                        switch (code)
+                        {
+                            case 0:
+                                File.WriteAllText(path1, scriptCode1);
+                                break;
+                            case 2:
+                                File.AppendAllText(path1, scriptCode1);
+                                break;
+                            default:
+                                return;
+                        }
+                    }
                 }
                 //csproj对主工程无效
                 AssetDatabase.Refresh();
@@ -596,8 +749,7 @@ namespace MVC.View
             var gameObject = Selection.activeGameObject;
             if (gameObject == null)
                 return;
-            var fieldCollection = gameObject.GetComponent<FieldCollection>();
-            if (fieldCollection == null)
+            if (!gameObject.TryGetComponent<FieldCollection>(out var fieldCollection))
                 return;
             if (fieldCollection.compiling)
             {
@@ -609,8 +761,14 @@ namespace MVC.View
                 else
                     componentTypeName = data.nameSpace + "." + fieldCollection.fieldName;
                 var type = AssemblyHelper.GetType(componentTypeName);
-                if (type != null)
-                    fieldCollection.gameObject.AddComponent(type);
+                if (type == null)
+                    return;
+                if (fieldCollection.TryGetComponent(type, out var component))
+                {
+                    component.GetType().GetMethod("OnValidate", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(component, null);
+                    return;
+                }
+                fieldCollection.gameObject.AddComponent(type);
             }
         }
     }
