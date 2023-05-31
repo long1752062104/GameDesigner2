@@ -52,13 +52,13 @@ namespace MVC.View
                                 var components = objects.Where(item => item.GetType() == cp).ToList();
                                 if (components.Count != 0)
                                 {
-                                    field.fieldName = obj.name;
+                                    field.fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
                                     field.selectObject = components[0];
                                     field.AddField(components[0].GetType().ToString());
                                     goto J;
                                 }
                             }
-                            field.fieldName = obj.name;
+                            field.fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
                             field.selectObject = objects[objects.Count - 1];
                             field.AddField(objects[objects.Count - 1].GetType().ToString());
                         J:;
@@ -89,7 +89,7 @@ namespace MVC.View
                             {
                                 foreach (var item1 in item.Value)
                                 {
-                                    field.fieldName = item1[0].name;
+                                    field.fieldName = item1[0].name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
                                     field.selectObject = item1[1];
                                     field.AddField(typeName);
                                 }
@@ -136,6 +136,8 @@ namespace MVC.View
             public bool seleAddField;
             public bool genericType = true;
             public string inheritType = "Net.Component.SingleCase";
+            public string addInheritType;
+            public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
         }
 
         private void OnEnable()
@@ -262,7 +264,7 @@ namespace MVC.View
                 field.fields[i].componentIndex = EditorGUILayout.Popup(field.fields[i].componentIndex, field.fields[i].typeNames, GUILayout.MaxWidth(200));
                 field.fields[i].typeName = field.fields[i].typeNames[field.fields[i].componentIndex];
                 field.fields[i].target = EditorGUILayout.ObjectField(field.fields[i].target, field.fields[i].Type, true);
-                if (GUILayout.Button("x", GUILayout.Width(50)))
+                if (GUILayout.Button("x", GUILayout.Width(25)))
                 {
                     field.fields.RemoveAt(i);
                     EditorUtility.SetDirty(field);
@@ -349,10 +351,25 @@ namespace MVC.View
                     SaveData();
                 }
             }
-
+            EditorGUILayout.BeginHorizontal();
+            data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
+            if (GUILayout.Button("添加"))
+            {
+                if (!data.inheritTypes.Contains(data.addInheritType))
+                    data.inheritTypes.Add(data.addInheritType);
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            foreach (var item in data.inheritTypes)
+            {
+                if (GUILayout.Button(item))
+                {
+                    data.inheritType = item;
+                }
+            }
+            EditorGUILayout.EndHorizontal();
             data.genericType = EditorGUILayout.Toggle("继承泛型", data.genericType);
-            data.inheritType = EditorGUILayout.TextField("继承类型", "Net.Component.SingleCase");
-
+            data.inheritType = EditorGUILayout.TextField("继承类型", data.inheritType);
             if (GUILayout.Button("生成脚本(hotfix)"))
             {
                 var codeTemplate = @"namespace {nameSpace} 

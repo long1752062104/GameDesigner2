@@ -863,6 +863,8 @@ internal static class SyncVarGetSetHelperGenerate
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var item in assemblies)
             {
+                if (item.IsDynamic)
+                    continue;
                 if (string.IsNullOrEmpty(item.Location))
                     continue;
                 if (item.Location.Contains("Library\\ScriptAssemblies\\"))
