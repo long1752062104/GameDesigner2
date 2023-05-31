@@ -9,13 +9,12 @@ namespace MVC.View
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UI;
+    using Object = UnityEngine.Object;
 
     public class FieldCollectionWindow : EditorWindow
     {
         private FieldCollectionEdit field;
-        private bool setValue;
-        private bool setName;
-
+        
         internal static void Init(FieldCollectionEdit field)
         {
             var win = GetWindow<FieldCollectionWindow>("字段收集器", true);
@@ -25,16 +24,17 @@ namespace MVC.View
         void OnGUI() 
         {
             GUILayout.Label("将组件拖到此窗口上! 如果是赋值模式, 拖入的对象将不会显示选择组件!");
-            setValue = GUILayout.Toggle(setValue, "赋值模式/创建模式");
-            setName = GUILayout.Toggle(setName, "设置字段名和赋值对象");
-            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & !setValue)
+            field.data.changeField = GUILayout.Toggle(field.data.changeField, "赋值变量");
+            field.data.addField = GUILayout.Toggle(field.data.addField, "直接添加变量");
+            field.data.seleAddField = GUILayout.Toggle(field.data.seleAddField, "选择添加变量组件");
+            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & !field.data.changeField)
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
                 if (Event.current.type == EventType.DragPerform)
                 {
-                    if (setName)
+                    if (field.data.addField)
                     {
-                        foreach (var obj in DragAndDrop.objectReferences) 
+                        foreach (var obj in DragAndDrop.objectReferences)
                         {
                             field.fieldName = obj.name;
                             field.selectObject = obj;
@@ -42,7 +42,41 @@ namespace MVC.View
                         }
                         return;
                     }
-                    else 
+                    else if (field.data.seleAddField)
+                    {
+                        var dict = new Dictionary<Type, List<Object[]>>();
+                        foreach (var obj in DragAndDrop.objectReferences)
+                        {
+                            var go = obj as GameObject;
+                            var objects = new List<Object>() { obj };
+                            objects.AddRange(go.GetComponents<Component>());
+                            foreach (var obj1 in objects)
+                            {
+                                var type = obj1.GetType();
+                                if (!dict.TryGetValue(type, out var objects1))
+                                    dict.Add(type, objects1 = new List<Object[]>());
+                                objects1.Add(new Object[] { obj, obj1 });
+                            }
+                        }
+                        var menu = new GenericMenu();
+                        foreach (var item in dict)
+                        {
+                            var typeName = item.Key.ToString();
+                            menu.AddItem(new GUIContent(typeName), false, () =>
+                            {
+                                foreach (var item1 in item.Value)
+                                {
+                                    field.fieldName = item1[0].name;
+                                    field.selectObject = item1[1];
+                                    field.AddField(typeName);
+                                }
+                            });
+                        }
+                        menu.ShowAsContext();
+                        Event.current.Use();
+                        return;
+                    }
+                    else
                     {
                         field.search1 = "";
                         field.search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
@@ -64,10 +98,9 @@ namespace MVC.View
         private int deleteArrayIndex = -1;
         private bool doubleClick;
         private int index;
-        private string savePath;
         private string selectTypeName;
-        internal UnityEngine.Object selectObject;
-        private JsonSave data = new JsonSave();
+        internal Object selectObject;
+        internal JsonSave data = new JsonSave();
         private Vector2 scrollPosition;
 
         public class JsonSave 
@@ -78,12 +111,15 @@ namespace MVC.View
             public bool fullPath;
             public string savePathExt;
             internal string nameSpace1;
+            public bool changeField;
+            public bool addField;
+            public bool seleAddField;
         }
 
         private void OnEnable()
         {
             field = target as FieldCollection;
-            var objects = Resources.FindObjectsOfTypeAll<UnityEngine.Object>();
+            var objects = Resources.FindObjectsOfTypeAll<Object>();
             HashSet<string> types1 = new HashSet<string>();
             foreach (var obj in objects)
             {
@@ -91,7 +127,7 @@ namespace MVC.View
                 if (!types1.Contains(str))
                     types1.Add(str);
             }
-            var types2 = typeof(Vector2).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(UnityEngine.Object))).ToArray();
+            var types2 = typeof(Vector2).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Object))).ToArray();
             foreach (var obj in types2)
             {
                 var str = obj.FullName;
@@ -100,8 +136,8 @@ namespace MVC.View
             }
             types = types1.ToArray();
             LoadData();
-            if (string.IsNullOrEmpty(savePath))
-                savePath = Application.dataPath;
+            if (string.IsNullOrEmpty(data.savePath))
+                data.savePath = Application.dataPath;
         }
 
         private void OnDisable()
@@ -255,18 +291,18 @@ namespace MVC.View
             }
             data.fullPath = EditorGUILayout.Toggle("(绝/相)对路径", data.fullPath);
             var rect1 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect1, "文件路径:", savePath);
+            EditorGUI.LabelField(rect1, "文件路径:", data.savePath);
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
                 if (data.fullPath)
                 {
-                    savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    data.savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                     SaveData();
                 }
                 else 
                 {
-                    savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    var strs = savePath.ToCharArray();
+                    data.savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                    var strs = data.savePath.ToCharArray();
                     var strs1 = Application.dataPath.Replace("Assets", "").ToCharArray();
                     int index = 0;
                     for (int i = 0; i < strs.Length; i++)
@@ -282,7 +318,7 @@ namespace MVC.View
                             break;
                         }
                     }
-                    savePath = savePath.Remove(0, index);
+                    data.savePath = data.savePath.Remove(0, index);
                     SaveData();
                 }
             }
@@ -408,12 +444,12 @@ namespace MVC.View
                 string path1 = "";
                 if (data.fullPath)
                 {
-                    path = savePath + $"/{field.fieldName}.cs";
+                    path = data.savePath + $"/{field.fieldName}.cs";
                     path1 = data.csprojFile;
                 }
                 else
                 {
-                    path = Application.dataPath.Replace("Assets", "") + savePath + $"/{field.fieldName}.cs";
+                    path = Application.dataPath.Replace("Assets", "") + data.savePath + $"/{field.fieldName}.cs";
                     path1 = Application.dataPath.Replace("Assets", "") + data.csprojFile;
                 }
                 if (File.Exists(path)) 
@@ -515,12 +551,12 @@ namespace MVC.View
                 string path1 = "";
                 if (data.fullPath)
                 {
-                    path = savePath + $"/{field.fieldName}.cs";
+                    path = data.savePath + $"/{field.fieldName}.cs";
                     path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
                 }
                 else
                 {
-                    path = Application.dataPath.Replace("Assets", "") + savePath + $"/{field.fieldName}.cs";
+                    path = Application.dataPath.Replace("Assets", "") + data.savePath + $"/{field.fieldName}.cs";
                     path1 = Application.dataPath.Replace("Assets", "") + data.savePathExt + $"/{field.fieldName}Ext.cs";
                 }
                 if (File.Exists(path)) 
