@@ -7,6 +7,7 @@ namespace MVC.View
     using System.IO;
     using System.Linq;
     using UnityEditor;
+    using UnityEditor.Callbacks;
     using UnityEngine;
     using UnityEngine.UI;
     using Object = UnityEngine.Object;
@@ -34,11 +35,31 @@ namespace MVC.View
                 {
                     if (field.data.addField)
                     {
+                        var componentPriority = new List<Type>()
+                        {
+                            typeof(Button), typeof(Toggle), typeof(Text), typeof(Slider), typeof(Scrollbar), typeof(Dropdown),
+                            typeof(ScrollRect), typeof(InputField), typeof(Image)
+                        };
                         foreach (var obj in DragAndDrop.objectReferences)
                         {
+                            var go = obj as GameObject;
+                            var objects = new List<Object>() { obj };
+                            objects.AddRange(go.GetComponents<Component>());
+                            foreach (var cp in componentPriority)
+                            {
+                                var components = objects.Where(item => item.GetType() == cp).ToList();
+                                if (components.Count != 0)
+                                {
+                                    field.fieldName = obj.name;
+                                    field.selectObject = components[0];
+                                    field.AddField(components[0].GetType().ToString());
+                                    goto J;
+                                }
+                            }
                             field.fieldName = obj.name;
-                            field.selectObject = obj;
-                            field.AddField(obj.GetType().FullName);
+                            field.selectObject = objects[objects.Count - 1];
+                            field.AddField(objects[objects.Count - 1].GetType().ToString());
+                        J:;
                         }
                         return;
                     }
@@ -96,8 +117,6 @@ namespace MVC.View
         private string[] types = new string[0];
         private DateTime searchTime;
         private int deleteArrayIndex = -1;
-        private bool doubleClick;
-        private int index;
         private string selectTypeName;
         internal Object selectObject;
         internal JsonSave data = new JsonSave();
@@ -174,6 +193,7 @@ namespace MVC.View
             if (selectObject != null)
                 field1.target = selectObject;
             selectTypeName = typeName;
+            field1.Update();
             EditorUtility.SetDirty(field);
         }
 
@@ -231,58 +251,39 @@ namespace MVC.View
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
             for (int i = 0; i < field.fields.Count; i++)
             {
-                try
+                if (deleteArrayIndex != -1)
                 {
-                    if (deleteArrayIndex != -1)
-                    {
-                        field.fields.RemoveAt(deleteArrayIndex);
-                        deleteArrayIndex = -1;
-                        EditorUtility.SetDirty(field);
-                        break;
-                    }
-                    var rect = EditorGUILayout.GetControlRect();
-                    so.FindProperty("fields").GetArrayElementAtIndex(i).FindPropertyRelative("target").objectReferenceValue = EditorGUI.ObjectField(rect, field.fields[i].name, field.fields[i].target, field.fields[i].Type, true);
-                    if (Event.current.type == EventType.ContextClick && rect.Contains(Event.current.mousePosition))//判断鼠标右键事件
-                    {
-                        GenericMenu menu = new GenericMenu();
-                        menu.AddItem(new GUIContent("删除字段"), false, (index) =>
-                        {
-                            deleteArrayIndex = (int)index;
-                        }, i);
-                        menu.ShowAsContext();
-                        Event.current.Use();//设置该事件被使用
-                    }
-                    if (Event.current.clickCount == 2 && rect.Contains(Event.current.mousePosition))//判断鼠标左键事件
-                    {
-                        index = i;
-                        doubleClick = true;
-                    }
-                    if (doubleClick & index == i) 
-                    {
-                        field.fields[i].name = EditorGUI.TextField(rect, field.fields[i].name);
-                        if (Event.current.type == EventType.MouseDown | Event.current.keyCode == KeyCode.Return) 
-                        {
-                            doubleClick = false;
-                            index = -1;
-                            EditorUtility.SetDirty(field);
-                            break;
-                        }
-                    }
+                    field.fields.RemoveAt(deleteArrayIndex);
+                    deleteArrayIndex = -1;
+                    EditorUtility.SetDirty(field);
+                    break;
                 }
-                catch
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUI.BeginChangeCheck();
+                field.fields[i].name = EditorGUILayout.TextField(field.fields[i].name, GUI.skin.label, GUILayout.MaxWidth(100));
+                if (field.fields[i].typeNames == null)
+                    field.fields[i].Update();
+                field.fields[i].componentIndex = EditorGUILayout.Popup(field.fields[i].componentIndex, field.fields[i].typeNames, GUILayout.MaxWidth(200));
+                field.fields[i].typeName = field.fields[i].typeNames[field.fields[i].componentIndex];
+                field.fields[i].target = EditorGUILayout.ObjectField(field.fields[i].target, field.fields[i].Type, true);
+                if (EditorGUI.EndChangeCheck())
                 {
+                    field.fields[i].Update();
+                    EditorUtility.SetDirty(field);
                 }
+                EditorGUILayout.EndHorizontal();
             }
             GUILayout.EndScrollView();
-            if (Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform)
-            {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
-                if (Event.current.type == EventType.DragPerform)
-                {
-                    search1 = "";
-                    search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
-                }
-            }
+            //if (Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform)
+            //{
+            //    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
+            //    if (Event.current.type == EventType.DragPerform)
+            //    {
+            //        search1 = "";
+            //        search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
+            //    }
+            //}
             data.nameSpace = EditorGUILayout.TextField("namespace", data.nameSpace);
             if (data.nameSpace != data.nameSpace1) 
             {
@@ -388,7 +389,7 @@ namespace MVC.View
             }
             if (GUILayout.Button("生成脚本(hotfix)"))
             {
-                bool hasns = data.nameSpace != "";
+                bool hasns = !string.IsNullOrEmpty(data.nameSpace);
                 Func<string> action = new Func<string>(()=> {
                     string str = "";
                     for (int i = 0; i < field.fields.Count; i++) 
@@ -440,8 +441,8 @@ namespace MVC.View
                 $"{(hasns ? "\t\t" : "\t")}" + "}\n" +
                 $"{(hasns ? "\t" : "")}" + "}" +
                 (hasns ? "\n}" : "");
-                string path = "";
-                string path1 = "";
+                string path;
+                string path1;
                 if (data.fullPath)
                 {
                     path = data.savePath + $"/{field.fieldName}.cs";
@@ -484,8 +485,8 @@ namespace MVC.View
             }
             if (GUILayout.Button("生成脚本(主工程)"))
             {
-                bool hasns = data.nameSpace != "";
-                Func<string> action = new Func<string>(() => {
+                bool hasns = !string.IsNullOrEmpty(data.nameSpace);
+                var action = new Func<string>(() => {
                     string str = "";
                     for (int i = 0; i < field.fields.Count; i++)
                     {
@@ -493,18 +494,18 @@ namespace MVC.View
                     }
                     return str;
                 });
-                Func<string> action1 = new Func<string>(() => {
+                var action1 = new Func<string>(() => {
                     string str = "";
                     int index = 0;
                     for (int i = 0; i < field.fields.Count; i++)
                     {
                         if (field.fields[i].Type == typeof(GameObject))
                             continue;
-                        if (field.fields[i].Type == typeof(UnityEngine.Object))
+                        if (field.fields[i].Type == typeof(Object))
                             continue;
                         if (!field.fields[i].Type.IsSubclassOf(typeof(Component)))
                             continue;
-                        var comps = field.transform.GetComponentsInChildren(field.fields[i].Type);
+                        var comps = field.transform.GetComponentsInChildren(field.fields[i].Type, true);
                         for (int ii = 0; ii < comps.Length; ii++)
                         {
                             var comp = field.fields[i].target as Component;
@@ -513,11 +514,11 @@ namespace MVC.View
                                 break;
                             }
                         }
-                        str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name} = transform.GetComponentsInChildren<{field.fields[i].Type.Name}>()[{index}];\n";
+                        str += $"{(hasns ? "\t\t\t" : "\t\t")}" + $"{field.fields[i].name} = transform.GetComponentsInChildren<{field.fields[i].Type.Name}>(true)[{index}];\n";
                     }
                     return str;
                 });
-                Func<string> action2 = new Func<string>(() => {
+                var action2 = new Func<string>(() => {
                     string str = "";
                     for (int i = 0; i < field.fields.Count; i++)
                     {
@@ -547,8 +548,8 @@ namespace MVC.View
                 $"{(hasns ? "\t\t" : "\t")}" + "}\n" +
                 $"{(hasns ? "\t" : "")}" + "}" +
                 (hasns ? "\n}" : "");
-                string path = "";
-                string path1 = "";
+                string path;
+                string path1;
                 if (data.fullPath)
                 {
                     path = data.savePath + $"/{field.fieldName}.cs";
@@ -584,8 +585,33 @@ namespace MVC.View
                 //csproj对主工程无效
                 AssetDatabase.Refresh();
                 Debug.Log($"生成成功:{path}");
+                field.compiling = true;
             }
             serializedObject.ApplyModifiedProperties();
+        }
+
+        [DidReloadScripts]
+        static void OnScriptCompilation()
+        {
+            var gameObject = Selection.activeGameObject;
+            if (gameObject == null)
+                return;
+            var fieldCollection = gameObject.GetComponent<FieldCollection>();
+            if (fieldCollection == null)
+                return;
+            if (fieldCollection.compiling)
+            {
+                fieldCollection.compiling = false;
+                var data = PersistHelper.Deserialize<JsonSave>("fcdata.txt");
+                string componentTypeName;
+                if (string.IsNullOrEmpty(data.nameSpace))
+                    componentTypeName = fieldCollection.fieldName;
+                else
+                    componentTypeName = data.nameSpace + "." + fieldCollection.fieldName;
+                var type = AssemblyHelper.GetType(componentTypeName);
+                if (type != null)
+                    fieldCollection.gameObject.AddComponent(type);
+            }
         }
     }
 }
