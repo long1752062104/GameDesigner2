@@ -1059,6 +1059,21 @@
         }
 
         /// <summary>
+        /// 反序列化 -- 记录类型时用到
+        /// </summary>
+        /// <typeparam name="T">基类或真实类对象</typeparam>
+        /// <param name="segment"></param>
+        /// <param name="type">派生类型</param>
+        /// <param name="isPush"></param>
+        /// <param name="recordType">记录类型?</param>
+        /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
+        /// <returns></returns>
+        public static T DeserializeObject<T>(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
+        {
+            return (T)DeserializeObject(segment, type, isPush, recordType, ignore);
+        }
+
+        /// <summary>
         /// 反序列化
         /// </summary>
         /// <param name="segment"></param>
