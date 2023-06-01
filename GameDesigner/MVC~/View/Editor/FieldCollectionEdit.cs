@@ -26,6 +26,8 @@ namespace MVC.View
 
         void OnGUI() 
         {
+            if (field == null)
+                return;
             GUILayout.Label("将组件拖到此窗口上! 如果是赋值模式, 拖入的对象将不会显示选择组件!");
             field.data.changeField = GUILayout.Toggle(field.data.changeField, "赋值变量");
             field.data.addField = GUILayout.Toggle(field.data.addField, "直接添加变量");
@@ -106,7 +108,7 @@ namespace MVC.View
                     }
                 }
             }
-            try { field.OnInspectorGUI(); } catch { }
+            field.OnInspectorGUI();
         }
     }
 
@@ -206,8 +208,6 @@ namespace MVC.View
         {
             if (GUILayout.Button("打开收集器界面")) 
                 FieldCollectionWindow.Init(this);
-            var so = serializedObject;
-            so.Update();
             field.fieldName = EditorGUILayout.TextField("收集器名称", field.fieldName);
             var rect2 = EditorGUILayout.GetControlRect();
             fieldName = EditorGUI.TextField(rect2, "字段名称", fieldName);
@@ -577,7 +577,7 @@ namespace MVC.View
         void OnValidate()
         {
 --
-            {fieldName} = transform.GetComponentsInChildren<{fieldType}>(true)[{index}];
+            {fieldName} = transform.GetComponentsInChildren<{fieldType}>(true)[{index}]{extend};
 --
         }
     }
@@ -625,7 +625,16 @@ namespace MVC.View
                         fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
                         sb.Append(fieldCode);
 
-                        fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        if (field.fields[i].Type == typeof(GameObject))
+                        {
+                            fieldCode = codes[4].Replace("{fieldType}", "UnityEngine.Transform");
+                            fieldCode = fieldCode.Replace("{extend}", ".gameObject");
+                        }
+                        else
+                        {
+                            fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                            fieldCode = fieldCode.Replace("{extend}", "");
+                        }
                         fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
                         fieldCode = fieldCode.Replace("{index}", i.ToString());
                         sb1.Append(fieldCode);
@@ -757,7 +766,6 @@ namespace MVC.View
                 Debug.Log($"生成成功:{path}");
                 field.compiling = true;
             }
-            serializedObject.ApplyModifiedProperties();
         }
 
         [DidReloadScripts]
