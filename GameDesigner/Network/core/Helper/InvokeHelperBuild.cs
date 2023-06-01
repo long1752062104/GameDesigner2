@@ -170,7 +170,7 @@ namespace Net.Helper
 
         public static string SyncVarBuild(List<TypeDef> types, bool recordType)
         {
-            var str = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
+            var codeTemplate = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
 internal static class SyncVarGetSetHelperGenerate
 {
     internal static void Init()
@@ -189,8 +189,6 @@ internal static class SyncVarGetSetHelperGenerate
     {
         if (isWrite)
         {
-            if (Equals(self.FIELDNAME, null))
-                return;
             if (JUDGE)
                 return;
             if (segment == null)
@@ -252,7 +250,7 @@ internal static class SyncVarGetSetHelperGenerate
 --
 }";
 
-            var codes = str.Split(new string[] { "--" }, 0);
+            var codes = codeTemplate.Split(new string[] { "--" }, 0);
             var sb = new StringBuilder();
             var setgetSb = new StringBuilder();
             sb.Append(codes[0]);
@@ -449,7 +447,10 @@ internal static class SyncVarGetSetHelperGenerate
                                 equalsSb.AppendLine($"\tinternal static bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
                                 equalsSb.AppendLine("\t{");
                                 if (typeSig.IsClassSig)
-                                    equalsSb.AppendLine($"\t\tif ((a == null & b != null) | (a != null & b == null)) return false;");
+                                {
+                                    equalsSb.AppendLine($"\t\tif (a == null) return true;");
+                                    equalsSb.AppendLine($"\t\tif (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了");
+                                }
                                 bool nullEquals = true;
                                 foreach (var ft1 in typeDef.Fields)
                                 {
