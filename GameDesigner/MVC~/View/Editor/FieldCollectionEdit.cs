@@ -16,116 +16,58 @@ namespace MVC.View
 
     public class FieldCollectionWindow : EditorWindow
     {
-        private FieldCollectionEdit field;
-        
-        internal static void Init(FieldCollectionEdit field)
+        internal static void Init(FieldCollection field)
         {
-            var win = GetWindow<FieldCollectionWindow>("字段收集器", true);
-            win.field = field;
+            GetWindow<FieldCollectionWindow>("字段收集器", true);
+            FieldCollectionEntity.OnEnable(field);
+        }
+
+        private void OnDisable()
+        {
+            FieldCollectionEntity.OnDisable();
         }
 
         void OnGUI() 
         {
-            if (field == null)
-                return;
-            GUILayout.Label("将组件拖到此窗口上! 如果是赋值模式, 拖入的对象将不会显示选择组件!");
-            field.data.changeField = GUILayout.Toggle(field.data.changeField, "赋值变量");
-            field.data.addField = GUILayout.Toggle(field.data.addField, "直接添加变量");
-            field.data.seleAddField = GUILayout.Toggle(field.data.seleAddField, "选择添加变量组件");
-            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & !field.data.changeField)
-            {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
-                if (Event.current.type == EventType.DragPerform)
-                {
-                    if (field.data.addField)
-                    {
-                        var componentPriority = new List<Type>()
-                        {
-                            typeof(Button), typeof(Toggle), typeof(Text), typeof(Slider), typeof(Scrollbar), typeof(Dropdown),
-                            typeof(ScrollRect), typeof(InputField), typeof(Image)
-                        };
-                        foreach (var obj in DragAndDrop.objectReferences)
-                        {
-                            var go = obj as GameObject;
-                            var objects = new List<Object>() { obj };
-                            objects.AddRange(go.GetComponents<Component>());
-                            foreach (var cp in componentPriority)
-                            {
-                                var components = objects.Where(item => item.GetType() == cp).ToList();
-                                if (components.Count != 0)
-                                {
-                                    field.fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
-                                    field.selectObject = components[0];
-                                    field.AddField(components[0].GetType().ToString());
-                                    goto J;
-                                }
-                            }
-                            field.fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
-                            field.selectObject = objects[objects.Count - 1];
-                            field.AddField(objects[objects.Count - 1].GetType().ToString());
-                        J:;
-                        }
-                        return;
-                    }
-                    else if (field.data.seleAddField)
-                    {
-                        var dict = new Dictionary<Type, List<Object[]>>();
-                        foreach (var obj in DragAndDrop.objectReferences)
-                        {
-                            var go = obj as GameObject;
-                            var objects = new List<Object>() { obj };
-                            objects.AddRange(go.GetComponents<Component>());
-                            foreach (var obj1 in objects)
-                            {
-                                var type = obj1.GetType();
-                                if (!dict.TryGetValue(type, out var objects1))
-                                    dict.Add(type, objects1 = new List<Object[]>());
-                                objects1.Add(new Object[] { obj, obj1 });
-                            }
-                        }
-                        var menu = new GenericMenu();
-                        foreach (var item in dict)
-                        {
-                            var typeName = item.Key.ToString();
-                            menu.AddItem(new GUIContent(typeName), false, () =>
-                            {
-                                foreach (var item1 in item.Value)
-                                {
-                                    field.fieldName = item1[0].name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
-                                    field.selectObject = item1[1];
-                                    field.AddField(typeName);
-                                }
-                            });
-                        }
-                        menu.ShowAsContext();
-                        Event.current.Use();
-                        return;
-                    }
-                    else
-                    {
-                        field.search1 = "";
-                        field.search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
-                    }
-                }
-            }
-            field.OnInspectorGUI();
+            FieldCollectionEntity.OnDragGuiWindow();
+            FieldCollectionEntity.OnDragGUI();
         }
     }
 
     [CustomEditor(typeof(FieldCollection))]
     public class FieldCollectionEdit : Editor
     {
-        private FieldCollection field;
-        private bool selectType;
-        internal string search = "", search1 = "", fieldName = "";
-        private string[] types = new string[0];
-        private DateTime searchTime;
-        private string selectTypeName;
-        internal Object selectObject;
-        internal JsonSave data = new JsonSave();
-        private Vector2 scrollPosition;
+        private void OnEnable()
+        {
+            FieldCollectionEntity.OnEnable(target as FieldCollection);
+        }
 
-        public class JsonSave 
+        private void OnDisable()
+        {
+            FieldCollectionEntity.OnDisable();
+        }
+
+        public override void OnInspectorGUI()
+        {
+            if (GUILayout.Button("打开收集器界面"))
+                FieldCollectionWindow.Init(target as FieldCollection);
+            FieldCollectionEntity.OnDragGUI();
+        }
+    }
+
+    public class FieldCollectionEntity
+    {
+        private static FieldCollection field;
+        private static bool selectType;
+        internal static string search = "", search1 = "", fieldName = "";
+        private static string[] types = new string[0];
+        private static DateTime searchTime;
+        private static string selectTypeName;
+        internal static Object selectObject;
+        internal static JsonSave data = new JsonSave();
+        private static Vector2 scrollPosition;
+
+        public class JsonSave
         {
             public string nameSpace;
             public string savePath;
@@ -142,9 +84,9 @@ namespace MVC.View
             public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
         }
 
-        private void OnEnable()
+        internal static void OnEnable(FieldCollection target)
         {
-            field = target as FieldCollection;
+            field = target;
             var objects = Resources.FindObjectsOfTypeAll<Object>();
             HashSet<string> types1 = new HashSet<string>();
             foreach (var obj in objects)
@@ -166,22 +108,22 @@ namespace MVC.View
                 data.savePath = Application.dataPath;
         }
 
-        private void OnDisable()
+        internal static void OnDisable()
         {
             SaveData();
         }
 
-        void LoadData() 
+        static void LoadData()
         {
             data = PersistHelper.Deserialize<JsonSave>("fcdata.txt");
         }
 
-        void SaveData() 
+        static void SaveData()
         {
             PersistHelper.Serialize(data, "fcdata.txt");
         }
 
-        internal void AddField(string typeName) 
+        internal static void AddField(string typeName)
         {
             selectType = true;
             var name = fieldName;
@@ -204,16 +146,102 @@ namespace MVC.View
             EditorUtility.SetDirty(field);
         }
 
-        public override void OnInspectorGUI()
+        public static void OnDragGuiWindow()
         {
-            if (GUILayout.Button("打开收集器界面")) 
-                FieldCollectionWindow.Init(this);
+            GUILayout.Label("将组件拖到此窗口上! 如果是赋值模式, 拖入的对象将不会显示选择组件!");
+            data.changeField = GUILayout.Toggle(data.changeField, "赋值变量");
+            data.addField = GUILayout.Toggle(data.addField, "直接添加变量");
+            data.seleAddField = GUILayout.Toggle(data.seleAddField, "选择添加变量组件");
+            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & !data.changeField)
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
+                if (Event.current.type == EventType.DragPerform)
+                {
+                    if (data.addField)
+                    {
+                        var componentPriority = new List<Type>()
+                        {
+                            typeof(Button), typeof(Toggle), typeof(Text), typeof(Slider), typeof(Scrollbar), typeof(Dropdown),
+                            typeof(ScrollRect), typeof(InputField), typeof(Image)
+                        };
+                        foreach (var obj in DragAndDrop.objectReferences)
+                        {
+                            var go = obj as GameObject;
+                            var objects = new List<Object>() { obj };
+                            objects.AddRange(go.GetComponents<Component>());
+                            foreach (var cp in componentPriority)
+                            {
+                                var components = objects.Where(item => item.GetType() == cp).ToList();
+                                if (components.Count != 0)
+                                {
+                                    fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
+                                    selectObject = components[0];
+                                    AddField(components[0].GetType().ToString());
+                                    goto J;
+                                }
+                            }
+                            fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
+                            selectObject = objects[objects.Count - 1];
+                            AddField(objects[objects.Count - 1].GetType().ToString());
+                        J:;
+                        }
+                        return;
+                    }
+                    else if (data.seleAddField)
+                    {
+                        var dict = new Dictionary<Type, List<Object[]>>();
+                        foreach (var obj in DragAndDrop.objectReferences)
+                        {
+                            GameObject gameObject;
+                            if (obj is Component component)
+                                gameObject = component.gameObject;
+                            else
+                                gameObject = obj as GameObject;
+                            var objects = new List<Object>() { gameObject };
+                            objects.AddRange(gameObject.GetComponents<Component>());
+                            foreach (var obj1 in objects)
+                            {
+                                var type = obj1.GetType();
+                                if (!dict.TryGetValue(type, out var objects1))
+                                    dict.Add(type, objects1 = new List<Object[]>());
+                                objects1.Add(new Object[] { obj, obj1 });
+                            }
+                        }
+                        var menu = new GenericMenu();
+                        foreach (var item in dict)
+                        {
+                            var typeName = item.Key.ToString();
+                            menu.AddItem(new GUIContent(typeName), false, () =>
+                            {
+                                foreach (var item1 in item.Value)
+                                {
+                                    fieldName = item1[0].name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
+                                    selectObject = item1[1];
+                                    AddField(typeName);
+                                }
+                            });
+                        }
+                        menu.ShowAsContext();
+                        Event.current.Use();
+                        return;
+                    }
+                    else
+                    {
+                        search1 = "";
+                        search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
+                    }
+                }
+            }
+        }
+
+        public static void OnDragGUI()
+        {
             field.fieldName = EditorGUILayout.TextField("收集器名称", field.fieldName);
             var rect2 = EditorGUILayout.GetControlRect();
             fieldName = EditorGUI.TextField(rect2, "字段名称", fieldName);
             if (GUI.Button(new Rect(rect2.x + 100, rect2.y, 20, rect2.height), "+"))
             {
-                if (string.IsNullOrEmpty(selectTypeName)) 
+                if (string.IsNullOrEmpty(selectTypeName))
                 {
                     Debug.Log("请先选择一次字段类型!");
                     return;
@@ -303,7 +331,7 @@ namespace MVC.View
                     data.savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                     SaveData();
                 }
-                else 
+                else
                 {
                     var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                     //相对于Assets路径
@@ -336,7 +364,7 @@ namespace MVC.View
             EditorGUI.LabelField(rect3, "csproj文件:", data.csprojFile);
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
-                if (data.fullPath) 
+                if (data.fullPath)
                 {
                     data.csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
                     SaveData();
@@ -353,10 +381,14 @@ namespace MVC.View
             }
             EditorGUILayout.BeginHorizontal();
             data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
-            if (GUILayout.Button("添加"))
+            if (GUILayout.Button("添加", GUILayout.Width(50f)))
             {
                 if (!data.inheritTypes.Contains(data.addInheritType))
                     data.inheritTypes.Add(data.addInheritType);
+            }
+            if (GUILayout.Button("删除", GUILayout.Width(50f)))
+            {
+                data.inheritTypes.Remove(data.addInheritType);
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
@@ -525,21 +557,15 @@ namespace MVC.View
                     while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
                         scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-                string path;
-                string path1;
-                if (data.fullPath)
+                if (!string.IsNullOrEmpty(data.savePath))
                 {
-                    path = data.savePath + $"/{field.fieldName}.cs";
-                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                    var path = data.savePath + $"/{field.fieldName}.cs";
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
                 }
-                else
+                if (!string.IsNullOrEmpty(data.savePathExt))
                 {
-                    path = data.savePath + $"/{field.fieldName}.cs";
-                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
-                }
-                File.WriteAllText(path, scriptCode);
-                if (!string.IsNullOrEmpty(path1))
-                {
+                    var path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
                     if (!File.Exists(path1))
                     {
                         File.WriteAllText(path1, scriptCode1);
@@ -559,10 +585,9 @@ namespace MVC.View
                                 return;
                         }
                     }
+                    Debug.Log($"生成成功:{path1}");
                 }
-                //csproj对主工程无效
                 AssetDatabase.Refresh();
-                Debug.Log($"生成成功:{path}");
             }
             if (GUILayout.Button("生成脚本(主工程)"))
             {
@@ -625,18 +650,37 @@ namespace MVC.View
                         fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
                         sb.Append(fieldCode);
 
+                        int index = -1;
                         if (field.fields[i].Type == typeof(GameObject))
                         {
                             fieldCode = codes[4].Replace("{fieldType}", "UnityEngine.Transform");
                             fieldCode = fieldCode.Replace("{extend}", ".gameObject");
+                            var components = field.GetComponentsInChildren(typeof(Transform), true);
+                            for (int x = 0; x < components.Length; x++)
+                            {
+                                if (components[x].gameObject == field.fields[i].target)
+                                {
+                                    index = x;
+                                    break;
+                                }
+                            }
                         }
                         else
                         {
                             fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
                             fieldCode = fieldCode.Replace("{extend}", "");
+                            var components = field.GetComponentsInChildren(field.fields[i].Type, true);
+                            for (int x = 0; x < components.Length; x++)
+                            {
+                                if (components[x] == field.fields[i].target)
+                                {
+                                    index = x;
+                                    break;
+                                }
+                            }
                         }
                         fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
-                        fieldCode = fieldCode.Replace("{index}", i.ToString());
+                        fieldCode = fieldCode.Replace("{index}", index.ToString());
                         sb1.Append(fieldCode);
                     }
                     sb.AppendLine();
@@ -726,21 +770,15 @@ namespace MVC.View
                     while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
                         scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-                string path;
-                string path1;
-                if (data.fullPath)
+                if (!string.IsNullOrEmpty(data.savePath))
                 {
-                    path = data.savePath + $"/{field.fieldName}.cs";
-                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                    var path = data.savePath + $"/{field.fieldName}.cs";
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
                 }
-                else
+                if (!string.IsNullOrEmpty(data.savePathExt))
                 {
-                    path = data.savePath + $"/{field.fieldName}.cs";
-                    path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
-                }
-                File.WriteAllText(path, scriptCode);
-                if (!string.IsNullOrEmpty(path1))
-                {
+                    var path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
                     if (!File.Exists(path1))
                     {
                         File.WriteAllText(path1, scriptCode1);
@@ -760,10 +798,10 @@ namespace MVC.View
                                 return;
                         }
                     }
+                    Debug.Log($"生成成功:{path1}");
                 }
                 //csproj对主工程无效
                 AssetDatabase.Refresh();
-                Debug.Log($"生成成功:{path}");
                 field.compiling = true;
             }
         }
