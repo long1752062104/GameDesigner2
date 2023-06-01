@@ -19,11 +19,19 @@ public class NetworkObjectEdit : Editor
     {
         base.OnInspectorGUI();
         GUI.enabled = false;
-        GUI.color = Color.green;
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         foreach (var item in no.syncVarInfos.Values)
         {
-            EditorGUILayout.LabelField(item.ToString());
+            if (item.IsDispose)
+            {
+                GUI.color = Color.gray;
+                EditorGUILayout.LabelField(item.ToString());
+            }
+            else
+            {
+                GUI.color = Color.green;
+                EditorGUILayout.LabelField(item.ToString());
+            }
         }
         EditorGUILayout.EndScrollView();
         GUI.color = Color.yellow;

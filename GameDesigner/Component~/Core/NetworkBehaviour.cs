@@ -107,17 +107,6 @@ namespace Net.UnityComponent
         public virtual void OnDestroy()
         {
             netObj.RemoveSyncVar(this);
-            var nbs = netObj.networkBehaviours;
-            for (int i = 0; i < nbs.Count; i++)
-            {
-                var nb = nbs[i];
-                nb.NetComponentID = i;
-                if (nb == this)
-                {
-                    nbs.RemoveAt(i);
-                    if (i >= 0) i--;
-                }
-            }
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Net.UnityComponent
         public void InitAll(Operation opt = default)
         {
             Init();
-            var nbs = GetComponentsInChildren<NetworkBehaviour>();
+            var nbs = GetComponentsInChildren<NetworkBehaviour>(true);
             foreach (var np in nbs)
             {
                 np.Init(opt);
@@ -175,6 +175,8 @@ namespace Net.UnityComponent
             for (int i = 0; i < networkBehaviours.Count; i++)
             {
                 var networkBehaviour = networkBehaviours[i];
+                if (networkBehaviour == null)
+                    continue;
                 if (!networkBehaviour.CheckEnabled())
                     continue;
                 networkBehaviour.OnPropertyAutoCheck();

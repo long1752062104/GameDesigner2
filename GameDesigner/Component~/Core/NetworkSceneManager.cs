@@ -194,6 +194,8 @@ namespace Net.UnityComponent
             if (identity.IsDispose)
                 return;
             var nb = identity.networkBehaviours[opt.index1];
+            if (nb == null)
+                return;
             nb.OnNetworkOperationHandler(opt);
         }
 

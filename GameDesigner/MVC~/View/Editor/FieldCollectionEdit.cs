@@ -236,6 +236,8 @@ namespace MVC.View
 
         public static void OnDragGUI()
         {
+            if (field == null)
+                return;
             field.fieldName = EditorGUILayout.TextField("收集器名称", field.fieldName);
             var rect2 = EditorGUILayout.GetControlRect();
             fieldName = EditorGUI.TextField(rect2, "字段名称", fieldName);

@@ -15,6 +15,8 @@ namespace Net.Share
         internal bool isDispose;
         internal uint tick;
 
+        public bool IsDispose => isDispose;
+
         internal virtual void SetTarget(object target) { }
         public virtual void SetDefaultValue() { }
         internal virtual void CheckHandlerValue(ref Segment segment, bool isWrite)
