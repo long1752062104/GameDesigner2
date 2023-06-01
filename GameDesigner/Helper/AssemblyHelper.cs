@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Net.Helper
 {
@@ -163,6 +164,17 @@ namespace Net.Helper
                 }
             }
             return typeName;
+        }
+
+        public static Assembly GetRunAssembly(string assemblyName)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                if (assembly.GetName().Name == assemblyName)
+                    return assembly;
+            }
+            return null;
         }
     }
 }

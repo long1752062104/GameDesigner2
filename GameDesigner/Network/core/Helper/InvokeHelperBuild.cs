@@ -8,6 +8,7 @@ using System.Xml;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using static UnityEditor.Progress;
 #if UNITY_EDITOR
 using dnlib.DotNet;
 #endif
@@ -488,14 +489,22 @@ internal static class SyncVarGetSetHelperGenerate
                             }
                             else
                             {
-                                var path = "Library\\ScriptAssemblies\\" + typeSig.DefinitionAssembly.Name + ".dll";
-                                if (File.Exists(path))
+                                var assembly = AssemblyHelper.GetRunAssembly(typeSig.DefinitionAssembly.Name);
+                                if (assembly != null) 
                                 {
-                                    module = ModuleDefMD.Load(path, typeSig.Module.Context);
-                                    streams.Add(typeSig.DefinitionAssembly.Name, module);
-                                    typeDef = module.FindReflection(typeSig.FullName);
-                                    if (typeDef != null)
-                                        goto J;
+                                    if (assembly.IsDynamic)
+                                        return;
+                                    if (string.IsNullOrEmpty(assembly.Location))
+                                        return;
+                                    var path = assembly.Location;
+                                    if (File.Exists(path))
+                                    {
+                                        module = ModuleDefMD.Load(path, typeSig.Module.Context);
+                                        streams.Add(typeSig.DefinitionAssembly.Name, module);
+                                        typeDef = module.FindReflection(typeSig.FullName);
+                                        if (typeDef != null)
+                                            goto J;
+                                    }
                                 }
                             }
                         }
@@ -860,21 +869,6 @@ internal static class SyncVarGetSetHelperGenerate
 
         public static void OnScriptCompilation(InvokeHelperConfig config, bool generateClientSyncVar, bool generateServerSyncVar)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var item in assemblies)
-            {
-                if (item.IsDynamic)
-                    continue;
-                if (string.IsNullOrEmpty(item.Location))
-                    continue;
-                if (item.Location.Contains("Library\\ScriptAssemblies\\"))
-                    continue;
-                var path = "Library\\ScriptAssemblies\\" + Path.GetFileName(item.Location);
-                if (File.Exists(path))
-                    continue;
-                File.Copy(item.Location, path, true);
-            }
-
             var streams = new List<ModuleDefMD>();
             var clientTypes = new List<TypeDef>();
             foreach (var file in config.dllPaths)
