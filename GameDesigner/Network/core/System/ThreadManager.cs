@@ -27,11 +27,13 @@ namespace Net.System
         /// </summary>
         public static bool IsRuning { get; set; }
 
+#if SERVICE
         static ThreadManager()
         {
             Init();
             Start();
         }
+#endif
 
         private static void Init()
         {
@@ -85,6 +87,7 @@ namespace Net.System
 #if !UNITY_WEBGL
             if (!Config.Config.MainThreadTick)
             {
+                Stop(); //unity出现两个事件线程的问题
                 MainThread = new Thread(Execute)
                 {
                     Name = "事件线程",
