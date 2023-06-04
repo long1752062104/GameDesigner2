@@ -13,6 +13,7 @@ public class ImportSettingWindow : EditorWindow
     public class Data 
     {
         public string path = "Assets/Plugins/GameDesigner";
+        public int develop;
     }
 
     [MenuItem("GameDesigner/Import Window", priority = 0)]
@@ -34,12 +35,12 @@ public class ImportSettingWindow : EditorWindow
 
     void LoadData()
     {
-        data = PersistHelper.Deserialize<Data>("importdata.txt");
+        data = PersistHelper.Deserialize<Data>("importdata.json");
     }
 
     void SaveData()
     {
-        PersistHelper.Serialize(data, "importdata.txt");
+        PersistHelper.Serialize(data, "importdata.json");
     }
 
     private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import = null, string pluginsPath = "Assets/Plugins/GameDesigner/") 
@@ -52,10 +53,13 @@ public class ImportSettingWindow : EditorWindow
                 import?.Invoke();
                 Import(sourceProtocolName, copyToProtocolName, pluginsPath);
             }
-            if (GUILayout.Button($"反导{name}模块", GUILayout.Width(200)))
+            if (data.develop == 1)
             {
-                import?.Invoke();
-                ReverseImport(sourceProtocolName, copyToProtocolName, pluginsPath);
+                if (GUILayout.Button($"反导{name}模块", GUILayout.Width(200)))
+                {
+                    import?.Invoke();
+                    ReverseImport(sourceProtocolName, copyToProtocolName, pluginsPath);
+                }
             }
             GUI.color = Color.red;
             if (GUILayout.Button($"移除{name}模块"))
@@ -74,8 +78,14 @@ public class ImportSettingWindow : EditorWindow
         }
     }
 
+    private readonly string[] displayedOptions = new string[] { "使用者", "开发者" };
+
     private void OnGUI()
     {
+        EditorGUI.BeginChangeCheck();
+        data.develop = EditorGUILayout.Popup("使用模式", data.develop, displayedOptions);
+        if (EditorGUI.EndChangeCheck())
+            SaveData();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("导入路径:", data.path);
         if (GUILayout.Button("选择路径", GUILayout.Width(80)))
@@ -203,6 +213,24 @@ public class ImportSettingWindow : EditorWindow
             ReImport("Common~", "Common", data.path + "/");
             ReImport("MMORPG~", "MMORPG", data.path + "/");
             ReImport("AOI~", "AOI", data.path + "/");
+        }
+        if (data.develop == 1) 
+        {
+            EditorGUILayout.HelpBox("反导已导入的模块", MessageType.Warning);
+            if (GUILayout.Button("反导已导入的模块", GUILayout.Height(20)))
+            {
+                ReverseImport("Network/Gcp~", "Network/Gcp", data.path + "/");
+                ReverseImport("Network/Udx~", "Network/Udx", data.path + "/");
+                ReverseImport("Network/Kcp~", "Network/Kcp", data.path + "/");
+                ReverseImport("Network/Web~", "Network/Web", data.path + "/");
+                ReverseImport("Component~", "Component", data.path + "/");
+                ReverseImport("StateMachine~", "StateMachine", data.path + "/");
+                ReverseImport("MVC~", "MVC", data.path + "/");
+                ReverseImport("ECS~", "ECS", data.path + "/");
+                ReverseImport("Common~", "Common", data.path + "/");
+                ReverseImport("MMORPG~", "MMORPG", data.path + "/");
+                ReverseImport("AOI~", "AOI", data.path + "/");
+            }
         }
         GUILayout.EndScrollView();
         GUILayout.Space(10);

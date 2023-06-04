@@ -782,147 +782,147 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<byte> value)
+        public unsafe void Write(ICollection<byte> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<sbyte> value)
+        public unsafe void Write(ICollection<sbyte> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<bool> value)
+        public unsafe void Write(ICollection<bool> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<short> value)
+        public unsafe void Write(ICollection<short> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<ushort> value)
+        public unsafe void Write(ICollection<ushort> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<char> value)
+        public unsafe void Write(ICollection<char> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<int> value)
+        public unsafe void Write(ICollection<int> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<uint> value)
+        public unsafe void Write(ICollection<uint> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<float> value)
+        public unsafe void Write(ICollection<float> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<long> value)
+        public unsafe void Write(ICollection<long> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<ulong> value)
+        public unsafe void Write(ICollection<ulong> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<DateTime> value)
+        public unsafe void Write(ICollection<DateTime> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<TimeSpan> value)
+        public unsafe void Write(ICollection<TimeSpan> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<double> value)
+        public unsafe void Write(ICollection<double> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<decimal> value)
+        public unsafe void Write(ICollection<decimal> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(List<string> value)
+        public unsafe void Write(ICollection<string> value)
         {
             Write(value.Count);
-            for (int i = 0; i < value.Count; i++)
+            foreach (var val in value)
             {
-                Write(value[i]);
+                Write(val);
             }
         }
         #endregion
@@ -1280,181 +1280,193 @@ namespace Net.System
             return value;
         }
 
+        public List<byte> ReadByteList() => ReadByteGeneric<List<byte>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<byte> ReadByteList()
+        public T ReadByteGeneric<T>() where T : ICollection<byte>, new()
         {
             var count = ReadInt32();
-            var value = new List<byte>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
-                value[i] = ReadByte();
+                value.Add(ReadByte());
             }
             return value;
         }
+        public List<sbyte> ReadSByteList() => ReadSByteGeneric<List<sbyte>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<sbyte> ReadSByteList()
+        public T ReadSByteGeneric<T>() where T : ICollection<sbyte>, new()
         {
             var count = ReadInt32();
-            var value = new List<sbyte>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
-                value[i] = ReadSByte();
+                value.Add(ReadSByte());
             }
             return value;
         }
+        public List<bool> ReadBooleanList() => ReadBooleanGeneric<List<bool>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<bool> ReadBooleanList()
+        public T ReadBooleanGeneric<T>() where T : ICollection<bool>, new()
         {
             var count = ReadInt32();
-            var value = new List<bool>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
-                value[i] = ReadBoolean();
+                value.Add(ReadBoolean());
             }
             return value;
         }
+        public List<short> ReadInt16List() => ReadInt16Generic<List<short>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<short> ReadInt16List()
+        public T ReadInt16Generic<T>() where T : ICollection<short>, new()
         {
             var count = ReadInt32();
-            var value = new List<short>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadInt16());
             }
             return value;
         }
+        public List<ushort> ReadUInt16List() => ReadUInt16Generic<List<ushort>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<ushort> ReadUInt16List()
+        public T ReadUInt16Generic<T>() where T : ICollection<ushort>, new()
         {
             var count = ReadInt32();
-            var value = new List<ushort>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadUInt16());
             }
             return value;
         }
+        public List<char> ReadCharList() => ReadCharGeneric<List<char>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<char> ReadCharList()
+        public T ReadCharGeneric<T>() where T : ICollection<char>, new()
         {
             var count = ReadInt32();
-            var value = new List<char>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadChar());
             }
             return value;
         }
+        public List<int> ReadInt32List() => ReadInt32Generic<List<int>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<int> ReadInt32List()
+        public T ReadInt32Generic<T>() where T : ICollection<int>, new()
         {
             var count = ReadInt32();
-            var value = new List<int>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadInt32());
             }
             return value;
         }
+        public List<uint> ReadUInt32List() => ReadUInt32Generic<List<uint>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<uint> ReadUInt32List()
+        public T ReadUInt32Generic<T>() where T : ICollection<uint>, new()
         {
             var count = ReadInt32();
-            var value = new List<uint>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadUInt32());
             }
             return value;
         }
+        public List<float> ReadFloatList() => ReadSingleGeneric<List<float>>();
+        public List<float> ReadSingleList() => ReadSingleGeneric<List<float>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<float> ReadFloatList()
+        public T ReadSingleGeneric<T>() where T : ICollection<float>, new()
         {
             var count = ReadInt32();
-            var value = new List<float>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadFloat());
             }
             return value;
         }
+        public List<long> ReadInt64List() => ReadInt64Generic<List<long>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<float> ReadSingleList()
-        {
-            return ReadFloatList();
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<long> ReadInt64List()
+        public T ReadInt64Generic<T>() where T : ICollection<long>, new()
         {
             var count = ReadInt32();
-            var value = new List<long>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadInt64());
             }
             return value;
         }
+        public List<ulong> ReadUInt64List() => ReadUInt64Generic<List<ulong>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<ulong> ReadUInt64List()
+        public T ReadUInt64Generic<T>() where T : ICollection<ulong>, new()
         {
             var count = ReadInt32();
-            var value = new List<ulong>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadUInt64());
             }
             return value;
         }
+        public List<double> ReadDoubleList() => ReadDoubleGeneric<List<double>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<double> ReadDoubleList()
+        public T ReadDoubleGeneric<T>() where T : ICollection<double>, new()
         {
             var count = ReadInt32();
-            var value = new List<double>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadDouble());
             }
             return value;
         }
+        public List<DateTime> ReadDateTimeList() => ReadDateTimeGeneric<List<DateTime>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<DateTime> ReadDateTimeList()
+        public T ReadDateTimeGeneric<T>() where T : ICollection<DateTime>, new()
         {
             var count = ReadInt32();
-            var value = new List<DateTime>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadDateTime());
             }
             return value;
         }
+        public List<TimeSpan> ReadTimeSpanList() => ReadTimeSpanGeneric<List<TimeSpan>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<TimeSpan> ReadTimeSpanList()
+        public T ReadTimeSpanGeneric<T>() where T : ICollection<TimeSpan>, new()
         {
             var count = ReadInt32();
-            var value = new List<TimeSpan>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadTimeSpan());
             }
             return value;
         }
+        public List<decimal> ReadDecimalList() => ReadDecimalGeneric<List<decimal>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<decimal> ReadDecimalList()
+        public T ReadDecimalGeneric<T>() where T : ICollection<decimal>, new()
         {
             var count = ReadInt32();
-            var value = new List<decimal>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadDecimal());
             }
             return value;
         }
+        public List<string> ReadStringList() => ReadStringGeneric<List<string>>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe List<string> ReadStringList()
+        public T ReadStringGeneric<T>() where T : ICollection<string>, new()
         {
             var count = ReadInt32();
-            var value = new List<string>();
+            var value = new T();
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadString());

@@ -270,7 +270,11 @@ public class Fast2BuildTools2 : EditorWindow
         EditorGUILayout.LabelField("保存路径:", data.savePath);
         if (GUILayout.Button("选择路径", GUILayout.Width(100)))
         {
-            data.savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
+            var savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
+            //相对于Assets路径
+            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+            var relativeUri = uri.MakeRelativeUri(new Uri(savePath));
+            data.savePath = relativeUri.ToString();
             SaveData();
         }
         GUILayout.EndHorizontal();

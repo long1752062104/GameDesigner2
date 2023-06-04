@@ -369,7 +369,8 @@ namespace Binding
                         templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
                         templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                         templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                        templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}List");
+                        var typeName1 = AssemblyHelper.GetTypeName(members[i].Type);
+                        templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Generic<{typeName1}>");
                         sb1.Append(templateText2);
                     }
                     else
