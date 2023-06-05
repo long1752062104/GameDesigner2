@@ -1,6 +1,7 @@
 #if (UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL) && UNITY_EDITOR
 using Net;
 using Net.Helper;
+using System;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
@@ -54,7 +55,12 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         {
             var path = EditorUtility.OpenFolderPanel("选择路径", "", "");
             if (!string.IsNullOrEmpty(path))
-                Config.savePath = path;
+            {
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                Config.savePath = relativeUri.ToString();
+            }
             SaveData();
         }
         rect = EditorGUILayout.GetControlRect(true, 60f + (Config.dllPaths.Count * 20f), GUILayout.Width(position.width - 130f));
@@ -65,7 +71,12 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         {
             var path = EditorUtility.OpenFilePanelWithFilters("选择文件", "", new string[] { "dll files", "dll,exe", "All files", "*" });
             if (!string.IsNullOrEmpty(path))
-                Config.dllPaths.Add(path);
+            {
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                Config.dllPaths.Add(relativeUri.ToString());
+            }
             SaveData();
         }
         rect = EditorGUILayout.GetControlRect();
@@ -117,8 +128,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     if (GUI.Button(rect, "选择文件"))
                     {
                         var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                        if (!string.IsNullOrEmpty(path))
-                            rpc.csprojPath = path;
+                        if (!string.IsNullOrEmpty(path)) 
+                        {
+                            //相对于Assets路径
+                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                            rpc.csprojPath = relativeUri.ToString();
+                        }
                         SaveData();
                     }
 
@@ -129,20 +145,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     if (GUI.Button(rect, "选择路径"))
                     {
                         var path = EditorUtility.OpenFolderPanel("选择路径", "", "");
-                        if (!string.IsNullOrEmpty(path))
-                            rpc.savePath = path;
-                        SaveData();
-                    }
-
-                    rect = EditorGUILayout.GetControlRect(true, 45f, GUILayout.Width(position.width - 130f));
-                    EditorGUI.PropertyField(rect, arrayElement.FindPropertyRelative("readConfigPath"));
-                    rect.position = new Vector2(rect.position.x + (position.width - 120f), rect.position.y + 25f);
-                    rect.size = new Vector2(100f, 20f);
-                    if (GUI.Button(rect, "选择路径"))
-                    {
-                        var path = EditorUtility.OpenFolderPanel("选择路径", "", "");
-                        if (!string.IsNullOrEmpty(path))
-                            rpc.readConfigPath = path;
+                        if (!string.IsNullOrEmpty(path)) 
+                        {
+                            //相对于Assets路径
+                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                            rpc.savePath = relativeUri.ToString();
+                        }
                         SaveData();
                     }
 
@@ -156,8 +165,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     if (GUI.Button(rect, "选择文件"))
                     {
                         var path = EditorUtility.OpenFilePanelWithFilters("选择文件", "", new string[] { "dll files", "dll,exe", "All files", "*" });
-                        if (!string.IsNullOrEmpty(path))
-                            rpc.dllPaths.Add(path);
+                        if (!string.IsNullOrEmpty(path)) 
+                        {
+                            //相对于Assets路径
+                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                            rpc.dllPaths.Add(relativeUri.ToString());
+                        }
                         SaveData();
                     }
                     EditorGUI.indentLevel = 2;
@@ -216,14 +230,14 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     {
         LoadData();
         int change = 0;
-        var path = Application.dataPath + "/Scripts/Helper/";
+        var path = "Assets/Scripts/Helper/";
         if (string.IsNullOrEmpty(Config.savePath))
         {
             Config.savePath = path;
             change++;
         }
         bool contains = false;
-        path = Application.dataPath + "/../Library/ScriptAssemblies/Assembly-CSharp.dll";
+        path = "Library/ScriptAssemblies/Assembly-CSharp.dll";
         foreach (var dllPath in Config.dllPaths)
         {
             if (dllPath.Contains("Assembly-CSharp.dll"))//如果没有这个程序集就需要添加, 这个是默认的, 如果克隆了项目或者移植项目出现路径不对需要移除清除dllPaths

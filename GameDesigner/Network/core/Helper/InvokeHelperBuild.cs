@@ -1023,8 +1023,15 @@ internal static class HelperFileInfo
     }
 }";
                 var csprojPath = config.rpcConfig[i].csprojPath;
+                csprojPath = Path.GetFullPath(csprojPath.Replace('/', '\\'));
                 var path1 = config.rpcConfig[i].savePath + "/InvokeHelperGenerate.cs";
-                path1 = path1.Replace('/', '\\');
+                path1 = Path.GetFullPath(path1.Replace('/', '\\'));
+
+                //相对于Assets路径
+                var uri = new Uri(csprojPath);
+                var relativeUri = uri.MakeRelativeUri(new Uri(path1));
+                var relativePath = relativeUri.ToString();
+
                 if (!File.Exists(csprojPath))
                     continue;
                 var xml = new XmlDocument();
@@ -1044,12 +1051,14 @@ internal static class HelperFileInfo
                     var node_child = node.ChildNodes;
                     foreach (XmlNode child_node in node_child)
                     {
+                        if (child_node.LocalName != "Compile")
+                            continue;
                         var value = child_node.Attributes["Include"].Value;
                         if (value.Contains("InvokeHelperGenerate.cs"))
                         {
-                            if (value != path1 | !File.Exists(value))
+                            if (value != relativePath | !File.Exists(value))
                             {
-                                child_node.Attributes["Include"].Value = path1;
+                                child_node.Attributes["Include"].Value = relativePath;
                                 xml.Save(csprojPath);
                             }
                             exist = true;
@@ -1061,7 +1070,7 @@ internal static class HelperFileInfo
                 {
                     var node = xml.CreateElement("ItemGroup", namespaceURI);
                     var e = xml.CreateElement("Compile", namespaceURI);
-                    e.SetAttribute("Include", path1);
+                    e.SetAttribute("Include", relativePath);
                     node.AppendChild(e);
                     documentElement.AppendChild(node);
                     xml.Save(csprojPath);
