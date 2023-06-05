@@ -224,7 +224,7 @@ namespace Binding
 			if({Condition})
 			{
 				NetConvertBase.SetBit(ref bits[{BITPOS}], {FIELDINDEX}, true);
-				var bind = new DictionaryBind<{KEYTYPE}, {VALUETYPE}>();
+				var bind = new {DICTIONARY}<{KEYTYPE}, {VALUETYPE}>();
 				bind.Write(value.{FIELDNAME}, stream, new {BINDTYPE}());
 			}
 {Split}
@@ -250,7 +250,7 @@ namespace Binding
 {Split}
 			if(NetConvertBase.GetBit(bits[{BITPOS}], {FIELDINDEX}))
 			{
-				var bind = new DictionaryBind<{KEYTYPE}, {VALUETYPE}>();
+				var bind = new {DICTIONARY}<{KEYTYPE}, {VALUETYPE}>();
 				value.{FIELDNAME} = bind.Read(stream, new {BINDTYPE}());
 			}
 {Split}
@@ -402,6 +402,7 @@ namespace Binding
                     templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
                     templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    templateText1 = templateText1.Replace("{DICTIONARY}", members[i].Type.Name == "MyDictionary`2" ? "MyDictionaryBind" : "DictionaryBind");
 
                     var key = members[i].ItemType.FullName;  
                     string bindType;
@@ -463,6 +464,7 @@ namespace Binding
                     templateText2 = templateText2.Replace("{KEYTYPE}", $"{key}");
                     templateText2 = templateText2.Replace("{VALUETYPE}", $"{value}");
                     templateText2 = templateText2.Replace("{BINDTYPE}", $"{bindType}");
+                    templateText2 = templateText2.Replace("{DICTIONARY}", members[i].Type.Name == "MyDictionary`2" ? "MyDictionaryBind" : "DictionaryBind");
                     sb1.Append(templateText2);
 
                     var text = BuildDictionary(members[i].Type, out var className1);

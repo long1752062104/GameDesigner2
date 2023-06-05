@@ -1,5 +1,6 @@
 ﻿using Net.Event;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -281,8 +282,59 @@ namespace Net.System
         }
         public unsafe void WriteList(object value)
         {
-            var array = value.GetType().GetMethod("ToArray").Invoke(value, null);
-            WriteArray(array);
+            switch (value)
+            {
+                case List<byte> array1:
+                    Write(array1);
+                    break;
+                case List<sbyte> array1:
+                    Write(array1);
+                    break;
+                case List<bool> array1:
+                    Write(array1);
+                    break;
+                case List<short> array1:
+                    Write(array1);
+                    break;
+                case List<ushort> array1:
+                    Write(array1);
+                    break;
+                case List<char> array1:
+                    Write(array1);
+                    break;
+                case List<int> array1:
+                    Write(array1);
+                    break;
+                case List<uint> array1:
+                    Write(array1);
+                    break;
+                case List<float> array1:
+                    Write(array1);
+                    break;
+                case List<long> array1:
+                    Write(array1);
+                    break;
+                case List<ulong> array1:
+                    Write(array1);
+                    break;
+                case List<double> array1:
+                    Write(array1);
+                    break;
+                case List<DateTime> array1:
+                    Write(array1);
+                    break;
+                case List<decimal> array1:
+                    Write(array1);
+                    break;
+                case List<string> array1:
+                    Write(array1);
+                    break;
+                case List<TimeSpan> array1:
+                    Write(array1);
+                    break;
+                default:
+                    throw new Exception($"错误!基类不能序列化这个类:{value}");
+            }
         }
 
         public void WriteArray<T>(T[] array)
@@ -336,6 +388,9 @@ namespace Net.System
                     Write(array1);
                     break;
                 case string[] array1:
+                    Write(array1);
+                    break;
+                case TimeSpan[] array1:
                     Write(array1);
                     break;
                 default:
@@ -778,6 +833,64 @@ namespace Net.System
             for (int i = 0; i < value.Length; i++)
             {
                 Write(value[i]);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void WriteGeneric(IEnumerable value)
+        {
+            switch (value)
+            {
+                case ICollection<byte> value1:
+                    Write(value1);
+                    break;
+                case ICollection<sbyte> value1:
+                    Write(value1);
+                    break;
+                case ICollection<bool> value1:
+                    Write(value1);
+                    break;
+                case ICollection<short> value1:
+                    Write(value1);
+                    break;
+                case ICollection<ushort> value1:
+                    Write(value1);
+                    break;
+                case ICollection<char> value1:
+                    Write(value1);
+                    break;
+                case ICollection<int> value1:
+                    Write(value1);
+                    break;
+                case ICollection<uint> value1:
+                    Write(value1);
+                    break;
+                case ICollection<float> value1:
+                    Write(value1);
+                    break;
+                case ICollection<long> value1:
+                    Write(value1);
+                    break;
+                case ICollection<ulong> value1:
+                    Write(value1);
+                    break;
+                case ICollection<double> value1:
+                    Write(value1);
+                    break;
+                case ICollection<decimal> value1:
+                    Write(value1);
+                    break;
+                case ICollection<string> value1:
+                    Write(value1);
+                    break;
+                case ICollection<TimeSpan> value1:
+                    Write(value1);
+                    break;
+                case ICollection<DateTime> value1:
+                    Write(value1);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1276,6 +1389,83 @@ namespace Net.System
             for (int i = 0; i < count; i++)
             {
                 value[i] = ReadString();
+            }
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ICollection ReadGeneric(Type type)
+        {
+            var count = ReadInt32();
+            var value = (ICollection)Activator.CreateInstance(type);
+            switch (value)
+            {
+                case ICollection<byte> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadByte());
+                    break;
+                case ICollection<sbyte> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadSByte());
+                    break;
+                case ICollection<bool> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadBoolean());
+                    break;
+                case ICollection<short> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadInt16());
+                    break;
+                case ICollection<ushort> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadUInt16());
+                    break;
+                case ICollection<char> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadChar());
+                    break;
+                case ICollection<int> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadInt32());
+                    break;
+                case ICollection<uint> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadUInt32());
+                    break;
+                case ICollection<float> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadSingle());
+                    break;
+                case ICollection<long> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadInt64());
+                    break;
+                case ICollection<ulong> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadUInt64());
+                    break;
+                case ICollection<double> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadDouble());
+                    break;
+                case ICollection<decimal> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadDecimal());
+                    break;
+                case ICollection<string> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadString());
+                    break;
+                case ICollection<TimeSpan> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadTimeSpan());
+                    break;
+                case ICollection<DateTime> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadDateTime());
+                    break;
+                default:
+                    throw new Exception("不是基础类型! 请联系作者解决!");
             }
             return value;
         }

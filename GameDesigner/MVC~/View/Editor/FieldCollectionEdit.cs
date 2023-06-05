@@ -574,22 +574,22 @@ namespace MVC.View
                     }
                     else
                     {
-                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", string.Empty, "尾部添加");
+                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "忽略", "尾部添加");
                         switch (code)
                         {
                             case 0:
                                 File.WriteAllText(path1, scriptCode1);
                                 break;
                             case 2:
-                                File.AppendAllText(path1, scriptCode1);
+                                File.AppendAllText(path1, $"\r\n/*{scriptCode1}*/");
                                 break;
                             default:
-                                return;
+                                goto J;
                         }
                     }
                     Debug.Log($"生成成功:{path1}");
                 }
-                AssetDatabase.Refresh();
+                J: AssetDatabase.Refresh();
             }
             if (GUILayout.Button("生成脚本(主工程)"))
             {
@@ -787,23 +787,23 @@ namespace MVC.View
                     }
                     else
                     {
-                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", string.Empty, "尾部添加");
+                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "忽略", "尾部添加");
                         switch (code)
                         {
                             case 0:
                                 File.WriteAllText(path1, scriptCode1);
                                 break;
                             case 2:
-                                File.AppendAllText(path1, scriptCode1);
+                                File.AppendAllText(path1, $"\r\n/*{scriptCode1}*/");
                                 break;
                             default:
-                                return;
+                                goto J;
                         }
                     }
                     Debug.Log($"生成成功:{path1}");
                 }
                 //csproj对主工程无效
-                AssetDatabase.Refresh();
+                J: AssetDatabase.Refresh();
                 field.compiling = true;
             }
         }

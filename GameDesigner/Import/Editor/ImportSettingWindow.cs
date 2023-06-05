@@ -56,10 +56,7 @@ public class ImportSettingWindow : EditorWindow
             if (data.develop == 1)
             {
                 if (GUILayout.Button($"反导{name}模块", GUILayout.Width(200)))
-                {
-                    import?.Invoke();
                     ReverseImport(sourceProtocolName, copyToProtocolName, pluginsPath);
-                }
             }
             GUI.color = Color.red;
             if (GUILayout.Button($"移除{name}模块"))
@@ -182,6 +179,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Common~", "Common", data.path + "/");
             Import("MMORPG~", "MMORPG", data.path + "/");
             Import("AOI~", "AOI", data.path + "/");
+            Import("Framework~", "Framework", data.path + "/");
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -213,6 +211,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("Common~", "Common", data.path + "/");
             ReImport("MMORPG~", "MMORPG", data.path + "/");
             ReImport("AOI~", "AOI", data.path + "/");
+            ReImport("Framework~", "Framework", data.path + "/");
         }
         if (data.develop == 1) 
         {
@@ -230,6 +229,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("Common~", "Common", data.path + "/");
                 ReverseImport("MMORPG~", "MMORPG", data.path + "/");
                 ReverseImport("AOI~", "AOI", data.path + "/");
+                ReverseImport("Framework~", "Framework", data.path + "/");
             }
         }
         GUILayout.EndScrollView();
@@ -308,10 +308,7 @@ public class ImportSettingWindow : EditorWindow
         }
         var path = $"{pluginsPath}{copyToProtocolName}/";
         if (!Directory.Exists(path))
-        {
-            Debug.LogError("找不到导入路径!");
             return;
-        }
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
         foreach (var file in files)
         {
