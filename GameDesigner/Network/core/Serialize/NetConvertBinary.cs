@@ -514,11 +514,11 @@
                 obj = v;
             }
 
-            internal virtual void GetValueCall(CallSite callSite) 
+            internal virtual void GetValueCall(object callSite) 
             {
             }
 
-            internal virtual void SetValueCall(CallSite callSite)
+            internal virtual void SetValueCall(object callSite)
             {
             }
 
@@ -561,11 +561,11 @@
             {
                 setValueCall.Target(setValueCall, obj, (T)v);
             }
-            internal override void GetValueCall(CallSite callSite)
+            internal override void GetValueCall(object callSite)
             {
                 getValueCall = callSite as CallSite<Func<CallSite, object, object>>;
             }
-            internal override void SetValueCall(CallSite callSite)
+            internal override void SetValueCall(object callSite)
             {
                 setValueCall = callSite as CallSite<Func<CallSite, object, T, object>>;
             }
@@ -582,11 +582,11 @@
             {
                 setValueCall.Target(setValueCall, obj, (T[])v);
             }
-            internal override void GetValueCall(CallSite callSite)
+            internal override void GetValueCall(object callSite)
             {
                 getValueCall = callSite as CallSite<Func<CallSite, object, object>>;
             }
-            internal override void SetValueCall(CallSite callSite)
+            internal override void SetValueCall(object callSite)
             {
                 setValueCall = callSite as CallSite<Func<CallSite, object, T[], object>>;
             }
@@ -641,7 +641,9 @@
                             var fType = field.FieldType;
                             if (fType.IsArray)
                             {
-                                var arrItemType = fType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                                var arrItemType = fType.GetArrayItemType();
+                                if (arrItemType == null)
+                                    continue;
                                 if (!CanSerialized(arrItemType))
                                     continue;
                             }
@@ -685,7 +687,9 @@
                             var pType = property.PropertyType;
                             if (pType.IsArray)
                             {
-                                var arrItemType = pType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                                var arrItemType = pType.GetArrayItemType();
+                                if (arrItemType == null)
+                                    continue;
                                 if (!CanSerialized(arrItemType))
                                     continue;
                             }
@@ -734,7 +738,9 @@
             {
                 if (type.IsArray)
                 {
-                    var arrItemType = type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                    var arrItemType = type.GetArrayItemType();
+                    if (arrItemType == null)
+                        return false;
                     return CanSerialized(arrItemType);
                 }
                 else if (type.IsGenericType)
@@ -798,7 +804,7 @@
 #endif
             if (fpType.IsArray)
             {
-                var itemType = fpType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                var itemType = fpType.GetArrayItemType();
 #if SERVICE
                 if (isClassField)
                 {
@@ -835,7 +841,7 @@
                 {
                     var itemType = fpType.GenericTypeArguments[0];
                     member1.ItemType = itemType;
-                    member1.Intricate = fpType.GetInterface(typeof(IList).Name) == null;
+                    member1.Intricate = fpType.GetGenericArguments() == null;
                     member1.IsPrimitive1 = Type.GetTypeCode(itemType) != TypeCode.Object;
                 }
                 else if (fpType.GenericTypeArguments.Length == 2)
@@ -847,7 +853,7 @@
                     member1.IsPrimitive1 = Type.GetTypeCode(keyType) != TypeCode.Object;
                     if (valueType.IsArray)
                     {
-                        var arrItemType = valueType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                        var arrItemType = valueType.GetArrayItemType();
                         member1.IsPrimitive2 = Type.GetTypeCode(arrItemType) != TypeCode.Object;
                         member1.ItemTypes = new Type[] { arrItemType };
                     }
@@ -872,7 +878,7 @@
             }
 #endif
             member1.name = Name;
-            member1.IsPrimitive = Type.GetTypeCode(fpType) != TypeCode.Object;//.IsPrimitive | (fpType == typeof(string)) | (fpType == typeof(decimal)) | (fpType == typeof(DateTime));
+            member1.IsPrimitive = Type.GetTypeCode(fpType) != TypeCode.Object;
             member1.IsEnum = fpType.IsEnum;
             member1.IsArray = fpType.IsArray;
             member1.IsGenericType = fpType.IsGenericType;

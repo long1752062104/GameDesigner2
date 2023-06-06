@@ -247,6 +247,7 @@
     <Compile Include="GameDesigner\Network\core\Tools\Loop.cs" />
     <Compile Include="GameDesigner\Network\core\Tools\OtherExtend.cs" />
     <Compile Include="GameDesigner\Network\core\Tools\RectExt.cs" />
+    <Compile Include="GameDesigner\Network\core\Tools\TypeExtend.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Color.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Color32.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Mathf.cs" />

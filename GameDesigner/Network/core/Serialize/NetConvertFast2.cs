@@ -172,7 +172,7 @@
                 throw new Exception($"已经添加{type}键，不需要添加了!");
             if (type.IsArray)
             {
-                var itemType = type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                var itemType = type.GetArrayItemType();
                 if (itemType.IsEnum)
                 {
                     AddBaseArrayType(type);

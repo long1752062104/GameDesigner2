@@ -828,7 +828,11 @@ internal static class SyncVarGetSetHelperGenerate
                     if (sequence == null)// async方法得不到源码行
                         continue;
                     var path = sequence.Document.Url;
-                    path = "Assets" + path.Replace('\\', '/').Split(new string[] { "Assets" }, 0)[1];
+                    //相对于Assets路径
+                    var uri = new Uri(Application.dataPath);
+                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                    path = relativeUri.ToString();
+                    path = path.Replace('\\', '/');
                     cache[type.FullName + "." + method.Name] = new SequencePoint(path, sequence.StartLine - 1);
                 }
                 //状态机部分

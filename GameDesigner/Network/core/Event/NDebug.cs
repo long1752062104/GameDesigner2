@@ -368,6 +368,8 @@
 #else
             LogHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Log] {message}");
             Output?.Invoke(DateTime.Now, LogType.Log, message.ToString());
+            if (!UnityEditor.EditorApplication.isPlaying)
+                UnityEngine.Debug.Log(message);
 #endif
         }
 
@@ -384,6 +386,8 @@
 #else
             LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Error] {message}");
             Output?.Invoke(DateTime.Now, LogType.Error, message.ToString());
+            if (!UnityEditor.EditorApplication.isPlaying)
+                UnityEngine.Debug.LogError(message);
 #endif
         }
 
@@ -400,6 +404,8 @@
 #else
             LogWarningHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Warning] {message}");
             Output?.Invoke(DateTime.Now, LogType.Warning, message.ToString());
+            if (!UnityEditor.EditorApplication.isPlaying)
+                UnityEngine.Debug.LogWarning(message);
 #endif
         }
 

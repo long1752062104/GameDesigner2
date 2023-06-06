@@ -112,8 +112,7 @@ namespace Net.Helper
             string typeName;
             if (type.IsArray)
             {
-                var interfaceType = type.GetInterface(typeof(IList<>).FullName);
-                var type1 = interfaceType.GetGenericArguments()[0];
+                var type1 = type.GetArrayItemType();
                 var typecode = Type.GetTypeCode(type1);
                 if (typecode == TypeCode.Object)
                 {

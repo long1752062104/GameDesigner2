@@ -134,8 +134,7 @@ public static class Fast2BuildMethod
             };
             if (field.FieldType.IsArray)
             {
-                var serType = field.FieldType.GetInterface(typeof(IList<>).FullName);
-                var itemType = serType.GetGenericArguments()[0];
+                var itemType = field.FieldType.GetArrayItemType();
                 member.ItemType = itemType;
             }
             else if (field.FieldType.GenericTypeArguments.Length == 1)
@@ -174,8 +173,7 @@ public static class Fast2BuildMethod
             };
             if (property.PropertyType.IsArray)
             {
-                var serType = property.PropertyType.GetInterface(typeof(IList<>).FullName);
-                var itemType = serType.GetGenericArguments()[0];
+                var itemType = property.PropertyType.GetArrayItemType();
                 member.ItemType = itemType;
             }
             else if (property.PropertyType.GenericTypeArguments.Length == 1)
@@ -409,8 +407,7 @@ namespace Binding
                     string value;
                     if (members[i].ItemType1.IsArray)
                     {
-                        var serType = members[i].ItemType1.GetInterface(typeof(IList<>).FullName);
-                        var type1 = serType.GetGenericArguments()[0];
+                        var type1 = members[i].ItemType1.GetArrayItemType();
                         typecode = Type.GetTypeCode(type1);
                         if (typecode == TypeCode.Object)
                         {
@@ -713,8 +710,7 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
         string keyRead;
         if (args[1].IsArray)
         {
-            var serType = args[1].GetInterface(typeof(IList<>).FullName);
-            var type1 = serType.GetGenericArguments()[0];
+            var type1 = args[1].GetArrayItemType();
             typecode = Type.GetTypeCode(type1);
             if (typecode == TypeCode.Object)
             {
@@ -786,8 +782,7 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
         string typeBindName;
         if (args[1].IsArray)
         {
-            var serType = args[1].GetInterface(typeof(IList<>).FullName);
-            var type1 = serType.GetGenericArguments()[0];
+            var type1 = args[1].GetArrayItemType();
             typecode = Type.GetTypeCode(type1);
             if (typecode == TypeCode.Object)
             {
