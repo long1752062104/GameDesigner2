@@ -276,11 +276,7 @@ namespace Net.System
             return array;
         }
 
-        public unsafe void WriteList<T>(List<T> array)
-        {
-            WriteArray(array.ToArray());
-        }
-        public unsafe void WriteList(object value)
+        public void WriteList(object value)
         {
             switch (value)
             {
@@ -333,7 +329,16 @@ namespace Net.System
                     Write(array1);
                     break;
                 default:
-                    throw new Exception($"错误!基类不能序列化这个类:{value}");
+                    {
+                        var isEnum = value.GetType().GenericTypeArguments[0].IsEnum;
+                        if (!isEnum)
+                            throw new Exception($"错误!基类不能序列化这个类:{value}");
+                        var array1 = value as IList;
+                        Write(array1.Count);
+                        for (int i = 0; i < array1.Count; i++)
+                            Write((Enum)array1[i]);
+                    }
+                    break;
             }
         }
 
@@ -410,6 +415,14 @@ namespace Net.System
             var listType = typeof(List<>);
             if (array == null)
                 return Activator.CreateInstance(listType.MakeGenericType(type));
+            if (type.IsEnum)
+            {
+                var array1 = array as int[];
+                var list = (IList)Activator.CreateInstance(listType.MakeGenericType(type), array1.Length); //设置总量
+                for (int i = 0; i < array1.Length; i++)
+                    list.Add(array1[i]); //一个一个添加 不能 list[i] = array1[i]; 这个无效
+                return list;
+            }
             return Activator.CreateInstance(listType.MakeGenericType(type), array);
         }
         public T[] ReadArray<T>()
@@ -1031,6 +1044,15 @@ namespace Net.System
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(ICollection<string> value)
+        {
+            Write(value.Count);
+            foreach (var val in value)
+            {
+                Write(val);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(ICollection<Enum> value)
         {
             Write(value.Count);
             foreach (var val in value)

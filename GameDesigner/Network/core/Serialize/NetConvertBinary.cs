@@ -502,6 +502,8 @@
             internal Func<object, object> getValue;
             internal Action<object, object> setValue;
 #endif
+            internal MethodInfo convertMethod;
+
             internal virtual object GetValue(object obj)
             {
                 return obj;
@@ -512,9 +514,38 @@
                 obj = v;
             }
 
+            internal virtual void GetValueCall(CallSite callSite) 
+            {
+            }
+
+            internal virtual void SetValueCall(CallSite callSite)
+            {
+            }
+
             public override string ToString()
             {
                 return $"{name} {Type}";
+            }
+
+            internal void ConvertValue(object array1, IList array)
+            {
+                if (convertMethod == null) 
+                {
+                    convertMethod = GetType().GetMethod("ConvertValue1", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                    convertMethod = convertMethod.MakeGenericMethod(ItemType);
+                }
+                convertMethod.Invoke(this, new object[] { array1, array });
+            }
+
+            internal void ConvertValue1<T>(object array1, IList<T> array) 
+            {
+                if (array1 is ICollection<T> collection)
+                {
+                    for (int i = 0; i < array.Count; i++)
+                    {
+                        collection.Add(array[i]);
+                    }
+                }
             }
         }
 #if SERVICE
@@ -530,6 +561,14 @@
             {
                 setValueCall.Target(setValueCall, obj, (T)v);
             }
+            internal override void GetValueCall(CallSite callSite)
+            {
+                getValueCall = callSite as CallSite<Func<CallSite, object, object>>;
+            }
+            internal override void SetValueCall(CallSite callSite)
+            {
+                setValueCall = callSite as CallSite<Func<CallSite, object, T, object>>;
+            }
         }
         private class FPArrayMember<T> : Member
         {
@@ -542,6 +581,14 @@
             internal override void SetValue(ref object obj, object v)
             {
                 setValueCall.Target(setValueCall, obj, (T[])v);
+            }
+            internal override void GetValueCall(CallSite callSite)
+            {
+                getValueCall = callSite as CallSite<Func<CallSite, object, object>>;
+            }
+            internal override void SetValueCall(CallSite callSite)
+            {
+                setValueCall = callSite as CallSite<Func<CallSite, object, T[], object>>;
             }
         }
 #else
@@ -564,7 +611,7 @@
                 var members1 = new List<Member>();
                 if (type.IsArray | type.IsGenericType) 
                 {
-                    Member member1 = GetFPMember(null, type, type.FullName, false);
+                    var member1 = GetFPMember(null, type, type.FullName, false);
                     members1.Add(member1);
                 }
                 else
@@ -608,8 +655,8 @@
                                 }
                                 else if (fType.GenericTypeArguments.Length == 2)
                                 {
-                                    Type keyType = fType.GenericTypeArguments[0];
-                                    Type valueType = fType.GenericTypeArguments[1];
+                                    var keyType = fType.GenericTypeArguments[0];
+                                    var valueType = fType.GenericTypeArguments[1];
                                     if (!CanSerialized(keyType))
                                         continue;
                                     if (!CanSerialized(valueType))
@@ -652,8 +699,8 @@
                                 }
                                 else if (pType.GenericTypeArguments.Length == 2)
                                 {
-                                    Type keyType = pType.GenericTypeArguments[0];
-                                    Type valueType = pType.GenericTypeArguments[1];
+                                    var keyType = pType.GenericTypeArguments[0];
+                                    var valueType = pType.GenericTypeArguments[1];
                                     if (!CanSerialized(keyType))
                                         continue;
                                     if (!CanSerialized(valueType))
@@ -730,7 +777,7 @@
         private static Member GetFPMember(Type type, Type fpType, string Name, bool isClassField) 
         {
 #if SERVICE
-            object getValueCall = CallSite<Func<CallSite, object, object>>.Create(Binder.GetMember(0, Name, type, new CSharpArgumentInfo[]
+            var getValueCall = CallSite<Func<CallSite, object, object>>.Create(Binder.GetMember(0, Name, type, new CSharpArgumentInfo[]
             {
                 CSharpArgumentInfo.Create(0, null)
             }));
@@ -751,7 +798,7 @@
 #endif
             if (fpType.IsArray)
             {
-                Type itemType = fpType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                var itemType = fpType.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
 #if SERVICE
                 if (isClassField)
                 {
@@ -786,15 +833,15 @@
 #endif
                 if (fpType.GenericTypeArguments.Length == 1)
                 {
-                    Type itemType = fpType.GenericTypeArguments[0];
+                    var itemType = fpType.GenericTypeArguments[0];
                     member1.ItemType = itemType;
                     member1.Intricate = fpType.GetInterface(typeof(IList).Name) == null;
                     member1.IsPrimitive1 = Type.GetTypeCode(itemType) != TypeCode.Object;
                 }
                 else if (fpType.GenericTypeArguments.Length == 2)
                 {
-                    Type keyType = fpType.GenericTypeArguments[0];
-                    Type valueType = fpType.GenericTypeArguments[1];
+                    var keyType = fpType.GenericTypeArguments[0];
+                    var valueType = fpType.GenericTypeArguments[1];
                     member1.ItemType = keyType;
                     member1.ItemType1 = valueType;
                     member1.IsPrimitive1 = Type.GetTypeCode(keyType) != TypeCode.Object;
@@ -820,10 +867,8 @@
 #if SERVICE
             if (setValueCall != null & getValueCall != null)
             {
-                var callS = member1.GetType().GetField("setValueCall", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                callS.SetValue(member1, setValueCall);
-                var callS1 = member1.GetType().GetField("getValueCall", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                callS1.SetValue(member1, getValueCall);
+                member1.GetValueCall(getValueCall);
+                member1.SetValueCall(setValueCall);
             }
 #endif
             member1.name = Name;
@@ -1167,11 +1212,7 @@
                         else 
                         {
                             var array1 = Activator.CreateInstance(member.Type);
-                            var addMethod = member.Type.GetMethod("Add", new Type[] { member.ItemType });
-                            foreach (var item in array)
-                            {
-                                addMethod.Invoke(array1, new object[] { item });
-                            }
+                            member.ConvertValue(array1, array);
                             member.SetValue(ref obj, array1);
                         }
                     }
