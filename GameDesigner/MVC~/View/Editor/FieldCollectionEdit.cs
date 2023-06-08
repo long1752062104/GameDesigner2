@@ -428,7 +428,7 @@ namespace MVC.View
                 var codeTemplate1 = @"namespace {nameSpace} 
 {
 --
-    public partial class {typeName} : {inherit}
+    public partial class {typeName}
     {
 --
         public void InitListener()
@@ -613,7 +613,7 @@ namespace MVC.View
                 var codeTemplate1 = @"namespace {nameSpace} 
 {
 --
-    public partial class {typeName} : {inherit}
+    public partial class {typeName}
     {
 --
         private void Start()

@@ -35,6 +35,7 @@ namespace MVC.View
                 return target as T;
             }
 
+#if UNITY_EDITOR
             public void Update()
             {
                 type = null; //要清空, 后面修改的类型才生效
@@ -75,6 +76,7 @@ namespace MVC.View
                     }
                 }
             }
+#endif
         }
         public string fieldName;
         public List<Field> fields = new List<Field>();
