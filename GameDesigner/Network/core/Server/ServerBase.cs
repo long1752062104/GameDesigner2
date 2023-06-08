@@ -989,6 +989,8 @@ namespace Net.Server
                 DataCRCHandle(client, segment, false);
                 BufferPool.Push(segment);
             }
+            if (client.Gcp != null)
+                client.Gcp.Update();
         }
 
         protected virtual void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
@@ -1613,7 +1615,7 @@ namespace Net.Server
             var stream = BufferPool.Take();
             WriteDataBody(client, ref stream, rtRPCModels, count, true);
             client.Gcp.Send(stream.ToArray(true));
-        J: client.Gcp.Update();
+        J:; //client.Gcp.Update();
         }
 
         protected virtual void WriteDataHead(Segment stream)

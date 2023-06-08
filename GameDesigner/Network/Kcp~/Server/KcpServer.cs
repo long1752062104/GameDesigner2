@@ -78,23 +78,21 @@
             while (client.RevdQueue.TryDequeue(out var segment))
             {
                 fixed (byte* p = &segment.Buffer[0])
-                {
                     ikcp_input(client.Kcp, p, segment.Count);
-                }
-                ikcp_update(client.Kcp, tick);
-                int len;
-                while ((len = ikcp_peeksize(client.Kcp)) > 0)
-                {
-                    var segment1 = BufferPool.Take(len);
-                    fixed (byte* p1 = &segment1.Buffer[0])
-                    {
-                        segment1.Count = ikcp_recv(client.Kcp, p1, len);
-                        DataCRCHandle(client, segment1, false);
-                        BufferPool.Push(segment1);
-                    }
-                }
                 BufferPool.Push(segment);
                 client.heart = 0;
+            }
+            ikcp_update(client.Kcp, tick);
+            int len;
+            while ((len = ikcp_peeksize(client.Kcp)) > 0)
+            {
+                var segment1 = BufferPool.Take(len);
+                fixed (byte* p1 = &segment1.Buffer[0])
+                {
+                    segment1.Count = ikcp_recv(client.Kcp, p1, len);
+                    DataCRCHandle(client, segment1, false);
+                    BufferPool.Push(segment1);
+                }
             }
         }
 
@@ -114,7 +112,7 @@
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(client.Kcp, p, buffer.Length);
-                ikcp_update(client.Kcp, (uint)Environment.TickCount);
+                //ikcp_update(client.Kcp, (uint)Environment.TickCount);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(client, buffer, reliable);
             }

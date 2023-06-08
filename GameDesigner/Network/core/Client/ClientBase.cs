@@ -696,7 +696,7 @@ namespace Net.Client
         /// </summary>
         protected bool UpdateHandler()
         {
-            try { NetworkTick(); } catch { }
+            NetworkTick();
             return openClient;
         }
 
@@ -1032,7 +1032,7 @@ namespace Net.Client
                 InvokeNetworkEvent(OnConnectFailedHandle, action, false);
                 NDebug.LogError("服务器尚未开启或连接IP端口错误!");
                 if (!UseUnityThread)
-                    ThreadManager.Invoke("UpdateHandle", UpdateHandler);
+                    UpdateHandler();
             }
         }
 
@@ -1041,7 +1041,7 @@ namespace Net.Client
             InvokeInMainThread(() => 
             {
                 action?.Invoke();
-                action1?.Invoke(true);
+                action1?.Invoke(isConnect);
             });
         }
 
@@ -1275,7 +1275,7 @@ namespace Net.Client
             var stream = BufferPool.Take();
             WriteDataBody(ref stream, rtRPCModels, count, true);
             Gcp.Send(stream.ToArray(true));
-        J: Gcp.Update();
+        J:; //Gcp.Update();
         }
 
         protected virtual void SendByteData(byte[] buffer, bool reliable)
@@ -1365,6 +1365,8 @@ namespace Net.Client
             {
                 Thread.Sleep(1);
             }
+            if (Gcp != null)
+                Gcp.Update();
         }
 
 #if TEST1

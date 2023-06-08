@@ -94,24 +94,24 @@
                 heart = 0;
                 fixed (byte* p = &segment.Buffer[0])
                     ikcp_input(kcp, p, segment.Count);
-                ikcp_update(kcp, (uint)Environment.TickCount);
-                int len;
-                while ((len = ikcp_peeksize(kcp)) > 0)
-                {
-                    var segment1 = BufferPool.Take(len);
-                    fixed (byte* p1 = &segment1.Buffer[0])
-                    {
-                        segment1.Count = ikcp_recv(kcp, p1, len);
-                        ResolveBuffer(ref segment1, false);
-                        BufferPool.Push(segment1);
-                    }
-                    revdLoopNum++;
-                }
                 BufferPool.Push(segment);
             }
             else if (isSleep)
             {
                 Thread.Sleep(1);
+            }
+            ikcp_update(kcp, (uint)Environment.TickCount);
+            int len;
+            while ((len = ikcp_peeksize(kcp)) > 0)
+            {
+                var segment1 = BufferPool.Take(len);
+                fixed (byte* p1 = &segment1.Buffer[0])
+                {
+                    segment1.Count = ikcp_recv(kcp, p1, len);
+                    ResolveBuffer(ref segment1, false);
+                    BufferPool.Push(segment1);
+                }
+                revdLoopNum++;
             }
         }
 
@@ -120,7 +120,7 @@
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(kcp, p, buffer.Length);
-                ikcp_update(kcp, (uint)Environment.TickCount);
+                //ikcp_update(kcp, (uint)Environment.TickCount);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(buffer, reliable);
             }

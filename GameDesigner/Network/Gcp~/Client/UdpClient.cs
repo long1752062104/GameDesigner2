@@ -180,6 +180,11 @@
         }
     }
 
+    /// <summary>
+    /// Gcp协议
+    /// </summary>
+    public class GcpClient : UdpClient { }
+
     public class UdpClientTest : UdpClient
     {
         public int fps;

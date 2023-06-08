@@ -76,10 +76,9 @@
                 uDXPRC = new UDXPRC(ProcessReceive);
                 UdxLib.USetFUCB(udxObj, uDXPRC);
                 GC.KeepAlive(uDXPRC);
-                string host1 = host;
-                if (host == "127.0.0.1")
-                    host1 = Server.NetPort.GetIP();
-                UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
+                if (host == "127.0.0.1" | host == "localhost")
+                    host = Server.NetPort.GetIP();
+                UdxLib.UConnect(udxObj, host, port, 0, false, 0);
 #if SERVICE
                 return UniTask.Run(() =>
 #else
@@ -110,6 +109,10 @@
                 result(false);
                 return UniTask.FromResult(false);
             }
+        }
+
+        public override void Receive(bool isSleep)
+        {
         }
 
         protected void ProcessReceive(UDXEVENT_TYPE type, int erro, IntPtr cli, IntPtr pData, int len)//cb回调
