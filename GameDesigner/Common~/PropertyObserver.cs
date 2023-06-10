@@ -119,13 +119,13 @@ namespace Net.Common
             var value = valueAtk ^ valueAtkKey;
             var ptr = (byte*)&value;
             var crcIndex = (byte)(valueAtk % 247);
-            crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8, crcIndex);
+            var crcValue = Net.Helper.CRCHelper.CRC8(ptr, 0, 8, crcIndex);
+            var value1 = Unsafe.As<long, T>(ref value);
             if (this.crcValue != crcValue)
             {
-                AntiCheatHelper.OnDetected?.Invoke(name, value, value);
-                return default;
+                AntiCheatHelper.OnDetected?.Invoke(name, value1, value1); //因为原值不做记录, 所以原值没有了, 需要在数据库找到原值
+                throw new Exception();
             }
-            var value1 = Unsafe.As<long, T>(ref value);
             return value1;
         }
 
