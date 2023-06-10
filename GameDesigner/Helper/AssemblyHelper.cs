@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace Net.Helper
 {
@@ -163,6 +164,55 @@ namespace Net.Helper
                 }
             }
             return typeName;
+        }
+
+        /// <summary>
+        /// 获取泛型类型ToString成代码形式返回
+        /// </summary>
+        /// <param name="fullName">必须是泛型.ToString() 而不是泛型.FullName</param>
+        /// <returns></returns>
+        public static string GetCodeTypeName(string fullName) 
+        {
+            var sb = new StringBuilder(fullName);
+            for (int i = 0; i < sb.Length; i++)
+            {
+                if (sb[i] == '`')
+                {
+                    sb[i++] = '<';
+                    for (int n = i; n < sb.Length; n++)
+                    {
+                        if (sb[n] != '[')
+                            continue;
+                        if (n + 1 >= sb.Length)
+                            continue;
+                        if (sb[n + 1] != ']')
+                        {
+                            sb.Remove(i, n - i + 1);
+                            break;
+                        }
+                    }
+                    for (int n = i; n < sb.Length; n++) //兼容dnlib库Type.FullName
+                    {
+                        if (sb[n] != '<')
+                            continue;
+                        sb.Remove(i, n - i + 1);
+                        break;
+                    }
+                    for (int n = sb.Length - 1; n >= 0; n--)
+                    {
+                        if (sb[n] != ']')
+                            continue;
+                        if (n - 1 < 0)
+                            continue;
+                        if (sb[n - 1] != '[')
+                        {
+                            sb[n] = '>';
+                            break;
+                        }
+                    }
+                }
+            }
+            return sb.ToString();
         }
 
         public static Assembly GetRunAssembly(string assemblyName)

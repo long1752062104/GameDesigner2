@@ -262,35 +262,25 @@ internal static class SyncVarGetSetHelperGenerate
                 var dictSB = new StringBuilder();
                 foreach (var field in type.Fields)//字段里面包含了属性字段
                 {
-                    bool hasAttribute = false;
+                    var hasAttribute = false;
+                    var nonSerialized = false;
                     foreach (var item in field.CustomAttributes)
                     {
                         if (item.TypeFullName == "Net.Share.SyncVar")
-                        {
                             hasAttribute = true;
-                            break;
-                        }
+                        else if (item.TypeFullName == "Net.Serialize.NonSerialized")
+                            nonSerialized = true;
                     }
                     if (!hasAttribute)
+                        continue;
+                    if (nonSerialized)
                         continue;
                     if (field.IsPrivate)
                         continue;
                     TypeSig ft = field.FieldType;
                     var gt = ft as GenericInstSig;
-                    string fieldType = field.FieldType.FullName;
-                    string fieldName = field.Name.String;
-                    if (fieldType.Contains("`"))
-                    {
-                        var fff = fieldType.Split('`');
-                        fff[0] += "<";
-                        foreach (var item in gt.GenericArguments)
-                        {
-                            fff[0] += $"{item.FullName},";
-                        }
-                        fff[0] = fff[0].TrimEnd(',');
-                        fff[0] += ">";
-                        fieldType = fff[0];
-                    }
+                    var fieldType = AssemblyHelper.GetCodeTypeName(field.FieldType.FullName);
+                    var fieldName = field.Name.String;
                     var code = codes[2].Replace("TARGETTYPE", type.FullName);
                     code = code.Replace("FIELDTYPE", fieldType);
                     code = code.Replace("FIELDNAME", fieldName);
@@ -456,6 +446,12 @@ internal static class SyncVarGetSetHelperGenerate
                                 foreach (var ft1 in typeDef.Fields)
                                 {
                                     if (!ft1.IsPublic | ft1.IsStatic)
+                                        continue;
+                                    var nonSerialized = false;
+                                    foreach (var item in ft1.CustomAttributes)
+                                        if (item.TypeFullName == "Net.Serialize.NonSerialized")
+                                            nonSerialized = true;
+                                    if (nonSerialized)
                                         continue;
                                     nullEquals = false;
                                     if (ft1.FieldType.IsPrimitive)
