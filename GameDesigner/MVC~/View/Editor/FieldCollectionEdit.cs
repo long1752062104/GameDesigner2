@@ -12,8 +12,6 @@ namespace MVC.View
     using UnityEditor.Callbacks;
     using UnityEngine;
     using UnityEngine.UI;
-    using static BuildComponentTools;
-    using static Fast2BuildTools2;
     using Object = UnityEngine.Object;
 
     public class FieldCollectionWindow : EditorWindow
@@ -868,7 +866,7 @@ namespace MVC.View
             if (fieldCollection.compiling)
             {
                 fieldCollection.compiling = false;
-                var data = PersistHelper.Deserialize<JsonSave>("fcdata.txt");
+                var data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
                 string componentTypeName;
                 if (string.IsNullOrEmpty(data.nameSpace))
                     componentTypeName = fieldCollection.fieldName;
