@@ -29,4 +29,14 @@ public static class TypeExtend
         }
         return null;
     }
+
+    public static bool IsInterfaceType(this Type type, Type interfaceType)
+    {
+        foreach (var interfaceType1 in type.GetInterfaces())
+        {
+            if (interfaceType1 == interfaceType)
+                return true;
+        }
+        return false;
+    }
 }

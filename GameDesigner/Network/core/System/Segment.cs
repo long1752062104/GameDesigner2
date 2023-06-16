@@ -445,7 +445,7 @@ namespace Net.System
                     array = ReadSByteArray();
                     break;
                 case TypeCode.Boolean:
-                    array = ReadByteArray();
+                    array = ReadBooleanArray();
                     break;
                 case TypeCode.Int16:
                     array = ReadInt16Array();

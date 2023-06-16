@@ -1,4 +1,4 @@
-#if (UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL) && UNITY_EDITOR
+#if UNITY_EDITOR
 using Net.Share;
 using UnityEditor;
 using UnityEngine;

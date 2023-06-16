@@ -12,6 +12,8 @@ namespace MVC.View
     using UnityEditor.Callbacks;
     using UnityEngine;
     using UnityEngine.UI;
+    using static BuildComponentTools;
+    using static Fast2BuildTools2;
     using Object = UnityEngine.Object;
 
     public class FieldCollectionWindow : EditorWindow
@@ -66,14 +68,15 @@ namespace MVC.View
         internal static Object selectObject;
         internal static JsonSave data = new JsonSave();
         private static Vector2 scrollPosition;
+        private static string searchAssemblies;
 
         public class JsonSave
         {
             public string nameSpace;
-            public string savePath;
+            public List<string> savePath = new List<string>();
+            public List<string> savePathExt = new List<string>();
             public string csprojFile;
-            public bool fullPath;
-            public string savePathExt;
+            public string searchAssemblies = "UnityEngine.CoreModule|Assembly-CSharp|Assembly-CSharp-firstpass";
             internal string nameSpace1;
             public bool changeField;
             public bool addField;
@@ -82,30 +85,35 @@ namespace MVC.View
             public string inheritType = "Net.Component.SingleCase";
             public string addInheritType;
             public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
+            public int savePathIndex;
+            public int savePathExtIndex;
+
+            internal string SavePath => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
+            internal string SavePathExt => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
         }
 
         internal static void OnEnable(FieldCollection target)
         {
-            field = target;
-            var objects = Resources.FindObjectsOfTypeAll<Object>();
-            HashSet<string> types1 = new HashSet<string>();
-            foreach (var obj in objects)
-            {
-                var str = obj.GetType().FullName;
-                if (!types1.Contains(str))
-                    types1.Add(str);
-            }
-            var types2 = typeof(Vector2).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Object))).ToArray();
-            foreach (var obj in types2)
-            {
-                var str = obj.FullName;
-                if (!types1.Contains(str))
-                    types1.Add(str);
-            }
-            types = types1.ToArray();
             LoadData();
-            if (string.IsNullOrEmpty(data.savePath))
-                data.savePath = Application.dataPath;
+            field = target;
+            searchAssemblies = data.searchAssemblies;
+            if (!string.IsNullOrEmpty(searchAssemblies))
+            {
+                var assemblyNames = searchAssemblies.Split('|');
+                var types1 = new List<string>();
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assemblie in assemblies)
+                {
+                    var name = assemblie.GetName().Name;
+                    if (assemblyNames.Contains(name))
+                    {
+                        var types = assemblie.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericTypeDefinition);
+                        foreach (var type in types)
+                            types1.Add(type.ToString());
+                    }
+                }
+                types = types1.ToArray();
+            }
         }
 
         internal static void OnDisable()
@@ -115,12 +123,12 @@ namespace MVC.View
 
         static void LoadData()
         {
-            data = PersistHelper.Deserialize<JsonSave>("fcdata.txt");
+            data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
         }
 
         static void SaveData()
         {
-            PersistHelper.Serialize(data, "fcdata.txt");
+            PersistHelper.Serialize(data, "fcdata.json");
         }
 
         internal static void AddField(string typeName)
@@ -166,23 +174,29 @@ namespace MVC.View
                         };
                         foreach (var obj in DragAndDrop.objectReferences)
                         {
-                            var go = obj as GameObject;
-                            var objects = new List<Object>() { obj };
-                            objects.AddRange(go.GetComponents<Component>());
-                            foreach (var cp in componentPriority)
-                            {
-                                var components = objects.Where(item => item.GetType() == cp).ToList();
-                                if (components.Count != 0)
-                                {
-                                    fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
-                                    selectObject = components[0];
-                                    AddField(components[0].GetType().ToString());
-                                    goto J;
-                                }
-                            }
                             fieldName = obj.name.Replace(" ", "").Replace("(", "_").Replace(")", "_");
-                            selectObject = objects[objects.Count - 1];
-                            AddField(objects[objects.Count - 1].GetType().ToString());
+                            if (obj is GameObject go)
+                            {
+                                var objects = new List<Object>() { obj };
+                                objects.AddRange(go.GetComponents<Component>());
+                                foreach (var cp in componentPriority)
+                                {
+                                    var components = objects.Where(item => item.GetType() == cp).ToList();
+                                    if (components.Count > 0)
+                                    {
+                                        selectObject = components[0];
+                                        AddField(components[0].GetType().ToString());
+                                        goto J;
+                                    }
+                                }
+                                selectObject = objects[objects.Count - 1];
+                                AddField(objects[objects.Count - 1].GetType().ToString());
+                            }
+                            else if (obj is Component component) 
+                            {
+                                selectObject = component;
+                                AddField(component.GetType().ToString());
+                            }
                         J:;
                         }
                         return;
@@ -283,6 +297,12 @@ namespace MVC.View
                     }
                 }
             }
+            data.searchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.searchAssemblies);
+            if (data.searchAssemblies != searchAssemblies)
+            {
+                searchAssemblies = data.searchAssemblies;
+                SaveData();
+            }
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
             for (int i = 0; i < field.fields.Count; i++)
             {
@@ -308,78 +328,68 @@ namespace MVC.View
                 EditorGUILayout.EndHorizontal();
             }
             GUILayout.EndScrollView();
-            //if (Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform)
-            //{
-            //    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
-            //    if (Event.current.type == EventType.DragPerform)
-            //    {
-            //        search1 = "";
-            //        search = DragAndDrop.objectReferences[0].GetType().Name.ToLower();
-            //    }
-            //}
             data.nameSpace = EditorGUILayout.TextField("命名空间", data.nameSpace);
             if (data.nameSpace != data.nameSpace1)
             {
                 data.nameSpace1 = data.nameSpace;
                 SaveData();
             }
-            data.fullPath = EditorGUILayout.Toggle("(绝/相)对路径", data.fullPath);
             var rect1 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect1, "文件路径:", data.savePath);
+            data.savePathIndex = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", data.savePathIndex, data.savePath.ToArray());
+            if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
+            {
+                if (data.savePath.Count > 0)
+                    data.savePath.RemoveAt(data.savePathIndex);
+                SaveData();
+            }
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
-                if (data.fullPath)
+                var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                path = relativeUri.ToString();
+                path = path.Replace('/', '\\');
+                if (!data.savePath.Contains(path))
                 {
-                    data.savePath = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    SaveData();
+                    data.savePath.Add(path);
+                    data.savePathIndex = data.savePath.Count - 1;
                 }
-                else
-                {
-                    var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    //相对于Assets路径
-                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    data.savePath = relativeUri.ToString();
-                    SaveData();
-                }
+                SaveData();
             }
             var rect4 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect4, "文件路径扩展:", data.savePathExt);
+            data.savePathExtIndex = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", data.savePathExtIndex, data.savePathExt.ToArray());
+            if (GUI.Button(new Rect(rect4.x + rect4.width - 90, rect4.y, 30, rect4.height), "x"))
+            {
+                if (data.savePathExt.Count > 0)
+                    data.savePathExt.RemoveAt(data.savePathExtIndex);
+                SaveData();
+            }
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
             {
-                if (data.fullPath)
+                var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                path = relativeUri.ToString();
+                path = path.Replace('/', '\\');
+                if (!data.savePathExt.Contains(path))
                 {
-                    data.savePathExt = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    SaveData();
+                    data.savePathExt.Add(path);
+                    data.savePathExtIndex = data.savePathExt.Count - 1;
                 }
-                else
-                {
-                    var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                    //相对于Assets路径
-                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    data.savePathExt = relativeUri.ToString();
-                    SaveData();
-                }
+                SaveData();
             }
             var rect3 = EditorGUILayout.GetControlRect();
             EditorGUI.LabelField(rect3, "csproj文件:", data.csprojFile);
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
-                if (data.fullPath)
-                {
-                    data.csprojFile = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                    SaveData();
-                }
-                else
-                {
-                    var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                    //相对于Assets路径
-                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    data.csprojFile = relativeUri.ToString();
-                    SaveData();
-                }
+                var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
+                //相对于Assets路径
+                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
+                var relativeUri = uri.MakeRelativeUri(new Uri(path));
+                data.csprojFile = relativeUri.ToString();
+                SaveData();
             }
             EditorGUILayout.BeginHorizontal();
             data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
@@ -559,15 +569,35 @@ namespace MVC.View
                     while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
                         scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-                if (!string.IsNullOrEmpty(data.savePath))
+
+                var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
                 {
-                    var path = data.savePath + $"/{field.fieldName}.cs";
+                    var path = files[0];
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
-                if (!string.IsNullOrEmpty(data.savePathExt))
+                else if (!string.IsNullOrEmpty(data.SavePath))
                 {
-                    var path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                    var path = data.SavePath + $"/{field.fieldName}.cs";
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
+                }
+                var path1 = string.Empty;
+                var hasExt = false;
+                files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
+                {
+                    path1 = files[0];
+                    hasExt = true;
+                }
+                else if (!string.IsNullOrEmpty(data.SavePathExt))
+                {
+                    path1 = data.SavePathExt + $"/{field.fieldName}Ext.cs";
+                    hasExt = true;
+                }
+                if (hasExt)
+                {
                     if (!File.Exists(path1))
                     {
                         File.WriteAllText(path1, scriptCode1);
@@ -772,15 +802,35 @@ namespace MVC.View
                     while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
                         scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-                if (!string.IsNullOrEmpty(data.savePath))
+
+                var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
                 {
-                    var path = data.savePath + $"/{field.fieldName}.cs";
+                    var path = files[0];
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
-                if (!string.IsNullOrEmpty(data.savePathExt))
+                else if (!string.IsNullOrEmpty(data.SavePath))
                 {
-                    var path1 = data.savePathExt + $"/{field.fieldName}Ext.cs";
+                    var path = data.SavePath + $"/{field.fieldName}.cs";
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
+                }
+                var path1 = string.Empty;
+                var hasExt = false;
+                files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
+                {
+                    path1 = files[0];
+                    hasExt = true;
+                }
+                else if (!string.IsNullOrEmpty(data.SavePathExt))
+                {
+                    path1 = data.SavePathExt + $"/{field.fieldName}Ext.cs";
+                    hasExt = true;
+                }
+                if (hasExt)
+                {
                     if (!File.Exists(path1))
                     {
                         File.WriteAllText(path1, scriptCode1);
@@ -802,7 +852,6 @@ namespace MVC.View
                     }
                     Debug.Log($"生成成功:{path1}");
                 }
-                //csproj对主工程无效
                 J: AssetDatabase.Refresh();
                 field.compiling = true;
             }
