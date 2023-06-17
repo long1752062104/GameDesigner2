@@ -3,6 +3,21 @@
 namespace Net.System
 {
     /// <summary>
+    /// 分片版本控制
+    /// </summary>
+    public enum SegmentVersion 
+    {
+        /// <summary>
+        /// 版本1, 已稳定
+        /// </summary>
+        Version1,
+        /// <summary>
+        /// 版本2, 压缩率和Protobuff一样, 在测试阶段
+        /// </summary>
+        Version2,
+    }
+
+    /// <summary>
     /// 数据缓冲内存池
     /// </summary>
     public static class BufferPool
@@ -15,6 +30,10 @@ namespace Net.System
         /// 当没有合理回收内存，导致内存泄漏被回收后提示
         /// </summary>
         public static bool Log { get; set; }
+        /// <summary>
+        /// 使用的分片版本
+        /// </summary>
+        public static SegmentVersion Version = SegmentVersion.Version1;
 
         private static readonly GStack<Segment>[] STACKS = new GStack<Segment>[37];
         private static readonly int[] TABLE = new int[] {
@@ -91,12 +110,13 @@ namespace Net.System
                         goto J1;
                     goto J2;
                 }
-                segment = new Segment(new byte[size], 0, size);
+                if (Version == SegmentVersion.Version1)
+                    segment = new Segment(new byte[size], 0, size);
+                else
+                    segment = new Segment2(new byte[size], 0, size);
             J2: segment.isDespose = false;
-                segment.Offset = 0;
-                segment.Count = 0;
-                segment.Position = 0;
                 segment.referenceCount++;
+                segment.Init();
                 return segment;
             }
         }

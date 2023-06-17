@@ -98,6 +98,13 @@ namespace Net.System
             Dispose();
         }
 
+        public virtual void Init() 
+        {
+            Offset = 0;
+            Count = 0;
+            Position = 0;
+        }
+
         public void Dispose()
         {
             if (!isRecovery)
@@ -539,7 +546,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(ushort value)
+        public virtual unsafe void Write(ushort value)
         {
             if (value == 0)
             {
@@ -573,7 +580,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(uint value)
+        public virtual unsafe void Write(uint value)
         {
             if (value == 0)
             {
@@ -608,7 +615,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(ulong value)
+        public virtual unsafe void Write(ulong value)
         {
             if (value == 0)
             {
@@ -662,7 +669,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(string value)
+        public virtual unsafe void Write(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -1084,11 +1091,11 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe short ReadInt16()
         {
-            return (short)ReadUInt32();
+            return (short)ReadUInt16();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe ushort ReadUInt16()
+        public virtual unsafe ushort ReadUInt16()
         {
             return (ushort)ReadUInt32();
         }
@@ -1106,7 +1113,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe uint ReadUInt32()
+        public virtual unsafe uint ReadUInt32()
         {
             byte num = Buffer[Position];
             Position++;//不安全代码中 i++和++i没区别
@@ -1152,7 +1159,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe ulong ReadUInt64()
+        public virtual unsafe ulong ReadUInt64()
         {
             byte num = Buffer[Position];
             Position++;//不安全代码中 i++和++i没区别
@@ -1223,7 +1230,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe string ReadString()
+        public virtual unsafe string ReadString()
         {
             var count = ReadInt32();
             if (count == 0)
@@ -1687,7 +1694,7 @@ namespace Net.System
         }
         #endregion
 
-        public void Flush(bool resetPos = true)
+        public virtual void Flush(bool resetPos = true)
         {
             if (Position > Count)
                 Count = Position;
