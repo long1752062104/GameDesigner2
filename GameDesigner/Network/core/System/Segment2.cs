@@ -150,7 +150,7 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe void Write(string value)
         {
-            CheckRecordBitInternal(1);
+            CheckRecordBitInternal(3);
             if (string.IsNullOrEmpty(value))
             {
                 RecordBitIndex += 3; // 2 ^ 3 = 最大值8
