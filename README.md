@@ -192,6 +192,16 @@ Fast2BuildMethod.DynamicBuild(BindingEntry.GetBindTypes());//动态编译指定�
 ```
 详细信息请打开案例: GameDesigner\Example\SerializeTest\Scenes\example3.unity 查看
 
+## 序列化片断Segment2
+序列化片断2类中压缩率和proto3一样, 体积很小, 在性能测试方面, 循环1000万次可见segment2要比proto3快了4秒, 前提是要开启gdnet库项目的优化编码. 
+
+Segment2的序列化压缩采用了位记录, 比如ushort值, 只需要用一个byte的8位中的两位来记录, 也就是一个byte可以记录ushort的4个值, int值需要占用3个二进制位 即 2 ^ 3 = 8个数才能记录int的4个byte字节值, long值需要占用4个二进制位, 即 2 ^ 4 = 16个才能记录8个byte是否存在值, 为什么不用 2 ^ 3 = 8记录? 因为 2 ^ 3 = 8 - 1 最大值是7, 没到8, 所以需要用4个二进制位
+
+如果要开启Segment2的序列化,则需要在初始化方法设置为序列化版本2
+```
+BufferPool.Version = SegmentVersion.Version2;
+```
+
 ## ECS模块
 ECS模块类似unity的gameObject->component模式, 在ecs中gameObject=entity, component=component, system类执行, ecs跟gameObject模式基本流程是一样的, 只是ecs中的组件可以复用, 而gameObject的component则不能复用, 在创建上万个对象时, gameObject就得重新new出来对象和组件, 而ecs调用Destroy时是把entity或component压入对象池, 等待下一次复用.实际上对象没有被释放,所以性能高于gameObject的原因
 
