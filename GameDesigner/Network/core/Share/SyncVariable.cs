@@ -17,12 +17,7 @@ namespace Net.Share
         public T Value
         {
             get => value;
-            set
-            {
-                if (Equals(this.value, value))
-                    return;
-                Set(value);
-            }
+            set => Set(value);
         }
         private bool isChanged;
         private object target;
@@ -45,6 +40,12 @@ namespace Net.Share
             var newVal = value;
             this.value = newVal;
             OnValueChanged?.Invoke(oldVal, newVal);
+        }
+
+        public override void Set() //unity编辑器修改属性值
+        {
+            isChanged = true;
+            OnValueChanged?.Invoke(value, value);
         }
 
         internal override void SetMemberInfo(MemberInfo memberInfo)
@@ -78,8 +79,7 @@ namespace Net.Share
                 if (!isChanged)
                     return;
                 isChanged = false;
-                if (segment == null)
-                    segment = BufferPool.Take();
+                segment ??= BufferPool.Take();
                 segment.Write(id);
                 NetConvertBinary.SerializeObject(segment, value, false, true);
             }
@@ -94,7 +94,6 @@ namespace Net.Share
 
         public override void SetDefaultValue()
         {
-            value = default;
         }
 
         internal override bool EqualsTarget(object target)

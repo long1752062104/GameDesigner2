@@ -1,6 +1,7 @@
 using Net.Share;
 using Net.UnityComponent;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SyncVarTest : NetworkBehaviour
@@ -14,9 +15,9 @@ public class SyncVarTest : NetworkBehaviour
     [SyncVar]
     public SyncVarClass test3;
 
-    public SyncVariable<SyncVarClass> test4 = new SyncVariable<SyncVarClass>();
+    public SyncVariable<SyncVarClass> test4 = new SyncVariable<SyncVarClass>(new SyncVarClass());
 
-    public SyncVariable<int> test5  = new SyncVariable<int>();
+    public SyncVariable<int> test5 = new SyncVariable<int>();
 
     public SyncVariable<string> test6 = new SyncVariable<string>();
 
@@ -24,12 +25,20 @@ public class SyncVarTest : NetworkBehaviour
 
     public SyncVariable<Rect> test8 = new SyncVariable<Rect>();
 
+    public SyncVariable<List<int>> test9 = new SyncVariable<List<int>>();
+
+    [SyncVar(authorize = false)]
+    public SyncVarClass[] test10 = new SyncVarClass[0];
+
+    [SyncVar(authorize = false)]
+    public List<SyncVarClass> test11 = new List<SyncVarClass>();
+
     public void OnTest4Value(int old, int value)
     {
         Debug.Log(value);
     }
 
-    public void OnTest2Value(SyncVarClass old, SyncVarClass value) 
+    public void OnTest2Value(SyncVarClass old, SyncVarClass value)
     {
         Debug.Log(value);
     }
@@ -38,17 +47,23 @@ public class SyncVarTest : NetworkBehaviour
     {
         base.Start();
         test5.OnValueChanged = OnTest4Value;
+        test4.Value.value2.OnValueChanged = OnTest4Value;
+        netObj.AddSyncVar(this, test4.Value);
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            test = new SyncVarClass();
-            test1 = new SyncVarClass();
-            test2 = new SyncVarClass();
-            test5.Value = RandomHelper.Range(0, 1000);
-            test4.Value = new SyncVarClass() { value = RandomHelper.Range(0, 1000) };
+            //test = new SyncVarClass();
+            //test1 = new SyncVarClass();
+            //test2 = new SyncVarClass();
+            //test5.Value = RandomHelper.Range(0, 1000);
+            //test4.Value = new SyncVarClass() { value = RandomHelper.Range(0, 1000) };
+        }
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            test4.Value.value2.Value = RandomHelper.Range(0, 1000);
         }
     }
 }
@@ -57,21 +72,13 @@ public class SyncVarTest : NetworkBehaviour
 public class SyncVarClass
 {
     public int value;
-
-    public override bool Equals(object obj)
-    {
-        if (!(obj is SyncVarClass obj1))
-            return false;
-        return obj1.value == value;
-    }
+    [Net.Serialize.NonSerialized] //过滤字段不进行序列化和判断
+    public int value1;
+    [Net.Serialize.NonSerialized] //过滤字段不进行序列化和判断
+    public SyncVariable<int> value2 = new SyncVariable<int>();
 
     public override string ToString()
     {
         return $"value={value}";
-    }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
     }
 }

@@ -121,12 +121,17 @@ namespace Net.UnityComponent
                 np.Init(opt);
             }
         }
-        internal void InitSyncVar(object target, int netComponentId)
+        /// <summary>
+        /// 添加字段和属性同步
+        /// </summary>
+        /// <param name="networkBehaviour"></param>
+        /// <param name="target"></param>
+        public void AddSyncVar(NetworkBehaviour networkBehaviour, object target)
         {
-            int syncVarID = netComponentId * 50; //每个组件和定义[SyncVar]同步字段和属性最多50个
+            int syncVarID = networkBehaviour.NetComponentID * 50; //每个组件和定义[SyncVar]同步字段和属性最多50个
             ClientBase.Instance.AddRpcHandle(target, false, (info) =>
             {
-                info.id = (ushort)syncVarID++;
+                info.id = (ushort)(syncVarID + networkBehaviour.SyncVarID++);
                 syncVarInfos.Add(info.id, info);
                 if (!isLocal)
                 {

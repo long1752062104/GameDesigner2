@@ -31,6 +31,7 @@ namespace Net.Share
             return false;
         }
         internal virtual void SetMemberInfo(MemberInfo memberInfo) { }
+        public virtual void Set() { }
     }
     
     public class SyncVarInfoPtr<T, V> : SyncVarInfo

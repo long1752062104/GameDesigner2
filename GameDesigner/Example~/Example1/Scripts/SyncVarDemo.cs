@@ -98,12 +98,32 @@ namespace Example1
         public Rigidbody obj1;//只在编辑器有效!
         [SyncVar]
         public UnityEngine.AI.NavMeshAgent obj3;//只在编辑器有效!
-        [Header("p2p同步int")]
-        [SyncVar(id = 1)]
-        public int testint;
-        [Header("p2p同步string")]
-        [SyncVar(id = 2)]
-        public string teststring;
+        //[Header("p2p同步int")]
+        //[SyncVar(id = 1)]
+        //public int testint;
+        //[Header("p2p同步string")]
+        //[SyncVar(id = 2)]
+        //public string teststring;
+
+        [SyncVar]
+        public MoveState test1;
+
+        [SyncVar]
+        public EUNM typeCode;
+    }
+
+    public enum EUNM 
+    {
+        None = 0,
+        One = 1,
+        Two = 2,
+    }
+
+    [System.Serializable]
+    public struct MoveState //同步结构体内没有类字段的, 这样就完美了
+    {
+        public int number;
+        public float speed;
     }
 }
 #endif

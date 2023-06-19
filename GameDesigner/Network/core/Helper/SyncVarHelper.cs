@@ -75,10 +75,8 @@ namespace Net.Helper
 
         public static bool ALEquals(IList a, IList b)
         {
-            if ((a != null & b == null) | (a == null & b != null))
-                return false;
-            if (a == null & b == null)
-                return true;
+            if (a == null) return true; //a不允许为null
+            if (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了
             if (a.Count != b.Count)
                 return false;
             for (int i = 0; i < a.Count; i++)

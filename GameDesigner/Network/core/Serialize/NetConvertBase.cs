@@ -16,54 +16,7 @@
         /// <returns></returns>
         public static object StringToValue(Type type, string value)
         {
-            switch (type.FullName)
-            {
-                case "System.Int32":
-                    return Convert.ToInt32(value);
-                case "System.Single":
-                    return Convert.ToSingle(value);
-                case "System.String":
-                    return value;
-                case "System.Boolean":
-                    return Convert.ToBoolean(value);
-                case "System.Char":
-                    return Convert.ToChar(value);
-                case "System.Int16":
-                    return Convert.ToInt16(value);
-                case "System.Int64":
-                    return Convert.ToInt64(value);
-                case "System.UInt16":
-                    return Convert.ToUInt16(value);
-                case "System.UInt32":
-                    return Convert.ToUInt32(value);
-                case "System.UInt64":
-                    return Convert.ToUInt64(value);
-                case "System.Double":
-                    return Convert.ToDouble(value);
-                case "System.Byte":
-                    return Convert.ToByte(value);
-                case "System.SByte":
-                    return Convert.ToSByte(value);
-                case "UnityEngine.Vector2":
-                    return ToVector2_3_4(type.FullName, value);
-                case "UnityEngine.Vector3":
-                    return ToVector2_3_4(type.FullName, value);
-                case "UnityEngine.Vector4":
-                    return ToVector2_3_4(type.FullName, value);
-                case "UnityEngine.Quaternion":
-                    return ToQuaternion(type.FullName, value);
-                case "UnityEngine.Rect":
-                    return ToRect(type.FullName, value);
-                case "UnityEngine.Color":
-                    return ToColor(type.FullName, value);
-                case "UnityEngine.Color32":
-                    return ToColor(type.FullName, value);
-                default:
-                    if (type.IsEnum)
-                        return Enum.Parse(type, value);
-                    break;
-            }
-            return null;
+            return StringToValue(type.ToString(), value);
         }
 
         /// <summary>

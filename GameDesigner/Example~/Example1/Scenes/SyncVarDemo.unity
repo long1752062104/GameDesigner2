@@ -683,25 +683,15 @@ MonoBehaviour:
     number: 0
     position: {x: 0, y: 0, z: 0}
     quaternion: {x: 0, y: 0, z: 0, w: 0}
-  array:
-  - number: 0
-    position: {x: 0, y: 0, z: 0}
-    quaternion: {x: 0, y: 0, z: 0, w: 0}
-  - number: 0
-    position: {x: 0, y: 0, z: 0}
-    quaternion: {x: 0, y: 0, z: 0, w: 0}
-  - number: 0
-    position: {x: 0, y: 0, z: 0}
-    quaternion: {x: 0, y: 0, z: 0, w: 0}
-  list1:
-  - 
-  - 
-  - 
+  array: []
+  list1: []
   obj: {fileID: 0}
   obj1: {fileID: 0}
   obj3: {fileID: 0}
-  testint: 0
-  teststring: 
+  test1:
+    number: 0
+    speed: 0
+  typeCode: 0
 --- !u!114 &1826353262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -732,40 +722,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   netObj: {fileID: 1826353262}
   netComponentID: 1
-  test:
-    value: 0
-  test1:
-    value: 0
-  test2:
-    value: 0
-  test3:
-    value: 6
   test4:
     id: 0
     authorize: 0
     value:
-      value: 292
-  test5:
-    id: 0
-    authorize: 0
-    value: 0
-  test6:
-    id: 0
-    authorize: 0
-    value: 
-  test7:
-    id: 0
-    authorize: 0
-    value: {x: 0, y: 0}
-  test8:
-    id: 0
-    authorize: 0
-    value:
-      serializedVersion: 2
-      x: 0
-      y: 0
-      width: 0
-      height: 0
+      value: 0
+      value1: 0
+      value2:
+        id: 0
+        authorize: 0
+        value: 0
+  test10: []
+  test11: []
 --- !u!1 &1902338648
 GameObject:
   m_ObjectHideFlags: 0
