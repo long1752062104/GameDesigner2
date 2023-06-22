@@ -257,6 +257,7 @@ internal static class SyncVarGetSetHelperGenerate
             sb.Append(codes[0]);
             var equalsSbs = new HashSet<string>();
             var streams = new Dictionary<string, ModuleDefMD>();
+            var typeLoop = new HashSet<string>();
             foreach (var type in types)
             {
                 var dictSB = new StringBuilder();
@@ -348,7 +349,9 @@ internal static class SyncVarGetSetHelperGenerate
                             code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                             code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                         }
-                        code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                        //code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                        code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+                        AddArrayOrListEquals(ft, streams, equalsSbs, typeLoop);
                     }
                     else if (ft.IsGenericInstanceType)
                     {
@@ -382,7 +385,9 @@ internal static class SyncVarGetSetHelperGenerate
                                 code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                                 code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                             }
-                            code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                            //code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
+                            code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+                            AddArrayOrListEquals(ft, streams, equalsSbs, typeLoop);
                         }
                         else
                         {
@@ -429,78 +434,7 @@ internal static class SyncVarGetSetHelperGenerate
                         code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
 
-                        void AddEquals(TypeSig typeSig, HashSet<string> equalsSbs)
-                        {
-                            var typeDef = typeSig.TryGetTypeDef();
-                            J: if (typeDef != null)
-                            {
-                                var equalsSb = new StringBuilder();
-                                equalsSb.AppendLine($"\tinternal static bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
-                                equalsSb.AppendLine("\t{");
-                                if (typeSig.IsClassSig)
-                                {
-                                    equalsSb.AppendLine($"\t\tif (a == null) return true;");
-                                    equalsSb.AppendLine($"\t\tif (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了");
-                                }
-                                bool nullEquals = true;
-                                foreach (var ft1 in typeDef.Fields)
-                                {
-                                    if (!ft1.IsPublic | ft1.IsStatic)
-                                        continue;
-                                    var nonSerialized = false;
-                                    foreach (var item in ft1.CustomAttributes)
-                                        if (item.TypeFullName == "Net.Serialize.NonSerialized")
-                                            nonSerialized = true;
-                                    if (nonSerialized)
-                                        continue;
-                                    nullEquals = false;
-                                    if (ft1.FieldType.IsPrimitive)
-                                    {
-                                        if (ft1.Name.EndsWith("value__")) //如果后面包含了value__ 暂时识别为枚举类型
-                                            equalsSb.AppendLine($"\t\tif (a != b) return false;");
-                                        else
-                                            equalsSb.AppendLine($"\t\tif (a.{ft1.Name} != b.{ft1.Name}) return false;");
-                                    }
-                                    else
-                                    {
-                                        equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
-                                        AddEquals(ft1.FieldType, equalsSbs);
-                                    }
-                                }
-                                if (nullEquals)
-                                    return;
-                                equalsSb.AppendLine("\t\treturn true;");
-                                equalsSb.AppendLine("\t}");
-                                equalsSbs.Add(equalsSb.ToString());
-                            }
-                            else if (streams.TryGetValue(typeSig.DefinitionAssembly.Name, out var module))
-                            {
-                                typeDef = module.FindReflection(typeSig.FullName);
-                                if (typeDef != null)
-                                    goto J;
-                            }
-                            else
-                            {
-                                var assembly = AssemblyHelper.GetRunAssembly(typeSig.DefinitionAssembly.Name);
-                                if (assembly != null) 
-                                {
-                                    if (assembly.IsDynamic)
-                                        return;
-                                    if (string.IsNullOrEmpty(assembly.Location))
-                                        return;
-                                    var path = assembly.Location;
-                                    if (File.Exists(path))
-                                    {
-                                        module = ModuleDefMD.Load(path, typeSig.Module.Context);
-                                        streams.Add(typeSig.DefinitionAssembly.Name, module);
-                                        typeDef = module.FindReflection(typeSig.FullName);
-                                        if (typeDef != null)
-                                            goto J;
-                                    }
-                                }
-                            }
-                        }
-                        AddEquals(ft, equalsSbs);
+                        AddEquals(ft, streams, equalsSbs, typeLoop);
                     }
                     setgetSb.Append(code);
                 }
@@ -535,6 +469,184 @@ internal static class SyncVarGetSetHelperGenerate
                 item?.Dispose();
 
             return text;
+        }
+
+        private static void AddArrayOrListEquals(TypeSig typeSig, Dictionary<string, ModuleDefMD> streams, HashSet<string> equalsSbs, HashSet<string> typeLoop)
+        {
+            var typeSig1 = typeSig;
+            var typeDef = typeSig.TryGetTypeDef();
+        J: if (typeDef != null)
+            {
+                var equalsSb = new StringBuilder();
+                var fullName = typeSig.FullName.Replace("`1", "");
+                equalsSb.AppendLine($"\tinternal static bool Equals({fullName} a, {fullName} b)");
+                equalsSb.AppendLine("\t{");
+                equalsSb.AppendLine($"\t\tif (a == null) return true;");
+                equalsSb.AppendLine($"\t\tif (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了");
+                if (typeSig.IsGenericInstanceType)
+                {
+                    equalsSb.AppendLine($"\t\tif (a.Count != b.Count) return false;");
+                    equalsSb.AppendLine($"\t\tfor(int i = 0; i < a.Count; i++)");
+                }
+                else
+                {
+                    equalsSb.AppendLine($"\t\tif (a.Length != b.Length) return false;");
+                    equalsSb.AppendLine($"\t\tfor(int i = 0; i < a.Length; i++)");
+                }
+                equalsSb.AppendLine("\t\t{");
+                equalsSb.AppendLine($"\t\t\tif (!Equals(a[i], b[i])) return false;");
+                typeSig = typeDef.ToTypeSig();
+                if (typeSig != null)
+                {
+                    if (typeLoop.Add(typeSig.FullName)) 
+                    {
+                        if (typeSig.IsArray | typeSig.IsValueArray | typeSig.IsSZArray | typeSig.IsSingleOrMultiDimensionalArray | typeSig.IsGenericInstanceType)
+                            AddArrayOrListEquals(typeSig, streams, equalsSbs, typeLoop);
+                        else
+                            AddEquals(typeSig, streams, equalsSbs, typeLoop);
+                    }
+                }
+                equalsSb.AppendLine("\t\t}");
+                equalsSb.AppendLine("\t\treturn true;");
+                equalsSb.AppendLine("\t}");
+                equalsSbs.Add(equalsSb.ToString());
+            }
+            else if (streams.TryGetValue(typeSig1.DefinitionAssembly.Name, out var module))
+            {
+                string fullName;
+                if (typeSig1.IsArray | typeSig1.IsValueArray | typeSig1.IsSZArray | typeSig1.IsSingleOrMultiDimensionalArray)
+                    fullName = typeSig1.Next.FullName;
+                else if (typeSig1.IsGenericInstanceType)
+                {
+                    var gt = typeSig1 as GenericInstSig;
+                    typeSig1 = gt.GenericArguments[0];
+                    goto J;
+                }
+                else fullName = typeSig1.FullName;
+                typeDef = module.FindReflection(fullName);
+                if (typeDef != null)
+                    goto J;
+            }
+            else
+            {
+                var assembly = AssemblyHelper.GetRunAssembly(typeSig.DefinitionAssembly.Name);
+                if (assembly != null)
+                {
+                    if (assembly.IsDynamic)
+                        return;
+                    if (string.IsNullOrEmpty(assembly.Location))
+                        return;
+                    var path = assembly.Location;
+                    if (File.Exists(path))
+                    {
+                        module = ModuleDefMD.Load(path, typeSig.Module.Context);
+                        streams.Add(typeSig.DefinitionAssembly.Name, module);
+                        var fullName = string.Empty;
+                        if (typeSig.IsArray | typeSig.IsValueArray | typeSig.IsSZArray | typeSig.IsSingleOrMultiDimensionalArray)
+                            fullName = typeSig.Next.FullName;
+                        else if (typeSig.IsGenericInstanceType)
+                        {
+                            var gt = typeSig as GenericInstSig;
+                            var gat = gt.GenericArguments[0];
+                            fullName = gat.FullName;
+                            typeDef = gat.Module.FindReflection(fullName);
+                            if (typeDef != null)
+                                goto J;
+                        }
+                        typeDef = module.FindReflection(fullName);
+                        if (typeDef != null)
+                            goto J;
+                    }
+                }
+            }
+        }
+
+        private static void AddEquals(TypeSig typeSig, Dictionary<string, ModuleDefMD> streams, HashSet<string> equalsSbs, HashSet<string> typeLoop)
+        {
+            var typeDef = typeSig.TryGetTypeDef();
+        J: if (typeDef != null)
+            {
+                var equalsSb = new StringBuilder();
+                equalsSb.AppendLine($"\tinternal static bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
+                equalsSb.AppendLine("\t{");
+                if (typeSig.IsClassSig)
+                {
+                    equalsSb.AppendLine($"\t\tif (a == null) return true;");
+                    equalsSb.AppendLine($"\t\tif (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了");
+                }
+                else if (GetTypeCode(typeSig) != TypeCode.Object) //基类
+                {
+                    equalsSb.AppendLine($"\t\tif (a != b) return false;");
+                    goto J1;
+                }
+                var nullEquals = true;
+                foreach (var ft1 in typeDef.Fields)
+                {
+                    if (!ft1.IsPublic | ft1.IsStatic)
+                        continue;
+                    var nonSerialized = false;
+                    foreach (var item in ft1.CustomAttributes)
+                        if (item.TypeFullName == "Net.Serialize.NonSerialized")
+                            nonSerialized = true;
+                    if (nonSerialized)
+                        continue;
+                    nullEquals = false;
+                    if (ft1.FieldType.IsPrimitive)
+                    {
+                        if (ft1.Name.EndsWith("value__")) //如果后面包含了value__ 暂时识别为枚举类型
+                            equalsSb.AppendLine($"\t\tif (a != b) return false;");
+                        else
+                            equalsSb.AppendLine($"\t\tif (a.{ft1.Name} != b.{ft1.Name}) return false;");
+                        AddEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
+                    }
+                    else if (ft1.FieldType.IsArray | ft1.FieldType.IsSZArray | ft1.FieldType.IsValueArray | ft1.FieldType.IsSingleOrMultiDimensionalArray)
+                    {
+                        equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
+                        AddArrayOrListEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
+                    }
+                    else if (ft1.FieldType.IsGenericInstanceType) 
+                    {
+                        equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
+                        AddArrayOrListEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
+                    }
+                    else
+                    {
+                        equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
+                        AddEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
+                    }
+                }
+                if (nullEquals)
+                    return;
+                J1: equalsSb.AppendLine("\t\treturn true;");
+                equalsSb.AppendLine("\t}");
+                equalsSbs.Add(equalsSb.ToString());
+            }
+            else if (streams.TryGetValue(typeSig.DefinitionAssembly.Name, out var module))
+            {
+                typeDef = module.FindReflection(typeSig.FullName);
+                if (typeDef != null)
+                    goto J;
+            }
+            else
+            {
+                var assembly = AssemblyHelper.GetRunAssembly(typeSig.DefinitionAssembly.Name);
+                if (assembly != null)
+                {
+                    if (assembly.IsDynamic)
+                        return;
+                    if (string.IsNullOrEmpty(assembly.Location))
+                        return;
+                    var path = assembly.Location;
+                    if (File.Exists(path))
+                    {
+                        module = ModuleDefMD.Load(path, typeSig.Module.Context);
+                        streams.Add(typeSig.DefinitionAssembly.Name, module);
+                        typeDef = module.FindReflection(typeSig.FullName);
+                        if (typeDef != null)
+                            goto J;
+                    }
+                }
+            }
         }
 
         public static string InvokeRpcClientBuild(List<TypeDef> types)
