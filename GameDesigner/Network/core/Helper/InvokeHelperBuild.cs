@@ -202,6 +202,7 @@ internal static class SyncVarGetSetHelperGenerate
             var end = segment.Position;
             segment.Position = pos;
             FIELDNAME = READVALUE
+            CHECKVALUE
             segment.Position = end;
         }
         else 
@@ -209,9 +210,11 @@ internal static class SyncVarGetSetHelperGenerate
             INDEXTOTYPE
             var pos = segment.Position;
             var FIELDNAME1 = READVALUE
+            CHECKVALUE1
             var end = segment.Position;
             segment.Position = pos;
             FIELDNAME = READVALUE
+            CHECKVALUE
             segment.Position = end;
             if (onValueChanged != null)
                 onValueChanged(self.FIELDNAME, FIELDNAME1);
@@ -319,6 +322,8 @@ internal static class SyncVarGetSetHelperGenerate
                         code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
                         code = code.Replace("READVALUE", $"segment.Read{typeCode}();");
                         code = code.Replace("JUDGE", $"self.{fieldName} == {fieldName}");
+                        code = code.Replace("CHECKVALUE1", "");
+                        code = code.Replace("CHECKVALUE", "");
                     }
                     else if (ft.IsArray | ft.IsSZArray | ft.IsValueArray)
                     {
@@ -331,6 +336,8 @@ internal static class SyncVarGetSetHelperGenerate
                             code = code.Replace("INDEXTOTYPE", "");
                             code = code.Replace("HANDLER", $"segment.Write(self.{fieldName});");
                             code = code.Replace("READVALUE", $"segment.Read{typeCode}Array();");
+                            code = code.Replace("CHECKVALUE1", "");
+                            code = code.Replace("CHECKVALUE", "");
                         }
                         else
                         {
@@ -348,8 +355,9 @@ internal static class SyncVarGetSetHelperGenerate
                             }
                             code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                             code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
+                            code = code.Replace("CHECKVALUE1", $"{fieldName}1 ??= new {fieldType}{{}};");
+                            code = code.Replace("CHECKVALUE", $"{fieldName} ??= new {fieldType}{{}};");
                         }
-                        //code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                         AddArrayOrListEquals(ft, streams, equalsSbs, typeLoop);
                     }
@@ -385,7 +393,6 @@ internal static class SyncVarGetSetHelperGenerate
                                 code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                                 code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                             }
-                            //code = code.Replace("JUDGE", $"SyncVarHelper.ALEquals(self.{fieldName}, {fieldName})");
                             code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                             AddArrayOrListEquals(ft, streams, equalsSbs, typeLoop);
                         }
@@ -406,6 +413,8 @@ internal static class SyncVarGetSetHelperGenerate
                             code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                             code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                         }
+                        code = code.Replace("CHECKVALUE1", "");
+                        code = code.Replace("CHECKVALUE", "");
                     }
                     else if (isUnityObject)
                     {
@@ -415,6 +424,8 @@ internal static class SyncVarGetSetHelperGenerate
                         code = code.Replace("HANDLER", $"segment.Write(UnityEditor.AssetDatabase.GetAssetPath(self.{fieldName}));");
                         code = code.Replace("READVALUE", $"segment.ReadString();");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
+                        code = code.Replace("CHECKVALUE1", "");
+                        code = code.Replace("CHECKVALUE", "");
                     }
                     else
                     {
@@ -433,7 +444,8 @@ internal static class SyncVarGetSetHelperGenerate
                         code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                         code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
-
+                        code = code.Replace("CHECKVALUE1", "");
+                        code = code.Replace("CHECKVALUE", "");
                         AddEquals(ft, streams, equalsSbs, typeLoop);
                     }
                     setgetSb.Append(code);
@@ -563,6 +575,8 @@ internal static class SyncVarGetSetHelperGenerate
 
         private static void AddEquals(TypeSig typeSig, Dictionary<string, ModuleDefMD> streams, HashSet<string> equalsSbs, HashSet<string> typeLoop)
         {
+            if (!typeLoop.Add(typeSig.FullName))
+                return;
             var typeDef = typeSig.TryGetTypeDef();
         J: if (typeDef != null)
             {

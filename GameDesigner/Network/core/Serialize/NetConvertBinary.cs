@@ -285,9 +285,9 @@
         private unsafe static void WriteArray(Segment stream, IList array, Type itemType, bool recordType, bool ignore)
         {
             int len = array.Count;
+            stream.Write(len); //必须记录长度 因为它的值不是null 而是 XX[0] 或者 List<XX>()
             if (len == 0)
                 return;
-            stream.Write(len);
             var bitLen = ((len - 1) / 8) + 1;
             byte[] bits = new byte[bitLen];
             int strPos = stream.Position;
@@ -319,8 +319,10 @@
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="array"></param>
-        private unsafe static void ReadArray(Segment segment, ref IList array, Type itemType, bool recordType, bool ignore)
+        private static void ReadArray(Segment segment, ref IList array, Type itemType, bool recordType, bool ignore)
         {
+            if (array.Count == 0) //如果长度是0就不需要读取字段位字节了
+                return;
             var bitLen = ((array.Count - 1) / 8) + 1;
             byte[] bits = segment.Read(bitLen);
             for (int i = 0; i < array.Count; i++)
@@ -938,8 +940,7 @@
                 {
                     if (member.ItemType1 == null)
                     {
-                        var array = value as IList;
-                        if (array == null)
+                        if (!(value is IList array))
                         {
                             array = Activator.CreateInstance(typeof(List<>).MakeGenericType(member.ItemType)) as IList;
                             var array1 = value as IEnumerable;
@@ -949,9 +950,7 @@
                                 array.Add(enumerator.Current);
                             }
                         }
-                        if (array.Count == 0)
-                            continue;
-                        SetBit(ref bits[bitPos], bitInx1 + 1, true);
+                        SetBit(ref bits[bitPos], bitInx1 + 1, true); //Count = 0也得记录, 因为它不是null, 而是XX[0] 或者 List<XX>(0)
                         if (member.IsPrimitive1)
                         {
                             if (member.IsArray) segment.WriteArray(array);
@@ -962,9 +961,7 @@
                     else
                     {
                         var dict = (IDictionary)value;
-                        if (dict.Count == 0)
-                            continue;
-                        SetBit(ref bits[bitPos], bitInx1 + 1, true);
+                        SetBit(ref bits[bitPos], bitInx1 + 1, true); //Count = 0也得记录, 因为它不是null, 而是XX[0] 或者 List<XX>(0)
                         if (!member.IsPrimitive1)
                             throw new Exception("字典Key必须是基础类型！");
                         segment.Write(dict.Count);
