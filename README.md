@@ -252,13 +252,10 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 
 热更新案例文档:[案例2热更新](https://docs.qq.com/doc/DS3FXbERiUXZnWHVx)
 
-## UNet&Mirror设计模式
+## [SyncVar]字段或属性同步特性
 
 <br>变量同步案例:Assets/GameDesigner/Example/Example1/Scenes/SyncVarDemo.unity</br>
-<br>可以同步C#基础单元结构体: byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double, DateTime, decimal, string类型</br>
-<br>同步自定义结构体: 纯包含基元类型, 不需要任何额外处理</br>
-<br>同步自定义结构体,包含类型字段: 需要重写Equals额外处理字段对等</br>
-<br>同步类型:需要重写Equals额外处理字段对等</br>
+<br>可以同步大部分类型, 基元类型和普通类型, 泛型的只支持List和Dictionary, 如果想要支持更多, 则需要额外处理, 分写SyncVarHandlerGenerate或继承</br>
 
 <br>与场景内的玩家进行变量同步: 原理是检查字段值有没有改变, 改变了就会往服务器发送, 服务器转发给场景内的所有客户端, 以identiy值取到对应的对象, 进行变量设置, 达到变量同步效果!</br>
 <br>客户端与服务器进行变量同步: 原理是检查字段值改变后, 发送字段的id和值到服务器, 服务器检查NetPlayer的变量管理列表取出对应的对象, 进行变量设置, 达到p2p变量同步效果</br>
@@ -266,6 +263,34 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 <br>[SyncVar]//在字段定义这个特性, 则为玩家之间变量</br>
 <br>[SyncVar(authorize = false)]//这是你实例化的网络物体, 其他玩家不能改变你的对象变量, 即使改变了也不会发生同步给其他玩家, 只能由自己控制变量变化后才会同步给其他玩家</br>
 <br>[SyncVar(id = 1)]//这是p2p 客户端只与服务器的netplayer之间变量同步, 开发者要保证id必须是唯一的 详情请看案例1的Example1.Client类定义</br>
+
+<br>如果使用[SyncVar]则需要在Unity点击菜单GameDesigner/Network/InvokeHepler打开调用帮助窗口, 启用OnReloadInvoke</br>
+<br>以下代码是[SyncVar]额外写的代码案例, 可进行参考</br>
+
+```
+using UnityEngine;
+
+internal partial class SyncVarHandlerGenerate
+{
+    internal virtual bool Equals(Rect a, Rect b) //[syncvar] Rect类型时没有判断Equals, 所以需要自己写一下
+    {
+        if (a.x != b.x) return false;
+        if (a.y != b.y) return false;
+        if (a.width != b.width) return false;
+        if (a.height != b.height) return false;
+        return true;
+    }
+}
+
+internal class SyncVarHandler : SyncVarHandlerGenerate
+{
+    //只执行最大值的对象, 也就是SyncVarHandler类被执行, SyncVarHandlerGenerate类将不会执行
+    public override int SortingOrder => 100;
+
+    //如果生成的Equals方法代码不对, 你可以在下面重写已生成的Equals方法, 自己进行判断
+}
+```
+
 
 ## 百万级别RPC小数据测试
 这里我们测试了100万次从客户端到服务器的请求并响应, 所需要的时间是4.67秒
