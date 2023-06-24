@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Net.Helper
@@ -224,6 +226,45 @@ namespace Net.Helper
                     return assembly;
             }
             return null;
+        }
+
+        public static List<Type> GetInterfaceTypes(Type interfaceType)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var interfaceTypes = new List<Type>();
+            foreach (var assembly in assemblies)
+            {
+                var types = assembly.GetTypes().Where(t => t.IsInterfaceType(interfaceType)).ToList();
+                if (types == null)
+                    continue;
+                if (types.Count > 0)
+                    interfaceTypes.AddRange(types);
+            }
+            return interfaceTypes;
+        }
+
+        public static List<object> GetInterfaceInstances(Type interfaceType)
+        {
+            var types = GetInterfaceTypes(interfaceType);
+            var objs = new List<object>();
+            foreach (var type in types)
+            {
+                var obj = Activator.CreateInstance(type);
+                objs.Add(obj);
+            }
+            return objs;
+        }
+
+        public static List<T> GetInterfaceInstances<T>()
+        {
+            var types = GetInterfaceTypes(typeof(T));
+            var objs = new List<T>();
+            foreach (var type in types)
+            {
+                var obj = (T)Activator.CreateInstance(type);
+                objs.Add(obj);
+            }
+            return objs;
         }
     }
 }

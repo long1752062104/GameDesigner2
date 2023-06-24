@@ -8,7 +8,6 @@ using System.Xml;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
-using UnityEngine;
 #if UNITY_EDITOR
 using dnlib.DotNet;
 #endif
@@ -43,8 +42,12 @@ namespace Net.Helper
         }
     }
 
-    public interface ISyncVarGetSet 
+    public interface ISyncVarHandler
     {
+        /// <summary>
+        /// [SyncVar]字段同步优先级, 只会执行优先级最高的一个, 所以有需要时可继承生成的SyncVarHandlerGenerate类进行额外处理
+        /// </summary>
+        int SortingOrder { get; }
         void Init();
     }
 
@@ -68,45 +71,30 @@ namespace Net.Helper
         [UnityEngine.RuntimeInitializeOnLoadMethod]
         private static void Init()
         {
-            Type type = null;
-            bool hasHelper = false;
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies) //检查是否是静态编译
+            var syncVars = AssemblyHelper.GetInterfaceInstances<ISyncVarHandler>();
+            syncVars.Sort((a, b) => b.SortingOrder.CompareTo(a.SortingOrder));
+            var hasHelper = false;
+            if (syncVars.Count > 0)
             {
-                if (!hasHelper)
-                {
-                    var type1 = assembly.GetType("SyncVarGetSetHelperGenerate");
-                    if (type1 != null)
-                    {
-                        type1.GetMethod("Init", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
-                        hasHelper = true;
-                        continue;
-                    }
-                }
-                if (type == null) 
-                {
-                    var type2 = assembly.GetType("HelperFileInfo");//此类必须在主程序集里面, 否则出问题
-                    if (type2 != null)
-                    {
-                        type = type2;
-                    }
-                }
+                hasHelper = true;
+                syncVars[0].Init();
             }
             if (!hasHelper) //动态编译模式
             {
+                var type = AssemblyHelper.GetTypeNotOptimized("HelperFileInfo");
                 if (type != null)
                 {
                     var path = (string)type.GetMethod("GetPath", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
 #if UNITY_EDITOR
-                    DynamicalCompilation(path, assemblies, type.Assembly, UnityEngine.Debug.Log);
+                    DynamicalCompilation(path, type.Assembly, UnityEngine.Debug.Log);
 #elif SERVICE
-                    DynamicalCompilation(path, assemblies, type.Assembly, Console.WriteLine);
+                    DynamicalCompilation(path, type.Assembly, Console.WriteLine);
 #endif
                 }
             }
         }
 
-        public static void DynamicalCompilation(string path, Assembly[] assemblies, Assembly mainAssembly, Action<object> log)
+        public static void DynamicalCompilation(string path, Assembly mainAssembly, Action<object> log)
         {
             if (File.Exists(path))
             {
@@ -118,6 +106,7 @@ namespace Net.Helper
                     var provider = new CSharpCodeProvider();
                     var parameters = new CompilerParameters();
                     var dict = new Dictionary<string, string>();
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                     foreach (var assemblie in assemblies)
                         dict.Add(assemblie.GetName().FullName, assemblie.Location);
                     var referencedAssemblies = mainAssembly.GetReferencedAssemblies();
@@ -127,7 +116,7 @@ namespace Net.Helper
                     parameters.ReferencedAssemblies.Add(mainAssembly.Location);
                     parameters.GenerateInMemory = false;
                     parameters.GenerateExecutable = false;
-                    parameters.OutputAssembly = "DynamicalAssembly.dll";//编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
+                    parameters.OutputAssembly = "SyncVarHandler.dll";//编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
                     parameters.IncludeDebugInformation = true;
                     var results = provider.CompileAssemblyFromSource(parameters, text);
                     if (results.Errors.HasErrors)
@@ -139,9 +128,12 @@ namespace Net.Helper
                     }
                     else
                     {
-                        var type = results.CompiledAssembly.GetType("SyncVarGetSetHelperGenerate");
+                        var type = results.CompiledAssembly.GetType("SyncVarHandlerGenerate");
                         if (type != null)
-                            type.GetMethod("Init", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
+                        {
+                            var obj = Activator.CreateInstance(type) as ISyncVarHandler;
+                            obj?.Init();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -172,9 +164,11 @@ namespace Net.Helper
         public static string SyncVarBuild(List<TypeDef> types, bool recordType)
         {
             var codeTemplate = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
-internal static class SyncVarGetSetHelperGenerate
+internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 {
-    internal static void Init()
+    public virtual int SortingOrder => 0;
+
+    public void Init()
     {
         SyncVarGetSetHelper.Cache.Clear();
 --
@@ -186,7 +180,7 @@ internal static class SyncVarGetSetHelperGenerate
 --
     }
 --
-    internal static void FIELDNAME(this TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -222,7 +216,7 @@ internal static class SyncVarGetSetHelperGenerate
         }
     }
 --
-    internal static void FIELDNAME(this TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -355,8 +349,8 @@ internal static class SyncVarGetSetHelperGenerate
                             }
                             code = code.Replace("HANDLER", $"NetConvertBinary.SerializeObject(segment, self.{fieldName}, {(recordType ? "true" : "false")}, true);");
                             code = code.Replace("READVALUE", $"NetConvertBinary.DeserializeObject<{fieldType}>(segment, {(recordType ? $"type," : "")} false, {(recordType ? "true" : "false")}, true);");
-                            code = code.Replace("CHECKVALUE1", $"{fieldName}1 ??= new {fieldType}{{}};");
-                            code = code.Replace("CHECKVALUE", $"{fieldName} ??= new {fieldType}{{}};");
+                            code = code.Replace("CHECKVALUE1", $"if({fieldName}1 == null) {fieldName}1 = new {fieldType}{{}};");
+                            code = code.Replace("CHECKVALUE", $"if({fieldName} == null) {fieldName} = new {fieldType}{{}};");
                         }
                         code = code.Replace("JUDGE", $"Equals(self.{fieldName}, {fieldName})");
                         AddArrayOrListEquals(ft, streams, equalsSbs, typeLoop);
@@ -491,7 +485,7 @@ internal static class SyncVarGetSetHelperGenerate
             {
                 var equalsSb = new StringBuilder();
                 var fullName = typeSig.FullName.Replace("`1", "");
-                equalsSb.AppendLine($"\tinternal static bool Equals({fullName} a, {fullName} b)");
+                equalsSb.AppendLine($"\tinternal virtual bool Equals({fullName} a, {fullName} b)");
                 equalsSb.AppendLine("\t{");
                 equalsSb.AppendLine($"\t\tif (a == null) return true;");
                 equalsSb.AppendLine($"\t\tif (b == null) return false; //到这里a不可能为null, 但是b如果为null, 就是不相等了");
@@ -581,7 +575,7 @@ internal static class SyncVarGetSetHelperGenerate
         J: if (typeDef != null)
             {
                 var equalsSb = new StringBuilder();
-                equalsSb.AppendLine($"\tinternal static bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
+                equalsSb.AppendLine($"\tinternal virtual bool Equals({typeSig.FullName} a, {typeSig.FullName} b)");
                 equalsSb.AppendLine("\t{");
                 if (typeSig.IsClassSig)
                 {
@@ -951,7 +945,7 @@ internal static class SyncVarGetSetHelperGenerate
                         continue;
                     var path = sequence.Document.Url;
                     //相对于Assets路径
-                    var uri = new Uri(Application.dataPath);
+                    var uri = new Uri(UnityEngine.Application.dataPath);
                     var relativeUri = uri.MakeRelativeUri(new Uri(path));
                     path = relativeUri.ToString();
                     path = path.Replace('\\', '/');
@@ -983,7 +977,7 @@ internal static class SyncVarGetSetHelperGenerate
                         continue;
                     var path = sequence.Document.Url;
                     //相对于Assets路径
-                    var uri = new Uri(Application.dataPath);
+                    var uri = new Uri(UnityEngine.Application.dataPath);
                     var relativeUri = uri.MakeRelativeUri(new Uri(path));
                     path = relativeUri.ToString();
                     path = path.Replace('\\', '/');
@@ -1083,7 +1077,7 @@ using System.Runtime.CompilerServices;
                 serverTypes3.AddRange(item);
             if(config.collectRpc)
                 text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
-            text += @"/// <summary>定位辅助类路径</summary>
+            text += @"/// <summary>SyncVar动态编译定位路径</summary>
 internal static class HelperFileInfo 
 {
     internal static string GetPath()
@@ -1101,7 +1095,7 @@ internal static class HelperFileInfo
                 goto J;
             if (!Directory.Exists(config.savePath))
                 Directory.CreateDirectory(config.savePath);
-            File.WriteAllText(config.savePath + "/InvokeHelperGenerate.cs", text);
+            File.WriteAllText(config.savePath + "/SyncVarHandlerGenerate.cs", text);
 
             for (int i = 0; i < config.rpcConfig.Count; i++)
             {
@@ -1155,7 +1149,7 @@ internal static class HelperFileInfo
 }";
                 var csprojPath = config.rpcConfig[i].csprojPath;
                 csprojPath = Path.GetFullPath(csprojPath.Replace('/', '\\'));
-                var path1 = config.rpcConfig[i].savePath + "/InvokeHelperGenerate.cs";
+                var path1 = config.rpcConfig[i].savePath + "/SyncVarHandlerGenerate.cs";
                 path1 = Path.GetFullPath(path1.Replace('/', '\\'));
 
                 //相对于Assets路径
@@ -1185,7 +1179,7 @@ internal static class HelperFileInfo
                         if (child_node.LocalName != "Compile")
                             continue;
                         var value = child_node.Attributes["Include"].Value;
-                        if (value.Contains("InvokeHelperGenerate.cs"))
+                        if (value.Contains("SyncVarHandlerGenerate.cs"))
                         {
                             if (value != relativePath | !File.Exists(value))
                             {
