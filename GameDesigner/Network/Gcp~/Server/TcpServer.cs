@@ -1,14 +1,14 @@
 ﻿namespace Net.Server
 {
-    using Net.Share;
     using global::System;
     using global::System.Net;
     using global::System.Net.Sockets;
     using global::System.Threading;
-    using Debug = Event.NDebug;
-    using Net.System;
     using global::System.Security.Cryptography;
+    using Net.Share;
+    using Net.System;
     using Net.Helper;
+    using Debug = Event.NDebug;
 
     /// <summary>
     /// TCP服务器类型

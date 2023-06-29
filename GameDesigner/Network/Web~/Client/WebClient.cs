@@ -176,6 +176,7 @@
 
         public override void Close(bool await = true, int millisecondsTimeout = 1000)
         {
+            var isDispose = openClient;
             Connected = false;
             openClient = false;
             NetworkState = NetworkState.ConnectClosed;
@@ -193,7 +194,7 @@
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
             if (Gcp != null) Gcp.Dispose();
-            NDebug.Log("客户端已关闭！");
+            if (isDispose) NDebug.Log("客户端已关闭！");
         }
 
         /// <summary>

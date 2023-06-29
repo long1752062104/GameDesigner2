@@ -37,7 +37,6 @@ namespace Net.Client
     using Net.Serialize;
     using Net.Helper;
     using Net.Server;
-    using Net.Adapter;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -1919,6 +1918,7 @@ namespace Net.Client
         /// <param name="millisecondsTimeout">等待毫秒数</param>
         public virtual void Close(bool await = true, int millisecondsTimeout = 1000)
         {
+            var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
             {
                 Send(NetCmd.Disconnect, new byte[0]);
@@ -1940,7 +1940,7 @@ namespace Net.Client
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
             if (Gcp != null) Gcp.Dispose();
-            NDebug.Log("客户端关闭成功!");
+            if (isDispose) NDebug.Log("客户端关闭成功!"); //只有打开状态下才会提示
         }
 
         /// <summary>

@@ -1,17 +1,13 @@
 ﻿namespace Net.Server
 {
-    using Net.Share;
     using global::System;
-    using global::System.Collections.Concurrent;
-    using global::System.Collections.Generic;
-    using global::System.IO;
     using global::System.Net;
     using global::System.Runtime.InteropServices;
     using global::System.Text;
-    using global::System.Threading;
+    using Net.Share;
+    using Net.System;
     using Udx;
     using Debug = Event.NDebug;
-    using Net.System;
 
     /// <summary>
     /// udx服务器类型  只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
@@ -19,7 +15,7 @@
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
     /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
     /// </summary>
-    public class UdxServer<Player, Scene> : ServerBase<Player, Scene>, IUDX where Player : UdxPlayer, new() where Scene : NetScene<Player>, new()
+    public class UdxServer<Player, Scene> : ServerBase<Player, Scene> where Player : UdxPlayer, new() where Scene : NetScene<Player>, new()
     {
         /// <summary>
         /// udx服务器对象
@@ -38,8 +34,8 @@
         {
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
             string path = AppDomain.CurrentDomain.BaseDirectory;
-            if (!File.Exists(path + "\\FastUdxApi.dll"))
-                throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到FastUdxApi.dll复制到{path}目录下.");
+            if (!global::System.IO.File.Exists(path + "\\FastUdxApi.dll"))
+                throw new global::System.IO.FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到FastUdxApi.dll复制到{path}目录下.");
 #endif
             if (!UdxLib.INIT)
             {
@@ -47,7 +43,6 @@
                 UdxLib.UInit(MaxThread);
                 UdxLib.UEnableLog(false);
             }
-            UdxLib.UDXS.Add(this);
             Server = UdxLib.UCreateFUObj();
             UdxLib.UBind(Server, null, port);
             uDXPRC = new UDXPRC(ProcessReceive);
@@ -151,12 +146,6 @@
             {
                 UdxLib.UDestroyFUObj(Server);
                 Server = IntPtr.Zero;
-            }
-            UdxLib.UDXS.Remove(this);
-            if (UdxLib.UDXS.Count == 0 & UdxLib.INIT)
-            {
-                UdxLib.UUnInit();
-                UdxLib.INIT = false;
             }
         }
 

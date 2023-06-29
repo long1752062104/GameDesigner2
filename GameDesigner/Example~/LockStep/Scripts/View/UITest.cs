@@ -73,7 +73,7 @@ public class UITest : SingleCase<UITest>
 
     private void OnDestroy()
     {
-        ClientManager.Instance.client.RemoveRpc(this);
+        ClientBase.Instance?.RemoveRpc(this);
     }
 }
 #endif

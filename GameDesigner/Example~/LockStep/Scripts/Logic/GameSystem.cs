@@ -17,6 +17,8 @@ namespace LockStep.Client
 
         public void Run(OperationList list)
         {
+            if (list.operations == null)
+                return;
             LSTime.time += LSTime.deltaTime;//最先执行的时间,逻辑时间
             for (int i = 0; i < list.operations.Length; i++)
             {

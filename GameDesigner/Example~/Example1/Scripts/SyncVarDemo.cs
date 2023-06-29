@@ -110,6 +110,9 @@ namespace Example1
 
         [SyncVar]
         public EUNM typeCode;
+
+        [SyncVar]
+        public EUNM[] typeCodes;
     }
 
     public enum EUNM 

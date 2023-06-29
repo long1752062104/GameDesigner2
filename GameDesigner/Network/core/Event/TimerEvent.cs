@@ -1,5 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using Net.System;
+﻿using Net.System;
 using System;
 using System.Threading;
 #if !UNITY_WEBGL
@@ -226,17 +225,10 @@ namespace Net.Event
                 UpdateEvent(interval);
                 frame++;
             }
-            else if (sleep)
-            {
-                UpdateEvent(0); //需要执行那些没有延迟的事件
-                Thread.Sleep(1);
-                var total = nextTick - tick;
-                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
-                    nextTick = tick;
-            }
             else
             {
                 UpdateEvent(0); //需要执行那些没有延迟的事件
+                if (sleep) Thread.Sleep(1);
                 var total = nextTick - tick;
                 if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
                     nextTick = tick;
@@ -330,8 +322,7 @@ namespace Net.Event
                             if (i >= 0) i--;
                             continue;//解决J:执行后索引超出异常
                         }
-                    J: if (i >= 0 & i < count)
-                            evt.time = time + evt.timeMax;
+                    J: evt.time = time + evt.timeMax;
                     }
                 }
                 catch (Exception ex) 
@@ -474,15 +465,9 @@ namespace Net.Event
                 frame++;
                 return true;
             }
-            else if (sleep)
-            {
-                Thread.Sleep(1);
-                var total = nextTick - tick;
-                if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
-                    nextTick = tick;
-            }
             else
             {
+                if (sleep) Thread.Sleep(1);
                 var total = nextTick - tick;
                 if (total >= 2000u) //当uint.MaxValue和1差距很大时, 会出现计数不命中的问题, 导致bug
                     nextTick = tick;

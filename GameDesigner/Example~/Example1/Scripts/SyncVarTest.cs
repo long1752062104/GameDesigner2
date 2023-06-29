@@ -77,6 +77,16 @@ public class SyncVarClass
     [Net.Serialize.NonSerialized] //过滤字段不进行序列化和判断
     public SyncVariable<int> value2 = new SyncVariable<int>();
 
+    public int[] value3;
+    public SyncVarClass[] value4;
+
+    public int value44 = 5;
+
+    public SyncVarClass value5;
+
+    [SyncVar]
+    public Rect value6;
+
     public override string ToString()
     {
         return $"value={value}";

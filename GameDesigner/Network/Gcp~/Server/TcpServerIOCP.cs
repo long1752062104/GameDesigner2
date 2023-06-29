@@ -1,13 +1,13 @@
 ﻿namespace Net.Server
 {
-    using Net.Share;
     using global::System;
     using global::System.Collections.Generic;
     using global::System.Net;
     using global::System.Net.Sockets;
     using global::System.Threading;
-    using Debug = Event.NDebug;
+    using Net.Share;
     using Net.System;
+    using Debug = Event.NDebug;
 
     /// <summary>
     /// tcp 输入输出完成端口服务器

@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UDXObj = System.IntPtr;
 
 namespace Udx
@@ -42,8 +44,9 @@ namespace Udx
         public string name;
     };
 
-    public interface IUDX { }
-
+#if UNITY_EDITOR
+    [InitializeOnLoad]
+#endif
     public class UdxLib
     {
 #if __IOS__ || UNITY_IOS && !UNITY_EDITOR
@@ -59,7 +62,25 @@ namespace Udx
         public const int DATAFRAME_I = 3;//数据帧
 
         public static bool INIT;
-        public static HashSet<IUDX> UDXS = new HashSet<IUDX>();
+
+#if UNITY_EDITOR
+        static UdxLib()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredEditMode) //当退出游戏进入编辑器模式时才判断
+            {
+                if (INIT)
+                {
+                    INIT = false;
+                    UUnInit();
+                }
+            }
+        }
+#endif
 
         [DllImport(nativeLibrary, CallingConvention = CallingConvention.StdCall)]
         public static extern void UInit(int threadcout);//UDXAPI初始化，threadcout UDX事件回调事件线程数，如果是客户端，一般设置为2，服务器时CPU*2+2
