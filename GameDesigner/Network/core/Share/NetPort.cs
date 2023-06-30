@@ -1,4 +1,4 @@
-﻿namespace Net.Server
+﻿namespace Net.Share
 {
     using global::System.Collections;
     using global::System.Net;

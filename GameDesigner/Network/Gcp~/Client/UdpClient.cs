@@ -242,6 +242,7 @@
         //{
         //    return default;
         //}
+
         /// <summary>
         /// 单线程更新，需要开发者自动调用更新
         /// </summary>
@@ -249,9 +250,8 @@
         {
             if (!Connected)
                 return;
-            Receive(false);
-            SendDirect();
-            NetworkTick(); 
+            NetworkProcessing(false);
+            NetworkTick();
         }
         public override string ToString()
         {

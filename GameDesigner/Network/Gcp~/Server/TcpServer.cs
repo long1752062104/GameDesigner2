@@ -18,19 +18,6 @@
     /// </summary>
     public class TcpServer<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
-        /// <summary>
-        /// tcp数据长度(4) + 1CRC协议 = 5
-        /// </summary>
-        protected override byte frame { get; set; } = 5;
-        public override bool MD5CRC
-        {
-            get => md5crc;
-            set
-            {
-                md5crc = value;
-                frame = (byte)(value ? 5 + 16 : 5);
-            }
-        }
         public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
         public override byte HeartLimit { get; set; } = 2;//确认两次
         
@@ -154,8 +141,8 @@
                     OnConnectLost(client);
                     return;
                 }
-                receiveCount += segment.Count;
                 receiveAmount++;
+                receiveCount += segment.Count;
                 ResolveBuffer(client, ref segment);
                 BufferPool.Push(segment);
                 isSleep = false;
@@ -175,32 +162,16 @@
 
         protected override byte[] PackData(Segment stream)
         {
-            stream.Flush();
-            if (MD5CRC)
-            {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                var head = frame;
-                byte[] retVal = md5.ComputeHash(stream, head, stream.Count - head);
-                EncryptHelper.ToEncrypt(Password, retVal);
-                int len = stream.Count - head;
-                var lenBytes = BitConverter.GetBytes(len);
-                byte crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
-                stream.Position = 0;
-                stream.Write(lenBytes, 0, 4);
-                stream.WriteByte(crc);
-                stream.Write(retVal, 0, retVal.Length);
-                stream.Position = len + head;
-            }
-            else
-            {
-                int len = stream.Count - frame;
-                var lenBytes = BitConverter.GetBytes(len);
-                byte crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
-                stream.Position = 0;
-                stream.Write(lenBytes, 0, 4);
-                stream.WriteByte(crc);
-                stream.Position = len + frame;
-            }
+            stream.Flush(false);
+            SetDataHead(stream);
+            PackageAdapter.Pack(stream);
+            var len = stream.Count - frame;
+            var lenBytes = BitConverter.GetBytes(len);
+            var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
+            stream.Position = 0;
+            stream.Write(lenBytes, 0, 4);
+            stream.WriteByte(crc);
+            stream.Position += len;
             return stream.ToArray();
         }
 

@@ -22,19 +22,12 @@
     [Serializable]
     public unsafe class KcpClient : ClientBase
     {
-        private readonly IntPtr kcp;
-        private readonly outputCallback output;
+        private IntPtr kcp;
+        private outputCallback output;
         private static readonly Dictionary<IntPtr, KcpClient> KcpDict = new Dictionary<IntPtr, KcpClient>();
 
         public KcpClient() : base()
         {
-            kcp = ikcp_create(1400, (IntPtr)1);
-            output = new outputCallback(Output);
-            IntPtr outputPtr = Marshal.GetFunctionPointerForDelegate(output);
-            ikcp_setoutput(kcp, outputPtr);
-            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
-            ikcp_nodelay(kcp, 1, 10, 2, 1);
-            KcpDict[kcp] = this;
         }
 
         public KcpClient(bool useUnityThread) : this()
@@ -45,6 +38,20 @@
         ~KcpClient()
         {
             KcpDict.Remove(kcp);
+        }
+
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result) 
+        {
+            if (kcp != IntPtr.Zero)
+                ikcp_release(kcp);
+            kcp = ikcp_create(MTU, (IntPtr)1);
+            output = new outputCallback(Output);
+            IntPtr outputPtr = Marshal.GetFunctionPointerForDelegate(output);
+            ikcp_setoutput(kcp, outputPtr);
+            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
+            ikcp_nodelay(kcp, 1, 10, 2, 1);
+            KcpDict[kcp] = this;
+            return base.ConnectResult(host, port, localPort, result);
         }
 
         private byte[] addressBuffer;
@@ -75,16 +82,11 @@
 
         public override void Receive(bool isSleep)
         {
-            if (Client.Poll(1, SelectMode.SelectRead))
+            if (Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(65507);
                 segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
-                if (error != SocketError.Success)
-                {
-                    BufferPool.Push(segment);
-                    return;
-                }
-                if (segment.Count == 0)
+                if (error != SocketError.Success | segment.Count == 0)
                 {
                     BufferPool.Push(segment);
                     return;
@@ -100,7 +102,6 @@
             {
                 Thread.Sleep(1);
             }
-            ikcp_update(kcp, (uint)Environment.TickCount);
             int len;
             while ((len = ikcp_peeksize(kcp)) > 0)
             {
@@ -115,12 +116,16 @@
             }
         }
 
+        public override void Tick()
+        {
+            ikcp_update(kcp, (uint)Environment.TickCount);
+        }
+
         protected override void SendByteData(byte[] buffer, bool reliable)
         {
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(kcp, p, buffer.Length);
-                //ikcp_update(kcp, (uint)Environment.TickCount);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(buffer, reliable);
             }
@@ -287,8 +292,7 @@
         {
             if (!Connected)
                 return;
-            Receive(false);
-            SendDirect();
+            NetworkProcessing(false);
             NetworkTick();
         }
         public override string ToString()

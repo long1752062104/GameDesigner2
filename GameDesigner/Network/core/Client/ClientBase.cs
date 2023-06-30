@@ -37,6 +37,7 @@ namespace Net.Client
     using Net.Serialize;
     using Net.Helper;
     using Net.Server;
+    using Net.Adapter;
 
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
@@ -309,9 +310,9 @@ namespace Net.Client
         /// </summary>
         public Action<RPCModel> OnSyncPropertyHandle { get; set; }
         /// <summary>
-        /// 1CRC协议
+        /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
-        protected virtual int frame { get; set; } = 1;
+        protected virtual int frame { get; set; } = 5;
         /// <summary>
         /// 心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
@@ -398,13 +399,14 @@ namespace Net.Client
         /// <summary>
         /// 采用md5 + 随机种子校验
         /// </summary>
+        [Obsolete("此属性已不再使用,请使用AddAdapter方法添加数据加密适配器!")]
         public virtual bool MD5CRC
         {
             get => md5crc;
             set
             {
                 md5crc = value;
-                frame = value ? 1 + 16 : 1;
+                //frame = value ? 1 + 16 : 1;
             }
         }
         /// <summary>
@@ -416,7 +418,7 @@ namespace Net.Client
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
-        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, sendHandlerID, singleReceiveHandlerID;//事件id
+        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, singleReceiveHandlerID;//事件id
         private int sendFileTick, recvFileTick;
         /// <summary>
         /// 当前尝试重连次数
@@ -438,7 +440,7 @@ namespace Net.Client
             get => sendInterval;
             set
             {
-                ThreadManager.Event.GetEvent(sendHandlerID)?.SetIntervalTime((uint)value);
+                //ThreadManager.Event.GetEvent(sendHandlerID)?.SetIntervalTime((uint)value);
                 sendInterval = value;
             }
         }
@@ -456,6 +458,10 @@ namespace Net.Client
         /// 版本号
         /// </summary>
         public int Version { get; set; } = 1;
+        /// <summary>
+        /// 数据包适配器
+        /// </summary>
+        public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
 
         /// <summary>
         /// 构造函数
@@ -899,7 +905,7 @@ namespace Net.Client
                     var tick1 = (uint)Environment.TickCount;
                     while (UID == 0)
                     {
-                        Receive(true);
+                        NetworkProcessing(true);
                         if ((uint)Environment.TickCount >= tick)
                             throw new Exception("uid赋值失败!");
                         if (!openClient)
@@ -1002,13 +1008,12 @@ namespace Net.Client
             AbortedThread();//断线重连处理
             Connected = true;
             if (IsMultiThread)
-                StartThread("ReceiveHandle", ReceiveHandle);
+                StartThread("NetworkProcessing", NetworkProcessing);
             else
-                singleReceiveHandlerID = ThreadManager.Invoke("SingleReceiveHandler", SingleReceiveHandler);
+                singleReceiveHandlerID = ThreadManager.Invoke("SingleNetworkHandler", SingleReceiveHandler);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
             syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            sendHandlerID = ThreadManager.Invoke("SendHandler", SendInterval, SendDataHandler);
             if (!UseUnityThread)
                 updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
         }
@@ -1098,23 +1103,6 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发包线程
-        /// </summary>
-        protected bool SendDataHandler()
-        {
-            try
-            {
-                SendDirect();
-                sendLoopNum++;
-            }
-            catch (Exception ex)
-            {
-                NetworkException(ex);
-            }
-            return Connected;
-        }
-
-        /// <summary>
         /// 当游戏操作行为封包数据时调用
         /// </summary>
         /// <param name="count"></param>
@@ -1170,9 +1158,9 @@ namespace Net.Client
             }
         }
 
-        protected virtual void WriteDataHead(Segment stream)
+        protected virtual void SetDataHead(Segment stream)
         {
-            stream.Position = frame;
+            stream.Position = frame + PackageAdapter.HeadCount;
         }
 
         protected virtual void WriteDataBody(ref Segment stream, QueueSafe<RPCModel> rPCModels, int count, bool reliable)
@@ -1188,21 +1176,13 @@ namespace Net.Client
                     if (rPCModel.buffer.Length == 0)
                         continue;
                 }
-                int len = stream.Position + rPCModel.buffer.Length + frame + 15;
-                if (len >= stream.Length)
+                var len = stream.Position + rPCModel.buffer.Length + frame;
+                if ((len >= MTU & !reliable) | len >= stream.Length)//udp不可靠判断 和 数据超过BufferPool.Size
                 {
-                    stream.Flush();
-                    var stream2 = BufferPool.Take(len);
-                    stream2.Write(stream, 0, stream.Count);
-                    BufferPool.Push(stream);
-                    stream = stream2;
-                }
-                if (len >= MTU & !reliable)//udp不可靠判断
-                {
-                    byte[] buffer = PackData(stream);
+                    var buffer = PackData(stream);
                     SendByteData(buffer, reliable);
-                    index = 0;
                     ResetDataHead(stream);
+                    index = 0;
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
@@ -1219,7 +1199,7 @@ namespace Net.Client
         /// <param name="stream"></param>
         protected virtual void ResetDataHead(Segment stream)
         {
-            stream.SetPositionLength(frame);
+            stream.SetPositionLength(frame + PackageAdapter.HeadCount);
         }
 
         /// <summary>
@@ -1231,60 +1211,60 @@ namespace Net.Client
             if (count <= 0)
                 return;
             var stream = BufferPool.Take();
-            WriteDataHead(stream);
+            SetDataHead(stream);
             WriteDataBody(ref stream, rPCModels, count, reliable);
-            byte[] buffer = PackData(stream);
+            var buffer = PackData(stream);
             SendByteData(buffer, reliable);
             BufferPool.Push(stream);
         }
 
         protected virtual byte[] PackData(Segment stream)
         {
-            stream.Flush();
-            if (MD5CRC)
-            {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] retVal = md5.ComputeHash(stream, frame, stream.Count - frame);
-                EncryptHelper.ToEncrypt(Password, retVal);
-                int len = stream.Count;
-                stream.Position = 0;
-                stream.Write(retVal, 0, retVal.Length);
-                stream.Position = len;
-            }
-            else
-            {
-                byte retVal = CRCHelper.CRC8(stream, 1, stream.Count);
-                int len = stream.Count;
-                stream.Position = 0;
-                stream.WriteByte(retVal);
-                stream.Position = len;
-            }
+            stream.Flush(false);
+            SetDataHead(stream);
+            PackageAdapter.Pack(stream);
+            var len = stream.Count - frame;
+            var lenBytes = BitConverter.GetBytes(len);
+            var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
+            stream.Position = 0;
+            stream.Write(lenBytes, 0, 4);
+            stream.WriteByte(crc);
+            stream.Position += len;
             return stream.ToArray();
         }
 
         protected virtual void SendRTDataHandle()
         {
-            int count = rtRPCModels.Count;
+            var count = rtRPCModels.Count;
             if (count <= 0)
-                goto J;
+                return;
             if (Gcp.HasSend())
-                goto J;
+                return;
             if (count >= PackageLength)
                 count = PackageLength;
             var stream = BufferPool.Take();
+            SetDataHead(stream);
             WriteDataBody(ref stream, rtRPCModels, count, true);
-            Gcp.Send(stream.ToArray(true));
-        J:; //Gcp.Update();
+            var buffer = PackData(stream);
+            SendByteData(buffer, true);
+            BufferPool.Push(stream);
         }
 
         protected virtual void SendByteData(byte[] buffer, bool reliable)
         {
-            sendCount += buffer.Length;
+            if (buffer.Length <= frame)//解决长度==5的问题(没有数据)
+                return;
             sendAmount++;
-            if (buffer.Length <= 65507)
-                Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+            sendCount += buffer.Length;
+            if (reliable)
+                Gcp.Send(buffer);
             else
-                NDebug.LogError("数据过大, 请使用SendRT发送...");
+            {
+                if (buffer.Length <= 65507)
+                    Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+                else
+                    NDebug.LogError("数据过大, 请使用SendRT发送...");
+            }
         }
 
         /// <summary>
@@ -1301,15 +1281,15 @@ namespace Net.Client
         protected internal virtual FuncData OnDeserializeRpcInternal(byte[] buffer, int index, int count) { return NetConvert.Deserialize(buffer, index, count); }
 
         /// <summary>
-        /// 后台线程接收数据
+        /// 网络处理线程
         /// </summary>
-        protected virtual void ReceiveHandle()
+        protected virtual void NetworkProcessing()
         {
             while (Connected)
             {
                 try
                 {
-                    Receive(true);
+                    NetworkProcessing(true);
                 }
                 catch (Exception ex)
                 {
@@ -1319,14 +1299,14 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 单线程接收处理
+        /// 单线程网络处理
         /// </summary>
         /// <returns></returns>
         protected virtual bool SingleReceiveHandler()
         {
             try
             {
-                Receive(false);
+                NetworkProcessing(false);
             }
             catch (Exception ex)
             {
@@ -1335,11 +1315,19 @@ namespace Net.Client
             return Connected;
         }
 
+        protected virtual void NetworkProcessing(bool isSleep)
+        {
+            Receive(isSleep);
+            SendDirect();
+            Tick();
+            sendLoopNum++;
+        }
+
         public virtual void Receive(bool isSleep)
         {
-            if (Client.Poll(1, SelectMode.SelectRead))
+            if (Client.Poll(0, SelectMode.SelectRead))
             {
-                var segment = BufferPool.Take(65507);
+                var segment = BufferPool.Take();
                 segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
@@ -1353,8 +1341,8 @@ namespace Net.Client
                     }
                     return;
                 }
-                receiveCount += segment.Count;
                 receiveAmount++;
+                receiveCount += segment.Count;
                 heart = 0;
                 ResolveBuffer(ref segment, false);
                 revdLoopNum++;
@@ -1366,6 +1354,10 @@ namespace Net.Client
             }
             if (Gcp != null)
                 Gcp.Update();
+        }
+
+        public virtual void Tick()
+        {
         }
 
 #if TEST1
@@ -1417,34 +1409,22 @@ namespace Net.Client
         /// <summary>
         /// 解析网络数据包
         /// </summary>
-        protected virtual void ResolveBuffer(ref Segment buffer, bool isTcp)
+        protected virtual void ResolveBuffer(ref Segment stream, bool isTcp)
         {
-            if (MD5CRC)
+            if (!isTcp) 
             {
-                var md5Hash = buffer.Read(16);
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] retVal = md5.ComputeHash(buffer, buffer.Position, buffer.Count - buffer.Position);
-                EncryptHelper.ToDecrypt(Password, md5Hash, 0, 16);
-                for (int i = 0; i < md5Hash.Length; i++)
-                {
-                    if (retVal[i] != md5Hash[i])
-                    {
-                        NDebug.LogError($"[{UID}]MD5CRC校验失败!");
-                        return;
-                    }
-                }
-            }
-            else if(!isTcp)
-            {
-                byte crcCode = buffer.ReadByte();//CRC检验索引
-                byte retVal = CRCHelper.CRC8(buffer, buffer.Position, buffer.Count);
+                var lenBytes = stream.Read(4);
+                var crcCode = stream.ReadByte();//CRC检验索引
+                var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
                     NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
             }
-            DataHandle(buffer);
+            if (!PackageAdapter.Unpack(stream, frame, UID))
+                return;
+            DataHandle(stream);
         }
 
         protected void DataHandle(Segment buffer)
@@ -1543,7 +1523,7 @@ namespace Net.Client
                     Segment buffer1;
                     while ((count1 = Gcp.Receive(out buffer1)) > 0)
                     {
-                        DataHandle(buffer1);
+                        ResolveBuffer(ref buffer1, false);
                         BufferPool.Push(buffer1);
                     }
                     break;
@@ -2563,7 +2543,8 @@ namespace Net.Client
                 NDebug.LogError("数据缓存列表超出限制!");
                 return;
             }
-            if (buffer.Length / MTU > LimitQueueCount)
+            var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+            if (buffer.Length > size)
             {
                 NDebug.LogError("数据太大，请分段发送!");
                 return;
@@ -2650,6 +2631,8 @@ namespace Net.Client
                 AddAdapter(AdapterType.RPC, rpc);
             else if (adapter is INetworkEvtAdapter evt)
                 AddAdapter(AdapterType.NetworkEvt, evt);
+            else if (adapter is IPackageAdapter package)
+                AddAdapter(AdapterType.Package, package);
             else throw new Exception("无法识别的适配器!， 注意: IRPCAdapter<Player>是服务器的RPC适配器，IRPCAdapter是客户端适配器！");
         }
 
@@ -2678,6 +2661,9 @@ namespace Net.Client
                     break;
                 case AdapterType.NetworkEvt:
                     BindNetworkHandle((INetworkHandle)adapter);
+                    break;
+                case AdapterType.Package:
+                    PackageAdapter = (IPackageAdapter)adapter;
                     break;
             }
         }

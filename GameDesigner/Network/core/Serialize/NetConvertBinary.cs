@@ -1090,7 +1090,7 @@
         /// <returns></returns>
         public static T DeserializeObject<T>(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
-            return DeserializeObject<T>(new Segment(buffer, index, count), default, recordType, ignore);
+            return DeserializeObject<T>(new Segment(buffer, index, count, false), default, recordType, ignore);
         }
 
         /// <summary>

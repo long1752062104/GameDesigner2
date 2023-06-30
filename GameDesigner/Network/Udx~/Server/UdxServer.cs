@@ -62,13 +62,13 @@
                 switch (eventtype)
                 {
                     case UDXEVENT_TYPE.E_CONNECT:
-                        byte[] ipbytes = new byte[128];
+                        var ipbytes = new byte[128];
                         int port = 0;
                         int ntype = 0;
                         UdxLib.USetGameMode(cli, true);
                         UdxLib.UGetRemoteAddr(cli, ipbytes, ref port, ref ntype);
                         port = UdxLib.UGetDesStreamID(cli);
-                        string ip = Encoding.ASCII.GetString(ipbytes, 0, 128);
+                        var ip = Encoding.ASCII.GetString(ipbytes, 0, 128);
                         ip = ip.Replace("\0", "");
                         var remotePoint = new IPEndPoint(IPAddress.Parse(ip), port);
                         client = AcceptHander(null, remotePoint);

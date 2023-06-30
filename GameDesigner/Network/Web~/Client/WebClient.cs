@@ -52,7 +52,9 @@
         {
             try
             {
-                bool isConnectFailed = false;
+                var isConnectFailed = false;
+                if (host == "127.0.0.1" | host == "localhost")
+                    host = NetPort.GetIP();
                 WSClient = new WebSocket($"ws://{host}:{port}/");
                 WSClient.OnError += (sender, e) =>
                 {

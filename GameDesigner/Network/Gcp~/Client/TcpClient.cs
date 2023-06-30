@@ -21,19 +21,6 @@
     [Serializable]
     public class TcpClient : ClientBase
     {
-        /// <summary>
-        /// tcp数据长度(4) + 1CRC协议 = 5
-        /// </summary>
-        protected override int frame { get; set; } = 5;
-        public override bool MD5CRC
-        {
-            get => md5crc;
-            set
-            {
-                md5crc = value;
-                frame = value ? 5 + 16 : 5;
-            }
-        }
         public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
         public override byte HeartLimit { get; set; } = 2;//确认两次
 
@@ -82,7 +69,7 @@
                     var tick = Environment.TickCount + 8000;
                     while (UID == 0)
                     {
-                        Receive(true);
+                        NetworkProcessing(true);
                         if (Environment.TickCount >= tick)
                             throw new Exception("uid赋值失败!连接超时处理");
                         if (!openClient)
@@ -129,32 +116,16 @@
 
         protected override byte[] PackData(Segment stream)
         {
-            stream.Flush();
-            if (MD5CRC)
-            {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                var head = frame;
-                byte[] retVal = md5.ComputeHash(stream, head, stream.Count - head);
-                EncryptHelper.ToEncrypt(Password, retVal);
-                int len = stream.Count - head;
-                var lenBytes = BitConverter.GetBytes(len);
-                byte crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
-                stream.Position = 0;
-                stream.Write(lenBytes, 0, 4);
-                stream.WriteByte(crc);
-                stream.Write(retVal, 0, retVal.Length);
-                stream.Position = len + head;
-            }
-            else 
-            {
-                int len = stream.Count - frame;
-                var lenBytes = BitConverter.GetBytes(len);
-                byte retVal = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
-                stream.Position = 0;
-                stream.Write(lenBytes, 0, 4);
-                stream.WriteByte(retVal);
-                stream.Position = len + frame;
-            }
+            stream.Flush(false);
+            SetDataHead(stream);
+            PackageAdapter.Pack(stream);
+            var len = stream.Count - frame;
+            var lenBytes = BitConverter.GetBytes(len);
+            var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
+            stream.Position = 0;
+            stream.Write(lenBytes, 0, 4);
+            stream.WriteByte(crc);
+            stream.Position += len;
             return stream.ToArray();
         }
 #if TEST1
@@ -216,7 +187,7 @@
             }
             while (buffer.Position < buffer.Count)
             {
-                if (buffer.Position + 5 > buffer.Count)//流数据偶尔小于frame头部字节
+                if (buffer.Position + frame > buffer.Count)//流数据偶尔小于frame头部字节
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
@@ -228,33 +199,32 @@
                     break;
                 }
                 var lenBytes = buffer.Read(4);
-                byte crcCode = buffer.ReadByte();//CRC检验索引
-                byte retVal = CRCHelper.CRC8(lenBytes, 0, 4);
+                var crcCode = buffer.ReadByte();//CRC检验索引
+                var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
                     stack = 0;
                     NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
-                int size = BitConverter.ToInt32(lenBytes, 0);
+                var size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     stack = 0;
                     NDebug.LogError($"[{UID}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
-                int value = MD5CRC ? 16 : 0;
-                if (buffer.Position + size + value <= buffer.Count)
+                if (buffer.Position + size <= buffer.Count)
                 {
                     stack = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
-                    buffer.Count = buffer.Position + value + size;//需要指定一个完整的数据长度给内部解析
+                    buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
                     base.ResolveBuffer(ref buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
                 else
                 {
-                    var position = buffer.Position - 5;
+                    var position = buffer.Position - frame;
                     var count = buffer.Count - position;
                     stackIndex = count;
                     stackCount = size;

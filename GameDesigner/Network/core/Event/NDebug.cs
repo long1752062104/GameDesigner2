@@ -305,6 +305,8 @@
                 var output = LogOutputMax;
                 while (logQueue.TryDequeue(out message))
                 {
+                    if (message == null)
+                        continue;
                     msg = message.ToString();
                     log = $"[{logTime}][Log] {msg}";
                     LogHandle?.Invoke(log);
@@ -318,6 +320,8 @@
                 output = LogOutputMax;
                 while (warningQueue.TryDequeue(out message))
                 {
+                    if (message == null)
+                        continue;
                     msg = message.ToString();
                     log = $"[{logTime}][Warning] {msg}";
                     LogWarningHandle?.Invoke(log);
@@ -331,6 +335,8 @@
                 output = LogOutputMax;
                 while (errorQueue.TryDequeue(out message))
                 {
+                    if (message == null)
+                        continue;
                     msg = message.ToString();
                     log = $"[{logTime}][Error] {msg}";
                     LogErrorHandle?.Invoke(log);

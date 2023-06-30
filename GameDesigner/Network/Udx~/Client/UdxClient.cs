@@ -76,7 +76,7 @@
                 UdxLib.USetFUCB(udxObj, uDXPRC);
                 GC.KeepAlive(uDXPRC);
                 if (host == "127.0.0.1" | host == "localhost")
-                    host = Server.NetPort.GetIP();
+                    host = NetPort.GetIP();
                 ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
                 if (ClientPtr != IntPtr.Zero)
                     UdxLib.UDump(ClientPtr);
@@ -361,13 +361,11 @@
             GC.KeepAlive(uDXPRC);
             string host1 = host;
             if (host == "127.0.0.1")
-                host1 = Server.NetPort.GetIP();
+                host1 = NetPort.GetIP();
             UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
             return UniTask.FromResult(true);
         }
         protected override void StartupThread() { }
-
-        //protected override void OnConnected(bool result) { }
 
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {

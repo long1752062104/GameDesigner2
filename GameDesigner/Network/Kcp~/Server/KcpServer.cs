@@ -31,7 +31,6 @@
                 throw new FileNotFoundException($"kcp.dll没有在程序根目录中! 请从GameDesigner文件夹下找到kcp.dll复制到{path}目录下.");
 #endif
             base.Start(port);
-
             ikcp_Malloc = Ikcp_malloc_hook;
             ikcp_Free = Ikcp_Free;
             var mallocPtr = Marshal.GetFunctionPointerForDelegate(ikcp_Malloc);
@@ -65,7 +64,7 @@
         protected override void AcceptHander(Player client)
         {
             client.Server = Server;
-            var kcp = ikcp_create(1400, (IntPtr)1);
+            var kcp = ikcp_create(MTU, (IntPtr)1);
             var output = Marshal.GetFunctionPointerForDelegate(client.output);
             ikcp_setoutput(kcp, output);
             ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
@@ -82,7 +81,6 @@
                 BufferPool.Push(segment);
                 client.heart = 0;
             }
-            ikcp_update(client.Kcp, tick);
             int len;
             while ((len = ikcp_peeksize(client.Kcp)) > 0)
             {
@@ -94,6 +92,11 @@
                     BufferPool.Push(segment1);
                 }
             }
+        }
+
+        protected override void OnClientTick(Player client, uint tick)
+        {
+            ikcp_update(client.Kcp, tick);
         }
 
         protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
@@ -112,7 +115,6 @@
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(client.Kcp, p, buffer.Length);
-                //ikcp_update(client.Kcp, (uint)Environment.TickCount);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(client, buffer, reliable);
             }

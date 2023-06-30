@@ -32,7 +32,14 @@
 
         protected override void OnThreadQueueSet(Player client)
         {
-            client.Group = ThreadGroupDict[Thread.CurrentThread.ManagedThreadId];
+            var value = threadNum++;
+            client.Group = ThreadGroups[value % ThreadGroups.Count];
+        }
+
+        protected override void OnSceneGroupSet(Scene scene)
+        {
+            var value = threadNum++;
+            scene.Group = ThreadGroups[value % ThreadGroups.Count];
         }
 
         protected override void AcceptHander(Player client)

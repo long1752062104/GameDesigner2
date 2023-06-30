@@ -96,6 +96,7 @@
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
     <Compile Include="GameDesigner\Common~\Command.cs" />
     <Compile Include="GameDesigner\Common~\NTransform.cs" />
+    <Compile Include="GameDesigner\Network\Adapter\PackageAdapter.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVariable.cs" />
     <Compile Include="GameDesigner\Network\core\Tools\ObjectConverter.cs" />
     <Compile Include="GameDesigner\Common~\RoomData.cs" />
@@ -168,7 +169,7 @@
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertFast2.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NonSerialized.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetPlayer.cs" />
-    <Compile Include="GameDesigner\Network\core\Server\NetPort.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\NetPort.cs" />
     <Compile Include="GameDesigner\Network\core\Server\NetScene.cs" />
     <Compile Include="GameDesigner\Network\core\Server\ServerBase.cs" />
     <Compile Include="GameDesigner\Network\core\Share\AckQueue.cs" />
