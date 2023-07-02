@@ -25,16 +25,16 @@ namespace Net.Component
         public bool debugRpc = true;
         public bool authorize;
         public bool startConnect = true;
-        public bool md5CRC;
+        //public bool md5CRC;
         public bool singleThread;
         public int reconnectCount = 10;
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
-        [Header("序列化适配器")]
-        public SerializeAdapterType type;
-        public bool isEncrypt = false;//数据加密?
-        public int password = 758426581;
+        //[Header("序列化适配器")]
+        //public SerializeAdapterType type;
+        //public bool isEncrypt = false;//数据加密?
+        //public int password = 758426581;
 
         public ClientBase Client
         {
@@ -50,7 +50,7 @@ namespace Net.Component
                 _client.host = ip;
                 _client.port = port;
                 _client.LogRpc = debugRpc;
-                _client.MD5CRC = md5CRC;
+                //_client.MD5CRC = md5CRC;
                 _client.IsMultiThread = !singleThread;
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
@@ -72,23 +72,23 @@ namespace Net.Component
             if (localTest) _client.host = "127.0.0.1";
 #endif
             _client.port = port;
-            switch (type)
-            {
-                case SerializeAdapterType.Default:
-                    break;
-                case SerializeAdapterType.PB_JSON_FAST:
-                    _client.AddAdapter(new Adapter.SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
-                    break;
-                case SerializeAdapterType.Binary:
-                    _client.AddAdapter(new Adapter.SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
-                    break;
-                case SerializeAdapterType.Binary2:
-                    _client.AddAdapter(new Adapter.SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
-                    break;
-                case SerializeAdapterType.Binary3:
-                    _client.AddAdapter(new Adapter.SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
-                    break;
-            }
+            //switch (type)
+            //{
+            //    case SerializeAdapterType.Default:
+            //        break;
+            //    case SerializeAdapterType.PB_JSON_FAST:
+            //        _client.AddAdapter(new Adapter.SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
+            //        break;
+            //    case SerializeAdapterType.Binary:
+            //        _client.AddAdapter(new Adapter.SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
+            //        break;
+            //    case SerializeAdapterType.Binary2:
+            //        _client.AddAdapter(new Adapter.SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
+            //        break;
+            //    case SerializeAdapterType.Binary3:
+            //        _client.AddAdapter(new Adapter.SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
+            //        break;
+            //}
             return _client.Connect(result =>
             {
                 if (result)
