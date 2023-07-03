@@ -2,9 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Security;
 using System.Threading;
 
 namespace Net.System
@@ -36,26 +33,14 @@ namespace Net.System
     [DebuggerTypeProxy(typeof(Mscorlib_DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
     //[Serializable]//unity新版本会记录起来, 导致开始游戏后, 被unity初始化赋值 导致bug
-    [ComVisible(false)]
-    public class MyDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IDictionary, ICollection, IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, ISerializable, IDeserializationCallback
+    public class MyDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IDictionary, ICollection, IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>
     {
 
-        public MyDictionary() : this(1, null)
+        public MyDictionary() : this(1)
         {
         }
 
-
-        public MyDictionary(int capacity) : this(capacity, null)
-        {
-        }
-
-
-        public MyDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer)
-        {
-        }
-
-
-        public MyDictionary(int capacity, IEqualityComparer<TKey> comparer)
+        public MyDictionary(int capacity)
         {
             if (capacity < 0)
             {
@@ -65,39 +50,17 @@ namespace Net.System
             {
                 Initialize(capacity);
             }
-            this.comparer = comparer ?? EqualityComparer<TKey>.Default;
         }
 
-
-        public MyDictionary(IDictionary<TKey, TValue> dictionary) : this(dictionary, null)
-        {
-        }
-
-
-        public MyDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) : this((dictionary != null) ? dictionary.Count : 0, comparer)
+        public MyDictionary(IDictionary<TKey, TValue> dictionary) : this((dictionary != null) ? dictionary.Count : 0)
         {
             if (dictionary == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dictionary);
             }
-            foreach (KeyValuePair<TKey, TValue> keyValuePair in dictionary)
+            foreach (var keyValuePair in dictionary)
             {
                 Add(keyValuePair.Key, keyValuePair.Value);
-            }
-        }
-
-        protected MyDictionary(SerializationInfo info, StreamingContext context)
-        {
-            HashHelpers.SerializationInfoTable.Add(this, info);
-        }
-
-
-        public IEqualityComparer<TKey> Comparer
-        {
-
-            get
-            {
-                return comparer;
             }
         }
 
@@ -293,7 +256,7 @@ namespace Net.System
             }
             else
             {
-                EqualityComparer<TValue> @default = EqualityComparer<TValue>.Default;
+                var @default = EqualityComparer<TValue>.Default;
                 for (int j = 0; j < count; j++)
                 {
                     if (entries[j].hashCode >= 0 && @default.Equals(entries[j].value, value))
@@ -320,7 +283,7 @@ namespace Net.System
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_ArrayPlusOffTooSmall);
             }
             int num = count;
-            Entry[] array2 = entries;
+            var array2 = entries;
             for (int i = 0; i < num; i++)
             {
                 if (array2[i].hashCode >= 0)
@@ -342,21 +305,6 @@ namespace Net.System
             return new Enumerator(this, 2);
         }
 
-        [SecurityCritical]
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.info);
-            }
-            info.AddValue("Version", version);
-            info.AddValue("Comparer", HashHelpers.GetEqualityComparerForSerialization(comparer), typeof(IEqualityComparer<TKey>));
-            info.AddValue("HashSize", buckets.Length);
-            KeyValuePair<TKey, TValue>[] array = new KeyValuePair<TKey, TValue>[Count];
-            CopyTo(array, 0);
-            info.AddValue("KeyValuePairs", array, typeof(KeyValuePair<TKey, TValue>[]));
-        }
-
         private int FindEntry(TKey key)
         {
             if (key == null)
@@ -364,7 +312,7 @@ namespace Net.System
             int num = key.GetHashCode() & int.MaxValue;
             for (int i = buckets[num % buckets.Length]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && comparer.Equals(entries[i].key, key))
+                if (entries[i].hashCode == num && Equals(entries[i].key, key))
                 {
                     return i;
                 }
@@ -392,7 +340,7 @@ namespace Net.System
             int num3 = 0;
             for (int i = buckets[num2]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && comparer.Equals(entries[i].key, key))
+                if (entries[i].hashCode == num && Equals(entries[i].key, key))
                 {
                     if (add)
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
@@ -426,54 +374,12 @@ namespace Net.System
             entries[num4].value = value;
             buckets[num2] = num4;
             version++;
-            if (num3 > 100 && HashHelpers.IsWellKnownEqualityComparer(comparer))
+            if (num3 > 100)
             {
-                comparer = (IEqualityComparer<TKey>)HashHelpers.GetRandomizedEqualityComparer(comparer);
                 Resize(entries.Length, true);
             }
             oldValue = default;
             return true;
-        }
-
-        public virtual void OnDeserialization(object sender)
-        {
-            HashHelpers.SerializationInfoTable.TryGetValue(this, out SerializationInfo serializationInfo);
-            if (serializationInfo == null)
-            {
-                return;
-            }
-            int @int = serializationInfo.GetInt32("Version");
-            int int2 = serializationInfo.GetInt32("HashSize");
-            comparer = (IEqualityComparer<TKey>)serializationInfo.GetValue("Comparer", typeof(IEqualityComparer<TKey>));
-            if (int2 != 0)
-            {
-                buckets = new int[int2];
-                for (int i = 0; i < buckets.Length; i++)
-                {
-                    buckets[i] = -1;
-                }
-                entries = new Entry[int2];
-                freeList = -1;
-                KeyValuePair<TKey, TValue>[] array = (KeyValuePair<TKey, TValue>[])serializationInfo.GetValue("KeyValuePairs", typeof(KeyValuePair<TKey, TValue>[]));
-                if (array == null)
-                {
-                    ThrowHelper.ThrowSerializationException(ExceptionResource.Serialization_MissingKeys);
-                }
-                for (int j = 0; j < array.Length; j++)
-                {
-                    if (array[j].Key == null)
-                    {
-                        ThrowHelper.ThrowSerializationException(ExceptionResource.Serialization_NullKey);
-                    }
-                    Insert(array[j].Key, array[j].Value, true, out _);
-                }
-            }
-            else
-            {
-                buckets = null;
-            }
-            version = @int;
-            HashHelpers.SerializationInfoTable.Remove(this);
         }
 
         private void Resize()
@@ -488,7 +394,7 @@ namespace Net.System
             {
                 array[i] = -1;
             }
-            Entry[] array2 = new Entry[newSize];
+            var array2 = new Entry[newSize];
             Array.Copy(entries, 0, array2, 0, count);
             if (forceNewHashCodes)
             {
@@ -496,7 +402,7 @@ namespace Net.System
                 {
                     if (array2[j].hashCode != -1)
                     {
-                        array2[j].hashCode = (comparer.GetHashCode(array2[j].key) & int.MaxValue);
+                        array2[j].hashCode = array2[j].key.GetHashCode() & int.MaxValue;
                     }
                 }
             }
@@ -522,12 +428,12 @@ namespace Net.System
         {
             if (key == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            int num = comparer.GetHashCode(key) & int.MaxValue;
+            int num = key.GetHashCode() & int.MaxValue;
             int num2 = num % buckets.Length;
             int num3 = -1;
             for (int i = buckets[num2]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && comparer.Equals(entries[i].key, key))
+                if (entries[i].hashCode == num && Equals(entries[i].key, key))
                 {
                     if (num3 < 0)
                     {
@@ -848,8 +754,6 @@ namespace Net.System
 
         private int freeCount;
 
-        private IEqualityComparer<TKey> comparer;
-
         private KeyCollection keys;
 
         private ValueCollection values;
@@ -1001,7 +905,7 @@ namespace Net.System
                     ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_ArrayPlusOffTooSmall);
                 }
                 int count = dictionary.count;
-                Entry[] entries = dictionary.entries;
+                var entries = dictionary.entries;
                 for (int i = 0; i < count; i++)
                 {
                     if (entries[i].hashCode >= 0)
@@ -1102,7 +1006,7 @@ namespace Net.System
                     ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidArrayType);
                 }
                 int count = dictionary.count;
-                Entry[] entries = dictionary.entries;
+                var entries = dictionary.entries;
                 try
                 {
                     for (int i = 0; i < count; i++)
@@ -1161,10 +1065,6 @@ namespace Net.System
 
                 public bool MoveNext()
                 {
-                    //if (version != dictionary.version)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    //}
                     while (index < dictionary.count)
                     {
                         if (dictionary.entries[index].hashCode >= 0)
@@ -1196,10 +1096,6 @@ namespace Net.System
 
                     get
                     {
-                        //if (index == 0 || index == dictionary.count + 1)
-                        //{
-                        //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                        //}
                         return currentKey;
                     }
                 }
@@ -1207,10 +1103,6 @@ namespace Net.System
 
                 void IEnumerator.Reset()
                 {
-                    //if (version != dictionary.version)
-                    //{
-                    //    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
-                    //}
                     index = 0;
                     currentKey = default;
                 }
@@ -1262,7 +1154,7 @@ namespace Net.System
                     ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_ArrayPlusOffTooSmall);
                 }
                 int count = dictionary.count;
-                Entry[] entries = dictionary.entries;
+                var entries = dictionary.entries;
                 for (int i = 0; i < count; i++)
                 {
                     if (entries[i].hashCode >= 0)
@@ -1363,7 +1255,7 @@ namespace Net.System
                     ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidArrayType);
                 }
                 int count = dictionary.count;
-                Entry[] entries = dictionary.entries;
+                var entries = dictionary.entries;
                 try
                 {
                     for (int i = 0; i < count; i++)

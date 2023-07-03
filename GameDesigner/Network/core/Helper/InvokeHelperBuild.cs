@@ -180,7 +180,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 --
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -198,6 +198,8 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
             FIELDNAME = READVALUE
             CHECKVALUE
             segment.Position = end;
+            syncVar.writeCount++;
+            syncVar.writeBytes += end - pos;
         }
         else 
         {
@@ -213,10 +215,12 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
             if (onValueChanged != null)
                 onValueChanged(self.FIELDNAME, FIELDNAME1);
             self.FIELDNAME = FIELDNAME1;
+            syncVar.readCount++;
+            syncVar.readBytes += end - pos;
         }
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {

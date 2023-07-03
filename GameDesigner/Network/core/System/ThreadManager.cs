@@ -90,7 +90,7 @@ namespace Net.System
                 Stop(); //unity出现两个事件线程的问题
                 MainThread = new Thread(Execute)
                 {
-                    Name = "事件线程",
+                    Name = "EventThread",
                     IsBackground = true
                 };
                 MainThread.Start();

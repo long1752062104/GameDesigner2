@@ -97,6 +97,7 @@
                         if (!client1.Client.Connected) //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
                         {
                             client1.Client = client;
+                            client1.Connected = true;
                             SetClientIdentity(client1);
                             client1.OnReconnecting();
                             OnReconnecting(client1);
@@ -122,12 +123,8 @@
 
         protected override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
-            if (!client.Client.Connected) //当socket断开后, 需要重连, 所以会等待一段重连时间
-            {
-                if (tick >= client.ReconnectTimeout)
-                    RemoveClient(client);
+            if (!client.Client.Connected)
                 return;
-            }
             if (client.Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
@@ -135,10 +132,7 @@
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
-                    client.Client.Disconnect(false);//标记为断开状态
-                    client.ReconnectTimeout = tick + ReconnectionTimeout;
-                    client.OnConnectLost();
-                    OnConnectLost(client);
+                    ConnectLost(client, tick);
                     return;
                 }
                 receiveAmount++;
@@ -147,6 +141,31 @@
                 BufferPool.Push(segment);
                 isSleep = false;
             }
+        }
+
+        protected override bool CheckIsConnected(Player client, uint tick)
+        {
+            if (!client.Connected)
+            {
+                if (tick >= client.ReconnectTimeout)
+                    RemoveClient(client);
+                return false;
+            }
+            if (!client.Client.Connected)
+            {
+                ConnectLost(client, tick);
+                return false;
+            }
+            return true;
+        }
+
+        protected void ConnectLost(Player client, uint tick)
+        {
+            client.Connected = false;
+            client.Client?.Disconnect(false);//标记为断开状态
+            client.ReconnectTimeout = tick + ReconnectionTimeout;
+            client.OnConnectLost();
+            OnConnectLost(client);
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
@@ -219,12 +238,6 @@
 
         protected override void CheckHeart(Player client, uint tick)
         {
-            if (!client.Client.Connected)
-            {
-                if (tick >= client.ReconnectTimeout)
-                    RemoveClient(client);
-                return;
-            }
             if (client.heart > HeartLimit * 5)
             {
                 client.Redundant = true;

@@ -1,10 +1,11 @@
 ﻿using Net.System;
 using System;
 using System.Reflection;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Net.Share
 {
-    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, bool isWrite, Action<V, V> onValueChanged);
+    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<V, V> onValueChanged);
 
     [Serializable]
     public class SyncVarInfo
@@ -14,6 +15,10 @@ namespace Net.Share
         internal MethodInfo onValueChanged;
         internal bool isDispose;
         internal uint tick;
+        public int writeCount;
+        public int readCount;
+        public int writeBytes;
+        public int readBytes;
 
         public bool IsDispose => isDispose;
 
@@ -32,6 +37,11 @@ namespace Net.Share
         }
         internal virtual void SetMemberInfo(MemberInfo memberInfo) { }
         public virtual void Set() { }
+
+        public virtual string ToColorString(string colorName)
+        {
+            return $"<color={colorName}>{ToString()}</color>";
+        }
     }
     
     public class SyncVarInfoPtr<T, V> : SyncVarInfo
@@ -53,7 +63,7 @@ namespace Net.Share
                 action2 = (Action<V, V>)onValueChanged.CreateDelegate(typeof(Action<V, V>), target);
             var segment = BufferPool.Take();
             V value1 = default;
-            action((T)target, ref value1, id, ref segment, true, action2);
+            action((T)target, ref value1, id, ref segment, this, true, action2);
             segment.Dispose();
             return new SyncVarInfoPtr<T, V>(action) 
             {
@@ -73,7 +83,7 @@ namespace Net.Share
 
         internal override void CheckHandlerValue(ref Segment segment, bool isWrite)
         {
-            action(target, ref value, id, ref segment, isWrite, action1);
+            action(target, ref value, id, ref segment, this, isWrite, action1);
         }
 
         internal override bool EqualsTarget(object target)
@@ -83,7 +93,12 @@ namespace Net.Share
 
         public override string ToString()
         {
-            return $"ID: {id} authorize: {authorize} target: {target.GetType().Name}.{action.Method.Name}";
+            return $"ID: {id} authorize: {authorize} target: {target.GetType().Name}.{action.Method.Name} writeCount: {writeCount} writeBytes: {writeBytes} readCount: {readCount} readBytes: {readBytes}";
+        }
+
+        public override string ToColorString(string colorName)
+        {
+            return $"<color={colorName}>ID:{id} {target.GetType().Name}.{action.Method.Name}</color> <color=#B78024>writeCount:{writeCount} writeBytes:{writeBytes} readCount:{readCount} readBytes:{readBytes}</color>";
         }
     }
 }

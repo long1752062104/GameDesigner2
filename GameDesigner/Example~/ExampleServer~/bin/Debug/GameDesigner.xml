@@ -295,11 +295,111 @@
             竞技模式 1:个人 2:团队
             </summary>
         </member>
+        <member name="T:Net.Adapter.DataAdapter">
+            <summary>
+            基础数据包适配器
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.MD5EncryptDataHeadAdapter">
+            <summary>
+            使用md5校验数据部分, 并且使用随机加密法加密md5值, 这里防止md5数据重新被校验, 所以用随机加密把md5值也加密了
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.MD5EncryptDataBodyAdapter">
+            <summary>
+            使用md5校验数据部分, 并且使用随机加密法加密数据体
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.EncryptDataBodyAdapter">
+            <summary>
+            使用随机加密法加密数据体
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.CallSiteRpcAdapter`1">
+            <summary>
+            服务器远程过程调用适配器
+            </summary>
+            <typeparam name="Player"></typeparam>
+        </member>
+        <member name="M:Net.Adapter.CallSiteRpcAdapter`1.#ctor(Net.Share.IRpcHandler)">
+            <summary>
+            构造客户端Rpc适配器，参数是xxxServer对象
+            </summary>
+            <param name="handle"></param>
+        </member>
+        <member name="T:Net.Adapter.CallSiteRpcAdapter">
+            <summary>
+            客户端远程过程调用适配器
+            </summary>
+        </member>
+        <member name="M:Net.Adapter.CallSiteRpcAdapter.#ctor(Net.Share.IRpcHandler)">
+            <summary>
+            构造客户端Rpc适配器，参数是xxxClient对象
+            </summary>
+            <param name="handle"></param>
+        </member>
+        <member name="T:Net.Adapter.ListenerAdapter">
+            <summary>
+            网络事件监听适配器
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.SerializeAdapter">
+            <summary>
+            快速序列化适配器
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.SerializeFastAdapter">
+            <summary>
+            通用升级版适配器
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.SerializeAdapter2">
+            <summary>
+            快速序列化2适配器
+            </summary>
+        </member>
+        <member name="T:Net.Adapter.SerializeAdapter3">
+            <summary>
+            极速序列化3适配器
+            </summary>
+        </member>
         <member name="T:Net.Share.SyncVariable`1">
             <summary>
             网络同步字段或属性类  --相对[SyncVar]性能要好一些
             </summary>
             <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Share.NetPort">
+            <summary>
+            网络端口检测类
+            </summary>
+        </member>
+        <member name="M:Net.Share.NetPort.GetFirstAvailablePort(System.Int32,System.Int32)">
+            <summary>
+            获取第一个可用的端口号
+            </summary>
+            <param name="startPort">起始端口号</param>
+            <param name="MaxPort">结束端口号</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.NetPort.PortIsUsed">
+            <summary>
+            获取操作系统已用的端口号
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.NetPort.PortIsAvailable(System.Int32)">
+            <summary>
+            检查指定端口是否已用
+            </summary>
+            <param name="port"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.NetPort.GetIP">
+            <summary>
+            获取本机ip地址
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Net.Share.NetworkState">
             <summary>
@@ -541,6 +641,32 @@
             <summary>
             网络事件适配器
             </summary>
+        </member>
+        <member name="T:Net.Share.IPackageAdapter">
+            <summary>
+            数据包适配器
+            </summary>
+        </member>
+        <member name="P:Net.Share.IPackageAdapter.HeadCount">
+            <summary>
+            头部长度
+            </summary>
+        </member>
+        <member name="M:Net.Share.IPackageAdapter.Pack(Net.System.Segment)">
+            <summary>
+            封包
+            </summary>
+            <param name="stream"></param>
+            <param name="frame"></param>
+        </member>
+        <member name="M:Net.Share.IPackageAdapter.Unpack(Net.System.Segment,System.Int32,System.Int32)">
+            <summary>
+            解包
+            </summary>
+            <param name="stream"></param>
+            <param name="frame"></param>
+            <param name="uid"></param>
+            <returns></returns>
         </member>
         <member name="T:Net.Share.IDataConfig">
             <summary>
@@ -2400,7 +2526,7 @@
         </member>
         <member name="M:Net.Share.RPCModel.ToString">
             <summary>
-            讲类转换字符串
+            类信息字符串
             </summary>
             <returns></returns>
         </member>
@@ -3008,54 +3134,6 @@
             巡逻路径点组件
             </summary>
         </member>
-        <member name="T:Net.Adapter.CallSiteRpcAdapter`1">
-            <summary>
-            服务器远程过程调用适配器
-            </summary>
-            <typeparam name="Player"></typeparam>
-        </member>
-        <member name="M:Net.Adapter.CallSiteRpcAdapter`1.#ctor(Net.Share.IRpcHandler)">
-            <summary>
-            构造客户端Rpc适配器，参数是xxxServer对象
-            </summary>
-            <param name="handle"></param>
-        </member>
-        <member name="T:Net.Adapter.CallSiteRpcAdapter">
-            <summary>
-            客户端远程过程调用适配器
-            </summary>
-        </member>
-        <member name="M:Net.Adapter.CallSiteRpcAdapter.#ctor(Net.Share.IRpcHandler)">
-            <summary>
-            构造客户端Rpc适配器，参数是xxxClient对象
-            </summary>
-            <param name="handle"></param>
-        </member>
-        <member name="T:Net.Adapter.ListenerAdapter">
-            <summary>
-            网络事件监听适配器
-            </summary>
-        </member>
-        <member name="T:Net.Adapter.SerializeAdapter">
-            <summary>
-            快速序列化适配器
-            </summary>
-        </member>
-        <member name="T:Net.Adapter.SerializeFastAdapter">
-            <summary>
-            通用升级版适配器
-            </summary>
-        </member>
-        <member name="T:Net.Adapter.SerializeAdapter2">
-            <summary>
-            快速序列化2适配器
-            </summary>
-        </member>
-        <member name="T:Net.Adapter.SerializeAdapter3">
-            <summary>
-            极速序列化3适配器
-            </summary>
-        </member>
         <member name="T:Net.Client.ClientBase">
             <summary>
             网络客户端核心基类 2019.3.3
@@ -3390,7 +3468,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.frame">
             <summary>
-            1CRC协议
+            4个字节记录数据长度 + 1CRC校验
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.HeartInterval">
@@ -3534,6 +3612,11 @@
         <member name="P:Net.Client.ClientBase.Version">
             <summary>
             版本号
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.PackageAdapter">
+            <summary>
+            数据包适配器
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.#ctor">
@@ -3723,11 +3806,6 @@
             调式输出网络流量信息
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.SendDataHandler">
-            <summary>
-            发包线程
-            </summary>
-        </member>
         <member name="M:Net.Client.ClientBase.OnOptPacket(System.Int32)">
             <summary>
             当游戏操作行为封包数据时调用
@@ -3769,14 +3847,14 @@
             <param name="buffer"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Client.ClientBase.ReceiveHandle">
+        <member name="M:Net.Client.ClientBase.NetworkProcessing">
             <summary>
-            后台线程接收数据
+            网络处理线程
             </summary>
         </member>
         <member name="M:Net.Client.ClientBase.SingleReceiveHandler">
             <summary>
-            单线程接收处理
+            单线程网络处理
             </summary>
             <returns></returns>
         </member>
@@ -4325,11 +4403,6 @@
             <summary>
             TCP客户端类型 
             第三版本 2020.9.14
-            </summary>
-        </member>
-        <member name="P:Net.Client.TcpClient.frame">
-            <summary>
-            tcp数据长度(4) + 1CRC协议 = 5
             </summary>
         </member>
         <member name="M:Net.Client.TcpClient.#ctor">
@@ -5365,14 +5438,9 @@
             用户唯一身份标识
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.CloseSend">
+        <member name="P:Net.Server.NetPlayer.Connected">
             <summary>
-            关闭发送数据, 当关闭发送数据后, 数据将会停止发送
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.CloseReceive">
-            <summary>
-            关闭接收数据, 当关闭接收数据后, 数据将会停止接收
+            是否处于连接
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.Redundant">
@@ -5398,11 +5466,6 @@
         <member name="P:Net.Server.NetPlayer.ReconnectTimeout">
             <summary>
             断线重连等待时间
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetPlayer.IsSending">
-            <summary>
-            是否在发送中, 避免客户端循环压入任务过多导致线程池处理不过来的问题
             </summary>
         </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
@@ -5551,38 +5614,6 @@
             <summary>
             此方法需要自己实现, 实现内容如下: <see langword="xxServer.Instance.RemoveClient(this);"/>
             </summary>
-        </member>
-        <member name="T:Net.Server.NetPort">
-            <summary>
-            网络端口检测类
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPort.GetFirstAvailablePort(System.Int32,System.Int32)">
-            <summary>
-            获取第一个可用的端口号
-            </summary>
-            <param name="startPort">起始端口号</param>
-            <param name="MaxPort">结束端口号</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPort.PortIsUsed">
-            <summary>
-            获取操作系统已用的端口号
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPort.PortIsAvailable(System.Int32)">
-            <summary>
-            检查指定端口是否已用
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPort.GetIP">
-            <summary>
-            获取本机ip地址
-            </summary>
-            <returns></returns>
         </member>
         <member name="T:Net.Server.NetScene`1">
             <summary>
@@ -6003,7 +6034,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`2.frame">
             <summary>
-            1CRC协议
+            4个字节记录数据长度 + 1CRC校验
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.PackageSize">
@@ -6115,6 +6146,11 @@
         <member name="P:Net.Server.ServerBase`2.ReconnectionTimeout">
             <summary>
             断线重连等待时间内, 默认10秒内进行重连成功, 否则断线处理
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.PackageAdapter">
+            <summary>
+            数据包适配器
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnStartingHandle">
@@ -6470,7 +6506,7 @@
             开始接收数据
             </summary>
         </member>
-        <member name="M:Net.Server.ServerBase`2.ProcessReceive(System.Object)">
+        <member name="M:Net.Server.ServerBase`2.NetworkProcessing(System.Object)">
             <summary>
             业务处理线程组
             </summary>
@@ -6998,11 +7034,6 @@
             第三版本 2020.9.14
             <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
             <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.TcpServer`2.frame">
-            <summary>
-            tcp数据长度(4) + 1CRC协议 = 5
             </summary>
         </member>
         <member name="T:Net.Server.TcpServer">

@@ -39,8 +39,6 @@ namespace Net.Server
     using Microsoft.Win32;
 #endif
     using Debug = Event.NDebug;
-    using global::System.Collections;
-    using global::System.Security.Cryptography;
 
     /// <summary>
     /// 网络服务器核心基类 2019.11.22
@@ -908,12 +906,12 @@ namespace Net.Server
             {
                 try
                 {
-                    bool isSleep = true;
+                    var isSleep = true;
                     ReceiveProcessed(remotePoint, ref isSleep);
                     if (allClients.Length != AllClients.Count)
                         allClients = AllClients.Values.ToArray();
                     tick = (uint)Environment.TickCount;
-                    bool isCheckHeart = false;
+                    var isCheckHeart = false;
                     if (tick >= heartTick)
                     {
                         heartTick = tick + (uint)HeartInterval;
@@ -926,10 +924,10 @@ namespace Net.Server
                             continue;
                         if (client.isDispose)
                             continue;
+                        if (!CheckIsConnected(client, tick))
+                            continue;
                         if (isCheckHeart)
                             CheckHeart(client, tick);
-                        if (client.CloseReceive)
-                            goto J;
                         ResolveDataQueue(client, ref isSleep, tick);
                         SendDirect(client);
                     J: OnClientTick(client, tick);
@@ -943,6 +941,17 @@ namespace Net.Server
                     Debug.LogError(ex.ToString());
                 }
             }
+        }
+
+        protected virtual bool CheckIsConnected(Player client, uint tick)
+        {
+            if (!client.Connected)
+            {
+                if (tick >= client.ReconnectTimeout)
+                    RemoveClient(client);
+                return false;
+            }
+            return true;
         }
 
         protected virtual void OnClientTick(Player client, uint tick)
@@ -978,7 +987,7 @@ namespace Net.Server
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
             client.heart = 0;//udp在关闭发送和接收后，客户端还是能给服务器发信息，导致服务器一直提示有客户端连接和断开连接，所以这里给他在服务器逗留，但不处理客户端任何数据，直到客户端自己不发送信息为止
-            if (client.CloseReceive)
+            if (!client.Connected)
             {
                 BufferPool.Push(buffer);
                 return;
@@ -991,7 +1000,7 @@ namespace Net.Server
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
             client.heart = 0;//udp在关闭发送和接收后，客户端还是能给服务器发信息，导致服务器一直提示有客户端连接和断开连接，所以这里给他在服务器逗留，但不处理客户端任何数据，直到客户端自己不发送信息为止
-            if (client.CloseReceive)
+            if (!client.Connected)
             {
                 BufferPool.Push(segment);
                 return;
@@ -1011,6 +1020,7 @@ namespace Net.Server
             client.Name = uid.ToString();
             client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
             client.ConnectTime = DateTime.Now;
+            client.Connected = true;
             OnThreadQueueSet(client);
             AcceptHander(client);
             SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
@@ -1021,8 +1031,7 @@ namespace Net.Server
             {
                 SendRT(client, NetCmd.ServerFull, new byte[0]);
                 SendDirect(client);
-                client.CloseSend = true;
-                client.CloseReceive = true;
+                client.Connected = false;
                 client.QueueUpNo = int.MaxValue;
             }
             else if (AllClients.Count > OnlineLimit)
@@ -1987,7 +1996,7 @@ namespace Net.Server
             {
                 if (client1.isDispose)
                     goto J;
-                if (client1.CloseReceive | client1.CloseSend)
+                if (!client1.Connected)
                     goto J;
                 client1.QueueUpNo = 0;
                 SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
@@ -2079,7 +2088,7 @@ namespace Net.Server
         /// <param name="buffer">数据缓冲区</param>
         public virtual void Send(Player client, byte cmd, byte[] buffer)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
@@ -2141,7 +2150,7 @@ namespace Net.Server
         /// <param name="pars">RPCFun参数</param>
         public virtual void Send(Player client, byte cmd, string func, params object[] pars)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
@@ -2158,7 +2167,7 @@ namespace Net.Server
 
         public virtual void Send(Player client, byte cmd, ushort methodHash, params object[] pars)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
@@ -2207,7 +2216,7 @@ namespace Net.Server
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
         public void Send(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
@@ -2224,7 +2233,7 @@ namespace Net.Server
 
         public void Send(Player client, RPCModel model)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.udpRPCModels.Count >= LimitQueueCount)
             {
@@ -2256,7 +2265,7 @@ namespace Net.Server
         /// <param name="pars">参数</param>
         public virtual void SendRT(Player client, byte cmd, string func, params object[] pars)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
@@ -2273,7 +2282,7 @@ namespace Net.Server
 
         public virtual void SendRT(Player client, byte cmd, ushort methodHash, params object[] pars)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
@@ -2303,7 +2312,7 @@ namespace Net.Server
         /// <param name="buffer"></param>
         public virtual void SendRT(Player client, byte cmd, byte[] buffer)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
@@ -2328,7 +2337,7 @@ namespace Net.Server
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
         public void SendRT(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
@@ -2345,7 +2354,7 @@ namespace Net.Server
 
         public void SendRT(Player client, RPCModel model)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (client.tcpRPCModels.Count >= LimitQueueCount)
             {
@@ -2487,7 +2496,7 @@ namespace Net.Server
                 var client = clients[i];
                 if (client == null)
                     continue;
-                if (client.CloseSend)
+                if (!client.Connected)
                     continue;
                 if (!reliable)
                 {

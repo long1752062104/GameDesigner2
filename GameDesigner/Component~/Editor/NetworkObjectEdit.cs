@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Net.UnityComponent;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,18 +21,10 @@ public class NetworkObjectEdit : Editor
         base.OnInspectorGUI();
         GUI.enabled = false;
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+        var style = new GUIStyle() { richText = true };
         foreach (var item in no.syncVarInfos.Values)
         {
-            if (item.IsDispose)
-            {
-                GUI.color = Color.gray;
-                EditorGUILayout.LabelField(item.ToString());
-            }
-            else
-            {
-                GUI.color = Color.green;
-                EditorGUILayout.LabelField(item.ToString());
-            }
+            EditorGUILayout.LabelField(item.ToColorString(item.IsDispose ? "#808080" : "green"), style);
         }
         EditorGUILayout.EndScrollView();
         GUI.color = Color.yellow;

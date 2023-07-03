@@ -97,13 +97,9 @@
         public bool Login { get; internal set; }
         public bool isDispose { get; internal set; }
         /// <summary>
-        /// 关闭发送数据, 当关闭发送数据后, 数据将会停止发送
+        /// 是否处于连接
         /// </summary>
-        public bool CloseSend { get; set; }
-        /// <summary>
-        /// 关闭接收数据, 当关闭接收数据后, 数据将会停止接收
-        /// </summary>
-        public bool CloseReceive { get; set; }
+        public bool Connected { get; set; }
         internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
         private byte[] addressBuffer;
         /// <summary>
@@ -127,7 +123,7 @@
         /// 断线重连等待时间
         /// </summary>
         public uint ReconnectTimeout { get; set; }
-
+        
         #region 创建网络客户端(玩家)
         /// <summary>
         /// 构造网络客户端
@@ -186,8 +182,7 @@
             stack = 0;
             stackIndex = 0;
             stackCount = 0;
-            CloseSend = true;
-            CloseReceive = true;
+            Connected = false;
             heart = 0;
             tcpRPCModels = new QueueSafe<RPCModel>();
             udpRPCModels = new QueueSafe<RPCModel>();

@@ -233,7 +233,7 @@ namespace Net.Share
         }
 
         /// <summary>
-        /// 讲类转换字符串
+        /// 类信息字符串
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -248,13 +248,14 @@ namespace Net.Share
                     break;
                 }
             }
-            return $"指令:{cmdStr} 内核:{kernel} 方法:{func} Mask:{methodHash} 数据:{(buffer != null ? buffer.Length : 0)}";
+            return $"指令:{cmdStr} 内核:{kernel} 方法:{func} 哈希方法:{methodHash} 数据:{(buffer != null ? buffer.Length : 0)}";
         }
 
         public void Flush()
         {
             buffer = Buffer;
             index = 0;
+            count = buffer.Length;
             isFill = true;
         }
     }

@@ -93,8 +93,7 @@ namespace ExampleServer
                 dataGridView1.Columns.Add("UserID", "玩家UID");
                 dataGridView1.Columns.Add("Login", "是否登录");
                 dataGridView1.Columns.Add("isDispose", "是否释放");
-                dataGridView1.Columns.Add("CloseSend", "关闭发送");
-                dataGridView1.Columns.Add("CloseReceive", "关闭接收");
+                dataGridView1.Columns.Add("Connected", "是否连接");
                 dataGridView1.Columns.Add("Redundant", "冗余连接");
                 dataGridView1.Columns.Add("QueueUpNo", "玩家排队");
                 dataGridView1.Columns.Add("ConnectTime", "连接时间");
@@ -102,7 +101,7 @@ namespace ExampleServer
                 {
                     dataGridView1.Rows.Add(client.PlayerID, client.Name, client.RemotePoint.ToString(),
                         client.SceneName, client.UserID.ToString(), client.Login.ToString(), client.isDispose.ToString(),
-                        client.CloseSend.ToString(), client.CloseReceive.ToString(), client.Redundant.ToString(),
+                        client.Connected.ToString(), client.Redundant.ToString(),
                         client.QueueUpNo.ToString(), client.ConnectTime.ToString("f"));
                 }
             }

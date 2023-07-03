@@ -47,17 +47,16 @@
                     var userToken = args.UserToken as UserToken<Player>;
                     var client = userToken.client;
                     int count = args.BytesTransferred;
-                    if (count == 0 | args.SocketError != SocketError.Success)
-                    {
-                        client.Client.Disconnect(false);//标记为断开状态
-                        client.ReconnectTimeout = (uint)Environment.TickCount + ReconnectionTimeout;
-                        client.OnConnectLost();
-                        OnConnectLost(client);
-                        return;
-                    }
                     var segment = userToken.segment;
                     segment.Position = args.Offset;
                     segment.Count = count;
+                    if (count == 0 | args.SocketError != SocketError.Success)
+                    {
+                        segment.Dispose();
+                        args.Dispose();
+                        ConnectLost(client, (uint)Environment.TickCount);
+                        return;
+                    }
                     receiveAmount++;
                     receiveCount += count;
                     count = segment.Length;

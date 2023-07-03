@@ -662,13 +662,14 @@ namespace Net.Client
             {
                 thread = new Thread(start)
                 {
-                    IsBackground = true,
-                    Name = threadKey
+                    Name = threadKey,
+                    IsBackground = true
                 };
                 thread.Start();
                 threadDic.TryAdd(threadKey, thread);
+                return;
             }
-            string str = thread.ThreadState.ToString();
+            var str = thread.ThreadState.ToString();
             if (str.Contains("Abort") | str.Contains("Stop") | str.Contains("WaitSleepJoin"))
             {
                 thread.Abort();
@@ -1325,7 +1326,7 @@ namespace Net.Client
 
         public virtual void Receive(bool isSleep)
         {
-            if (Client.Poll(0, SelectMode.SelectRead))
+            if (Client.Poll(1, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
                 segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
@@ -1352,8 +1353,7 @@ namespace Net.Client
             {
                 Thread.Sleep(1);
             }
-            if (Gcp != null)
-                Gcp.Update();
+            Gcp?.Update();
         }
 
         public virtual void Tick()

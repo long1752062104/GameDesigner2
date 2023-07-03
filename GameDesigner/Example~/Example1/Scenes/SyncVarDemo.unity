@@ -456,7 +456,6 @@ MonoBehaviour:
   debugRpc: 1
   authorize: 0
   startConnect: 1
-  md5CRC: 0
   reconnectCount: 10
   reconnectInterval: 2000
   heartLimit: 5
@@ -729,6 +728,10 @@ MonoBehaviour:
     value2:
       id: 0
       authorize: 0
+      writeCount: 0
+      readCount: 0
+      writeBytes: 0
+      readBytes: 0
       value: 0
     value3: 
     value4: []
@@ -745,6 +748,10 @@ MonoBehaviour:
     value2:
       id: 0
       authorize: 0
+      writeCount: 0
+      readCount: 0
+      writeBytes: 0
+      readBytes: 0
       value: 0
     value3: 
     value4: []
@@ -761,6 +768,10 @@ MonoBehaviour:
     value2:
       id: 0
       authorize: 0
+      writeCount: 0
+      readCount: 0
+      writeBytes: 0
+      readBytes: 0
       value: 0
     value3: 
     value4: []
@@ -777,6 +788,10 @@ MonoBehaviour:
     value2:
       id: 0
       authorize: 0
+      writeCount: 0
+      readCount: 0
+      writeBytes: 0
+      readBytes: 0
       value: 0
     value3: 
     value4: []
@@ -790,12 +805,20 @@ MonoBehaviour:
   test4:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value:
       value: 0
       value1: 0
       value2:
         id: 0
         authorize: 0
+        writeCount: 0
+        readCount: 0
+        writeBytes: 0
+        readBytes: 0
         value: 0
       value3: 
       value4: []
@@ -809,18 +832,34 @@ MonoBehaviour:
   test5:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value: 0
   test6:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value: 
   test7:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value: {x: 0, y: 0}
   test8:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value:
       serializedVersion: 2
       x: 0
@@ -830,6 +869,10 @@ MonoBehaviour:
   test9:
     id: 0
     authorize: 0
+    writeCount: 0
+    readCount: 0
+    writeBytes: 0
+    readBytes: 0
     value: 
   test10: []
   test11: []

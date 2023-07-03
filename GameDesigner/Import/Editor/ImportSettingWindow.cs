@@ -290,7 +290,8 @@ public class ImportSettingWindow : EditorWindow
             var path1 = Path.GetDirectoryName(newPath);
             if (!Directory.Exists(path1))
                 Directory.CreateDirectory(path1);
-            File.Copy(file, newPath, true);
+            try { File.Copy(file, newPath, true); }
+            catch (Exception ex) { Debug.LogError(ex); }
         }
         Debug.Log($"导入{Path.GetFileName(copyToProtocolName)}完成!");
         AssetDatabase.Refresh();

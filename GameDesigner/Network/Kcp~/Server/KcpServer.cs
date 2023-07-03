@@ -106,7 +106,7 @@
 
         protected unsafe override void SendByteData(Player client, byte[] buffer, bool reliable)
         {
-            if (client.CloseSend)
+            if (!client.Connected)
                 return;
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;
