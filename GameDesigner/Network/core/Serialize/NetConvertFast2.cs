@@ -175,7 +175,7 @@
                 var itemType = type.GetArrayItemType();
                 if (itemType.IsEnum)
                 {
-                    AddBaseArrayType(type);
+                    AddBaseArrayType(type, itemType);
                     return;
                 }
             }
@@ -187,7 +187,7 @@
                     var itemType = arguments[0];
                     if (itemType.IsEnum)
                     {
-                        AddBaseListType(type);
+                        AddBaseListType(type, itemType);
                         return;
                     }
                 }
@@ -208,8 +208,8 @@
         private static void AddBaseType3<T>()
         {
             AddBaseType(typeof(T));
-            AddBaseArrayType(typeof(T[]));
-            AddBaseListType(typeof(List<T>));
+            AddBaseArrayType(typeof(T[]), typeof(T));
+            AddBaseListType(typeof(List<T>), typeof(T));
         }
 
         private static void AddBaseType<T>()
@@ -228,36 +228,24 @@
             Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseBind<>).MakeGenericType(type)), hashCode = hashType });
         }
 
-        private static void AddBaseArrayType<T>()
-        {
-            var type = typeof(T[]);
-            AddBaseArrayType(type);
-        }
-
-        private static void AddBaseArrayType(Type type)
+        private static void AddBaseArrayType(Type type, Type itemType)
         {
             if (Types2.ContainsKey(type))
                 return;
             var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
-            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseArrayBind<>).MakeGenericType(type)), hashCode = hashType });
+            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseArrayBind<>).MakeGenericType(itemType)), hashCode = hashType });
         }
 
-        private static void AddBaseListType<T>()
-        {
-            var type = typeof(List<T>);
-            AddBaseListType(type);
-        }
-
-        private static void AddBaseListType(Type type)
+        private static void AddBaseListType(Type type, Type itemType)
         {
             if (Types2.ContainsKey(type))
                 return;
             var hashType = (ushort)Types.Count;
             Types.Add(hashType, type);
             Types1.Add(type, hashType);
-            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseListBind<>).MakeGenericType(type)), hashCode = hashType });
+            Types2.Add(type, new TypeBind() { bind = Activator.CreateInstance(typeof(BaseListBind<>).MakeGenericType(itemType)), hashCode = hashType });
         }
 
         public static void InitBindInterfaces()

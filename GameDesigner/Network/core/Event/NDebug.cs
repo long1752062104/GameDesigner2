@@ -38,39 +38,58 @@
         private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
         public int count = 1000;
         private int cursorTop;
+        private bool collapse;
+
+        public ConsoleDebug(bool collapse) 
+        {
+            this.collapse = collapse;
+        }
 
         public void Output(DateTime time, LogType log, string msg)
         {
-            if (dic.Count > count)
+            if (collapse)
             {
-                dic.Clear();
-                Console.Clear();
-                cursorTop = 0;
+                if (dic.Count > count)
+                {
+                    dic.Clear();
+                    Console.Clear();
+                    cursorTop = 0;
+                }
+                if (!dic.TryGetValue(log + msg, out var entity))
+                    dic.TryAdd(log + msg, entity = new LogEntity() { time = time, log = log, msg = msg });
+                entity.count++;
+                if (entity.row == -1)
+                {
+                    entity.row = cursorTop;
+                    Console.SetCursorPosition(0, cursorTop);
+                }
+                else
+                {
+                    Console.SetCursorPosition(0, entity.row);
+                }
+                var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][";
+                Console.Write(info);
+                Console.ForegroundColor = log == LogType.Log ? ConsoleColor.Green : log == LogType.Warning ? ConsoleColor.Yellow : ConsoleColor.Red;
+                info = $"{log}";
+                Console.Write(info);
+                Console.ResetColor();
+                if (entity.count > 1)
+                    Console.Write($"] ({entity.count}) {msg}\r\n");
+                else
+                    Console.Write($"] {msg}\r\n");
+                if (Console.CursorTop > cursorTop)
+                    cursorTop = Console.CursorTop;
             }
-            if (!dic.TryGetValue(log + msg, out var entity))
-                dic.TryAdd(log + msg, entity = new LogEntity() { time = time, log = log, msg = msg });
-            entity.count++;
-            if (entity.row == -1)
+            else 
             {
-                entity.row = cursorTop;
-                Console.SetCursorPosition(0, cursorTop);
-            }
-            else
-            {
-                Console.SetCursorPosition(0, entity.row);
-            }
-            var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][";
-            Console.Write(info);
-            Console.ForegroundColor = log == LogType.Log ? ConsoleColor.Green : log == LogType.Warning ? ConsoleColor.Yellow : ConsoleColor.Red;
-            info = $"{log}";
-            Console.Write(info);
-            Console.ResetColor();
-            if (entity.count > 1)
-                Console.Write($"] ({entity.count}) {msg}\r\n");
-            else
+                var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][";
+                Console.Write(info);
+                Console.ForegroundColor = log == LogType.Log ? ConsoleColor.Green : log == LogType.Warning ? ConsoleColor.Yellow : ConsoleColor.Red;
+                info = $"{log}";
+                Console.Write(info);
+                Console.ResetColor();
                 Console.Write($"] {msg}\r\n");
-            if(Console.CursorTop > cursorTop)
-                cursorTop = Console.CursorTop;
+            }
         }
     }
 
@@ -442,9 +461,9 @@
         /// <summary>
         /// 绑定控制台输出
         /// </summary>
-        public static void BindConsoleLog()
+        public static void BindConsoleLog(bool collapse = true)
         {
-            BindDebug(new ConsoleDebug());
+            BindDebug(new ConsoleDebug(collapse));
         }
 
         /// <summary>
