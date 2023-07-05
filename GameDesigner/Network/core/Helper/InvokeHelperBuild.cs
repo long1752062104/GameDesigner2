@@ -108,7 +108,11 @@ namespace Net.Helper
                     var dict = new Dictionary<string, string>();
                     var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                     foreach (var assemblie in assemblies)
+                    {
+                        if (assemblie.IsDynamic)
+                            continue;
                         dict.Add(assemblie.GetName().FullName, assemblie.Location);
+                    }
                     var referencedAssemblies = mainAssembly.GetReferencedAssemblies();
                     foreach (var item in referencedAssemblies)
                         if (dict.TryGetValue(item.FullName, out var path2))

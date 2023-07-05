@@ -189,7 +189,7 @@
                 }
                 type = obj.GetType();
                 segment.Write(GetTypeHash(type));
-                NetConvertBinary.SerializeObject(segment, obj, recordType, true);
+                NetConvertBinary.WriteObject(segment, type, obj, recordType, true);
             }
             return segment.ToArray(true);
         }
@@ -237,7 +237,7 @@
                         list.Add(null);
                         continue;
                     }
-                    var obj = NetConvertBinary.DeserializeObject(segment, type, false, recordType, true);
+                    var obj = NetConvertBinary.ReadObject(segment, type, recordType, true);
                     list.Add(obj);
                 }
                 fdata.pars = list.ToArray();

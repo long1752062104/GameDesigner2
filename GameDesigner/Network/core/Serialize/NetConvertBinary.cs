@@ -418,9 +418,8 @@
             {
                 if (obj == null)
                     return default;
-                Type type = obj.GetType();
-                byte[] typeBytes = BitConverter.GetBytes(TypeToIndex(type));
-                stream.Write(typeBytes, 0, 2);
+                var type = obj.GetType();
+                stream.Write(TypeToIndex(type));
                 WriteObject(stream, type, obj, recordType, ignore);
             }
             catch (Exception ex)
@@ -442,22 +441,8 @@
         public static Segment SerializeObject(object obj, bool recordType = false, bool ignore = false)
         {
             var stream = BufferPool.Take();
-            try
-            {
-                if (obj == null)
-                    return stream;
-                var type = obj.GetType();
-                WriteObject(stream, type, obj, recordType, ignore);
-            }
-            catch (Exception ex)
-            {
-                NDebug.LogError("序列化:" + obj + "出错 详细信息:" + ex);
-            }
-            finally 
-            {
-                stream.Count = stream.Position;
-                stream.Position = 0;
-            }
+            SerializeObject(stream, obj, recordType, ignore);
+            stream.Position = 0;
             return stream;
         }
 
@@ -473,6 +458,7 @@
                 if (obj == null)
                     return;
                 var type = obj.GetType();
+                if (recordType) stream.Write(TypeToIndex(type));
                 WriteObject(stream, type, obj, recordType, ignore);
             }
             catch (Exception ex)
@@ -905,7 +891,7 @@
         /// <param name="target"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
-        private static void WriteObject(Segment segment, Type type, object target, bool recordType, bool ignore)
+        public static void WriteObject(Segment segment, Type type, object target, bool recordType, bool ignore)
         {
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
@@ -1026,7 +1012,7 @@
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
-                    Type type = IndexToType(segment.ReadUInt16());
+                    var type = IndexToType(segment.ReadUInt16());
                     if (type == null)
                         break;
                     index += 2;
@@ -1130,6 +1116,7 @@
         /// <returns></returns>
         public static object DeserializeObject(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
+            if (recordType) type = IndexToType(segment.ReadUInt16());
             var obj = ReadObject(segment, type, recordType, ignore);
             if (isPush) BufferPool.Push(segment);
             return obj;
@@ -1156,7 +1143,7 @@
         /// <param name="index"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static object ReadObject(Segment segment, Type type, bool recordType, bool ignore)
+        public static object ReadObject(Segment segment, Type type, bool recordType, bool ignore)
         {
             object obj;
             if (type == typeof(string)) obj = string.Empty;
