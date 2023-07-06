@@ -307,8 +307,6 @@ namespace Net.System
 
         private int FindEntry(TKey key)
         {
-            if (key == null)
-                return -1;
             int num = key.GetHashCode() & int.MaxValue;
             for (int i = buckets[num % buckets.Length]; i >= 0; i = entries[i].next)
             {
@@ -426,8 +424,6 @@ namespace Net.System
 
         public bool TryRemove(TKey key, out TValue value)
         {
-            if (key == null)
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
             int num = key.GetHashCode() & int.MaxValue;
             int num2 = num % buckets.Length;
             int num3 = -1;

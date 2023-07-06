@@ -75,11 +75,13 @@ namespace Net.System
                 playerLoop.subSystemList = copyList.ToArray();
                 PlayerLoop.SetPlayerLoop(playerLoop);
             }
+#if !UNITY_WEBGL //在webgl平台下 必须是主线程
             else //解决有的Unity不改代码每次运行不会调用静态构造函数导致的问题
             {
                 Init();
                 Start();
             }
+#endif
         }
 
         private static void Start()
