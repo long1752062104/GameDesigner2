@@ -145,4 +145,301 @@ namespace Binding
             return value;
         }
     }
+
+    #region "基元类型绑定"
+    public struct SystemByteBind : ISerialize<System.Byte>, ISerialize
+    {
+        public void Write(System.Byte value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Byte Read(Segment stream)
+        {
+            return stream.ReadByte();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Byte)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadByte();
+        }
+    }
+    public struct SystemSByteBind : ISerialize<System.SByte>, ISerialize
+    {
+        public void Write(System.SByte value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.SByte Read(Segment stream)
+        {
+            return stream.ReadSByte();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.SByte)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadSByte();
+        }
+    }
+    public struct SystemBooleanBind : ISerialize<System.Boolean>, ISerialize
+    {
+        public void Write(System.Boolean value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Boolean Read(Segment stream)
+        {
+            return stream.ReadBoolean();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Boolean)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadBoolean();
+        }
+    }
+    public struct SystemInt16Bind : ISerialize<System.Int16>, ISerialize
+    {
+        public void Write(System.Int16 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Int16 Read(Segment stream)
+        {
+            return stream.ReadInt16();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Int16)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadInt16();
+        }
+    }
+    public struct SystemUInt16Bind : ISerialize<System.UInt16>, ISerialize
+    {
+        public void Write(System.UInt16 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.UInt16 Read(Segment stream)
+        {
+            return stream.ReadUInt16();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.UInt16)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadUInt16();
+        }
+    }
+    public struct SystemCharBind : ISerialize<System.Char>, ISerialize
+    {
+        public void Write(System.Char value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Char Read(Segment stream)
+        {
+            return stream.ReadChar();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Char)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadChar();
+        }
+    }
+    public struct SystemInt32Bind : ISerialize<System.Int32>, ISerialize
+    {
+        public void Write(System.Int32 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Int32 Read(Segment stream)
+        {
+            return stream.ReadInt32();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Int32)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadInt32();
+        }
+    }
+    public struct SystemUInt32Bind : ISerialize<System.UInt32>, ISerialize
+    {
+        public void Write(System.UInt32 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.UInt32 Read(Segment stream)
+        {
+            return stream.ReadUInt32();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.UInt32)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadUInt32();
+        }
+    }
+    public struct SystemSingleBind : ISerialize<System.Single>, ISerialize
+    {
+        public void Write(System.Single value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Single Read(Segment stream)
+        {
+            return stream.ReadSingle();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Single)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadSingle();
+        }
+    }
+    public struct SystemInt64Bind : ISerialize<System.Int64>, ISerialize
+    {
+        public void Write(System.Int64 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Int64 Read(Segment stream)
+        {
+            return stream.ReadInt64();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Int64)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadInt64();
+        }
+    }
+    public struct SystemUInt64Bind : ISerialize<System.UInt64>, ISerialize
+    {
+        public void Write(System.UInt64 value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.UInt64 Read(Segment stream)
+        {
+            return stream.ReadUInt64();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.UInt64)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadUInt64();
+        }
+    }
+    public struct SystemDoubleBind : ISerialize<System.Double>, ISerialize
+    {
+        public void Write(System.Double value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Double Read(Segment stream)
+        {
+            return stream.ReadDouble();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Double)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadDouble();
+        }
+    }
+    public struct SystemStringBind : ISerialize<System.String>, ISerialize
+    {
+        public void Write(System.String value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.String Read(Segment stream)
+        {
+            return stream.ReadString();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.String)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadString();
+        }
+    }
+    public struct SystemDecimalBind : ISerialize<System.Decimal>, ISerialize
+    {
+        public void Write(System.Decimal value, Segment stream)
+        {
+            stream.Write(value);
+        }
+        public System.Decimal Read(Segment stream)
+        {
+            return stream.ReadDecimal();
+        }
+
+        public void WriteValue(object value, Segment stream)
+        {
+            stream.Write((System.Decimal)value);
+        }
+
+        object ISerialize.ReadValue(Segment stream)
+        {
+            return stream.ReadDecimal();
+        }
+    }
+#endregion
 }

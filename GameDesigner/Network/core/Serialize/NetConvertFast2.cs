@@ -112,8 +112,8 @@
             AddBaseType3<ulong>();
             AddBaseType3<double>();
             AddBaseType3<string>();
-            AddBaseType3<DateTime>();
             AddBaseType3<decimal>();
+            AddBaseType3<DateTime>();
             AddBaseType3<DBNull>();
         }
 

@@ -353,26 +353,55 @@ namespace Binding
             {
                 if (members[i].ItemType1 == null)//List<T>
                 {
-                    typecode = Type.GetTypeCode(members[i].ItemType);
-                    if (typecode != TypeCode.Object)
+                    if(members[i].Type == typeof(List<>).MakeGenericType(members[i].ItemType))
                     {
-                        var templateText1 = templateTexts[1];
-                        templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                        templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                        templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                        sb.Append(templateText1);
+                        typecode = Type.GetTypeCode(members[i].ItemType);
+                        if (typecode != TypeCode.Object)
+                        {
+                            var templateText1 = templateTexts[1];
+                            templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                            templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                            templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                            templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                            sb.Append(templateText1);
 
-                        var templateText2 = templateTexts[5];
-                        templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                        templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                        templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                        var typeName1 = AssemblyHelper.GetTypeName(members[i].Type);
-                        templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Generic<{typeName1}>");
-                        sb1.Append(templateText2);
+                            var templateText2 = templateTexts[5];
+                            templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                            templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                            templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                            var typeName1 = AssemblyHelper.GetTypeName(members[i].Type);
+                            templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Generic<{typeName1}>");
+                            sb1.Append(templateText2);
+                        }
+                        else
+                        {
+                            var templateText1 = templateTexts[2];
+                            templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                            templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                            templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                            if (members[i].Type.IsValueType)
+                                templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                            else
+                                templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                            var local = members[i].ItemType.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
+                            templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                            sb.Append(templateText1);
+
+                            var templateText2 = templateTexts[6];
+                            templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                            templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                            templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                            templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                            sb1.Append(templateText2);
+                        }
                     }
                     else
                     {
+                        var str = BuildGenericAll(members[i].Type);
+                        var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
+                        className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+                        File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
+
                         var templateText1 = templateTexts[2];
                         templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
                         templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
@@ -381,7 +410,7 @@ namespace Binding
                             templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
                         else
                             templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                        var local = members[i].ItemType.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
+                        var local = className + "Bind";
                         templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
                         sb.Append(templateText1);
 
@@ -546,7 +575,7 @@ namespace Binding
 
     public static StringBuilder BuildArray(Type type)
     {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         var templateText = @"
 namespace Binding
 {
@@ -605,7 +634,7 @@ namespace Binding
 
     public static StringBuilder BuildGeneric(Type type)
     {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         var templateText = @"
 namespace Binding
 {
@@ -650,6 +679,66 @@ namespace Binding
 
         var local = typeName + "Bind";
         templateText = templateText.Replace("{BINDTYPE}", $"{local}");
+
+        sb.Append(templateText);
+        return sb;
+    }
+
+    public static StringBuilder BuildGenericAll(Type type)
+    {
+        var sb = new StringBuilder();
+        var templateText = @"using Net.System;
+using Net.Serialize;
+
+namespace Binding
+{
+	public struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
+	{
+		public void Write(List<TYPE> value, Segment stream)
+		{
+			int count = value.Count;
+			stream.Write(count);
+			if (count == 0) return;
+			var bind = new {BINDTYPE}();
+			foreach (var value1 in value)
+				bind.Write(value1, stream);
+		}
+
+		public List<TYPE> Read(Segment stream)
+		{
+			var count = stream.ReadInt32();
+			var value = new List<TYPE>({COUNT});
+			if (count == 0) return value;
+			var bind = new {BINDTYPE}();
+			for (int i = 0; i < count; i++)
+				value.Add(bind.Read(stream));
+			return value;
+		}
+
+		public void WriteValue(object value, Segment stream)
+		{
+			Write((List<TYPE>)value, stream);
+		}
+
+		public object ReadValue(Segment stream)
+		{
+			return Read(stream);
+		}
+	}
+}";
+        var typeName = AssemblyHelper.GetCodeTypeName(type.ToString());
+        var fullName = typeName;
+        typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+        templateText = templateText.Replace("{TYPENAME}", typeName);
+        templateText = templateText.Replace("List<TYPE>", fullName);
+
+        var itemTypeName = type.GetArrayItemType().ToString();
+        itemTypeName = itemTypeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+        var local = itemTypeName + "Bind";
+        templateText = templateText.Replace("{BINDTYPE}", $"{local}");
+
+        var ctor = type.GetConstructor(new Type[] { typeof(int) });
+        templateText = templateText.Replace("{COUNT}", ctor != null ? "count" : "");
 
         sb.Append(templateText);
         return sb;
