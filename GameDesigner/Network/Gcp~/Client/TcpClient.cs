@@ -135,7 +135,7 @@
         {
             sendCount += buffer.Length;
             sendAmount++;
-            if (Client.Poll(1, SelectMode.SelectWrite))
+            if (Client.Poll(0, SelectMode.SelectWrite))
             {
 #if TEST1
                 list.AddRange(buffer);
@@ -150,12 +150,12 @@
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(buffer, reliable);
                 else if (count != buffer.Length)
-                    NDebug.Log($"发送了{buffer.Length - count}个字节失败!");
+                    NDebug.LogError($"发送了{buffer.Length - count}个字节失败!");
 #endif
             }
             else
             {
-                NDebug.Log("缓冲区已满,等待接收中!");
+                NDebug.LogError("发送窗口已满,等待对方接收中!");
             }
         }
 

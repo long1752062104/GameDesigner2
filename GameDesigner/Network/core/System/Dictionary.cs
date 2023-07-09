@@ -310,7 +310,7 @@ namespace Net.System
             int num = key.GetHashCode() & int.MaxValue;
             for (int i = buckets[num % buckets.Length]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && Equals(entries[i].key, key))
+                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
                 {
                     return i;
                 }
@@ -338,7 +338,7 @@ namespace Net.System
             int num3 = 0;
             for (int i = buckets[num2]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && Equals(entries[i].key, key))
+                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
                 {
                     if (add)
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
@@ -429,7 +429,7 @@ namespace Net.System
             int num3 = -1;
             for (int i = buckets[num2]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num && Equals(entries[i].key, key))
+                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
                 {
                     if (num3 < 0)
                     {

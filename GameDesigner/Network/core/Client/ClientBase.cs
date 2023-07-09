@@ -1326,7 +1326,7 @@ namespace Net.Client
 
         public virtual void Receive(bool isSleep)
         {
-            if (Client.Poll(1, SelectMode.SelectRead))
+            if (Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
                 segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);

@@ -1,7 +1,4 @@
-﻿using Net.System;
-using System;
-
-namespace Net.Share
+﻿namespace Net.Share
 {
     /// <summary>
     /// 远程过程调用模型,此类负责网络通讯中数据解析临时存储的对象

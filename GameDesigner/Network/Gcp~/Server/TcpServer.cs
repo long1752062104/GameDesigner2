@@ -207,7 +207,7 @@
                 return;
             if (buffer.Length <= frame)//解决长度==6的问题(没有数据)
                 return;
-            if (client.Client.Poll(1, SelectMode.SelectWrite))
+            if (client.Client.Poll(0, SelectMode.SelectWrite))
             {
 #if TEST1
                 list.AddRange(buffer);
@@ -225,14 +225,14 @@
                     return;
                 }
                 else if (count1 != buffer.Length)
-                    Debug.Log($"发送了{buffer.Length - count1}个字节失败!");
+                    Debug.LogError($"发送了{buffer.Length - count1}个字节失败!");
                 sendAmount++;
                 sendCount += buffer.Length;
 #endif
             }
             else
             {
-                Debug.LogError($"[{client}]发送缓冲列表已经超出限制!");
+                Debug.LogError($"[{client}]发送窗口已满,等待对方接收中!");
             }
         }
 
