@@ -61,6 +61,7 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         //public bool md5CRC;
+        public bool singleThread;
         public int reconnectCount = 10;
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
@@ -84,6 +85,7 @@ namespace Net.Component
                     _client.port = port;
                     _client.LogRpc = debugRpc;
                     //_client.MD5CRC = md5CRC;
+                    _client.IsMultiThread = !singleThread;
                     _client.ReconnectCount = reconnectCount;
                     _client.ReconnectInterval = reconnectInterval;
                     _client.SetHeartTime(heartLimit, heartInterval);

@@ -1008,9 +1008,11 @@ namespace Net.Client
         {
             AbortedThread();//断线重连处理
             Connected = true;
+#if !UNITY_WEBGL
             if (IsMultiThread)
                 StartThread("NetworkProcessing", NetworkProcessing);
             else
+#endif
                 singleReceiveHandlerID = ThreadManager.Invoke("SingleNetworkHandler", SingleReceiveHandler);
             networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
