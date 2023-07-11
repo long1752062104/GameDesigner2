@@ -15,6 +15,7 @@
     using AOT;
     using Cysharp.Threading.Tasks;
     using static Kcp.KcpLib;
+    using Net.Event;
 
     /// <summary>
     /// kcp客户端
@@ -80,7 +81,7 @@
 #endif
         }
 
-        public override void Receive(bool isSleep)
+        public override void ReceiveHandler()
         {
             if (Client.Poll(0, SelectMode.SelectRead))
             {
@@ -98,10 +99,6 @@
                     ikcp_input(kcp, p, segment.Count);
                 BufferPool.Push(segment);
             }
-            else if (isSleep)
-            {
-                Thread.Sleep(1);
-            }
             int len;
             while ((len = ikcp_peeksize(kcp)) > 0)
             {
@@ -112,11 +109,10 @@
                     ResolveBuffer(ref segment1, false);
                     BufferPool.Push(segment1);
                 }
-                revdLoopNum++;
             }
         }
 
-        public override void Tick()
+        public override void OnNetworkTick()
         {
             ikcp_update(kcp, (uint)Environment.TickCount);
         }
@@ -212,7 +208,7 @@
                                 }
                                 catch (Exception ex)
                                 {
-                                    Event.NDebug.LogError(ex);
+                                    NDebug.LogError(ex);
                                 }
                             }
                         }
@@ -259,32 +255,6 @@
             return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
-
-        //protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
-
-        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-        //{
-        //    base.ResolveBuffer(ref buffer, isTcp);
-        //}
-//        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
-//        {
-//            sendCount += buffer.Length;
-//            sendAmount++;
-//#if WINDOWS
-//            fixed (byte* ptr = buffer)
-//                Win32KernelAPI.sendto(Client.Handle, ptr, buffer.Length, SocketFlags.None, addressBuffer, 16);
-//#else
-//            Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
-//#endif
-//        }
-        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
-        //{
-        //    return new byte[0];
-        //}
-        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-        //{
-        //    return default;
-        //}
         /// <summary>
         /// 单线程更新，需要开发者自动调用更新
         /// </summary>
@@ -292,7 +262,6 @@
         {
             if (!Connected)
                 return;
-            NetworkProcessing(false);
             NetworkTick();
         }
         public override string ToString()

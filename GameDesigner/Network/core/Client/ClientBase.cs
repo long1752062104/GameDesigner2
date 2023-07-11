@@ -133,13 +133,9 @@ namespace Net.Client
         /// </summary>
         protected int receiveCount;
         /// <summary>
-        /// 发送线程循环次数
+        /// 网络FPS
         /// </summary>
-        protected int sendLoopNum;
-        /// <summary>
-        /// 接收线程循环次数 只有ENetServer
-        /// </summary>
-        protected int revdLoopNum;
+        public int FPS { get; private set; }
         /// <summary>
         /// 从启动到现在总流出的数据流量
         /// </summary>
@@ -418,7 +414,7 @@ namespace Net.Client
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
         private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
-        protected int checkRpcHandleID, networkFlowHandlerID, heartHandlerID, syncVarHandlerID, updateHandlerID, singleReceiveHandlerID;//事件id
+        protected int singleThreadHandlerID, networkTickID, networkFlowHandlerID, heartHandlerID;
         private int sendFileTick, recvFileTick;
         /// <summary>
         /// 当前尝试重连次数
@@ -462,6 +458,10 @@ namespace Net.Client
         /// 数据包适配器
         /// </summary>
         public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
+        /// <summary>
+        /// 网络循环事件处理
+        /// </summary>
+        protected TimerEvent LoopEvent = new TimerEvent();
 
         /// <summary>
         /// 构造函数
@@ -685,31 +685,18 @@ namespace Net.Client
         public void AbortedThread()
         {
 #if !UNITY_WEBGL
-            foreach (Thread thread in threadDic.Values)
+            foreach (var thread in threadDic.Values)
                 thread?.Abort();
             threadDic.Clear();
 #endif
-            ThreadManager.Event.RemoveEvent(checkRpcHandleID);
-            ThreadManager.Event.RemoveEvent(networkFlowHandlerID);
-            ThreadManager.Event.RemoveEvent(heartHandlerID);
-            ThreadManager.Event.RemoveEvent(syncVarHandlerID);
-            ThreadManager.Event.RemoveEvent(updateHandlerID);
-            ThreadManager.Event.RemoveEvent(singleReceiveHandlerID);
-        }
-
-        /// <summary>
-        /// 每一帧执行线程
-        /// </summary>
-        protected bool UpdateHandler()
-        {
-            NetworkTick();
-            return openClient;
+            ThreadManager.Event.RemoveEvent(singleThreadHandlerID);
+            LoopEvent.Clear();
         }
 
         /// <summary>
         /// 网络数据更新
         /// </summary>
-        public void NetworkTick()
+        public void NetworkUpdate()
         {
             int count = WorkerQueue.Count;
             for (int i = 0; i < count; i++)
@@ -906,7 +893,6 @@ namespace Net.Client
                     var tick1 = (uint)Environment.TickCount;
                     while (UID == 0)
                     {
-                        NetworkProcessing(true);
                         if ((uint)Environment.TickCount >= tick)
                             throw new Exception("uid赋值失败!");
                         if (!openClient)
@@ -917,10 +903,8 @@ namespace Net.Client
                             var segment = BufferPool.Take();
                             segment.Write(PreUserId);
                             rPCModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
-                            SendDirect();
                         }
-                        if (Gcp != null)
-                            Gcp.Update();
+                        NetworkTick();
                     }
                     Connected = true;
                     StartupThread();
@@ -1013,12 +997,10 @@ namespace Net.Client
                 StartThread("NetworkProcessing", NetworkProcessing);
             else
 #endif
-                singleReceiveHandlerID = ThreadManager.Invoke("SingleNetworkHandler", SingleReceiveHandler);
-            networkFlowHandlerID = ThreadManager.Invoke("NetworkFlowHandler", 1f, NetworkFlowHandler);
-            heartHandlerID = ThreadManager.Invoke("HeartHandler", HeartInterval, HeartHandler);
-            syncVarHandlerID = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
-            if (!UseUnityThread)
-                updateHandlerID = ThreadManager.Invoke("UpdateHandle", UpdateHandler);
+                singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
+            networkTickID = LoopEvent.AddEvent("NetworkTick", 0, NetworkTick);
+            networkFlowHandlerID = LoopEvent.AddEvent("NetworkFlowHandler", 1f, NetworkFlowHandler);
+            heartHandlerID = LoopEvent.AddEvent("HeartHandler", HeartInterval, HeartHandler);
         }
 
         /// <summary>
@@ -1039,7 +1021,7 @@ namespace Net.Client
                 InvokeNetworkEvent(OnConnectFailedHandle, action, false);
                 NDebug.LogError("服务器尚未开启或连接IP端口错误!");
                 if (!UseUnityThread)
-                    UpdateHandler();
+                    NetworkUpdate();
             }
         }
 
@@ -1082,8 +1064,7 @@ namespace Net.Client
                     receiveNumber = receiveAmount,
                     receiveCount = receiveCount,
                     resolveNumber = resolveAmount,
-                    sendLoopNum = sendLoopNum,
-                    revdLoopNum = revdLoopNum,
+                    FPS = FPS,
                     outflowTotal = outflowTotal,
                     inflowTotal = inflowTotal,
                 });
@@ -1099,8 +1080,7 @@ namespace Net.Client
                 resolveAmount = 0;
                 receiveAmount = 0;
                 receiveCount = 0;
-                sendLoopNum = 0;
-                revdLoopNum = 0;
+                FPS = 0;
             }
             return Connected;
         }
@@ -1292,7 +1272,7 @@ namespace Net.Client
             {
                 try
                 {
-                    NetworkProcessing(true);
+                    LoopEvent.UpdateEventFixed(1, true);
                 }
                 catch (Exception ex)
                 {
@@ -1305,11 +1285,11 @@ namespace Net.Client
         /// 单线程网络处理
         /// </summary>
         /// <returns></returns>
-        protected virtual bool SingleReceiveHandler()
+        protected virtual bool SingleNetworkProcessing()
         {
             try
             {
-                NetworkProcessing(false);
+                LoopEvent.UpdateEventFixed(1, false);
             }
             catch (Exception ex)
             {
@@ -1318,15 +1298,26 @@ namespace Net.Client
             return Connected;
         }
 
-        protected virtual void NetworkProcessing(bool isSleep)
+        protected virtual bool NetworkTick()
         {
-            Receive(isSleep);
-            SendDirect();
-            Tick();
-            sendLoopNum++;
+            try
+            {
+                ReceiveHandler();
+                SyncVarHandler();
+                SendDirect();
+                OnNetworkTick();
+                if (!UseUnityThread)
+                    NetworkUpdate();
+                FPS++;
+            }
+            catch (Exception ex)
+            {
+                NetworkException(ex);
+            }
+            return Connected;
         }
 
-        public virtual void Receive(bool isSleep)
+        public virtual void ReceiveHandler()
         {
             if (Client.Poll(0, SelectMode.SelectRead))
             {
@@ -1348,17 +1339,12 @@ namespace Net.Client
                 receiveCount += segment.Count;
                 heart = 0;
                 ResolveBuffer(ref segment, false);
-                revdLoopNum++;
                 BufferPool.Push(segment);
-            }
-            else if(isSleep)
-            {
-                Thread.Sleep(1);
             }
             Gcp?.Update();
         }
 
-        public virtual void Tick()
+        public virtual void OnNetworkTick()
         {
         }
 
@@ -2598,7 +2584,7 @@ namespace Net.Client
 
         protected void SetHeartInterval(int interval) 
         {
-            ThreadManager.Event.ResetTimeInterval(heartHandlerID, (ulong)interval);
+            LoopEvent.ResetTimeInterval(heartHandlerID, (ulong)interval);
         }
 
         /// <summary>
@@ -2712,19 +2698,11 @@ namespace Net.Client
         /// <summary>
         /// 字段,属性同步处理线程
         /// </summary>
-        protected virtual bool SyncVarHandler()
+        protected virtual void SyncVarHandler()
         {
-            try
-            {
-                var buffer = SyncVarHelper.CheckSyncVar(true, SyncVarDic);
-                if (buffer != null)
-                    SendRT(NetCmd.SyncVarP2P, buffer);
-            }
-            catch (Exception e)
-            {
-                NDebug.LogError(e);
-            }
-            return Connected;
+            var buffer = SyncVarHelper.CheckSyncVar(true, SyncVarDic);
+            if (buffer != null)
+                SendRT(NetCmd.SyncVarP2P, buffer);
         }
 
         /// <summary>

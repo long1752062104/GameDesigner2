@@ -69,7 +69,7 @@
                     var tick = Environment.TickCount + 8000;
                     while (UID == 0)
                     {
-                        NetworkProcessing(true);
+                        NetworkTick();
                         if (Environment.TickCount >= tick)
                             throw new Exception("uid赋值失败!连接超时处理");
                         if (!openClient)
@@ -393,13 +393,6 @@
             return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
-
-        //protected override void OnConnected(bool result) { }
-
-        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-        //{
-        //    base.ResolveBuffer(ref buffer, isTcp);
-        //}
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
@@ -411,14 +404,6 @@
                 Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
 #endif
         }
-        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
-        //{
-        //    return new byte[0];
-        //}
-        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-        //{
-        //    return default;
-        //}
         public override string ToString()
         {
             return $"uid:{UID} conv:{Connected}";

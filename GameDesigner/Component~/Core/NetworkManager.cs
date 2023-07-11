@@ -166,7 +166,7 @@ namespace Net.Component
             {
                 if (clients[i]._client == null)
                     continue;
-                clients[i]._client.NetworkTick();
+                clients[i]._client.NetworkUpdate();
             }
         }
 

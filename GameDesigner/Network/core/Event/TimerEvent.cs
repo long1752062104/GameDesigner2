@@ -192,7 +192,7 @@ namespace Net.Event
             return enentID;
         }
 
-        public TimerEvent() 
+        public TimerEvent()
         {
             frame = 0u;//一秒60次
             startTick = (uint)Environment.TickCount;
@@ -432,6 +432,11 @@ namespace Net.Event
             {
                 events[i].complete = true;
             }
+        }
+
+        public void Clear()
+        {
+            events.Clear();
         }
     }
 

@@ -126,7 +126,7 @@
             }
         }
 
-        public override void Receive(bool isSleep)
+        public override void ReceiveHandler()
         {
         }
 
@@ -316,7 +316,6 @@
                                     {
                                         //client.SendRT(NetCmd.Local, buffer);
                                         client.AddOperation(new Operation(66, buffer));
-                                        client.SendDirect();
                                     }
                                     client.NetworkTick();
                                 }

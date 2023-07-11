@@ -162,7 +162,7 @@
         protected void ConnectLost(Player client, uint tick)
         {
             client.Connected = false;
-            client.Client?.Disconnect(false);//标记为断开状态
+            //client.Client?.Disconnect(false);//标记为断开状态
             client.ReconnectTimeout = tick + ReconnectionTimeout;
             client.OnConnectLost();
             OnConnectLost(client);

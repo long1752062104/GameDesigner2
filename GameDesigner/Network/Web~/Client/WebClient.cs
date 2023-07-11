@@ -117,7 +117,7 @@
             }
         }
 
-        public override void Receive(bool isSleep)
+        public override void ReceiveHandler()
         {
         }
 

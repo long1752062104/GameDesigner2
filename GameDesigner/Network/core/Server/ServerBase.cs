@@ -187,13 +187,9 @@ namespace Net.Server
         /// </summary>
         protected int receiveCount;
         /// <summary>
-        /// 发送线程循环次数 并发数,类似fps
+        /// FPS
         /// </summary>
-        protected int sendLoopNum;
-        /// <summary>
-        /// 接收线程循环次数(FPS)
-        /// </summary>
-        protected int revdLoopNum;
+        public int FPS;
         /// <summary>
         /// 从启动到现在总流出的数据流量
         /// </summary>
@@ -697,7 +693,6 @@ namespace Net.Server
         {
             int id = 0;
             taskIDs[id++] = ThreadManager.Invoke("DataTrafficHandler", 1f, DataTrafficHandler);
-            taskIDs[id++] = ThreadManager.Invoke("SyncVarHandler", SyncVarHandler);
             taskIDs[id++] = ThreadManager.Invoke("CheckOnLinePlayers", 1000 * 60 * 10, CheckOnLinePlayers);
         }
 
@@ -847,8 +842,7 @@ namespace Net.Server
                     receiveNumber = receiveAmount,
                     receiveCount = receiveCount,
                     resolveNumber = resolveAmount,
-                    sendLoopNum = sendLoopNum,
-                    revdLoopNum = revdLoopNum,
+                    FPS = FPS,
                     outflowTotal = outflowTotal,
                     inflowTotal = inflowTotal,
                 });
@@ -864,8 +858,7 @@ namespace Net.Server
                 resolveAmount = 0;
                 receiveAmount = 0;
                 receiveCount = 0;
-                sendLoopNum = 0;
-                revdLoopNum = 0;
+                FPS = 0;
             }
             return IsRunServer;
         }
@@ -930,11 +923,12 @@ namespace Net.Server
                             CheckHeart(client, tick);
                         ResolveDataQueue(client, ref isSleep, tick);
                         SendDirect(client);
+                        SyncVarHandler(client);
                     J: OnClientTick(client, tick);
                     }
                     if (isSleep)
                         Thread.Sleep(1);
-                    revdLoopNum++;
+                    FPS++;
                 }
                 catch (Exception ex)
                 {
@@ -2722,24 +2716,11 @@ namespace Net.Server
         /// <summary>
         /// 字段,属性同步线程
         /// </summary>
-        protected virtual bool SyncVarHandler()
+        protected virtual void SyncVarHandler(Player client)
         {
-            try
-            {
-                foreach (var client in AllClients)
-                {
-                    if (client.Value == null)
-                        continue;
-                    var buffer = SyncVarHelper.CheckSyncVar(true, client.Value.SyncVarDic);
-                    if (buffer != null)
-                        SendRT(client.Value, NetCmd.SyncVarP2P, buffer);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-            return IsRunServer;
+            var buffer = SyncVarHelper.CheckSyncVar(true, client.SyncVarDic);
+            if (buffer != null)
+                SendRT(client, NetCmd.SyncVarP2P, buffer);
         }
 
         /// <summary>

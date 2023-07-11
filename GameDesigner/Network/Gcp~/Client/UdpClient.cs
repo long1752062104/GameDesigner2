@@ -164,7 +164,7 @@
                                 }
                                 catch (Exception ex)
                                 {
-                                    Event.NDebug.LogError(ex);
+                                    NDebug.LogError(ex);
                                 }
                             }
                         }
@@ -216,13 +216,6 @@
             return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
-
-        //protected override void OnConnected(bool result) { NetworkState = NetworkState.Connected; }
-
-        //protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
-        //{
-        //    base.ResolveBuffer(ref buffer, isTcp);
-        //}
         protected unsafe override void SendByteData(byte[] buffer, bool reliable)
         {
             sendCount += buffer.Length;
@@ -234,15 +227,6 @@
             Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
 #endif
         }
-        //protected internal override byte[] OnSerializeOptInternal(OperationList list)
-        //{
-        //    return new byte[0];
-        //}
-        //protected internal override OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
-        //{
-        //    return default;
-        //}
-
         /// <summary>
         /// 单线程更新，需要开发者自动调用更新
         /// </summary>
@@ -250,7 +234,6 @@
         {
             if (!Connected)
                 return;
-            NetworkProcessing(false);
             NetworkTick();
         }
         public override string ToString()

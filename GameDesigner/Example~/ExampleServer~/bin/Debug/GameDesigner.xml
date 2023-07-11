@@ -295,6 +295,61 @@
             竞技模式 1:个人 2:团队
             </summary>
         </member>
+        <member name="T:Net.Common.IPropertyObserver`1">
+            <summary>
+            属性观察接口
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.Value">
+            <summary>
+            属性值
+            </summary>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.OnValueChanged">
+            <summary>
+            当属性被修改事件
+            </summary>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.GetValue">
+            <summary>
+            获取属性值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.SetValue(`0,System.Boolean)">
+            <summary>
+            设置属性值
+            </summary>
+            <param name="value">新的属性值</param>
+            <param name="isNotify">是否通知事件</param>
+        </member>
+        <member name="T:Net.Common.PropertyObserver`1">
+            <summary>
+            属性观察类
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Common.ObscuredPropertyObserver`1">
+            <summary>
+            模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Common.PropertyObserverAuto`1">
+            <summary>
+            属性观察自动类, 可模糊,不模糊
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.Common.PropertyObserverAuto`1.#ctor(System.String,System.Boolean,System.Action{`0})">
+            <summary>
+            属性观察自动类构造
+            </summary>
+            <param name="name">当属性被发现修改时提示名称</param>
+            <param name="available">使用模糊属性?</param>
+            <param name="onValueChanged">当属性被修改事件</param>
+        </member>
         <member name="T:Net.Adapter.DataAdapter">
             <summary>
             基础数据包适配器
@@ -1862,14 +1917,9 @@
             解析RPC函数次数
             </summary>
         </member>
-        <member name="F:Net.Share.Dataflow.sendLoopNum">
+        <member name="F:Net.Share.Dataflow.FPS">
             <summary>
-            发送线程循环次数(FPS)
-            </summary>
-        </member>
-        <member name="F:Net.Share.Dataflow.revdLoopNum">
-            <summary>
-            接收线程循环次数(FPS)
+            FPS
             </summary>
         </member>
         <member name="F:Net.Share.Dataflow.outflowTotal">
@@ -2737,60 +2787,651 @@
             <param name="size">字节值</param>
             <returns></returns>
         </member>
-        <member name="T:Net.Common.IPropertyObserver`1">
+        <member name="T:Net.System.ArraySegment">
             <summary>
-            属性观察接口
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="P:Net.Common.IPropertyObserver`1.Value">
-            <summary>
-            属性值
+            内存字节数组片
             </summary>
         </member>
-        <member name="P:Net.Common.IPropertyObserver`1.OnValueChanged">
+        <member name="T:Net.System.SegmentVersion">
             <summary>
-            当属性被修改事件
+            分片版本控制
             </summary>
         </member>
-        <member name="M:Net.Common.IPropertyObserver`1.GetValue">
+        <member name="F:Net.System.SegmentVersion.Version1">
             <summary>
-            获取属性值
+            版本1, 已稳定
+            </summary>
+        </member>
+        <member name="F:Net.System.SegmentVersion.Version2">
+            <summary>
+            版本2, 压缩率和Protobuff一样, 在测试阶段
+            </summary>
+        </member>
+        <member name="T:Net.System.BufferPool">
+            <summary>
+            数据缓冲内存池
+            </summary>
+        </member>
+        <member name="P:Net.System.BufferPool.Size">
+            <summary>
+            数据缓冲池大小. 默认65536字节
+            </summary>
+        </member>
+        <member name="P:Net.System.BufferPool.Log">
+            <summary>
+            当没有合理回收内存，导致内存泄漏被回收后提示
+            </summary>
+        </member>
+        <member name="F:Net.System.BufferPool.Version">
+            <summary>
+            使用的分片版本
+            </summary>
+        </member>
+        <member name="M:Net.System.BufferPool.Take">
+            <summary>
+            从内存池取数据片
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Net.Common.IPropertyObserver`1.SetValue(`0,System.Boolean)">
+        <member name="M:Net.System.BufferPool.Take(System.Int32)">
             <summary>
-            设置属性值
+            从内存池取数据片
             </summary>
-            <param name="value">新的属性值</param>
-            <param name="isNotify">是否通知事件</param>
+            <param name="size">内存大小</param>
+            <returns></returns>
         </member>
-        <member name="T:Net.Common.PropertyObserver`1">
+        <member name="M:Net.System.BufferPool.Push(Net.System.Segment)">
             <summary>
-            属性观察类
+            压入数据片, 等待复用
+            </summary>
+            <param name="segment"></param>
+        </member>
+        <member name="T:Net.System.FastList`1">
+            <summary>
+            List类, 添加是有序的, 移除是无序的,极速的
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="T:Net.Common.ObscuredPropertyObserver`1">
+        <member name="M:Net.System.FastList`1.GetRemoveRange(System.Int32,System.Int32)">
             <summary>
-            模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
+            获取对象数组, 并移除对象数组, 如果长度大于列表的长度, 则会裁剪到能获取的长度
+            </summary>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.System.FastListSafe`1">
+            <summary>
+            线程安全的List类, 无序的, 极速的
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="T:Net.Common.PropertyObserverAuto`1">
+        <member name="M:Net.System.FastListSafe`1.GetRemoveRange(System.Int32,System.Int32)">
             <summary>
-            属性观察自动类, 可模糊,不模糊
+            获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
+            </summary>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.BitHelper.#ctor(System.Int32*,System.Int32)">
+            <summary>
+            Instantiates a BitHelper with a heap alloc'd array of ints
+            </summary>
+            <param name="bitArray">int array to hold bits</param>
+            <param name="length">length of int array</param>
+        </member>
+        <member name="M:Net.System.BitHelper.#ctor(System.Int32[],System.Int32)">
+            <summary>
+            Instantiates a BitHelper with a heap alloc'd array of ints
+            </summary>
+            <param name="bitArray">int array to hold bits</param>
+            <param name="length">length of int array</param>
+        </member>
+        <member name="M:Net.System.BitHelper.MarkBit(System.Int32)">
+            <summary>
+            Mark bit at specified position
+            </summary>
+            <param name="bitPosition"></param>
+        </member>
+        <member name="M:Net.System.BitHelper.IsMarked(System.Int32)">
+            <summary>
+            Is bit at specified position marked?
+            </summary>
+            <param name="bitPosition"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.BitHelper.ToIntArrayLength(System.Int32)">
+            <summary>
+            How many ints must be allocated to represent n bits. Returns (n+31)/32, but 
+            avoids overflow
+            </summary>
+            <param name="n"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.System.ListSafe`1">
+            <summary>
+            线程安全的List类
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="M:Net.Common.PropertyObserverAuto`1.#ctor(System.String,System.Boolean,System.Action{`0})">
+        <member name="M:Net.System.ListSafe`1.GetRemoveRange(System.Int32,System.Int32)">
             <summary>
-            属性观察自动类构造
+            获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
             </summary>
-            <param name="name">当属性被发现修改时提示名称</param>
-            <param name="available">使用模糊属性?</param>
-            <param name="onValueChanged">当属性被修改事件</param>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.System.QueueSafeDebugView`1">
+            <summary>
+            A debugger view of the IProducerConsumerCollection that makes it simple to browse the
+            collection's contents at a point in time.
+            </summary>
+            <typeparam name="T">The type of elements stored within.</typeparam>
+        </member>
+        <member name="M:Net.System.QueueSafeDebugView`1.#ctor(System.Collections.Concurrent.IProducerConsumerCollection{`0})">
+            <summary>
+            Constructs a new debugger view object for the provided collection object.
+            </summary>
+            <param name="collection">A collection to browse in the debugger.</param>
+        </member>
+        <member name="P:Net.System.QueueSafeDebugView`1.Items">
+            <summary>
+            Returns a snapshot of the underlying collection's elements.
+            </summary>
+        </member>
+        <member name="T:Net.System.QueueSafe`1">
+            <summary>
+            多线程安全队列
+            </summary>
+            <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
+            <remarks>
+            All public  and protected members of <see cref="T:Net.System.QueueSafe`1"/> are thread-safe and may be used
+            concurrently from multiple threads.
+            </remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Net.System.QueueSafe`1"/> class.
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.InitializeFromCollection(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Initializes the contents of the queue from an existing collection.
+            </summary>
+            <param name="collection">A collection from which to copy elements.</param>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Net.System.QueueSafe`1"/>
+            class that contains elements copied from the specified collection
+            </summary>
+            <param name="collection">The collection whose elements are copied to the new <see
+            cref="T:Net.System.QueueSafe`1"/>.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="collection"/> argument is
+            null.</exception>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.OnSerializing(System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Get the data array to be serialized
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.OnDeserialized(System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Construct the queue from a previously seiralized one
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:System.Collections.ICollection"/> to an <see
+            cref="T:System.Array"/>, starting at a particular
+            <see cref="T:System.Array"/> index.
+            </summary>
+            <param name="array">The one-dimensional <see cref="T:System.Array">Array</see> that is the
+            destination of the elements copied from the
+            <see cref="T:System.Collections.Concurrent.ConcurrentBag"/>. The <see
+            cref="T:System.Array">Array</see> must have zero-based indexing.</param>
+            <param name="index">The zero-based index in <paramref name="array"/> at which copying
+            begins.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is a null reference (Nothing in
+            Visual Basic).</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than
+            zero.</exception>
+            <exception cref="T:System.ArgumentException">
+            <paramref name="array"/> is multidimensional. -or-
+            <paramref name="array"/> does not have zero-based indexing. -or-
+            <paramref name="index"/> is equal to or greater than the length of the <paramref name="array"/>
+            -or- The number of elements in the source <see cref="T:System.Collections.ICollection"/> is
+            greater than the available space from <paramref name="index"/> to the end of the destination
+            <paramref name="array"/>. -or- The type of the source <see
+            cref="T:System.Collections.ICollection"/> cannot be cast automatically to the type of the
+            destination <paramref name="array"/>.
+            </exception>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.System#Collections#ICollection#IsSynchronized">
+            <summary>
+            Gets a value indicating whether access to the <see cref="T:System.Collections.ICollection"/> is
+            synchronized with the SyncRoot.
+            </summary>
+            <value>true if access to the <see cref="T:System.Collections.ICollection"/> is synchronized
+            with the SyncRoot; otherwise, false. For <see cref="T:Net.System.QueueSafe`1"/>, this property always
+            returns false.</value>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.System#Collections#ICollection#SyncRoot">
+            <summary>
+            Gets an object that can be used to synchronize access to the <see
+            cref="T:System.Collections.ICollection"/>. This property is not supported.
+            </summary>
+            <exception cref="T:System.NotSupportedException">The SyncRoot property is not supported.</exception>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through a collection.
+            </summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator"/> that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.System#Collections#Concurrent#IProducerConsumerCollection{T}#TryAdd(`0)">
+            <summary>
+            Attempts to add an object to the <see
+            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
+            </summary>
+            <param name="item">The object to add to the <see
+            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>. The value can be a null
+            reference (Nothing in Visual Basic) for reference types.
+            </param>
+            <returns>true if the object was added successfully; otherwise, false.</returns>
+            <remarks>For <see cref="T:Net.System.QueueSafe`1"/>, this operation will always add the object to the
+            end of the <see cref="T:Net.System.QueueSafe`1"/>
+            and return true.</remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.System#Collections#Concurrent#IProducerConsumerCollection{T}#TryTake(`0@)">
+            <summary>
+            Attempts to remove and return an object from the <see
+            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
+            </summary>
+            <param name="item">
+            When this method returns, if the operation was successful, <paramref name="item"/> contains the
+            object removed. If no object was available to be removed, the value is unspecified.
+            </param>
+            <returns>true if an element was removed and returned succesfully; otherwise, false.</returns>
+            <remarks>For <see cref="T:Net.System.QueueSafe`1"/>, this operation will attempt to remove the object
+            from the beginning of the <see cref="T:Net.System.QueueSafe`1"/>.
+            </remarks>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.IsEmpty">
+            <summary>
+            Gets a value that indicates whether the <see cref="T:Net.System.QueueSafe`1"/> is empty.
+            </summary>
+            <value>true if the <see cref="T:Net.System.QueueSafe`1"/> is empty; otherwise, false.</value>
+            <remarks>
+            For determining whether the collection contains any items, use of this property is recommended
+            rather than retrieving the number of items from the <see cref="P:Net.System.QueueSafe`1.Count"/> property and comparing it
+            to 0.  However, as this collection is intended to be accessed concurrently, it may be the case
+            that another thread will modify the collection after <see cref="P:Net.System.QueueSafe`1.IsEmpty"/> returns, thus invalidating
+            the result.
+            </remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.ToArray">
+            <summary>
+            Copies the elements stored in the <see cref="T:Net.System.QueueSafe`1"/> to a new array.
+            </summary>
+            <returns>A new array containing a snapshot of elements copied from the <see
+            cref="T:Net.System.QueueSafe`1"/>.</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.ToList">
+            <summary>
+            Copies the <see cref="T:Net.System.QueueSafe`1"/> elements to a new <see
+            cref="T:System.Collections.Generic.List{T}"/>.
+            </summary>
+            <returns>A new <see cref="T:System.Collections.Generic.List{T}"/> containing a snapshot of
+            elements copied from the <see cref="T:Net.System.QueueSafe`1"/>.</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.GetHeadTailPositions(Net.System.QueueSafe{`0}.Segment@,Net.System.QueueSafe{`0}.Segment@,System.Int32@,System.Int32@)">
+            <summary>
+            Store the position of the current head and tail positions.
+            </summary>
+            <param name="head">return the head segment</param>
+            <param name="tail">return the tail segment</param>
+            <param name="headLow">return the head offset, value range [0, SEGMENT_SIZE]</param>
+            <param name="tailHigh">return the tail offset, value range [-1, SEGMENT_SIZE-1]</param>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:Net.System.QueueSafe`1"/>.
+            </summary>
+            <value>The number of elements contained in the <see cref="T:Net.System.QueueSafe`1"/>.</value>
+            <remarks>
+            For determining whether the collection contains any items, use of the <see cref="P:Net.System.QueueSafe`1.IsEmpty"/>
+            property is recommended rather than retrieving the number of items from the <see cref="P:Net.System.QueueSafe`1.Count"/>
+            property and comparing it to 0.
+            </remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.CopyTo(`0[],System.Int32)">
+            <summary>
+            Copies the <see cref="T:Net.System.QueueSafe`1"/> elements to an existing one-dimensional <see
+            cref="T:System.Array">Array</see>, starting at the specified array index.
+            </summary>
+            <param name="array">The one-dimensional <see cref="T:System.Array">Array</see> that is the
+            destination of the elements copied from the
+            <see cref="T:Net.System.QueueSafe`1"/>. The <see cref="T:System.Array">Array</see> must have zero-based
+            indexing.</param>
+            <param name="index">The zero-based index in <paramref name="array"/> at which copying
+            begins.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is a null reference (Nothing in
+            Visual Basic).</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than
+            zero.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="index"/> is equal to or greater than the
+            length of the <paramref name="array"/>
+            -or- The number of elements in the source <see cref="T:Net.System.QueueSafe`1"/> is greater than the
+            available space from <paramref name="index"/> to the end of the destination <paramref
+            name="array"/>.
+            </exception>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through the <see
+            cref="T:Net.System.QueueSafe`1"/>.
+            </summary>
+            <returns>An enumerator for the contents of the <see
+            cref="T:Net.System.QueueSafe`1"/>.</returns>
+            <remarks>
+            The enumeration represents a moment-in-time snapshot of the contents
+            of the queue.  It does not reflect any updates to the collection after 
+            <see cref="M:Net.System.QueueSafe`1.GetEnumerator"/> was called.  The enumerator is safe to use
+            concurrently with reads from and writes to the queue.
+            </remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.GetEnumerator(Net.System.QueueSafe{`0}.Segment,Net.System.QueueSafe{`0}.Segment,System.Int32,System.Int32)">
+            <summary>
+            Helper method of GetEnumerator to seperate out yield return statement, and prevent lazy evaluation. 
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Enqueue(`0)">
+            <summary>
+            Adds an object to the end of the <see cref="T:Net.System.QueueSafe`1"/>.
+            </summary>
+            <param name="item">The object to add to the end of the <see
+            cref="T:Net.System.QueueSafe`1"/>. The value can be a null reference
+            (Nothing in Visual Basic) for reference types.
+            </param>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.TryDequeue(`0@)">
+            <summary>
+            Attempts to remove and return the object at the beginning of the <see
+            cref="T:Net.System.QueueSafe`1"/>.
+            </summary>
+            <param name="result">
+            When this method returns, if the operation was successful, <paramref name="result"/> contains the
+            object removed. If no object was available to be removed, the value is unspecified.
+            </param>
+            <returns>true if an element was removed and returned from the beggining of the <see
+            cref="T:Net.System.QueueSafe`1"/>
+            succesfully; otherwise, false.</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.TryPeek(`0@)">
+            <summary>
+            Attempts to return an object from the beginning of the <see cref="T:Net.System.QueueSafe`1"/>
+            without removing it.
+            </summary>
+            <param name="result">When this method returns, <paramref name="result"/> contains an object from
+            the beginning of the <see cref="T:System.Collections.Concurrent.ConccurrentQueue{T}"/> or an
+            unspecified value if the operation failed.</param>
+            <returns>true if and object was returned successfully; otherwise, false.</returns>
+        </member>
+        <member name="T:Net.System.QueueSafe`1.Segment">
+            <summary>
+            private class for ConcurrentQueue. 
+            a queue is a linked list of small arrays, each node is called a segment.
+            A segment contains an array, a pointer to the next segment, and m_low, m_high indices recording
+            the first and last valid elements of the array.
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.#ctor(System.Int64,Net.System.QueueSafe{`0})">
+            <summary>
+            Create and initialize a segment with the specified index.
+            </summary>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.Segment.Next">
+            <summary>
+            return the next segment
+            </summary>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.Segment.IsEmpty">
+            <summary>
+            return true if the current segment is empty (doesn't have any element available to dequeue, 
+            false otherwise
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.UnsafeAdd(`0)">
+            <summary>
+            Add an element to the tail of the current segment
+            exclusively called by ConcurrentQueue.InitializedFromCollection
+            InitializeFromCollection is responsible to guaratee that there is no index overflow,
+            and there is no contention
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.UnsafeGrow">
+            <summary>
+            Create a new segment and append to the current one
+            Does not update the m_tail pointer
+            exclusively called by ConcurrentQueue.InitializedFromCollection
+            InitializeFromCollection is responsible to guaratee that there is no index overflow,
+            and there is no contention
+            </summary>
+            <returns>the reference to the new Segment</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.Grow">
+            <summary>
+            Create a new segment and append to the current one
+            Update the m_tail pointer
+            This method is called when there is no contention
+            </summary>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.TryAppend(`0)">
+            <summary>
+            Try to append an element at the end of this segment.
+            </summary>
+            <param name="value">the element to append</param>
+            <returns>true if the element is appended, false if the current segment is full</returns>
+            <remarks>if appending the specified element succeeds, and after which the segment is full, 
+            then grow the segment</remarks>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.TryRemove(`0@)">
+            <summary>
+            try to remove an element from the head of current segment
+            </summary>
+            <param name="result">The result.</param>
+            <returns>return false only if the current segment is empty</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.TryPeek(`0@)">
+            <summary>
+            try to peek the current segment
+            </summary>
+            <param name="result">holds the return value of the element at the head position, 
+            value set to default(T) if there is no such an element</param>
+            <returns>true if there are elements in the current segment, false otherwise</returns>
+        </member>
+        <member name="M:Net.System.QueueSafe`1.Segment.AddToList(System.Collections.Generic.List{`0},System.Int32,System.Int32)">
+            <summary>
+            Adds part or all of the current segment into a List.
+            </summary>
+            <param name="list">the list to which to add</param>
+            <param name="start">the start position</param>
+            <param name="end">the end position</param>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.Segment.Low">
+            <summary>
+            return the position of the head of the current segment
+            Value range [0, SEGMENT_SIZE], if it's SEGMENT_SIZE, it means this segment is exhausted and thus empty
+            </summary>
+        </member>
+        <member name="P:Net.System.QueueSafe`1.Segment.High">
+            <summary>
+            return the logical position of the tail of the current segment      
+            Value range [-1, SEGMENT_SIZE-1]. When it's -1, it means this is a new segment and has no elemnet yet
+            </summary>
+        </member>
+        <member name="T:Net.System.VolatileBool">
+            <summary>
+            A wrapper struct for volatile bool, please note the copy of the struct it self will not be volatile
+            for example this statement will not include in volatilness operation volatileBool1 = volatileBool2 the jit will copy the struct and will ignore the volatile
+            </summary>
+        </member>
+        <member name="T:Net.System.RandomSafe">
+            <summary>
+            随机类 (多线程安全)
+            </summary>
+        </member>
+        <member name="T:Net.System.Segment">
+            <summary>
+            内存数据片段
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Buffer">
+            <summary>
+            总内存
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Offset">
+            <summary>
+            片的开始位置
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Count">
+            <summary>
+            片的长度
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Position">
+            <summary>
+            读写位置
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Length">
+            <summary>
+            获取总长度
+            </summary>
+        </member>
+        <member name="F:Net.System.Segment.StringRecordSize">
+            <summary>
+            字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
+            </summary>
+        </member>
+        <member name="P:Net.System.Segment.Item(System.Int32)">
+            <summary>
+            获取或设置总内存位置索引
+            </summary>
+            <param name="index">内存位置索引</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.Segment.#ctor(System.Byte[])">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.Segment.#ctor(System.Byte[],System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.Segment.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+        </member>
+        <member name="M:Net.System.Segment.ToArray(System.Boolean,System.Boolean)">
+            <summary>
+            复制分片数据
+            </summary>
+            <param name="recovery">复制数据后立即回收此分片?</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.Segment.Write(System.Byte[],System.Boolean)">
+            <summary>
+            写入字节数组
+            </summary>
+            <param name="value"></param>
+            <param name="recordLength">是否记录此次写入的字节长度?</param>
+        </member>
+        <member name="M:Net.System.Segment.Write(System.SByte[],System.Boolean)">
+            <summary>
+            写入字节数组
+            </summary>
+            <param name="value"></param>
+            <param name="recordLength">是否记录此次写入的字节长度?</param>
+        </member>
+        <member name="T:Net.System.Segment2">
+            <summary>
+            内存数据片段
+            </summary>
+        </member>
+        <member name="M:Net.System.Segment2.#ctor(System.Byte[])">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+        </member>
+        <member name="T:Net.System.ThreadManager">
+            <summary>
+            事件线程管理
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.Event">
+            <summary>
+            计时器对象
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.Interval">
+            <summary>
+            时间计数间隔
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadManager.IsRuning">
+            <summary>
+            运行中?
+            </summary>
+        </member>
+        <member name="M:Net.System.ThreadManager.Run">
+            <summary>
+            控制台死循环线程
+            </summary>
+        </member>
+        <member name="M:Net.System.ThreadManager.Run(System.UInt32)">
+            <summary>
+            unity update每帧调用
+            </summary>
+        </member>
+        <member name="T:Net.System.EventManager">
+            <summary>
+            事件管理器
+            </summary>
+        </member>
+        <member name="P:Net.System.EventManager.Event">
+            <summary>
+            计时事件属性
+            </summary>
         </member>
         <member name="P:Net.Helper.AntiCheatHelper.IsActive">
             <summary>
@@ -3246,14 +3887,9 @@
             每秒接收网络数据大小
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.sendLoopNum">
+        <member name="P:Net.Client.ClientBase.FPS">
             <summary>
-            发送线程循环次数
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.revdLoopNum">
-            <summary>
-            接收线程循环次数 只有ENetServer
+            网络FPS
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.outflowTotal">
@@ -3619,6 +4255,11 @@
             数据包适配器
             </summary>
         </member>
+        <member name="F:Net.Client.ClientBase.LoopEvent">
+            <summary>
+            网络循环事件处理
+            </summary>
+        </member>
         <member name="M:Net.Client.ClientBase.#ctor">
             <summary>
             构造函数
@@ -3710,12 +4351,7 @@
             结束所有线程
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.UpdateHandler">
-            <summary>
-            每一帧执行线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.NetworkTick">
+        <member name="M:Net.Client.ClientBase.NetworkUpdate">
             <summary>
             网络数据更新
             </summary>
@@ -3852,7 +4488,7 @@
             网络处理线程
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.SingleReceiveHandler">
+        <member name="M:Net.Client.ClientBase.SingleNetworkProcessing">
             <summary>
             单线程网络处理
             </summary>
@@ -4797,7 +5433,7 @@
             </summary>
             <param name="message"></param>
         </member>
-        <member name="M:Net.Event.NDebug.BindConsoleLog">
+        <member name="M:Net.Event.NDebug.BindConsoleLog(System.Boolean)">
             <summary>
             绑定控制台输出
             </summary>
@@ -6012,14 +6648,9 @@
             网络统计接收长度/秒
             </summary>
         </member>
-        <member name="F:Net.Server.ServerBase`2.sendLoopNum">
+        <member name="F:Net.Server.ServerBase`2.FPS">
             <summary>
-            发送线程循环次数 并发数,类似fps
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`2.revdLoopNum">
-            <summary>
-            接收线程循环次数(FPS)
+            FPS
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.outflowTotal">
@@ -6987,7 +7618,7 @@
             <param name="type"></param>
             <param name="adapter"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.SyncVarHandler">
+        <member name="M:Net.Server.ServerBase`2.SyncVarHandler(`0)">
             <summary>
             字段,属性同步线程
             </summary>
@@ -7167,652 +7798,6 @@
             默认web服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
         </member>
-        <member name="T:Net.System.ArraySegment">
-            <summary>
-            内存字节数组片
-            </summary>
-        </member>
-        <member name="T:Net.System.SegmentVersion">
-            <summary>
-            分片版本控制
-            </summary>
-        </member>
-        <member name="F:Net.System.SegmentVersion.Version1">
-            <summary>
-            版本1, 已稳定
-            </summary>
-        </member>
-        <member name="F:Net.System.SegmentVersion.Version2">
-            <summary>
-            版本2, 压缩率和Protobuff一样, 在测试阶段
-            </summary>
-        </member>
-        <member name="T:Net.System.BufferPool">
-            <summary>
-            数据缓冲内存池
-            </summary>
-        </member>
-        <member name="P:Net.System.BufferPool.Size">
-            <summary>
-            数据缓冲池大小. 默认65536字节
-            </summary>
-        </member>
-        <member name="P:Net.System.BufferPool.Log">
-            <summary>
-            当没有合理回收内存，导致内存泄漏被回收后提示
-            </summary>
-        </member>
-        <member name="F:Net.System.BufferPool.Version">
-            <summary>
-            使用的分片版本
-            </summary>
-        </member>
-        <member name="M:Net.System.BufferPool.Take">
-            <summary>
-            从内存池取数据片
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.BufferPool.Take(System.Int32)">
-            <summary>
-            从内存池取数据片
-            </summary>
-            <param name="size">内存大小</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.BufferPool.Push(Net.System.Segment)">
-            <summary>
-            压入数据片, 等待复用
-            </summary>
-            <param name="segment"></param>
-        </member>
-        <member name="T:Net.System.FastList`1">
-            <summary>
-            List类, 添加是有序的, 移除是无序的,极速的
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Net.System.FastList`1.GetRemoveRange(System.Int32,System.Int32)">
-            <summary>
-            获取对象数组, 并移除对象数组, 如果长度大于列表的长度, 则会裁剪到能获取的长度
-            </summary>
-            <param name="index"></param>
-            <param name="count"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.System.FastListSafe`1">
-            <summary>
-            线程安全的List类, 无序的, 极速的
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Net.System.FastListSafe`1.GetRemoveRange(System.Int32,System.Int32)">
-            <summary>
-            获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
-            </summary>
-            <param name="index"></param>
-            <param name="count"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.BitHelper.#ctor(System.Int32*,System.Int32)">
-            <summary>
-            Instantiates a BitHelper with a heap alloc'd array of ints
-            </summary>
-            <param name="bitArray">int array to hold bits</param>
-            <param name="length">length of int array</param>
-        </member>
-        <member name="M:Net.System.BitHelper.#ctor(System.Int32[],System.Int32)">
-            <summary>
-            Instantiates a BitHelper with a heap alloc'd array of ints
-            </summary>
-            <param name="bitArray">int array to hold bits</param>
-            <param name="length">length of int array</param>
-        </member>
-        <member name="M:Net.System.BitHelper.MarkBit(System.Int32)">
-            <summary>
-            Mark bit at specified position
-            </summary>
-            <param name="bitPosition"></param>
-        </member>
-        <member name="M:Net.System.BitHelper.IsMarked(System.Int32)">
-            <summary>
-            Is bit at specified position marked?
-            </summary>
-            <param name="bitPosition"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.BitHelper.ToIntArrayLength(System.Int32)">
-            <summary>
-            How many ints must be allocated to represent n bits. Returns (n+31)/32, but 
-            avoids overflow
-            </summary>
-            <param name="n"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.System.ListSafe`1">
-            <summary>
-            线程安全的List类
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Net.System.ListSafe`1.GetRemoveRange(System.Int32,System.Int32)">
-            <summary>
-            获取列表对象, 并移除列表, 如果在多线程下, 多线程并行下, 是可以获取到对象, 但是会出现长度不是所指定的长度, 所以获取后要判断一下长度
-            </summary>
-            <param name="index"></param>
-            <param name="count"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.System.QueueSafeDebugView`1">
-            <summary>
-            A debugger view of the IProducerConsumerCollection that makes it simple to browse the
-            collection's contents at a point in time.
-            </summary>
-            <typeparam name="T">The type of elements stored within.</typeparam>
-        </member>
-        <member name="M:Net.System.QueueSafeDebugView`1.#ctor(System.Collections.Concurrent.IProducerConsumerCollection{`0})">
-            <summary>
-            Constructs a new debugger view object for the provided collection object.
-            </summary>
-            <param name="collection">A collection to browse in the debugger.</param>
-        </member>
-        <member name="P:Net.System.QueueSafeDebugView`1.Items">
-            <summary>
-            Returns a snapshot of the underlying collection's elements.
-            </summary>
-        </member>
-        <member name="T:Net.System.QueueSafe`1">
-            <summary>
-            多线程安全队列
-            </summary>
-            <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
-            <remarks>
-            All public  and protected members of <see cref="T:Net.System.QueueSafe`1"/> are thread-safe and may be used
-            concurrently from multiple threads.
-            </remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Net.System.QueueSafe`1"/> class.
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.InitializeFromCollection(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Initializes the contents of the queue from an existing collection.
-            </summary>
-            <param name="collection">A collection from which to copy elements.</param>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Net.System.QueueSafe`1"/>
-            class that contains elements copied from the specified collection
-            </summary>
-            <param name="collection">The collection whose elements are copied to the new <see
-            cref="T:Net.System.QueueSafe`1"/>.</param>
-            <exception cref="T:System.ArgumentNullException">The <paramref name="collection"/> argument is
-            null.</exception>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.OnSerializing(System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Get the data array to be serialized
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.OnDeserialized(System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Construct the queue from a previously seiralized one
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
-            <summary>
-            Copies the elements of the <see cref="T:System.Collections.ICollection"/> to an <see
-            cref="T:System.Array"/>, starting at a particular
-            <see cref="T:System.Array"/> index.
-            </summary>
-            <param name="array">The one-dimensional <see cref="T:System.Array">Array</see> that is the
-            destination of the elements copied from the
-            <see cref="T:System.Collections.Concurrent.ConcurrentBag"/>. The <see
-            cref="T:System.Array">Array</see> must have zero-based indexing.</param>
-            <param name="index">The zero-based index in <paramref name="array"/> at which copying
-            begins.</param>
-            <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is a null reference (Nothing in
-            Visual Basic).</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than
-            zero.</exception>
-            <exception cref="T:System.ArgumentException">
-            <paramref name="array"/> is multidimensional. -or-
-            <paramref name="array"/> does not have zero-based indexing. -or-
-            <paramref name="index"/> is equal to or greater than the length of the <paramref name="array"/>
-            -or- The number of elements in the source <see cref="T:System.Collections.ICollection"/> is
-            greater than the available space from <paramref name="index"/> to the end of the destination
-            <paramref name="array"/>. -or- The type of the source <see
-            cref="T:System.Collections.ICollection"/> cannot be cast automatically to the type of the
-            destination <paramref name="array"/>.
-            </exception>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.System#Collections#ICollection#IsSynchronized">
-            <summary>
-            Gets a value indicating whether access to the <see cref="T:System.Collections.ICollection"/> is
-            synchronized with the SyncRoot.
-            </summary>
-            <value>true if access to the <see cref="T:System.Collections.ICollection"/> is synchronized
-            with the SyncRoot; otherwise, false. For <see cref="T:Net.System.QueueSafe`1"/>, this property always
-            returns false.</value>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.System#Collections#ICollection#SyncRoot">
-            <summary>
-            Gets an object that can be used to synchronize access to the <see
-            cref="T:System.Collections.ICollection"/>. This property is not supported.
-            </summary>
-            <exception cref="T:System.NotSupportedException">The SyncRoot property is not supported.</exception>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.System#Collections#IEnumerable#GetEnumerator">
-            <summary>
-            Returns an enumerator that iterates through a collection.
-            </summary>
-            <returns>An <see cref="T:System.Collections.IEnumerator"/> that can be used to iterate through the collection.</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.System#Collections#Concurrent#IProducerConsumerCollection{T}#TryAdd(`0)">
-            <summary>
-            Attempts to add an object to the <see
-            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
-            </summary>
-            <param name="item">The object to add to the <see
-            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>. The value can be a null
-            reference (Nothing in Visual Basic) for reference types.
-            </param>
-            <returns>true if the object was added successfully; otherwise, false.</returns>
-            <remarks>For <see cref="T:Net.System.QueueSafe`1"/>, this operation will always add the object to the
-            end of the <see cref="T:Net.System.QueueSafe`1"/>
-            and return true.</remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.System#Collections#Concurrent#IProducerConsumerCollection{T}#TryTake(`0@)">
-            <summary>
-            Attempts to remove and return an object from the <see
-            cref="T:System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
-            </summary>
-            <param name="item">
-            When this method returns, if the operation was successful, <paramref name="item"/> contains the
-            object removed. If no object was available to be removed, the value is unspecified.
-            </param>
-            <returns>true if an element was removed and returned succesfully; otherwise, false.</returns>
-            <remarks>For <see cref="T:Net.System.QueueSafe`1"/>, this operation will attempt to remove the object
-            from the beginning of the <see cref="T:Net.System.QueueSafe`1"/>.
-            </remarks>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.IsEmpty">
-            <summary>
-            Gets a value that indicates whether the <see cref="T:Net.System.QueueSafe`1"/> is empty.
-            </summary>
-            <value>true if the <see cref="T:Net.System.QueueSafe`1"/> is empty; otherwise, false.</value>
-            <remarks>
-            For determining whether the collection contains any items, use of this property is recommended
-            rather than retrieving the number of items from the <see cref="P:Net.System.QueueSafe`1.Count"/> property and comparing it
-            to 0.  However, as this collection is intended to be accessed concurrently, it may be the case
-            that another thread will modify the collection after <see cref="P:Net.System.QueueSafe`1.IsEmpty"/> returns, thus invalidating
-            the result.
-            </remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.ToArray">
-            <summary>
-            Copies the elements stored in the <see cref="T:Net.System.QueueSafe`1"/> to a new array.
-            </summary>
-            <returns>A new array containing a snapshot of elements copied from the <see
-            cref="T:Net.System.QueueSafe`1"/>.</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.ToList">
-            <summary>
-            Copies the <see cref="T:Net.System.QueueSafe`1"/> elements to a new <see
-            cref="T:System.Collections.Generic.List{T}"/>.
-            </summary>
-            <returns>A new <see cref="T:System.Collections.Generic.List{T}"/> containing a snapshot of
-            elements copied from the <see cref="T:Net.System.QueueSafe`1"/>.</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.GetHeadTailPositions(Net.System.QueueSafe{`0}.Segment@,Net.System.QueueSafe{`0}.Segment@,System.Int32@,System.Int32@)">
-            <summary>
-            Store the position of the current head and tail positions.
-            </summary>
-            <param name="head">return the head segment</param>
-            <param name="tail">return the tail segment</param>
-            <param name="headLow">return the head offset, value range [0, SEGMENT_SIZE]</param>
-            <param name="tailHigh">return the tail offset, value range [-1, SEGMENT_SIZE-1]</param>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.Count">
-            <summary>
-            Gets the number of elements contained in the <see cref="T:Net.System.QueueSafe`1"/>.
-            </summary>
-            <value>The number of elements contained in the <see cref="T:Net.System.QueueSafe`1"/>.</value>
-            <remarks>
-            For determining whether the collection contains any items, use of the <see cref="P:Net.System.QueueSafe`1.IsEmpty"/>
-            property is recommended rather than retrieving the number of items from the <see cref="P:Net.System.QueueSafe`1.Count"/>
-            property and comparing it to 0.
-            </remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.CopyTo(`0[],System.Int32)">
-            <summary>
-            Copies the <see cref="T:Net.System.QueueSafe`1"/> elements to an existing one-dimensional <see
-            cref="T:System.Array">Array</see>, starting at the specified array index.
-            </summary>
-            <param name="array">The one-dimensional <see cref="T:System.Array">Array</see> that is the
-            destination of the elements copied from the
-            <see cref="T:Net.System.QueueSafe`1"/>. The <see cref="T:System.Array">Array</see> must have zero-based
-            indexing.</param>
-            <param name="index">The zero-based index in <paramref name="array"/> at which copying
-            begins.</param>
-            <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is a null reference (Nothing in
-            Visual Basic).</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than
-            zero.</exception>
-            <exception cref="T:System.ArgumentException"><paramref name="index"/> is equal to or greater than the
-            length of the <paramref name="array"/>
-            -or- The number of elements in the source <see cref="T:Net.System.QueueSafe`1"/> is greater than the
-            available space from <paramref name="index"/> to the end of the destination <paramref
-            name="array"/>.
-            </exception>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.GetEnumerator">
-            <summary>
-            Returns an enumerator that iterates through the <see
-            cref="T:Net.System.QueueSafe`1"/>.
-            </summary>
-            <returns>An enumerator for the contents of the <see
-            cref="T:Net.System.QueueSafe`1"/>.</returns>
-            <remarks>
-            The enumeration represents a moment-in-time snapshot of the contents
-            of the queue.  It does not reflect any updates to the collection after 
-            <see cref="M:Net.System.QueueSafe`1.GetEnumerator"/> was called.  The enumerator is safe to use
-            concurrently with reads from and writes to the queue.
-            </remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.GetEnumerator(Net.System.QueueSafe{`0}.Segment,Net.System.QueueSafe{`0}.Segment,System.Int32,System.Int32)">
-            <summary>
-            Helper method of GetEnumerator to seperate out yield return statement, and prevent lazy evaluation. 
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Enqueue(`0)">
-            <summary>
-            Adds an object to the end of the <see cref="T:Net.System.QueueSafe`1"/>.
-            </summary>
-            <param name="item">The object to add to the end of the <see
-            cref="T:Net.System.QueueSafe`1"/>. The value can be a null reference
-            (Nothing in Visual Basic) for reference types.
-            </param>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.TryDequeue(`0@)">
-            <summary>
-            Attempts to remove and return the object at the beginning of the <see
-            cref="T:Net.System.QueueSafe`1"/>.
-            </summary>
-            <param name="result">
-            When this method returns, if the operation was successful, <paramref name="result"/> contains the
-            object removed. If no object was available to be removed, the value is unspecified.
-            </param>
-            <returns>true if an element was removed and returned from the beggining of the <see
-            cref="T:Net.System.QueueSafe`1"/>
-            succesfully; otherwise, false.</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.TryPeek(`0@)">
-            <summary>
-            Attempts to return an object from the beginning of the <see cref="T:Net.System.QueueSafe`1"/>
-            without removing it.
-            </summary>
-            <param name="result">When this method returns, <paramref name="result"/> contains an object from
-            the beginning of the <see cref="T:System.Collections.Concurrent.ConccurrentQueue{T}"/> or an
-            unspecified value if the operation failed.</param>
-            <returns>true if and object was returned successfully; otherwise, false.</returns>
-        </member>
-        <member name="T:Net.System.QueueSafe`1.Segment">
-            <summary>
-            private class for ConcurrentQueue. 
-            a queue is a linked list of small arrays, each node is called a segment.
-            A segment contains an array, a pointer to the next segment, and m_low, m_high indices recording
-            the first and last valid elements of the array.
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.#ctor(System.Int64,Net.System.QueueSafe{`0})">
-            <summary>
-            Create and initialize a segment with the specified index.
-            </summary>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.Segment.Next">
-            <summary>
-            return the next segment
-            </summary>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.Segment.IsEmpty">
-            <summary>
-            return true if the current segment is empty (doesn't have any element available to dequeue, 
-            false otherwise
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.UnsafeAdd(`0)">
-            <summary>
-            Add an element to the tail of the current segment
-            exclusively called by ConcurrentQueue.InitializedFromCollection
-            InitializeFromCollection is responsible to guaratee that there is no index overflow,
-            and there is no contention
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.UnsafeGrow">
-            <summary>
-            Create a new segment and append to the current one
-            Does not update the m_tail pointer
-            exclusively called by ConcurrentQueue.InitializedFromCollection
-            InitializeFromCollection is responsible to guaratee that there is no index overflow,
-            and there is no contention
-            </summary>
-            <returns>the reference to the new Segment</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.Grow">
-            <summary>
-            Create a new segment and append to the current one
-            Update the m_tail pointer
-            This method is called when there is no contention
-            </summary>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.TryAppend(`0)">
-            <summary>
-            Try to append an element at the end of this segment.
-            </summary>
-            <param name="value">the element to append</param>
-            <returns>true if the element is appended, false if the current segment is full</returns>
-            <remarks>if appending the specified element succeeds, and after which the segment is full, 
-            then grow the segment</remarks>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.TryRemove(`0@)">
-            <summary>
-            try to remove an element from the head of current segment
-            </summary>
-            <param name="result">The result.</param>
-            <returns>return false only if the current segment is empty</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.TryPeek(`0@)">
-            <summary>
-            try to peek the current segment
-            </summary>
-            <param name="result">holds the return value of the element at the head position, 
-            value set to default(T) if there is no such an element</param>
-            <returns>true if there are elements in the current segment, false otherwise</returns>
-        </member>
-        <member name="M:Net.System.QueueSafe`1.Segment.AddToList(System.Collections.Generic.List{`0},System.Int32,System.Int32)">
-            <summary>
-            Adds part or all of the current segment into a List.
-            </summary>
-            <param name="list">the list to which to add</param>
-            <param name="start">the start position</param>
-            <param name="end">the end position</param>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.Segment.Low">
-            <summary>
-            return the position of the head of the current segment
-            Value range [0, SEGMENT_SIZE], if it's SEGMENT_SIZE, it means this segment is exhausted and thus empty
-            </summary>
-        </member>
-        <member name="P:Net.System.QueueSafe`1.Segment.High">
-            <summary>
-            return the logical position of the tail of the current segment      
-            Value range [-1, SEGMENT_SIZE-1]. When it's -1, it means this is a new segment and has no elemnet yet
-            </summary>
-        </member>
-        <member name="T:Net.System.VolatileBool">
-            <summary>
-            A wrapper struct for volatile bool, please note the copy of the struct it self will not be volatile
-            for example this statement will not include in volatilness operation volatileBool1 = volatileBool2 the jit will copy the struct and will ignore the volatile
-            </summary>
-        </member>
-        <member name="T:Net.System.RandomSafe">
-            <summary>
-            随机类 (多线程安全)
-            </summary>
-        </member>
-        <member name="T:Net.System.Segment">
-            <summary>
-            内存数据片段
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Buffer">
-            <summary>
-            总内存
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Offset">
-            <summary>
-            片的开始位置
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Count">
-            <summary>
-            片的长度
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Position">
-            <summary>
-            读写位置
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Length">
-            <summary>
-            获取总长度
-            </summary>
-        </member>
-        <member name="F:Net.System.Segment.StringRecordSize">
-            <summary>
-            字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
-            </summary>
-        </member>
-        <member name="P:Net.System.Segment.Item(System.Int32)">
-            <summary>
-            获取或设置总内存位置索引
-            </summary>
-            <param name="index">内存位置索引</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.Segment.#ctor(System.Byte[])">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment.#ctor(System.Byte[],System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.System.Segment.ToArray(System.Boolean,System.Boolean)">
-            <summary>
-            复制分片数据
-            </summary>
-            <param name="recovery">复制数据后立即回收此分片?</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.Segment.Write(System.Byte[],System.Boolean)">
-            <summary>
-            写入字节数组
-            </summary>
-            <param name="value"></param>
-            <param name="recordLength">是否记录此次写入的字节长度?</param>
-        </member>
-        <member name="M:Net.System.Segment.Write(System.SByte[],System.Boolean)">
-            <summary>
-            写入字节数组
-            </summary>
-            <param name="value"></param>
-            <param name="recordLength">是否记录此次写入的字节长度?</param>
-        </member>
-        <member name="T:Net.System.Segment2">
-            <summary>
-            内存数据片段
-            </summary>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[])">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-        </member>
-        <member name="T:Net.System.ThreadManager">
-            <summary>
-            事件线程管理
-            </summary>
-        </member>
-        <member name="P:Net.System.ThreadManager.Event">
-            <summary>
-            计时器对象
-            </summary>
-        </member>
-        <member name="P:Net.System.ThreadManager.Interval">
-            <summary>
-            时间计数间隔
-            </summary>
-        </member>
-        <member name="P:Net.System.ThreadManager.IsRuning">
-            <summary>
-            运行中?
-            </summary>
-        </member>
-        <member name="M:Net.System.ThreadManager.Run">
-            <summary>
-            控制台死循环线程
-            </summary>
-        </member>
-        <member name="M:Net.System.ThreadManager.Run(System.UInt32)">
-            <summary>
-            unity update每帧调用
-            </summary>
-        </member>
-        <member name="T:Net.System.EventManager">
-            <summary>
-            事件管理器
-            </summary>
-        </member>
-        <member name="P:Net.System.EventManager.Event">
-            <summary>
-            计时事件属性
-            </summary>
-        </member>
         <member name="T:Net.Unity.UnitySynchronizationContext">
             <summary>
             unity线程同步中心管理类
@@ -7833,7 +7818,7 @@
             在主线程调用, 并返回结果到此线程, 如果此线程是主线程, 则直接调用并返回
             </summary>
             <typeparam name="T"></typeparam>
-            <param name="d"></param>
+            <param name="ptr"></param>
             <returns></returns>
         </member>
         <member name="F:Net.Plugins.Cmd.Frame">

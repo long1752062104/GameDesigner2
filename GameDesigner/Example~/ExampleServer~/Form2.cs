@@ -50,7 +50,7 @@ namespace ExampleServer
             server.OnNetworkDataTraffic += (df) => {//当统计网络性能,数据传输量
                 toolStripStatusLabel1.Text = $"流出:{df.sendNumber}次/{ByteHelper.ToString(df.sendCount)} " +
                 $"流入:{df.receiveNumber}次/{ByteHelper.ToString(df.receiveCount)} " +
-                $"发送fps:{df.sendLoopNum} 接收fps:{df.revdLoopNum} 解析:{df.resolveNumber}次 " +
+                $"FPS:{df.FPS} 解析:{df.resolveNumber}次 " +
                 $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)} " +
                 $"登录:{server.OnlinePlayers} 未登录:{server.UnClientNumber}";
             };
