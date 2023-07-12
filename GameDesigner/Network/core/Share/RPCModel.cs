@@ -67,6 +67,10 @@
         /// 当数据已经填充, 获取Buffer可直接返回真正数据
         /// </summary>
         private bool isFill;
+        /// <summary>
+        /// 演员id, 用于Call识别或其他用途
+        /// </summary>
+        public uint actorId;
 
         /// <summary>
         /// 构造
@@ -100,9 +104,18 @@
             kernel = true;
             serialize = true;
             this.cmd = cmd;
-            //func = string.Empty;
             this.methodHash = methodHash;
             this.pars = pars;
+        }
+
+        public RPCModel(byte cmd, ushort methodHash, object[] pars, uint actorId) : this()
+        {
+            kernel = true;
+            serialize = true;
+            this.cmd = cmd;
+            this.methodHash = methodHash;
+            this.pars = pars;
+            this.actorId = actorId;
         }
 
         /// <summary>
@@ -126,6 +139,16 @@
             this.index = index;
             this.count = size;
             this.kernel = kernel;
+        }
+
+        public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size, uint actorId) : this()
+        {
+            this.cmd = cmd;
+            this.buffer = buffer;
+            this.index = index;
+            this.count = size;
+            this.kernel = kernel;
+            this.actorId = actorId;
         }
 
         /// <summary>
@@ -169,6 +192,16 @@
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
+        }
+
+        public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, uint actorId) : this()
+        {
+            this.cmd = cmd;
+            this.func = func;
+            this.pars = pars;
+            this.kernel = kernel;
+            this.serialize = serialize;
+            this.actorId = actorId;
         }
 
         public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, ushort methodHash) : this()

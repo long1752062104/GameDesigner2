@@ -194,14 +194,10 @@
             return stream.ToArray();
         }
 
-        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            SendDataHandle(client, rtRPCModels, true);
-        }
 #if TEST1
         ListSafe<byte> list = new ListSafe<byte>();
 #endif
-        protected override void SendByteData(Player client, byte[] buffer, bool reliable)
+        protected override void SendByteData(Player client, byte[] buffer)
         {
             if (!client.Client.Connected)
                 return;
@@ -221,7 +217,7 @@
                 int count1 = client.Client.Send(buffer, 0, buffer.Length, SocketFlags.None, out SocketError error);
                 if (error != SocketError.Success | count1 <= 0)
                 {
-                    OnSendErrorHandle?.Invoke(client, buffer, true);
+                    OnSendErrorHandle?.Invoke(client, buffer);
                     return;
                 }
                 else if (count1 != buffer.Length)

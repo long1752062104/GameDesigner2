@@ -105,12 +105,7 @@
             }
         }
 
-        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            SendDataHandle(client, rtRPCModels, true);
-        }
-
-        protected override void SendByteData(Player client, byte[] buffer, bool reliable)
+        protected override void SendByteData(Player client, byte[] buffer)
         {
             if (buffer.Length == frame)//解决长度==6的问题(没有数据)
                 return;

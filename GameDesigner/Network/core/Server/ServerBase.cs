@@ -367,7 +367,7 @@ namespace Net.Server
         /// <summary>
         /// 当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="SendByteData"/>方法重新发送
         /// </summary>
-        public Action<Player, byte[], bool> OnSendErrorHandle;
+        public Action<Player, byte[]> OnSendErrorHandle;
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
         /// </summary>
@@ -620,26 +620,23 @@ namespace Net.Server
         /// 当客户端使用场景转发命令会调用此方法
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void OnSceneRelay(Player client, RPCModel model, bool reliable)
+        protected virtual void OnSceneRelay(Player client, RPCModel model)
         {
             if (!(client.Scene is Scene scene))
             {
-                if (reliable)
-                    client.tcpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
-                else
-                    client.udpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                 return;
             }
-            Multicast(scene.Players, reliable, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+            Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
         }
 
         /// <summary>
         /// 当客户端使用公告转发命令会调用此方法
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void OnNoticeRelay(Player client, RPCModel model, bool reliable)
+        protected virtual void OnNoticeRelay(Player client, RPCModel model)
         {
-            Multicast(Clients, reliable, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+            Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
         }
         #endregion
 
@@ -954,13 +951,12 @@ namespace Net.Server
 
         protected virtual void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
-            while (client.RevdQueue.TryDequeue(out var segment))
+            if (client.RevdQueue.TryDequeue(out var segment))
             {
                 DataCRCHandle(client, segment, false);
                 BufferPool.Push(segment);
             }
-            if (client.Gcp != null)
-                client.Gcp.Update();
+            client.Gcp?.Update();
         }
 
         protected virtual void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
@@ -1113,10 +1109,11 @@ namespace Net.Server
                 }
                 byte cmd1 = buffer.ReadByte();
                 int dataCount = buffer.ReadInt32();
+                uint actorId = buffer.ReadUInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount, actorId);
                 if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.SceneRT & cmd1 != NetCmd.Notice & cmd1 != NetCmd.NoticeRT & cmd1 != NetCmd.Local & cmd1 != NetCmd.LocalRT)
                 {
                     var func = OnDeserializeRpc(buffer, buffer.Position, dataCount);
@@ -1333,22 +1330,22 @@ namespace Net.Server
                     OnRpcExecute(client, model);
                     break;
                 case NetCmd.Local:
-                    client.udpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.LocalRT:
-                    client.tcpRPCModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.Scene:
-                    OnSceneRelay(client, model, false);
+                    OnSceneRelay(client, model);
                     break;
                 case NetCmd.SceneRT:
-                    OnSceneRelay(client, model, true);
+                    OnSceneRelay(client, model);
                     break;
                 case NetCmd.Notice:
-                    OnNoticeRelay(client, model, false);
+                    OnNoticeRelay(client, model);
                     break;
                 case NetCmd.NoticeRT:
-                    OnNoticeRelay(client, model, true);
+                    OnNoticeRelay(client, model);
                     break;
                 case NetCmd.SendHeartbeat:
                     Send(client, NetCmd.RevdHeartbeat, new byte[0]);
@@ -1374,7 +1371,7 @@ namespace Net.Server
                     OnOperationSyncHandle(client, list);
                     break;
                 case NetCmd.Ping:
-                    client.udpRPCModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false, model.methodHash));
+                    client.RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false, model.methodHash));
                     break;
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
@@ -1522,25 +1519,7 @@ namespace Net.Server
         /// <param name="client"></param>
         public virtual void SendDirect(Player client)
         {
-            SendDataHandle(client, client.udpRPCModels, false);//不可靠发送
-            SendRTDataHandle(client, client.tcpRPCModels);//可靠发送
-        }
-
-        protected virtual void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            int count = rtRPCModels.Count;
-            if (count <= 0)
-                return;
-            if (client.Gcp.HasSend())
-                return;
-            if (count >= PackageLength)
-                count = PackageLength;
-            var stream = BufferPool.Take();
-            SetDataHead(stream);
-            WriteDataBody(client, ref stream, rtRPCModels, count, true);
-            var buffer = PackData(stream);
-            SendByteData(client, buffer, true);
-            BufferPool.Push(stream);
+            SendDataHandler(client, client.RpcModels);
         }
 
         protected virtual void SetDataHead(Segment stream)
@@ -1548,7 +1527,7 @@ namespace Net.Server
             stream.Position = frame + PackageAdapter.HeadCount;
         }
 
-        protected virtual void WriteDataBody(Player client, ref Segment stream, QueueSafe<RPCModel> rPCModels, int count, bool reliable)
+        protected virtual void WriteDataBody(Player client, ref Segment stream, QueueSafe<RPCModel> rPCModels, int count)
         {
             int index = 0;
             for (int i = 0; i < count; i++)
@@ -1562,16 +1541,17 @@ namespace Net.Server
                         continue;
                 }
                 var len = stream.Position + rPCModel.buffer.Length + frame;
-                if ((len >= MTU & !reliable) | len >= stream.Length)//udp不可靠判断 和 数据超过BufferPool.Size
+                if (len >= stream.Length)//udp不可靠判断 和 数据超过BufferPool.Size
                 {
                     var buffer = PackData(stream);
-                    SendByteData(client, buffer, reliable);
+                    SendByteData(client, buffer);
                     ResetDataHead(stream);
                     index = 0;
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
                 stream.Write(rPCModel.buffer.Length);
+                stream.Write(rPCModel.actorId);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
                 if (rPCModel.bigData | ++index >= PackageLength)
                     break;
@@ -1587,16 +1567,16 @@ namespace Net.Server
             stream.SetPositionLength(frame + PackageAdapter.HeadCount);
         }
 
-        protected virtual void SendDataHandle(Player client, QueueSafe<RPCModel> rPCModels, bool reliable)
+        protected virtual void SendDataHandler(Player client, QueueSafe<RPCModel> rPCModels)
         {
-            int count = rPCModels.Count;//源码中Count执行也不少, 所以优化一下   这里已经取出要处理的长度
+            var count = rPCModels.Count;//源码中Count执行也不少, 所以优化一下   这里已经取出要处理的长度
             if (count <= 0)
                 return;
             var stream = BufferPool.Take();
             SetDataHead(stream);
-            WriteDataBody(client, ref stream, rPCModels, count, reliable);
+            WriteDataBody(client, ref stream, rPCModels, count);
             var buffer = PackData(stream);
-            SendByteData(client, buffer, reliable);
+            SendByteData(client, buffer);
             BufferPool.Push(stream);
         }
 
@@ -1615,21 +1595,13 @@ namespace Net.Server
             return stream.ToArray();
         }
 
-        protected virtual void SendByteData(Player client, byte[] buffer, bool reliable)
+        protected virtual void SendByteData(Player client, byte[] buffer)
         {
             if (buffer.Length <= frame)//解决长度==5的问题(没有数据)
                 return;
             sendAmount++;
             sendCount += buffer.Length;
-            if (reliable)
-                client.Gcp.Send(buffer);
-            else
-            {
-                if (buffer.Length <= 65507)
-                    Server.SendTo(buffer, 0, buffer.Length, SocketFlags.None, client.RemotePoint);
-                else
-                    NDebug.LogError($"[{client}] 数据过大, 请使用SendRT发送...");
-            }
+            client.Gcp.Send(buffer);
         }
 
         /// <summary>
@@ -1662,6 +1634,7 @@ namespace Net.Server
 
         private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
         {
+            client.callActorId = model.actorId;
             foreach (RPCMethod method in methods.Values)
             {
                 try
@@ -2084,7 +2057,7 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.udpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
@@ -2094,7 +2067,7 @@ namespace Net.Server
                 Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
-            client.udpRPCModels.Enqueue(new RPCModel(cmd, buffer) { bigData = buffer.Length > short.MaxValue });
+            client.RpcModels.Enqueue(new RPCModel(cmd, buffer) { bigData = buffer.Length > short.MaxValue , actorId = client.callActorId });
         }
 
         /// <summary>
@@ -2146,12 +2119,12 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.udpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.udpRPCModels.Enqueue(new RPCModel(cmd, func, pars));
+            client.RpcModels.Enqueue(new RPCModel(cmd, func, pars) { actorId = client.callActorId });
         }
 
         public virtual void Send(Player client, ushort methodHash, params object[] pars)
@@ -2163,12 +2136,12 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.udpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.udpRPCModels.Enqueue(new RPCModel(cmd, methodHash, pars));
+            client.RpcModels.Enqueue(new RPCModel(cmd, methodHash, pars) { actorId = client.callActorId });
         }
 
         /// <summary>
@@ -2212,7 +2185,7 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.udpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
@@ -2222,19 +2195,19 @@ namespace Net.Server
                 Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
-            client.udpRPCModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
+            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue, actorId = client.callActorId });
         }
 
         public void Send(Player client, RPCModel model)
         {
             if (!client.Connected)
                 return;
-            if (client.udpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.udpRPCModels.Enqueue(model);
+            client.RpcModels.Enqueue(model);
         }
 
         /// <summary>
@@ -2261,12 +2234,12 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.tcpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.tcpRPCModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
+            client.RpcModels.Enqueue(new RPCModel(cmd, func, pars, true, true) { actorId = client.callActorId });
         }
 
         public virtual void SendRT(Player client, ushort methodHash, params object[] pars)
@@ -2278,12 +2251,12 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.tcpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.tcpRPCModels.Enqueue(new RPCModel(cmd, string.Empty, pars, true, true, methodHash));
+            client.RpcModels.Enqueue(new RPCModel(cmd, string.Empty, pars, true, true, methodHash) { actorId = client.callActorId });
         }
 
         /// <summary>
@@ -2308,7 +2281,7 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.tcpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
@@ -2318,7 +2291,7 @@ namespace Net.Server
                 Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
-            client.tcpRPCModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
+            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue, actorId = client.callActorId });
         }
 
         /// <summary>
@@ -2333,7 +2306,7 @@ namespace Net.Server
         {
             if (!client.Connected)
                 return;
-            if (client.tcpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
@@ -2343,19 +2316,19 @@ namespace Net.Server
                 Debug.LogError($"[{client}]数据太大，请分块发送!");
                 return;
             }
-            client.tcpRPCModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
+            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue, actorId = client.callActorId });
         }
 
         public void SendRT(Player client, RPCModel model)
         {
             if (!client.Connected)
                 return;
-            if (client.tcpRPCModels.Count >= LimitQueueCount)
+            if (client.RpcModels.Count >= LimitQueueCount)
             {
                 Debug.LogError($"[{client}]数据缓存列表超出限制!");
                 return;
             }
-            client.tcpRPCModels.Enqueue(model);
+            client.RpcModels.Enqueue(model);
         }
 
         /// <summary>
@@ -2365,55 +2338,31 @@ namespace Net.Server
         /// <param name="buffer">自定义字节数组</param>
         public virtual void Multicast(IList<Player> clients, byte[] buffer)
         {
-            Multicast(clients, false, NetCmd.CallRpc, buffer);
+            Multicast(clients, NetCmd.OtherCmd, buffer);
         }
 
         /// <summary>
         /// 网络多播, 发送自定义数据到clients集合的客户端
         /// </summary>
         /// <param name="clients">客户端集合</param>
-        /// <param name="cmd"></param>
+        /// <param name="cmd">网络命令</param>
         /// <param name="buffer">自定义字节数组</param>
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
         {
-            Multicast(clients, false, cmd, buffer);
-        }
-
-        /// <summary>
-        /// 网络多播, 发送自定义数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="reliable"></param>
-        /// <param name="buffer">自定义字节数组</param>
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte[] buffer)
-        {
-            Multicast(clients, reliable, NetCmd.OtherCmd, buffer);
-        }
-
-        /// <summary>
-        /// 网络多播, 发送自定义数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="reliable">使用可靠传输?</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer">自定义字节数组</param>
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte cmd, byte[] buffer)
-        {
-            Multicast(clients, reliable, new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
+            Multicast(clients, new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
         }
 
         /// <summary>
         /// 网络多播, 发送数据到clients集合的客户端 (灵活数据包)
         /// </summary>
         /// <param name="clients">客户端集合</param>
-        /// <param name="reliable"></param>
         /// <param name="cmd"></param>
         /// <param name="buffer">要包装的数据,你自己来定</param>
         /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte cmd, byte[] buffer, bool kernel, bool serialize)
+        public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
         {
-            Multicast(clients, reliable, new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
+            Multicast(clients, new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
         }
 
         /// <summary>
@@ -2424,19 +2373,7 @@ namespace Net.Server
         /// <param name="pars">本地客户端rpc参数</param>
         public virtual void Multicast(IList<Player> clients, string func, params object[] pars)
         {
-            Multicast(clients, false, NetCmd.CallRpc, func, pars);
-        }
-
-        /// <summary>
-        /// 网络多播, 发送数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="reliable">使用可靠传输?</param>
-        /// <param name="func">本地客户端rpc函数</param>
-        /// <param name="pars">本地客户端rpc参数</param>
-        public virtual void Multicast(IList<Player> clients, bool reliable, string func, params object[] pars)
-        {
-            Multicast(clients, reliable, NetCmd.CallRpc, func, pars);
+            Multicast(clients, NetCmd.CallRpc, func, pars);
         }
 
         /// <summary>
@@ -2448,34 +2385,21 @@ namespace Net.Server
         /// <param name="pars">本地客户端rpc参数</param>
         public virtual void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
         {
-            Multicast(clients, false, cmd, func, pars);
+            var buffer = OnSerializeRpc(new RPCModel(1, func, pars));
+            Multicast(clients, new RPCModel(cmd, buffer, true, false));
         }
 
-        /// <summary>
-        /// 网络多播, 发送数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="reliable">使用可靠传输?</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">本地客户端rpc函数</param>
-        /// <param name="pars">本地客户端rpc参数</param>
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte cmd, string func, params object[] pars)
+        public virtual void Multicast(IList<Player> clients, ushort methodHash, params object[] pars)
         {
-            byte[] buffer = OnSerializeRpc(new RPCModel(1, func, pars));
-            Multicast(clients, reliable, new RPCModel(cmd, buffer, true, false));
+            Multicast(clients, NetCmd.CallRpc, methodHash, pars);
         }
 
-        public virtual void Multicast(IList<Player> clients, bool reliable, ushort methodHash, params object[] pars)
+        public virtual void Multicast(IList<Player> clients, byte cmd, ushort methodHash, params object[] pars)
         {
-            Multicast(clients, reliable, new RPCModel(NetCmd.CallRpc, methodHash, pars));
+            Multicast(clients, new RPCModel(cmd, methodHash, pars));
         }
 
-        public virtual void Multicast(IList<Player> clients, bool reliable, byte cmd, ushort methodHash, params object[] pars)
-        {
-            Multicast(clients, reliable, new RPCModel(cmd, methodHash, pars));
-        }
-
-        public virtual void Multicast(IList<Player> clients, bool reliable, RPCModel model)
+        public virtual void Multicast(IList<Player> clients, RPCModel model)
         {
             if (model.buffer != null)
             {
@@ -2492,24 +2416,12 @@ namespace Net.Server
                     continue;
                 if (!client.Connected)
                     continue;
-                if (!reliable)
+                if (client.RpcModels.Count >= LimitQueueCount)
                 {
-                    if (client.udpRPCModels.Count >= LimitQueueCount)
-                    {
-                        Debug.LogError($"[{client}]数据缓存列表超出限制!");
-                        return;
-                    }
-                    client.udpRPCModels.Enqueue(model);
+                    Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                    continue;
                 }
-                else
-                {
-                    if (client.tcpRPCModels.Count >= LimitQueueCount)
-                    {
-                        Debug.LogError($"[{client}]数据缓存列表超出限制!");
-                        return;
-                    }
-                    client.tcpRPCModels.Enqueue(model);
-                }
+                client.RpcModels.Enqueue(model);
             }
         }
 
@@ -2789,7 +2701,7 @@ namespace Net.Server
         /// <returns>是否可发送数据</returns>
         public bool CheckSend(Player client)
         {
-            return client.udpRPCModels.Count < LimitQueueCount;
+            return client.RpcModels.Count < LimitQueueCount;
         }
 
         /// <summary>
@@ -2798,7 +2710,7 @@ namespace Net.Server
         /// <returns>是否可发送数据</returns>
         public bool CheckSendRT(Player client)
         {
-            return client.udpRPCModels.Count < LimitQueueCount;
+            return client.RpcModels.Count < LimitQueueCount;
         }
 
         /// <summary>

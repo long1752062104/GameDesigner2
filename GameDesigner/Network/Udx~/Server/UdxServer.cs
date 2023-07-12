@@ -113,12 +113,7 @@
             return false;
         }
 
-        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            SendDataHandle(client, rtRPCModels, true);
-        }
-
-        protected unsafe override void SendByteData(Player client, byte[] buffer, bool reliable)
+        protected unsafe override void SendByteData(Player client, byte[] buffer)
         {
             if (client.Udx == IntPtr.Zero)
                 return;
@@ -130,7 +125,7 @@
             {
                 int count = UdxLib.USend(client.Udx, ptr, buffer.Length);
                 if (count <= 0)
-                    OnSendErrorHandle?.Invoke(client, buffer, reliable);
+                    OnSendErrorHandle?.Invoke(client, buffer);
             }
         }
 

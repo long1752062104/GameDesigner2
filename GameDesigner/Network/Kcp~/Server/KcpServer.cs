@@ -99,12 +99,7 @@
             ikcp_update(client.Kcp, tick);
         }
 
-        protected override void SendRTDataHandle(Player client, QueueSafe<RPCModel> rtRPCModels)
-        {
-            SendDataHandle(client, rtRPCModels, true);
-        }
-
-        protected unsafe override void SendByteData(Player client, byte[] buffer, bool reliable)
+        protected unsafe override void SendByteData(Player client, byte[] buffer)
         {
             if (!client.Connected)
                 return;
@@ -116,7 +111,7 @@
             {
                 int count = ikcp_send(client.Kcp, p, buffer.Length);
                 if (count < 0)
-                    OnSendErrorHandle?.Invoke(client, buffer, reliable);
+                    OnSendErrorHandle?.Invoke(client, buffer);
             }
         }
     }

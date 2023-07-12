@@ -33,10 +33,6 @@
         /// 备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
         /// </summary>
         protected FastList<Operation> operations = new FastList<Operation>();
-        /// <summary>
-        /// 玩家操作是以可靠传输进行发送的?
-        /// </summary>
-        public bool SendOperationReliable { get; set; }
         public Func<OperationList, byte[]> onSerializeOpt;
         public Func<RPCModel, byte[]> onSerializeRpc;
         /// <summary>
@@ -245,7 +241,7 @@
                 operations = opts
             };
             var buffer = onSerializeOpt(operList);
-            handle.Multicast(players, SendOperationReliable, cmd, buffer, false, false);
+            handle.Multicast(players, cmd, buffer, false, false);
         }
 
         /// <summary>
@@ -425,6 +421,5 @@
     /// </summary>
     public class DefaultScene : NetScene<NetPlayer> 
     {
-        public DefaultScene() { SendOperationReliable = true; }
     }
 }

@@ -148,8 +148,7 @@
                         Connected = false;
                         NetworkState = NetworkState.ConnectLost;
                         InvokeInMainThread(OnConnectLostHandle);
-                        rtRPCModels = new QueueSafe<RPCModel>();
-                        rPCModels = new QueueSafe<RPCModel>();
+                        RpcModels = new QueueSafe<RPCModel>();
                         ReleaseUdx();
                         NDebug.Log("断开连接！");
                         break;
@@ -185,12 +184,7 @@
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected override void SendRTDataHandle()
-        {
-            SendDataHandle(rtRPCModels, true);
-        }
-
-        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+        protected unsafe override void SendByteData(byte[] buffer)
         {
             if (ClientPtr == IntPtr.Zero)
                 return;
@@ -200,7 +194,7 @@
             {
                 int count = UdxLib.USend(ClientPtr, ptr, buffer.Length);
                 if (count <= 0)
-                    OnSendErrorHandle?.Invoke(buffer, reliable);
+                    OnSendErrorHandle?.Invoke(buffer);
             }
         }
 
@@ -366,10 +360,6 @@
         }
         protected override void StartupThread() { }
 
-        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
-        {
-            base.SendByteData(buffer, reliable);
-        }
         public override string ToString()
         {
             return $"uid:{UID} conv:{Connected}";

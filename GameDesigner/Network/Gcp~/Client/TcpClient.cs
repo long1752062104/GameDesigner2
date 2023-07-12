@@ -109,11 +109,6 @@
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected override void SendRTDataHandle()
-        {
-            SendDataHandle(rtRPCModels, true);
-        }
-
         protected override byte[] PackData(Segment stream)
         {
             stream.Flush(false);
@@ -131,7 +126,7 @@
 #if TEST1
         ListSafe<byte> list = new ListSafe<byte>();
 #endif
-        protected override void SendByteData(byte[] buffer, bool reliable)
+        protected override void SendByteData(byte[] buffer)
         {
             sendCount += buffer.Length;
             sendAmount++;
@@ -148,7 +143,7 @@
 #else
                 int count = Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
                 if (count <= 0)
-                    OnSendErrorHandle?.Invoke(buffer, reliable);
+                    OnSendErrorHandle?.Invoke(buffer);
                 else if (count != buffer.Length)
                     NDebug.LogError($"发送了{buffer.Length - count}个字节失败!");
 #endif
@@ -393,7 +388,7 @@
             return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
-        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+        protected unsafe override void SendByteData(byte[] buffer)
         {
             sendCount += buffer.Length;
             sendAmount++;

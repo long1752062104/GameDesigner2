@@ -117,19 +117,14 @@
             ikcp_update(kcp, (uint)Environment.TickCount);
         }
 
-        protected override void SendByteData(byte[] buffer, bool reliable)
+        protected override void SendByteData(byte[] buffer)
         {
             fixed (byte* p = &buffer[0])
             {
                 int count = ikcp_send(kcp, p, buffer.Length);
                 if (count < 0)
-                    OnSendErrorHandle?.Invoke(buffer, reliable);
+                    OnSendErrorHandle?.Invoke(buffer);
             }
-        }
-
-        protected override void SendRTDataHandle()
-        {
-            SendDataHandle(rtRPCModels, true);
         }
 
         public override void Close(bool await = true, int millisecondsTimeout = 1000)
@@ -248,7 +243,7 @@
             var socketAddress = Client.RemoteEndPoint.Serialize();
             addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
 #endif
-            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+            RpcModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
             SendDirect();
             Connected = true;
             result(true);

@@ -14,7 +14,6 @@ namespace Net.System
         {
             if (dictionary == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.dictionary);
-
             dict = dictionary;
         }
 
@@ -23,19 +22,22 @@ namespace Net.System
         {
             get
             {
-                KeyValuePair<K, V>[] items = new KeyValuePair<K, V>[dict.Count];
+                var items = new KeyValuePair<K, V>[dict.Count];
                 dict.CopyTo(items, 0);
                 return items;
             }
         }
     }
 
+    /// <summary>
+    /// 无GC快速字典
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
     [DebuggerTypeProxy(typeof(Mscorlib_DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
-    //[Serializable]//unity新版本会记录起来, 导致开始游戏后, 被unity初始化赋值 导致bug
     public class MyDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IDictionary, ICollection, IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>
     {
-
         public MyDictionary() : this(1)
         {
         }
@@ -231,7 +233,6 @@ namespace Net.System
                 freeList = -1;
                 count = 0;
                 freeCount = 0;
-                version++;
             }
         }
 
@@ -310,7 +311,7 @@ namespace Net.System
             int num = key.GetHashCode() & int.MaxValue;
             for (int i = buckets[num % buckets.Length]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
+                if (entries[i].hashCode == num)
                 {
                     return i;
                 }
@@ -331,29 +332,28 @@ namespace Net.System
             freeList = -1;
         }
 
-        private bool Insert(TKey key, TValue value, bool add, out TValue oldValue)
+        protected virtual bool Insert(TKey key, TValue value, bool tryAdd, out TValue oldValue)
         {
-            int num = key.GetHashCode() & int.MaxValue;
-            int num2 = num % buckets.Length;
-            int num3 = 0;
-            for (int i = buckets[num2]; i >= 0; i = entries[i].next)
+            int hashCode = key.GetHashCode() & int.MaxValue;
+            int hashIndex = hashCode % buckets.Length;
+            int depth = 0;
+            for (int i = buckets[hashIndex]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
+                if (entries[i].hashCode == hashCode)
                 {
-                    if (add)
+                    if (tryAdd)
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
                     oldValue = entries[i].value;
                     entries[i].value = value;
-                    version++;
                     return false;
                 }
-                num3++;
+                depth++;
             }
-            int num4;
+            int index;
             if (freeCount > 0)
             {
-                num4 = freeList;
-                freeList = entries[num4].next;
+                index = freeList;
+                freeList = entries[index].next;
                 freeCount--;
             }
             else
@@ -361,21 +361,18 @@ namespace Net.System
                 if (count == entries.Length)
                 {
                     Resize();
-                    num2 = num % buckets.Length;
+                    hashIndex = hashCode % buckets.Length;
                 }
-                num4 = count;
+                index = count;
                 count++;
             }
-            entries[num4].hashCode = num;
-            entries[num4].next = buckets[num2];
-            entries[num4].key = key;
-            entries[num4].value = value;
-            buckets[num2] = num4;
-            version++;
-            if (num3 > 100)
-            {
+            entries[index].hashCode = hashCode;
+            entries[index].next = buckets[hashIndex];
+            entries[index].key = key;
+            entries[index].value = value;
+            buckets[hashIndex] = index;
+            if (depth > 100)
                 Resize(entries.Length, true);
-            }
             oldValue = default;
             return true;
         }
@@ -422,23 +419,19 @@ namespace Net.System
             return TryRemove(key, out _);
         }
 
-        public bool TryRemove(TKey key, out TValue value)
+        public virtual bool TryRemove(TKey key, out TValue value)
         {
             int num = key.GetHashCode() & int.MaxValue;
             int num2 = num % buckets.Length;
             int num3 = -1;
             for (int i = buckets[num2]; i >= 0; i = entries[i].next)
             {
-                if (entries[i].hashCode == num /*&& Equals(entries[i].key, key)*/)
+                if (entries[i].hashCode == num)
                 {
                     if (num3 < 0)
-                    {
                         buckets[num2] = entries[i].next;
-                    }
                     else
-                    {
                         entries[num3].next = entries[i].next;
-                    }
                     value = entries[i].value;
                     entries[i].hashCode = -1;
                     entries[i].next = freeList;
@@ -446,7 +439,6 @@ namespace Net.System
                     entries[i].value = default;
                     freeList = i;
                     freeCount++;
-                    version++;
                     return true;
                 }
                 num3 = i;
@@ -1048,7 +1040,6 @@ namespace Net.System
                 internal Enumerator(MyDictionary<TKey, TValue> dictionary)
                 {
                     this.dictionary = dictionary;
-                    version = dictionary.version;
                     index = 0;
                     currentKey = default;
                 }
@@ -1106,8 +1097,6 @@ namespace Net.System
                 private readonly MyDictionary<TKey, TValue> dictionary;
 
                 private int index;
-
-                private readonly int version;
 
                 private TKey currentKey;
             }

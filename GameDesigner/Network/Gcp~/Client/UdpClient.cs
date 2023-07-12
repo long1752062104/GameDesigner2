@@ -209,14 +209,14 @@
             var socketAddress = Client.RemoteEndPoint.Serialize();
             addressBuffer = (byte[])socketAddress.GetType().GetField("m_Buffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(socketAddress);
 #endif
-            rPCModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
+            RpcModels.Enqueue(new RPCModel(NetCmd.Connect, new byte[0]));
             SendDirect();
             Connected = true;
             result(true);
             return UniTask.FromResult(Connected);
         }
         protected override void StartupThread() { }
-        protected unsafe override void SendByteData(byte[] buffer, bool reliable)
+        protected unsafe override void SendByteData(byte[] buffer)
         {
             sendCount += buffer.Length;
             sendAmount++;

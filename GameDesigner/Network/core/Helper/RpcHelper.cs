@@ -132,11 +132,9 @@ namespace Net.Helper
                     return;
                 }
             }
-            uint tick = (uint)Environment.TickCount;
-            while (body.TaskQueue.TryDequeue(out var modelTask))
+            RPCModelTask modelTask;
+            while (body.CallWaitDict.TryRemove(model.actorId, out modelTask))
             {
-                if (tick > modelTask.tick) //超时要移出队列, 检查下一个, 否则一个超时任务把其他Call也搞得超时
-                    continue;
                 modelTask.model = model;
                 modelTask.IsCompleted = true;
                 var callback = modelTask.callback;
@@ -149,6 +147,8 @@ namespace Net.Helper
                 if (modelTask.intercept)
                     return;
             }
+            if (modelTask == null & model.actorId != 0 & client == null) //当请求超时后, 在Call等待那里已经进行移除, 但是如果服务器回应过慢, 但是返回来了, 就会被丢弃掉
+                return;
             if (body.Count <= 0)
             {
                 log(2, client, model);

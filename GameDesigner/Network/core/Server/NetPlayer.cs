@@ -89,8 +89,8 @@
         /// 用户唯一身份标识
         /// </summary>
         public int UserID { get; internal set; }
-        internal QueueSafe<RPCModel> tcpRPCModels = new QueueSafe<RPCModel>();
-        internal QueueSafe<RPCModel> udpRPCModels = new QueueSafe<RPCModel>();
+        internal QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
+        internal uint callActorId;
         public QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
         public ThreadGroup Group;
         internal int SceneHash;
@@ -184,8 +184,7 @@
             stackCount = 0;
             Connected = false;
             heart = 0;
-            tcpRPCModels = new QueueSafe<RPCModel>();
-            udpRPCModels = new QueueSafe<RPCModel>();
+            RpcModels = new QueueSafe<RPCModel>();
             Login = false;
             addressBuffer = null;
             if (Gcp != null) Gcp.Dispose();

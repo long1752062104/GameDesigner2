@@ -215,6 +215,7 @@ namespace Net.Adapter
 
         private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
         {
+            client.callActorId = model.actorId;
             foreach (RPCMethodPtr method in methods.Values)
             {
                 try

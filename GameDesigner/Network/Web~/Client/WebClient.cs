@@ -65,8 +65,7 @@
                     Connected = false;
                     NetworkState = NetworkState.ConnectLost;
                     InvokeInMainThread(OnConnectLostHandle);
-                    rtRPCModels = new QueueSafe<RPCModel>();
-                    rPCModels = new QueueSafe<RPCModel>();
+                    RpcModels = new QueueSafe<RPCModel>();
                     NDebug.Log("websocket关闭！");
                     isConnectFailed = true;
                 };
@@ -136,12 +135,7 @@
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected override void SendRTDataHandle()
-        {
-            SendDataHandle(rtRPCModels, true);
-        }
-
-        protected override void SendByteData(byte[] buffer, bool reliable)
+        protected override void SendByteData(byte[] buffer)
         {
             sendCount += buffer.Length;
             sendAmount++;
