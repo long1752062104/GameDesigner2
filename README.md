@@ -428,6 +428,9 @@ static void Main(string[] args)
 <br>11.[放置武界](https://www.taptap.cn/app/314773)</br>
 <br>12.[吞噬修仙](https://www.taptap.cn/app/352549)</br>
 
+## Steam游戏
+<br>1.[CubeSquad:Zero](https://store.steampowered.com/app/2505450/CubeSquadZero/)</br>
+
 ## 使用到的第三方库和一些推荐的库
 <br>1.udx: 超强的一个udp可靠协议库,实力大于名气 www.goodudx.com</br>
 <br>2.kcp: 超多使用的可靠udp协议库 https://github.com/skywind3000/kcp</br>
