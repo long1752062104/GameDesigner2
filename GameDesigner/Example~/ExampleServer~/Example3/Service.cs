@@ -86,7 +86,7 @@ namespace LockStep.Server
             if (readyCount == scene.Count)
             {
                 NDebug.Log("开始同步!");
-                Multicast(scene.Clients, true, "StartGameSync");
+                Multicast(scene.Clients, "StartGameSync");
                 client.Scene.battle = true;
                 if (scene.check)
                     Net.Event.EventSystem.RemoveEvent(scene.actionId);
@@ -99,7 +99,7 @@ namespace LockStep.Server
                 {//如果在60秒内, 其他玩家还没加载完成, 那就不等了, 直接游戏开始
                     if (client.Scene == null)
                         return;
-                    Multicast(scene.Clients, true, "StartGameSync");
+                    Multicast(scene.Clients, "StartGameSync");
                     client.Scene.battle = true;
                     NDebug.Log("不等待!");
                 });

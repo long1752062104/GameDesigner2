@@ -10,12 +10,12 @@
     using global::System.Reflection;
     using global::System.Collections.Generic;
     using Kcp;
+    using AOT;
     using Net.Share;
     using Net.System;
-    using AOT;
+    using Net.Event;
     using Cysharp.Threading.Tasks;
     using static Kcp.KcpLib;
-    using Net.Event;
 
     /// <summary>
     /// kcp客户端
@@ -24,8 +24,8 @@
     public unsafe class KcpClient : ClientBase
     {
         private IntPtr kcp;
+        private IntPtr user;
         private outputCallback output;
-        private static readonly Dictionary<IntPtr, KcpClient> KcpDict = new Dictionary<IntPtr, KcpClient>();
 
         public KcpClient() : base()
         {
@@ -38,20 +38,19 @@
 
         ~KcpClient()
         {
-            KcpDict.Remove(kcp);
+            ReleaseKcp();
         }
 
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result) 
         {
-            if (kcp != IntPtr.Zero)
-                ikcp_release(kcp);
-            kcp = ikcp_create(MTU, (IntPtr)1);
+            ReleaseKcp();
+            user = Marshal.GetIUnknownForObject(this);
+            kcp = ikcp_create(MTU, user);
             output = new outputCallback(Output);
-            IntPtr outputPtr = Marshal.GetFunctionPointerForDelegate(output);
+            var outputPtr = Marshal.GetFunctionPointerForDelegate(output);
             ikcp_setoutput(kcp, outputPtr);
             ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
             ikcp_nodelay(kcp, 1, 10, 2, 1);
-            KcpDict[kcp] = this;
             return base.ConnectResult(host, port, localPort, result);
         }
 
@@ -69,7 +68,7 @@
         [MonoPInvokeCallback(typeof(outputCallback))]
         public static unsafe int Output(IntPtr buf, int len, IntPtr kcp, IntPtr user)
         {
-            var client = KcpDict[kcp];
+            var client = Marshal.GetObjectForIUnknown(user) as KcpClient;
             client.sendCount += len;
             client.sendAmount++;
 #if WINDOWS
@@ -131,6 +130,21 @@
         {
             base.Close(await);
             addressBuffer = null;
+            ReleaseKcp();
+        }
+
+        private void ReleaseKcp()
+        {
+            if (kcp != IntPtr.Zero)
+            {
+                ikcp_release(kcp);
+                kcp = IntPtr.Zero;
+            }
+            if (user != IntPtr.Zero)
+            {
+                Marshal.Release(user);
+                user = IntPtr.Zero;
+            }
         }
 
         /// <summary>
@@ -226,7 +240,7 @@
         public int sendSize { get { return sendCount; } }
         public int sendNum { get { return sendAmount; } }
         public int revdNum { get { return receiveAmount; } }
-        public int resolveNum { get { return receiveAmount; } }
+        public int resolveNum { get { return resolveAmount; } }
         private byte[] addressBuffer;
         public KcpClientTest() : base()
         {

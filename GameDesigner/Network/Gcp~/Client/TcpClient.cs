@@ -325,19 +325,10 @@
                                         continue;
                                     if (!client.Client.Connected)
                                         continue;
-                                    if (client.Client.Poll(0, SelectMode.SelectRead))
-                                    {
-                                        var buffer1 = BufferPool.Take(65535);
-                                        buffer1.Count = client.Client.Receive(buffer1, 0, ushort.MaxValue, SocketFlags.None, out var errorCode);
-                                        if(errorCode == SocketError.Success)
-                                            client.ResolveBuffer(ref buffer1, false);
-                                        BufferPool.Push(buffer1);
-                                    }
                                     if (canSend)
                                     {
                                         client.SendRT(NetCmd.Local, buffer);
                                         //client.AddOperation(new Operation(66, buffer));
-                                        client.SendDirect();
                                     }
                                     client.NetworkTick();
                                 }
@@ -366,7 +357,7 @@
         public int sendSize { get { return sendCount; } }
         public int sendNum { get { return sendAmount; } }
         public int revdNum { get { return receiveAmount; } }
-        public int resolveNum { get { return receiveAmount; } }
+        public int resolveNum { get { return resolveAmount; } }
 
         public TcpClientTest()
         {

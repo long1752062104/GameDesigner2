@@ -1114,36 +1114,6 @@
             <param name="func">RPCFun函数</param>
             <param name="pars">RPCFun参数</param>
         </member>
-        <member name="M:Net.Share.ISendHandle.CallRpc(System.String,System.Object[])">
-            <summary>
-            远程过程调用 同Send方法
-            </summary>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.CallRpc(System.Byte,System.String,System.Object[])">
-            <summary>
-            远程过程调用 同Send方法
-            </summary>
-            <param name="cmd">网络命令，请看NetCmd类定义</param>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Request(System.String,System.Object[])">
-            <summary>
-            网络请求 同Send方法
-            </summary>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Request(System.Byte,System.String,System.Object[])">
-            <summary>
-            网络请求 同Send方法
-            </summary>
-            <param name="cmd">网络命令，请看NetCmd类定义</param>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
         <member name="M:Net.Share.ISendHandle.SendRT(System.String,System.Object[])">
             <summary>
             发送网络可靠传输数据, 可以发送大型文件数据
@@ -1175,48 +1145,6 @@
             </summary>
             <param name="cmd">网络命令</param>
             <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.String,System.String,System.Delegate,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.String,System.String,System.Delegate,System.Int32,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="millisecondsDelay">异步时间</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.String,System.String,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="millisecondsDelay">异步时间</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.Byte,System.String,System.String,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在millisecondsDelay时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="cmd">指令</param>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="millisecondsDelay">异步时间</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
         </member>
         <member name="T:Net.Share.IServerEventHandle`1">
             <summary>
@@ -1386,37 +1314,11 @@
             <param name="cmd"></param>
             <param name="buffer">自定义字节数组</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable"></param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
         <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.String,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
@@ -1429,17 +1331,7 @@
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
+        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[],System.Boolean,System.Boolean)">
             <summary>
             网络多播, 发送数据到clients集合的客户端 (灵活数据包)
             </summary>
@@ -2518,6 +2410,11 @@
             当数据已经填充, 获取Buffer可直接返回真正数据
             </summary>
         </member>
+        <member name="F:Net.Share.RPCModel.actorId">
+            <summary>
+            演员id, 用于Call识别或其他用途
+            </summary>
+        </member>
         <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[])">
             <summary>
             构造
@@ -2592,7 +2489,7 @@
         </member>
         <member name="F:Net.Share.RPCModelTask.model">
             <summary>
-            对方回应的数据都在这里
+            响应的数据在这里
             </summary>
         </member>
         <member name="T:Net.Share.FlowControlMode">
@@ -2787,6 +2684,13 @@
             <param name="size">字节值</param>
             <returns></returns>
         </member>
+        <member name="T:Net.System.SafeDictionary`2">
+            <summary>
+            安全字典, 无GC快速字典
+            </summary>
+            <typeparam name="TKey"></typeparam>
+            <typeparam name="TValue"></typeparam>
+        </member>
         <member name="T:Net.System.ArraySegment">
             <summary>
             内存字节数组片
@@ -2845,6 +2749,13 @@
             压入数据片, 等待复用
             </summary>
             <param name="segment"></param>
+        </member>
+        <member name="T:Net.System.MyDictionary`2">
+            <summary>
+            无GC快速字典
+            </summary>
+            <typeparam name="TKey"></typeparam>
+            <typeparam name="TValue"></typeparam>
         </member>
         <member name="T:Net.System.FastList`1">
             <summary>
@@ -3795,14 +3706,9 @@
             端口号
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.rPCModels">
+        <member name="F:Net.Client.ClientBase.RpcModels">
             <summary>
             发送缓存器
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.rtRPCModels">
-            <summary>
-            可靠传输缓冲队列
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.RpcDic">
@@ -4039,7 +3945,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.OnSendErrorHandle">
             <summary>
-            当socket发送失败调用. 参数1:发送的字节数组, 参数2:发送标志(可靠和不可靠)  ->可通过SendByteData方法重新发送
+            当socket发送失败调用. 参数1:发送的字节数组  ->可通过SendByteData方法重新发送
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.OnP2PCallback">
@@ -4152,12 +4058,6 @@
         <member name="P:Net.Client.ClientBase.StackStream">
             <summary>
             TCP叠包临时缓存流
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.SendOperationReliable">
-            <summary>
-            玩家操作是以可靠传输进行发送的?     
-            服务器的对应属性SendOperationReliable在 NetScene类里面
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.operations">
@@ -4464,7 +4364,7 @@
             </summary>
             <param name="stream"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.SendDataHandle(Net.System.QueueSafe{Net.Share.RPCModel},System.Boolean)">
+        <member name="M:Net.Client.ClientBase.SendDataHandler(Net.System.QueueSafe{Net.Share.RPCModel})">
             <summary>
             发送处理
             </summary>
@@ -4845,90 +4745,6 @@
             </summary>
             <param name="model"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.String,System.String,System.Delegate,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.String,System.String,System.Delegate,System.Int32,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.String,System.String,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.String,System.String,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="cmd">指令</param>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.UInt16,System.UInt16,System.Delegate,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.UInt16,System.UInt16,System.Delegate,System.Int32,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.UInt16,System.UInt16,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.UInt16,System.UInt16,System.Delegate,System.Int32,System.Action,System.Object[])">
-            <summary>
-            发送请求, 并且监听服务端的回调请求, 服务器回调请求要对应上发送时的回调匿名, 异步回调, 并且在timeoutMilliseconds时间内要响应, 否则调用outTimeAct
-            </summary>
-            <param name="cmd">指令</param>
-            <param name="func">服务器函数名</param>
-            <param name="funcCB">服务器回调函数名</param>
-            <param name="callback">回调接收委托</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="outTimeAct">异步超时调用</param>
-            <param name="pars">远程参数</param>
-        </member>
         <member name="M:Net.Client.ClientBase.SendRT(System.Byte[])">
             <summary>
             发送可靠的网络数据
@@ -4941,36 +4757,6 @@
             </summary>
             <param name="cmd">网络命令</param>
             <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.CallRpc(System.String,System.Object[])">
-            <summary>
-            远程过程调用 同Send方法
-            </summary>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.CallRpc(System.Byte,System.String,System.Object[])">
-            <summary>
-            远程过程调用 同Send方法
-            </summary>
-            <param name="cmd">网络命令，请看NetCmd类定义</param>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Request(System.String,System.Object[])">
-            <summary>
-            网络请求 同Send方法
-            </summary>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Request(System.Byte,System.String,System.Object[])">
-            <summary>
-            网络请求 同Send方法
-            </summary>
-            <param name="cmd">网络命令，请看NetCmd类定义</param>
-            <param name="func">Call名</param>
-            <param name="pars">Call函数</param>
         </member>
         <member name="M:Net.Client.ClientBase.SetHeartTime(System.Byte,System.Int32)">
             <summary>
@@ -6281,11 +6067,6 @@
             备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
             </summary>
         </member>
-        <member name="P:Net.Server.NetScene`1.SendOperationReliable">
-            <summary>
-            玩家操作是以可靠传输进行发送的?
-            </summary>
-        </member>
         <member name="P:Net.Server.NetScene`1.SceneNumber">
             <summary>
             获取场景当前人数
@@ -6846,7 +6627,7 @@
         </member>
         <member name="F:Net.Server.ServerBase`2.OnSendErrorHandle">
             <summary>
-            当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="M:Net.Server.ServerBase`2.SendByteData(`0,System.Byte[],System.Boolean)"/>方法重新发送
+            当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="M:Net.Server.ServerBase`2.SendByteData(`0,System.Byte[])"/>方法重新发送
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnAddRpcHandle">
@@ -7070,13 +6851,13 @@
             <param name="buffer"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`2.OnSceneRelay(`0,Net.Share.RPCModel,System.Boolean)">
+        <member name="M:Net.Server.ServerBase`2.OnSceneRelay(`0,Net.Share.RPCModel)">
             <summary>
             当客户端使用场景转发命令会调用此方法
             </summary>
             <param name="client"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.OnNoticeRelay(`0,Net.Share.RPCModel,System.Boolean)">
+        <member name="M:Net.Server.ServerBase`2.OnNoticeRelay(`0,Net.Share.RPCModel)">
             <summary>
             当客户端使用公告转发命令会调用此方法
             </summary>
@@ -7460,32 +7241,14 @@
             网络多播, 发送自定义数据到clients集合的客户端
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable"></param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
             <param name="cmd">网络命令</param>
             <param name="buffer">自定义字节数组</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
+        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[],System.Boolean,System.Boolean)">
             <summary>
             网络多播, 发送数据到clients集合的客户端 (灵活数据包)
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="reliable"></param>
             <param name="cmd"></param>
             <param name="buffer">要包装的数据,你自己来定</param>
             <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
@@ -7499,30 +7262,11 @@
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
-        </member>
         <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.String,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Multicast(System.Collections.Generic.IList{`0},System.Boolean,System.Byte,System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="reliable">使用可靠传输?</param>
             <param name="cmd">网络命令</param>
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
