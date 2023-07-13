@@ -885,7 +885,8 @@ namespace Net.Server
         /// <param name="obj"></param>
         protected virtual void NetworkProcessing(object obj)
         {
-            var allClients = new Player[0];
+            int count = 0;
+            var groupClients = new FastList<Player>();
             uint tick = (uint)Environment.TickCount;
             uint heartTick = tick + (uint)HeartInterval;
             var group = obj as ThreadGroup;
@@ -898,8 +899,14 @@ namespace Net.Server
                 {
                     var isSleep = true;
                     ReceiveProcessed(remotePoint, ref isSleep);
-                    if (allClients.Length != AllClients.Count)
-                        allClients = AllClients.Values.ToArray();
+                    if (count != AllClients.Count)
+                    {
+                        count = AllClients.Count;
+                        groupClients.Clear();
+                        foreach (var client in AllClients.Values)
+                            if (client.Group == group)
+                                groupClients.Add(client);
+                    }
                     tick = (uint)Environment.TickCount;
                     var isCheckHeart = false;
                     if (tick >= heartTick)
@@ -907,11 +914,9 @@ namespace Net.Server
                         heartTick = tick + (uint)HeartInterval;
                         isCheckHeart = true;
                     }
-                    for (int i = 0; i < allClients.Length; i++)
+                    for (int i = 0; i < groupClients.Count; i++)
                     {
-                        var client = allClients[i];
-                        if (client.Group != group)
-                            continue;
+                        var client = groupClients[i];
                         if (client.isDispose)
                             continue;
                         if (!CheckIsConnected(client, tick))
@@ -953,7 +958,7 @@ namespace Net.Server
         {
             if (client.RevdQueue.TryDequeue(out var segment))
             {
-                DataCRCHandle(client, segment, false);
+                DataCRCHandler(client, segment, false);
                 BufferPool.Push(segment);
             }
             client.Gcp?.Update();
@@ -995,7 +1000,7 @@ namespace Net.Server
                 BufferPool.Push(segment);
                 return;
             }
-            DataCRCHandle(client, segment, tcp_udp);
+            DataCRCHandler(client, segment, tcp_udp);
         }
 
         protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
@@ -1078,7 +1083,7 @@ namespace Net.Server
         }
 #endif
 
-        protected virtual void DataCRCHandle(Player client, Segment buffer, bool isTcp)
+        protected virtual void DataCRCHandler(Player client, Segment buffer, bool isTcp)
         {
             if (!isTcp)
             {
@@ -1093,10 +1098,10 @@ namespace Net.Server
             }
             if (!PackageAdapter.Unpack(buffer, frame, client.UserID))
                 return;
-            DataHandle(client, buffer);
+            DataHandler(client, buffer);
         }
 
-        protected virtual void DataHandle(Player client, Segment buffer)
+        protected virtual void DataHandler(Player client, Segment buffer)
         {
             while (buffer.Position < buffer.Count)
             {
@@ -1123,7 +1128,8 @@ namespace Net.Server
                     model.pars = func.pars;
                     model.methodHash = func.hash;
                 }
-                DataHandle(client, model, buffer);//解析协议完成
+                client.callActorId = actorId;
+                DataHandler(client, model, buffer);//解析协议完成
                 J: buffer.Position = position;
             }
         }
@@ -1184,7 +1190,7 @@ namespace Net.Server
                     client.stack = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
                     buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
-                    DataCRCHandle(client, buffer, true);
+                    DataCRCHandler(client, buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
                 else
@@ -1223,20 +1229,20 @@ namespace Net.Server
             return false;
         }
 
-        protected virtual void DataHandle(Player client, RPCModel model, Segment segment)
+        protected virtual void DataHandler(Player client, RPCModel model, Segment segment)
         {
             client.heart = 0;
             if (IsInternalCommand(client, model))
                 return;
             if (client.Login)
             {
-                CommandHandle(client, model, segment);
+                CommandHandler(client, model, segment);
                 return;
             }
             switch (model.cmd)
             {
                 case NetCmd.ReliableTransport:
-                    CommandHandle(client, model, segment);
+                    CommandHandler(client, model, segment);
                     return;
                 case NetCmd.SendHeartbeat:
                     Send(client, NetCmd.RevdHeartbeat, new byte[0]);
@@ -1315,7 +1321,7 @@ namespace Net.Server
             SetClientIdentity(client);//将发送登录成功的identity标识, 开发者可赋值, 必须保证是唯一的
         }
 
-        protected virtual void CommandHandle(Player client, RPCModel model, Segment segment)
+        protected virtual void CommandHandler(Player client, RPCModel model, Segment segment)
         {
             resolveAmount++;
             switch (model.cmd)
@@ -1362,7 +1368,7 @@ namespace Net.Server
                     Segment buffer1;
                     while ((count1 = client.Gcp.Receive(out buffer1)) > 0)
                     {
-                        DataCRCHandle(client, buffer1, false);
+                        DataCRCHandler(client, buffer1, false);
                         BufferPool.Push(buffer1);
                     }
                     break;
@@ -1634,7 +1640,6 @@ namespace Net.Server
 
         private void AddRpcWorkQueue(MyDictionary<object, IRPCMethod> methods, NetPlayer client, RPCModel model)
         {
-            client.callActorId = model.actorId;
             foreach (RPCMethod method in methods.Values)
             {
                 try

@@ -88,7 +88,7 @@
                 fixed (byte* p1 = &segment1.Buffer[0])
                 {
                     segment1.Count = ikcp_recv(client.Kcp, p1, len);
-                    DataCRCHandle(client, segment1, false);
+                    DataCRCHandler(client, segment1, false);
                     BufferPool.Push(segment1);
                 }
             }

@@ -94,7 +94,7 @@
                 var model1 = new RPCModel(model.cmd, model.func, model.GetPars()) {
                     buffer = buffer, count = buffer.Length
                 };
-                DataHandle(client, model1, null);
+                DataHandler(client, model1, null);
             }
             catch (Exception ex)
             {

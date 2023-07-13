@@ -179,7 +179,6 @@
                         for (int i = 0; i < clients.Count; i++)
                         {
                             clients[i].NetworkFlowHandler();
-                            clients[i].fps = 0;
                         }
                     }
                 });
@@ -235,7 +234,6 @@
 
     public class KcpClientTest : KcpClient
     {
-        public int fps;
         public int revdSize { get { return receiveCount; } }
         public int sendSize { get { return sendCount; } }
         public int sendNum { get { return sendAmount; } }
@@ -244,8 +242,6 @@
         private byte[] addressBuffer;
         public KcpClientTest() : base()
         {
-            OnReceiveDataHandle += (model) => { fps++; };
-            OnOperationSync += (list) => { fps++; };
         }
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
