@@ -109,18 +109,6 @@
             }
         }
 
-        protected override void OnThreadQueueSet(Player client)
-        {
-            var value = threadNum++;
-            client.Group = ThreadGroups[value % ThreadGroups.Count];
-        }
-
-        protected override void OnSceneGroupSet(Scene scene)
-        {
-            var value = threadNum++;
-            scene.Group = ThreadGroups[value % ThreadGroups.Count];
-        }
-
         protected override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
             if (!client.Client.Connected)

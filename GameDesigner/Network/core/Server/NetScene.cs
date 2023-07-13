@@ -68,10 +68,6 @@
         /// 操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
         /// </summary>
         public int Split { get; set; } = 500;
-        /// <summary>
-        /// 线程群组, 解决多线程竞争, Addopt方法, removeopt方法
-        /// </summary>
-        public ThreadGroup Group;
         private int hash;
         internal int preFps, currFps;
         /// <summary>
@@ -129,8 +125,6 @@
                 preScene.Remove(client);
             client.SceneName = Name;
             client.Scene = this;
-            if (Group != null)
-                client.Group = Group;
             Players.Add(client);
             OnEnter(client);
             client.OnEnter();

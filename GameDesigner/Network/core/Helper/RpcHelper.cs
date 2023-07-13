@@ -36,10 +36,10 @@ namespace Net.Helper
                     var data = new MemberData() { member = info };
                     if (info.MemberType == MemberTypes.Method)
                     {
-                        var attributes = info.GetCustomAttributes(typeof(RPCFun), true);//兼容ILR写法
+                        var attributes = info.GetCustomAttributes(typeof(RPC), true);//兼容ILR写法
                         if (attributes.Length > 0)
                         {
-                            data.rpc = attributes[0] as RPCFun;
+                            data.rpc = attributes[0] as RPC;
                             action?.Invoke(info, data);
                         }
                     }
@@ -133,7 +133,7 @@ namespace Net.Helper
                 }
             }
             RPCModelTask modelTask;
-            while (body.CallWaitDict.TryRemove(model.actorId, out modelTask))
+            while (body.CallWaitDict.TryRemove(model.callId, out modelTask))
             {
                 modelTask.model = model;
                 modelTask.IsCompleted = true;
@@ -147,7 +147,7 @@ namespace Net.Helper
                 if (modelTask.intercept)
                     return;
             }
-            if (modelTask == null & model.actorId != 0 & client == null) //当请求超时后, 在Call等待那里已经进行移除, 但是如果服务器回应过慢, 但是返回来了, 就会被丢弃掉
+            if (modelTask == null & model.callId != 0 & client == null) //当请求超时后, 在Call等待那里已经进行移除, 但是如果服务器回应过慢, 但是返回来了, 就会被丢弃掉
                 return;
             if (body.Count <= 0)
             {

@@ -11,7 +11,6 @@
     using Net.Share;
     using Net.System;
     using Net.Helper;
-    using UnityEngine;
 
     /// <summary>
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -90,9 +89,25 @@
         /// </summary>
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
-        internal uint callActorId;
+        /// <summary>
+        /// 客户端使用Call发起请求时的ID缓冲区
+        /// </summary>
+        public uint CallId;
         public QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
-        public ThreadGroup Group;
+        private ThreadGroup group;
+        /// <summary>
+        /// 当前玩家所在的线程组对象
+        /// </summary>
+        public ThreadGroup Group
+        {
+            get => group;
+            set
+            {
+                group?.Remove(this);
+                group = value;
+                group?.Add(this); //当释放后Group = null;
+            }
+        }
         internal int SceneHash;
         public bool Login { get; internal set; }
         public bool isDispose { get; internal set; }
@@ -187,7 +202,8 @@
             RpcModels = new QueueSafe<RPCModel>();
             Login = false;
             addressBuffer = null;
-            if (Gcp != null) Gcp.Dispose();
+            Gcp?.Dispose();
+            Group = null;
         }
         #endregion
 

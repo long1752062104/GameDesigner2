@@ -1157,7 +1157,7 @@ namespace Net.Client
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
                 stream.Write(rPCModel.buffer.Length);
-                stream.Write(rPCModel.actorId);
+                stream.Write(rPCModel.callId);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
                 if (rPCModel.bigData | ++index >= PackageLength)
                     break;
@@ -1496,8 +1496,6 @@ namespace Net.Client
                     if (segment.Position >= segment.Count) //此代码是兼容旧版本写法
                         return;
                     var adapterType = segment.ReadString();
-                    var isEncrypt = segment.ReadBoolean();
-                    var password = segment.ReadInt32();
                     var version = segment.ReadInt32();
                     if (version != Version)
                         InvokeInMainThread(() => OnUpdateVersion?.Invoke(version));
@@ -1505,8 +1503,6 @@ namespace Net.Client
                         return;
                     var type = AssemblyHelper.GetType(adapterType);
                     var adapter = (ISerializeAdapter)Activator.CreateInstance(type);
-                    adapter.IsEncrypt = isEncrypt;
-                    adapter.Password = password;
                     AddAdapter(adapter);
                     break;
                 case NetCmd.OperationSync:

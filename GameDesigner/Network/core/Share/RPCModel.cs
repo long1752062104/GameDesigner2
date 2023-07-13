@@ -68,9 +68,9 @@
         /// </summary>
         private bool isFill;
         /// <summary>
-        /// 演员id, 用于Call识别或其他用途
+        /// 用于Call请求后正确响应的顺序标识
         /// </summary>
-        public uint actorId;
+        public uint callId;
 
         /// <summary>
         /// 构造
@@ -115,7 +115,7 @@
             this.cmd = cmd;
             this.methodHash = methodHash;
             this.pars = pars;
-            this.actorId = actorId;
+            this.callId = actorId;
         }
 
         /// <summary>
@@ -148,7 +148,7 @@
             this.index = index;
             this.count = size;
             this.kernel = kernel;
-            this.actorId = actorId;
+            this.callId = actorId;
         }
 
         /// <summary>
@@ -201,7 +201,7 @@
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
-            this.actorId = actorId;
+            this.callId = actorId;
         }
 
         public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, ushort methodHash) : this()

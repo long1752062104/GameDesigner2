@@ -74,7 +74,7 @@
 
         protected unsafe override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
-            while (client.RevdQueue.TryDequeue(out var segment))
+            if (client.RevdQueue.TryDequeue(out var segment))
             {
                 fixed (byte* p = &segment.Buffer[0])
                     ikcp_input(client.Kcp, p, segment.Count);
@@ -82,7 +82,7 @@
                 client.heart = 0;
             }
             int len;
-            while ((len = ikcp_peeksize(client.Kcp)) > 0)
+            if ((len = ikcp_peeksize(client.Kcp)) > 0)
             {
                 var segment1 = BufferPool.Take(len);
                 fixed (byte* p1 = &segment1.Buffer[0])

@@ -99,7 +99,7 @@
                 BufferPool.Push(segment);
             }
             int len;
-            while ((len = ikcp_peeksize(kcp)) > 0)
+            if ((len = ikcp_peeksize(kcp)) > 0)
             {
                 var segment1 = BufferPool.Take(len);
                 fixed (byte* p1 = &segment1.Buffer[0])

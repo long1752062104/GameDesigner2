@@ -30,18 +30,6 @@
 #endif
         }
 
-        protected override void OnThreadQueueSet(Player client)
-        {
-            var value = threadNum++;
-            client.Group = ThreadGroups[value % ThreadGroups.Count];
-        }
-
-        protected override void OnSceneGroupSet(Scene scene)
-        {
-            var value = threadNum++;
-            scene.Group = ThreadGroups[value % ThreadGroups.Count];
-        }
-
         protected override void AcceptHander(Player client)
         {
             client.Gcp = new Plugins.GcpKernel();
