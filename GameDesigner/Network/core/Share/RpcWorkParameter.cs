@@ -30,35 +30,4 @@ namespace Net.Share
             method.Invoke(array);
         }
     }
-
-    public class CallWorkParameter
-    {
-        public NetPlayer client;
-        public IRPCMethod method;
-        public object[] pars;
-        public uint callId;
-
-        public CallWorkParameter(NetPlayer client, IRPCMethod method, object[] pars, uint callId)
-        {
-            this.client = client;
-            this.method = method;
-            this.pars = pars;
-            this.callId = callId;
-        }
-
-        public void RpcWorkCallback(object state)
-        {
-            Invoke();
-        }
-
-        public void Invoke()
-        {
-            var len = pars.Length;
-            var array = new object[len + 2];
-            array[0] = client;
-            array[1] = callId;
-            Array.Copy(pars, 0, array, 2, len);
-            method.Invoke(array);
-        }
-    }
 }

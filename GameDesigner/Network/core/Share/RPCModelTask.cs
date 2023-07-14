@@ -17,6 +17,7 @@ namespace Net.Share
         public RPCModel model;
         internal bool intercept;
         internal Delegate callback;
+        internal uint timeout;
 
         public override string ToString()
         {

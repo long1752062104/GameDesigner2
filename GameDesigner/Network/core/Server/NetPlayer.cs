@@ -89,10 +89,6 @@
         /// </summary>
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
-        /// <summary>
-        /// 客户端使用Call发起请求时的ID缓冲区
-        /// </summary>
-        public uint CallId;
         public QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
         private ThreadGroup group;
         /// <summary>

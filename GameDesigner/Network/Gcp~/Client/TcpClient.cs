@@ -7,7 +7,6 @@
     using global::System.Net.Sockets;
     using global::System.Threading;
     using global::System.Threading.Tasks;
-    using global::System.Security.Cryptography;
     using Net.Share;
     using Net.System;
     using Net.Event;
@@ -123,30 +122,18 @@
             stream.Position += len;
             return stream.ToArray();
         }
-#if TEST1
-        ListSafe<byte> list = new ListSafe<byte>();
-#endif
+
         protected override void SendByteData(byte[] buffer)
         {
             sendCount += buffer.Length;
             sendAmount++;
             if (Client.Poll(0, SelectMode.SelectWrite))
             {
-#if TEST1
-                list.AddRange(buffer);
-                do
-                {
-                    var buffer1 = list.GetRemoveRange(0, RandomHelper.Range(0, buffer.Length));
-                    Net.Server.TcpServer.Instance.ReceiveTest(buffer1);
-                }
-                while (rtRPCModels.Count == 0 & list.Count > 0);
-#else
                 int count = Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(buffer);
                 else if (count != buffer.Length)
                     NDebug.LogError($"发送了{buffer.Length - count}个字节失败!");
-#endif
             }
             else
             {
@@ -156,10 +143,6 @@
 
         protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
         {
-#if TEST1
-            if (StackStream == null)
-                StackStream = BufferStreamShare.Take();
-#endif
             heart = 0;
             if (stack > 0)
             {

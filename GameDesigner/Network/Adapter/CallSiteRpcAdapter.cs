@@ -227,16 +227,9 @@ namespace Net.Adapter
                         case NetCmd.SingleCall:
                             ThreadManager.Invoke(() => InvokeSafeMethod(client, method, model.pars));
                             break;
-                        case NetCmd.SafeCall_CallId:
-                            InvokeSafeCallMethod(client, method, model.pars);
-                            break;
                         case NetCmd.SafeCallAsync:
                             var workCallback = new RpcWorkParameter(client, method, model.pars);
                             ThreadPool.UnsafeQueueUserWorkItem(workCallback.RpcWorkCallback, workCallback);
-                            break;
-                        case NetCmd.SafeCall_CallId_Async:
-                            var callworkCallback = new CallWorkParameter(client, method, model.pars, client.CallId);
-                            ThreadPool.UnsafeQueueUserWorkItem(callworkCallback.RpcWorkCallback, callworkCallback);
                             break;
                         default:
                             method.Invoke(model.pars);
@@ -256,16 +249,6 @@ namespace Net.Adapter
             var array = new object[len + 1];
             array[0] = client;
             Array.Copy(pars, 0, array, 1, len);
-            method.Invoke(array);
-        }
-
-        protected void InvokeSafeCallMethod(NetPlayer client, IRPCMethod method, object[] pars)
-        {
-            var len = pars.Length;
-            var array = new object[len + 2];
-            array[0] = client;
-            array[1] = client.CallId;
-            Array.Copy(pars, 0, array, 2, len);
             method.Invoke(array);
         }
     }

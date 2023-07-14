@@ -67,10 +67,6 @@
         /// 当数据已经填充, 获取Buffer可直接返回真正数据
         /// </summary>
         private bool isFill;
-        /// <summary>
-        /// 用于Call请求后正确响应的顺序标识
-        /// </summary>
-        public uint callId;
 
         /// <summary>
         /// 构造
@@ -108,16 +104,6 @@
             this.pars = pars;
         }
 
-        public RPCModel(byte cmd, ushort methodHash, object[] pars, uint actorId) : this()
-        {
-            kernel = true;
-            serialize = true;
-            this.cmd = cmd;
-            this.methodHash = methodHash;
-            this.pars = pars;
-            this.callId = actorId;
-        }
-
         /// <summary>
         /// 构造Send
         /// </summary>
@@ -139,16 +125,6 @@
             this.index = index;
             this.count = size;
             this.kernel = kernel;
-        }
-
-        public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size, uint actorId) : this()
-        {
-            this.cmd = cmd;
-            this.buffer = buffer;
-            this.index = index;
-            this.count = size;
-            this.kernel = kernel;
-            this.callId = actorId;
         }
 
         /// <summary>
@@ -192,16 +168,6 @@
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
-        }
-
-        public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, uint actorId) : this()
-        {
-            this.cmd = cmd;
-            this.func = func;
-            this.pars = pars;
-            this.kernel = kernel;
-            this.serialize = serialize;
-            this.callId = actorId;
         }
 
         public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, ushort methodHash) : this()

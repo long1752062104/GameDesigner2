@@ -199,12 +199,12 @@ namespace Net.System
             }
         }
 
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             Add(item, out _);
         }
 
-        public void Add(T item, out int index)
+        public virtual void Add(T item, out int index)
         {
             index = _size;
             if (index == _items.Length)
@@ -228,7 +228,7 @@ namespace Net.System
             return Count - 1;
         }
 
-        public void AddRange(IEnumerable<T> collection)
+        public virtual void AddRange(IEnumerable<T> collection)
         {
             InsertRange(_size, collection);
         }
@@ -238,7 +238,7 @@ namespace Net.System
             return new ReadOnlyCollection<T>(this);
         }
 
-        public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
+        public virtual int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
             if (index < 0)
             {
@@ -265,7 +265,7 @@ namespace Net.System
             return BinarySearch(0, Count, item, comparer);
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             if (_size > 0)
             {
@@ -319,7 +319,7 @@ namespace Net.System
             return list;
         }
 
-        public void CopyTo(T[] array)
+        public virtual void CopyTo(T[] array)
         {
             CopyTo(array, 0);
         }
@@ -340,7 +340,7 @@ namespace Net.System
             }
         }
 
-        public void CopyTo(int index, T[] array, int arrayIndex, int count)
+        public virtual void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
             if (_size - index < count)
             {
@@ -350,7 +350,7 @@ namespace Net.System
         }
 
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public virtual void CopyTo(T[] array, int arrayIndex)
         {
             Array.Copy(_items, 0, array, arrayIndex, _size);
         }
@@ -514,7 +514,7 @@ namespace Net.System
         }
 
 
-        public void ForEach(Action<T> action)
+        public virtual void ForEach(Action<T> action)
         {
             if (action == null)
             {
@@ -552,7 +552,7 @@ namespace Net.System
         }
 
 
-        public T[] GetRange(int index, int count)
+        public virtual T[] GetRange(int index, int count)
         {
             if (index < 0 | count < 0)
                 return null;
@@ -569,7 +569,7 @@ namespace Net.System
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public T[] GetRemoveRange(int index, int count)
+        public virtual T[] GetRemoveRange(int index, int count)
         {
             if (_size - index < count)
                 count = _size - index;
@@ -624,7 +624,7 @@ namespace Net.System
         }
 
 
-        public void Insert(int index, T item)
+        public virtual void Insert(int index, T item)
         {
             if (index > _size)
                 return;
@@ -655,7 +655,7 @@ namespace Net.System
         }
 
 
-        public void InsertRange(int index, IEnumerable<T> collection)
+        public virtual void InsertRange(int index, IEnumerable<T> collection)
         {
             if (collection == null)
                 return;
@@ -739,7 +739,7 @@ namespace Net.System
         }
 
 
-        public bool Remove(T item)
+        public virtual bool Remove(T item)
         {
             int index = IndexOf(item);
             return RemoveAtInternal(index);
@@ -753,7 +753,7 @@ namespace Net.System
         }
 
 
-        public int RemoveAll(Predicate<T> match)
+        public virtual int RemoveAll(Predicate<T> match)
         {
             if (match == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
@@ -786,7 +786,7 @@ namespace Net.System
         }
 
 
-        public void RemoveAt(int index)
+        public virtual void RemoveAt(int index)
         {
             RemoveAtInternal(index);
         }
@@ -804,7 +804,7 @@ namespace Net.System
         }
 
 
-        public void RemoveRange(int index, int count)
+        public virtual void RemoveRange(int index, int count)
         {
             if (_size - index < count)
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
@@ -818,13 +818,13 @@ namespace Net.System
             }
         }
         
-        public void Reverse()
+        public virtual void Reverse()
         {
             Reverse(0, Count);
         }
 
 
-        public void Reverse(int index, int count)
+        public virtual void Reverse(int index, int count)
         {
             if (index < 0)
             {
@@ -843,19 +843,19 @@ namespace Net.System
         }
 
 
-        public void Sort()
+        public virtual void Sort()
         {
             Sort(0, Count, null);
         }
 
 
-        public void Sort(IComparer<T> comparer)
+        public virtual void Sort(IComparer<T> comparer)
         {
             Sort(0, Count, comparer);
         }
 
 
-        public void Sort(int index, int count, IComparer<T> comparer)
+        public virtual void Sort(int index, int count, IComparer<T> comparer)
         {
             if (index < 0)
             {
@@ -888,7 +888,7 @@ namespace Net.System
             private readonly Comparison<T1> comparison;
         }
 
-        public void Sort(Comparison<T> comparison)
+        public virtual void Sort(Comparison<T> comparison)
         {
             if (comparison == null)
             {
@@ -902,7 +902,7 @@ namespace Net.System
         }
 
 
-        public T[] ToArray()
+        public virtual T[] ToArray()
         {
             T[] array = new T[_size];
             Array.Copy(_items, 0, array, 0, _size);

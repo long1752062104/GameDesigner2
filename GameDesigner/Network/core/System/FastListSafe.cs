@@ -13,7 +13,7 @@ namespace Net.System
     [Serializable]
     public class FastListSafe<T> : FastList<T>
     {
-        public void Add(T item)
+        public override void Add(T item)
         {
             lock (SyncRoot)
             {
@@ -21,7 +21,7 @@ namespace Net.System
             }
         }
 
-        public void Add(T item, out int index)
+        public override void Add(T item, out int index)
         {
             lock (SyncRoot)
             {
@@ -29,7 +29,7 @@ namespace Net.System
             }
         }
 
-        public void AddRange(IEnumerable<T> collection)
+        public override void AddRange(IEnumerable<T> collection)
         {
             lock (SyncRoot)
             {
@@ -37,7 +37,7 @@ namespace Net.System
             }
         }
 
-        public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
+        public override int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
             lock (SyncRoot)
             {
@@ -45,7 +45,7 @@ namespace Net.System
             }
         }
 
-        public void Clear()
+        public override void Clear()
         {
             lock (SyncRoot) 
             {
@@ -53,12 +53,12 @@ namespace Net.System
             }
         }
 
-        public void CopyTo(T[] array)
+        public override void CopyTo(T[] array)
         {
             CopyTo(array, 0);
         }
 
-        public void CopyTo(int index, T[] array, int arrayIndex, int count)
+        public override void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
             lock (SyncRoot)
             {
@@ -67,7 +67,7 @@ namespace Net.System
         }
 
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public override void CopyTo(T[] array, int arrayIndex)
         {
             lock (SyncRoot)
             {
@@ -75,7 +75,7 @@ namespace Net.System
             }
         }
 
-        public void ForEach(Action<T> action)
+        public override void ForEach(Action<T> action)
         {
             lock (SyncRoot) 
             {
@@ -83,7 +83,7 @@ namespace Net.System
             }
         }
 
-        public T[] GetRange(int index, int count)
+        public override T[] GetRange(int index, int count)
         {
             lock (SyncRoot)
             {
@@ -97,7 +97,7 @@ namespace Net.System
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public T[] GetRemoveRange(int index, int count)
+        public override T[] GetRemoveRange(int index, int count)
         {
             lock (SyncRoot)
             {
@@ -105,7 +105,7 @@ namespace Net.System
             }
         }
 
-        public void Insert(int index, T item)
+        public override void Insert(int index, T item)
         {
             lock (SyncRoot)
             {
@@ -113,7 +113,7 @@ namespace Net.System
             }
         }
 
-        public void InsertRange(int index, IEnumerable<T> collection)
+        public override void InsertRange(int index, IEnumerable<T> collection)
         {
             lock (SyncRoot)
             {
@@ -121,7 +121,7 @@ namespace Net.System
             }
         }
 
-        public bool Remove(T item)
+        public override bool Remove(T item)
         {
             lock (SyncRoot)
             {
@@ -129,7 +129,7 @@ namespace Net.System
             }
         }
 
-        public int RemoveAll(Predicate<T> match)
+        public override int RemoveAll(Predicate<T> match)
         {
             lock (SyncRoot)
             {
@@ -138,7 +138,7 @@ namespace Net.System
         }
 
 
-        public void RemoveAt(int index)
+        public override void RemoveAt(int index)
         {
             lock (SyncRoot)
             {
@@ -146,7 +146,7 @@ namespace Net.System
             }
         }
 
-        public void RemoveRange(int index, int count)
+        public override void RemoveRange(int index, int count)
         {
             lock (SyncRoot)
             {
@@ -154,12 +154,12 @@ namespace Net.System
             }
         }
 
-        public void Reverse()
+        public override void Reverse()
         {
             Reverse(0, Count);
         }
 
-        public void Reverse(int index, int count)
+        public override void Reverse(int index, int count)
         {
             lock (SyncRoot)
             {
@@ -167,17 +167,17 @@ namespace Net.System
             }
         }
 
-        public void Sort()
+        public override void Sort()
         {
             Sort(0, Count, null);
         }
 
-        public void Sort(IComparer<T> comparer)
+        public override void Sort(IComparer<T> comparer)
         {
             Sort(0, Count, comparer);
         }
 
-        public void Sort(int index, int count, IComparer<T> comparer)
+        public override void Sort(int index, int count, IComparer<T> comparer)
         {
             lock (SyncRoot)
             {
@@ -185,7 +185,7 @@ namespace Net.System
             }
         }
 
-        public void Sort(Comparison<T> comparison)
+        public override void Sort(Comparison<T> comparison)
         {
             lock (SyncRoot)
             {
@@ -193,7 +193,7 @@ namespace Net.System
             }
         }
 
-        public T[] ToArray()
+        public override T[] ToArray()
         {
             lock (SyncRoot)
             {

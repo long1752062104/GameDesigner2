@@ -1157,7 +1157,6 @@ namespace Net.Client
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
                 stream.Write(rPCModel.buffer.Length);
-                stream.Write(rPCModel.callId);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
                 if (rPCModel.bigData | ++index >= PackageLength)
                     break;
@@ -1231,34 +1230,26 @@ namespace Net.Client
         /// </summary>
         protected virtual void NetworkProcessing()
         {
-            while (Connected)
-            {
-                try
-                {
-                    LoopEvent.UpdateEventFixed(1, true);
-                }
-                catch (Exception ex)
-                {
-                    NetworkException(ex);
-                }
-            }
+            while (NetworkProcessing(true)) { }
         }
 
         /// <summary>
         /// 单线程网络处理
         /// </summary>
         /// <returns></returns>
-        protected virtual bool SingleNetworkProcessing()
+        protected virtual bool SingleNetworkProcessing() => NetworkProcessing(false);
+
+        protected virtual bool NetworkProcessing(bool sleep)
         {
             try
             {
-                LoopEvent.UpdateEventFixed(1, false);
+                LoopEvent.UpdateEventFixed(1, sleep);
             }
             catch (Exception ex)
             {
                 NetworkException(ex);
             }
-            return Connected;
+            return Connected | openClient | CurrReconnect < ReconnectCount; //当连接中断时不能结束线程, 还有尝试重连
         }
 
         protected virtual bool NetworkTick()
@@ -1311,19 +1302,6 @@ namespace Net.Client
         {
         }
 
-#if TEST1
-        internal void ReceiveTest(byte[] buffer)//本机测试
-        {
-            var segment = new Segment(buffer, false);
-            receiveCount += segment.Count;
-            receiveAmount++;
-            heart = 0;
-            ResolveBuffer(segment, false);
-            revdLoopNum++;
-            BufferPool.Push(segment);
-        }
-#endif
-
         /// <summary>
         /// 网络异常处理
         /// </summary>
@@ -1353,9 +1331,6 @@ namespace Net.Client
             }
         }
 
-#if TEST
-        public void TestResolveBuffer(Segment buffer) => ResolveBuffer(ref buffer, false);
-#endif
         /// <summary>
         /// 解析网络数据包
         /// </summary>
@@ -1390,11 +1365,10 @@ namespace Net.Client
                 }
                 byte cmd1 = buffer.ReadByte();
                 int dataCount = buffer.ReadInt32();
-                uint actorId = buffer.ReadUInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount, actorId);
+                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
                 if (kernel)
                 {
                     var func = OnDeserializeRPC(buffer, buffer.Position, dataCount);
@@ -1789,8 +1763,7 @@ namespace Net.Client
             if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.TryToConnect |
                 NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
                 return;
-            if (Client != null)
-                Client.Close();
+            Client?.Close();
             if (CurrReconnect >= ReconnectCount)//如果想断线不需要重连,则直接返回
             {
                 NetworkState = NetworkState.ConnectFailed;
@@ -2216,8 +2189,6 @@ namespace Net.Client
         }
         #endregion
 
-        private uint callActorId;
-
         private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort methodHash, ushort callbackFunc1, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
             var model = new RPCModelTask();
@@ -2236,27 +2207,25 @@ namespace Net.Client
                 }
             }
             else body = OnRpcTaskRegister(callbackFunc1, callbackFunc);
-            model.intercept = intercept;
-            if (callActorId == 0) callActorId = 1; //当值++到最大值后会回到0, 所以这里不能为0
-            var actorId = callActorId++;
-            body.CallWaitDict.TryAdd(actorId, model);
             if (methodHash != 0)
-                SendRT(new RPCModel(cmd, methodHash, pars, actorId));
+                SendRT(new RPCModel(cmd, methodHash, pars));
             else
-                SendRT(new RPCModel(cmd, func, pars, true, true, actorId));
+                SendRT(new RPCModel(cmd, func, pars, true, true));
             if (timeoutMilliseconds == -1)
                 timeoutMilliseconds = int.MaxValue;
             else if (timeoutMilliseconds == 0)
                 timeoutMilliseconds = 5000;
             var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
+            model.timeout = timeout;
+            model.intercept = intercept;
+            body.CallWaitQueue.Enqueue(model);
             while ((uint)Environment.TickCount < timeout)
             {
                 await UniTask.Yield();
                 if (model.IsCompleted)
                     goto J;
             }
-            body.CallWaitDict.Remove(actorId);
-        J: return model;
+            J: return model;
         }
 
         /// <summary>
