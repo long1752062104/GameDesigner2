@@ -168,7 +168,6 @@ namespace Net.System
                     ThrowHelper.ThrowArgumentOutOfRangeException();
                 }
                 _items[index] = value;
-                _version++;
             }
         }
 
@@ -211,7 +210,6 @@ namespace Net.System
                 EnsureCapacity(index + 1);
             _items[index] = item;
             _size++;
-            _version++;
         }
 
         int IList.Add(object item)
@@ -272,7 +270,6 @@ namespace Net.System
                 Array.Clear(_items, 0, _size);
                 _size = 0;
             }
-            _version++;
         }
 
         public bool Contains(T item)
@@ -520,16 +517,11 @@ namespace Net.System
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
             }
-            int version = _version;
             int num = 0;
-            while (num < _size && (version == _version))
+            while (num < _size)
             {
                 action(_items[num]);
                 num++;
-            }
-            if (version != _version)
-            {
-                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumFailedVersion);
             }
         }
 
@@ -580,7 +572,6 @@ namespace Net.System
                 Array.Copy(_items, index, array, 0, count);//复制移除的数组部分
                 Array.Copy(_items, index + count, _items, index, _size - index);//将结尾数组移动到移除的数组部分来
                 Array.Clear(_items, _size, count);
-                _version++;
                 return array;
             }
             return null;
@@ -638,7 +629,6 @@ namespace Net.System
             }
             _items[index] = item;
             _size++;
-            _version++;
         }
 
         void IList.Insert(int index, object item)
@@ -692,7 +682,6 @@ namespace Net.System
                     Insert(index++, item);
                 }
             }
-            _version++;
         }
 
         public int LastIndexOf(T item)
@@ -781,7 +770,6 @@ namespace Net.System
             Array.Clear(_items, num, _size - num);
             int result = _size - num;
             _size = num;
-            _version++;
             return result;
         }
 
@@ -799,7 +787,6 @@ namespace Net.System
             if (index < _size)
                 _items[index] = _items[_size];
             _items[_size] = default;
-            _version++;
             return true;
         }
 
@@ -814,7 +801,6 @@ namespace Net.System
                 if (index < _size)
                     Array.Copy(_items, index + count, _items, index, _size - index);
                 Array.Clear(_items, _size, count);
-                _version++;
             }
         }
         
@@ -839,7 +825,6 @@ namespace Net.System
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
             }
             Array.Reverse(_items, index, count);
-            _version++;
         }
 
 
@@ -870,7 +855,6 @@ namespace Net.System
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
             }
             Array.Sort(_items, index, count, comparer);
-            _version++;
         }
 
         internal sealed class FunctorComparer<T1> : IComparer<T1>
@@ -936,16 +920,9 @@ namespace Net.System
             return true;
         }
 
-        internal static IList<T> Synchronized(ListSafe<T> list)
-        {
-            return new SynchronizedList(list);
-        }
-
         internal T[] _items;
 
         private int _size;
-
-        private int _version;
 
         [NonSerialized]
         private object _syncRoot;
@@ -1120,7 +1097,6 @@ namespace Net.System
             {
                 this.list = list;
                 index = 0;
-                version = list._version;
                 current = default;
             }
 
@@ -1165,10 +1141,6 @@ namespace Net.System
 
                 get
                 {
-                    if (index == 0 || index == list._size + 1)
-                    {
-                        ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_EnumOpCantHappen);
-                    }
                     return Current;
                 }
             }
@@ -1183,8 +1155,6 @@ namespace Net.System
             private readonly FastList<T> list;
 
             private int index;
-
-            private readonly int version;
 
             private T current;
         }
