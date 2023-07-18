@@ -54,10 +54,10 @@
             if (!UdxLib.INIT)
             {
                 UdxLib.INIT = true;
-#if SERVICE
+#if SERVICE && WINDOWS
                 string path = AppDomain.CurrentDomain.BaseDirectory;
-                if (!File.Exists(path + "\\FastUdxApi.dll"))
-                    throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
+                if (!File.Exists(path + "\\udxapi.dll"))
+                    throw new FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 udxapi.dll复制到{path}目录下.");
 #endif
                 UdxLib.UInit(1);
                 UdxLib.UEnableLog(false);

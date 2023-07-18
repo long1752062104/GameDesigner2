@@ -32,10 +32,10 @@
 
         protected override void CreateServerSocket(ushort port)
         {
-#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS
+#if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS && WINDOWS
             string path = AppDomain.CurrentDomain.BaseDirectory;
-            if (!global::System.IO.File.Exists(path + "\\FastUdxApi.dll"))
-                throw new global::System.IO.FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到FastUdxApi.dll复制到{path}目录下.");
+            if (!global::System.IO.File.Exists(path + "\\udxapi.dll"))
+                throw new global::System.IO.FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到udxapi.dll复制到{path}目录下.");
 #endif
             if (!UdxLib.INIT)
             {

@@ -2286,33 +2286,33 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Net.Share.RPCFun">
+        <member name="T:Net.Share.RPC">
             <summary>
             标注为远程过程调用函数
             </summary>
         </member>
-        <member name="F:Net.Share.RPCFun.cmd">
+        <member name="F:Net.Share.RPC.cmd">
             <summary>
             网络命令
             </summary>
         </member>
-        <member name="F:Net.Share.RPCFun.hash">
+        <member name="F:Net.Share.RPC.hash">
             <summary>
             远程方法的哈希值
             </summary>
         </member>
-        <member name="F:Net.Share.RPCFun.il2cpp">
+        <member name="F:Net.Share.RPC.il2cpp">
             <summary>
             <code>如果在unity编译为il2cpp后端脚本并使用CallSiteRpcAdapter快速调用rpc适配器，则需要先声明类型出来，因为编译后，类型将无法在创建出来</code>
             例子: void Test(int num, string str); 则需要使用 [Rpc(il2cpp = typeof(RPCPTR&lt;int, string&gt;))]
             </summary>
         </member>
-        <member name="M:Net.Share.RPCFun.#ctor">
+        <member name="M:Net.Share.RPC.#ctor">
             <summary>
             构造RPCFun函数特性
             </summary>
         </member>
-        <member name="M:Net.Share.RPCFun.#ctor(System.Byte)">
+        <member name="M:Net.Share.RPC.#ctor(System.Byte)">
             <summary>
             构造RPCFun函数特性
             </summary>
@@ -2408,11 +2408,6 @@
         <member name="F:Net.Share.RPCModel.isFill">
             <summary>
             当数据已经填充, 获取Buffer可直接返回真正数据
-            </summary>
-        </member>
-        <member name="F:Net.Share.RPCModel.actorId">
-            <summary>
-            演员id, 用于Call识别或其他用途
             </summary>
         </member>
         <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[])">
@@ -5860,6 +5855,11 @@
             用户唯一身份标识
             </summary>
         </member>
+        <member name="P:Net.Server.NetPlayer.Group">
+            <summary>
+            当前玩家所在的线程组对象
+            </summary>
+        </member>
         <member name="P:Net.Server.NetPlayer.Connected">
             <summary>
             是否处于连接
@@ -6090,11 +6090,6 @@
         <member name="P:Net.Server.NetScene`1.Split">
             <summary>
             操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetScene`1.Group">
-            <summary>
-            线程群组, 解决多线程竞争, Addopt方法, removeopt方法
             </summary>
         </member>
         <member name="P:Net.Server.NetScene`1.FPS">
@@ -6538,11 +6533,6 @@
         <member name="F:Net.Server.ServerBase`2.ThreadGroups">
             <summary>
             线程组, 优化多线程资源竞争问题
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`2.ThreadGroupDict">
-            <summary>
-            线程组字典, key是线程唯一id
             </summary>
         </member>
         <member name="F:Net.Server.ServerBase`2.QueueUp">
@@ -7124,21 +7114,6 @@
             <param name="cmd">网络命令</param>
             <param name="buffer">数据缓冲区</param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.Send(`0,System.Boolean,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="client">发送到客户端</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Send(`0,System.Byte,System.Boolean,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="client">发送到客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
         <member name="M:Net.Server.ServerBase`2.Send(`0,System.String,System.Object[])">
             <summary>
             发送网络数据
@@ -7148,23 +7123,6 @@
             <param name="pars">RPCFun参数</param>
         </member>
         <member name="M:Net.Server.ServerBase`2.Send(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送到的客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Send(`0,System.Boolean,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送到的客户端</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.Send(`0,System.Byte,System.Boolean,System.String,System.Object[])">
             <summary>
             发送网络数据
             </summary>
@@ -7220,6 +7178,52 @@
             <param name="buffer"></param>
         </member>
         <member name="M:Net.Server.ServerBase`2.SendRT(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
+            <summary>
+            发送灵活数据包
+            </summary>
+            <param name="client">客户端集合</param>
+            <param name="cmd"></param>
+            <param name="buffer">要包装的数据,你自己来定</param>
+            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
+            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.Call(`0,System.String,System.Object[])">
+            <summary>
+            发送网络可靠传输数据, 可以发送大型文件数据
+            调用此方法通常情况下是一定把数据发送成功为止, 
+            </summary>
+            <param name="client"></param>
+            <param name="func">函数名</param>
+            <param name="pars">参数</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.Call(`0,System.Byte,System.String,System.Object[])">
+            <summary>
+            发送可靠网络传输, 可以发送大型文件数据
+            调用此方法通常情况下是一定把数据发送成功为止, 
+            </summary>
+            <param name="client"></param>
+            <param name="cmd">网络命令</param>
+            <param name="func">函数名</param>
+            <param name="pars">参数</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.Call(`0,System.Byte[])">
+            <summary>
+            发送可靠网络传输, 可发送大数据流
+            调用此方法通常情况下是一定把数据发送成功为止, 
+            </summary>
+            <param name="client"></param>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.Call(`0,System.Byte,System.Byte[])">
+            <summary>
+            发送可靠网络传输, 可发送大数据流
+            调用此方法通常情况下是一定把数据发送成功为止, 
+            </summary>
+            <param name="client"></param>
+            <param name="cmd">网络命令</param>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.Call(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
             <summary>
             发送灵活数据包
             </summary>

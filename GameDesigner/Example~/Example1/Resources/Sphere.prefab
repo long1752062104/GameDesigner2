@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 1733678439470617694}
   - component: {fileID: 1733678439470617695}
   - component: {fileID: 1733678439470617692}
-  - component: {fileID: 2954880796194470439}
   - component: {fileID: 4131912551985867742}
   - component: {fileID: 3225783897442011128}
   m_Layer: 0
@@ -115,54 +114,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2954880796194470439
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1733678439470617690}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 17572e32b54cd004eb3d181b56756e47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  netObj: {fileID: 4131912551985867742}
-  netComponentID: 0
-  test:
-    value: 0
-  test1:
-    value: 0
-  test2:
-    value: 0
-  test3:
-    value: 0
-  test4:
-    id: 0
-    authorize: 0
-    value:
-      value: 0
-  test5:
-    id: 0
-    authorize: 0
-    value: 0
-  test6:
-    id: 0
-    authorize: 0
-    value: 
-  test7:
-    id: 0
-    authorize: 0
-    value: {x: 0, y: 0}
-  test8:
-    id: 0
-    authorize: 0
-    value:
-      serializedVersion: 2
-      x: 0
-      y: 0
-      width: 0
-      height: 0
 --- !u!114 &4131912551985867742
 MonoBehaviour:
   m_ObjectHideFlags: 0

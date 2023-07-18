@@ -53,9 +53,10 @@ namespace Udx
 		public const string nativeLibrary = "__Internal";
 #elif UNITY_ANDROID && !UNITY_EDITOR//宏编译 在安卓编译就是这里
 		public const string nativeLibrary = "udxapi";
-#else //在win, unity编辑器
-        public const string nativeLibrary = "FastUdxApi.dll";
+#else //在win, linux, unity编辑器
+        public const string nativeLibrary = "udxapi";
 #endif
+
         public const int AUDIOFRAME_A = 0;//音频帧
         public const int VIDEOFRAME_I = 1;//I帧
         public const int VIDEOFRAME_P = 2;//P帧
