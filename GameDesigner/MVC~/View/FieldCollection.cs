@@ -84,6 +84,10 @@ namespace MVC.View
 #if UNITY_EDITOR
         public int nameIndex;
         public bool compiling;
+        public int savePathInx;
+        public int savePathExtInx;
+        public bool genericType;
+        public int inheritTypeInx;
 #endif
         private bool init;
         public Field this[int index]

@@ -22,12 +22,17 @@ namespace MVC.View
             FieldCollectionEntity.OnEnable(field);
         }
 
+        private void OnEnable()
+        {
+            FieldCollectionEntity.LoadData();
+        }
+
         private void OnDisable()
         {
             FieldCollectionEntity.OnDisable();
         }
 
-        void OnGUI() 
+        void OnGUI()
         {
             FieldCollectionEntity.OnDragGuiWindow();
             FieldCollectionEntity.OnDragGUI();
@@ -83,11 +88,8 @@ namespace MVC.View
             public string inheritType = "Net.Component.SingleCase";
             public string addInheritType;
             public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
-            public int savePathIndex;
-            public int savePathExtIndex;
-
-            internal string SavePath => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
-            internal string SavePathExt => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
+            internal string SavePath(int savePathIndex) => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
+            internal string SavePathExt(int savePathExtIndex) => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
         }
 
         internal static void OnEnable(FieldCollection target)
@@ -117,9 +119,11 @@ namespace MVC.View
         internal static void OnDisable()
         {
             SaveData();
+            if (field != null)
+                EditorUtility.SetDirty(field);
         }
 
-        static void LoadData()
+        internal static void LoadData()
         {
             data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
         }
@@ -251,50 +255,6 @@ namespace MVC.View
             if (field == null)
                 return;
             field.fieldName = EditorGUILayout.TextField("收集器名称", field.fieldName);
-            var rect2 = EditorGUILayout.GetControlRect();
-            fieldName = EditorGUI.TextField(rect2, "字段名称", fieldName);
-            if (GUI.Button(new Rect(rect2.x + 100, rect2.y, 20, rect2.height), "+"))
-            {
-                if (string.IsNullOrEmpty(selectTypeName))
-                {
-                    Debug.Log("请先选择一次字段类型!");
-                    return;
-                }
-                var name = fieldName;
-                if (name == "")
-                    name = "name" + field.nameIndex++;
-                foreach (var f in field.fields)
-                {
-                    if (f.name == fieldName)
-                    {
-                        name += field.nameIndex++;
-                        break;
-                    }
-                }
-                field.fields.Add(new FieldCollection.Field() { name = name, typeName = selectTypeName });
-                EditorUtility.SetDirty(field);
-                return;
-            }
-            search = EditorGUILayout.TextField("字段类型", search);
-            if (search != search1)
-            {
-                selectType = false;
-                search1 = search;
-                searchTime = DateTime.Now.AddMilliseconds(20);
-            }
-            if (DateTime.Now > searchTime & !selectType & search.Length > 0)
-            {
-                foreach (var type1 in types)
-                {
-                    if (!type1.ToLower().Contains(search))
-                        continue;
-                    if (GUILayout.Button(type1))
-                    {
-                        AddField(type1);
-                        return;
-                    }
-                }
-            }
             data.searchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.searchAssemblies);
             if (data.searchAssemblies != searchAssemblies)
             {
@@ -304,23 +264,23 @@ namespace MVC.View
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
             for (int i = 0; i < field.fields.Count; i++)
             {
+                var field1 = field.fields[i];
                 EditorGUILayout.BeginHorizontal();
                 EditorGUI.BeginChangeCheck();
-                field.fields[i].name = EditorGUILayout.TextField(field.fields[i].name, GUI.skin.label, GUILayout.MaxWidth(100));
-                if (field.fields[i].typeNames == null)
-                    field.fields[i].Update();
-                field.fields[i].componentIndex = EditorGUILayout.Popup(field.fields[i].componentIndex, field.fields[i].typeNames, GUILayout.MaxWidth(200));
-                field.fields[i].typeName = field.fields[i].typeNames[field.fields[i].componentIndex];
-                field.fields[i].target = EditorGUILayout.ObjectField(field.fields[i].target, field.fields[i].Type, true);
+                field1.name = EditorGUILayout.TextField(field1.name, GUI.skin.label, GUILayout.MaxWidth(100));
+                if (field1.typeNames == null)
+                    field1.Update();
+                field1.componentIndex = EditorGUILayout.Popup(field1.componentIndex, field1.typeNames, GUILayout.MaxWidth(200));
+                field1.typeName = field1.typeNames[field1.componentIndex];
+                field1.target = EditorGUILayout.ObjectField(field1.target, field1.Type, true);
                 if (GUILayout.Button("x", GUILayout.Width(25)))
                 {
                     field.fields.RemoveAt(i);
                     EditorUtility.SetDirty(field);
-                    return;
                 }
                 if (EditorGUI.EndChangeCheck())
                 {
-                    field.fields[i].Update();
+                    field1.Update();
                     EditorUtility.SetDirty(field);
                 }
                 EditorGUILayout.EndHorizontal();
@@ -333,11 +293,11 @@ namespace MVC.View
                 SaveData();
             }
             var rect1 = EditorGUILayout.GetControlRect();
-            data.savePathIndex = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", data.savePathIndex, data.savePath.ToArray());
+            field.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", field.savePathInx, data.savePath.ToArray());
             if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
             {
                 if (data.savePath.Count > 0)
-                    data.savePath.RemoveAt(data.savePathIndex);
+                    data.savePath.RemoveAt(field.savePathInx);
                 SaveData();
             }
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
@@ -351,16 +311,16 @@ namespace MVC.View
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
-                    data.savePathIndex = data.savePath.Count - 1;
+                    field.savePathInx = data.savePath.Count - 1;
                 }
                 SaveData();
             }
             var rect4 = EditorGUILayout.GetControlRect();
-            data.savePathExtIndex = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", data.savePathExtIndex, data.savePathExt.ToArray());
+            field.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", field.savePathExtInx, data.savePathExt.ToArray());
             if (GUI.Button(new Rect(rect4.x + rect4.width - 90, rect4.y, 30, rect4.height), "x"))
             {
                 if (data.savePathExt.Count > 0)
-                    data.savePathExt.RemoveAt(data.savePathExtIndex);
+                    data.savePathExt.RemoveAt(field.savePathExtInx);
                 SaveData();
             }
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
@@ -374,7 +334,7 @@ namespace MVC.View
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);
-                    data.savePathExtIndex = data.savePathExt.Count - 1;
+                    field.savePathExtInx = data.savePathExt.Count - 1;
                 }
                 SaveData();
             }
@@ -401,17 +361,8 @@ namespace MVC.View
                 data.inheritTypes.Remove(data.addInheritType);
             }
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
-            foreach (var item in data.inheritTypes)
-            {
-                if (GUILayout.Button(item))
-                {
-                    data.inheritType = item;
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            data.genericType = EditorGUILayout.Toggle("继承泛型", data.genericType);
-            data.inheritType = EditorGUILayout.TextField("继承类型", data.inheritType);
+            field.genericType = EditorGUILayout.Toggle("继承泛型", field.genericType);
+            field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.inheritTypes.ToArray());
             if (GUILayout.Button("生成脚本(hotfix)"))
             {
                 var codeTemplate = @"namespace {nameSpace} 
@@ -575,9 +526,9 @@ namespace MVC.View
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
-                else if (!string.IsNullOrEmpty(data.SavePath))
+                else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
                 {
-                    var path = data.SavePath + $"/{field.fieldName}.cs";
+                    var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
@@ -589,9 +540,9 @@ namespace MVC.View
                     path1 = files[0];
                     hasExt = true;
                 }
-                else if (!string.IsNullOrEmpty(data.SavePathExt))
+                else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
                 {
-                    path1 = data.SavePathExt + $"/{field.fieldName}Ext.cs";
+                    path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
                     hasExt = true;
                 }
                 if (hasExt)
@@ -808,9 +759,9 @@ namespace MVC.View
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
-                else if (!string.IsNullOrEmpty(data.SavePath))
+                else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
                 {
-                    var path = data.SavePath + $"/{field.fieldName}.cs";
+                    var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
                     File.WriteAllText(path, scriptCode);
                     Debug.Log($"生成成功:{path}");
                 }
@@ -822,9 +773,9 @@ namespace MVC.View
                     path1 = files[0];
                     hasExt = true;
                 }
-                else if (!string.IsNullOrEmpty(data.SavePathExt))
+                else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
                 {
-                    path1 = data.SavePathExt + $"/{field.fieldName}Ext.cs";
+                    path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
                     hasExt = true;
                 }
                 if (hasExt)
