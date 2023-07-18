@@ -84,12 +84,11 @@ namespace MVC.View
             public bool changeField;
             public bool addField;
             public bool seleAddField;
-            public bool genericType = true;
-            public string inheritType = "Net.Component.SingleCase";
             public string addInheritType;
             public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
             internal string SavePath(int savePathIndex) => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
             internal string SavePathExt(int savePathExtIndex) => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
+            internal string InheritType(int index) => inheritTypes[index];
         }
 
         internal static void OnEnable(FieldCollection target)
@@ -412,7 +411,7 @@ namespace MVC.View
                     codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
                     var typeName = field.fieldName;
                     codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
                     codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
                     var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
                     var sb = new StringBuilder();
@@ -464,7 +463,7 @@ namespace MVC.View
                     codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
                     var typeName = field.fieldName;
                     codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
-                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
                     codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
                     var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
                     var sb = new StringBuilder();
@@ -617,7 +616,7 @@ namespace MVC.View
                     codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
                     var typeName = field.fieldName;
                     codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
                     codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
                     var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
                     var sb = new StringBuilder();
@@ -697,7 +696,7 @@ namespace MVC.View
                     codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
                     var typeName = field.fieldName;
                     codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
-                    var inheritType = data.genericType ? $"{data.inheritType}<{typeName}>" : data.inheritType;
+                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
                     codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
                     var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
                     var sb = new StringBuilder();

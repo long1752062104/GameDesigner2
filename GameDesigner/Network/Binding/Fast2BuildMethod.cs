@@ -507,7 +507,7 @@ namespace Binding
                 templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
 
                 if(members[i].Type.IsValueType)
-                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type.FullName})");
                 else
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
                 var local = members[i].Type.FullName.Replace(".", "").Replace("+", "") + "Bind";
