@@ -1,6 +1,7 @@
 ﻿#if (UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL) && UNITY_EDITOR
 namespace MVC.View
 {
+    using LC.Google.Protobuf;
     using Net.Helper;
     using System;
     using System.Collections.Generic;
@@ -63,11 +64,7 @@ namespace MVC.View
     public class FieldCollectionEntity
     {
         private static FieldCollection field;
-        private static bool selectType;
         internal static string search = "", search1 = "", fieldName = "";
-        private static string[] types = new string[0];
-        private static DateTime searchTime;
-        private static string selectTypeName;
         internal static Object selectObject;
         internal static JsonSave data = new JsonSave();
         private static Vector2 scrollPosition;
@@ -84,7 +81,7 @@ namespace MVC.View
             public bool changeField;
             public bool addField;
             public bool seleAddField;
-            public string addInheritType;
+            internal string addInheritType;
             public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
             internal string SavePath(int savePathIndex) => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
             internal string SavePathExt(int savePathExtIndex) => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
@@ -111,7 +108,6 @@ namespace MVC.View
                             types1.Add(type.ToString());
                     }
                 }
-                types = types1.ToArray();
             }
         }
 
@@ -134,7 +130,6 @@ namespace MVC.View
 
         internal static void AddField(string typeName)
         {
-            selectType = true;
             var name = fieldName;
             if (name == "")
                 name = "name" + field.nameIndex++;
@@ -150,7 +145,6 @@ namespace MVC.View
             field.fields.Add(field1);
             if (selectObject != null)
                 field1.target = selectObject;
-            selectTypeName = typeName;
             field1.Update();
             EditorUtility.SetDirty(field);
         }
@@ -591,6 +585,9 @@ namespace MVC.View
                 var codeTemplate1 = @"namespace {nameSpace} 
 {
 --
+    //项目需要用到UTF8编码进行保存, 默认情况下是中文编码(GB2312), 如果更新MVC后发现脚本的中文乱码则需要处理一下
+    //以下是设置UTF8编码的Url:方法二 安装插件
+    //url:https://blog.csdn.net/hfy1237/article/details/129858976
     public partial class {typeName}
     {
 --
@@ -686,6 +683,19 @@ namespace MVC.View
                     }
                     while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                         scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
+                    var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
+                    if (files.Length > 0)
+                    {
+                        var path = files[0];
+                        File.WriteAllText(path, scriptCode);
+                        Debug.Log($"生成成功:{path}");
+                    }
+                    else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
+                    {
+                        var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
+                        File.WriteAllText(path, scriptCode);
+                        Debug.Log($"生成成功:{path}");
+                    }
                 }
 
                 string scriptCode1;
@@ -749,60 +759,79 @@ namespace MVC.View
                     }
                     while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
                         scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
-                }
-
-                var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    var path = files[0];
-                    File.WriteAllText(path, scriptCode);
-                    Debug.Log($"生成成功:{path}");
-                }
-                else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
-                {
-                    var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
-                    File.WriteAllText(path, scriptCode);
-                    Debug.Log($"生成成功:{path}");
-                }
-                var path1 = string.Empty;
-                var hasExt = false;
-                files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    path1 = files[0];
-                    hasExt = true;
-                }
-                else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
-                {
-                    path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
-                    hasExt = true;
-                }
-                if (hasExt)
-                {
-                    if (!File.Exists(path1))
+                    var path1 = string.Empty;
+                    var hasExt = false;
+                    var files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
+                    if (files.Length > 0)
+                    {
+                        path1 = files[0];
+                        hasExt = true;
+                        var lines = new List<string>(File.ReadAllLines(path1));
+                        int startIndex = 0;
+                        for (int i = 0; i < lines.Count; i++)
+                        {
+                            if (lines[i].Contains("private void Start()"))
+                            {
+                                startIndex = i + 2;
+                                break;
+                            }
+                        }
+                        for (int i = 0; i < field.fields.Count; i++)
+                        {
+                            var isBtn = field.fields[i].Type == typeof(Button);
+                            var isToggle = field.fields[i].Type == typeof(Toggle);
+                            if (!isBtn & !isToggle)
+                                continue;
+                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener";
+                            if (!Contains(lines, addListenerText))
+                            {
+                                addListenerText = $"{field.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{field.fields[i].name}{(isBtn ? "Click" : "Changed")});";
+                                lines.Insert(startIndex, (hasns ? "            " : "        ") + addListenerText);
+                                startIndex++;
+                                var fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");
+                                var fieldCodes = fieldCode.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                                for (int x = 0; x < fieldCodes.Length; x++)
+                                {
+                                    var fieldCode2 = fieldCodes[x];
+                                    if (!hasns)
+                                    {
+                                        if (fieldCode2.StartsWith("        "))
+                                            fieldCode2 = fieldCode2.Remove(0, 4);
+                                        else if (fieldCode2.StartsWith("    "))
+                                            fieldCode2 = fieldCode2.Remove(0, 4);
+                                    }
+                                    lines.Insert(lines.Count - (hasns ? 2 : 1), fieldCode2);
+                                }
+                            }
+                        }
+                        scriptCode1 = "";
+                        for (int i = 0; i < lines.Count; i++)
+                            scriptCode1 += lines[i] + "\r\n";
+                    }
+                    else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
+                    {
+                        path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
+                        hasExt = true;
+                    }
+                    if (hasExt) 
                     {
                         File.WriteAllText(path1, scriptCode1);
+                        Debug.Log($"生成成功:{path1}");
                     }
-                    else
-                    {
-                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "忽略", "尾部添加");
-                        switch (code)
-                        {
-                            case 0:
-                                File.WriteAllText(path1, scriptCode1);
-                                break;
-                            case 2:
-                                File.AppendAllText(path1, $"\r\n/*{scriptCode1}*/");
-                                break;
-                            default:
-                                goto J;
-                        }
-                    }
-                    Debug.Log($"生成成功:{path1}");
                 }
-                J: AssetDatabase.Refresh();
+                AssetDatabase.Refresh();
                 field.compiling = true;
             }
+        }
+
+        static bool Contains(List<string> list, string text) 
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Contains(text))
+                    return true;
+            }
+            return false;
         }
 
         [DidReloadScripts]
