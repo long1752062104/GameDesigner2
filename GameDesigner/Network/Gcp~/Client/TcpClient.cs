@@ -309,8 +309,8 @@
                                         continue;
                                     if (canSend)
                                     {
-                                        //client.SendRT(NetCmd.Local, buffer);
-                                        client.AddOperation(new Operation(66, buffer));
+                                        client.SendRT(NetCmd.Local, buffer);
+                                        //client.AddOperation(new Operation(66, buffer));
                                     }
                                     client.NetworkTick();
                                 }

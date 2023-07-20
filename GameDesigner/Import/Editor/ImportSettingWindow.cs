@@ -48,18 +48,18 @@ public class ImportSettingWindow : EditorWindow
         if (Directory.Exists(path))
         {
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button($"ÖØĞÂµ¼Èë{name}Ä£¿é"))
+            if (GUILayout.Button($"é‡æ–°å¯¼å…¥{name}æ¨¡å—"))
             {
                 import?.Invoke();
                 Import(sourceProtocolName, copyToProtocolName, pluginsPath);
             }
             if (data.develop == 1)
             {
-                if (GUILayout.Button($"·´µ¼{name}Ä£¿é", GUILayout.Width(200)))
+                if (GUILayout.Button($"åå¯¼{name}æ¨¡å—", GUILayout.Width(200)))
                     ReverseImport(sourceProtocolName, copyToProtocolName, pluginsPath);
             }
             GUI.color = Color.red;
-            if (GUILayout.Button($"ÒÆ³ı{name}Ä£¿é"))
+            if (GUILayout.Button($"ç§»é™¤{name}æ¨¡å—"))
             {
                 Directory.Delete(path, true);
                 File.Delete(path + ".meta");
@@ -68,27 +68,27 @@ public class ImportSettingWindow : EditorWindow
             GUI.color = Color.white;
             GUILayout.EndHorizontal();
         }
-        else if (GUILayout.Button($"µ¼Èë{name}Ä£¿é"))
+        else if (GUILayout.Button($"å¯¼å…¥{name}æ¨¡å—"))
         {
             import?.Invoke();
             Import(sourceProtocolName, copyToProtocolName, pluginsPath);
         }
     }
 
-    private readonly string[] displayedOptions = new string[] { "Ê¹ÓÃÕß", "¿ª·¢Õß" };
+    private readonly string[] displayedOptions = new string[] { "ä½¿ç”¨è€…", "å¼€å‘è€…" };
 
     private void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
-        data.develop = EditorGUILayout.Popup("Ê¹ÓÃÄ£Ê½", data.develop, displayedOptions);
+        data.develop = EditorGUILayout.Popup("ä½¿ç”¨æ¨¡å¼", data.develop, displayedOptions);
         if (EditorGUI.EndChangeCheck())
             SaveData();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("µ¼ÈëÂ·¾¶:", data.path);
-        if (GUILayout.Button("Ñ¡ÔñÂ·¾¶", GUILayout.Width(80)))
+        EditorGUILayout.LabelField("å¯¼å…¥è·¯å¾„:", data.path);
+        if (GUILayout.Button("é€‰æ‹©è·¯å¾„", GUILayout.Width(80)))
         {
-            var importPath = EditorUtility.OpenFolderPanel("Ñ¡Ôñµ¼ÈëÂ·¾¶", "", "");
-            //Ïà¶ÔÓÚAssetsÂ·¾¶
+            var importPath = EditorUtility.OpenFolderPanel("é€‰æ‹©å¯¼å…¥è·¯å¾„", "", "");
+            //ç›¸å¯¹äºAssetsè·¯å¾„
             var uri = new Uri(Application.dataPath.Replace('/', '\\'));
             var relativeUri = uri.MakeRelativeUri(new Uri(importPath));
             data.path = relativeUri.ToString();
@@ -96,57 +96,57 @@ public class ImportSettingWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
-        EditorGUILayout.HelpBox("Tcp&GcpÄ£¿é »ù´¡ÍøÂçĞ­ÒéÄ£¿é", MessageType.Info);
+        EditorGUILayout.HelpBox("Tcp&Gcpæ¨¡å— åŸºç¡€ç½‘ç»œåè®®æ¨¡å—", MessageType.Info);
         var path = data.path + "/Network/Gcp";
         DrawGUI(path, "Gcp", "Network/Gcp~", "Network/Gcp", null, data.path + "/");
 
-        EditorGUILayout.HelpBox("UdxÄ£¿é ¿ÉÓÃÓÚÖ¡Í¬²½£¬ÊÓÆµÁ÷£¬Ö±²¥Á÷£¬´óÊı¾İ´«Êä", MessageType.Info);
+        EditorGUILayout.HelpBox("Udxæ¨¡å— å¯ç”¨äºå¸§åŒæ­¥ï¼Œè§†é¢‘æµï¼Œç›´æ’­æµï¼Œå¤§æ•°æ®ä¼ è¾“", MessageType.Info);
         path = data.path + "/Network/Udx";
         DrawGUI(path, "Udx", "Network/Udx~", "Network/Udx", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("KcpÄ£¿é ¿ÉÓÃÓÚÖ¡Í¬²½ ¼´Ê±ÓÎÏ·", MessageType.Info);
+        EditorGUILayout.HelpBox("Kcpæ¨¡å— å¯ç”¨äºå¸§åŒæ­¥ å³æ—¶æ¸¸æˆ", MessageType.Info);
         path = data.path + "/Network/Kcp";
         DrawGUI(path, "Kcp", "Network/Kcp~", "Network/Kcp", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("WebÄ£¿é ¿ÉÓÃÓÚÍøÒ³ÓÎÏ· WebGL", MessageType.Info);
+        EditorGUILayout.HelpBox("Webæ¨¡å— å¯ç”¨äºç½‘é¡µæ¸¸æˆ WebGL", MessageType.Info);
         path = data.path + "/Network/Web";
         DrawGUI(path, "Web", "Network/Web~", "Network/Web", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("StateMachineÄ£¿é ¿ÉÓÃ¸ñ¶·ÓÎÏ·£¬»ò»ù´¡ÓÎÏ·¶¯×÷Éè¼Æ", MessageType.Info);
+        EditorGUILayout.HelpBox("StateMachineæ¨¡å— å¯ç”¨æ ¼æ–—æ¸¸æˆï¼Œæˆ–åŸºç¡€æ¸¸æˆåŠ¨ä½œè®¾è®¡", MessageType.Info);
         path = data.path + "/StateMachine";
         DrawGUI(path, "StateMachine", "StateMachine~", "StateMachine", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("NetworkComponentsÄ£¿é ·â×°ÁËÒ»Ì×ÍêÕûµÄ¿Í»§¶ËÍøÂç×é¼ş", MessageType.Info);
+        EditorGUILayout.HelpBox("NetworkComponentsæ¨¡å— å°è£…äº†ä¸€å¥—å®Œæ•´çš„å®¢æˆ·ç«¯ç½‘ç»œç»„ä»¶", MessageType.Info);
         path = data.path + "/Component";
         DrawGUI(path, "NetworkComponent", "Component~", "Component", ()=> {
-            Import("Common~", "Common");//ÒÀÀµ
+            Import("Common~", "Common");//ä¾èµ–
         }, data.path + "/");
 
-        EditorGUILayout.HelpBox("MVCÄ£¿é ¿ÉÓÃÓÚÖ¡Í¬²½Éè¼Æ£¬ÊÓÍ¼£¬Âß¼­·ÖÀë", MessageType.Info);
+        EditorGUILayout.HelpBox("MVCæ¨¡å— å¯ç”¨äºå¸§åŒæ­¥è®¾è®¡ï¼Œè§†å›¾ï¼Œé€»è¾‘åˆ†ç¦»", MessageType.Info);
         path = data.path + "/MVC";
         DrawGUI(path, "MVC", "MVC~", "MVC", null, data.path + "/"); 
         
-        EditorGUILayout.HelpBox("ECSÄ£¿é ¿ÉÓÃÓÚË«¶ËµÄ¶ÀÁ¢´úÂëÔËĞĞ", MessageType.Info);
+        EditorGUILayout.HelpBox("ECSæ¨¡å— å¯ç”¨äºåŒç«¯çš„ç‹¬ç«‹ä»£ç è¿è¡Œ", MessageType.Info);
         path = data.path + "/ECS";
         DrawGUI(path, "ECS", "ECS~", "ECS", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("CommonÄ£¿é ³£ÓÃÄ£¿é", MessageType.Info);
+        EditorGUILayout.HelpBox("Commonæ¨¡å— å¸¸ç”¨æ¨¡å—", MessageType.Info);
         path = data.path + "/Common";
         DrawGUI(path, "Common", "Common~", "Common", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("MMORPGÄ£¿é ÓÃÓÚMMORPGÉè¼Æ¹ÖÎïµã, Ñ²Âßµã, µØÍ¼Êı¾İµÈ", MessageType.Info);
+        EditorGUILayout.HelpBox("MMORPGæ¨¡å— ç”¨äºMMORPGè®¾è®¡æ€ªç‰©ç‚¹, å·¡é€»ç‚¹, åœ°å›¾æ•°æ®ç­‰", MessageType.Info);
         path = data.path + "/MMORPG";
         DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () => {
-            Import("AOI~", "AOI");//ÒÀÀµ
+            Import("AOI~", "AOI");//ä¾èµ–
         }, data.path + "/");
 
-        EditorGUILayout.HelpBox("AOIÄ£¿é ¿ÉÓÃÓÚMMORPG´óµØÍ¼Í¬²½·½°¸£¬¾Å¹¬¸ñÍ¬²½£¬ »òÕßµ¥»ú´óµØÍ¼·Ö¸îÏÔÊ¾", MessageType.Info);
+        EditorGUILayout.HelpBox("AOIæ¨¡å— å¯ç”¨äºMMORPGå¤§åœ°å›¾åŒæ­¥æ–¹æ¡ˆï¼Œä¹å®«æ ¼åŒæ­¥ï¼Œ æˆ–è€…å•æœºå¤§åœ°å›¾åˆ†å‰²æ˜¾ç¤º", MessageType.Info);
         path = data.path + "/AOI";
         DrawGUI(path, "AOI", "AOI~", "AOI", null, data.path + "/");
         
-        EditorGUILayout.HelpBox("FrameworkÄ£¿é ¿Í»§¶Ë¿ò¼Ü, °üº¬ÈÈ¸üĞÂ£¬Excel¶Á±í£¬GlobalÈ«¾Ö¹ÜÀí£¬ÆäËû¹ÜÀí", MessageType.Info);
+        EditorGUILayout.HelpBox("Frameworkæ¨¡å— å®¢æˆ·ç«¯æ¡†æ¶, åŒ…å«çƒ­æ›´æ–°ï¼ŒExcelè¯»è¡¨ï¼ŒGlobalå…¨å±€ç®¡ç†ï¼Œå…¶ä»–ç®¡ç†", MessageType.Info);
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("HyBridCLRµØÖ·,ÏÂÔØ»òGitµ¼Èë°ü"))
+        if (GUILayout.Button("HyBridCLRåœ°å€,ä¸‹è½½æˆ–Gitå¯¼å…¥åŒ…"))
         {
             Application.OpenURL(@"https://gitee.com/focus-creative-games/hybridclr_unity");
         }
@@ -154,19 +154,19 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "Framework", "Framework~", "Framework", null, data.path + "/");
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.HelpBox("ParrelSync²å¼ş, ¿ÉÒÔ¿ËÂ¡Á½¸öÒ»Ä£Ò»ÑùµÄÏîÄ¿½øĞĞÍøÂçÍ¬²½µ÷Ê½, ¼«¿ì½â¾öÁª»úÍ¬²½ÎÊÌâ", MessageType.Info);
+        EditorGUILayout.HelpBox("ParrelSyncæ’ä»¶, å¯ä»¥å…‹éš†ä¸¤ä¸ªä¸€æ¨¡ä¸€æ ·çš„é¡¹ç›®è¿›è¡Œç½‘ç»œåŒæ­¥è°ƒå¼, æå¿«è§£å†³è”æœºåŒæ­¥é—®é¢˜", MessageType.Info);
         path = data.path + "/ParrelSync";
         DrawGUI(path, "ParrelSync", "ParrelSync~", "ParrelSync", null, data.path + "/");
 
-        EditorGUILayout.HelpBox("»ù´¡Ä£¿éµ¼Èë", MessageType.Warning);
-        if (GUILayout.Button("»ù´¡Ä£¿éµ¼Èë", GUILayout.Height(20)))
+        EditorGUILayout.HelpBox("åŸºç¡€æ¨¡å—å¯¼å…¥", MessageType.Warning);
+        if (GUILayout.Button("åŸºç¡€æ¨¡å—å¯¼å…¥", GUILayout.Height(20)))
         {
             Import("Network/Gcp~", "Network/Gcp", data.path + "/");
             Import("Component~", "Component", data.path + "/");
             Import("Common~", "Common", data.path + "/");
         }
-        EditorGUILayout.HelpBox("ËùÓĞÄ£¿éµ¼Èë", MessageType.Warning);
-        if (GUILayout.Button("ËùÓĞÄ£¿éµ¼Èë", GUILayout.Height(20)))
+        EditorGUILayout.HelpBox("æ‰€æœ‰æ¨¡å—å¯¼å…¥", MessageType.Warning);
+        if (GUILayout.Button("æ‰€æœ‰æ¨¡å—å¯¼å…¥", GUILayout.Height(20)))
         {
             Import("Network/Gcp~", "Network/Gcp", data.path + "/");
             Import("Network/Udx~", "Network/Udx", data.path + "/");
@@ -181,8 +181,8 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI~", "AOI", data.path + "/");
             Import("Framework~", "Framework", data.path + "/");
         }
-        EditorGUILayout.HelpBox("ËùÓĞ°¸Àıµ¼Èë£¬ÓÃÓÚÑ§Ï°ºÍ¿ìËÙÉÏÊÖ", MessageType.Warning);
-        if (GUILayout.Button("°¸Àıµ¼Èë", GUILayout.Height(20)))
+        EditorGUILayout.HelpBox("æ‰€æœ‰æ¡ˆä¾‹å¯¼å…¥ï¼Œç”¨äºå­¦ä¹ å’Œå¿«é€Ÿä¸Šæ‰‹", MessageType.Warning);
+        if (GUILayout.Button("æ¡ˆä¾‹å¯¼å…¥", GUILayout.Height(20)))
         {
             Import("Network/Gcp~", "Network/Gcp", data.path + "/");
             Import("Network/Udx~", "Network/Udx", data.path + "/");
@@ -197,8 +197,8 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI~", "AOI", data.path + "/");
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
-        EditorGUILayout.HelpBox("ÖØĞÂµ¼ÈëÒÑµ¼ÈëµÄÄ£¿é", MessageType.Warning);
-        if (GUILayout.Button("ÖØĞÂµ¼ÈëÒÑµ¼ÈëµÄÄ£¿é", GUILayout.Height(20)))
+        EditorGUILayout.HelpBox("é‡æ–°å¯¼å…¥å·²å¯¼å…¥çš„æ¨¡å—", MessageType.Warning);
+        if (GUILayout.Button("é‡æ–°å¯¼å…¥å·²å¯¼å…¥çš„æ¨¡å—", GUILayout.Height(20)))
         {
             ReImport("Network/Gcp~", "Network/Gcp", data.path + "/");
             ReImport("Network/Udx~", "Network/Udx", data.path + "/");
@@ -215,8 +215,8 @@ public class ImportSettingWindow : EditorWindow
         }
         if (data.develop == 1) 
         {
-            EditorGUILayout.HelpBox("·´µ¼ÒÑµ¼ÈëµÄÄ£¿é", MessageType.Warning);
-            if (GUILayout.Button("·´µ¼ÒÑµ¼ÈëµÄÄ£¿é", GUILayout.Height(20)))
+            EditorGUILayout.HelpBox("åå¯¼å·²å¯¼å…¥çš„æ¨¡å—", MessageType.Warning);
+            if (GUILayout.Button("åå¯¼å·²å¯¼å…¥çš„æ¨¡å—", GUILayout.Height(20)))
             {
                 ReverseImport("Network/Gcp~", "Network/Gcp", data.path + "/");
                 ReverseImport("Network/Udx~", "Network/Udx", data.path + "/");
@@ -239,11 +239,11 @@ public class ImportSettingWindow : EditorWindow
         {
             Application.OpenURL(@"https://gitee.com/leng_yue/GameDesigner");
         }
-        if (GUILayout.Button("¼ÓÈëQQÈº:825240544", GUILayout.Height(20))) 
+        if (GUILayout.Button("åŠ å…¥QQç¾¤:825240544", GUILayout.Height(20))) 
         {
             Application.OpenURL(@"https://jq.qq.com/?_wv=1027&k=nx1Psgjz");
         }
-        if (GUILayout.Button("°æ±¾:2022.12.12", GUILayout.Height(20)))
+        if (GUILayout.Button("ç‰ˆæœ¬:2022.12.12", GUILayout.Height(20)))
         {
         }
         GUILayout.EndHorizontal(); 
@@ -252,12 +252,12 @@ public class ImportSettingWindow : EditorWindow
 
     private static void ReImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
     {
-        var rootPath = "Packages/com.gamedesigner.network";//°üµÄ¸ùÂ·¾¶
+        var rootPath = "Packages/com.gamedesigner.network";//åŒ…çš„æ ¹è·¯å¾„
         if (!Directory.Exists(rootPath))
-            rootPath = Application.dataPath + "/GameDesigner";//Ö±½Ó·ÅAssetsÄ¿Â¼µÄÂ·¾¶
+            rootPath = Application.dataPath + "/GameDesigner";//ç›´æ¥æ”¾Assetsç›®å½•çš„è·¯å¾„
         if (!Directory.Exists(rootPath))
         {
-            Debug.LogError("ÕÒ²»µ½¸ùÂ·¾¶, ÎŞ·¨Ö´ĞĞ, ÇëÊ¹ÓÃ°ü¹ÜÀíÆ÷Ìí¼Ógdnet, »òÕß¸ùÂ·¾¶±ØĞëÔÚAssetsÄ¿Â¼ÏÂ!");
+            Debug.LogError("æ‰¾ä¸åˆ°æ ¹è·¯å¾„, æ— æ³•æ‰§è¡Œ, è¯·ä½¿ç”¨åŒ…ç®¡ç†å™¨æ·»åŠ gdnet, æˆ–è€…æ ¹è·¯å¾„å¿…é¡»åœ¨Assetsç›®å½•ä¸‹!");
             return;
         }
         var path = $"{pluginsPath}{copyToProtocolName}/";
@@ -268,18 +268,18 @@ public class ImportSettingWindow : EditorWindow
 
     private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
     {
-        var rootPath = "Packages/com.gamedesigner.network";//°üµÄ¸ùÂ·¾¶
+        var rootPath = "Packages/com.gamedesigner.network";//åŒ…çš„æ ¹è·¯å¾„
         if (!Directory.Exists(rootPath))
-            rootPath = Application.dataPath + "/GameDesigner";//Ö±½Ó·ÅAssetsÄ¿Â¼µÄÂ·¾¶
+            rootPath = Application.dataPath + "/GameDesigner";//ç›´æ¥æ”¾Assetsç›®å½•çš„è·¯å¾„
         if (!Directory.Exists(rootPath))
         {
-            Debug.LogError("ÕÒ²»µ½¸ùÂ·¾¶, ÎŞ·¨Ö´ĞĞ, ÇëÊ¹ÓÃ°ü¹ÜÀíÆ÷Ìí¼Ógdnet, »òÕß¸ùÂ·¾¶±ØĞëÔÚAssetsÄ¿Â¼ÏÂ!");
+            Debug.LogError("æ‰¾ä¸åˆ°æ ¹è·¯å¾„, æ— æ³•æ‰§è¡Œ, è¯·ä½¿ç”¨åŒ…ç®¡ç†å™¨æ·»åŠ gdnet, æˆ–è€…æ ¹è·¯å¾„å¿…é¡»åœ¨Assetsç›®å½•ä¸‹!");
             return;
         }
         var path = $"{rootPath}/{sourceProtocolName}/";
         if (!Directory.Exists(path))
         {
-            Debug.LogError("ÕÒ²»µ½Â·¾¶:" + path);
+            Debug.LogError("æ‰¾ä¸åˆ°è·¯å¾„:" + path);
             return;
         }
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
@@ -293,18 +293,18 @@ public class ImportSettingWindow : EditorWindow
             try { File.Copy(file, newPath, true); }
             catch (Exception ex) { Debug.LogError(ex); }
         }
-        Debug.Log($"µ¼Èë{Path.GetFileName(copyToProtocolName)}Íê³É!");
+        Debug.Log($"å¯¼å…¥{Path.GetFileName(copyToProtocolName)}å®Œæˆ!");
         AssetDatabase.Refresh();
     }
 
     private static void ReverseImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath = "Assets/Plugins/GameDesigner/")
     {
-        var rootPath = "Packages/com.gamedesigner.network";//°üµÄ¸ùÂ·¾¶
+        var rootPath = "Packages/com.gamedesigner.network";//åŒ…çš„æ ¹è·¯å¾„
         if (!Directory.Exists(rootPath))
-            rootPath = Application.dataPath + "/GameDesigner";//Ö±½Ó·ÅAssetsÄ¿Â¼µÄÂ·¾¶
+            rootPath = Application.dataPath + "/GameDesigner";//ç›´æ¥æ”¾Assetsç›®å½•çš„è·¯å¾„
         if (!Directory.Exists(rootPath))
         {
-            Debug.LogError("ÕÒ²»µ½¸ùÂ·¾¶, ÎŞ·¨Ö´ĞĞ, ÇëÊ¹ÓÃ°ü¹ÜÀíÆ÷Ìí¼Ógdnet, »òÕß¸ùÂ·¾¶±ØĞëÔÚAssetsÄ¿Â¼ÏÂ!");
+            Debug.LogError("æ‰¾ä¸åˆ°æ ¹è·¯å¾„, æ— æ³•æ‰§è¡Œ, è¯·ä½¿ç”¨åŒ…ç®¡ç†å™¨æ·»åŠ gdnet, æˆ–è€…æ ¹è·¯å¾„å¿…é¡»åœ¨Assetsç›®å½•ä¸‹!");
             return;
         }
         var path = $"{pluginsPath}{copyToProtocolName}/";
@@ -317,7 +317,7 @@ public class ImportSettingWindow : EditorWindow
             var newPath = $"{rootPath}/{sourceProtocolName}/{newFile}";
             File.Copy(file, newPath, true);
         }
-        Debug.Log($"·´µ¼³ö{Path.GetFileName(copyToProtocolName)}Íê³É!");
+        Debug.Log($"åå¯¼å‡º{Path.GetFileName(copyToProtocolName)}å®Œæˆ!");
         AssetDatabase.Refresh();
     }
 }
