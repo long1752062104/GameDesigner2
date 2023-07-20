@@ -267,11 +267,7 @@
                 if (value != WriteLogMode.None & fileStream == null)
                 {
                     CreateLogFile();
-                    var now = DateTime.Now;
-                    var day = now.AddDays(1);
-                    day = new DateTime(day.Year, day.Month, day.Day, 0, 0, 0);//明天0点
-                    var time = (day - now).TotalMilliseconds / 1000d;//转换成0.x秒
-                    writeFileModeID = ThreadManager.Invoke("CreateLogFile", (float)time, CreateLogFile);//每0点会创建新的日志文件
+                    writeFileModeID = ThreadManager.Invoke("CreateLogFile", GetResetTime(), CreateLogFile);//每0点会创建新的日志文件
                 }
                 else if (value == WriteLogMode.None & fileStream != null)
                 {
@@ -280,6 +276,15 @@
                     ThreadManager.Event.RemoveEvent(writeFileModeID);
                 }
             }
+        }
+
+        private static float GetResetTime()
+        {
+            var now = DateTime.Now;
+            var day = now.AddDays(1);
+            day = new DateTime(day.Year, day.Month, day.Day, 0, 0, 0);//明天0点
+            var time = (day - now).TotalMilliseconds / 1000d;//转换成0.x秒
+            return (float)time;
         }
 
         private static bool CreateLogFile()
@@ -301,6 +306,9 @@
             {
                 NDebug.LogError(ex);
             }
+            var loggerEvent = ThreadManager.Event.GetEvent(writeFileModeID);
+            if (loggerEvent != null)
+                loggerEvent.SetIntervalTime((uint)(GetResetTime() * 1000f));
             return true;
         }
 
