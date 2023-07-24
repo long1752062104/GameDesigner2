@@ -27,7 +27,7 @@ namespace Net.Event
             internal bool async;
             internal bool complete = true;
             internal bool isRemove;
-            internal void SetIntervalTime(uint value)
+            public void SetIntervalTime(uint value)
             {
                 timeMax = value;
             }
@@ -46,7 +46,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
         /// </summary>
-        /// <param name="time"></param>
+        /// <param name="time">以秒为单位</param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
@@ -66,7 +66,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
         /// </summary>
-        /// <param name="time"></param>
+        /// <param name="time">以秒为单位</param>
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
@@ -88,7 +88,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时器事件, 当time时间到调用ptr, 总共调用invokeNum次数
         /// </summary>
-        /// <param name="time"></param>
+        /// <param name="time">以秒为单位</param>
         /// <param name="invokeNum">调用次数, -1则是无限循环</param>
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
@@ -113,7 +113,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
         /// </summary>
-        /// <param name="time"></param>
+        /// <param name="time">以秒为单位</param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
@@ -125,7 +125,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">以秒为单位</param>
         /// <param name="time"></param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
@@ -149,7 +149,7 @@ namespace Net.Event
         /// 添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="time"></param>
+        /// <param name="time">毫秒为单位</param>
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
@@ -171,7 +171,7 @@ namespace Net.Event
         /// <summary>
         /// 添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
         /// </summary>
-        /// <param name="time"></param>
+        /// <param name="time">以秒为单位</param>
         /// <param name="ptr"></param>
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>

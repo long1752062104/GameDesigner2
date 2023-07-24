@@ -278,13 +278,14 @@
             }
         }
 
-        private static float GetResetTime()
+        private static int GetResetTime() //获取毫秒数
         {
             var now = DateTime.Now;
             var day = now.AddDays(1);
             day = new DateTime(day.Year, day.Month, day.Day, 0, 0, 0);//明天0点
-            var time = (day - now).TotalMilliseconds / 1000d;//转换成0.x秒
-            return (float)time;
+            var time = (day - now).TotalMilliseconds;
+            var seconds = (int)Math.Ceiling(time);
+            return seconds;
         }
 
         private static bool CreateLogFile()
@@ -306,9 +307,10 @@
             {
                 NDebug.LogError(ex);
             }
-            var loggerEvent = ThreadManager.Event.GetEvent(writeFileModeID);
-            if (loggerEvent != null)
-                loggerEvent.SetIntervalTime((uint)(GetResetTime() * 1000f));
+            finally
+            {
+                ThreadManager.Event.ResetTimeInterval(writeFileModeID, (ulong)GetResetTime());
+            }
             return true;
         }
 
