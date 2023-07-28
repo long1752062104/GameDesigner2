@@ -568,6 +568,12 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe void WriteFixed(ushort value)
+        {
+            Write(&value, 2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(char value)
         {
             Write((ushort)value);
@@ -599,6 +605,12 @@ namespace Net.System
                 ptr[0] = num;
                 Position += num + 1;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe void WriteFixed(uint value)
+        {
+            Write(&value, 4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -634,6 +646,12 @@ namespace Net.System
                 ptr[0] = num;
                 Position += num + 1;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe void WriteFixed(ulong value)
+        {
+            Write(&value, 8);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1101,6 +1119,16 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe ushort ReadUInt16Fixed()
+        {
+            fixed (byte* ptr = &Buffer[Position])
+            {
+                return *(ushort*)ptr; //不处理大小端
+                Position += 2;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char ReadChar()
         {
             return (char)ReadUInt16();
@@ -1136,6 +1164,16 @@ namespace Net.System
                         value |= (uint)ptr[i] << (i * 8);
                     return value;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe uint ReadUInt32Fixed()
+        {
+            fixed (byte* ptr = &Buffer[Position])
+            {
+                return *(uint*)ptr; //不处理大小端
+                Position += 4;
             }
         }
 
@@ -1182,6 +1220,16 @@ namespace Net.System
                         value |= (ulong)ptr[i] << (i * 8);
                     return value;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual unsafe ulong ReadUInt64Fixed()
+        {
+            fixed (byte* ptr = &Buffer[Position])
+            {
+                return *(ulong*)ptr; //不处理大小端
+                Position += 8;
             }
         }
 

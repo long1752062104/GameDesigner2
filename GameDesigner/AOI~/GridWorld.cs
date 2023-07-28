@@ -28,7 +28,7 @@ namespace Net.AOI
     public class GridWorld
     {
         public List<Grid> grids = new List<Grid>();
-        public FastList<IGridBody> gridBodies = new FastList<IGridBody>();
+        public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();
         public Rect worldSize;
         public GridType gridType = GridType.Horizontal;
 
