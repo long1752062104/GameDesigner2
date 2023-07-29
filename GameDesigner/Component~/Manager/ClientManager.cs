@@ -60,12 +60,12 @@ namespace Net.Component
         public bool debugRpc = true;
         public bool authorize;
         public bool startConnect = true;
-        //public bool md5CRC;
         public bool singleThread;
         public int reconnectCount = 10;
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
+        public string scheme = "ws";
         public bool dontDestroyOnLoad = true;
 
 #pragma warning disable IDE1006 // 命名样式
@@ -84,11 +84,11 @@ namespace Net.Component
                     _client.host = ip;
                     _client.port = port;
                     _client.LogRpc = debugRpc;
-                    //_client.MD5CRC = md5CRC;
                     _client.IsMultiThread = !singleThread;
                     _client.ReconnectCount = reconnectCount;
                     _client.ReconnectInterval = reconnectInterval;
                     _client.SetHeartTime(heartLimit, heartInterval);
+                    _client.Scheme = scheme;
                 }
                 return _client;
             }

@@ -965,6 +965,7 @@ namespace Net.Server
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
             client.heart = 0;//udp在关闭发送和接收后，客户端还是能给服务器发信息，导致服务器一直提示有客户端连接和断开连接，所以这里给他在服务器逗留，但不处理客户端任何数据，直到客户端自己不发送信息为止
+            client.BytesReceived += buffer.Count;
             if (!client.Connected)
             {
                 BufferPool.Push(buffer);

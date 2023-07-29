@@ -134,7 +134,11 @@
         /// 断线重连等待时间
         /// </summary>
         public uint ReconnectTimeout { get; set; }
-        
+        /// <summary>
+        /// 此客户端接收到的字节总量
+        /// </summary>
+        public long BytesReceived { get; set; }
+
         #region 创建网络客户端(玩家)
         /// <summary>
         /// 构造网络客户端

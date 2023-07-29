@@ -96,6 +96,7 @@
                         Marshal.Copy(pData, buffer, 0, len);
                         receiveCount += len;
                         receiveAmount++;
+                        client.BytesReceived += len;
                         client.RevdQueue.Enqueue(buffer);
                         break;
                 }

@@ -11,7 +11,7 @@
     /// <summary>
     /// 服务器组件,  (案例代码)
     /// </summary>
-    public class Service : TcpServer<Player, Scene>
+    public class Service : WebServer<Player, Scene>
     {
         /// <summary>
         /// 当开始服务器的时候

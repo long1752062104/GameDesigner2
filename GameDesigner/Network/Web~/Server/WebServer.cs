@@ -26,10 +26,14 @@
         /// webSocket服务器套接字
         /// </summary>
         public new WebSocketServer Server { get; protected set; }
+        /// <summary>
+        /// websocket连接策略, 有wss和ws
+        /// </summary>
+        public string Scheme { get; set; } = "ws";
 
         protected override void CreateServerSocket(ushort port)
         {
-            Server = new WebSocketServer($"ws://{NetPort.GetIP()}:{port}");
+            Server = new WebSocketServer($"{Scheme}://{NetPort.GetIP()}:{port}");
             Server.ListenerSocket.NoDelay = true;
             Server.Start(AcceptConnect);
         }
@@ -56,7 +60,10 @@
                 receiveCount += buffer.Length;
                 receiveAmount++;
                 if (AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
+                {
+                    client.BytesReceived += buffer.Length;
                     WSRevdHandle(client, buffer, message);
+                }
             };
             wsClient1.OnBinary = (buffer) =>
             {
@@ -67,6 +74,7 @@
                 receiveAmount++;
                 if (AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 {
+                    client.BytesReceived += buffer.Length;
                     client.RevdQueue.Enqueue(segment);
                 }
             };

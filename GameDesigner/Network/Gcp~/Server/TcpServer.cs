@@ -125,6 +125,7 @@
                 }
                 receiveAmount++;
                 receiveCount += segment.Count;
+                client.BytesReceived += segment.Count;
                 ResolveBuffer(client, ref segment);
                 BufferPool.Push(segment);
                 isSleep = false;

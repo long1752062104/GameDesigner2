@@ -2672,13 +2672,6 @@
             <param name="duration">声音的持续时间，以毫秒为单位。</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.ByteHelper.ToString(System.Double)">
-            <summary>
-            转换方法
-            </summary>
-            <param name="size">字节值</param>
-            <returns></returns>
-        </member>
         <member name="T:Net.System.SafeDictionary`2">
             <summary>
             安全字典, 无GC快速字典
@@ -3512,6 +3505,13 @@
             <summary>
             远程过程调用(RPC)帮助类
             </summary>
+        </member>
+        <member name="M:Net.Helper.ByteHelper.ToString(System.Double)">
+            <summary>
+            转换方法
+            </summary>
+            <param name="size">字节值</param>
+            <returns></returns>
         </member>
         <member name="T:Net.CloneHelper">
             <summary>
@@ -4930,6 +4930,11 @@
             第三版本 2020.9.14
             </summary>
         </member>
+        <member name="P:Net.Client.WebClient.Scheme">
+            <summary>
+            websocket连接策略, 有wss和ws
+            </summary>
+        </member>
         <member name="M:Net.Client.WebClient.#ctor">
             <summary>
             构造不可靠传输客户端
@@ -5254,7 +5259,7 @@
             <summary>
             添加计时器事件, time时间后调用ptr
             </summary>
-            <param name="time"></param>
+            <param name="time">以秒为单位</param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
@@ -5263,7 +5268,7 @@
             <summary>
             添加计时器事件, time时间后调用ptr
             </summary>
-            <param name="time"></param>
+            <param name="time">以秒为单位</param>
             <param name="ptr"></param>
             <param name="obj"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
@@ -5273,7 +5278,7 @@
             <summary>
             添加计时器事件, 当time时间到调用ptr, 总共调用invokeNum次数
             </summary>
-            <param name="time"></param>
+            <param name="time">以秒为单位</param>
             <param name="invokeNum">调用次数, -1则是无限循环</param>
             <param name="ptr"></param>
             <param name="obj"></param>
@@ -5284,7 +5289,7 @@
             <summary>
             添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
             </summary>
-            <param name="time"></param>
+            <param name="time">以秒为单位</param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
@@ -5293,7 +5298,7 @@
             <summary>
             添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
             </summary>
-            <param name="name"></param>
+            <param name="name">以秒为单位</param>
             <param name="time"></param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
@@ -5304,7 +5309,7 @@
             添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
             </summary>
             <param name="name"></param>
-            <param name="time"></param>
+            <param name="time">毫秒为单位</param>
             <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
@@ -5313,7 +5318,7 @@
             <summary>
             添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
             </summary>
-            <param name="time"></param>
+            <param name="time">以秒为单位</param>
             <param name="ptr"></param>
             <param name="obj"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
@@ -5888,6 +5893,11 @@
         <member name="P:Net.Server.NetPlayer.ReconnectTimeout">
             <summary>
             断线重连等待时间
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.BytesReceived">
+            <summary>
+            此客户端接收到的字节总量
             </summary>
         </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
@@ -7539,6 +7549,11 @@
         <member name="P:Net.Server.WebServer`2.Server">
             <summary>
             webSocket服务器套接字
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebServer`2.Scheme">
+            <summary>
+            websocket连接策略, 有wss和ws
             </summary>
         </member>
         <member name="T:Net.Server.WebServer">

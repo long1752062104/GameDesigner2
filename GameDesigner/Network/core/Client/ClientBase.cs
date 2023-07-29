@@ -453,6 +453,10 @@ namespace Net.Client
         /// 网络循环事件处理
         /// </summary>
         protected TimerEvent LoopEvent = new TimerEvent();
+        /// <summary>
+        /// websocket连接策略, 有wss和ws
+        /// </summary>
+        public string Scheme { get; set; } = "ws";
 
         /// <summary>
         /// 构造函数

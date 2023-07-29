@@ -24,7 +24,7 @@
     public class WebClient : ClientBase
     {
         public WebSocket WSClient { get; private set; }
-
+        
         /// <summary>
         /// 构造不可靠传输客户端
         /// </summary>
@@ -55,7 +55,7 @@
                 var isConnectFailed = false;
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
-                WSClient = new WebSocket($"ws://{host}:{port}/");
+                WSClient = new WebSocket($"{Scheme}://{host}:{port}/");
                 WSClient.OnError += (sender, e) =>
                 {
                     NDebug.LogError(e.Exception);

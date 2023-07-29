@@ -1,5 +1,6 @@
 ﻿using Example1;
 using Net.Event;
+using Net.Helper;
 using Net.Share;
 using System;
 using System.Diagnostics;
@@ -86,16 +87,17 @@ namespace ExampleServer
                 dataGridView1.Columns.Add("UserID", "玩家UID");
                 dataGridView1.Columns.Add("Login", "是否登录");
                 dataGridView1.Columns.Add("isDispose", "是否释放");
-                dataGridView1.Columns.Add("CloseSend", "是否连接");
+                dataGridView1.Columns.Add("Connected", "是否连接");
                 dataGridView1.Columns.Add("Redundant", "冗余连接");
                 dataGridView1.Columns.Add("QueueUpNo", "玩家排队");
                 dataGridView1.Columns.Add("ConnectTime", "连接时间");
+                dataGridView1.Columns.Add("BytesReceived", "接收总量");
                 foreach (var client in server.AllClients.Values)
                 {
                     dataGridView1.Rows.Add(client.PlayerID, client.Name, client.RemotePoint.ToString(),
                         client.SceneName, client.UserID.ToString(), client.Login.ToString(), client.isDispose.ToString(),
                         client.Connected.ToString(), client.Redundant.ToString(),
-                        client.QueueUpNo.ToString(), client.ConnectTime.ToString("f"));
+                        client.QueueUpNo.ToString(), client.ConnectTime.ToString("f"), ByteHelper.ToString(client.BytesReceived));
                 }
             }
         }
