@@ -453,6 +453,13 @@ namespace Net.Event
             nextTick = startTick + 1000u;
         }
 
+        /// <summary>
+        /// 检测时间是否到达
+        /// </summary>
+        /// <param name="tick"></param>
+        /// <param name="interval">间隔最大是1000</param>
+        /// <param name="sleep"></param>
+        /// <returns></returns>
         public bool CheckTimeout(uint tick, uint interval, bool sleep = false)//60帧
         {
             var frameRate = 1000u / interval;
@@ -463,9 +470,9 @@ namespace Net.Event
                 nextTick = tick + 1000u;
                 if (startTick >= nextTick)
                     nextTick = uint.MaxValue;
-                return true;
+                return false; //这里返回true会调用两次
             }
-            else if (frame < frameRate & (tick - startTick) >= frame * interval)
+            else if (frame <= frameRate & (tick - startTick) >= frame * interval)
             {
                 frame++;
                 return true;

@@ -1,12 +1,18 @@
-﻿using Microsoft.CSharp;
-using Net.Event;
+﻿using Net.Event;
 using Net.Helper;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+using Microsoft.CodeAnalysis;
+#if !WINDOWS
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+#endif
+using System.Linq;
 
 public static class Fast2BuildMethod
 {
@@ -30,27 +36,16 @@ public static class Fast2BuildMethod
     /// <returns></returns>
     public static bool DynamicBuild(params Type[] types)
     {
-        return DynamicBuild(0, types);
-    }
-
-    /// <summary>
-    /// 动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
-    /// </summary>
-    /// <param name="compilerOptionsIndex">编译参数, 如果编译失败, 可以选择0-7测试哪个编译成功</param>
-    /// <param name="types"></param>
-    /// <returns></returns>
-    public static bool DynamicBuild(int compilerOptionsIndex, params Type[] types)
-    {
-        var codes = new List<string>();
+        var codes = new Dictionary<string, string>();
         foreach (var type in types)
         {
-            var str = BuildNew(type, true, true, new List<string>());
-            str.Append(BuildArray(type));
-            str.Append(BuildGeneric(type));
-            codes.Add(str.ToString());
+            var code = BuildNew(type, true, true, new List<string>());
+            code.AppendLine(BuildArray(type).ToString());
+            code.AppendLine(BuildGeneric(type).ToString());
+            codes.Add(type.ToString() + "Bind.cs", code.ToString());
         }
-        var provider = new CSharpCodeProvider();
-        var param = new CompilerParameters();
+        codes.Add("Binding.BindingType.cs", BuildBindingType(new HashSet<Type>(types)));
+        codes.Add("BindingExtension.cs", BuildBindingExtension(new HashSet<Type>(types)));
         var dllpaths = new HashSet<string>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
@@ -67,12 +62,21 @@ public static class Fast2BuildMethod
                 continue;
             dllpaths.Add(path);
         }
+#if WINDOWS
+        var provider = new CSharpCodeProvider();
+        var param = new CompilerParameters();
         param.ReferencedAssemblies.AddRange(dllpaths.ToArray());
         param.GenerateExecutable = false;
         param.GenerateInMemory = true;
-        var options = new string[] { "/langversion:experimental", "/langversion:default", "/langversion:ISO-1", "/langversion:ISO-2", "/langversion:3", "/langversion:4", "/langversion:5", "/langversion:6", "/langversion:7" };
-        param.CompilerOptions = options[compilerOptionsIndex];
-        var cr = provider.CompileAssemblyFromSource(param, codes.ToArray());
+        param.CompilerOptions = "/optimize+ /platform:x64 /target:library /unsafe /langversion:default";
+        var codeFiles = new List<string>();
+        foreach (var code in codes)
+        {
+            var tempFile = $"{Path.GetTempPath()}{code.Key}";
+            File.WriteAllText(tempFile, code.Value);
+            codeFiles.Add(tempFile);
+        }
+        var cr = provider.CompileAssemblyFromFile(param, codeFiles.ToArray());
         if (cr.Errors.HasErrors)
         {
             NDebug.LogError("编译错误：");
@@ -80,11 +84,54 @@ public static class Fast2BuildMethod
                 NDebug.LogError(err.ErrorText);
             return false;
         }
+#else
+        var metadataReferences = new List<MetadataReference>();
+        foreach (var dllPath in dllpaths)
+            metadataReferences.Add(MetadataReference.CreateFromFile(dllPath));
+        var references = metadataReferences.ToArray();
+        var assemblyName = Path.GetRandomFileName();
+        var syntaxTrees = new List<SyntaxTree>();
+        foreach (var code in codes)
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText(code.Value));
+        var compilation = CSharpCompilation.Create(assemblyName, syntaxTrees, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
+        using (var stream = new MemoryStream())
+        {
+            var result = compilation.Emit(stream);
+            if (!result.Success)
+            {
+                var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+                foreach (Diagnostic diagnostic in failures)
+                    NDebug.LogError($"{diagnostic.Id}: {diagnostic.GetMessage()}");
+                return false;
+            }
+            else
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                Assembly.Load(stream.ToArray());
+            }
+        }
+#endif
         Net.Serialize.NetConvertFast2.Init();
-        foreach (var type in types)
-            Net.Serialize.NetConvertFast2.AddSerializeType3(type);
-        NDebug.Log("编译成功");
+        NDebug.Log("动态编译完成!");
         return true;
+    }
+
+    /// <summary>
+    /// 生成所有完整的绑定类型
+    /// </summary>
+    /// <param name="savePath"></param>
+    /// <param name="types"></param>
+    /// <returns></returns>
+    public static void BuildAll(string savePath, params Type[] types)
+    {
+        foreach (var type in types)
+        {
+            Build(type, savePath);
+            BuildArray(type, savePath);
+            BuildGeneric(type, savePath);
+        }
+        BuildBindingType(new HashSet<Type>(types), savePath, 1);
+        BuildBindingExtension(new HashSet<Type>(types), savePath);
     }
 
     public static void Build(Type type, string savePath)
@@ -204,7 +251,7 @@ namespace Binding
         {
             int pos = stream.Position;
             stream.Position += {SIZE};
-            byte[] bits = new byte[{SIZE}];
+            var bits = new byte[{SIZE}];
 {Split}
             if ({Condition})
             {
@@ -232,10 +279,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public {TYPE} Read(Segment stream)
+        public {TYPE} Read(Segment stream) 
+        {
+            var value = new {TYPE}();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref {TYPE} value, Segment stream)
 		{
-			byte[] bits = stream.Read({SIZE});
-			var value = new {TYPE}();
+			var bits = stream.Read({SIZE});
 {Split}
 			if(NetConvertBase.GetBit(bits[{BITPOS}], {FIELDINDEX}))
 				value.{FIELDNAME} = stream.{READTYPE}();
@@ -252,7 +305,6 @@ namespace Binding
 				value.{FIELDNAME} = bind.Read(stream, new {BINDTYPE}());
 			}
 {Split}
-			return value;
 		}
 
         public void WriteValue(object value, Segment stream)
@@ -530,9 +582,15 @@ namespace Binding
         return sb;
     }
 
-    public static void BuildBindingType(HashSet<Type> types, string savePath)
+    public static void BuildBindingType(HashSet<Type> types, string savePath, int sortingOrder = 1)
     {
-        StringBuilder str = new StringBuilder();
+        var code = BuildBindingType(types, sortingOrder);
+        File.WriteAllText(savePath + $"//BindingType.cs", code);
+    }
+
+    public static string BuildBindingType(HashSet<Type> types, int sortingOrder = 1)
+    {
+        var str = new StringBuilder();
         str.AppendLine("using System;");
         str.AppendLine("using System.Collections.Generic;");
         str.AppendLine("using Net.Serialize;");
@@ -541,15 +599,18 @@ namespace Binding
         str.AppendLine("{");
         str.AppendLine("    public class BindingType : IBindingType");
         str.AppendLine("    {");
-        str.AppendLine("        public int SortingOrder { get; } = 1;");
-        str.AppendLine("        public Dictionary<Type, Type> BindTypes { get; } = new Dictionary<Type, Type>");
+        str.AppendLine("        public int SortingOrder { get; private set; }");
+        str.AppendLine("        public Dictionary<Type, Type> BindTypes { get; private set; }");
+        str.AppendLine("        public BindingType()");
         str.AppendLine("        {");
+        str.AppendLine($"            SortingOrder = {sortingOrder};");
+        str.AppendLine("            BindTypes = new Dictionary<Type, Type>");
+        str.AppendLine("            {");
         foreach (var item in types)
         {
             if (item.IsGenericType & item.GenericTypeArguments.Length == 2)
             {
                 var typeName = AssemblyHelper.GetTypeName(item);
-                //var bindType = AssemblyHelper.GetTypeName(item, "BaseBind<", ">", "", "Bind", "BaseArrayBind<", ">", "", "ArrayBind", "BaseListBind<", ">", "", "GenericBind"); //GetDictionaryBindTypeName(item);
                 var bindType = GetDictionaryBindTypeName(item);
                 str.AppendLine($"\t\t\t{{ typeof({typeName}), typeof({bindType}) }},");
             }
@@ -560,10 +621,60 @@ namespace Binding
                 str.AppendLine($"\t\t\t{{ typeof(List<{item.FullName}>), typeof({item.FullName.Replace(".", "")}GenericBind) }},");
             }
         }
-        str.AppendLine("        };");
+        str.AppendLine("            };");
+        str.AppendLine("        }");
         str.AppendLine("    }");
         str.AppendLine("}");
-        File.WriteAllText(savePath + $"//BindingType.cs", str.ToString());
+        return str.ToString();
+    }
+
+    public static void BuildBindingExtension(HashSet<Type> types, string savePath)
+    {
+        var code = BuildBindingExtension(types);
+        File.WriteAllText(savePath + $"//BindingExtension.cs", code);
+    }
+
+    public static string BuildBindingExtension(HashSet<Type> types)
+    {
+        var codeTemplate = @"using Binding;
+using Net.Serialize;
+using Net.System;
+
+public static class BindingExtension
+{
+{Space}
+    public static Segment SerializeObject(this {TYPE} value)
+    {
+        var segment = BufferPool.Take();
+        var bind = new {TYPEBIND}();
+        bind.Write(value, segment);
+        return segment;
+    }
+
+    public static {TYPE} DeserializeObject(this {TYPE} value, Segment segment, bool isPush = true)
+    {
+        var bind = new {TYPEBIND}();
+        bind.Read(ref value, segment);
+        if (isPush) BufferPool.Push(segment);
+        return value;
+    }
+{Space}
+}";
+
+        var str = new StringBuilder();
+        var codes = codeTemplate.Split(new string[] { "{Space}" }, 0);
+        str.Append(codes[0]);
+        foreach (var item in types)
+        {
+            if (item.IsGenericType)
+                continue;
+            var code = codes[1];
+            code = code.Replace("{TYPE}", item.ToString());
+            code = code.Replace("{TYPEBIND}", $"{item.ToString().Replace(".", "")}Bind");
+            str.Append(code);
+        }
+        str.Append(codes[2]);
+        return str.ToString();
     }
 
     public static void BuildArray(Type type, string savePath)

@@ -1,9 +1,9 @@
-﻿using Net.Event;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Net.Event;
 
 namespace Net.System
 {
@@ -129,11 +129,15 @@ namespace Net.System
         /// </summary>
         /// <param name="recovery">复制数据后立即回收此分片?</param>
         /// <returns></returns>
-        public byte[] ToArray(bool recovery = false, bool resetPos = false)
+        public unsafe byte[] ToArray(bool recovery = false, bool resetPos = false)
         {
             Flush(resetPos);
-            byte[] array = new byte[Count];
-            global::System.Buffer.BlockCopy(Buffer, Offset, array, 0, Count);
+            var array = new byte[Count];
+            fixed (byte* ptr = &Buffer[Offset])
+            fixed (byte* ptr1 = &array[0])
+                for (int i = 0; i < Count; i++)
+                    ptr1[i] = ptr[i];
+            //global::System.Buffer.BlockCopy(Buffer, Offset, array, 0, Count);
             if (recovery) BufferPool.Push(this);
             return array;
         }
@@ -268,10 +272,15 @@ namespace Net.System
             return value;
         }
 
-        public byte[] Read(int count)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe byte[] Read(int count)
         {
-            byte[] array = new byte[count];
-            global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
+            var array = new byte[count];
+            fixed (byte* ptr = &Buffer[Position])
+            fixed (byte* ptr1 = &array[0])
+                for (int i = 0; i < count; i++)
+                    ptr1[i] = ptr[i];
+            //global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
             Position += count;
             return array;
         }
@@ -717,18 +726,27 @@ namespace Net.System
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(byte[] value, bool recordLength = true)
+        public unsafe void Write(byte[] value, bool recordLength = true)
         {
+            var count = value.Length;
             if (recordLength)
-                Write(value.Length);
-            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, value.Length);
-            Position += value.Length;
+                Write(count);
+            fixed (byte* ptr = &value[0])
+            fixed (byte* ptr1 = &Buffer[Position])
+                for (int i = 0; i < count; i++)
+                    ptr1[i] = ptr[i];
+            //global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
+            Position += count;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(byte[] value, int index, int count)
+        public unsafe void Write(byte[] value, int index, int count)
         {
-            global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
+            fixed (byte* ptr = &value[index])
+            fixed (byte* ptr1 = &Buffer[Position])
+                for (int i = 0; i < count; i++)
+                    ptr1[i] = ptr[i];
+            //global::System.Buffer.MemoryCopy(value, index, Buffer, Position, count);
             Position += count;
         }
 
@@ -738,11 +756,16 @@ namespace Net.System
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(sbyte[] value, bool recordLength = true)
+        public unsafe void Write(sbyte[] value, bool recordLength = true)
         {
+            var count = value.Length;
             if (recordLength)
-                Write(value.Length);
-            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, value.Length);
+                Write(count);
+            fixed (sbyte* ptr = &value[0])
+            fixed (byte* ptr1 = &Buffer[Position])
+                for (int i = 0; i < count; i++)
+                    ptr1[i] = (byte)ptr[i];
+            //global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
             Position += value.Length;
         }
 
