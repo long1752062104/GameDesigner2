@@ -8,7 +8,7 @@ using System.Text;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using Microsoft.CodeAnalysis;
-#if !WINDOWS
+#if !WINDOWS && !UNITY_EDITOR
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 #endif
@@ -62,7 +62,7 @@ public static class Fast2BuildMethod
                 continue;
             dllpaths.Add(path);
         }
-#if WINDOWS
+#if WINDOWS || UNITY_EDITOR
         var provider = new CSharpCodeProvider();
         var param = new CompilerParameters();
         param.ReferencedAssemblies.AddRange(dllpaths.ToArray());

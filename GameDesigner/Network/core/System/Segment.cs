@@ -129,15 +129,11 @@ namespace Net.System
         /// </summary>
         /// <param name="recovery">复制数据后立即回收此分片?</param>
         /// <returns></returns>
-        public unsafe byte[] ToArray(bool recovery = false, bool resetPos = false)
+        public byte[] ToArray(bool recovery = false, bool resetPos = false)
         {
             Flush(resetPos);
             var array = new byte[Count];
-            fixed (byte* ptr = &Buffer[Offset])
-            fixed (byte* ptr1 = &array[0])
-                for (int i = 0; i < Count; i++)
-                    ptr1[i] = ptr[i];
-            //global::System.Buffer.BlockCopy(Buffer, Offset, array, 0, Count);
+            global::System.Buffer.BlockCopy(Buffer, Offset, array, 0, Count);
             if (recovery) BufferPool.Push(this);
             return array;
         }
@@ -273,14 +269,10 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte[] Read(int count)
+        public byte[] Read(int count)
         {
             var array = new byte[count];
-            fixed (byte* ptr = &Buffer[Position])
-            fixed (byte* ptr1 = &array[0])
-                for (int i = 0; i < count; i++)
-                    ptr1[i] = ptr[i];
-            //global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
+            global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
             Position += count;
             return array;
         }
@@ -726,27 +718,19 @@ namespace Net.System
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(byte[] value, bool recordLength = true)
+        public void Write(byte[] value, bool recordLength = true)
         {
             var count = value.Length;
             if (recordLength)
                 Write(count);
-            fixed (byte* ptr = &value[0])
-            fixed (byte* ptr1 = &Buffer[Position])
-                for (int i = 0; i < count; i++)
-                    ptr1[i] = ptr[i];
-            //global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
+            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
             Position += count;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(byte[] value, int index, int count)
+        public void Write(byte[] value, int index, int count)
         {
-            fixed (byte* ptr = &value[index])
-            fixed (byte* ptr1 = &Buffer[Position])
-                for (int i = 0; i < count; i++)
-                    ptr1[i] = ptr[i];
-            //global::System.Buffer.MemoryCopy(value, index, Buffer, Position, count);
+            global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
             Position += count;
         }
 
@@ -756,16 +740,12 @@ namespace Net.System
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(sbyte[] value, bool recordLength = true)
+        public void Write(sbyte[] value, bool recordLength = true)
         {
             var count = value.Length;
             if (recordLength)
                 Write(count);
-            fixed (sbyte* ptr = &value[0])
-            fixed (byte* ptr1 = &Buffer[Position])
-                for (int i = 0; i < count; i++)
-                    ptr1[i] = (byte)ptr[i];
-            //global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
+            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
             Position += value.Length;
         }
 
@@ -1281,9 +1261,7 @@ namespace Net.System
             decimal value = default;
             void* ptr = &value;
             fixed (void* ptr1 = &Buffer[Position])
-            {
                 global::System.Buffer.MemoryCopy(ptr1, ptr, 16, 16);
-            }
             Position += 16;
             return value;
         }

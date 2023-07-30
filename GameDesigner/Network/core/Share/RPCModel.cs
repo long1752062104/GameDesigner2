@@ -21,7 +21,7 @@
         /// <summary>
         /// 数据缓存器(正确的数据段)
         /// </summary>
-        public unsafe byte[] Buffer
+        public byte[] Buffer
         {
             get
             {
@@ -30,11 +30,7 @@
                 if (count == 0)
                     return new byte[0];//byte[]不能为空,否则出错
                 var array = new byte[count];
-                fixed (byte* ptr = &buffer[index])
-                fixed (byte* ptr1 = &array[0])
-                    for (int i = 0; i < count; i++)
-                        ptr1[i] = ptr[i];
-                //global::System.Buffer.BlockCopy(buffer, index, array, 0, count);
+                global::System.Buffer.BlockCopy(buffer, index, array, 0, count);
                 return array;
             }
             set
