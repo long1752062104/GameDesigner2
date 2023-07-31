@@ -85,7 +85,7 @@
                         receiveCount += data.Length;
                         receiveAmount++;
                         var buffer = BufferPool.Take(data.Length);
-                        Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                        Buffer.BlockCopy(data, 0, buffer.Buffer, 0, data.Length);
                         buffer.Count = data.Length;
                         ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);

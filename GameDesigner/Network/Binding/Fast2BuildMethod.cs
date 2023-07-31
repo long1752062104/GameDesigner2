@@ -126,9 +126,11 @@ public static class Fast2BuildMethod
     {
         foreach (var type in types)
         {
-            Build(type, savePath);
-            BuildArray(type, savePath);
-            BuildGeneric(type, savePath);
+            var code = BuildNew(type, true, true, new List<string>(), savePath);
+            code.AppendLine(BuildArray(type).ToString());
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+            var className = type.ToString().Replace(".", "").Replace("+", "");
+            File.WriteAllText(savePath + $"//{className}Bind.cs", code.ToString());
         }
         BuildBindingType(new HashSet<Type>(types), savePath, 1);
         BuildBindingExtension(new HashSet<Type>(types), savePath);
@@ -245,9 +247,9 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
+    public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
-        public void Write({TYPE} value, Segment stream)
+        public void Write({TYPE} value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += {SIZE};
@@ -268,9 +270,9 @@ namespace Binding
 {Split}
 			if({Condition})
 			{
-				NetConvertBase.SetBit(ref bits[{BITPOS}], {FIELDINDEX}, true);
-				var bind = new {DICTIONARY}<{KEYTYPE}, {VALUETYPE}>();
-				bind.Write(value.{FIELDNAME}, stream, new {BINDTYPE}());
+                NetConvertBase.SetBit(ref bits[{BITPOS}], {FIELDINDEX}, true);
+				var bind = new {DICTIONARYBIND}();
+				bind.Write(value.{FIELDNAME}, stream);
 			}
 {Split}
             int pos1 = stream.Position;
@@ -279,14 +281,14 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-        public {TYPE} Read(Segment stream) 
+        public {TYPE} Read(ISegment stream) 
         {
             var value = new {TYPE}();
             Read(ref value, stream);
             return value;
         }
 
-		public void Read(ref {TYPE} value, Segment stream)
+		public void Read(ref {TYPE} value, ISegment stream)
 		{
 			var bits = stream.Read({SIZE});
 {Split}
@@ -301,26 +303,26 @@ namespace Binding
 {Split}
 			if(NetConvertBase.GetBit(bits[{BITPOS}], {FIELDINDEX}))
 			{
-				var bind = new {DICTIONARY}<{KEYTYPE}, {VALUETYPE}>();
-				value.{FIELDNAME} = bind.Read(stream, new {BINDTYPE}());
+				var bind = new {DICTIONARYBIND}();
+				value.{FIELDNAME} = bind.Read(stream);
 			}
 {Split}
 		}
 
-        public void WriteValue(object value, Segment stream)
+        public void WriteValue(object value, ISegment stream)
         {
             Write(({TYPE})value, stream);
         }
 
-        public object ReadValue(Segment stream)
+        public object ReadValue(ISegment stream)
         {
             return Read(stream);
         }
     }
 }
 ";
-        var typeName = type.FullName.Replace(".", "").Replace("+", "");
-        var fullName = type.FullName;
+        var typeName = type.ToString().Replace(".", "").Replace("+", "");
+        var fullName = type.ToString();
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("{TYPE}", fullName);
         templateText = templateText.Replace("{SIZE}", $"{((members.Count - 1) / 8) + 1}");
@@ -355,7 +357,7 @@ namespace Binding
                 templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                 templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
                 if(members[i].IsEnum)
-                    templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.FullName.Replace("+", ".")}>");
+                    templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.ToString().Replace("+", ".")}>");
                 else
                     templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
                 sb1.Append(templateText2);
@@ -389,7 +391,7 @@ namespace Binding
                         templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
                     else
                         templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                    var local = members[i].ItemType.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
+                    var local = members[i].ItemType.ToString().Replace(".", "").Replace("+", "") + "ArrayBind";
                     templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
                     sb.Append(templateText1);
 
@@ -405,74 +407,30 @@ namespace Binding
             {
                 if (members[i].ItemType1 == null)//List<T>
                 {
-                    if(members[i].Type == typeof(List<>).MakeGenericType(members[i].ItemType))
-                    {
-                        typecode = Type.GetTypeCode(members[i].ItemType);
-                        if (typecode != TypeCode.Object)
-                        {
-                            var templateText1 = templateTexts[1];
-                            templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                            templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                            templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                            templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                            sb.Append(templateText1);
-
-                            var templateText2 = templateTexts[5];
-                            templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                            templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                            templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                            var typeName1 = AssemblyHelper.GetTypeName(members[i].Type);
-                            templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Generic<{typeName1}>");
-                            sb1.Append(templateText2);
-                        }
-                        else
-                        {
-                            var templateText1 = templateTexts[2];
-                            templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                            templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                            templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                            if (members[i].Type.IsValueType)
-                                templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
-                            else
-                                templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                            var local = members[i].ItemType.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-                            templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
-                            sb.Append(templateText1);
-
-                            var templateText2 = templateTexts[6];
-                            templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                            templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                            templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                            templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
-                            sb1.Append(templateText2);
-                        }
-                    }
-                    else
-                    {
-                        var str = BuildGenericAll(members[i].Type);
-                        var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
-                        className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+                    var str = BuildGenericAll(members[i].Type);
+                    var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
+                    className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+                    if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
                         File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
 
-                        var templateText1 = templateTexts[2];
-                        templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                        templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                        templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                        if (members[i].Type.IsValueType)
-                            templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
-                        else
-                            templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                        var local = className + "Bind";
-                        templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
-                        sb.Append(templateText1);
+                    var templateText1 = templateTexts[2];
+                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    if (members[i].Type.IsValueType)
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                    else
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    var local = className + "Bind";
+                    templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                    sb.Append(templateText1);
 
-                        var templateText2 = templateTexts[6];
-                        templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                        templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                        templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                        templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
-                        sb1.Append(templateText2);
-                    }
+                    var templateText2 = templateTexts[6];
+                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                    sb1.Append(templateText2);
                 }
                 else //Dic
                 {
@@ -481,72 +439,20 @@ namespace Binding
                     templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
                     templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                    templateText1 = templateText1.Replace("{DICTIONARY}", members[i].Type.Name == "MyDictionary`2" ? "MyDictionaryBind" : "DictionaryBind");
-
-                    var key = members[i].ItemType.FullName;  
-                    string bindType;
-                    string value;
-                    if (members[i].ItemType1.IsArray)
-                    {
-                        var type1 = members[i].ItemType1.GetArrayItemType();
-                        typecode = Type.GetTypeCode(type1);
-                        if (typecode == TypeCode.Object)
-                        {
-                            value = $"{type1.FullName}[]";
-                            bindType = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
-                        }
-                        else
-                        {
-                            value = $"{type1.FullName}[]";
-                            bindType = $"BaseArrayBind<{type1.FullName}>";
-                        }
-                    }
-                    else if (members[i].ItemType1.IsGenericType)
-                    {
-                        var type1 = members[i].ItemType1.GenericTypeArguments[0];
-                        typecode = Type.GetTypeCode(type1);
-                        if (typecode == TypeCode.Object)
-                        {
-                            value = $"List<{type1.FullName}>";
-                            bindType = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-                        }
-                        else
-                        {
-                            value = $"List<{type1.FullName}>";
-                            bindType = $"BaseListBind<{type1.FullName}>";
-                        }
-                    }
-                    else
-                    {
-                        typecode = Type.GetTypeCode(members[i].ItemType1);
-                        if (typecode == TypeCode.Object)
-                        {
-                            value = members[i].ItemType1.FullName.Replace("+", ".");
-                            bindType = members[i].ItemType1.FullName.Replace(".", "").Replace("+", "") + "Bind";
-                        }
-                        else
-                        {
-                            value = members[i].ItemType1.FullName;
-                            bindType = $"BaseBind<{value}>";
-                        }
-                    }
-                    templateText1 = templateText1.Replace("{KEYTYPE}", $"{key}");
-                    templateText1 = templateText1.Replace("{VALUETYPE}", $"{value}");
-                    templateText1 = templateText1.Replace("{BINDTYPE}", $"{bindType}");
-                    sb.Append(templateText1);
 
                     var templateText2 = templateTexts[7];
                     templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
                     templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                     templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    templateText2 = templateText2.Replace("{KEYTYPE}", $"{key}");
-                    templateText2 = templateText2.Replace("{VALUETYPE}", $"{value}");
-                    templateText2 = templateText2.Replace("{BINDTYPE}", $"{bindType}");
-                    templateText2 = templateText2.Replace("{DICTIONARY}", members[i].Type.Name == "MyDictionary`2" ? "MyDictionaryBind" : "DictionaryBind");
-                    sb1.Append(templateText2);
 
                     var text = BuildDictionary(members[i].Type, out var className1);
                     File.WriteAllText(savePath + $"//{className1}.cs", text);
+
+                    templateText1 = templateText1.Replace("{DICTIONARYBIND}", $"{className1}");
+                    sb.Append(templateText1);
+
+                    templateText2 = templateText2.Replace("{DICTIONARYBIND}", $"{className1}");
+                    sb1.Append(templateText2);
 
                     types?.Add(members[i].Type);
                 }
@@ -559,10 +465,10 @@ namespace Binding
                 templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
 
                 if(members[i].Type.IsValueType)
-                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type.FullName})");
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type})");
                 else
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                var local = members[i].Type.FullName.Replace(".", "").Replace("+", "") + "Bind";
+                var local = members[i].Type.ToString().Replace(".", "").Replace("+", "") + "Bind";
                 templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
                 sb.Append(templateText1);
 
@@ -612,13 +518,15 @@ namespace Binding
             {
                 var typeName = AssemblyHelper.GetTypeName(item);
                 var bindType = GetDictionaryBindTypeName(item);
-                str.AppendLine($"\t\t\t{{ typeof({typeName}), typeof({bindType}) }},");
+                str.AppendLine($"\t\t\t\t{{ typeof({typeName}), typeof({bindType}) }},");
             }
             else
             {
-                str.AppendLine($"\t\t\t{{ typeof({item.FullName}), typeof({item.FullName.Replace(".", "")}Bind) }},");
-                str.AppendLine($"\t\t\t{{ typeof({item.FullName}[]), typeof({item.FullName.Replace(".", "")}ArrayBind) }},");
-                str.AppendLine($"\t\t\t{{ typeof(List<{item.FullName}>), typeof({item.FullName.Replace(".", "")}GenericBind) }},");
+                str.AppendLine($"\t\t\t\t{{ typeof({item.ToString()}), typeof({item.ToString().Replace(".", "")}Bind) }},");
+                str.AppendLine($"\t\t\t\t{{ typeof({item.ToString()}[]), typeof({item.ToString().Replace(".", "")}ArrayBind) }},");
+                var typeName = AssemblyHelper.GetCodeTypeName(typeof(List<>).MakeGenericType(item).ToString());
+                typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "") + "Bind";
+                str.AppendLine($"\t\t\t\t{{ typeof(List<{item.ToString()}>), typeof({typeName}) }},");
             }
         }
         str.AppendLine("            };");
@@ -637,13 +545,12 @@ namespace Binding
     public static string BuildBindingExtension(HashSet<Type> types)
     {
         var codeTemplate = @"using Binding;
-using Net.Serialize;
 using Net.System;
 
 public static class BindingExtension
 {
 {Space}
-    public static Segment SerializeObject(this {TYPE} value)
+    public static ISegment SerializeObject(this {TYPE} value)
     {
         var segment = BufferPool.Take();
         var bind = new {TYPEBIND}();
@@ -651,7 +558,7 @@ public static class BindingExtension
         return segment;
     }
 
-    public static {TYPE} DeserializeObject(this {TYPE} value, Segment segment, bool isPush = true)
+    public static {TYPE} DeserializeObject(this {TYPE} value, ISegment segment, bool isPush = true)
     {
         var bind = new {TYPEBIND}();
         bind.Read(ref value, segment);
@@ -690,9 +597,9 @@ public static class BindingExtension
         var templateText = @"
 namespace Binding
 {
-	public struct {TYPENAME}ArrayBind : ISerialize<{TYPE}[]>, ISerialize
+	public readonly struct {TYPENAME}ArrayBind : ISerialize<{TYPE}[]>, ISerialize
 	{
-		public void Write({TYPE}[] value, Segment stream)
+		public void Write({TYPE}[] value, ISegment stream)
 		{
 			int count = value.Length;
 			stream.Write(count);
@@ -702,7 +609,7 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public {TYPE}[] Read(Segment stream)
+		public {TYPE}[] Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
 			var value = new {TYPE}[count];
@@ -713,12 +620,12 @@ namespace Binding
 			return value;
 		}
 
-		public void WriteValue(object value, Segment stream)
+		public void WriteValue(object value, ISegment stream)
 		{
 			Write(({TYPE}[])value, stream);
 		}
 
-		public object ReadValue(Segment stream)
+		public object ReadValue(ISegment stream)
 		{
 			return Read(stream);
 		}
@@ -739,7 +646,7 @@ namespace Binding
     public static void BuildGeneric(Type type, string savePath)
     {
         var str = BuildGeneric(type);
-        var className = type.FullName.Replace(".", "").Replace("+", "");
+        var className = type.ToString().Replace(".", "").Replace("+", "");
         File.AppendAllText(savePath + $"//{className}Bind.cs", str.ToString());
     }
 
@@ -749,9 +656,9 @@ namespace Binding
         var templateText = @"
 namespace Binding
 {
-	public struct {TYPENAME}GenericBind : ISerialize<List<{TYPE}>>, ISerialize
+	public readonly struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
 	{
-		public void Write(List<{TYPE}> value, Segment stream)
+		public void Write(List<TYPE> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -761,10 +668,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<{TYPE}> Read(Segment stream)
+		public List<TYPE> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<{TYPE}>(count);
+			var value = new List<TYPE>({COUNT});
 			if (count == 0) return value;
 			var bind = new {BINDTYPE}();
 			for (int i = 0; i < count; i++)
@@ -772,24 +679,30 @@ namespace Binding
 			return value;
 		}
 
-		public void WriteValue(object value, Segment stream)
+		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<{TYPE}>)value, stream);
+			Write((List<TYPE>)value, stream);
 		}
 
-		public object ReadValue(Segment stream)
+		public object ReadValue(ISegment stream)
 		{
 			return Read(stream);
 		}
 	}
 }";
-        var typeName = type.FullName.Replace(".", "").Replace("+", "");
-        var fullName = type.FullName;
+        var typeName = AssemblyHelper.GetCodeTypeName(type.ToString());
+        var fullName = typeName;
+        typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
         templateText = templateText.Replace("{TYPENAME}", typeName);
-        templateText = templateText.Replace("{TYPE}", fullName);
+        templateText = templateText.Replace("List<TYPE>", fullName);
 
-        var local = typeName + "Bind";
+        var itemTypeName = type.GetArrayItemType().ToString();
+        itemTypeName = itemTypeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+        var local = itemTypeName + "Bind";
         templateText = templateText.Replace("{BINDTYPE}", $"{local}");
+
+        var ctor = type.GetConstructor(new Type[] { typeof(int) });
+        templateText = templateText.Replace("{COUNT}", ctor != null ? "count" : "");
 
         sb.Append(templateText);
         return sb;
@@ -803,9 +716,9 @@ using Net.Serialize;
 
 namespace Binding
 {
-	public struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
+	public readonly struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
 	{
-		public void Write(List<TYPE> value, Segment stream)
+		public void Write(List<TYPE> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -815,7 +728,7 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<TYPE> Read(Segment stream)
+		public List<TYPE> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
 			var value = new List<TYPE>({COUNT});
@@ -826,12 +739,12 @@ namespace Binding
 			return value;
 		}
 
-		public void WriteValue(object value, Segment stream)
+		public void WriteValue(object value, ISegment stream)
 		{
 			Write((List<TYPE>)value, stream);
 		}
 
-		public object ReadValue(Segment stream)
+		public object ReadValue(ISegment stream)
 		{
 			return Read(stream);
 		}
@@ -862,9 +775,10 @@ namespace Binding
 using Net.Serialize;
 using Net.System;
 using System.Collections.Generic;
-public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{TKey}, {TValue}>>, ISerialize
+
+public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{Dictionary}<{TKey}, {TValue}>>, ISerialize
 {
-    public void Write(Dictionary<{TKey}, {TValue}> value, Segment stream)
+    public void Write({Dictionary}<{TKey}, {TValue}> value, ISegment stream)
     {
         int count = value.Count;
         stream.Write(count);
@@ -877,10 +791,10 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
         }
     }
 
-    public Dictionary<{TKey}, {TValue}> Read(Segment stream)
+    public {Dictionary}<{TKey}, {TValue}> Read(ISegment stream)
     {
         var count = stream.ReadInt32();
-        var value = new Dictionary<{TKey}, {TValue}>();
+        var value = new {Dictionary}<{TKey}, {TValue}>();
         if (count == 0) return value;
         for (int i = 0; i < count; i++)
         {
@@ -892,84 +806,45 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
         return value;
     }
 
-    public void WriteValue(object value, Segment stream)
+    public void WriteValue(object value, ISegment stream)
     {
-        Write((Dictionary<{TKey}, {TValue}>)value, stream);
+        Write(({Dictionary}<{TKey}, {TValue}>)value, stream);
     }
 
-    public object ReadValue(Segment stream)
+    public object ReadValue(ISegment stream)
     {
         return Read(stream);
     }
 }";
-        TypeCode typecode;
         var args = type.GenericTypeArguments;
-        string bindType;
         string value;
         string typeBindName;
-        string keyRead;
+        string keyRead = $"{Type.GetTypeCode(args[0])}";
         if (args[1].IsArray)
         {
-            var type1 = args[1].GetArrayItemType();
-            typecode = Type.GetTypeCode(type1);
-            if (typecode == TypeCode.Object)
-            {
-                value = $"{type1.FullName}[]";
-                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                value = $"{type1.FullName}[]";
-                bindType = $"BaseArrayBind<{type1.FullName}>";
-                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
-            }
-            //keyRead = $"{Type.GetTypeCode(args[0])}Array";
-            keyRead = $"{Type.GetTypeCode(args[0])}";
+            value = args[1].ToString().Replace("+", ".");
+            typeBindName = args[1].ToString().ReplaceClear("+", ".", "[", "]", "<", ">") + "ArrayBind";
         }
         else if (args[1].IsGenericType)
         {
-            var type1 = args[1].GenericTypeArguments[0];
-            typecode = Type.GetTypeCode(type1);
-            if (typecode == TypeCode.Object)
-            {
-                value = $"List<{type1.FullName}>";
-                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                value = $"List<{type1.FullName}>";
-                bindType = $"BaseListBind<{type1.FullName}>";
-                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-            }
-            //keyRead = $"{Type.GetTypeCode(args[0])}List"; 
-            keyRead = $"{Type.GetTypeCode(args[0])}";
+            value = AssemblyHelper.GetCodeTypeName(args[1].ToString());
+            typeBindName = value.ReplaceClear("+", ".", "[", "]", "<", ">") + "Bind";
         }
         else
         {
-            typecode = Type.GetTypeCode(args[1]);
-            if (typecode == TypeCode.Object)
-            {
-                value = args[1].FullName.Replace("+", ".");
-                bindType = args[1].FullName.Replace(".", "").Replace("+", "") + "Bind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                value = args[1].FullName;
-                bindType = $"BaseBind<{value}>";
-                typeBindName = value.Replace(".", "").Replace("+", "");
-            }
-            keyRead = $"{Type.GetTypeCode(args[0])}";
+            value = args[1].ToString().Replace("+", ".");
+            typeBindName = args[1].ToString().Replace(".", "").Replace("+", "") + "Bind";
         }
-        text = text.Replace("{TKeyName}", $"{args[0].FullName.Replace(".", "").Replace("+", "")}");
+        text = text.Replace("{TKeyName}", $"{args[0].ToString().Replace(".", "").Replace("+", "")}");
         text = text.Replace("{TValueName}", $"{typeBindName}");
-        text = text.Replace("{TKey}", $"{args[0].FullName}");
+        text = text.Replace("{TKey}", $"{args[0]}");
         text = text.Replace("{TValue}", $"{value}");
-        text = text.Replace("{BindTypeName}", $"{bindType}");
+        text = text.Replace("{BindTypeName}", $"{typeBindName}");
         text = text.Replace("{READ}", $"{keyRead}");
-        fileTypeName = $"Dictionary_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
+        var dictName = type.Name.Replace("`2", "");
+        text = text.Replace("{Dictionary}", $"{dictName}");
+
+        fileTypeName = $"{dictName}_{args[0].ToString().Replace(".", "")}_{typeBindName}_Bind"; ;
         return text;
     }
 
@@ -1022,7 +897,8 @@ public struct Dictionary_{TKeyName}_{TValueName}_Bind : ISerialize<Dictionary<{T
                 typeBindName = value.Replace(".", "").Replace("+", "");
             }
         }
-        var fileTypeName = $"Dictionary_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
+        var dictName = type.Name.Replace("`2", "");
+        var fileTypeName = $"{dictName}_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
         return fileTypeName;
     }
 }

@@ -10,12 +10,12 @@ namespace Net.System
     /// <summary>
     /// 内存数据片段
     /// </summary>
-    public class Segment : IDisposable
+    public class Segment : IDisposable, ISegment
     {
         /// <summary>
         /// 总内存
         /// </summary>
-        public byte[] Buffer { get; internal set; }
+        public byte[] Buffer { get; set; }
         /// <summary>
         /// 片的开始位置
         /// </summary>
@@ -31,11 +31,19 @@ namespace Net.System
         /// <summary>
         /// 获取总长度
         /// </summary>
-        public int Length { get { return length; } }
-        internal bool isDespose;
-        internal int length;
-        internal bool isRecovery;
-        internal int referenceCount;
+        public int Length { get; private set; }
+        /// <summary>
+        /// 是否已经释放
+        /// </summary>
+        public bool IsDespose { get; set; }
+        /// <summary>
+        /// 是否可回收
+        /// </summary>
+        public bool IsRecovery { get; set; }
+        /// <summary>
+        /// 引用次数
+        /// </summary>
+        public int ReferenceCount { get; set; }
         /// <summary>
         /// 字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
         /// </summary>
@@ -75,10 +83,11 @@ namespace Net.System
             Buffer = buffer;
             Offset = index;
             Count = count;
-            length = buffer.Length;
+            Length = buffer.Length;
             Position = index;
-            isDespose = !isRecovery;//如果不回收，则已经释放状态，不允许压入数组池
-            this.isRecovery = isRecovery;
+            IsDespose = !isRecovery;//如果不回收，则已经释放状态，不允许压入数组池
+            IsRecovery = isRecovery;
+            ReferenceCount = 0;
         }
 
         public static implicit operator Segment(byte[] buffer)
@@ -93,12 +102,12 @@ namespace Net.System
 
         ~Segment()
         {
-            if (isRecovery && BufferPool.Log)
+            if (IsRecovery && BufferPool.Log)
                 NDebug.LogError("片段内存泄漏!请检查代码正确Push内存池!");
             Dispose();
         }
 
-        public virtual void Init() 
+        public virtual void Init()
         {
             Offset = 0;
             Count = 0;
@@ -107,15 +116,15 @@ namespace Net.System
 
         public void Dispose()
         {
-            if (!isRecovery)
+            if (!IsRecovery)
                 return;
             BufferPool.Push(this);
         }
 
         public void Close()
         {
-            isRecovery = false;
-            isDespose = true;
+            IsRecovery = false;
+            IsDespose = true;
             Buffer = null;
         }
 
@@ -188,6 +197,17 @@ namespace Net.System
                     Write(value1);
                     break;
                 case DateTime value1:
+                    Write(value1);
+                    break;
+                case TimeSpan value1:
+                    Write(value1);
+                    break;
+#if CORE
+                case TimeOnly value1:
+                    Write(value1);
+                    break;
+#endif
+                case DateTimeOffset value1:
                     Write(value1);
                     break;
                 case decimal value1:
@@ -277,13 +297,6 @@ namespace Net.System
             return array;
         }
 
-        public ArraySegment ReadAS(int count)
-        {
-            var array = new ArraySegment(this, Position, count);
-            Position += count;
-            return array;
-        }
-
         public void WriteList(object value)
         {
             switch (value)
@@ -334,6 +347,14 @@ namespace Net.System
                     Write(array1);
                     break;
                 case List<TimeSpan> array1:
+                    Write(array1);
+                    break;
+#if CORE
+                case List<TimeOnly> array1:
+                    Write(array1);
+                    break;
+#endif
+                case List<DateTimeOffset> array1:
                     Write(array1);
                     break;
                 default:
@@ -404,6 +425,14 @@ namespace Net.System
                     Write(array1);
                     break;
                 case TimeSpan[] array1:
+                    Write(array1);
+                    break;
+#if CORE
+                case TimeOnly[] array1:
+                    Write(array1);
+                    break;
+#endif
+                case DateTimeOffset[] array1:
                     Write(array1);
                     break;
                 default:
@@ -569,7 +598,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe void WriteFixed(ushort value)
+        public unsafe void WriteFixed(ushort value)
         {
             Write(&value, 2);
         }
@@ -609,7 +638,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe void WriteFixed(uint value)
+        public unsafe void WriteFixed(uint value)
         {
             Write(&value, 4);
         }
@@ -650,7 +679,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe void WriteFixed(ulong value)
+        public unsafe void WriteFixed(ulong value)
         {
             Write(&value, 8);
         }
@@ -660,6 +689,13 @@ namespace Net.System
         {
             var ptr1 = *(ulong*)&value;
             Write(ptr1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(decimal value)
+        {
+            var ptr1 = &value;
+            Write(ptr1, 16);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -674,11 +710,18 @@ namespace Net.System
             Write((ulong)value.Ticks);
         }
 
+#if CORE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Write(decimal value)
+        public void Write(TimeOnly value)
         {
-            var ptr1 = &value;
-            Write(ptr1, 16);
+            Write((ulong)value.Ticks);
+        }
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Write(DateTimeOffset value)
+        {
+            Write((ulong)value.Ticks);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -849,6 +892,26 @@ namespace Net.System
                 Write(value[i]);
             }
         }
+#if CORE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(TimeOnly[] value)
+        {
+            Write(value.Length);
+            for (int i = 0; i < value.Length; i++)
+            {
+                Write(value[i]);
+            }
+        }
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(DateTimeOffset[] value)
+        {
+            Write(value.Length);
+            for (int i = 0; i < value.Length; i++)
+            {
+                Write(value[i]);
+            }
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(double[] value)
         {
@@ -928,6 +991,14 @@ namespace Net.System
                     Write(value1);
                     break;
                 case ICollection<DateTime> value1:
+                    Write(value1);
+                    break;
+#if CORE
+                case ICollection<TimeOnly> value1:
+                    Write(value1);
+                    break;
+#endif
+                case ICollection<DateTimeOffset> value1:
                     Write(value1);
                     break;
                 default:
@@ -1052,6 +1123,26 @@ namespace Net.System
                 Write(val);
             }
         }
+#if CORE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(ICollection<TimeOnly> value)
+        {
+            Write(value.Count);
+            foreach (var val in value)
+            {
+                Write(val);
+            }
+        }
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Write(ICollection<DateTimeOffset> value)
+        {
+            Write(value.Count);
+            foreach (var val in value)
+            {
+                Write(val);
+            }
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(ICollection<double> value)
         {
@@ -1122,12 +1213,12 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe ushort ReadUInt16Fixed()
+        public unsafe ushort ReadUInt16Fixed()
         {
             fixed (byte* ptr = &Buffer[Position])
             {
-                return *(ushort*)ptr; //不处理大小端
                 Position += 2;
+                return *(ushort*)ptr; //不处理大小端
             }
         }
 
@@ -1171,12 +1262,12 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe uint ReadUInt32Fixed()
+        public unsafe uint ReadUInt32Fixed()
         {
             fixed (byte* ptr = &Buffer[Position])
             {
-                return *(uint*)ptr; //不处理大小端
                 Position += 4;
+                return *(uint*)ptr; //不处理大小端
             }
         }
 
@@ -1227,12 +1318,12 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe ulong ReadUInt64Fixed()
+        public unsafe ulong ReadUInt64Fixed()
         {
             fixed (byte* ptr = &Buffer[Position])
             {
-                return *(ulong*)ptr; //不处理大小端
                 Position += 8;
+                return *(ulong*)ptr; //不处理大小端
             }
         }
 
@@ -1244,15 +1335,14 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DateTime ReadDateTime()
+        public unsafe string ReadString()
         {
-            return new DateTime((long)ReadUInt64());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TimeSpan ReadTimeSpan()
-        {
-            return new TimeSpan((long)ReadUInt64());
+            var count = ReadInt32();
+            if (count == 0)
+                return string.Empty;
+            var value = Encoding.UTF8.GetString(Buffer, Position, count);
+            Position += count;
+            return value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1267,6 +1357,30 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public DateTime ReadDateTime()
+        {
+            return new DateTime((long)ReadUInt64());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TimeSpan ReadTimeSpan()
+        {
+            return new TimeSpan((long)ReadUInt64());
+        }
+#if CORE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TimeOnly ReadTimeOnly()
+        {
+            return new TimeOnly((long)ReadUInt64());
+        }
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public DateTimeOffset ReadDateTimeOffset()
+        {
+            return new DateTimeOffset((long)ReadUInt64(), TimeSpan.Zero);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe T ReadEnum<T>() where T : Enum
         {
             return (T)Enum.ToObject(typeof(T), ReadInt32());
@@ -1276,17 +1390,6 @@ namespace Net.System
         public unsafe object ReadEnum(Type type)
         {
             return Enum.ToObject(type, ReadInt32());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe string ReadString()
-        {
-            var count = ReadInt32();
-            if (count == 0)
-                return string.Empty;
-            var value = Encoding.UTF8.GetString(Buffer, Position, count);
-            Position += count;
-            return value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1448,6 +1551,30 @@ namespace Net.System
             }
             return value;
         }
+#if CORE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe TimeOnly[] ReadTimeOnlyArray()
+        {
+            var count = ReadInt32();
+            var value = new TimeOnly[count];
+            for (int i = 0; i < count; i++)
+            {
+                value[i] = ReadTimeOnly();
+            }
+            return value;
+        }
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe DateTimeOffset[] ReadDateTimeOffsetArray()
+        {
+            var count = ReadInt32();
+            var value = new DateTimeOffset[count];
+            for (int i = 0; i < count; i++)
+            {
+                value[i] = ReadDateTimeOffset();
+            }
+            return value;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe decimal[] ReadDecimalArray()
         {
@@ -1541,6 +1668,16 @@ namespace Net.System
                 case ICollection<DateTime> value1:
                     for (int i = 0; i < count; i++)
                         value1.Add(ReadDateTime());
+                    break;
+#if CORE
+                case ICollection<TimeOnly> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadTimeOnly());
+                    break;
+#endif
+                case ICollection<DateTimeOffset> value1:
+                    for (int i = 0; i < count; i++)
+                        value1.Add(ReadDateTimeOffset());
                     break;
                 default:
                     throw new Exception("不是基础类型! 请联系作者解决!");
@@ -1714,6 +1851,32 @@ namespace Net.System
             for (int i = 0; i < count; i++)
             {
                 value.Add(ReadTimeSpan());
+            }
+            return value;
+        }
+#if CORE
+        public List<TimeOnly> ReadTimeOnlyList() => ReadTimeOnlyGeneric<List<TimeOnly>>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T ReadTimeOnlyGeneric<T>() where T : ICollection<TimeOnly>, new()
+        {
+            var count = ReadInt32();
+            var value = new T();
+            for (int i = 0; i < count; i++)
+            {
+                value.Add(ReadTimeOnly());
+            }
+            return value;
+        }
+#endif
+        public List<DateTimeOffset> ReadDateTimeOffsetList() => ReadDateTimeOffsetGeneric<List<DateTimeOffset>>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T ReadDateTimeOffsetGeneric<T>() where T : ICollection<DateTimeOffset>, new()
+        {
+            var count = ReadInt32();
+            var value = new T();
+            for (int i = 0; i < count; i++)
+            {
+                value.Add(ReadDateTimeOffset());
             }
             return value;
         }

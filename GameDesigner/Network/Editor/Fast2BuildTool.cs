@@ -294,9 +294,11 @@ public class Fast2BuildTools2 : EditorWindow
                     Debug.Log($"类型:{type1.name}已不存在!");
                     continue;
                 }
-                Fast2BuildMethod.Build(type, data.savePath, serField, serProperty, type1.fields.ConvertAll((item)=> !item.serialize ? item.name : ""), types);
-                Fast2BuildMethod.BuildArray(type, data.savePath);
-                Fast2BuildMethod.BuildGeneric(type, data.savePath);
+                var code = Fast2BuildMethod.BuildNew(type, serField, serProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.savePath, types);
+                code.AppendLine(Fast2BuildMethod.BuildArray(type).ToString());
+                code.AppendLine(Fast2BuildMethod.BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+                var className = type.ToString().Replace(".", "").Replace("+", "");
+                File.WriteAllText(data.savePath + $"//{className}Bind.cs", code.ToString());
                 types.Add(type);
             }
             if (!string.IsNullOrEmpty(data.typeEntry)) 
@@ -326,7 +328,8 @@ public class Fast2BuildTools2 : EditorWindow
                     types.Add(type);
                 }
             }
-            Fast2BuildMethod.BuildBindingType(types, data.savePath);
+            Fast2BuildMethod.BuildBindingType(types, data.savePath, 1);
+            Fast2BuildMethod.BuildBindingExtension(types, data.savePath);
             Debug.Log("生成完成.");
             AssetDatabase.Refresh();
         }

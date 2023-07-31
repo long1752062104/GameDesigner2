@@ -80,7 +80,7 @@
                 {
                     using (var segment = BufferPool.Take())
                     {
-                        segment.Count = client.Receive(segment, 0, segment.Length, SocketFlags.None, out var error);
+                        segment.Count = client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out var error);
                         if (segment.Count == 0 | error != SocketError.Success) //当等待10秒超时
                         {
                             client.Close();
@@ -116,7 +116,7 @@
             if (client.Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
-                segment.Count = client.Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                segment.Count = client.Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
@@ -168,7 +168,7 @@
             return false;
         }
 
-        protected override byte[] PackData(Segment stream)
+        protected override byte[] PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);

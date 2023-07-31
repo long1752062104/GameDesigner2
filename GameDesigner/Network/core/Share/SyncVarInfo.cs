@@ -5,7 +5,7 @@ using static UnityEngine.GraphicsBuffer;
 
 namespace Net.Share
 {
-    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<V, V> onValueChanged);
+    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<V, V> onValueChanged);
 
     [Serializable]
     public class SyncVarInfo
@@ -24,7 +24,7 @@ namespace Net.Share
 
         internal virtual void SetTarget(object target) { }
         public virtual void SetDefaultValue() { }
-        internal virtual void CheckHandlerValue(ref Segment segment, bool isWrite)
+        internal virtual void CheckHandlerValue(ref ISegment segment, bool isWrite)
         {
         }
         internal virtual SyncVarInfo Clone(object target)
@@ -81,7 +81,7 @@ namespace Net.Share
             value = default;
         }
 
-        internal override void CheckHandlerValue(ref Segment segment, bool isWrite)
+        internal override void CheckHandlerValue(ref ISegment segment, bool isWrite)
         {
             action(target, ref value, id, ref segment, this, isWrite, action1);
         }

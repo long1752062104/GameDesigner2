@@ -72,7 +72,7 @@ namespace Net.Share
             this.target = target;
         }
 
-        internal override void CheckHandlerValue(ref Segment segment, bool isWrite)
+        internal override void CheckHandlerValue(ref ISegment segment, bool isWrite)
         {
             if (isWrite)
             {

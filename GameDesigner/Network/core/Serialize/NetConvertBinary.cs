@@ -282,7 +282,7 @@
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="array"></param>
-        private unsafe static void WriteArray(Segment stream, IList array, Type itemType, bool recordType, bool ignore)
+        private unsafe static void WriteArray(ISegment stream, IList array, Type itemType, bool recordType, bool ignore)
         {
             int len = array.Count;
             stream.Write(len); //必须记录长度 因为它的值不是null 而是 XX[0] 或者 List<XX>()
@@ -319,7 +319,7 @@
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="array"></param>
-        private static void ReadArray(Segment segment, ref IList array, Type itemType, bool recordType, bool ignore)
+        private static void ReadArray(ISegment segment, ref IList array, Type itemType, bool recordType, bool ignore)
         {
             if (array.Count == 0) //如果长度是0就不需要读取字段位字节了
                 return;
@@ -411,7 +411,7 @@
         /// <param name="obj"></param>
         /// <param name="recordType"></param>
         /// <returns></returns>
-        public static Segment Serialize(object obj, bool recordType = false, bool ignore = false)
+        public static ISegment Serialize(object obj, bool recordType = false, bool ignore = false)
         {
             var stream = BufferPool.Take();
             try
@@ -438,7 +438,7 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static Segment SerializeObject(object obj, bool recordType = false, bool ignore = false)
+        public static ISegment SerializeObject(object obj, bool recordType = false, bool ignore = false)
         {
             var stream = BufferPool.Take();
             SerializeObject(stream, obj, recordType, ignore);
@@ -451,7 +451,7 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static void SerializeObject(Segment stream, object obj, bool recordType = false, bool ignore = false)
+        public static void SerializeObject(ISegment stream, object obj, bool recordType = false, bool ignore = false)
         {
             try
             {
@@ -891,7 +891,7 @@
         /// <param name="target"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
-        public static void WriteObject(Segment segment, Type type, object target, bool recordType, bool ignore)
+        public static void WriteObject(ISegment segment, Type type, object target, bool recordType, bool ignore)
         {
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
@@ -1087,7 +1087,7 @@
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
-        public static T DeserializeObject<T>(Segment segment, bool isPush = true, bool recordType = false, bool ignore = false)
+        public static T DeserializeObject<T>(ISegment segment, bool isPush = true, bool recordType = false, bool ignore = false)
         {
             return (T)DeserializeObject(segment, typeof(T), isPush, recordType, ignore);
         }
@@ -1102,7 +1102,7 @@
         /// <param name="recordType">记录类型?</param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
-        public static T DeserializeObject<T>(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
+        public static T DeserializeObject<T>(ISegment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
             return (T)DeserializeObject(segment, type, isPush, recordType, ignore);
         }
@@ -1114,7 +1114,7 @@
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
-        public static object DeserializeObject(Segment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
+        public static object DeserializeObject(ISegment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
             if (recordType) type = IndexToType(segment.ReadUInt16());
             var obj = ReadObject(segment, type, recordType, ignore);
@@ -1122,7 +1122,7 @@
             return obj;
         }
 
-        public static object Deserialize(Segment segment, bool isPush = true, bool recordType = false, bool ignore = false)
+        public static object Deserialize(ISegment segment, bool isPush = true, bool recordType = false, bool ignore = false)
         {
             object obj = null;
             if (segment.Position < segment.Offset + segment.Count)
@@ -1143,7 +1143,7 @@
         /// <param name="index"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static object ReadObject(Segment segment, Type type, bool recordType, bool ignore)
+        public static object ReadObject(ISegment segment, Type type, bool recordType, bool ignore)
         {
             object obj;
             if (type == typeof(string)) obj = string.Empty;

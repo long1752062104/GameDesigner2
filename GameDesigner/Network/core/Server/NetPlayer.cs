@@ -89,7 +89,7 @@
         /// </summary>
         public int UserID { get; internal set; }
         internal QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
-        public QueueSafe<Segment> RevdQueue = new QueueSafe<Segment>();
+        public QueueSafe<ISegment> RevdQueue = new QueueSafe<ISegment>();
         private ThreadGroup group;
         /// <summary>
         /// 当前玩家所在的线程组对象

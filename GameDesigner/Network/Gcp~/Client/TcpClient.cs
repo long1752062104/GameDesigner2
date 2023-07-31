@@ -108,7 +108,7 @@
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected override byte[] PackData(Segment stream)
+        protected override byte[] PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);
@@ -141,7 +141,7 @@
             }
         }
 
-        protected override void ResolveBuffer(ref Segment buffer, bool isTcp)
+        protected override void ResolveBuffer(ref ISegment buffer, bool isTcp)
         {
             heart = 0;
             if (stack > 0)
@@ -150,7 +150,7 @@
                 StackStream.Seek(stackIndex, SeekOrigin.Begin);
                 int size = buffer.Count - buffer.Position;
                 stackIndex += size;
-                StackStream.Write(buffer, buffer.Position, size);
+                StackStream.Write(buffer.Buffer, buffer.Position, size);
                 if (stackIndex < stackCount)
                 {
                     InvokeRevdRTProgress(stackIndex, stackCount);
@@ -160,7 +160,7 @@
                 BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
                 buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
                 StackStream.Seek(0, SeekOrigin.Begin);
-                StackStream.Read(buffer, 0, count);
+                StackStream.Read(buffer.Buffer, 0, count);
                 buffer.Count = count;
             }
             while (buffer.Position < buffer.Count)
@@ -172,7 +172,7 @@
                     stackIndex = count;
                     stackCount = 0;
                     StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer, position, count);
+                    StackStream.Write(buffer.Buffer, position, count);
                     stack++;
                     break;
                 }
@@ -207,7 +207,7 @@
                     stackIndex = count;
                     stackCount = size;
                     StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer, position, count);
+                    StackStream.Write(buffer.Buffer, position, count);
                     stack++;
                     break;
                 }

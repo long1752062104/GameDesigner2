@@ -93,7 +93,7 @@
                         client.heart = 0;
                         var buffer = BufferPool.Take(len);
                         buffer.Count = len;
-                        Marshal.Copy(pData, buffer, 0, len);
+                        Marshal.Copy(pData, buffer.Buffer, 0, len);
                         receiveCount += len;
                         receiveAmount++;
                         client.BytesReceived += len;

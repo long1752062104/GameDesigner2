@@ -1132,12 +1132,12 @@ namespace Net.Client
             }
         }
 
-        protected virtual void SetDataHead(Segment stream)
+        protected virtual void SetDataHead(ISegment stream)
         {
             stream.Position = frame + PackageAdapter.HeadCount;
         }
 
-        protected virtual void WriteDataBody(ref Segment stream, QueueSafe<RPCModel> rPCModels, int count)
+        protected virtual void WriteDataBody(ref ISegment stream, QueueSafe<RPCModel> rPCModels, int count)
         {
             int index = 0;
             for (int i = 0; i < count; i++)
@@ -1171,7 +1171,7 @@ namespace Net.Client
         /// 重置头部数据大小, 在小数据达到<see cref="PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
         /// </summary>
         /// <param name="stream"></param>
-        protected virtual void ResetDataHead(Segment stream)
+        protected virtual void ResetDataHead(ISegment stream)
         {
             stream.SetPositionLength(frame + PackageAdapter.HeadCount);
         }
@@ -1192,7 +1192,7 @@ namespace Net.Client
             BufferPool.Push(stream);
         }
 
-        protected virtual byte[] PackData(Segment stream)
+        protected virtual byte[] PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);
@@ -1280,7 +1280,7 @@ namespace Net.Client
             if (Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
-                segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                segment.Count = Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
@@ -1338,7 +1338,7 @@ namespace Net.Client
         /// <summary>
         /// 解析网络数据包
         /// </summary>
-        protected virtual void ResolveBuffer(ref Segment stream, bool isTcp)
+        protected virtual void ResolveBuffer(ref ISegment stream, bool isTcp)
         {
             if (!isTcp) 
             {
@@ -1356,7 +1356,7 @@ namespace Net.Client
             DataHandle(stream);
         }
 
-        protected void DataHandle(Segment buffer)
+        protected void DataHandle(ISegment buffer)
         {
             while (buffer.Position < buffer.Count)
             {
@@ -1372,10 +1372,10 @@ namespace Net.Client
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount);
                 if (kernel)
                 {
-                    var func = OnDeserializeRPC(buffer, buffer.Position, dataCount);
+                    var func = OnDeserializeRPC(buffer.Buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
                     model.func = func.name;
@@ -1387,7 +1387,7 @@ namespace Net.Client
             }
         }
 
-        protected virtual void RPCDataHandle(RPCModel model, Segment segment)
+        protected virtual void RPCDataHandle(RPCModel model, ISegment segment)
         {
             resolveAmount++;
             switch (model.cmd)
@@ -1449,7 +1449,7 @@ namespace Net.Client
                 case NetCmd.ReliableTransport:
                     Gcp.Input(model.Buffer);
                     int count1;
-                    Segment buffer1;
+                    ISegment buffer1;
                     while ((count1 = Gcp.Receive(out buffer1)) > 0)
                     {
                         ResolveBuffer(ref buffer1, false);

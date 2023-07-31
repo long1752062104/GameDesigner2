@@ -87,7 +87,7 @@ namespace Net.Helper
 
         public static byte[] CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos)
         {
-            Segment segment = null;
+            ISegment segment = null;
             var tick = (uint)Environment.TickCount;
             for (int i = 0; i < syncVarInfos.count; i++)
             {
@@ -105,7 +105,7 @@ namespace Net.Helper
 
         public static void SyncVarHandler(MyDictionary<ushort, SyncVarInfo> syncVarDic, byte[] buffer)
         {
-            var segment1 = new Segment(buffer, false);
+            ISegment segment1 = new Segment(buffer, false);
             while (segment1.Position < segment1.Offset + segment1.Count)
             {
                 var index = segment1.ReadUInt16();

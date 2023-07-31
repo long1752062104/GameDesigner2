@@ -90,7 +90,7 @@ namespace Net.Share
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="frame"></param>
-        void Pack(Segment stream);
+        void Pack(ISegment stream);
         /// <summary>
         /// 解包
         /// </summary>
@@ -98,6 +98,6 @@ namespace Net.Share
         /// <param name="frame"></param>
         /// <param name="uid"></param>
         /// <returns></returns>
-        bool Unpack(Segment stream, int frame, int uid);
+        bool Unpack(ISegment stream, int frame, int uid);
     }
 }

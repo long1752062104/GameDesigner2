@@ -68,7 +68,7 @@
             wsClient1.OnBinary = (buffer) =>
             {
                 var segment = BufferPool.Take(buffer.Length);
-                Buffer.BlockCopy(buffer, 0, segment, 0, buffer.Length);
+                Buffer.BlockCopy(buffer, 0, segment.Buffer, 0, buffer.Length);
                 segment.Count = buffer.Length;
                 receiveCount += buffer.Length;
                 receiveAmount++;

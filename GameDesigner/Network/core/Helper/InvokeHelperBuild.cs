@@ -184,7 +184,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 --
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -224,7 +224,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
         }
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref Segment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {

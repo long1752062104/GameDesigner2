@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Net.Helper
 {
-    public class StringHelper
+    public static class StringHelper
     {
         /// <summary>
         /// 检查sql的字符串类型的值合法性
@@ -97,6 +97,13 @@ namespace Net.Helper
         public static List<char> Substring(List<char> chars, int index, int count)
         {
             return chars.GetRange(index, count);
+        }
+
+        public static string ReplaceClear(this string self, params string[] pars)
+        {
+            foreach (var item in pars)
+                self = self.Replace(item, "");
+            return self;
         }
     }
 }

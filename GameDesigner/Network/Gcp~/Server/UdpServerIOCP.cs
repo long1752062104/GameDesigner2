@@ -22,7 +22,7 @@ namespace Net.Server
             ServerArgs = new SocketAsyncEventArgs { UserToken = Server };
             var userToken = new UserToken<Player>() { segment = BufferPool.Take() };
             ServerArgs.UserToken = userToken;
-            ServerArgs.SetBuffer(userToken.segment, 0, userToken.segment.Length);
+            ServerArgs.SetBuffer(userToken.segment.Buffer, 0, userToken.segment.Length);
             ServerArgs.RemoteEndPoint = Server.LocalEndPoint;
             ServerArgs.Completed += OnIOCompleted;
             if (!Server.ReceiveFromAsync(ServerArgs))

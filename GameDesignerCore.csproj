@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE SERVICE</DefineConstants>
+    <DefineConstants>$(DefineConstants)TRACE SERVICE CORE</DefineConstants>
     <Optimize>True</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE SERVICE</DefineConstants>
+    <DefineConstants>$(DefineConstants)TRACE SERVICE CORE</DefineConstants>
     <Optimize>True</Optimize>
   </PropertyGroup>
 
@@ -67,6 +67,7 @@
     <None Remove="GameDesigner\Helper.meta" />
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\Network.meta" />
+    <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />
     <None Remove="GameDesigner\Serialize.meta" />

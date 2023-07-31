@@ -85,7 +85,7 @@
             if (Client.Poll(0, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(65507);
-                segment.Count = Client.Receive(segment, 0, segment.Length, SocketFlags.None, out SocketError error);
+                segment.Count = Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (error != SocketError.Success | segment.Count == 0)
                 {
                     BufferPool.Push(segment);

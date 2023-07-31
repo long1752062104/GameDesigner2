@@ -125,15 +125,11 @@ namespace Net.Adapter
         public byte[] OnSerializeRpc(RPCModel model)
         {
             var buffer = NetConvertFast2.SerializeModel(model);
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToEncrypt(Password, buffer);
             return buffer;
         }
 
         public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
         {
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToDecrypt(Password, buffer, index, count);
             var segment = new Segment(buffer, index, count, false);
             return NetConvertFast2.DeserializeModel(segment);
         }

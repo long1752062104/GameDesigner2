@@ -100,6 +100,7 @@
     <Compile Include="GameDesigner\Network\Adapter\PackageAdapter.cs" />
     <Compile Include="GameDesigner\Network\Binding\BindingExtension.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVariable.cs" />
+    <Compile Include="GameDesigner\Network\core\System\ISegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\SafeDictionary.cs" />
     <Compile Include="GameDesigner\Network\core\System\SystemManager.cs" />
     <Compile Include="GameDesigner\Network\core\Tools\ObjectConverter.cs" />

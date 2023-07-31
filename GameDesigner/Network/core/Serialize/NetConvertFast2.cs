@@ -18,12 +18,12 @@
         /// </summary>
         /// <param name="value"></param>
         /// <param name="stream"></param>
-        void WriteValue(object value, Segment stream);
+        void WriteValue(object value, ISegment stream);
         /// <summary>
         /// 反序列化读取
         /// </summary>
         /// <param name="stream"></param>
-        object ReadValue(Segment stream);
+        object ReadValue(ISegment stream);
     }
 
     /// <summary>
@@ -36,12 +36,12 @@
         /// </summary>
         /// <param name="value"></param>
         /// <param name="stream"></param>
-        void Write(T value, Segment stream);
+        void Write(T value, ISegment stream);
         /// <summary>
         /// 反序列化读取
         /// </summary>
         /// <param name="stream"></param>
-        T Read(Segment stream);
+        T Read(ISegment stream);
     }
 
     /// <summary>
@@ -108,6 +108,8 @@
             AddBaseType3<string>();
             AddBaseType3<decimal>();
             AddBaseType3<DateTime>();
+            AddBaseType3<TimeSpan>();
+            AddBaseType3<DateTimeOffset>();
             AddBaseType3<DBNull>();
         }
 
@@ -272,7 +274,7 @@
             }
         }
 
-        public static Segment SerializeObject<T>(T value)
+        public static ISegment SerializeObject<T>(T value)
         {
             var stream = BufferPool.Take();
             try
@@ -297,7 +299,7 @@
             return stream;
         }
 
-        public static void SerializeObject<T>(T value, Segment stream)
+        public static void SerializeObject<T>(T value, ISegment stream)
         {
             try
             {
@@ -315,7 +317,7 @@
             }
         }
 
-        public static Segment SerializeObject(object value)
+        public static ISegment SerializeObject(object value)
         {
             var stream = BufferPool.Take();
             try
@@ -340,7 +342,7 @@
             return stream;
         }
 
-        public static T DeserializeObject<T>(Segment segment, bool isPush = true)
+        public static T DeserializeObject<T>(ISegment segment, bool isPush = true)
         {
             var type = typeof(T);
             if (Types2.TryGetValue(type, out ISerialize bind)) 
@@ -352,7 +354,7 @@
             else throw new Exception($"请注册或绑定:{type}类型后才能反序列化!");
         }
 
-        public static object DeserializeObject(Type type, Segment segment, bool isPush = true)
+        public static object DeserializeObject(Type type, ISegment segment, bool isPush = true)
         {
             if (Types2.TryGetValue(type, out ISerialize bind))
             {
@@ -427,7 +429,7 @@
             return buffer1;
         }
 
-        public static FuncData DeserializeModel(Segment segment, bool isPush = true)
+        public static FuncData DeserializeModel(ISegment segment, bool isPush = true)
         {
             FuncData obj = default;
             try

@@ -952,7 +952,7 @@ namespace Net.Server
             if (Server.Poll(0, SelectMode.SelectRead))
             {
                 var buffer = BufferPool.Take();
-                buffer.Count = Server.ReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref remotePoint);
+                buffer.Count = Server.ReceiveFrom(buffer.Buffer, 0, buffer.Length, SocketFlags.None, ref remotePoint);
                 receiveCount += buffer.Count;
                 receiveAmount++;
                 ReceiveProcessed(remotePoint, buffer, false);
@@ -960,7 +960,7 @@ namespace Net.Server
             }
         }
 
-        protected virtual void ReceiveProcessed(EndPoint remotePoint, Segment buffer, bool tcp_udp)
+        protected virtual void ReceiveProcessed(EndPoint remotePoint, ISegment buffer, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
@@ -974,7 +974,7 @@ namespace Net.Server
             client.RevdQueue.Enqueue(buffer);
         }
 
-        protected virtual void ReceiveProcessedDirect(EndPoint remotePoint, Segment segment, bool tcp_udp)
+        protected virtual void ReceiveProcessedDirect(EndPoint remotePoint, ISegment segment, bool tcp_udp)
         {
             if (!AllClients.TryGetValue(remotePoint, out Player client))//在线客户端  得到client对象
                 client = AcceptHander(null, remotePoint);
@@ -1059,7 +1059,7 @@ namespace Net.Server
         }
 #endif
 
-        protected virtual void DataCRCHandler(Player client, Segment buffer, bool isTcp)
+        protected virtual void DataCRCHandler(Player client, ISegment buffer, bool isTcp)
         {
             if (!isTcp)
             {
@@ -1077,7 +1077,7 @@ namespace Net.Server
             DataHandler(client, buffer);
         }
 
-        protected virtual void DataHandler(Player client, Segment buffer)
+        protected virtual void DataHandler(Player client, ISegment buffer)
         {
             while (buffer.Position < buffer.Count)
             {
@@ -1093,10 +1093,10 @@ namespace Net.Server
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount);
                 if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.SceneRT & cmd1 != NetCmd.Notice & cmd1 != NetCmd.NoticeRT & cmd1 != NetCmd.Local & cmd1 != NetCmd.LocalRT)
                 {
-                    var func = OnDeserializeRpc(buffer, buffer.Position, dataCount);
+                    var func = OnDeserializeRpc(buffer.Buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
                     model.func = func.name;
@@ -1108,7 +1108,7 @@ namespace Net.Server
             }
         }
 
-        protected virtual void ResolveBuffer(Player client, ref Segment buffer)
+        protected virtual void ResolveBuffer(Player client, ref ISegment buffer)
         {
             client.heart = 0;
             if (client.stack > 0)
@@ -1117,7 +1117,7 @@ namespace Net.Server
                 client.stackStream.Seek(client.stackIndex, SeekOrigin.Begin);
                 var size = buffer.Count - buffer.Position;
                 client.stackIndex += size;
-                client.stackStream.Write(buffer, buffer.Position, size);
+                client.stackStream.Write(buffer.Buffer, buffer.Position, size);
                 if (client.stackIndex < client.stackCount)
                 {
                     InvokeRevdRTProgress(client, client.stackIndex, client.stackCount);
@@ -1127,7 +1127,7 @@ namespace Net.Server
                 BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
                 buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
                 client.stackStream.Seek(0, SeekOrigin.Begin);
-                client.stackStream.Read(buffer, 0, count);
+                client.stackStream.Read(buffer.Buffer, 0, count);
                 buffer.Count = count;
             }
             while (buffer.Position < buffer.Count)
@@ -1139,7 +1139,7 @@ namespace Net.Server
                     client.stackIndex = count;
                     client.stackCount = 0;
                     client.stackStream.Seek(0, SeekOrigin.Begin);
-                    client.stackStream.Write(buffer, position, count);
+                    client.stackStream.Write(buffer.Buffer, position, count);
                     client.stack++;
                     break;
                 }
@@ -1174,7 +1174,7 @@ namespace Net.Server
                     client.stackIndex = count;
                     client.stackCount = size;
                     client.stackStream.Seek(0, SeekOrigin.Begin);
-                    client.stackStream.Write(buffer, position, count);
+                    client.stackStream.Write(buffer.Buffer, position, count);
                     client.stack++;
                     break;
                 }
@@ -1203,7 +1203,7 @@ namespace Net.Server
             return false;
         }
 
-        protected virtual void DataHandler(Player client, RPCModel model, Segment segment)
+        protected virtual void DataHandler(Player client, RPCModel model, ISegment segment)
         {
             client.heart = 0;
             if (IsInternalCommand(client, model))
@@ -1295,7 +1295,7 @@ namespace Net.Server
             SetClientIdentity(client);//将发送登录成功的identity标识, 开发者可赋值, 必须保证是唯一的
         }
 
-        protected virtual void CommandHandler(Player client, RPCModel model, Segment segment)
+        protected virtual void CommandHandler(Player client, RPCModel model, ISegment segment)
         {
             resolveAmount++;
             switch (model.cmd)
@@ -1339,7 +1339,7 @@ namespace Net.Server
                 case NetCmd.ReliableTransport:
                     client.Gcp.Input(model.Buffer);
                     int count1;
-                    Segment buffer1;
+                    ISegment buffer1;
                     while ((count1 = client.Gcp.Receive(out buffer1)) > 0)
                     {
                         DataCRCHandler(client, buffer1, false);
@@ -1502,12 +1502,12 @@ namespace Net.Server
             SendDataHandler(client, client.RpcModels);
         }
 
-        protected virtual void SetDataHead(Segment stream)
+        protected virtual void SetDataHead(ISegment stream)
         {
             stream.Position = frame + PackageAdapter.HeadCount;
         }
 
-        protected virtual void WriteDataBody(Player client, ref Segment stream, QueueSafe<RPCModel> rPCModels, int count)
+        protected virtual void WriteDataBody(Player client, ref ISegment stream, QueueSafe<RPCModel> rPCModels, int count)
         {
             int index = 0;
             for (int i = 0; i < count; i++)
@@ -1541,7 +1541,7 @@ namespace Net.Server
         /// 重置头部数据大小, 在小数据达到<see cref="PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
         /// </summary>
         /// <param name="stream"></param>
-        protected virtual void ResetDataHead(Segment stream)
+        protected virtual void ResetDataHead(ISegment stream)
         {
             stream.SetPositionLength(frame + PackageAdapter.HeadCount);
         }
@@ -1559,7 +1559,7 @@ namespace Net.Server
             BufferPool.Push(stream);
         }
 
-        protected virtual byte[] PackData(Segment stream)
+        protected virtual byte[] PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);

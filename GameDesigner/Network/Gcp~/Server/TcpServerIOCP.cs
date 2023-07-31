@@ -12,7 +12,7 @@
     internal class UserToken<Player> where Player : NetPlayer
     {
         internal Player client;
-        internal Segment segment;
+        internal ISegment segment;
     }
 
     /// <summary>
@@ -28,7 +28,7 @@
             var userToken = new UserToken<Player>() { client = client, segment = BufferPool.Take() };
             client.ReceiveArgs.UserToken = userToken;
             client.ReceiveArgs.RemoteEndPoint = client.Client.RemoteEndPoint;
-            client.ReceiveArgs.SetBuffer(userToken.segment, 0, userToken.segment.Length);
+            client.ReceiveArgs.SetBuffer(userToken.segment.Buffer, 0, userToken.segment.Length);
             client.ReceiveArgs.Completed += OnIOCompleted;
             if (!client.Client.ReceiveAsync(client.ReceiveArgs))
                 OnIOCompleted(null, client.ReceiveArgs);
@@ -64,7 +64,7 @@
                     if (count != segment.Length)
                     {
                         userToken.segment = segment;
-                        args.SetBuffer(segment, 0, segment.Length);
+                        args.SetBuffer(segment.Buffer, 0, segment.Length);
                     }
                     clientSocket = client.Client;
                     if (!clientSocket.Connected)

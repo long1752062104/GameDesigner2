@@ -155,7 +155,7 @@
                     case UDXEVENT_TYPE.E_DATAREAD:
                         var buffer = BufferPool.Take(len);
                         buffer.Count = len;
-                        Marshal.Copy(pData, buffer, 0, len);
+                        Marshal.Copy(pData, buffer.Buffer, 0, len);
                         receiveCount += len;
                         receiveAmount++;
                         ResolveBuffer(ref buffer, false);
