@@ -124,16 +124,18 @@ public static class Fast2BuildMethod
     /// <returns></returns>
     public static void BuildAll(string savePath, params Type[] types)
     {
+        var bindTypes = new HashSet<Type>();
         foreach (var type in types)
         {
-            var code = BuildNew(type, true, true, new List<string>(), savePath);
+            var code = BuildNew(type, true, true, new List<string>(), savePath, bindTypes);
             code.AppendLine(BuildArray(type).ToString());
             code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
             var className = type.ToString().Replace(".", "").Replace("+", "");
             File.WriteAllText(savePath + $"//{className}Bind.cs", code.ToString());
+            bindTypes.Add(type);
         }
-        BuildBindingType(new HashSet<Type>(types), savePath, 1);
-        BuildBindingExtension(new HashSet<Type>(types), savePath);
+        BuildBindingType(new HashSet<Type>(bindTypes), savePath, 1);
+        BuildBindingExtension(new HashSet<Type>(bindTypes), savePath);
     }
 
     public static void Build(Type type, string savePath)
@@ -850,55 +852,23 @@ public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{D
 
     public static string GetDictionaryBindTypeName(Type type)
     {
-        TypeCode typecode;
         var args = type.GenericTypeArguments;
-        string bindType;
-        string value;
         string typeBindName;
         if (args[1].IsArray)
         {
-            var type1 = args[1].GetArrayItemType();
-            typecode = Type.GetTypeCode(type1);
-            if (typecode == TypeCode.Object)
-            {
-                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "ArrayBind";
-            }
+            typeBindName = args[1].ToString().ReplaceClear("+", ".", "[", "]", "<", ">") + "ArrayBind";
         }
         else if (args[1].IsGenericType)
         {
-            var type1 = args[1].GenericTypeArguments[0];
-            typecode = Type.GetTypeCode(type1);
-            if (typecode == TypeCode.Object)
-            {
-                bindType = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                typeBindName = type1.FullName.Replace(".", "").Replace("+", "") + "GenericBind";
-            }
+            var value = AssemblyHelper.GetCodeTypeName(args[1].ToString());
+            typeBindName = value.ReplaceClear("+", ".", "[", "]", "<", ">") + "Bind";
         }
         else
         {
-            typecode = Type.GetTypeCode(args[1]);
-            if (typecode == TypeCode.Object)
-            {
-                bindType = args[1].FullName.Replace(".", "").Replace("+", "") + "Bind";
-                typeBindName = bindType;
-            }
-            else
-            {
-                value = args[1].FullName;
-                typeBindName = value.Replace(".", "").Replace("+", "");
-            }
+            typeBindName = args[1].ToString().Replace(".", "").Replace("+", "") + "Bind";
         }
         var dictName = type.Name.Replace("`2", "");
-        var fileTypeName = $"{dictName}_{args[0].FullName.Replace(".", "")}_{typeBindName}_Bind"; ;
+        var fileTypeName = $"{dictName}_{args[0].ToString().Replace(".", "")}_{typeBindName}_Bind"; ;
         return fileTypeName;
     }
 }
