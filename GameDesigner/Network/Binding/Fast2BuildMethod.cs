@@ -1,18 +1,17 @@
 ﻿using Net.Event;
 using Net.Helper;
+using System.Reflection;
+using System.Text;
+#if CORE
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+#else
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Text;
-using System.CodeDom.Compiler;
 using Microsoft.CSharp;
-using Microsoft.CodeAnalysis;
-#if !WINDOWS && !UNITY_EDITOR
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
+using System.CodeDom.Compiler;
 #endif
-using System.Linq;
 
 public static class Fast2BuildMethod
 {
@@ -36,20 +35,32 @@ public static class Fast2BuildMethod
     /// <returns></returns>
     public static bool DynamicBuild(params Type[] types)
     {
+        var bindTypes = new HashSet<Type>();
         var codes = new Dictionary<string, string>();
         foreach (var type in types)
         {
-            var code = BuildNew(type, true, true, new List<string>());
+            var genericCodes = new List<string>();
+            var code = BuildNew(type, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
             code.AppendLine(BuildArray(type).ToString());
-            code.AppendLine(BuildGeneric(type).ToString());
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+            foreach (var igenericCode in genericCodes)
+            {
+                var index1 = igenericCode.IndexOf("struct") + 7;
+                var index2 = igenericCode.IndexOf(" ", index1);
+                var className = igenericCode.Substring(index1, index2 - index1);
+                codes.Add(className + ".cs", igenericCode);
+            }
             codes.Add(type.ToString() + "Bind.cs", code.ToString());
+            bindTypes.Add(type);
         }
-        codes.Add("Binding.BindingType.cs", BuildBindingType(new HashSet<Type>(types)));
-        codes.Add("BindingExtension.cs", BuildBindingExtension(new HashSet<Type>(types)));
+        codes.Add("Binding.BindingType.cs", BuildBindingType(bindTypes));
+        codes.Add("BindingExtension.cs", BuildBindingExtension(bindTypes));
         var dllpaths = new HashSet<string>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
         {
+            if (assemblie.IsDynamic)
+                continue;
             var path = assemblie.Location;
             var name = Path.GetFileName(path);
             if (name.Contains("Editor"))
@@ -62,7 +73,7 @@ public static class Fast2BuildMethod
                 continue;
             dllpaths.Add(path);
         }
-#if WINDOWS || UNITY_EDITOR
+#if !CORE
         var provider = new CSharpCodeProvider();
         var param = new CompilerParameters();
         param.ReferencedAssemblies.AddRange(dllpaths.ToArray());
@@ -141,18 +152,18 @@ public static class Fast2BuildMethod
     public static void Build(Type type, string savePath)
     {
         var str = BuildNew(type, true, true, new List<string>(), savePath);
-        var className = type.FullName.Replace(".", "").Replace("+", "");
+        var className = type.ToString().Replace(".", "").Replace("+", "");
         File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
     }
 
     public static void Build(Type type, string savePath, bool serField, bool serProperty, List<string> ignores, HashSet<Type> types = null)
     {
         var str = BuildNew(type, serField, serProperty, ignores, savePath, types);
-        var className = type.FullName.Replace(".", "").Replace("+", "");
+        var className = type.ToString().Replace(".", "").Replace("+", "");
         File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
     }
 
-    public static StringBuilder BuildNew(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null)
+    public static StringBuilder BuildNew(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -409,11 +420,14 @@ namespace Binding
             {
                 if (members[i].ItemType1 == null)//List<T>
                 {
-                    var str = BuildGenericAll(members[i].Type);
+                    var codeSB = BuildGenericAll(members[i].Type);
                     var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
                     className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
                     if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
-                        File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
+                    {
+                        File.WriteAllText(savePath + $"//{className}Bind.cs", codeSB.ToString());
+                        genericCodes?.Add(codeSB.ToString());
+                    }
 
                     var templateText1 = templateTexts[2];
                     templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
@@ -448,7 +462,9 @@ namespace Binding
                     templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
 
                     var text = BuildDictionary(members[i].Type, out var className1);
-                    File.WriteAllText(savePath + $"//{className1}.cs", text);
+                    if (!string.IsNullOrEmpty(savePath))
+                        File.WriteAllText(savePath + $"//{className1}.cs", text);
+                    genericCodes?.Add(text);
 
                     templateText1 = templateText1.Replace("{DICTIONARYBIND}", $"{className1}");
                     sb.Append(templateText1);
@@ -484,7 +500,7 @@ namespace Binding
         }
 
         sb.Append(templateTexts[4]);
-        sb.Append(sb1.ToString());
+        sb.Append(sb1);
         sb.Append(templateTexts[8]);
 
         return sb;

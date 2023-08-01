@@ -45,6 +45,10 @@ namespace Net.System
         /// </summary>
         public int ReferenceCount { get; set; }
         /// <summary>
+        /// 在内存池表索引
+        /// </summary>
+        public int TableIndex { get; set; }
+        /// <summary>
         /// 字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
         /// </summary>
         public static byte StringRecordSize = 2;
@@ -289,10 +293,17 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte[] Read(int count)
+        public unsafe byte[] Read(int count)
         {
             var array = new byte[count];
-            global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
+            //global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
+            fixed (void* ptr = &Buffer[Position])
+            {
+                fixed (void* ptr1 = &array[0])
+                {
+                    Unsafe.CopyBlock(ptr1, ptr, (uint)count);
+                }
+            }
             Position += count;
             return array;
         }
@@ -771,9 +782,16 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(byte[] value, int index, int count)
+        public unsafe void Write(byte[] value, int index, int count)
         {
-            global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
+            //global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
+            fixed (void* ptr = &Buffer[Position])
+            {
+                fixed (void* ptr1 = &value[index])
+                {
+                    Unsafe.CopyBlock(ptr, ptr1, (uint)count);
+                }
+            }
             Position += count;
         }
 

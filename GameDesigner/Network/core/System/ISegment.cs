@@ -33,6 +33,7 @@ namespace Net.System
         bool IsDespose { get; set; }
         bool IsRecovery { get; set; }
         int ReferenceCount { get; set; }
+        int TableIndex { get; set; }
 
         /// <summary>
         /// 获取或设置总内存位置索引

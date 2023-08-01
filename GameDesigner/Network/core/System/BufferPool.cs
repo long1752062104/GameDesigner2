@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Net.System
 {
@@ -15,6 +16,10 @@ namespace Net.System
         /// 版本2, 压缩率和Protobuff一样, 在测试阶段
         /// </summary>
         Version2,
+        /// <summary>
+        /// 版本3, 结构分片
+        /// </summary>
+        Version3,
     }
 
     /// <summary>
@@ -90,14 +95,16 @@ namespace Net.System
         /// <returns></returns>
         public static ISegment Take(int size)
         {
-            lock (SyncRoot) 
+            lock (SyncRoot)
             {
-                var tableInx = 0;
-                for (int i = 0; i < TABLE.Length; i++)
+                int tableInx = 0;
+                var table = TABLE;
+                var count = table.Length;
+                for (int i = 0; i < count; i++)
                 {
-                    if (size <= TABLE[i])
+                    if (size <= table[i])
                     {
-                        size = TABLE[i];
+                        size = table[i];
                         tableInx = i;
                         goto J;
                     }
@@ -113,8 +120,11 @@ namespace Net.System
                 }
                 if (Version == SegmentVersion.Version1)
                     segment = new Segment(new byte[size], 0, size);
-                else
+                else if (Version == SegmentVersion.Version2)
                     segment = new Segment2(new byte[size], 0, size);
+                else
+                    segment = new ArraySegment(new byte[size], 0, size);
+                segment.TableIndex = tableInx;
             J2: segment.IsDespose = false;
                 segment.ReferenceCount++;
                 segment.Init();
@@ -128,21 +138,14 @@ namespace Net.System
         /// <param name="segment"></param>
         public static void Push(ISegment segment) 
         {
-            lock (SyncRoot) 
+            lock (SyncRoot)
             {
                 if (!segment.IsRecovery)
                     return;
                 if (segment.IsDespose)
                     return;
                 segment.IsDespose = true;
-                for (int i = 0; i < TABLE.Length; i++)
-                {
-                    if (segment.Length == TABLE[i])
-                    {
-                        STACKS[i].Push(segment);
-                        return;
-                    }
-                }
+                STACKS[segment.TableIndex].Push(segment);
             }
         }
     }

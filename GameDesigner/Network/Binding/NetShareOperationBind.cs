@@ -233,7 +233,7 @@ namespace Binding
 }
 namespace Binding
 {
-	public struct NetShareOperationGenericBind : ISerialize<List<Net.Share.Operation>>, ISerialize
+	public readonly struct NetShareOperationGenericBind : ISerialize<List<Net.Share.Operation>>, ISerialize
 	{
 		public void Write(List<Net.Share.Operation> value, ISegment stream)
 		{

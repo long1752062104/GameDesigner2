@@ -45,6 +45,10 @@ namespace Net.System
         /// </summary>
         public int ReferenceCount { get; set; }
         /// <summary>
+        /// 在内存池表索引
+        /// </summary>
+        public int TableIndex { get; set; }
+        /// <summary>
         /// 字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
         /// </summary>
         public static byte StringRecordSize = 2;
@@ -88,6 +92,7 @@ namespace Net.System
             IsDespose = !isRecovery;//如果不回收，则已经释放状态，不允许压入数组池
             IsRecovery = isRecovery;
             ReferenceCount = 0;
+            TableIndex = 0;
         }
 
         public static implicit operator ArraySegment(byte[] buffer)

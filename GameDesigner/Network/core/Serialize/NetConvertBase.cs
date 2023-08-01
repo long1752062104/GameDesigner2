@@ -1,6 +1,7 @@
 ﻿namespace Net.Serialize
 {
     using global::System;
+    using global::System.Runtime.CompilerServices;
     using UnityEngine;
 
     /// <summary>
@@ -172,10 +173,18 @@
         /// <param name="data">要修改的数据</param>
         /// <param name="index">索引从1-8</param>
         /// <param name="flag">填二进制的0或1</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static void SetBit(ref byte data, int index, bool flag)
+        //{
+        //    int mask = index < 2 ? index : (2 << (index - 2));
+        //    data = flag ? (byte)(data | mask) : (byte)(data & ~mask);
+        //}
         public static void SetBit(ref byte data, int index, bool flag)
         {
-            int mask = index < 2 ? index : (2 << (index - 2));
-            data = flag ? (byte)(data | mask) : (byte)(data & ~mask);
+            if (flag)
+                data |= (byte)(1 << (8 - index));
+            else
+                data &= (byte)~(1 << (8 - index));
         }
 
         /// <summary>
@@ -184,10 +193,15 @@
         /// <param name="data">要获取的数据</param>
         /// <param name="index">索引从1-8</param>
         /// <returns>返回二进制的0或1</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static bool GetBit(byte data, byte index)
+        //{
+        //    byte mask = index < 2 ? index : (byte)(2 << (index - 2));
+        //    return (data & mask) == mask;
+        //}
         public static bool GetBit(byte data, byte index)
         {
-            byte mask = index < 2 ? index : (byte)(2 << (index - 2));
-            return (data & mask) == mask;
+            return ((data >> (8 - index)) & 1) == 1;
         }
     }
 }
