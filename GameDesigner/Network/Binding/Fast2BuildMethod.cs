@@ -506,6 +506,326 @@ namespace Binding
         return sb;
     }
 
+    public static StringBuilder BuildNewTest(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+    {
+        var sb = new StringBuilder();
+        var sb1 = new StringBuilder();
+        FieldInfo[] fields;
+        if (serField)
+            fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+        else
+            fields = new FieldInfo[0];
+        PropertyInfo[] properties;
+        if (serProperty)
+            properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        else
+            properties = new PropertyInfo[0];
+        var members = new List<Member>();
+        foreach (var field in fields)
+        {
+            if (field.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
+                continue;
+            if (ignores.Contains(field.Name))
+                continue;
+            var member = new Member()
+            {
+                IsArray = field.FieldType.IsArray,
+                IsEnum = field.FieldType.IsEnum,
+                IsGenericType = field.FieldType.IsGenericType,
+                IsPrimitive = Type.GetTypeCode(field.FieldType) != TypeCode.Object,
+                Name = field.Name,
+                Type = field.FieldType,
+                TypeCode = Type.GetTypeCode(field.FieldType)
+            };
+            if (field.FieldType.IsArray)
+            {
+                var itemType = field.FieldType.GetArrayItemType();
+                member.ItemType = itemType;
+            }
+            else if (field.FieldType.GenericTypeArguments.Length == 1)
+            {
+                Type itemType = field.FieldType.GenericTypeArguments[0];
+                member.ItemType = itemType;
+            }
+            else if (field.FieldType.GenericTypeArguments.Length == 2)
+            {
+                Type itemType = field.FieldType.GenericTypeArguments[0];
+                Type itemType1 = field.FieldType.GenericTypeArguments[1];
+                member.ItemType = itemType;
+                member.ItemType1 = itemType1;
+            }
+            members.Add(member);
+        }
+        foreach (var property in properties)
+        {
+            if (property.GetCustomAttribute<Net.Serialize.NonSerialized>() != null)
+                continue;
+            if (!property.CanRead | !property.CanWrite)
+                continue;
+            if (property.GetIndexParameters().Length > 0)
+                continue;
+            if (ignores.Contains(property.Name))
+                continue;
+            var member = new Member()
+            {
+                IsArray = property.PropertyType.IsArray,
+                IsEnum = property.PropertyType.IsEnum,
+                IsGenericType = property.PropertyType.IsGenericType,
+                IsPrimitive = Type.GetTypeCode(property.PropertyType) != TypeCode.Object,
+                Name = property.Name,
+                Type = property.PropertyType,
+                TypeCode = Type.GetTypeCode(property.PropertyType)
+            };
+            if (property.PropertyType.IsArray)
+            {
+                var itemType = property.PropertyType.GetArrayItemType();
+                member.ItemType = itemType;
+            }
+            else if (property.PropertyType.GenericTypeArguments.Length == 1)
+            {
+                Type itemType = property.PropertyType.GenericTypeArguments[0];
+                member.ItemType = itemType;
+            }
+            else if (property.PropertyType.GenericTypeArguments.Length == 2)
+            {
+                Type itemType = property.PropertyType.GenericTypeArguments[0];
+                Type itemType1 = property.PropertyType.GenericTypeArguments[1];
+                member.ItemType = itemType;
+                member.ItemType1 = itemType1;
+            }
+            members.Add(member);
+        }
+
+        var templateText = @"using Net.Serialize;
+using Net.System;
+using System;
+using System.Collections.Generic;
+
+namespace Binding
+{
+    public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
+    {
+        public unsafe void Write({TYPE} value, ISegment stream)
+        {
+            fixed (byte* ptr = &stream.Buffer[stream.Position]) 
+            {
+                int offset = 0;
+{FieldSplit}
+                Unsafe.WriteUnaligned(ptr + offset, value.{FIELDNAME});
+                offset += {Offset};
+{FieldSplit}
+            }
+        }
+		
+        public {TYPE} Read(ISegment stream) 
+        {
+            var value = new {TYPE}();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public unsafe void Read(ref {TYPE} value, ISegment stream)
+		{
+			fixed (byte* ptr = &stream.Buffer[stream.Position]) 
+            {
+                int offset = 0;
+{FieldSplit}
+                Unsafe.WriteUnaligned(ptr + offset, value.{FIELDNAME});
+                offset += {Offset};
+{FieldSplit}
+            }
+		}
+
+        public void WriteValue(object value, ISegment stream)
+        {
+            Write(({TYPE})value, stream);
+        }
+
+        public object ReadValue(ISegment stream)
+        {
+            return Read(stream);
+        }
+    }
+}
+";
+        var typeName = type.ToString().Replace(".", "").Replace("+", "");
+        var fullName = type.ToString();
+        templateText = templateText.Replace("{TYPENAME}", typeName);
+        templateText = templateText.Replace("{TYPE}", fullName);
+        templateText = templateText.Replace("{SIZE}", $"{((members.Count - 1) / 8) + 1}");
+
+        var templateTexts = templateText.Split(new string[] { "{Split}" }, 0);
+
+        sb.Append(templateTexts[0]);
+
+        for (int i = 0; i < members.Count; i++)
+        {
+            int bitInx1 = i % 8;
+            int bitPos = i / 8;
+            var typecode = Type.GetTypeCode(members[i].Type);
+            if (typecode != TypeCode.Object)
+            {
+                //var templateText1 = templateTexts[1];
+                //templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                //templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                //templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                //if (typecode == TypeCode.String)
+                //    templateText1 = templateText1.Replace("{Condition}", $"!string.IsNullOrEmpty(value.{members[i].Name})");
+                //else if (typecode == TypeCode.Boolean)
+                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != false");
+                //else if (typecode == TypeCode.DateTime)
+                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                //else
+                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != 0");
+                //sb.Append(templateText1);
+
+                //var templateText2 = templateTexts[5];
+                //templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                //templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                //templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                //if (members[i].IsEnum)
+                //    templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.ToString().Replace("+", ".")}>");
+                //else
+                //    templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
+                //sb1.Append(templateText2);
+
+                var code = @"                Unsafe.WriteUnaligned(ptr + offset, value.f1);
+                offset += 1;";
+
+
+            }
+            else if (members[i].IsArray)
+            {
+                typecode = Type.GetTypeCode(members[i].ItemType);
+                if (typecode != TypeCode.Object)
+                {
+                    var templateText1 = templateTexts[1];
+                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    sb.Append(templateText1);
+
+                    var templateText2 = templateTexts[5];
+                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Array");
+                    sb1.Append(templateText2);
+                }
+                else
+                {
+                    var templateText1 = templateTexts[2];
+                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    if (members[i].Type.IsValueType)
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                    else
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    var local = members[i].ItemType.ToString().Replace(".", "").Replace("+", "") + "ArrayBind";
+                    templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                    sb.Append(templateText1);
+
+                    var templateText2 = templateTexts[6];
+                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                    sb1.Append(templateText2);
+                }
+            }
+            else if (members[i].IsGenericType)
+            {
+                if (members[i].ItemType1 == null)//List<T>
+                {
+                    var codeSB = BuildGenericAll(members[i].Type);
+                    var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
+                    className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
+                    if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
+                    {
+                        File.WriteAllText(savePath + $"//{className}Bind.cs", codeSB.ToString());
+                        genericCodes?.Add(codeSB.ToString());
+                    }
+
+                    var templateText1 = templateTexts[2];
+                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    if (members[i].Type.IsValueType)
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
+                    else
+                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    var local = className + "Bind";
+                    templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                    sb.Append(templateText1);
+
+                    var templateText2 = templateTexts[6];
+                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                    sb1.Append(templateText2);
+                }
+                else //Dic
+                {
+                    var templateText1 = templateTexts[3];
+                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+
+                    var templateText2 = templateTexts[7];
+                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+
+                    var text = BuildDictionary(members[i].Type, out var className1);
+                    if (!string.IsNullOrEmpty(savePath))
+                        File.WriteAllText(savePath + $"//{className1}.cs", text);
+                    genericCodes?.Add(text);
+
+                    templateText1 = templateText1.Replace("{DICTIONARYBIND}", $"{className1}");
+                    sb.Append(templateText1);
+
+                    templateText2 = templateText2.Replace("{DICTIONARYBIND}", $"{className1}");
+                    sb1.Append(templateText2);
+
+                    types?.Add(members[i].Type);
+                }
+            }
+            else
+            {
+                var templateText1 = templateTexts[2];
+                templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
+                templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
+                templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+
+                if (members[i].Type.IsValueType)
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type})");
+                else
+                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                var local = members[i].Type.ToString().Replace(".", "").Replace("+", "") + "Bind";
+                templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                sb.Append(templateText1);
+
+                var templateText2 = templateTexts[6];
+                templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
+                templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                sb1.Append(templateText2);
+            }
+        }
+
+        sb.Append(templateTexts[4]);
+        sb.Append(sb1);
+        sb.Append(templateTexts[8]);
+
+        return sb;
+    }
+
+
     public static void BuildBindingType(HashSet<Type> types, string savePath, int sortingOrder = 1)
     {
         var code = BuildBindingType(types, sortingOrder);

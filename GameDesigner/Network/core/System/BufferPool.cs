@@ -95,7 +95,9 @@ namespace Net.System
         /// <returns></returns>
         public static ISegment Take(int size)
         {
+#if !SerializeTest
             lock (SyncRoot)
+#endif
             {
                 int tableInx = 0;
                 var table = TABLE;
@@ -138,7 +140,9 @@ namespace Net.System
         /// <param name="segment"></param>
         public static void Push(ISegment segment) 
         {
+#if !SerializeTest
             lock (SyncRoot)
+#endif
             {
                 if (!segment.IsRecovery)
                     return;

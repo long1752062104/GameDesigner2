@@ -296,14 +296,7 @@ namespace Net.System
         public unsafe byte[] Read(int count)
         {
             var array = new byte[count];
-            //global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
-            fixed (void* ptr = &Buffer[Position])
-            {
-                fixed (void* ptr1 = &array[0])
-                {
-                    Unsafe.CopyBlock(ptr1, ptr, (uint)count);
-                }
-            }
+            global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
             Position += count;
             return array;
         }
@@ -784,14 +777,7 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(byte[] value, int index, int count)
         {
-            //global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
-            fixed (void* ptr = &Buffer[Position])
-            {
-                fixed (void* ptr1 = &value[index])
-                {
-                    Unsafe.CopyBlock(ptr, ptr1, (uint)count);
-                }
-            }
+            global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
             Position += count;
         }
 
