@@ -15,6 +15,7 @@
     using Net.System;
     using Net.Event;
     using Net.Share;
+    using AOT;
 
     /// <summary>
     /// udx客户端类型 -> 只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
@@ -78,8 +79,13 @@
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
                 ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
-                if (ClientPtr != IntPtr.Zero)
+                if (ClientPtr != IntPtr.Zero) 
+                {
                     UdxLib.UDump(ClientPtr);
+                    var handle = GCHandle.Alloc(this);
+                    var ptr = GCHandle.ToIntPtr(handle);
+                    UdxLib.USetUserData(ClientPtr, ptr);
+                }
 #if SERVICE
                 return UniTask.Run(() =>
 #else
@@ -130,35 +136,41 @@
         {
         }
 
-        protected void ProcessReceive(UDXEVENT_TYPE type, int erro, IntPtr cli, IntPtr pData, int len)//cb回调
+        //IL2CPP使用Marshal.GetFunctionPointerForDelegate需要设置委托方法为静态方法，并且要添加上特性MonoPInvokeCallback
+        [MonoPInvokeCallback(typeof(UDXPRC))]
+        protected static void ProcessReceive(UDXEVENT_TYPE type, int erro, IntPtr cli, IntPtr pData, int len)//cb回调
         {
             try
             {
-                heart = 0;
+                var ptr1 = UdxLib.UGetUserData(cli);
+                var handle = GCHandle.FromIntPtr(ptr1);
+                var client = handle.Target as UdxClient;
+                client.heart = 0;
                 switch (type)
                 {
                     case UDXEVENT_TYPE.E_CONNECT:
                         if (erro != 0)
                             return;
-                        ClientPtr = cli;
-                        Connected = true;
+                        client.ClientPtr = cli;
+                        client.Connected = true;
                         UdxLib.USetGameMode(cli, true);
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
-                        Connected = false;
-                        NetworkState = NetworkState.ConnectLost;
-                        InvokeInMainThread(OnConnectLostHandle);
-                        RpcModels = new QueueSafe<RPCModel>();
-                        ReleaseUdx();
+                        client.Connected = false;
+                        client.NetworkState = NetworkState.ConnectLost;
+                        client.InvokeInMainThread(client.OnConnectLostHandle);
+                        client.RpcModels = new QueueSafe<RPCModel>();
+                        client.ReleaseUdx();
+                        handle.Free();
                         NDebug.Log("断开连接！");
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:
                         var buffer = BufferPool.Take(len);
                         buffer.Count = len;
                         Marshal.Copy(pData, buffer.Buffer, 0, len);
-                        receiveCount += len;
-                        receiveAmount++;
-                        ResolveBuffer(ref buffer, false);
+                        client.receiveCount += len;
+                        client.receiveAmount++;
+                        client.ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);
                         break;
                 }

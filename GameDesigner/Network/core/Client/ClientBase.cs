@@ -681,7 +681,7 @@ namespace Net.Client
         {
 #if !UNITY_WEBGL
             foreach (var thread in threadDic.Values)
-                thread?.Abort();
+                try { thread?.Abort(); } catch { }
             threadDic.Clear();
 #endif
             ThreadManager.Event.RemoveEvent(singleThreadHandlerID);
@@ -1325,7 +1325,7 @@ namespace Net.Client
                 Close();
                 NDebug.LogError("客户端已被释放!" + ex);
             }
-            else if (ex is ThreadAbortException) 
+            else if (ex is ThreadAbortException)
             {
                 //线程Abort时, 线程还在Thread.Sleep就会出现这个错误, 所以在这里忽略掉
             }

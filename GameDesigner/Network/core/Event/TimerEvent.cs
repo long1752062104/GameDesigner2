@@ -12,20 +12,176 @@ namespace Net.Event
     /// </summary>
     public class TimerEvent
     {
+        public abstract class EventAction
+        {
+            public Event Event;
+            public bool IsAsync;
+            public bool IsCompleted;
+            public abstract void Invoke();
+            public abstract void WorkExecute(object args);
+        }
+
+        public class EventAction1 : EventAction
+        {
+            public Action action;
+
+            public override void Invoke()
+            {
+#if !UNITY_WEBGL
+                if (IsAsync)
+                {
+                    if (!IsCompleted)
+                        return;
+                    IsCompleted = false;
+                    ThreadPool.UnsafeQueueUserWorkItem(WorkExecute, null);
+                }
+                else
+#endif
+                    action();
+                if (Event.invokeNum == -1)
+                    Event.time = Event.time + Event.timeMax;
+                else if (--Event.invokeNum <= 0)
+                    Event.isRemove = true;
+            }
+
+            public override void WorkExecute(object args)
+            {
+                try { action(); } catch (Exception ex) { NDebug.LogError(ex); }
+                if (--Event.invokeNum <= 0)
+                    Event.isRemove = true;
+                else
+                    Event.time = Event.time + Event.timeMax;
+                IsCompleted = true;
+            }
+        }
+
+        public class EventAction2 : EventAction
+        {
+            public Action<object> action;
+
+            public override void Invoke()
+            {
+#if !UNITY_WEBGL
+                if (IsAsync)
+                {
+                    if (!IsCompleted)
+                        return;
+                    IsCompleted = false;
+                    ThreadPool.UnsafeQueueUserWorkItem(WorkExecute, null);
+                }
+                else
+#endif
+                    action(Event.obj);
+                if (Event.invokeNum == -1)
+                    Event.time = Event.time + Event.timeMax;
+                else if (--Event.invokeNum <= 0)
+                    Event.isRemove = true;
+            }
+
+            public override void WorkExecute(object args)
+            {
+                try { action(Event.obj); } catch (Exception ex) { NDebug.LogError(ex); }
+                if (--Event.invokeNum <= 0)
+                    Event.isRemove = true;
+                else
+                    Event.time = Event.time + Event.timeMax;
+                IsCompleted = true;
+            }
+        }
+
+        public class EventAction3 : EventAction
+        {
+            public Func<bool> action;
+
+            public override void Invoke()
+            {
+#if !UNITY_WEBGL
+                if (IsAsync)
+                {
+                    if (!IsCompleted)
+                        return;
+                    IsCompleted = false;
+                    ThreadPool.UnsafeQueueUserWorkItem(WorkExecute, null);
+                }
+                else
+#endif
+                if (action())
+                    Event.time = Event.time + Event.timeMax;
+                else
+                    Event.isRemove = true;
+            }
+
+            public override void WorkExecute(object args)
+            {
+                try
+                {
+                    if (action())
+                        Event.time = Event.time + Event.timeMax;
+                    else
+                        Event.isRemove = true;
+                }
+                catch (Exception ex)
+                {
+                    NDebug.LogError(ex);
+                }
+                finally
+                {
+                    IsCompleted = true;
+                }
+            }
+        }
+
+        public class EventAction4 : EventAction
+        {
+            public Func<object, bool> action;
+
+            public override void Invoke()
+            {
+#if !UNITY_WEBGL
+                if (IsAsync)
+                {
+                    if (!IsCompleted)
+                        return;
+                    IsCompleted = false;
+                    ThreadPool.UnsafeQueueUserWorkItem(WorkExecute, null);
+                }
+                else
+#endif
+                if (action(Event.obj))
+                    Event.time = Event.time + Event.timeMax;
+                else
+                    Event.isRemove = true;
+            }
+
+            public override void WorkExecute(object args)
+            {
+                try
+                {
+                    if (action(Event.obj))
+                        Event.time = Event.time + Event.timeMax;
+                    else
+                        Event.isRemove = true;
+                }
+                catch (Exception ex)
+                {
+                    NDebug.LogError(ex);
+                }
+                finally
+                {
+                    IsCompleted = true;
+                }
+            }
+        }
+
         public class Event
         {
             public string name;
             public ulong time;
-            public Action ptr1;
-            public Action<object> ptr2;
-            public Func<bool> ptr3;
-            public Func<object, bool> ptr4;
+            public EventAction action;
             public object obj;
             public int invokeNum;
             internal ulong timeMax;
             internal int eventId;
-            internal bool async;
-            internal bool complete = true;
             internal bool isRemove;
             public void SetIntervalTime(uint value)
             {
@@ -52,15 +208,20 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr1 = ptr,
-                eventId = enentID,
-                async = isAsync,
-            });
-            return enentID;
+                eventId = eventID,
+            };
+            eventObj.action = new EventAction1()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         /// <summary>
@@ -73,16 +234,21 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr2 = ptr,
                 obj = obj,
-                eventId = enentID,
-                async = isAsync,
-            });
-            return enentID;
+                eventId = eventID,
+            };
+            eventObj.action = new EventAction2()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         /// <summary>
@@ -96,18 +262,23 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr2 = ptr,
                 obj = obj,
                 invokeNum = invokeNum,
                 timeMax = (ulong)(time * 1000),
-                eventId = enentID,
-                async = isAsync,
-            });
-            return enentID;
+                eventId = eventID,
+            };
+            eventObj.action = new EventAction2()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         /// <summary>
@@ -132,17 +303,22 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, float time, Func<bool> ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 name = name,
                 time = (ulong)(this.time + (time * 1000)),
-                ptr3 = ptr,
-                eventId = enentID,
+                eventId = eventID,
                 timeMax = (ulong)(time * 1000),
-                async = isAsync,
-            });
-            return enentID;
+            };
+            eventObj.action = new EventAction3()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         /// <summary>
@@ -155,17 +331,22 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, int time, Func<bool> ptr, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 name = name,
                 time = this.time + (ulong)time,
-                ptr3 = ptr,
-                eventId = enentID,
+                eventId = eventID,
                 timeMax = (ulong)time,
-                async = isAsync,
-            });
-            return enentID;
+            };
+            eventObj.action = new EventAction3()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         /// <summary>
@@ -178,18 +359,23 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
         {
-            var enentID = Interlocked.Increment(ref eId);
-            events.Add(new Event()
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
             {
                 time = (ulong)(this.time + (time * 1000)),
-                ptr4 = ptr,
                 obj = obj,
                 invokeNum = 1,
                 timeMax = (ulong)(time * 1000),
-                eventId = enentID,
-                async = isAsync,
-            });
-            return enentID;
+                eventId = eventID,
+            };
+            eventObj.action = new EventAction4()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr
+            };
+            events.Add(eventObj);
+            return eventID;
         }
 
         public TimerEvent()
@@ -243,138 +429,26 @@ namespace Net.Event
             {
                 try
                 {
-                    var evt = events._items[i];
-                    if (evt == null) //当unity关闭客户端也会导致这里null
+                    var _event = events._items[i];
+                    if (_event == null) //当unity关闭客户端也会导致这里null
                         continue;
-                    if (evt.isRemove)
+                    if (_event.isRemove)
                     {
                         events.RemoveAt(i);
                         count = events.Count;
                         if (i >= 0) i--;
                         continue;
                     }
-                    if (time >= evt.time)
-                    {
-                        if (evt.ptr1 != null)
-                        {
-#if !UNITY_WEBGL
-                            if (evt.async)
-                            {
-                                if (!evt.complete)
-                                    continue;
-                                evt.complete = false;
-                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute1, evt);
-                            }
-                            else
-#endif
-                                evt.ptr1();
-                        }
-                        else if (evt.ptr2 != null)
-                        {
-#if !UNITY_WEBGL
-                            if (evt.async)
-                            {
-                                if (!evt.complete)
-                                    continue;
-                                evt.complete = false;
-                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute2, evt);
-                            }
-                            else
-#endif
-                                evt.ptr2(evt.obj);
-                        }
-                        else if (evt.ptr3 != null)
-                        {
-#if !UNITY_WEBGL
-                            if (evt.async)
-                            {
-                                if (!evt.complete)
-                                    continue;
-                                evt.complete = false;
-                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute3, evt);
-                                continue;
-                            }
-#endif
-                            if (evt.ptr3())
-                                goto J;
-                        }
-                        else if (evt.ptr4 != null)
-                        {
-#if !UNITY_WEBGL
-                            if (evt.async)
-                            {
-                                if (!evt.complete)
-                                    continue;
-                                evt.complete = false;
-                                ThreadPool.UnsafeQueueUserWorkItem(WorkExecute4, evt);
-                                continue;
-                            }
-#endif
-                            if (evt.ptr4(evt.obj))
-                                goto J;
-                        }
-                        if (evt.invokeNum == -1)
-                            goto J;
-                        if (--evt.invokeNum <= 0)
-                        {
-                            events.RemoveAt(i);
-                            count = events.Count;
-                            if (i >= 0) i--;
-                            continue;//解决J:执行后索引超出异常
-                        }
-                    J: evt.time = time + evt.timeMax;
-                    }
+                    if (time < _event.time)
+                        continue;
+                    _event.action.Invoke();
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     NDebug.LogError("计时器异常:" + ex);
                 }
             }
         }
-
-#if !UNITY_WEBGL
-        private void WorkExecute1(object state)
-        {
-            var evt = state as Event;
-            evt.ptr1();
-            if (--evt.invokeNum <= 0)
-                evt.isRemove = true;
-            else
-                evt.time = time + evt.timeMax;
-            evt.complete = true;
-        }
-
-        private void WorkExecute2(object state)
-        {
-            var evt = state as Event;
-            evt.ptr2(evt.obj);
-            if (--evt.invokeNum <= 0)
-                evt.isRemove = true;
-            else
-                evt.time = time + evt.timeMax;
-            evt.complete = true;
-        }
-
-        private void WorkExecute3(object state)
-        {
-            var evt = state as Event;
-            if (evt.ptr3())
-                evt.time = time + evt.timeMax;
-            else
-                evt.isRemove = true;
-            evt.complete = true;
-        }
-
-        private void WorkExecute4(object state)
-        {
-            var evt = state as Event;
-            if (evt.ptr4(evt.obj))
-                evt.time = time + evt.timeMax;
-            else
-                evt.isRemove = true;
-            evt.complete = true;
-        }
-#endif
 
         /// <summary>
         /// 获取计时事件
@@ -430,7 +504,7 @@ namespace Net.Event
         {
             for (int i = 0; i < events.Count; i++)
             {
-                events[i].complete = true;
+                events[i].action.IsCompleted = true;
             }
         }
 
