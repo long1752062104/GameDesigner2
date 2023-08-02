@@ -427,6 +427,8 @@ static void Main(string[] args)
 <br>10.[挂了个机](https://www.taptap.cn/app/3191)</br>
 <br>11.[放置武界](https://www.taptap.cn/app/314773)</br>
 <br>12.[吞噬修仙](https://www.taptap.cn/app/352549)</br>
+<br>12.[吞噬修仙](https://www.taptap.cn/app/352549)</br>
+<br>13.[武界传说](https://www.taptap.cn/app/381982/review)</br>
 
 ## Steam游戏
 <br>1.[CubeSquad:Zero](https://store.steampowered.com/app/2505450/CubeSquadZero/)</br>

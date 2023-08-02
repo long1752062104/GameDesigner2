@@ -33,7 +33,6 @@ namespace Net.System
         bool IsDespose { get; set; }
         bool IsRecovery { get; set; }
         int ReferenceCount { get; set; }
-        int TableIndex { get; set; }
 
         /// <summary>
         /// 获取或设置总内存位置索引
@@ -474,7 +473,7 @@ namespace Net.System
         List<string> ReadStringList();
         
         T ReadStringGeneric<T>() where T : ICollection<string>, new();
-#endregion
+        #endregion
 
         void Flush(bool resetPos = true);
     }

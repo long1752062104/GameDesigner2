@@ -138,6 +138,18 @@
         /// 此客户端接收到的字节总量
         /// </summary>
         public long BytesReceived { get; set; }
+        /// <summary>
+        /// CRC校验错误次数, 如果有错误每秒提示一次
+        /// </summary>
+        public int CRCError { get; set; }
+        /// <summary>
+        /// 发送窗口已满提示次数
+        /// </summary>
+        public int WindowFullError { get; set; }
+        /// <summary>
+        /// 数据大小错误, 数据被拦截修改或者其他问题导致错误
+        /// </summary>
+        public int DataSizeError { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>
@@ -419,7 +431,7 @@
 
         public override string ToString()
         {
-            return $"玩家ID:{PlayerID} 用户ID:{UserID} 场景ID:{SceneName} 登录:{Login}";
+            return $"玩家ID:{PlayerID} 用户ID:{UserID} IP:{RemotePoint} 场景ID:{SceneName} 登录:{Login}";
         }
     }
 }

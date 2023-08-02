@@ -506,7 +506,7 @@ namespace Binding
         return sb;
     }
 
-    public static StringBuilder BuildNewTest(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+    public static StringBuilder BuildNewFast(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -596,10 +596,11 @@ namespace Binding
             members.Add(member);
         }
 
-        var templateText = @"using Net.Serialize;
-using Net.System;
-using System;
+        var templateText = @"using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Net.System;
+using Net.Serialize;
 
 namespace Binding
 {
@@ -610,10 +611,16 @@ namespace Binding
             fixed (byte* ptr = &stream.Buffer[stream.Position]) 
             {
                 int offset = 0;
-{FieldSplit}
-                Unsafe.WriteUnaligned(ptr + offset, value.{FIELDNAME});
-                offset += {Offset};
-{FieldSplit}
+{Split} //1
+                {WRITE}
+{Split} //2
+                NetConvertHelper.Write(ptr, ref offset, value.{FIELDNAME} != null);
+                if (value.test != null)
+                {
+                    stream.Position++;
+                    new {BINDTYPE}().Write(value.{FIELDNAME}, stream);
+                }
+{Split} //3
             }
         }
 		
@@ -629,10 +636,15 @@ namespace Binding
 			fixed (byte* ptr = &stream.Buffer[stream.Position]) 
             {
                 int offset = 0;
-{FieldSplit}
-                Unsafe.WriteUnaligned(ptr + offset, value.{FIELDNAME});
-                offset += {Offset};
-{FieldSplit}
+{Split} //4
+                {READ}
+{Split} //5
+                if (NetConvertHelper.Read<bool>(ptr, ref offset))
+                {
+                    stream.Position++;
+                    value.{FIELDNAME} = new {BINDTYPE}().Read(stream);
+                }
+{Split} //6
             }
 		}
 
@@ -665,34 +677,13 @@ namespace Binding
             var typecode = Type.GetTypeCode(members[i].Type);
             if (typecode != TypeCode.Object)
             {
-                //var templateText1 = templateTexts[1];
-                //templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                //templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                //templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                //if (typecode == TypeCode.String)
-                //    templateText1 = templateText1.Replace("{Condition}", $"!string.IsNullOrEmpty(value.{members[i].Name})");
-                //else if (typecode == TypeCode.Boolean)
-                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != false");
-                //else if (typecode == TypeCode.DateTime)
-                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
-                //else
-                //    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != 0");
-                //sb.Append(templateText1);
+                var templateText1 = templateTexts[1];
+                templateText1 = templateText1.Replace("{WRITE}", $"NetConvertHelper.Write(ptr, ref offset, value.{members[i].Name});");
+                sb.Append(templateText1);
 
-                //var templateText2 = templateTexts[5];
-                //templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                //templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                //templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                //if (members[i].IsEnum)
-                //    templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.ToString().Replace("+", ".")}>");
-                //else
-                //    templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
-                //sb1.Append(templateText2);
-
-                var code = @"                Unsafe.WriteUnaligned(ptr + offset, value.f1);
-                offset += 1;";
-
-
+                var templateText2 = templateTexts[4];
+                templateText2 = templateText2.Replace("{READ}", $"value.{members[i].Name} = NetConvertHelper.Read{(typecode == TypeCode.String ? "" : $"<{members[i].Type}>")}(ptr, ref offset);");
+                sb1.Append(templateText2);
             }
             else if (members[i].IsArray)
             {
@@ -700,36 +691,23 @@ namespace Binding
                 if (typecode != TypeCode.Object)
                 {
                     var templateText1 = templateTexts[1];
-                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
+                    templateText1 = templateText1.Replace("{WRITE}", $"NetConvertHelper.WriteArray(ptr, ref offset, value.{members[i].Name});");
                     sb.Append(templateText1);
 
-                    var templateText2 = templateTexts[5];
-                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}Array");
+                    var templateText2 = templateTexts[4];
+                    templateText2 = templateText2.Replace("{READ}", $"value.{members[i].Name} = NetConvertHelper.ReadArray{(typecode == TypeCode.String ? "" : $"<{members[i].ItemType}>")}(ptr, ref offset);");
                     sb1.Append(templateText2);
                 }
                 else
                 {
-                    var templateText1 = templateTexts[2];
-                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    if (members[i].Type.IsValueType)
-                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
-                    else
-                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
                     var local = members[i].ItemType.ToString().Replace(".", "").Replace("+", "") + "ArrayBind";
+
+                    var templateText1 = templateTexts[2];
+                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
                     templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
                     sb.Append(templateText1);
 
-                    var templateText2 = templateTexts[6];
-                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                    var templateText2 = templateTexts[5];
                     templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
                     templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
                     sb1.Append(templateText2);
@@ -748,24 +726,33 @@ namespace Binding
                         genericCodes?.Add(codeSB.ToString());
                     }
 
-                    var templateText1 = templateTexts[2];
-                    templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                    templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                    templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    if (members[i].Type.IsValueType)
-                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default");
-                    else
-                        templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
-                    var local = className + "Bind";
-                    templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
-                    sb.Append(templateText1);
+                    typecode = Type.GetTypeCode(members[i].ItemType);
+                    if (typecode != TypeCode.Object)
+                    {
+                        var templateText1 = templateTexts[1];
+                        var typeName1 = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
+                        templateText1 = templateText1.Replace("{WRITE}", $"NetConvertHelper.WriteCollection(ptr, ref offset, value.{members[i].Name});");
+                        sb.Append(templateText1);
 
-                    var templateText2 = templateTexts[6];
-                    templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                    templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
-                    templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                    templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
-                    sb1.Append(templateText2);
+                        var templateText2 = templateTexts[4];
+                        templateText2 = templateText2.Replace("{READ}", $"value.{members[i].Name} = NetConvertHelper.ReadCollection<{(typecode == TypeCode.String ? $"{typeName1}" : $"{typeName1}, {members[i].ItemType}")}>(ptr, ref offset);");
+                        sb1.Append(templateText2);
+                    }
+                    else
+                    {
+                        var local = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
+                        local = local.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "") + "Bind";
+
+                        var templateText1 = templateTexts[2];
+                        templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
+                        templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
+                        sb.Append(templateText1);
+
+                        var templateText2 = templateTexts[5];
+                        templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
+                        templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                        sb1.Append(templateText2);
+                    }
                 }
                 else //Dic
                 {
@@ -796,31 +783,23 @@ namespace Binding
             }
             else
             {
-                var templateText1 = templateTexts[2];
-                templateText1 = templateText1.Replace("{BITPOS}", $"{bitPos}");
-                templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
-                templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
-
-                if (members[i].Type.IsValueType)
-                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type})");
-                else
-                    templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
                 var local = members[i].Type.ToString().Replace(".", "").Replace("+", "") + "Bind";
+
+                var templateText1 = templateTexts[2];
+                templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
                 templateText1 = templateText1.Replace("{BINDTYPE}", $"{local}");
                 sb.Append(templateText1);
 
-                var templateText2 = templateTexts[6];
-                templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
-                templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
+                var templateText2 = templateTexts[5];
                 templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
+                templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}"); 
                 sb1.Append(templateText2);
             }
         }
 
-        sb.Append(templateTexts[4]);
+        sb.Append(templateTexts[3]);
         sb.Append(sb1);
-        sb.Append(templateTexts[8]);
+        sb.Append(templateTexts[6]);
 
         return sb;
     }

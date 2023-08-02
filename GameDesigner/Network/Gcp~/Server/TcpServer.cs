@@ -9,6 +9,7 @@
     using Net.System;
     using Net.Helper;
     using Debug = Event.NDebug;
+    using global::System.Drawing;
 
     /// <summary>
     /// TCP服务器类型
@@ -217,7 +218,22 @@
             }
             else
             {
-                Debug.LogError($"[{client}]发送窗口已满,等待对方接收中!");
+                client.WindowFullError++;
+            }
+        }
+
+        protected override void OnCheckPerSecond(Player client)
+        {
+            base.OnCheckPerSecond(client);
+            if (client.WindowFullError > 0)
+            {
+                Debug.LogError($"[{client}]发送窗口已满,等待对方接收中! {client.WindowFullError}/秒");
+                client.WindowFullError = 0;
+            }
+            if (client.DataSizeError > 0)
+            {
+                Debug.LogError($"[{client}]数据被拦截修改或数据量太大, 如果想传输大数据, 请设置PackageSize属性! {client.DataSizeError}/秒");
+                client.DataSizeError = 0;
             }
         }
 

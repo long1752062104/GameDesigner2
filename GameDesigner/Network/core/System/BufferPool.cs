@@ -126,7 +126,6 @@ namespace Net.System
                     segment = new Segment2(new byte[size], 0, size);
                 else
                     segment = new ArraySegment(new byte[size], 0, size);
-                segment.TableIndex = tableInx;
             J2: segment.IsDespose = false;
                 segment.ReferenceCount++;
                 segment.Init();
@@ -149,7 +148,15 @@ namespace Net.System
                 if (segment.IsDespose)
                     return;
                 segment.IsDespose = true;
-                STACKS[segment.TableIndex].Push(segment);
+                var table = TABLE;
+                for (int i = 0; i < table.Length; i++)
+                {
+                    if (segment.Length == table[i])
+                    {
+                        STACKS[i].Push(segment);
+                        return;
+                    }
+                }
             }
         }
     }

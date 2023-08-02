@@ -880,6 +880,7 @@ namespace Net.Server
         {
             var tick = (uint)Environment.TickCount;
             var heartTick = tick + (uint)HeartInterval;
+            var checkPerSecondTick = tick + 1000u;
             var group = obj as ThreadGroup<Player>;
             EndPoint remotePoint = null;
             if (Server != null) //其他协议Server字段不使用
@@ -897,6 +898,12 @@ namespace Net.Server
                         heartTick = tick + (uint)HeartInterval;
                         isCheckHeart = true;
                     }
+                    var isCheckPerSecond = false;
+                    if (tick >= checkPerSecondTick)
+                    {
+                        checkPerSecondTick = tick + 1000u;
+                        isCheckPerSecond = true;
+                    }
                     for (int i = 0; i < group.Clients.Count; i++)
                     {
                         var client = group.Clients[i];
@@ -904,12 +911,12 @@ namespace Net.Server
                             continue;
                         if (!CheckIsConnected(client, tick))
                             continue;
-                        if (isCheckHeart)
-                            CheckHeart(client, tick);
+                        if (isCheckHeart) CheckHeart(client, tick);
                         ResolveDataQueue(client, ref isSleep, tick);
                         SendDirect(client);
                         SyncVarHandler(client);
                     J: OnClientTick(client, tick);
+                        if (isCheckPerSecond) OnCheckPerSecond(client);
                     }
                     if (isSleep)
                         Thread.Sleep(1);
@@ -919,6 +926,15 @@ namespace Net.Server
                 {
                     Debug.LogError(ex.ToString());
                 }
+            }
+        }
+
+        protected virtual void OnCheckPerSecond(Player client) 
+        {
+            if (client.CRCError > 0)
+            {
+                Debug.LogError($"[{client}]CRC校验失败! {client.CRCError}/秒");
+                client.CRCError = 0;
             }
         }
 
@@ -1068,7 +1084,7 @@ namespace Net.Server
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
-                    NDebug.LogError($"[{client}]CRC校验失败!");
+                    client.CRCError++;
                     return;
                 }
             }
@@ -1149,14 +1165,14 @@ namespace Net.Server
                 if (crcCode != retVal)
                 {
                     client.stack = 0;
-                    Debug.LogError($"[{client}]CRC校验失败!");
+                    client.CRCError++;
                     return;
                 }
                 var size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     client.stack = 0;
-                    NDebug.LogError($"[{client}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
+                    client.DataSizeError++;
                     return;
                 }
                 if (buffer.Position + size <= buffer.Count)
