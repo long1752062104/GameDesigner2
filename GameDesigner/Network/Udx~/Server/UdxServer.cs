@@ -21,7 +21,7 @@
         /// udx服务器对象
         /// </summary>
         public new IntPtr Server;
-        private UDXPRC uDXPRC;
+        private UDXPRC udxPrc;
 
         public override void Start(ushort port = 9543)
         {
@@ -45,9 +45,9 @@
             }
             Server = UdxLib.UCreateFUObj();
             UdxLib.UBind(Server, null, port);
-            uDXPRC = new UDXPRC(ProcessReceive);
-            UdxLib.USetFUCB(Server, uDXPRC);
-            GC.KeepAlive(uDXPRC);
+            udxPrc = new UDXPRC(ProcessReceive);
+            UdxLib.USetFUCB(Server, udxPrc);
+            GC.KeepAlive(udxPrc);
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
@@ -128,6 +128,10 @@
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(client, buffer);
             }
+        }
+
+        protected override void CheckHeart(Player client, uint tick)
+        {
         }
 
         public override void RemoveClient(Player client)

@@ -24,7 +24,7 @@
     public class UdxClient : ClientBase
     {
         protected IntPtr udxObj;
-        public IntPtr ClientPtr { get; private set; }
+        protected IntPtr ClientPtr;
         protected UDXPRC udxPrc;
 
         /// <summary>
@@ -161,7 +161,7 @@
                         client.InvokeInMainThread(client.OnConnectLostHandle);
                         client.RpcModels = new QueueSafe<RPCModel>();
                         client.ReleaseUdx();
-                        //handle.Free();
+                        handle.Free();
                         NDebug.Log("断开连接！");
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:
@@ -230,7 +230,7 @@
             if (isDispose) NDebug.Log("客户端已关闭！");
         }
 
-        private void ReleaseUdx()
+        protected void ReleaseUdx()
         {
             if (ClientPtr != IntPtr.Zero)
             {
@@ -355,15 +355,22 @@
         }
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
+            ReleaseUdx();
             udxObj = UdxLib.UCreateFUObj();
             UdxLib.UBind(udxObj, null, 0);
             udxPrc = new UDXPRC(ProcessReceive);
             UdxLib.USetFUCB(udxObj, udxPrc);
             GC.KeepAlive(udxPrc);
-            string host1 = host;
-            if (host == "127.0.0.1")
-                host1 = NetPort.GetIP();
-            UdxLib.UConnect(udxObj, host1, port, 0, false, 0);
+            if (host == "127.0.0.1" | host == "localhost")
+                host = NetPort.GetIP();
+            ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
+            if (ClientPtr != IntPtr.Zero)
+            {
+                UdxLib.UDump(ClientPtr);
+                var handle = GCHandle.Alloc(this);
+                var user = GCHandle.ToIntPtr(handle);
+                UdxLib.USetUserData(ClientPtr, user.ToInt64());
+            }
             return UniTask.FromResult(true);
         }
         protected override void StartupThread() { }
