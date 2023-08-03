@@ -25,7 +25,7 @@
     {
         protected IntPtr udxObj;
         public IntPtr ClientPtr { get; private set; }
-        protected UDXPRC uDXPRC;
+        protected UDXPRC udxPrc;
 
         /// <summary>
         /// 构造可靠传输客户端
@@ -66,8 +66,6 @@
             return base.Connect(host, port, localPort, result);
         }
 
-        //static IntPtr user;
-
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
@@ -75,18 +73,18 @@
                 ReleaseUdx();
                 udxObj = UdxLib.UCreateFUObj();
                 UdxLib.UBind(udxObj, null, 0);
-                uDXPRC = new UDXPRC(ProcessReceive);
-                UdxLib.USetFUCB(udxObj, uDXPRC);
-                GC.KeepAlive(uDXPRC);
+                udxPrc = new UDXPRC(ProcessReceive);
+                UdxLib.USetFUCB(udxObj, udxPrc);
+                GC.KeepAlive(udxPrc);
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
                 ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
                 if (ClientPtr != IntPtr.Zero) 
                 {
                     UdxLib.UDump(ClientPtr);
-                    //var handle = GCHandle.Alloc(this);
-                    //user = GCHandle.ToIntPtr(handle);
-                    //UdxLib.USetUserData(ClientPtr, user);
+                    var handle = GCHandle.Alloc(this);
+                    var user = GCHandle.ToIntPtr(handle);
+                    UdxLib.USetUserData(ClientPtr, user.ToInt64());
                 }
 #if SERVICE
                 return UniTask.Run(() =>
@@ -144,11 +142,9 @@
         {
             try
             {
-                //var ptr1 = UdxLib.UGetUserData(cli);
-                //var handle = GCHandle.FromIntPtr(user);
-                //var client = handle.Target as UdxClient;
-                //NDebug.LogError($"静态指针 = {user.ToString("X")} 事件获得指针 = {ptr1.ToString("X")} target = " + client);
-                var client = Instance as UdxClient;
+                var user = UdxLib.UGetUserData(cli);
+                var handle = GCHandle.FromIntPtr(new IntPtr(user));
+                var client = handle.Target as UdxClient;
                 client.heart = 0;
                 switch (type)
                 {
@@ -214,7 +210,7 @@
             }
         }
 
-        public override void Close(bool await = true, int millisecondsTimeout = 1000)
+        public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
             var isDispose = openClient;
             Connected = false;
@@ -361,9 +357,9 @@
         {
             udxObj = UdxLib.UCreateFUObj();
             UdxLib.UBind(udxObj, null, 0);
-            uDXPRC = new UDXPRC(ProcessReceive);
-            UdxLib.USetFUCB(udxObj, uDXPRC);
-            GC.KeepAlive(uDXPRC);
+            udxPrc = new UDXPRC(ProcessReceive);
+            UdxLib.USetFUCB(udxObj, udxPrc);
+            GC.KeepAlive(udxPrc);
             string host1 = host;
             if (host == "127.0.0.1")
                 host1 = NetPort.GetIP();

@@ -214,7 +214,7 @@
             }
         }
 
-        public override void Close(bool await = true, int millisecondsTimeout = 1000)
+        public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
             SendRT(NetCmd.Disconnect, new byte[0]);
             SendDirect();

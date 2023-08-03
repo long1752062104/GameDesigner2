@@ -75,19 +75,19 @@
                         client.Udx = cli;
                         var handle = GCHandle.Alloc(client);
                         var ptr = GCHandle.ToIntPtr(handle);
-                        UdxLib.USetUserData(cli, ptr);
+                        UdxLib.USetUserData(cli, ptr.ToInt64());
                         client.Handle = handle;
                         break;
                     case UDXEVENT_TYPE.E_LINKBROKEN:
                         var ptr1 = UdxLib.UGetUserData(cli);
-                        client = GCHandle.FromIntPtr(ptr1).Target as Player;
+                        client = GCHandle.FromIntPtr(new IntPtr(ptr1)).Target as Player;
                         if (client == null)
                             return;
                         RemoveClient(client);
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:
                         var ptr2 = UdxLib.UGetUserData(cli);
-                        client = GCHandle.FromIntPtr(ptr2).Target as Player;
+                        client = GCHandle.FromIntPtr(new IntPtr(ptr2)).Target as Player;
                         if (client == null)
                             return;
                         client.heart = 0;

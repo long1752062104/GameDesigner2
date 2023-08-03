@@ -170,7 +170,7 @@
         }
 #endif
 
-        public override void Close(bool await = true, int millisecondsTimeout = 1000)
+        public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
             var isDispose = openClient;
             Connected = false;

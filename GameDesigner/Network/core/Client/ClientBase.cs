@@ -1818,7 +1818,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="await">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
         /// <param name="millisecondsTimeout">等待毫秒数</param>
-        public virtual void Close(bool await = true, int millisecondsTimeout = 1000)
+        public virtual void Close(bool await = true, int millisecondsTimeout = 100)
         {
             var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
