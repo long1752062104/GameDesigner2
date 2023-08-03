@@ -68,6 +68,7 @@
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\Network.meta" />
     <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />
     <None Remove="GameDesigner\Serialize.meta" />

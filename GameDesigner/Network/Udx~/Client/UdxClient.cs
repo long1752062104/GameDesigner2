@@ -66,6 +66,8 @@
             return base.Connect(host, port, localPort, result);
         }
 
+        //static IntPtr user;
+
         protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
@@ -82,9 +84,9 @@
                 if (ClientPtr != IntPtr.Zero) 
                 {
                     UdxLib.UDump(ClientPtr);
-                    var handle = GCHandle.Alloc(this);
-                    var ptr = GCHandle.ToIntPtr(handle);
-                    UdxLib.USetUserData(ClientPtr, ptr);
+                    //var handle = GCHandle.Alloc(this);
+                    //user = GCHandle.ToIntPtr(handle);
+                    //UdxLib.USetUserData(ClientPtr, user);
                 }
 #if SERVICE
                 return UniTask.Run(() =>
@@ -142,9 +144,11 @@
         {
             try
             {
-                var ptr1 = UdxLib.UGetUserData(cli);
-                var handle = GCHandle.FromIntPtr(ptr1);
-                var client = handle.Target as UdxClient;
+                //var ptr1 = UdxLib.UGetUserData(cli);
+                //var handle = GCHandle.FromIntPtr(user);
+                //var client = handle.Target as UdxClient;
+                //NDebug.LogError($"静态指针 = {user.ToString("X")} 事件获得指针 = {ptr1.ToString("X")} target = " + client);
+                var client = Instance as UdxClient;
                 client.heart = 0;
                 switch (type)
                 {
@@ -161,7 +165,7 @@
                         client.InvokeInMainThread(client.OnConnectLostHandle);
                         client.RpcModels = new QueueSafe<RPCModel>();
                         client.ReleaseUdx();
-                        handle.Free();
+                        //handle.Free();
                         NDebug.Log("断开连接！");
                         break;
                     case UDXEVENT_TYPE.E_DATAREAD:

@@ -39,7 +39,7 @@ namespace Net.Event
 #endif
                     action();
                 if (Event.invokeNum == -1)
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 else if (--Event.invokeNum <= 0)
                     Event.isRemove = true;
             }
@@ -50,7 +50,7 @@ namespace Net.Event
                 if (--Event.invokeNum <= 0)
                     Event.isRemove = true;
                 else
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 IsCompleted = true;
             }
         }
@@ -73,7 +73,7 @@ namespace Net.Event
 #endif
                     action(Event.obj);
                 if (Event.invokeNum == -1)
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 else if (--Event.invokeNum <= 0)
                     Event.isRemove = true;
             }
@@ -84,7 +84,7 @@ namespace Net.Event
                 if (--Event.invokeNum <= 0)
                     Event.isRemove = true;
                 else
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 IsCompleted = true;
             }
         }
@@ -106,7 +106,7 @@ namespace Net.Event
                 else
 #endif
                 if (action())
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 else
                     Event.isRemove = true;
             }
@@ -116,7 +116,7 @@ namespace Net.Event
                 try
                 {
                     if (action())
-                        Event.time = Event.time + Event.timeMax;
+                        Event.time += Event.timeMax;
                     else
                         Event.isRemove = true;
                 }
@@ -148,7 +148,7 @@ namespace Net.Event
                 else
 #endif
                 if (action(Event.obj))
-                    Event.time = Event.time + Event.timeMax;
+                    Event.time += Event.timeMax;
                 else
                     Event.isRemove = true;
             }
@@ -158,7 +158,7 @@ namespace Net.Event
                 try
                 {
                     if (action(Event.obj))
-                        Event.time = Event.time + Event.timeMax;
+                        Event.time += Event.timeMax;
                     else
                         Event.isRemove = true;
                 }
@@ -218,7 +218,8 @@ namespace Net.Event
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
@@ -245,7 +246,8 @@ namespace Net.Event
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
@@ -269,13 +271,14 @@ namespace Net.Event
                 obj = obj,
                 invokeNum = invokeNum,
                 timeMax = (ulong)(time * 1000),
-                eventId = eventID,
+                eventId = eventID
             };
             eventObj.action = new EventAction2()
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
@@ -315,7 +318,8 @@ namespace Net.Event
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
@@ -343,7 +347,8 @@ namespace Net.Event
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
@@ -372,7 +377,8 @@ namespace Net.Event
             {
                 Event = eventObj,
                 IsAsync = isAsync,
-                action = ptr
+                action = ptr,
+                IsCompleted = true,
             };
             events.Add(eventObj);
             return eventID;
