@@ -252,8 +252,8 @@
                 UdxLib.INIT = true;
 #if SERVICE
                 string path = AppDomain.CurrentDomain.BaseDirectory;
-                if (!File.Exists(path + "\\FastUdxApi.dll"))
-                    throw new FileNotFoundException($"FastUdxApi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 FastUdxApi.dll复制到{path}目录下.");
+                if (!File.Exists(path + "\\udxapi.dll"))
+                    throw new FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 udxapi.dll复制到{path}目录下.");
 #endif
                 UdxLib.UInit(8);
                 UdxLib.UEnableLog(false);
@@ -282,13 +282,21 @@
                 var buffer = new byte[dataLen];
                 Task.Run(() =>
                 {
+                    for (int i = 0; i < clients.Count; i++)
+                    {
+                        var client = clients[i];
+                        client.OnPingCallback += (d)=> 
+                        {
+                            client.delay = d;
+                        };
+                    }
                     while (!cts.IsCancellationRequested)
                     {
                         Thread.Sleep(1000);
                         fpsAct?.Invoke(clients);
                         for (int i = 0; i < clients.Count; i++)
                         {
-                            clients[i].NetworkFlowHandler();
+                            clients[i].Ping();
                         }
                     }
                 });
@@ -349,30 +357,31 @@
         public int sendNum { get { return sendAmount; } }
         public int revdNum { get { return receiveAmount; } }
         public int resolveNum { get { return resolveAmount; } }
+        public uint delay { get; set; }
 
         public UdxClientTest()
         {
         }
-        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
-        {
-            ReleaseUdx();
-            udxObj = UdxLib.UCreateFUObj();
-            UdxLib.UBind(udxObj, null, 0);
-            udxPrc = new UDXPRC(ProcessReceive);
-            UdxLib.USetFUCB(udxObj, udxPrc);
-            GC.KeepAlive(udxPrc);
-            if (host == "127.0.0.1" | host == "localhost")
-                host = NetPort.GetIP();
-            ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
-            if (ClientPtr != IntPtr.Zero)
-            {
-                UdxLib.UDump(ClientPtr);
-                var handle = GCHandle.Alloc(this);
-                var user = GCHandle.ToIntPtr(handle);
-                UdxLib.USetUserData(ClientPtr, user.ToInt64());
-            }
-            return UniTask.FromResult(true);
-        }
+        //protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        //{
+        //    ReleaseUdx();
+        //    udxObj = UdxLib.UCreateFUObj();
+        //    UdxLib.UBind(udxObj, null, 0);
+        //    udxPrc = new UDXPRC(ProcessReceive);
+        //    UdxLib.USetFUCB(udxObj, udxPrc);
+        //    GC.KeepAlive(udxPrc);
+        //    if (host == "127.0.0.1" | host == "localhost")
+        //        host = NetPort.GetIP();
+        //    ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
+        //    if (ClientPtr != IntPtr.Zero)
+        //    {
+        //        UdxLib.UDump(ClientPtr);
+        //        var handle = GCHandle.Alloc(this);
+        //        var user = GCHandle.ToIntPtr(handle);
+        //        UdxLib.USetUserData(ClientPtr, user.ToInt64());
+        //    }
+        //    return UniTask.FromResult(true);
+        //}
         protected override void StartupThread() { }
 
         public override string ToString()

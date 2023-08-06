@@ -172,13 +172,21 @@
                 var buffer = new byte[dataLen];
                 Task.Run(() =>
                 {
+                    for (int i = 0; i < clients.Count; i++)
+                    {
+                        var client = clients[i];
+                        client.OnPingCallback += (d) =>
+                        {
+                            client.delay = d;
+                        };
+                    }
                     while (!cts.IsCancellationRequested)
                     {
                         Thread.Sleep(1000);
                         fpsAct?.Invoke(clients);
                         for (int i = 0; i < clients.Count; i++)
                         {
-                            clients[i].NetworkFlowHandler();
+                            clients[i].Ping();
                         }
                     }
                 });
@@ -239,6 +247,8 @@
         public int sendNum { get { return sendAmount; } }
         public int revdNum { get { return receiveAmount; } }
         public int resolveNum { get { return resolveAmount; } }
+        public uint delay { get; internal set; }
+
         private byte[] addressBuffer;
         public KcpClientTest() : base()
         {

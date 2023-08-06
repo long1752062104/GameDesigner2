@@ -524,7 +524,7 @@ namespace Net.Server
         /// 当有客户端连接
         /// </summary>
         /// <param name="client">客户端套接字</param>
-        protected virtual void OnHasConnect(Player client) => Debug.Log($"[{client} {client.RemotePoint}]连接服务器!");
+        protected virtual void OnHasConnect(Player client) => Debug.Log($"[{client}]连接服务器!");
 
         /// <summary>
         /// 当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开

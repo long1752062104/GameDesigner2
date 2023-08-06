@@ -268,13 +268,21 @@
                 var buffer = new byte[dataLen];
                 Task.Run(() =>
                 {
+                    for (int i = 0; i < clients.Count; i++)
+                    {
+                        var client = clients[i];
+                        client.OnPingCallback += (d) =>
+                        {
+                            client.delay = d;
+                        };
+                    }
                     while (!cts.IsCancellationRequested)
                     {
                         Thread.Sleep(1000);
                         fpsAct?.Invoke(clients);
                         for (int i = 0; i < clients.Count; i++)
                         {
-                            clients[i].NetworkFlowHandler();
+                            clients[i].Ping();
                         }
                     }
                 });
@@ -309,8 +317,8 @@
                                         continue;
                                     if (canSend)
                                     {
-                                        client.SendRT(NetCmd.Local, buffer);
-                                        //client.AddOperation(new Operation(66, buffer));
+                                        //client.SendRT(NetCmd.Local, buffer);
+                                        client.AddOperation(new Operation(66, buffer));
                                     }
                                     client.NetworkTick();
                                 }
@@ -339,6 +347,7 @@
         public int sendNum { get { return sendAmount; } }
         public int revdNum { get { return receiveAmount; } }
         public int resolveNum { get { return resolveAmount; } }
+        public uint delay { get; internal set; }
 
         public TcpClientTest()
         {
