@@ -9,6 +9,7 @@ namespace Net.AOI
     /// </summary>
     public class Grid : IEnumerable<IGridBody>, IEnumerable
     {
+        public int Id;
         public Rect rect;
         public List<Grid> grids = new List<Grid>();//九宫格列表
         public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();//格子的物体
@@ -80,7 +81,7 @@ namespace Net.AOI
         }
         public override string ToString()
         {
-            return $"{rect}";
+            return $"ID:{Id} Rect:{rect} Bodys:{gridBodies.Count}";
         }
     }
 }
