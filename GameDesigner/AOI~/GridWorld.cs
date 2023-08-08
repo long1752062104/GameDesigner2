@@ -222,7 +222,7 @@ namespace Net.AOI
         /// <param name="other"></param>
         private static void EnterHandler(IGridBody body, IGridBody other) 
         {
-            if (body == other) //当插入时会偶尔发生相同的玩家通知问题
+            if (body == other | body.Identity == other.Identity) //当插入时会偶尔发生相同的玩家通知问题
                 return;
             if (body.MainRole & other.MainRole) //如果两个都是主角, 则相互通知
             {
@@ -243,7 +243,7 @@ namespace Net.AOI
         /// <param name="other"></param>
         private static void ExitHandler(IGridBody body, IGridBody other)
         {
-            if (body == other) //当插入时会偶尔发生相同的玩家通知问题
+            if (body == other | body.Identity == other.Identity) //当插入时会偶尔发生相同的玩家通知问题
                 return;
             if (body.MainRole & other.MainRole) //如果两个都是主角, 则相互通知
             {
