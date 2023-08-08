@@ -78,6 +78,8 @@ namespace Net.AOI
         /// <returns></returns>
         public bool Insert(IGridBody body)
         {
+            if (body.Grid != null) //防止多次插入
+                return false;
             body.OnStart();
             foreach (var grid in grids)
             {
