@@ -31,12 +31,13 @@ namespace Framework
     {
         public Delegate onBack;
 
-        public void ShowUI(Delegate onBack = null)
+        public void ShowUI(Delegate onBack = null, params object[] pars)
         {
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             if (onBack != null)
                 this.onBack = onBack;
+            OnShowUI(pars);
         }
 
         public void ShowUI(string info)
@@ -75,6 +76,8 @@ namespace Framework
         {
             throw new Exception($"请重写OnShowUI方法处理你的进度加载界面");
         }
+
+        public virtual void OnShowUI(params object[] pars) { }
     }
 
     /// <summary>
@@ -85,9 +88,9 @@ namespace Framework
     {
         public static T I => Global.UI.GetFormOrCreate<T>();
 
-        public static T Show(Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm)
+        public static T Show(Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm, params object[] pars)
         {
-            var form = Global.UI.OpenForm<T>(onBack, formMode);
+            var form = Global.UI.OpenForm<T>(onBack, formMode, pars);
             return form;
         }
 

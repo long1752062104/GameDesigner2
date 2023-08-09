@@ -45,10 +45,10 @@ namespace Framework
         /// <param name="onBack">当关闭界面后回调</param>
         /// <param name="formMode">当前界面响应模式</param>
         /// <returns></returns>
-        public T OpenForm<T>(Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm) where T : UIFormBase<T>
+        public T OpenForm<T>(Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm, params object[] pars) where T : UIFormBase<T>
         {
             var formName = typeof(T).Name;
-            return OpenForm(formName, onBack, formMode) as T;
+            return OpenForm(formName, onBack, formMode, pars) as T;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Framework
         /// <param name="onBack">当关闭界面后回调</param>
         /// <param name="formMode">当前界面响应模式</param>
         /// <returns></returns>
-        public void OpenForm(UIFormBase uiForm, Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm)
+        public void OpenForm(UIFormBase uiForm, Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm, params object[] pars)
         {
             var formName = uiForm.GetType().Name;
             OpenForm(formName, onBack, formMode);
@@ -71,7 +71,7 @@ namespace Framework
         /// <param name="onBack">当关闭界面后回调</param>
         /// <param name="formMode">当前界面响应模式</param>
         /// <returns></returns>
-        public UIFormBase OpenForm(string formName, Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm)
+        public UIFormBase OpenForm(string formName, Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm, params object[] pars)
         {
             if (formDict.TryGetValue(formName, out var form))
                 if (form != null)
@@ -95,8 +95,8 @@ namespace Framework
                         break;
                 }
             }
-            form.ShowUI(onBack);
-            form.transform.SetAsLastSibling();
+            form.ShowUI(onBack, pars);
+            //form.transform.SetAsLastSibling(); //showui已经处理
             formStack.Push(form);//如果是消息框, 一定会关闭了才能再次打开, 不存在多次压入
             return form;
         }

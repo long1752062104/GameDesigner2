@@ -915,7 +915,7 @@ namespace Net.Server
                         ResolveDataQueue(client, ref isSleep, tick);
                         SendDirect(client);
                         SyncVarHandler(client);
-                    J: OnClientTick(client, tick);
+                        OnClientTick(client, tick);
                         if (isCheckPerSecond) OnCheckPerSecond(client);
                     }
                     if (isSleep)

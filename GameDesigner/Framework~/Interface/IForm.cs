@@ -11,7 +11,7 @@ namespace Framework
         /// 显示一个ui界面
         /// </summary>
         /// <param name="onBack"></param>
-        void ShowUI(Delegate onBack = null);
+        void ShowUI(Delegate onBack = null, params object[] pars);
         /// <summary>
         /// 屏幕中间提示
         /// </summary>
