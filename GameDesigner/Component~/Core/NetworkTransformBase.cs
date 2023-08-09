@@ -198,8 +198,12 @@ namespace Net.UnityComponent
             base.OnDestroy();
             if (ClientBase.Instance == null)
                 return;
+            if (!ClientBase.Instance.Connected)
+                return;
+            if (netObj.Identity == -1)
+                return;
             //如果在退出游戏或者退出场景后不让物体被销毁，则需要查找netobj组件设置Identity等于-1，或者查找此组件设置currMode等于None，或者在点击处理的时候调用ClientBase.Instance.Close方法
-            if ((currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control) & netObj.Identity != -1 & ClientBase.Instance.Connected)
+            if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control | currMode == SyncMode.Local)
                 netObj.SendDestroyCommand();
         }
     }
