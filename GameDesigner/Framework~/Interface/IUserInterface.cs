@@ -5,7 +5,7 @@ namespace Framework
     /// <summary>
     /// 界面接口
     /// </summary>
-    public interface IForm
+    public interface IUserInterface
     {
         /// <summary>
         /// 显示一个ui界面

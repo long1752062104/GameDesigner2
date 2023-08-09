@@ -263,6 +263,7 @@ public class ImportSettingWindow : EditorWindow
         var path = $"{pluginsPath}{copyToProtocolName}/";
         if (!Directory.Exists(path))
             return;
+        Directory.Delete(path, true); //删除原文件再导入新文件
         Import(sourceProtocolName, copyToProtocolName, pluginsPath);
     }
 

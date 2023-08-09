@@ -7,7 +7,7 @@ namespace Framework
     /// <summary>
     /// 界面打开操作模式
     /// </summary>
-    public enum UIFormMode 
+    public enum UIMode
     {
         /// <summary>
         /// 不做任何响应
@@ -16,18 +16,17 @@ namespace Framework
         /// <summary>
         /// 关闭当前界面, 并打开新的界面
         /// </summary>
-        CloseCurrForm,
+        CloseCurrUI,
         /// <summary>
         /// 只隐藏当前界面, 然后打开新的界面
         /// </summary>
-        HideCurrForm,
+        HideCurrUI,
     }
-
 
     /// <summary>
     /// UI界面基类
     /// </summary>
-    public class UIFormBase : MonoBehaviour, IForm
+    public class UIBase : MonoBehaviour, IUserInterface
     {
         public Delegate onBack;
 
@@ -84,11 +83,11 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UIFormBase<T> : UIFormBase where T : UIFormBase<T>
+    public class UIBase<T> : UIBase where T : UIBase<T>
     {
         public static T I => Global.UI.GetFormOrCreate<T>();
 
-        public static T Show(Delegate onBack = null, UIFormMode formMode = UIFormMode.CloseCurrForm, params object[] pars)
+        public static T Show(Delegate onBack = null, UIMode formMode = UIMode.CloseCurrUI, params object[] pars)
         {
             var form = Global.UI.OpenForm<T>(onBack, formMode, pars);
             return form;
@@ -96,7 +95,7 @@ namespace Framework
 
         public static void Show(string title, string info, Action<bool> result = null)
         {
-            var i = Show(null, UIFormMode.None);
+            var i = Show(null, UIMode.None);
             i.OnShowUI(title, info, result);
         }
 
@@ -110,7 +109,7 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UIFormBase<T, Item> : UIFormBase<T> where T : UIFormBase<T, Item>
+    public class UIBase<T, Item> : UIBase<T> where T : UIBase<T, Item>
     {
         public Item item;
         public Transform itemRoot;
@@ -121,7 +120,7 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UIFormBase1<T, Item> : UIFormBase<T> where T : UIFormBase1<T, Item>
+    public class UIBase1<T, Item> : UIBase<T> where T : UIBase1<T, Item>
     {
         public Item[] item;
         public Transform[] itemRoot;
@@ -132,7 +131,7 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class NetworkOneUIFormBase<T> : UIFormBase<T> where T : NetworkOneUIFormBase<T>
+    public class NetworkOneUIBase<T> : UIBase<T> where T : NetworkOneUIBase<T>
     {
         public virtual void Awake()
         {
@@ -149,7 +148,7 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class NetworkTwoUIFormBase<T> : UIFormBase<T> where T : NetworkTwoUIFormBase<T>
+    public class NetworkTwoUIBase<T> : UIBase<T> where T : NetworkTwoUIBase<T>
     {
         public virtual void Awake()
         {
@@ -166,7 +165,7 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class NetworkAllUIFormBase<T> : UIFormBase<T> where T : NetworkAllUIFormBase<T>
+    public class NetworkAllUIBase<T> : UIBase<T> where T : NetworkAllUIBase<T>
     {
         public virtual void Awake()
         {
@@ -178,4 +177,9 @@ namespace Framework
             Global.Network.RemoveRpc(-1, this);
         }
     }
+
+    public class UIFormBase : UIBase { }
+    public class UIFormBase<T> : UIBase<T> where T : UIFormBase<T> { }
+    public class UIFormBase<T, Item> : UIBase<T, Item> where T : UIFormBase<T, Item> { }
+    public class UIFormBase1<T, Item> : UIBase1<T, Item> where T : UIFormBase1<T, Item> { }
 }
