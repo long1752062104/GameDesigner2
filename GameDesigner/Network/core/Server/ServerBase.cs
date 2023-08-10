@@ -1354,9 +1354,8 @@ namespace Net.Server
                     break;
                 case NetCmd.ReliableTransport:
                     client.Gcp.Input(model.Buffer);
-                    int count1;
                     ISegment buffer1;
-                    while ((count1 = client.Gcp.Receive(out buffer1)) > 0)
+                    while (client.Gcp.Receive(out buffer1) > 0)
                     {
                         DataCRCHandler(client, buffer1, false);
                         BufferPool.Push(buffer1);

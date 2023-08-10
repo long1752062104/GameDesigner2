@@ -120,6 +120,19 @@ namespace Framework
     /// UI界面基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    public class UIBase<T, Item1, Item2> : UIBase<T> where T : UIBase<T, Item1, Item2>
+    {
+        public Item1 item_1;
+        public Item2 item_2;
+        public Transform[] itemRoots;
+        public List<Item1> item1List = new List<Item1>();
+        public List<Item2> item2List = new List<Item2>();
+    }
+
+    /// <summary>
+    /// UI界面基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class UIBase1<T, Item> : UIBase<T> where T : UIBase1<T, Item>
     {
         public Item[] item;
