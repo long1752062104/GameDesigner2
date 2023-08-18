@@ -315,6 +315,8 @@ public class ImportSettingWindow : EditorWindow
         {
             var newFile = file.Replace(path, "");
             var newPath = $"{rootPath}/{sourceProtocolName}/{newFile}";
+            if (!Directory.Exists(Path.GetDirectoryName(newPath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
             File.Copy(file, newPath, true);
         }
         Debug.Log($"反导出{Path.GetFileName(copyToProtocolName)}完成!");
