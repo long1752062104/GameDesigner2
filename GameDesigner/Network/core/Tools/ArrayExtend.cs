@@ -346,6 +346,26 @@ public static class ArrayExtend
             tran.gameObject.layer = layer;
         }
     }
+
+    public static void SetIsOn(this List<Toggle> self, int isOnIndex)
+    {
+        for (int i = 0; i < self.Count; i++)
+        {
+            var isOn = i == isOnIndex;
+            self[i].isOn = isOn;
+            self[i].onValueChanged.Invoke(isOn);
+        }
+    }
+
+    public static void SetIsOn(this Toggle[] self, int isOnIndex)
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            var isOn = i == isOnIndex;
+            self[i].isOn = isOn;
+            self[i].onValueChanged.Invoke(isOn);
+        }
+    }
 #endif
 
     public static void For<T>(this HashSet<T> self, Action<T> action)
