@@ -219,6 +219,26 @@ public static class ArrayExtend
         }
     }
 
+    public static void InvokeMethod<T>(this T[] self, string name, params object[] pars) where T : Object
+    {
+        var type = typeof(T);
+        var method = type.GetMethod(name);
+        for (int i = 0; i < self.Length; i++)
+        {
+            method.Invoke(self[i], pars);
+        }
+    }
+
+    public static void InvokeMethod<T>(this List<T> self, string name, params object[] pars) where T : Object
+    {
+        var type = typeof(T);
+        var method = type.GetMethod(name);
+        for (int i = 0; i < self.Count; i++)
+        {
+            method.Invoke(self[i], pars);
+        }
+    }
+
     public static void SetEnableds<T>(this T[] self, bool active) where T : Behaviour
     {
         for (int i = 0; i < self.Length; i++)

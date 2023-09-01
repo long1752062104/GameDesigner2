@@ -28,7 +28,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Debug\GameDesigner.xml</DocumentationFile>
     <RegisterForComInterop>false</RegisterForComInterop>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -84,6 +84,15 @@
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi-v7a\libudxapi.so" />
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi\libudxapi.so" />
     <None Include="GameDesigner\Network\Web~\UnityWebSocket\Plugins\WebGL\WebSocket.jslib" />
+    <None Include="GameDesigner\Recast~\Agent.cs.meta" />
+    <None Include="GameDesigner\Recast~\AgentEntity.cs.meta" />
+    <None Include="GameDesigner\Recast~\Editor.meta" />
+    <None Include="GameDesigner\Recast~\Editor\PathfindingEditor.cs.meta" />
+    <None Include="GameDesigner\Recast~\Library.meta" />
+    <None Include="GameDesigner\Recast~\Library\AmazingAssets.TerrainToMesh.dll.meta" />
+    <None Include="GameDesigner\Recast~\Library\RecastDll.dll.meta" />
+    <None Include="GameDesigner\Recast~\Pathfinding.cs.meta" />
+    <None Include="GameDesigner\Recast~\RecastDll.cs.meta" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +106,8 @@
     <Content Include="GameDesigner\Network\Udx~\Plugins\Windows\FastUdxApi.dll" />
     <Content Include="GameDesigner\Network\Udx~\使用说明.txt" />
     <Content Include="GameDesigner\Network\Web~\使用说明.txt" />
+    <Content Include="GameDesigner\Recast~\Library\AmazingAssets.TerrainToMesh.dll" />
+    <Content Include="GameDesigner\Recast~\Library\RecastDll.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameDesigner\AOI~\Grid.cs" />
@@ -339,6 +350,11 @@
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\NoWebGL\WebSocketManager.cs" />
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\WebGL\WebSocket.cs" />
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\WebGL\WebSocketManager.cs" />
+    <Compile Include="GameDesigner\Recast~\Agent.cs" />
+    <Compile Include="GameDesigner\Recast~\AgentEntity.cs" />
+    <Compile Include="GameDesigner\Recast~\Editor\PathfindingEditor.cs" />
+    <Compile Include="GameDesigner\Recast~\Pathfinding.cs" />
+    <Compile Include="GameDesigner\Recast~\RecastDll.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonArray.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonBinary.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonBinaryType.cs" />

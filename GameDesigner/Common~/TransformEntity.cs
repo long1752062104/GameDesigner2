@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Net.Common
 {
     /// <summary>
     /// 新的Trasnform实体类, 性能可能要好点
     /// </summary>
+    [Serializable]
     public class TransformEntity
     {
         private Vector3 position;

@@ -142,7 +142,11 @@ public class ImportSettingWindow : EditorWindow
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
         path = data.path + "/AOI";
         DrawGUI(path, "AOI", "AOI~", "AOI", null, data.path + "/");
-        
+
+        EditorGUILayout.HelpBox("Recast & Detour寻路模块 用于双端AI寻路", MessageType.Info);
+        path = data.path + "/Recast";
+        DrawGUI(path, "Recast", "Recast~", "Recast", null, data.path + "/");
+
         EditorGUILayout.HelpBox("Framework模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("HyBridCLR地址,下载或Git导入包"))
@@ -178,6 +182,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Common~", "Common", data.path + "/");
             Import("MMORPG~", "MMORPG", data.path + "/");
             Import("AOI~", "AOI", data.path + "/");
+            Import("Recast~", "Recast", data.path + "/");
             Import("Framework~", "Framework", data.path + "/");
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
@@ -194,6 +199,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Common~", "Common", data.path + "/");
             Import("MMORPG~", "MMORPG", data.path + "/");
             Import("AOI~", "AOI", data.path + "/");
+            Import("Recast~", "Recast", data.path + "/");
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -210,6 +216,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("Common~", "Common", data.path + "/");
             ReImport("MMORPG~", "MMORPG", data.path + "/");
             ReImport("AOI~", "AOI", data.path + "/");
+            ReImport("Recast~", "Recast", data.path + "/");
             ReImport("Framework~", "Framework", data.path + "/");
         }
         if (data.develop == 1) 
@@ -228,6 +235,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("Common~", "Common", data.path + "/");
                 ReverseImport("MMORPG~", "MMORPG", data.path + "/");
                 ReverseImport("AOI~", "AOI", data.path + "/");
+                ReverseImport("Recast~", "Recast", data.path + "/");
                 ReverseImport("Framework~", "Framework", data.path + "/");
             }
         }
