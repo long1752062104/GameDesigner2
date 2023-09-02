@@ -8,5 +8,10 @@
         public const byte Resurrection = 153;//复活
         public const byte PlayerState = 154;
         public const byte AttackPlayer = 155;
+
+        public const byte EnterArea = 156;
+        public const byte ExitArea = 157;
+
+        public const byte SetDestination = 157;
     }
 }

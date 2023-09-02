@@ -84,15 +84,6 @@
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi-v7a\libudxapi.so" />
     <None Include="GameDesigner\Network\Udx~\Plugins\Android\armeabi\libudxapi.so" />
     <None Include="GameDesigner\Network\Web~\UnityWebSocket\Plugins\WebGL\WebSocket.jslib" />
-    <None Include="GameDesigner\Recast~\Agent.cs.meta" />
-    <None Include="GameDesigner\Recast~\AgentEntity.cs.meta" />
-    <None Include="GameDesigner\Recast~\Editor.meta" />
-    <None Include="GameDesigner\Recast~\Editor\PathfindingEditor.cs.meta" />
-    <None Include="GameDesigner\Recast~\Library.meta" />
-    <None Include="GameDesigner\Recast~\Library\AmazingAssets.TerrainToMesh.dll.meta" />
-    <None Include="GameDesigner\Recast~\Library\RecastDll.dll.meta" />
-    <None Include="GameDesigner\Recast~\Pathfinding.cs.meta" />
-    <None Include="GameDesigner\Recast~\RecastDll.cs.meta" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -353,7 +344,7 @@
     <Compile Include="GameDesigner\Recast~\Agent.cs" />
     <Compile Include="GameDesigner\Recast~\AgentEntity.cs" />
     <Compile Include="GameDesigner\Recast~\Editor\PathfindingEditor.cs" />
-    <Compile Include="GameDesigner\Recast~\Pathfinding.cs" />
+    <Compile Include="GameDesigner\Recast~\NavmeshSystem.cs" />
     <Compile Include="GameDesigner\Recast~\RecastDll.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonArray.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonBinary.cs" />

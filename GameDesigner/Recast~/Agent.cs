@@ -17,7 +17,7 @@ namespace Net.AI
             GetComponent<MeshRenderer>().material.color = Random.ColorHSV();
 
             thisTransform = transform;
-            entity.Init(transform.position, transform.rotation);
+            entity.SetPositionAndRotation(transform.position, transform.rotation);
         }
 
         // Update is called once per frame

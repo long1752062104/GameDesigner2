@@ -238,7 +238,13 @@ namespace Example2
             }
         }
 
-    #if SERVER
+        public object this[string name]
+        {
+            get { return null; }
+            set { }
+        }
+
+#if SERVER
         public void Delete(bool immediately = false)
         {
             if (immediately)

@@ -31,12 +31,10 @@ namespace ExampleServer
             }
             else if (args[0] == "Example2")
             {
-                Task.Run(() => {
-                    while (true)
-                    {
-                        Thread.Sleep(30);
-                        Time.time++;
-                    }
+                ThreadManager.Invoke("TimeTick", Time.deltaTime, () =>
+                {
+                    Time.time += Time.deltaTime;
+                    return true;
                 });
                 Application.Run(new Form2());
             }

@@ -29,7 +29,7 @@
 #else
             var path = UnityEngine.Application.dataPath + "/GameDesigner/Example/ExampleServer~/bin/Debug/Data/";
 #endif
-            var files = Directory.GetFiles(path, "*.sceneData");
+            var files = Directory.GetFiles(path, "*.mapData");
             foreach (var flie in files)
             {
                 var mapData = MapData.ReadData(flie);

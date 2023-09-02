@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.3069224, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748171, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -181,6 +181,247 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 9500000, guid: fb4a4223a5d4ac0489a60bbfdf81d94a, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: fb4a4223a5d4ac0489a60bbfdf81d94a, type: 3}
+--- !u!1 &11650642
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 11650645}
+  - component: {fileID: 11650644}
+  - component: {fileID: 11650643}
+  m_Layer: 0
+  m_Name: point (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &11650643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11650642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b119b46741fe21c4e89627700ceb983a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  monsters:
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+--- !u!114 &11650644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11650642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 045d625ee3dd9d84b9aec35229c0e34a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localWaypoints:
+  - x: 4.3360367
+    y: 0
+    z: 4.2159443
+  - x: 5.524605
+    y: 0
+    z: -2.163643
+  - x: -0.33961868
+    y: 0
+    z: -4.863138
+  - x: -5.2957077
+    y: 0
+    z: -0.4994011
+  - x: -2.5356789
+    y: 0
+    z: 5.148611
+  waypointsList:
+  - x: -38.053963
+    y: 0
+    z: 26.965944
+  - x: -36.865395
+    y: 0
+    z: 20.586357
+  - x: -42.729618
+    y: 0
+    z: 17.886862
+  - x: -47.685707
+    y: 0
+    z: 22.250599
+  - x: -44.92568
+    y: 0
+    z: 27.898611
+  waypointsFoldout: 0
+--- !u!4 &11650645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11650642}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -42.39, y: 0, z: 22.75}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &292817120
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,6 +511,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -347,6 +589,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -20.7, y: 0, z: -43.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
@@ -367,11 +610,146 @@ MonoBehaviour:
   - id: 0
     health: 100
     json: 
-  - id: 1
-    health: 150
+  - id: 0
+    health: 100
     json: 
-  - id: 2
-    health: 200
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
     json: 
   - id: 0
     health: 100
@@ -452,6 +830,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 11.32, y: 0, z: -38.24}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
@@ -472,11 +851,146 @@ MonoBehaviour:
   - id: 0
     health: 100
     json: 
-  - id: 1
-    health: 150
+  - id: 0
+    health: 100
     json: 
-  - id: 2
-    health: 200
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
     json: 
   - id: 0
     health: 100
@@ -514,6 +1028,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit
@@ -546,6 +1061,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -630,6 +1146,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -723,7 +1240,7 @@ MonoBehaviour:
   - x: 9.384317
     y: 0
     z: 22.058613
-  waypointsFoldout: 0
+  waypointsFoldout: 1
 --- !u!4 &1189370479
 Transform:
   m_ObjectHideFlags: 0
@@ -734,6 +1251,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 11.92, y: 0, z: 16.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -754,11 +1272,146 @@ MonoBehaviour:
   - id: 0
     health: 100
     json: 
-  - id: 1
-    health: 150
+  - id: 0
+    health: 100
     json: 
-  - id: 2
-    health: 200
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
+    json: 
+  - id: 0
+    health: 100
     json: 
   - id: 0
     health: 100
@@ -777,7 +1430,7 @@ GameObject:
   - component: {fileID: 1233865787}
   - component: {fileID: 1233865786}
   m_Layer: 0
-  m_Name: aoi
+  m_Name: aoiSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -797,17 +1450,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   world:
     worldSize:
-      m_XMin: 0
-      m_YMin: 0
-      m_Width: 0
-      m_Height: 0
+      m_XMin: -60
+      m_YMin: -60
+      m_Width: 120
+      m_Height: 120
     gridType: 0
   xPos: -60
   zPos: -60
-  xMax: 13
-  zMax: 13
-  width: 10
-  height: 10
+  xMax: 6
+  zMax: 6
+  width: 20
+  height: 20
   EditInit: 0
   showText: 0
 --- !u!4 &1233865787
@@ -820,9 +1473,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1812795133
 GameObject:
@@ -859,9 +1513,7 @@ MonoBehaviour:
   - {fileID: 8172448054269350695, guid: 0d947c8429c27c54f8e0579b919a56c6, type: 3}
   onExitDelectAll: 1
   monsters:
-  - {fileID: 4615171339904707042, guid: ef023427b690fef4ebc83ad8cce6db54, type: 3}
-  - {fileID: 4615171339904707042, guid: a74923fd483f4f24596bdcbd1593d057, type: 3}
-  - {fileID: 4615171339904707042, guid: 9eac432789f703e49bf8532d2d19d2f1, type: 3}
+  - {fileID: -8880938591081599990, guid: ef023427b690fef4ebc83ad8cce6db54, type: 3}
 --- !u!114 &1812795135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -884,6 +1536,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -901,6 +1554,77 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanSentTime: 0.033333335
+--- !u!1 &1934671126
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1934671128}
+  - component: {fileID: 1934671127}
+  m_Layer: 0
+  m_Name: navSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1934671127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934671126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 948730f500ed9ac448a4e9bc79989bf0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  System:
+    buildSettings:
+      cellSize: 0.3
+      cellHeight: 0.2
+      agentHeight: 2
+      agentRadius: 0.6
+      agentMaxClimb: 0.9
+      agentMaxSlope: 45
+      regionMinSize: 8
+      regionMergeSize: 20
+      edgeMaxLen: 12
+      edgeMaxError: 1.3
+      vertsPerPoly: 6
+      detailSampleDist: 6
+      detailSampleMaxError: 1
+      partitionType: 0
+      navMeshBMin: []
+      navMeshBMax: []
+      tileSize: 0
+  bakeLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  navMashPath: D:/Demo/Assets/BattleNavMesh.bin
+  vertexCountHorizontal: 100
+  vertexCountVertical: 100
+  drawNavmesh: 1
+  drawWireNavmesh: 1
+--- !u!4 &1934671128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934671126}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2069414148265509325
 PrefabInstance:
   m_ObjectHideFlags: 0

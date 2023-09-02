@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace Net.AI 
 {
-    [CustomEditor(typeof(Pathfinding))]
+    [CustomEditor(typeof(NavmeshSystemUnity))]
     public class PathfindingEditor : Editor
     {
-        private Pathfinding pathfinding;
+        private NavmeshSystemUnity pathfinding;
 
         private void OnEnable()
         {
-            pathfinding = target as Pathfinding;
+            pathfinding = target as NavmeshSystemUnity;
         }
 
         public override void OnInspectorGUI()

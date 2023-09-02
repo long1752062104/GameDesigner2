@@ -11,10 +11,27 @@ namespace Net.AI
         public float agentHeight = 1f;
         public TransformEntity transform = new TransformEntity();
         private readonly List<Vector3> pathPoints = new List<Vector3>();
-        //private bool isLookAtOptimize = true;
         public FindPathMode findPathMode;
+        private NavmeshSystem navmeshSystem;
 
-        public void Init(Vector3 position, Quaternion rotation)
+        public float RemainingDistance
+        {
+            get
+            {
+                if (pathPoints.Count > 0)
+                    return Vector3.Distance(transform.Position, pathPoints[0]);
+                return 0f;
+            }
+        }
+
+        public AgentEntity() { }
+
+        public AgentEntity(NavmeshSystem navmeshSystem)
+        {
+            this.navmeshSystem = navmeshSystem;
+        }
+
+        public void SetPositionAndRotation(Vector3 position, Quaternion rotation)
         {
             transform.Position = position;
             transform.Rotation = rotation;
@@ -26,31 +43,18 @@ namespace Net.AI
             {
                 int index = pathPoints.Count - 1;
                 var nextPos = pathPoints[index];
-                //nextPos.y -= agentHeight / 2f;
-                //if (isLookAtOptimize)
-                //{
-                //    transform.LookAt(new Vector3(nextPos.x, transform.Position.y, nextPos.z));
-                //    isLookAtOptimize = false;
-                //}
                 transform.Rotation = Quaternion.Lerp(transform.Rotation, Quaternion.LookRotation(new Vector3(nextPos.x, transform.Position.y, nextPos.z) - transform.Position, Vector3.up), 0.1f);
                 transform.Position = Vector3.MoveTowards(transform.Position, nextPos, speed * dt);
                 if (Vector3.Distance(transform.Position, nextPos) < 0.1f)
-                {
                     pathPoints.RemoveAt(index);
-                    //isLookAtOptimize = true;
-                }
             }
         }
 
         public bool SetDestination(Vector3 target)
         {
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-            Pathfinding.I.GetPath(transform.Position, target, pathPoints, agentHeight, findPathMode);
+            navmeshSystem.GetPath(transform.Position, target, pathPoints, agentHeight, findPathMode);
             pathPoints.Reverse(); //反转是因为后面每一步会进行移除, 移除时数组不会进行倒塌操作
             return pathPoints.Count > 0;
-#else
-            return false;
-#endif
         }
 
         public void OnDrawGizmos(Action<Vector3, Vector3> onDrawLine)

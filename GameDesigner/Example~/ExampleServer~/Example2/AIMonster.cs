@@ -1,96 +1,98 @@
-﻿using ECS;
-using Net;
-using Net.Component;
+﻿using Net;
+using Net.AI;
 using Net.MMORPG;
 using Net.Share;
 using Net.System;
+using Net.AOI;
 
 namespace Example2
 {
-    public class AIMonster : Component, IUpdate
+    public class AIMonster : IGridBody, IGridActor
     {
-        internal NTransform transform;
-        internal PatrolPath patrolPath;
-        internal Scene scene;
-        internal byte state;
-        internal byte state1;
+        public int ID { get; set; }
+        public int Identity { get; set; }
+        public Vector3 Position { get; set; }
+        public Grid Grid { get; set; }
+        public int Hair { get; set; }
+        public int Head { get; set; }
+        public int Jacket { get; set; }
+        public int Belt { get; set; }
+        public int Pants { get; set; }
+        public int Shoe { get; set; }
+        public int Weapon { get; set; }
+        public int ActorID { get; set; }
+        public bool MainRole { get; set; }
+
+        public AgentEntity Agent;
+
+        public Player target; //攻击对象
+
+        public ListSafe<Operation> currOpers = new ListSafe<Operation>();
+        public Operation[] preOpers;
+        public uint frame;
+
+        internal Vector3 pointCenter;
+        internal Vector3 destination;
         private float idleTime;
-        private int pointIndex;
-        public float walkSpeed = 3f;
-        public float moveSpeed = 6f;
-        internal int id;
-        internal int mid;
         internal bool isDeath;
         internal int health = 100;
-        internal int targetID;
-        
-        public void OnUpdate()
+
+        public int roleInCount; //有主角在这个区域才能添加操作, 否则会堆积很多数据
+
+        public void OnStart()
         {
+        }
+
+        public void OnBodyUpdate()
+        {
+            Position = Agent.transform.Position;
             if (isDeath)
                 return;
-            switch (state)
+            if (target == null)
             {
-                case 0:
-                    Patrol();
-                    break;
-                case 1:
-                    Authorize();
-                    break;
-            }
-        }
-
-        void Authorize() 
-        {
-            scene.AddOperation(new Operation(Command.EnemySync, id, transform.position, transform.rotation)
-            {
-                cmd1 = state,
-                cmd2 = state1,
-                index1 = health,
-                index2 = targetID,
-                buffer = new byte[] { (byte)mid }
-            });
-            if (targetID == 0)
-            {
-                state = 0;
-                state1 = 0;
-            }
-        }
-
-        void Patrol()
-        {
-            switch (state1)
-            {
-                case 0:
-                    if (Time.time > idleTime)
+                if (Time.time > idleTime)
+                {
+                    idleTime = Time.time + RandomHelper.Range(0f, 10f);
+                    destination = new Vector3(RandomHelper.Range(pointCenter.x - 10f, pointCenter.x + 10f), 0f, RandomHelper.Range(pointCenter.z - 10f, pointCenter.z + 10f));
+                    Agent.SetDestination(destination);
+                    if (roleInCount > 0)
                     {
-                        state1 = (byte)RandomHelper.Range(0, 2);
-                        idleTime = Time.time + RandomHelper.Range(0f, 2f);
+                        currOpers.Add(new Operation(Command.EnterArea, Identity, Position, Quaternion.identity)
+                        {
+                            index = 2,
+                            index1 = ActorID,
+                            index2 = health,
+                            direction = destination, //怪物下一个位置, 客户端收到后会自动寻路到目的地
+                        });
                     }
-                    break;
-                case 1:
-                    var dis = Vector3.Distance(transform.position, patrolPath.waypoints[pointIndex]);
-                    if (dis < 0.1f)
-                    {
-                        pointIndex = RandomHelper.Range(0, patrolPath.waypoints.Count);
-                        state1 = 0;
-                        idleTime = Time.time + RandomHelper.Range(0f, 2f);
-                    }
-                    transform.LookAt(patrolPath.waypoints[pointIndex], Vector3.up);
-                    transform.Translate(0, 0, walkSpeed * Time.deltaTime);
-                    break;
+                }
             }
-            PatrolCall();
+            else
+            {
+                var d = Vector3.Distance(Position, target.Position);
+                if (d < 1.5f)
+                {
+                    //TODO 攻击玩家
+                }
+                else if (d < 10f)
+                {
+                    //TODO 追击玩家
+                    Agent.SetDestination(target.Position);
+                }
+                else
+                {
+                    target = null;
+                }
+            }
+            Agent.OnUpdate(Time.deltaTime);
         }
 
-        internal void PatrolCall()
+        public void OnEnter(IGridBody body)
         {
-            scene.AddOperation(new Operation(Command.AIMonster, id, transform.position, transform.rotation)
-            {
-                cmd1 = state,
-                cmd2 = state1,
-                index1 = health,
-                buffer = new byte[] { (byte)mid }
-            });
+        }
+
+        public void OnExit(IGridBody body)
+        {
         }
 
         internal void OnDamage(int damage)
@@ -102,19 +104,13 @@ namespace Example2
             {
                 isDeath = true;
                 health = 0;
-                state1 = 4;
-                ThreadManager.Event.AddEvent(10f, () =>
+                EventManager.Event.AddEvent(10f, () =>
                 {
                     health = 100;
                     isDeath = false;
-                    state = 0;
-                    state1 = 0;
-                    targetID = 0;
+                    target = null;
                 });
-            }
-            else 
-            {
-                state = 1;
+                //TODO 死亡通知
             }
         }
     }

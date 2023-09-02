@@ -9,6 +9,9 @@ namespace Example2
         public const byte Resurrection = 153;//复活
         public const byte PlayerState = 154;
         public const byte AttackPlayer = 155;
+
+        public const byte EnterArea = 156;
+        public const byte ExitArea = 157;
     }
 }
 #endif

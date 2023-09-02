@@ -591,6 +591,12 @@ namespace Example2
             }
         }
 
+        public object this[string name] 
+        {
+            get { return null; }
+            set { }
+        }
+
     #if SERVER
         public void Delete(bool immediately = false)
         {
