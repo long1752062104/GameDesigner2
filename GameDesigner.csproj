@@ -113,6 +113,7 @@
     <Compile Include="GameDesigner\Network\Binding\BindingExtension.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVariable.cs" />
+    <Compile Include="GameDesigner\Network\core\System\FastHashSet.cs" />
     <Compile Include="GameDesigner\Network\core\System\ISegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\SafeDictionary.cs" />
     <Compile Include="GameDesigner\Network\core\System\SystemManager.cs" />

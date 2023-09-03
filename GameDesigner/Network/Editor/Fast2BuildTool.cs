@@ -242,6 +242,7 @@ public class Fast2BuildTools2 : EditorWindow
         data.SerField = EditorGUILayout.Toggle("序列化字段:", data.SerField);
         data.SerProperty = EditorGUILayout.Toggle("序列化属性:", data.SerProperty);
         data.IsCompress = EditorGUILayout.Toggle("使用字节压缩:", data.IsCompress);
+        data.SortingOrder = EditorGUILayout.IntField("绑定序号:", data.SortingOrder);
         GUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("保存路径:", data.SavePath);
         if (GUILayout.Button("选择路径", GUILayout.Width(100)))
@@ -280,7 +281,7 @@ public class Fast2BuildTools2 : EditorWindow
                 File.WriteAllText(data.SavePath + $"//{className}Bind.cs", code.ToString());
                 types.Add(type);
             }
-            Fast2BuildMethod.BuildBindingType(types, data.SavePath, 1);
+            Fast2BuildMethod.BuildBindingType(types, data.SavePath, data.SortingOrder);
             Fast2BuildMethod.BuildBindingExtension(types, data.SavePath);
             Debug.Log("生成完成.");
             AssetDatabase.Refresh();
@@ -472,6 +473,7 @@ public class Fast2BuildTools2 : EditorWindow
         private bool serField = true;
         private bool serProperty = true;
         private bool isCompress = true;
+        private int sortingOrder = 1;
         private bool init;
 
         public void Init() 
@@ -537,6 +539,17 @@ public class Fast2BuildTools2 : EditorWindow
                 if (isCompress != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");
                 isCompress = value;
+            }
+        }
+
+        public int SortingOrder 
+        {
+            get => sortingOrder;
+            set 
+            {
+                if (sortingOrder != value & init)
+                    PersistHelper.Serialize(this, "fastProtoBuild.json");
+                sortingOrder = value;
             }
         }
     }
