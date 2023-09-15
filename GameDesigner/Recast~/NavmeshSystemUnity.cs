@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using AmazingAssets.TerrainToMesh;
 using UnityEngine;
 using Net.Component;
+using Recast;
+using System.Diagnostics;
 
 namespace Net.AI
 {
@@ -95,26 +97,42 @@ namespace Net.AI
             UpdateNavMeshFace();
         }
 
-        public void Save()
+        public void LoadMeshObj()
         {
-            RecastDll.SaveNavMesh(System.Sample, navMashPath);
+            System.Init();
+            ClassGlobal.LoadMeshFile(System.Sample, navMashPath);
+            ClassGlobal.Build(System.Sample);
+            UpdateNavMeshFace();
         }
 
-        public void Bake() 
+        public void Save()
+        {
+            System.Init();
+            ClassGlobal.SaveNavMesh(System.Sample, navMashPath);
+        }
+
+        public void Bake()
         {
             var mesh = Merge();
             var objText = ExportMeshText(mesh);
             System.Init();
-            RecastDll.LoadObjText(System.Sample, objText, objText.Length);
-            RecastDll.Build(System.Sample);
+            ClassGlobal.ReadMeshObj(System.Sample, objText);
+            ClassGlobal.Build(System.Sample);
             UpdateNavMeshFace();
         }
 
-        private void UpdateNavMeshFace()
+        public void SaveMeshObj()
         {
-            int vertsCount = RecastDll.GetDrawNavMeshCount(System.Sample);
-            var vertsArray = new float[vertsCount];
-            RecastDll.GetDrawNavMesh(System.Sample, vertsArray, out vertsCount);
+            var mesh = Merge();
+            var objText = ExportMeshText(mesh);
+            File.WriteAllText(navMashPath, objText);
+        }
+
+        private unsafe void UpdateNavMeshFace()
+        {
+            int vertsCount = ClassGlobal.GetDrawNavMeshCount(System.Sample);
+            float* vertsArray = stackalloc float[vertsCount];
+            ClassGlobal.GetDrawNavMesh(System.Sample, vertsArray, out vertsCount);
             var m_Triangles = new List<RenderTriangle>();
             var col = new Color(0f, 1f, 1f, 1f);
             for (int i = 0; i < vertsCount; i += 9)
@@ -124,6 +142,8 @@ namespace Net.AI
                 var c = new UnityEngine.Vector3(vertsArray[i + 6], vertsArray[i + 7], vertsArray[i + 8]);
                 m_Triangles.Add(new RenderTriangle(a, b, c, col));
             }
+            if (navMesh != null)
+                DestroyImmediate(navMesh, true);
             navMesh = new Mesh();
             int triCount = m_Triangles.Count;
             var verts = new UnityEngine.Vector3[3 * triCount];
@@ -160,22 +180,22 @@ namespace Net.AI
             return mergedMesh;
         }
 
-        public void BakeTerrain() 
+        public void BakeTerrain()
         {
             var terrain = FindObjectOfType<Terrain>();
             var mesh = terrain.terrainData.TerrainToMesh().ExportMesh(vertexCountHorizontal, vertexCountVertical, Normal.CalculateFromMesh);//AddTerrain(terrain);
             var objText = ExportMeshText(mesh);
             System.Init();
-            RecastDll.LoadObjText(System.Sample, objText, objText.Length);
-            RecastDll.Build(System.Sample);
+            ClassGlobal.ReadMeshObj(System.Sample, objText);
+            ClassGlobal.Build(System.Sample);
             UpdateNavMeshFace();
         }
 
-        public void SaveTerrainMesh() 
+        public void SaveTerrainMesh()
         {
             var terrain = FindObjectOfType<Terrain>();
             var mesh = terrain.terrainData.TerrainToMesh().ExportMesh(vertexCountHorizontal, vertexCountVertical, Normal.CalculateFromMesh); // AddTerrain(terrain);
-            ExportMesh("D:\\recastnavigation_share\\RecastDemo\\Bin\\Meshes\\Terrain.obj", mesh);
+            ExportMesh("Assets/Terrain.obj", mesh);
         }
 
         public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
@@ -208,7 +228,7 @@ namespace Net.AI
 
         private void OnValidate()
         {
-            if (string.IsNullOrEmpty(navMashPath)) 
+            if (string.IsNullOrEmpty(navMashPath))
             {
                 navMashPath = Application.dataPath + "/" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + "NavMesh.bin";
             }

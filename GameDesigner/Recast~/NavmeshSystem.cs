@@ -1,27 +1,36 @@
-﻿using System;
+﻿using Recast;
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Net.AI
 {
     [Serializable]
-    public class NavmeshSystem
+    public unsafe class NavmeshSystem
     {
         private IntPtr sample;
-        public BuildSettings buildSettings = BuildSettings.Default;
-        private readonly float[] m_Paths = new float[2048 * 3];
+        public ClassGlobal.BuildSettings buildSettings = ClassGlobal.BuildSettings.Default;
+        private float* m_Paths; // = new float[2048 * 3];
+        private float* m_spos;
+        private float* m_epos;
         public IntPtr Sample => sample;
 
         public void Init()
         {
             if (sample == IntPtr.Zero)
-                sample = RecastDll.CreateSoloMesh();
-            RecastDll.CollectSettings(sample, buildSettings);
+            {
+                m_Paths = (float*)Marshal.AllocHGlobal(2048 * 3);
+                m_spos = (float*)Marshal.AllocHGlobal(sizeof(float) * 3);
+                m_epos = (float*)Marshal.AllocHGlobal(sizeof(float) * 3);
+                sample = ClassGlobal.CreateSoloMesh();
+            }
+            ClassGlobal.SetBuildSettings(sample, buildSettings);
         }
 
         public void Init(string navmeshPath)
         {
             Init();
-            RecastDll.LoadNavMesh(sample, navmeshPath);
+            ClassGlobal.LoadNavMesh(sample, navmeshPath);
         }
 
         public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
@@ -31,14 +40,26 @@ namespace Net.AI
             return paths;
         }
 
-        public void GetPath(Vector3 currPosition, Vector3 destination, List<Vector3> paths, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
+        public unsafe void GetPath(Vector3 currPosition, Vector3 destination, List<Vector3> paths, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
         {
+            m_spos[0] = currPosition.x;
+            m_spos[1] = currPosition.y;
+            m_spos[2] = currPosition.z;
+
+            m_epos[0] = destination.x;
+            m_epos[1] = destination.y;
+            m_epos[2] = destination.z;
+
             paths.Clear();
             int outPointCount;
             if (pathMode == FindPathMode.FindPathStraight)
-                RecastDll.FindPathStraight(sample, currPosition, destination, m_Paths, out outPointCount);
+            {
+                ClassGlobal.FindPathStraight(sample, m_spos, m_epos, m_Paths, out outPointCount);
+            }
             else
-                RecastDll.FindPathFollow(sample, currPosition, destination, m_Paths, out outPointCount);
+            {
+                ClassGlobal.FindPathFollow(sample, m_spos, m_epos, m_Paths, out outPointCount);
+            }
             for (int i = 1; i < outPointCount; i++) //为什么不能要最后一条线? 因为后面一条线偶尔出现y=1的问题, 最后一个不要也不影响
             {
                 int v = i * 3;
@@ -51,7 +72,22 @@ namespace Net.AI
         {
             if (sample != IntPtr.Zero)
             {
-                RecastDll.FreeSoloMesh(sample);
+                ClassGlobal.FreeSoloMesh(sample);
+                if (m_Paths != null)
+                {
+                    Marshal.FreeHGlobal((IntPtr)m_Paths);
+                    m_Paths = null;
+                }
+                if (m_spos != null)
+                {
+                    Marshal.FreeHGlobal((IntPtr)m_spos);
+                    m_spos = null;
+                }
+                if (m_epos != null)
+                {
+                    Marshal.FreeHGlobal((IntPtr)m_epos);
+                    m_epos = null;
+                }
                 sample = IntPtr.Zero;
             }
         }
