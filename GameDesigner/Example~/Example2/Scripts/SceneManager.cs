@@ -39,7 +39,7 @@ namespace Example2
                 var monsterObj = monsters[opt.index1];
                 monster = Instantiate(monsterObj, opt.position, opt.rotation);
                 monster.Self = new Monster();
-                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = 0f };
+                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight, m_straightPathOptions = Recast.dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS };
                 monster.Self.Agent.SetPositionAndRotation(opt.position, opt.rotation);
                 monsterDics.Add(opt.identity, monster);
             }
@@ -73,6 +73,7 @@ namespace Example2
                             identity.name = opt.identity.ToString();
                             identity.Self.Agent.SetPositionAndRotation(opt.position, opt.rotation);
                             identity.Self.Agent.SetDestination(opt.direction);
+                            identity.transform.SetPositionAndRotation(opt.position, opt.rotation); //视图的位置和旋转也要立马刷新
                             identity.gameObject.SetActive(true);
                         }
                     }

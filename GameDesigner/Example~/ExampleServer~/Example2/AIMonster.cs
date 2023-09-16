@@ -53,11 +53,11 @@ namespace Example2
                 if (Time.time > idleTime)
                 {
                     idleTime = Time.time + RandomHelper.Range(0f, 10f);
-                    destination = new Vector3(RandomHelper.Range(pointCenter.x - 10f, pointCenter.x + 10f), 0f, RandomHelper.Range(pointCenter.z - 10f, pointCenter.z + 10f));
+                    destination = new Vector3(RandomHelper.Range(pointCenter.x - 50f, pointCenter.x + 50f), 0f, RandomHelper.Range(pointCenter.z - 50f, pointCenter.z + 50f));
                     Agent.SetDestination(destination);
                     if (roleInCount > 0)
                     {
-                        currOpers.Add(new Operation(Command.EnterArea, Identity, Position, Quaternion.identity)
+                        currOpers.Add(new Operation(Command.EnterArea, Identity, Position, Agent.Rotation)
                         {
                             index = 2,
                             index1 = ActorID,

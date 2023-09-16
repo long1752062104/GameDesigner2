@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Net.Common;
+using Recast;
 
 namespace Net.AI
 {
@@ -12,6 +13,7 @@ namespace Net.AI
         public TransformEntity transform = new TransformEntity();
         private readonly List<Vector3> pathPoints = new List<Vector3>();
         public FindPathMode findPathMode;
+        public dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS;
         private NavmeshSystem navmeshSystem;
 
         public float RemainingDistance
@@ -21,6 +23,14 @@ namespace Net.AI
                 if (pathPoints.Count > 0)
                     return Vector3.Distance(transform.Position, pathPoints[0]);
                 return 0f;
+            }
+        }
+
+        public Quaternion Rotation
+        {
+            get
+            {
+                return transform.Rotation;
             }
         }
 
@@ -52,7 +62,7 @@ namespace Net.AI
 
         public bool SetDestination(Vector3 target)
         {
-            navmeshSystem.GetPath(transform.Position, target, pathPoints, agentHeight, findPathMode);
+            navmeshSystem.GetPath(transform.Position, target, pathPoints, agentHeight, findPathMode, m_straightPathOptions);
             pathPoints.Reverse(); //反转是因为后面每一步会进行移除, 移除时数组不会进行倒塌操作
             return pathPoints.Count > 0;
         }

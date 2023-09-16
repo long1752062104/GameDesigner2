@@ -8,16 +8,16 @@ namespace Net.AI
     [Serializable]
     public unsafe class NavmeshSystem
     {
-        private IntPtr sample;
+        private ClassGlobal.Sample_SoloMesh sample;
         public ClassGlobal.BuildSettings buildSettings = ClassGlobal.BuildSettings.Default;
         private float* m_Paths; // = new float[2048 * 3];
         private float* m_spos;
         private float* m_epos;
-        public IntPtr Sample => sample;
+        public ClassGlobal.Sample_SoloMesh Sample => sample;
 
         public void Init()
         {
-            if (sample == IntPtr.Zero)
+            if (sample == null)
             {
                 m_Paths = (float*)Marshal.AllocHGlobal(2048 * 3);
                 m_spos = (float*)Marshal.AllocHGlobal(sizeof(float) * 3);
@@ -33,14 +33,14 @@ namespace Net.AI
             ClassGlobal.LoadNavMesh(sample, navmeshPath);
         }
 
-        public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
+        public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight, dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)
         {
             var paths = new List<Vector3>();
-            GetPath(currPosition, destination, paths, agentHeight, pathMode);
+            GetPath(currPosition, destination, paths, agentHeight, pathMode, m_straightPathOptions);
             return paths;
         }
 
-        public unsafe void GetPath(Vector3 currPosition, Vector3 destination, List<Vector3> paths, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
+        public unsafe void GetPath(Vector3 currPosition, Vector3 destination, List<Vector3> paths, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight, dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)
         {
             m_spos[0] = currPosition.x;
             m_spos[1] = currPosition.y;
@@ -54,7 +54,7 @@ namespace Net.AI
             int outPointCount;
             if (pathMode == FindPathMode.FindPathStraight)
             {
-                ClassGlobal.FindPathStraight(sample, m_spos, m_epos, m_Paths, out outPointCount);
+                ClassGlobal.FindPathStraight(sample, m_spos, m_epos, m_Paths, out outPointCount, m_straightPathOptions);
             }
             else
             {
@@ -70,7 +70,7 @@ namespace Net.AI
 
         public void Free()
         {
-            if (sample != IntPtr.Zero)
+            if (sample != null)
             {
                 ClassGlobal.FreeSoloMesh(sample);
                 if (m_Paths != null)
@@ -88,7 +88,7 @@ namespace Net.AI
                     Marshal.FreeHGlobal((IntPtr)m_epos);
                     m_epos = null;
                 }
-                sample = IntPtr.Zero;
+                sample = null;
             }
         }
     }

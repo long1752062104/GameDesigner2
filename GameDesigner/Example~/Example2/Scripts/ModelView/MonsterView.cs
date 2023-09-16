@@ -13,7 +13,7 @@ public class MonsterView : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Self == null)
+        if (Self.Agent == null)
             return;
         Self.Agent.OnUpdate(Time.deltaTime);
         var agentTransform = Self.Agent.transform;
@@ -26,7 +26,7 @@ public class MonsterView : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (Self == null)
+        if (Self.Agent == null)
             return;
         Self.Agent.OnDrawGizmos((begin, end) => Gizmos.DrawLine(begin, end));
     }

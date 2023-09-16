@@ -45,7 +45,7 @@ namespace Example2
         {
             if (body is Player player)
             {
-                selfOpers.Add(new Operation(Command.EnterArea, body.Identity, body.Position, Quaternion.identity)
+                selfOpers.Add(new Operation(Command.EnterArea, body.Identity, player.Position, Quaternion.identity)
                 {
                     index = 1, //区分类型, 1=玩家, 2=怪物
                     index1 = player.ActorID,
@@ -55,7 +55,7 @@ namespace Example2
             else if (body is AIMonster monster) 
             {
                 monster.roleInCount++;
-                selfOpers.Add(new Operation(Command.EnterArea, body.Identity, body.Position, Quaternion.identity)
+                selfOpers.Add(new Operation(Command.EnterArea, body.Identity, monster.Position, monster.Agent.Rotation)
                 {
                     index = 2,
                     index1 = monster.ActorID,

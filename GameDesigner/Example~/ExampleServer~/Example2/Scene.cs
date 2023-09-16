@@ -2,10 +2,14 @@
 using Net.AI;
 using Net.AOI;
 using Net.Component;
+using Net.Event;
 using Net.MMORPG;
 using Net.Server;
 using Net.Share;
 using Net.System;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Example2
 {
@@ -34,7 +38,7 @@ namespace Example2
                 {
                     var position = patrolPath.waypoints[0];
                     var monster = new AIMonster();
-                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = 0f };
+                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight };
                     monster.Agent.SetPositionAndRotation(position, Quaternion.identity);
                     monster.Position = position;
                     monster.pointCenter = position;
@@ -45,6 +49,21 @@ namespace Example2
                     monsters.Add(id++, monster);
                 }
             }
+            //Task.Run(() =>
+            //{
+            //    while (true)
+            //    {
+            //        try
+            //        {
+            //            Thread.Sleep(1);
+            //            gridWorld.UpdateHandler();
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            NDebug.LogError(ex);
+            //        }
+            //    }
+            //});
         }
 
         public override void OnEnter(Player client)
@@ -136,7 +155,7 @@ namespace Example2
                         var players = Clients;
                         for (int n = 0; n < players.Count; n++)
                         {
-                            if (players[n].UserID == opt.identity) 
+                            if (players[n].UserID == opt.identity)
                             {
                                 players[n].BeAttacked(opt.index1);
                                 break;
