@@ -1,7 +1,13 @@
 using System;
-using System.Collections.Generic;
 using Net.Common;
+using System.Collections.Generic;
+#if RECAST_NATIVE
+using Net.AI.Native;
+using static Net.AI.Native.RecastDll;
+#else
 using Recast;
+using static Recast.RecastGlobal;
+#endif
 
 namespace Net.AI
 {
@@ -10,11 +16,13 @@ namespace Net.AI
     {
         public float speed = 5f;
         public float agentHeight = 1f;
+        public float angularSpeed = 0.25f;
         public TransformEntity transform = new TransformEntity();
         private readonly List<Vector3> pathPoints = new List<Vector3>();
         public FindPathMode findPathMode;
         public dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS;
         private NavmeshSystem navmeshSystem;
+        public NavmeshSystem System { get => navmeshSystem; set => navmeshSystem = value; }
 
         public float RemainingDistance
         {
@@ -28,10 +36,7 @@ namespace Net.AI
 
         public Quaternion Rotation
         {
-            get
-            {
-                return transform.Rotation;
-            }
+            get => transform.Rotation;
         }
 
         public AgentEntity() { }
@@ -53,7 +58,7 @@ namespace Net.AI
             {
                 int index = pathPoints.Count - 1;
                 var nextPos = pathPoints[index];
-                transform.Rotation = Quaternion.Lerp(transform.Rotation, Quaternion.LookRotation(new Vector3(nextPos.x, transform.Position.y, nextPos.z) - transform.Position, Vector3.up), 0.1f);
+                transform.Rotation = Quaternion.Lerp(transform.Rotation, Quaternion.LookRotation(new Vector3(nextPos.x, transform.Position.y, nextPos.z) - transform.Position, Vector3.up), angularSpeed);
                 transform.Position = Vector3.MoveTowards(transform.Position, nextPos, speed * dt);
                 if (Vector3.Distance(transform.Position, nextPos) < 0.1f)
                     pathPoints.RemoveAt(index);

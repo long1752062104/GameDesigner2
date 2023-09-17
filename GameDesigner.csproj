@@ -49,6 +49,10 @@
       <HintPath>GameDesigner\Network\dnlib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="RecastNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>GameDesigner\Recast~\Library\RecastNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Demo\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
@@ -98,6 +102,7 @@
     <Content Include="GameDesigner\Network\Udx~\使用说明.txt" />
     <Content Include="GameDesigner\Network\Web~\使用说明.txt" />
     <Content Include="GameDesigner\Recast~\Library\AmazingAssets.TerrainToMesh.dll" />
+    <Content Include="GameDesigner\Recast~\Library\RecastDll.dll" />
     <Content Include="GameDesigner\Recast~\Library\RecastNet.dll" />
     <Content Include="GameDesigner\Recast~\Library\RecastNet.pdb" />
   </ItemGroup>
@@ -343,12 +348,15 @@
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\NoWebGL\WebSocketManager.cs" />
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\WebGL\WebSocket.cs" />
     <Compile Include="GameDesigner\Network\Web~\UnityWebSocket\Scripts\Runtime\Implementation\WebGL\WebSocketManager.cs" />
-    <Compile Include="GameDesigner\Recast~\Agent.cs" />
     <Compile Include="GameDesigner\Recast~\AgentEntity.cs" />
+    <Compile Include="GameDesigner\Recast~\AgentUnity.cs" />
     <Compile Include="GameDesigner\Recast~\Editor\NavmeshSystemUnityEditor.cs" />
+    <Compile Include="GameDesigner\Recast~\Editor\RecastDefineSymbolsTools.cs" />
     <Compile Include="GameDesigner\Recast~\FindPathMode.cs" />
     <Compile Include="GameDesigner\Recast~\NavmeshSystem.cs" />
     <Compile Include="GameDesigner\Recast~\NavmeshSystemUnity.cs" />
+    <Compile Include="GameDesigner\Recast~\RecastDll.cs" />
+    <Compile Include="GameDesigner\Recast~\RecastManager.cs" />
     <Compile Include="GameDesigner\Recast~\RenderTriangle.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonArray.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Bson\BsonBinary.cs" />
@@ -540,12 +548,6 @@
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Utilities\TypeInformation.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Utilities\ValidationUtils.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\WriteState.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\recastnavigation_share\RecastNet\RecastNet.csproj">
-      <Project>{dd9fddca-c552-4cd5-b310-2163658f2068}</Project>
-      <Name>RecastNet</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

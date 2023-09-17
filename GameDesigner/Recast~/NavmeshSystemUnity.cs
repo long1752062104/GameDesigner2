@@ -6,8 +6,13 @@ using System.Collections.Generic;
 using AmazingAssets.TerrainToMesh;
 using UnityEngine;
 using Net.Component;
+#if RECAST_NATIVE
+using Net.AI.Native;
+using static Net.AI.Native.RecastDll;
+#else
 using Recast;
-using System.Diagnostics;
+using static Recast.RecastGlobal;
+#endif
 
 namespace Net.AI
 {
@@ -100,15 +105,15 @@ namespace Net.AI
         public void LoadMeshObj()
         {
             System.Init();
-            ClassGlobal.LoadMeshFile(System.Sample, navMashPath);
-            ClassGlobal.Build(System.Sample);
+            LoadMeshFile(System.Sample, navMashPath);
+            Build(System.Sample);
             UpdateNavMeshFace();
         }
 
         public void Save()
         {
             System.Init();
-            ClassGlobal.SaveNavMesh(System.Sample, navMashPath);
+            SaveNavMesh(System.Sample, navMashPath);
         }
 
         public void Bake()
@@ -116,8 +121,8 @@ namespace Net.AI
             var mesh = Merge();
             var objText = ExportMeshText(mesh);
             System.Init();
-            ClassGlobal.ReadMeshObj(System.Sample, objText);
-            ClassGlobal.Build(System.Sample);
+            LoadMeshData(System.Sample, objText);
+            Build(System.Sample);
             UpdateNavMeshFace();
         }
 
@@ -130,9 +135,9 @@ namespace Net.AI
 
         private unsafe void UpdateNavMeshFace()
         {
-            int vertsCount = ClassGlobal.GetDrawNavMeshCount(System.Sample);
+            int vertsCount = GetDrawNavMeshCount(System.Sample);
             float* vertsArray = stackalloc float[vertsCount];
-            ClassGlobal.GetDrawNavMesh(System.Sample, vertsArray, out vertsCount);
+            GetDrawNavMesh(System.Sample, vertsArray, out vertsCount);
             var m_Triangles = new List<RenderTriangle>();
             var col = new Color(0f, 1f, 1f, 1f);
             for (int i = 0; i < vertsCount; i += 9)
@@ -186,8 +191,8 @@ namespace Net.AI
             var mesh = terrain.terrainData.TerrainToMesh().ExportMesh(vertexCountHorizontal, vertexCountVertical, Normal.CalculateFromMesh);//AddTerrain(terrain);
             var objText = ExportMeshText(mesh);
             System.Init();
-            ClassGlobal.ReadMeshObj(System.Sample, objText);
-            ClassGlobal.Build(System.Sample);
+            LoadMeshData(System.Sample, objText);
+            Build(System.Sample);
             UpdateNavMeshFace();
         }
 

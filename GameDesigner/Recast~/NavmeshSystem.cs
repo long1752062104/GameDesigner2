@@ -1,36 +1,49 @@
-﻿using Recast;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+#if RECAST_NATIVE
+using Net.AI.Native;
+using static Net.AI.Native.RecastDll;
+#else
+using Recast;
+using static Recast.RecastGlobal;
+#endif
 
 namespace Net.AI
 {
     [Serializable]
     public unsafe class NavmeshSystem
     {
-        private ClassGlobal.Sample_SoloMesh sample;
-        public ClassGlobal.BuildSettings buildSettings = ClassGlobal.BuildSettings.Default;
+#if RECAST_NATIVE
+        private IntPtr sample;
+#else
+        private Sample_SoloMesh sample;
+#endif
+        public BuildSettings buildSettings = BuildSettings.Default;
         private float* m_Paths; // = new float[2048 * 3];
         private float* m_spos;
         private float* m_epos;
-        public ClassGlobal.Sample_SoloMesh Sample => sample;
-
+#if RECAST_NATIVE
+        public IntPtr Sample => sample;
+#else
+        public Sample_SoloMesh Sample => sample;
+#endif
         public void Init()
         {
-            if (sample == null)
+            if (sample == default)
             {
-                m_Paths = (float*)Marshal.AllocHGlobal(2048 * 3);
+                m_Paths = (float*)Marshal.AllocHGlobal(sizeof(float) * (2048 * 3));
                 m_spos = (float*)Marshal.AllocHGlobal(sizeof(float) * 3);
                 m_epos = (float*)Marshal.AllocHGlobal(sizeof(float) * 3);
-                sample = ClassGlobal.CreateSoloMesh();
+                sample = CreateSoloMesh();
             }
-            ClassGlobal.SetBuildSettings(sample, buildSettings);
+            SetBuildSettings(sample, buildSettings);
         }
 
         public void Init(string navmeshPath)
         {
             Init();
-            ClassGlobal.LoadNavMesh(sample, navmeshPath);
+            LoadNavMesh(sample, navmeshPath);
         }
 
         public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight, dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)
@@ -54,11 +67,11 @@ namespace Net.AI
             int outPointCount;
             if (pathMode == FindPathMode.FindPathStraight)
             {
-                ClassGlobal.FindPathStraight(sample, m_spos, m_epos, m_Paths, out outPointCount, m_straightPathOptions);
+                FindPathStraight(sample, m_spos, m_epos, m_Paths, out outPointCount, m_straightPathOptions);
             }
             else
             {
-                ClassGlobal.FindPathFollow(sample, m_spos, m_epos, m_Paths, out outPointCount);
+                FindPathFollow(sample, m_spos, m_epos, m_Paths, out outPointCount, m_straightPathOptions);
             }
             for (int i = 1; i < outPointCount; i++) //为什么不能要最后一条线? 因为后面一条线偶尔出现y=1的问题, 最后一个不要也不影响
             {
@@ -72,7 +85,7 @@ namespace Net.AI
         {
             if (sample != null)
             {
-                ClassGlobal.FreeSoloMesh(sample);
+                FreeSoloMesh(sample);
                 if (m_Paths != null)
                 {
                     Marshal.FreeHGlobal((IntPtr)m_Paths);
@@ -88,7 +101,7 @@ namespace Net.AI
                     Marshal.FreeHGlobal((IntPtr)m_epos);
                     m_epos = null;
                 }
-                sample = null;
+                sample = default;
             }
         }
     }
