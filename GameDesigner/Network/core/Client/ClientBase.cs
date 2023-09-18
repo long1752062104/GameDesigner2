@@ -423,7 +423,8 @@ namespace Net.Client
         /// <summary>
         /// 每次发送数据间隔，每秒大概执行1000次
         /// </summary>
-        public int SendInterval {
+        public int SendInterval
+        {
             get => sendInterval;
             set
             {
@@ -863,7 +864,7 @@ namespace Net.Client
                 this.localPort = localPort;
                 if (localPort != -1)
                     Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
-                return CheckIdentity(()=> Client.Connect(host, port), result);
+                return CheckIdentity(() => Client.Connect(host, port), result);
             }
             catch (Exception ex)
             {
@@ -1020,9 +1021,9 @@ namespace Net.Client
             }
         }
 
-        protected void InvokeNetworkEvent(Action action, Action<bool> action1, bool isConnect) 
+        protected void InvokeNetworkEvent(Action action, Action<bool> action1, bool isConnect)
         {
-            InvokeInMainThread(() => 
+            InvokeInMainThread(() =>
             {
                 action?.Invoke();
                 action1?.Invoke(isConnect);
@@ -1285,12 +1286,7 @@ namespace Net.Client
                 {
                     BufferPool.Push(segment);
                     if (Connected & openClient) //导致的问题是当调用Client.Close时, 线程并行到这里导致已经关闭客户端, 但是还是提示连接中断
-                    {
-                        Connected = false;
-                        NetworkState = NetworkState.ConnectLost;
-                        SetHeartInterval(ReconnectInterval);
-                        InvokeInMainThread(OnConnectLostHandle);
-                    }
+                        throw new SocketException(-1); //这个如果直接执行会触发两处连接中断事件
                     return;
                 }
                 receiveAmount++;
@@ -1333,7 +1329,7 @@ namespace Net.Client
             }
             else if (Connected)
             {
-                NDebug.LogError("发送或接收异常:" + ex);
+                NDebug.LogError("网络异常:" + ex);
             }
         }
 
@@ -1342,7 +1338,7 @@ namespace Net.Client
         /// </summary>
         protected virtual void ResolveBuffer(ref ISegment stream, bool isTcp)
         {
-            if (!isTcp) 
+            if (!isTcp)
             {
                 var lenBytes = stream.Read(4);
                 var crcCode = stream.ReadByte();//CRC检验索引
@@ -1385,7 +1381,7 @@ namespace Net.Client
                     model.methodHash = func.hash;
                 }
                 RPCDataHandle(model, buffer);//解析协议完成
-                J: buffer.Position = position;
+            J: buffer.Position = position;
             }
         }
 
@@ -1487,7 +1483,7 @@ namespace Net.Client
                     break;
                 case NetCmd.OperationSync:
                     var list = OnDeserializeOPT(model.buffer, model.index, model.count);
-                    InvokeInMainThread(()=> OnOperationSync?.Invoke(list));
+                    InvokeInMainThread(() => OnOperationSync?.Invoke(list));
                     break;
                 case NetCmd.Ping:
                     RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -1557,7 +1553,7 @@ namespace Net.Client
                         {
                             ftpDic.Remove(key);
                             fileData.fileStream.Position = 0;
-                            InvokeInMainThread(() => 
+                            InvokeInMainThread(() =>
                             {
                                 OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete));
                                 var isDelete = true;
@@ -1620,7 +1616,7 @@ namespace Net.Client
             }
         }
 
-        protected virtual void InvokeInMainThread(RPCModel model) 
+        protected virtual void InvokeInMainThread(RPCModel model)
         {
             model.Flush(); //先缓存起来, 当切换到主线程后才能得到正确的数据
             InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
@@ -1915,7 +1911,7 @@ namespace Net.Client
             Send(new RPCModel(cmd, methodHash, pars));
         }
 
-        public void Send(RPCModel model) 
+        public void Send(RPCModel model)
         {
             if (!Connected)
                 return;
@@ -1927,7 +1923,7 @@ namespace Net.Client
             RpcModels.Enqueue(model);
         }
 
-#region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
         /// <summary>
         /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
         /// </summary>
@@ -2054,9 +2050,9 @@ namespace Net.Client
         {
             return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
         }
-#endregion
+        #endregion
 
-#region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
         /// <summary>
         /// 远程同步调用
         /// </summary>
@@ -2231,7 +2227,7 @@ namespace Net.Client
                 if (model.IsCompleted)
                     goto J;
             }
-            J: return model;
+        J: return model;
         }
 
         /// <summary>
@@ -2336,7 +2332,7 @@ namespace Net.Client
             SetHeartInterval(interval);
         }
 
-        protected void SetHeartInterval(int interval) 
+        protected void SetHeartInterval(int interval)
         {
             LoopEvent.ResetTimeInterval(heartHandlerID, (ulong)interval);
         }
@@ -2512,7 +2508,7 @@ namespace Net.Client
                 ftpDic.Remove(key);
                 fileData.fileStream.Close();
             }
-            else if(Environment.TickCount >= sendFileTick)
+            else if (Environment.TickCount >= sendFileTick)
             {
                 sendFileTick = Environment.TickCount + 1000;
                 if (OnSendFileProgress != null)
