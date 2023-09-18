@@ -1252,7 +1252,7 @@ namespace Net.Client
             }
             catch (Exception ex)
             {
-                NetworkException(ex);
+                NDebug.LogError("网络异常:" + ex);
             }
             return Connected | openClient | CurrReconnect < ReconnectCount; //当连接中断时不能结束线程, 还有尝试重连
         }
