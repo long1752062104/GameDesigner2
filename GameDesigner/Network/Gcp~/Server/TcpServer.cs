@@ -100,10 +100,10 @@
                             client1.Client = client;
                             client1.Connected = true;
                             SetClientIdentity(client1);
-                            client1.OnReconnecting();
-                            OnReconnecting(client1);
                         }
                         else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
+                        client1.OnReconnecting();
+                        OnReconnecting(client1);
                         J: acceptList.RemoveAt(i);
                     }
                 }
