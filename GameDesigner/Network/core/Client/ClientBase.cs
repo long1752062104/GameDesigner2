@@ -1250,6 +1250,9 @@ namespace Net.Client
             {
                 LoopEvent.UpdateEventFixed(1, sleep);
             }
+            catch (ThreadAbortException ex) //线程结束不提示异常
+            {
+            }
             catch (Exception ex)
             {
                 NDebug.LogError("网络异常:" + ex);
@@ -1286,7 +1289,7 @@ namespace Net.Client
                 {
                     BufferPool.Push(segment);
                     if (Connected & openClient) //导致的问题是当调用Client.Close时, 线程并行到这里导致已经关闭客户端, 但是还是提示连接中断
-                        throw new SocketException(-1); //这个如果直接执行会触发两处连接中断事件
+                        throw new SocketException((int)SocketError.NoData); //这个如果直接执行会触发两处连接中断事件
                     return;
                 }
                 receiveAmount++;
@@ -1312,11 +1315,13 @@ namespace Net.Client
             {
                 Connected = false;
                 NetworkState = NetworkState.ConnectLost;
-                InvokeInMainThread(OnConnectLostHandle);
                 RpcModels = new QueueSafe<RPCModel>();
                 heart = HeartLimit + 1; //心跳时间直接到达最大值
                 SetHeartInterval(ReconnectInterval); //断线后, 会改变心跳时间为断线重连间隔时间
+                InvokeInMainThread(OnConnectLostHandle);
                 NDebug.LogError("连接中断!" + ex);
+                if (!UseUnityThread)
+                    NetworkUpdate();
             }
             else if (ex is ObjectDisposedException)
             {
@@ -1728,11 +1733,7 @@ namespace Net.Client
                 }
                 else//连接中断事件执行
                 {
-                    NetworkState = NetworkState.ConnectLost;
-                    InvokeInMainThread(OnConnectLostHandle);
-                    RpcModels = new QueueSafe<RPCModel>();
-                    Connected = false;
-                    NDebug.LogError("连接中断！");
+                    NetworkException(new SocketException((int)SocketError.Disconnecting));
                 }
             }
             catch { }

@@ -94,7 +94,7 @@
         public override void OnNetworkTick()
         {
             if (!Client.Connected)
-                throw new SocketException(-1);
+                throw new SocketException((int)SocketError.Disconnecting);
         }
 
         protected override bool HeartHandler()
