@@ -79,7 +79,7 @@
                     result(true);
                     return true;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     NDebug.LogError("连接错误:" + ex);
                     Connected = false;
@@ -89,6 +89,12 @@
                     return false;
                 }
             });
+        }
+
+        public override void OnNetworkTick()
+        {
+            if (!Client.Connected)
+                NetworkException(new SocketException(-1));
         }
 
         protected override bool HeartHandler()
@@ -255,11 +261,14 @@
                 {
                     var client = new TcpClientTest();
                     onInit?.Invoke(client);
-                    if(adapter != null)
+                    if (adapter != null)
                         client.AddAdapter(adapter);
-                    try { 
+                    try
+                    {
                         client.Connect(ip, port);
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         NDebug.LogError(ex);
                         return;
                     }

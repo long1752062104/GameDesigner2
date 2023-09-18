@@ -1318,6 +1318,8 @@ namespace Net.Client
                 NetworkState = NetworkState.ConnectLost;
                 InvokeInMainThread(OnConnectLostHandle);
                 RpcModels = new QueueSafe<RPCModel>();
+                heart = HeartLimit + 1; //心跳时间直接到达最大值
+                SetHeartInterval(ReconnectInterval); //断线后, 会改变心跳时间为断线重连间隔时间
                 NDebug.LogError("连接中断!" + ex);
             }
             else if (ex is ObjectDisposedException)

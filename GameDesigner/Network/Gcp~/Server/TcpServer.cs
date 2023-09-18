@@ -95,7 +95,7 @@
                             client1 = AcceptHander(client, client.RemoteEndPoint);
                             goto J;
                         }
-                        if (!client1.Client.Connected) //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
+                        if (!client1.Connected | !client1.Client.Connected) //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
                         {
                             client1.Client = client;
                             client1.Connected = true;
