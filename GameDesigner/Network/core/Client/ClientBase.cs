@@ -1252,6 +1252,7 @@ namespace Net.Client
             }
             catch (ThreadAbortException ex) //线程结束不提示异常
             {
+                return false; //如果这里不返回false, 则在ilcpp编译后执行Abort无法结束线程, 导致错误
             }
             catch (Exception ex)
             {
