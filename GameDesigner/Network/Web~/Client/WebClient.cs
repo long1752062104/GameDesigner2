@@ -187,6 +187,7 @@
             StackStream = null;
             stack = 0;
             UID = 0;
+            PreUserId = 0;
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
             if (Gcp != null) Gcp.Dispose();

@@ -1838,6 +1838,7 @@ namespace Net.Client
             StackStream?.Close();
             StackStream = null;
             UID = 0;
+            PreUserId = 0;
             CurrReconnect = 0;
             if (Instance == this) Instance = null;
             if (Gcp != null) Gcp.Dispose();
