@@ -408,6 +408,10 @@ namespace Net.Client
         protected int singleThreadHandlerID, networkTickID, networkFlowHandlerID, heartHandlerID;
         private int sendFileTick, recvFileTick;
         /// <summary>
+        /// 是否自动重连, 默认是自动重连
+        /// </summary>
+        public bool AutoReconnecting { get; set; } = true;
+        /// <summary>
         /// 当前尝试重连次数
         /// </summary>
         public int CurrReconnect { get; protected set; }
@@ -1767,7 +1771,6 @@ namespace Net.Client
             if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.TryToConnect |
                 NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
                 return;
-            Client?.Close();
             if (CurrReconnect >= ReconnectCount)//如果想断线不需要重连,则直接返回
             {
                 NetworkState = NetworkState.ConnectFailed;
@@ -1776,6 +1779,9 @@ namespace Net.Client
                 NDebug.LogError($"连接失败!请检查网络是否异常(无重连次数)");
                 return;
             }
+            if (!AutoReconnecting)
+                return;
+            Client?.Close();
             UID = 0;
             CurrReconnect++;
             NetworkState = NetworkState.TryToConnect;
