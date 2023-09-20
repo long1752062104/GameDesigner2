@@ -129,7 +129,7 @@
                 if (Connected)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else//尝试连接执行
-                    Reconnection();
+                    InternalReconnection();
             }
             catch { }
             return openClient & CurrReconnect < ReconnectCount;

@@ -408,7 +408,7 @@ namespace Net.Client
         protected int singleThreadHandlerID, networkTickID, networkFlowHandlerID, heartHandlerID;
         private int sendFileTick, recvFileTick;
         /// <summary>
-        /// 是否自动重连, 默认是自动重连
+        /// 自动断线重新连接, 默认是true
         /// </summary>
         public bool AutoReconnecting { get; set; } = true;
         /// <summary>
@@ -1729,7 +1729,7 @@ namespace Net.Client
                     return true;
                 if (!Connected)
                 {
-                    Reconnection();//尝试连接执行
+                    InternalReconnection();//尝试连接执行
                     return true;
                 }
                 if (heart < HeartLimit + 5)
@@ -1764,9 +1764,19 @@ namespace Net.Client
         }
 
         /// <summary>
+        /// 内部断线重新连接
+        /// </summary>
+        protected virtual void InternalReconnection()
+        {
+            if (!AutoReconnecting)
+                return;
+            Reconnection();
+        }
+
+        /// <summary>
         /// 断线重新连接
         /// </summary>
-        protected virtual void Reconnection()
+        public void Reconnection()
         {
             if (NetworkState == NetworkState.Connection | NetworkState == NetworkState.TryToConnect |
                 NetworkState == NetworkState.ConnectClosed | NetworkState == NetworkState.Reconnect)
@@ -1779,8 +1789,6 @@ namespace Net.Client
                 NDebug.LogError($"连接失败!请检查网络是否异常(无重连次数)");
                 return;
             }
-            if (!AutoReconnecting)
-                return;
             Client?.Close();
             UID = 0;
             CurrReconnect++;

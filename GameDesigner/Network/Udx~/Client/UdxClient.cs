@@ -190,7 +190,7 @@
                 if (Connected & heart < HeartLimit + 5)
                     Send(NetCmd.SendHeartbeat, new byte[0]);
                 else if (!Connected)//尝试连接执行
-                    Reconnection();
+                    InternalReconnection();
             }
             catch { }
             return openClient & CurrReconnect < ReconnectCount;

@@ -104,7 +104,7 @@
                 if (++heart <= HeartLimit)
                     return true;
                 if (!Connected)
-                    Reconnection();
+                    InternalReconnection();
                 else
                     Send(NetCmd.SendHeartbeat, new byte[0]);
             }
