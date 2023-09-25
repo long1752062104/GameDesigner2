@@ -3246,6 +3246,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="RecastNet">
+      <HintPath>GameDesigner\Recast~\Library\RecastNet.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Library\UnityEngine.dll</HintPath>
     </Reference>
