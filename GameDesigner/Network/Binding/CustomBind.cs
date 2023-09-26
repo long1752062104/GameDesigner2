@@ -4,151 +4,10 @@ using System;
 
 namespace Binding
 {
-    /// <summary>
-    /// 基础类型绑定
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public readonly struct BaseBind<T> : ISerialize<T>, ISerialize
-    {
-        public void Write(T value, ISegment stream)
-        {
-            stream.WriteValue(value);
-        }
-        public T Read(ISegment stream)
-        {
-            return stream.ReadValue<T>();
-        }
-
-        public void WriteValue(object value, ISegment stream)
-        {
-            stream.WriteValue(value);
-        }
-
-        object ISerialize.ReadValue(ISegment stream)
-        {
-            return stream.ReadValue<T>();
-        }
-    }
-
-    /// <summary>
-    /// 基础类型数组绑定
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public readonly struct BaseArrayBind<T> : ISerialize<T[]>, ISerialize
-    {
-        public void Write(T[] value, ISegment stream)
-        {
-            stream.WriteArray(value);
-        }
-        public T[] Read(ISegment stream)
-        {
-            return stream.ReadArray<T>();
-        }
-
-        public void WriteValue(object value, ISegment stream)
-        {
-            stream.WriteArray(value);
-        }
-
-        object ISerialize.ReadValue(ISegment stream)
-        {
-            return stream.ReadArray<T>();
-        }
-    }
-
-    /// <summary>
-    /// 基础类型泛型绑定
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public readonly struct BaseListBind<T> : ISerialize<System.Collections.Generic.List<T>>, ISerialize
-    {
-        public void Write(System.Collections.Generic.List<T> value, ISegment stream)
-        {
-            stream.WriteList(value);
-        }
-        public System.Collections.Generic.List<T> Read(ISegment stream)
-        {
-            return stream.ReadList<T>();
-        }
-
-        public void WriteValue(object value, ISegment stream)
-        {
-            stream.WriteList(value);
-        }
-
-        object ISerialize.ReadValue(ISegment stream)
-        {
-            return stream.ReadList<T>();
-        }
-    }
-
-    /// <summary>
-    /// 字典绑定
-    /// </summary>
-    public readonly struct DictionaryBind<TKey, TValue>
-    {
-        public void Write(System.Collections.Generic.Dictionary<TKey, TValue> value, ISegment stream, ISerialize<TValue> bind)
-        {
-            int count = value.Count;
-            stream.Write(count);
-            if (count == 0) return;
-            foreach (var value1 in value)
-            {
-                stream.WriteValue(value1.Key);
-                bind.Write(value1.Value, stream);
-            }
-        }
-
-        public System.Collections.Generic.Dictionary<TKey, TValue> Read(ISegment stream, ISerialize<TValue> bind)
-        {
-            var count = stream.ReadInt32();
-            var value = new System.Collections.Generic.Dictionary<TKey, TValue>();
-            if (count == 0) return value;
-            for (int i = 0; i < count; i++)
-            {
-                var key = stream.ReadValue<TKey>();
-                var tvalue = bind.Read(stream);
-                value.Add(key, tvalue);
-            }
-            return value;
-        }
-    }
-
-    /// <summary>
-    /// My字典绑定
-    /// </summary>
-    public readonly struct MyDictionaryBind<TKey, TValue>
-    {
-        public void Write(MyDictionary<TKey, TValue> value, ISegment stream, ISerialize<TValue> bind)
-        {
-            int count = value.Count;
-            stream.Write(count);
-            if (count == 0) return;
-            foreach (var value1 in value)
-            {
-                stream.WriteValue(value1.Key);
-                bind.Write(value1.Value, stream);
-            }
-        }
-
-        public MyDictionary<TKey, TValue> Read(ISegment stream, ISerialize<TValue> bind)
-        {
-            var count = stream.ReadInt32();
-            var value = new MyDictionary<TKey, TValue>();
-            if (count == 0) return value;
-            for (int i = 0; i < count; i++)
-            {
-                var key = stream.ReadValue<TKey>();
-                var tvalue = bind.Read(stream);
-                value.Add(key, tvalue);
-            }
-            return value;
-        }
-    }
-
     #region "基元类型绑定"
     public readonly struct SystemByteBind : ISerialize<System.Byte>, ISerialize
     {
+        public ushort HashCode { get { return 1; } }
         public void Write(System.Byte value, ISegment stream)
         {
             stream.Write(value);
@@ -170,6 +29,7 @@ namespace Binding
     }
     public readonly struct SystemSByteBind : ISerialize<System.SByte>, ISerialize
     {
+        public ushort HashCode { get { return 2; } }
         public void Write(System.SByte value, ISegment stream)
         {
             stream.Write(value);
@@ -191,6 +51,7 @@ namespace Binding
     }
     public readonly struct SystemBooleanBind : ISerialize<System.Boolean>, ISerialize
     {
+        public ushort HashCode { get { return 3; } }
         public void Write(System.Boolean value, ISegment stream)
         {
             stream.Write(value);
@@ -212,6 +73,7 @@ namespace Binding
     }
     public readonly struct SystemInt16Bind : ISerialize<System.Int16>, ISerialize
     {
+        public ushort HashCode { get { return 4; } }
         public void Write(System.Int16 value, ISegment stream)
         {
             stream.Write(value);
@@ -233,6 +95,7 @@ namespace Binding
     }
     public readonly struct SystemUInt16Bind : ISerialize<System.UInt16>, ISerialize
     {
+        public ushort HashCode { get { return 5; } }
         public void Write(System.UInt16 value, ISegment stream)
         {
             stream.Write(value);
@@ -254,6 +117,7 @@ namespace Binding
     }
     public readonly struct SystemCharBind : ISerialize<System.Char>, ISerialize
     {
+        public ushort HashCode { get { return 6; } }
         public void Write(System.Char value, ISegment stream)
         {
             stream.Write(value);
@@ -275,6 +139,7 @@ namespace Binding
     }
     public readonly struct SystemInt32Bind : ISerialize<System.Int32>, ISerialize
     {
+        public ushort HashCode { get { return 7; } }
         public void Write(System.Int32 value, ISegment stream)
         {
             stream.Write(value);
@@ -296,6 +161,7 @@ namespace Binding
     }
     public readonly struct SystemUInt32Bind : ISerialize<System.UInt32>, ISerialize
     {
+        public ushort HashCode { get { return 8; } }
         public void Write(System.UInt32 value, ISegment stream)
         {
             stream.Write(value);
@@ -317,6 +183,7 @@ namespace Binding
     }
     public readonly struct SystemSingleBind : ISerialize<System.Single>, ISerialize
     {
+        public ushort HashCode { get { return 9; } }
         public void Write(System.Single value, ISegment stream)
         {
             stream.Write(value);
@@ -338,6 +205,7 @@ namespace Binding
     }
     public readonly struct SystemInt64Bind : ISerialize<System.Int64>, ISerialize
     {
+        public ushort HashCode { get { return 10; } }
         public void Write(System.Int64 value, ISegment stream)
         {
             stream.Write(value);
@@ -359,6 +227,7 @@ namespace Binding
     }
     public readonly struct SystemUInt64Bind : ISerialize<System.UInt64>, ISerialize
     {
+        public ushort HashCode { get { return 11; } }
         public void Write(System.UInt64 value, ISegment stream)
         {
             stream.Write(value);
@@ -380,6 +249,7 @@ namespace Binding
     }
     public readonly struct SystemDoubleBind : ISerialize<System.Double>, ISerialize
     {
+        public ushort HashCode { get { return 12; } }
         public void Write(System.Double value, ISegment stream)
         {
             stream.Write(value);
@@ -401,6 +271,7 @@ namespace Binding
     }
     public readonly struct SystemStringBind : ISerialize<System.String>, ISerialize
     {
+        public ushort HashCode { get { return 13; } }
         public void Write(System.String value, ISegment stream)
         {
             stream.Write(value);
@@ -422,6 +293,7 @@ namespace Binding
     }
     public readonly struct SystemDecimalBind : ISerialize<System.Decimal>, ISerialize
     {
+        public ushort HashCode { get { return 14; } }
         public void Write(System.Decimal value, ISegment stream)
         {
             stream.Write(value);
@@ -443,6 +315,7 @@ namespace Binding
     }
     public readonly struct SystemDateTimeBind : ISerialize<System.DateTime>, ISerialize
     {
+        public ushort HashCode { get { return 15; } }
         public void Write(System.DateTime value, ISegment stream)
         {
             stream.Write(value);
@@ -464,6 +337,7 @@ namespace Binding
     }
     public readonly struct SystemTimeSpanBind : ISerialize<System.TimeSpan>, ISerialize
     {
+        public ushort HashCode { get { return 16; } }
         public void Write(System.TimeSpan value, ISegment stream)
         {
             stream.Write(value);
@@ -486,6 +360,7 @@ namespace Binding
 #if CORE
     public readonly struct SystemTimeOnlyBind : ISerialize<System.TimeOnly>, ISerialize
     {
+        public ushort HashCode { get { return 17; } }
         public void Write(System.TimeOnly value, ISegment stream)
         {
             stream.Write(value);
@@ -508,6 +383,7 @@ namespace Binding
 #endif
     public readonly struct SystemDateTimeOffsetBind : ISerialize<System.DateTimeOffset>, ISerialize
     {
+        public ushort HashCode { get { return 18; } }
         public void Write(System.DateTimeOffset value, ISegment stream)
         {
             stream.Write(value);
@@ -529,6 +405,7 @@ namespace Binding
     }
     public readonly struct SystemDBNullBind : ISerialize<System.DBNull>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
+        public ushort HashCode { get { return 19; } }
         public void Write(System.DBNull value, ISegment stream)
         {
         }
@@ -548,6 +425,7 @@ namespace Binding
     }
     public readonly struct SystemEnumBind<T> : ISerialize<T>, ISerialize where T : System.Enum
     {
+        public ushort HashCode { get { return 20; } }
         public void Write(T value, ISegment stream)
         {
             stream.Write(value);
@@ -572,6 +450,7 @@ namespace Binding
     #region "基元类型数组绑定"
     public readonly struct SystemByteArrayBind : ISerialize<System.Byte[]>, ISerialize
     {
+        public ushort HashCode { get { return 21; } }
         public void Write(System.Byte[] value, ISegment stream)
         {
             stream.Write(value);
@@ -594,6 +473,7 @@ namespace Binding
     }
     public readonly struct SystemSByteArrayBind : ISerialize<System.SByte[]>, ISerialize
     {
+        public ushort HashCode { get { return 22; } }
         public void Write(System.SByte[] value, ISegment stream)
         {
             stream.Write(value);
@@ -616,6 +496,7 @@ namespace Binding
     }
     public readonly struct SystemBooleanArrayBind : ISerialize<System.Boolean[]>, ISerialize
     {
+        public ushort HashCode { get { return 23; } }
         public void Write(System.Boolean[] value, ISegment stream)
         {
             stream.Write(value);
@@ -638,6 +519,7 @@ namespace Binding
     }
     public readonly struct SystemInt16ArrayBind : ISerialize<System.Int16[]>, ISerialize
     {
+        public ushort HashCode { get { return 24; } }
         public void Write(System.Int16[] value, ISegment stream)
         {
             stream.Write(value);
@@ -660,6 +542,7 @@ namespace Binding
     }
     public readonly struct SystemUInt16ArrayBind : ISerialize<System.UInt16[]>, ISerialize
     {
+        public ushort HashCode { get { return 25; } }
         public void Write(System.UInt16[] value, ISegment stream)
         {
             stream.Write(value);
@@ -682,6 +565,7 @@ namespace Binding
     }
     public readonly struct SystemCharArrayBind : ISerialize<System.Char[]>, ISerialize
     {
+        public ushort HashCode { get { return 26; } }
         public void Write(System.Char[] value, ISegment stream)
         {
             stream.Write(value);
@@ -704,6 +588,7 @@ namespace Binding
     }
     public readonly struct SystemInt32ArrayBind : ISerialize<System.Int32[]>, ISerialize
     {
+        public ushort HashCode { get { return 27; } }
         public void Write(System.Int32[] value, ISegment stream)
         {
             stream.Write(value);
@@ -726,6 +611,7 @@ namespace Binding
     }
     public readonly struct SystemUInt32ArrayBind : ISerialize<System.UInt32[]>, ISerialize
     {
+        public ushort HashCode { get { return 28; } }
         public void Write(System.UInt32[] value, ISegment stream)
         {
             stream.Write(value);
@@ -748,6 +634,7 @@ namespace Binding
     }
     public readonly struct SystemSingleArrayBind : ISerialize<System.Single[]>, ISerialize
     {
+        public ushort HashCode { get { return 29; } }
         public void Write(System.Single[] value, ISegment stream)
         {
             stream.Write(value);
@@ -770,6 +657,7 @@ namespace Binding
     }
     public readonly struct SystemInt64ArrayBind : ISerialize<System.Int64[]>, ISerialize
     {
+        public ushort HashCode { get { return 30; } }
         public void Write(System.Int64[] value, ISegment stream)
         {
             stream.Write(value);
@@ -792,6 +680,7 @@ namespace Binding
     }
     public readonly struct SystemUInt64ArrayBind : ISerialize<System.UInt64[]>, ISerialize
     {
+        public ushort HashCode { get { return 31; } }
         public void Write(System.UInt64[] value, ISegment stream)
         {
             stream.Write(value);
@@ -814,6 +703,7 @@ namespace Binding
     }
     public readonly struct SystemDoubleArrayBind : ISerialize<System.Double[]>, ISerialize
     {
+        public ushort HashCode { get { return 32; } }
         public void Write(System.Double[] value, ISegment stream)
         {
             stream.Write(value);
@@ -836,6 +726,7 @@ namespace Binding
     }
     public readonly struct SystemStringArrayBind : ISerialize<System.String[]>, ISerialize
     {
+        public ushort HashCode { get { return 33; } }
         public void Write(System.String[] value, ISegment stream)
         {
             stream.Write(value);
@@ -858,6 +749,7 @@ namespace Binding
     }
     public readonly struct SystemDecimalArrayBind : ISerialize<System.Decimal[]>, ISerialize
     {
+        public ushort HashCode { get { return 34; } }
         public void Write(System.Decimal[] value, ISegment stream)
         {
             stream.Write(value);
@@ -880,6 +772,7 @@ namespace Binding
     }
     public readonly struct SystemDateTimeArrayBind : ISerialize<System.DateTime[]>, ISerialize
     {
+        public ushort HashCode { get { return 35; } }
         public void Write(System.DateTime[] value, ISegment stream)
         {
             stream.Write(value);
@@ -902,6 +795,7 @@ namespace Binding
     }
     public readonly struct SystemTimeSpanArrayBind : ISerialize<System.TimeSpan[]>, ISerialize
     {
+        public ushort HashCode { get { return 36; } }
         public void Write(System.TimeSpan[] value, ISegment stream)
         {
             stream.Write(value);
@@ -925,6 +819,7 @@ namespace Binding
 #if CORE
     public readonly struct SystemTimeOnlyArrayBind : ISerialize<System.TimeOnly[]>, ISerialize
     {
+        public ushort HashCode { get { return 37; } }
         public void Write(System.TimeOnly[] value, ISegment stream)
         {
             stream.Write(value);
@@ -948,6 +843,7 @@ namespace Binding
 #endif
     public readonly struct SystemDateTimeOffsetArrayBind : ISerialize<System.DateTimeOffset[]>, ISerialize
     {
+        public ushort HashCode { get { return 38; } }
         public void Write(System.DateTimeOffset[] value, ISegment stream)
         {
             stream.Write(value);
@@ -970,6 +866,7 @@ namespace Binding
     }
     public readonly struct SystemDBNullArrayBind : ISerialize<System.DBNull[]>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
+        public ushort HashCode { get { return 39; } }
         public void Write(System.DBNull[] value, ISegment stream)
         {
         }
@@ -989,6 +886,7 @@ namespace Binding
     }
     public readonly struct SystemEnumArrayBind<T> : ISerialize<T[]>, ISerialize where T : System.Enum
     {
+        public ushort HashCode { get { return 40; } }
         public void Write(T[] value, ISegment stream)
         {
             stream.Write(value.Length);
@@ -1023,6 +921,7 @@ namespace Binding
     #region "基元类型List绑定"
     public readonly struct SystemCollectionsGenericListSystemByteBind : ISerialize<System.Collections.Generic.List<System.Byte>>, ISerialize
     {
+        public ushort HashCode { get { return 41; } }
         public void Write(System.Collections.Generic.List<System.Byte> value, ISegment stream)
         {
             stream.Write(value);
@@ -1045,6 +944,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemSByteBind : ISerialize<System.Collections.Generic.List<System.SByte>>, ISerialize
     {
+        public ushort HashCode { get { return 42; } }
         public void Write(System.Collections.Generic.List<System.SByte> value, ISegment stream)
         {
             stream.Write(value);
@@ -1067,6 +967,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemBooleanBind : ISerialize<System.Collections.Generic.List<System.Boolean>>, ISerialize
     {
+        public ushort HashCode { get { return 43; } }
         public void Write(System.Collections.Generic.List<System.Boolean> value, ISegment stream)
         {
             stream.Write(value);
@@ -1089,6 +990,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemInt16Bind : ISerialize<System.Collections.Generic.List<System.Int16>>, ISerialize
     {
+        public ushort HashCode { get { return 44; } }
         public void Write(System.Collections.Generic.List<System.Int16> value, ISegment stream)
         {
             stream.Write(value);
@@ -1111,6 +1013,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemUInt16Bind : ISerialize<System.Collections.Generic.List<System.UInt16>>, ISerialize
     {
+        public ushort HashCode { get { return 45; } }
         public void Write(System.Collections.Generic.List<System.UInt16> value, ISegment stream)
         {
             stream.Write(value);
@@ -1133,6 +1036,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemCharBind : ISerialize<System.Collections.Generic.List<System.Char>>, ISerialize
     {
+        public ushort HashCode { get { return 46; } }
         public void Write(System.Collections.Generic.List<System.Char> value, ISegment stream)
         {
             stream.Write(value);
@@ -1155,6 +1059,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemInt32Bind : ISerialize<System.Collections.Generic.List<System.Int32>>, ISerialize
     {
+        public ushort HashCode { get { return 47; } }
         public void Write(System.Collections.Generic.List<System.Int32> value, ISegment stream)
         {
             stream.Write(value);
@@ -1177,6 +1082,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemUInt32Bind : ISerialize<System.Collections.Generic.List<System.UInt32>>, ISerialize
     {
+        public ushort HashCode { get { return 48; } }
         public void Write(System.Collections.Generic.List<System.UInt32> value, ISegment stream)
         {
             stream.Write(value);
@@ -1199,6 +1105,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemSingleBind : ISerialize<System.Collections.Generic.List<System.Single>>, ISerialize
     {
+        public ushort HashCode { get { return 49; } }
         public void Write(System.Collections.Generic.List<System.Single> value, ISegment stream)
         {
             stream.Write(value);
@@ -1221,6 +1128,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemInt64Bind : ISerialize<System.Collections.Generic.List<System.Int64>>, ISerialize
     {
+        public ushort HashCode { get { return 50; } }
         public void Write(System.Collections.Generic.List<System.Int64> value, ISegment stream)
         {
             stream.Write(value);
@@ -1243,6 +1151,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemUInt64Bind : ISerialize<System.Collections.Generic.List<System.UInt64>>, ISerialize
     {
+        public ushort HashCode { get { return 51; } }
         public void Write(System.Collections.Generic.List<System.UInt64> value, ISegment stream)
         {
             stream.Write(value);
@@ -1265,6 +1174,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemDoubleBind : ISerialize<System.Collections.Generic.List<System.Double>>, ISerialize
     {
+        public ushort HashCode { get { return 52; } }
         public void Write(System.Collections.Generic.List<System.Double> value, ISegment stream)
         {
             stream.Write(value);
@@ -1287,6 +1197,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemStringBind : ISerialize<System.Collections.Generic.List<System.String>>, ISerialize
     {
+        public ushort HashCode { get { return 53; } }
         public void Write(System.Collections.Generic.List<System.String> value, ISegment stream)
         {
             stream.Write(value);
@@ -1309,6 +1220,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemDecimalBind : ISerialize<System.Collections.Generic.List<System.Decimal>>, ISerialize
     {
+        public ushort HashCode { get { return 54; } }
         public void Write(System.Collections.Generic.List<System.Decimal> value, ISegment stream)
         {
             stream.Write(value);
@@ -1331,6 +1243,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemDateTimeBind : ISerialize<System.Collections.Generic.List<System.DateTime>>, ISerialize
     {
+        public ushort HashCode { get { return 55; } }
         public void Write(System.Collections.Generic.List<System.DateTime> value, ISegment stream)
         {
             stream.Write(value);
@@ -1353,6 +1266,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemTimeSpanBind : ISerialize<System.Collections.Generic.List<System.TimeSpan>>, ISerialize
     {
+        public ushort HashCode { get { return 56; } }
         public void Write(System.Collections.Generic.List<System.TimeSpan> value, ISegment stream)
         {
             stream.Write(value);
@@ -1376,6 +1290,7 @@ namespace Binding
 #if CORE
     public readonly struct SystemCollectionsGenericListSystemTimeOnlyBind : ISerialize<System.Collections.Generic.List<System.TimeOnly>>, ISerialize
     {
+        public ushort HashCode { get { return 57; } }
         public void Write(System.Collections.Generic.List<System.TimeOnly> value, ISegment stream)
         {
             stream.Write(value);
@@ -1399,6 +1314,7 @@ namespace Binding
 #endif
     public readonly struct SystemCollectionsGenericListSystemDateTimeOffsetBind : ISerialize<System.Collections.Generic.List<System.DateTimeOffset>>, ISerialize
     {
+        public ushort HashCode { get { return 58; } }
         public void Write(System.Collections.Generic.List<System.DateTimeOffset> value, ISegment stream)
         {
             stream.Write(value);
@@ -1421,6 +1337,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemDBNullBind : ISerialize<System.Collections.Generic.List<System.DBNull>>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
+        public ushort HashCode { get { return 59; } }
         public void Write(System.Collections.Generic.List<System.DBNull> value, ISegment stream)
         {
         }
@@ -1440,6 +1357,7 @@ namespace Binding
     }
     public readonly struct SystemCollectionsGenericListSystemEnumBind<T> : ISerialize<System.Collections.Generic.List<T>>, ISerialize where T : System.Enum
     {
+        public ushort HashCode { get { return 60; } }
         public void Write(System.Collections.Generic.List<T> value, ISegment stream)
         {
             stream.Write(value.Count);

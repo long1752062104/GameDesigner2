@@ -692,7 +692,7 @@
         </member>
         <member name="T:Net.Serialize.NetConvertFast">
             <summary>
-            快速解析类型, 使用此类需要使用AddNetworkType()先添加序列化类型, 类型是固定, 并且双端统一
+            快速解析类型, 使用此类需要使用AddSerializeType先添加序列化类型, 类型是固定, 并且双端统一
             </summary>
         </member>
         <member name="M:Net.Serialize.NetConvertFast.AddNetworkBaseType">
@@ -727,6 +727,11 @@
         <member name="T:Net.Serialize.ISerialize">
             <summary>
             快速序列化2接口--动态匹配
+            </summary>
+        </member>
+        <member name="P:Net.Serialize.ISerialize.HashCode">
+            <summary>
+            双端一致性的哈希协议码
             </summary>
         </member>
         <member name="M:Net.Serialize.ISerialize.WriteValue(System.Object,Net.System.ISegment)">
@@ -4740,6 +4745,11 @@
             限制发送队列长度
             </summary>
         </member>
+        <member name="P:Net.Client.ClientBase.AutoReconnecting">
+            <summary>
+            自动断线重新连接, 默认是true
+            </summary>
+        </member>
         <member name="P:Net.Client.ClientBase.CurrReconnect">
             <summary>
             当前尝试重连次数
@@ -5094,6 +5104,11 @@
             </summary>
             <param name="ip"></param>
             <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.InternalReconnection">
+            <summary>
+            内部断线重新连接
+            </summary>
         </member>
         <member name="M:Net.Client.ClientBase.Reconnection">
             <summary>
@@ -7945,34 +7960,6 @@
         <member name="T:ECS.UpdateComponent">
             <summary>
             热更层借助此组件进行更新, ilr不支持多继承, 接口继承
-            </summary>
-        </member>
-        <member name="T:Binding.BaseBind`1">
-            <summary>
-            基础类型绑定
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Binding.BaseArrayBind`1">
-            <summary>
-            基础类型数组绑定
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Binding.BaseListBind`1">
-            <summary>
-            基础类型泛型绑定
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Binding.DictionaryBind`2">
-            <summary>
-            字典绑定
-            </summary>
-        </member>
-        <member name="T:Binding.MyDictionaryBind`2">
-            <summary>
-            My字典绑定
             </summary>
         </member>
         <member name="M:Fast2BuildMethod.DynamicBuild(System.Boolean,System.Type[])">

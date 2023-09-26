@@ -38,7 +38,7 @@ namespace Example2
                 {
                     var position = patrolPath.waypoints[0];
                     var monster = new AIMonster();
-                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight };
+                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = 0f, findPathMode = FindPathMode.FindPathFollow };
                     monster.Agent.SetPositionAndRotation(position, Quaternion.identity);
                     monster.Position = position;
                     monster.pointCenter = position;
@@ -49,21 +49,6 @@ namespace Example2
                     monsters.Add(id++, monster);
                 }
             }
-            //Task.Run(() =>
-            //{
-            //    while (true)
-            //    {
-            //        try
-            //        {
-            //            Thread.Sleep(1);
-            //            gridWorld.UpdateHandler();
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            NDebug.LogError(ex);
-            //        }
-            //    }
-            //});
         }
 
         public override void OnEnter(Player client)

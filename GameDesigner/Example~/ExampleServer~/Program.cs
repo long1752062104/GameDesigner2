@@ -17,7 +17,7 @@ namespace ExampleServer
         /// <summary>
         /// 应用程序的主入口点。
         /// </summary>
-        [STAThread]
+        //[STAThread]
         static void Main(string[] args)
         {
             if (args.Length == 0)

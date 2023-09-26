@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct NetShareOperationBind : ISerialize<Net.Share.Operation>, ISerialize
+    public readonly struct NetShareOperationBind : ISerialize<Net.Share.Operation>, ISerialize
     {
+        public ushort HashCode { get { return 151; } }
+
         public void Write(Net.Share.Operation value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 2;
-            byte[] bits = new byte[2];
+            var bits = new byte[2];
 
             if (value.cmd != 0)
             {
@@ -37,7 +39,7 @@ namespace Binding
                 stream.Write(value.name);
             }
 
-			if(value.position != default)
+			if(value.position != default(Net.Vector3))
 			{
 				NetConvertBase.SetBit(ref bits[0], 5, true);
 				var bind = new NetVector3Bind();
@@ -51,7 +53,7 @@ namespace Binding
 				bind.Write(value.rotation, stream);
 			}
 
-			if(value.direction != default)
+			if(value.direction != default(Net.Vector3))
 			{
 				NetConvertBase.SetBit(ref bits[0], 7, true);
 				var bind = new NetVector3Bind();
@@ -118,10 +120,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public Net.Share.Operation Read(ISegment stream)
+        public Net.Share.Operation Read(ISegment stream) 
+        {
+            var value = new Net.Share.Operation();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref Net.Share.Operation value, ISegment stream)
 		{
-			byte[] bits = stream.Read(2);
-			var value = new Net.Share.Operation();
+			var bits = stream.Read(2);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.cmd = stream.ReadByte();
@@ -180,7 +188,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[1], 8))
 				value.name2 = stream.ReadString();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -197,8 +204,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct NetShareOperationArrayBind : ISerialize<Net.Share.Operation[]>, ISerialize
+	public readonly struct NetShareOperationArrayBind : ISerialize<Net.Share.Operation[]>, ISerialize
 	{
+        public ushort HashCode { get { return 152; } }
+
 		public void Write(Net.Share.Operation[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -231,11 +240,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public readonly struct NetShareOperationGenericBind : ISerialize<List<Net.Share.Operation>>, ISerialize
+	public readonly struct SystemCollectionsGenericListNetShareOperationBind : ISerialize<System.Collections.Generic.List<Net.Share.Operation>>, ISerialize
 	{
-		public void Write(List<Net.Share.Operation> value, ISegment stream)
+        public ushort HashCode { get { return 153; } }
+
+		public void Write(System.Collections.Generic.List<Net.Share.Operation> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -245,10 +257,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<Net.Share.Operation> Read(ISegment stream)
+		public System.Collections.Generic.List<Net.Share.Operation> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<Net.Share.Operation>(count);
+			var value = new System.Collections.Generic.List<Net.Share.Operation>(count);
 			if (count == 0) return value;
 			var bind = new NetShareOperationBind();
 			for (int i = 0; i < count; i++)
@@ -258,7 +270,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<Net.Share.Operation>)value, stream);
+			Write((System.Collections.Generic.List<Net.Share.Operation>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)

@@ -8,7 +8,7 @@ public class AOTHook : MonoBehaviour
     {
         var types = new Type[]
         {
-            typeof(Binding.BaseBind<bool>)
+            //typeof(Binding.BaseBind<bool>)
         };
     }
 }

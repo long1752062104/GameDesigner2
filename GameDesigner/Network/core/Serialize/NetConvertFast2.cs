@@ -14,6 +14,10 @@
     public interface ISerialize
     {
         /// <summary>
+        /// 双端一致性的哈希协议码 --解决子项目和父项目融合问题
+        /// </summary>
+        ushort HashCode { get; }
+        /// <summary>
         /// 序列化写入
         /// </summary>
         /// <param name="value"></param>
@@ -64,9 +68,9 @@
     /// </summary>
     public class NetConvertFast2 : NetConvertBase
     {
-        private static readonly MyDictionary<ushort, Type> Types = new MyDictionary<ushort, Type>();
-        private static readonly MyDictionary<Type, ushort> Types1 = new MyDictionary<Type, ushort>();
-        private static readonly MyDictionary<Type, ISerialize> Types2 = new MyDictionary<Type, ISerialize>();
+        private static readonly MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
+        private static readonly MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
+        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>();
         private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>();
 
         static NetConvertFast2()
@@ -79,9 +83,9 @@
         /// </summary>
         public static bool Init()
         {
-            Types.Clear();
-            Types1.Clear();
-            Types2.Clear();
+            HashToTypeDict.Clear();
+            TypeToHashDict.Clear();
+            TypeToSerializeDict.Clear();
             BindTypes.Clear();
             AddBaseType();
             InitBindInterfaces();
@@ -164,7 +168,7 @@
         /// <param name="type">要添加的网络类型</param>
         public static void AddSerializeType(Type type)
         {
-            if (Types2.ContainsKey(type))
+            if (TypeToSerializeDict.ContainsKey(type))
                 throw new Exception($"已经添加{type}键，不需要添加了!");
             if (type.IsArray)
             {
@@ -175,7 +179,7 @@
                     return;
                 }
             }
-            else if (type.IsGenericType) 
+            else if (type.IsGenericType)
             {
                 var arguments = type.GenericTypeArguments;
                 if (arguments.Length == 1)
@@ -195,10 +199,11 @@
             }
             if (!BindTypes.TryGetValue(type, out Type bindType))
                 throw new Exception($"类型{type}尚未实现绑定类型,请使用工具生成绑定类型!");
-            var hashType = (ushort)Types.Count;
-            Types.Add(hashType, type);
-            Types1.Add(type, hashType);
-            Types2.Add(type, Activator.CreateInstance(bindType) as ISerialize);
+            var serialize = Activator.CreateInstance(bindType) as ISerialize;
+            var hashType = serialize.HashCode;//(ushort)Types.Count;
+            HashToTypeDict.Add(hashType, type);
+            TypeToHashDict.Add(type, hashType);
+            TypeToSerializeDict.Add(type, serialize);
         }
 
         private static void AddBaseType3<T>()
@@ -210,11 +215,8 @@
 
         private static void AddBaseType(Type type)
         {
-            if (Types2.ContainsKey(type))
+            if (TypeToSerializeDict.ContainsKey(type))
                 return;
-            var hashType = (ushort)Types.Count;
-            Types.Add(hashType, type);
-            Types1.Add(type, hashType);
             Type bindType;
             if (type.IsEnum)
             {
@@ -225,16 +227,17 @@
                 var typeName = "Binding." + type.ToString().Replace(".", "") + "Bind";
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
-            Types2.Add(type, Activator.CreateInstance(bindType) as ISerialize);
+            var serialize = Activator.CreateInstance(bindType) as ISerialize;
+            var hashType = serialize.HashCode;// (ushort)Types.Count;
+            HashToTypeDict.Add(hashType, type);
+            TypeToHashDict.Add(type, hashType);
+            TypeToSerializeDict.Add(type, serialize);
         }
 
         private static void AddBaseArrayType(Type type, Type itemType)
         {
-            if (Types2.ContainsKey(type))
+            if (TypeToSerializeDict.ContainsKey(type))
                 return;
-            var hashType = (ushort)Types.Count;
-            Types.Add(hashType, type);
-            Types1.Add(type, hashType);
             Type bindType;
             if (itemType.IsEnum)
             {
@@ -245,16 +248,17 @@
                 var typeName = "Binding." + type.ToString().Replace(".", "").Replace("[]", "") + "ArrayBind";
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
-            Types2.Add(type, Activator.CreateInstance(bindType) as ISerialize);
+            var serialize = Activator.CreateInstance(bindType) as ISerialize;
+            var hashType = serialize.HashCode;//(ushort)Types.Count;
+            HashToTypeDict.Add(hashType, type);
+            TypeToHashDict.Add(type, hashType);
+            TypeToSerializeDict.Add(type, serialize);
         }
 
         private static void AddBaseListType(Type type, Type itemType)
         {
-            if (Types2.ContainsKey(type))
+            if (TypeToSerializeDict.ContainsKey(type))
                 return;
-            var hashType = (ushort)Types.Count;
-            Types.Add(hashType, type);
-            Types1.Add(type, hashType);
             Type bindType;
             if (itemType.IsEnum)
             {
@@ -267,11 +271,15 @@
                 typeName = "Binding." + typeName + "Bind";
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
-            Types2.Add(type, Activator.CreateInstance(bindType) as ISerialize);
+            var serialize = Activator.CreateInstance(bindType) as ISerialize;
+            var hashType = serialize.HashCode; //(ushort)Types.Count;
+            HashToTypeDict.Add(hashType, type);
+            TypeToHashDict.Add(type, hashType);
+            TypeToSerializeDict.Add(type, serialize);
         }
 
         public static void InitBindInterfaces()
-        { 
+        {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var bindTypes = new List<IBindingType>();
             foreach (Assembly assembly in assemblies)
@@ -283,7 +291,7 @@
                     bindTypes.Add(bindObj);
                 }
             }
-            bindTypes.Sort((a, b)=> a.SortingOrder.CompareTo(b.SortingOrder));
+            bindTypes.Sort((a, b) => a.SortingOrder.CompareTo(b.SortingOrder));
             foreach (var bindObj in bindTypes)
             {
                 foreach (var bindType in bindObj.BindTypes)
@@ -312,7 +320,7 @@
             try
             {
                 var type = value.GetType();
-                if (Types2.TryGetValue(type, out ISerialize bind))
+                if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
                 {
                     ((ISerialize<T>)bind).Write(value, stream);
                 }
@@ -336,7 +344,7 @@
             try
             {
                 var type = value.GetType();
-                if (Types2.TryGetValue(type, out ISerialize bind))
+                if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
                 {
                     ((ISerialize<T>)bind).WriteValue(value, stream);
                 }
@@ -355,7 +363,7 @@
             try
             {
                 var type = value.GetType();
-                if (Types2.TryGetValue(type, out ISerialize bind))
+                if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
                 {
                     bind.WriteValue(value, stream);
                 }
@@ -377,7 +385,7 @@
         public static T DeserializeObject<T>(ISegment segment, bool isPush = true)
         {
             var type = typeof(T);
-            if (Types2.TryGetValue(type, out ISerialize bind)) 
+            if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
             {
                 T value = ((ISerialize<T>)bind).Read(segment);
                 if (isPush) BufferPool.Push(segment);
@@ -388,10 +396,10 @@
 
         public static object DeserializeObject(Type type, ISegment segment, bool isPush = true)
         {
-            if (Types2.TryGetValue(type, out ISerialize bind))
+            if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
             {
                 object value = bind.ReadValue(segment);
-                if(isPush) BufferPool.Push(segment);
+                if (isPush) BufferPool.Push(segment);
                 return value;
             }
             throw new Exception($"请注册或绑定:{type}类型后才能反序列化!");
@@ -404,7 +412,7 @@
         /// <returns></returns>
         private static Type IndexToType(ushort typeIndex)
         {
-            if (Types.TryGetValue(typeIndex, out Type type))
+            if (HashToTypeDict.TryGetValue(typeIndex, out Type type))
                 return type;
             return null;
         }
@@ -416,7 +424,7 @@
         /// <returns></returns>
         private static ushort TypeToIndex(Type type)
         {
-            if (Types1.TryGetValue(type, out ushort typeHash))
+            if (TypeToHashDict.TryGetValue(type, out ushort typeHash))
                 return typeHash;
             throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用序列化生成工具生成{type}绑定类! (如果是基类,请联系作者修复!谢谢)");
         }
@@ -446,7 +454,7 @@
                     }
                     type = obj.GetType();
                     stream.Write(TypeToIndex(type));
-                    if (Types2.TryGetValue(type, out ISerialize bind))
+                    if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
                         bind.WriteValue(obj, stream);
                     else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
                 }
@@ -489,7 +497,7 @@
                     list.Add(obj1);
                 }
                 obj.pars = list.ToArray();
-                if(isPush)
+                if (isPush)
                     BufferPool.Push(segment);
             }
             catch (Exception ex)

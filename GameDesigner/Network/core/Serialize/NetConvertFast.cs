@@ -10,12 +10,12 @@
     using Net.System;
 
     /// <summary>
-    /// 快速解析类型, 使用此类需要使用AddNetworkType()先添加序列化类型, 类型是固定, 并且双端统一
+    /// 快速解析类型, 使用此类需要使用AddSerializeType先添加序列化类型, 类型是固定, 并且双端统一
     /// </summary>
     public class NetConvertFast : NetConvertBase
     {
-        private static readonly Dictionary<ushort, Type> Types = new Dictionary<ushort, Type>();
-        private static readonly Dictionary<Type, ushort> Types1 = new Dictionary<Type, ushort>();
+        private static readonly Dictionary<ushort, Type> HashToTypeDict = new Dictionary<ushort, Type>();
+        private static readonly Dictionary<Type, ushort> TypeToHashDict = new Dictionary<Type, ushort>();
 
         static NetConvertFast()
         {
@@ -24,8 +24,8 @@
 
         public static void Init()
         {
-            Types.Clear();
-            Types1.Clear();
+            HashToTypeDict.Clear();
+            TypeToHashDict.Clear();
             AddNetworkBaseType();
         }
 
@@ -134,35 +134,21 @@
         /// <param name="type"></param>
         public static void AddSerializeType(Type type)
         {
-            if (Types1.ContainsKey(type))
+            var typeHash = (ushort)HashToTypeDict.Count;
+            AddSerializeType(type, typeHash);
+        }
+
+        /// <summary>
+        /// 添加经过网络传送的类型
+        /// </summary>
+        /// <param name="type">序列化的类型</param>
+        /// <param name="typeHash">序列化的类型反序列化的哈希识别码</param>
+        public static void AddSerializeType(Type type, ushort typeHash)
+        {
+            if (TypeToHashDict.ContainsKey(type))
                 throw new Exception($"已经添加{type}键，不需要添加了!");
-            Types.Add((byte)Types.Count, type);
-            Types1.Add(type, (byte)Types1.Count);
-        }
-
-        /// <summary>
-        /// 添加网络传输的程序集, 程序集内的所有类型都会被添加, 注意: 客户端和服务器都必须统一使用一模一样的程序集, 否则有可能出现问题!
-        /// </summary>
-        /// <param name="assembly"></param>
-        public static void AddAssembly(Assembly assembly)
-        {
-            foreach (Type type in assembly.GetTypes().Where(t => { return !t.IsAbstract; }))
-            {
-                AddSerializeType(type);
-            }
-        }
-
-        /// <summary>
-        /// 添加assembly程序集的所有nameSpace命名空间的类型
-        /// </summary>
-        /// <param name="assembly"></param>
-        /// <param name="nameSpace"></param>
-        public static void AddNameSpaceTypes(Assembly assembly, string nameSpace)
-        {
-            foreach (Type type in assembly.GetTypes().Where(t => { return !t.IsAbstract & t.Namespace == nameSpace; }))
-            {
-                AddSerializeType(type);
-            }
+            HashToTypeDict.Add(typeHash, type);
+            TypeToHashDict.Add(type, typeHash);
         }
 
         public static byte[] Serialize(RPCModel model, bool recordType = false)
@@ -196,14 +182,14 @@
 
         private static ushort GetTypeHash(Type type)
         {
-            if (Types1.TryGetValue(type, out var typeHash))
+            if (TypeToHashDict.TryGetValue(type, out var typeHash))
                 return typeHash;
             throw new IOException($"参数类型:[{type}]没有被注册! 请使用NetConvertFast.AddSerializeType<{type}>()添加序列化类型! 双端都要添加");
         }
 
         public static Type GetTypeHash(ushort hashCode)
         {
-            if (Types.TryGetValue(hashCode, out Type type))
+            if (HashToTypeDict.TryGetValue(hashCode, out Type type))
                 return type;
             NDebug.LogError($"找不到哈希代码类型:{hashCode}, 类型太复杂时需要使用 NetConvertOld.AddSerializeType(type) 添加类型后再进行系列化!");
             return null;

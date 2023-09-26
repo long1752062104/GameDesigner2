@@ -17,7 +17,7 @@ public class Fast2BuildTools2 : EditorWindow
     private TypeData[] types;
     private Vector2 scrollPosition;
     private Vector2 scrollPosition1;
-    
+
     private string selectType;
     private PersistentData data = new PersistentData();
 
@@ -74,7 +74,7 @@ public class Fast2BuildTools2 : EditorWindow
             OnEnable();
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("全部展开")) 
+        if (GUILayout.Button("全部展开"))
             foreach (var type1 in data.typeNames)
                 type1.foldout = true;
         if (GUILayout.Button("全部收起"))
@@ -97,7 +97,7 @@ public class Fast2BuildTools2 : EditorWindow
                     var name = names[names.Length - 1];
                     var names1 = typeName.name.Split('.');
                     var name1 = names1[names1.Length - 1];
-                    if (name == name1) 
+                    if (name == name1)
                     {
                         typeName.name = type1.name;
                         count++;
@@ -224,7 +224,7 @@ public class Fast2BuildTools2 : EditorWindow
                     var scrollPosition2 = new Vector2();
                     for (int i = 0; i < data.typeNames.Count; i++)
                     {
-                        if (data.typeNames[i].name == type1.name) 
+                        if (data.typeNames[i].name == type1.name)
                         {
                             scrollPosition1 = scrollPosition2;
                             selectType = type1.name;
@@ -262,6 +262,7 @@ public class Fast2BuildTools2 : EditorWindow
                 return;
             }
             var types = new HashSet<Type>();
+            ushort orderId = (ushort)((data.SortingOrder * 1000) + 100);
             foreach (var type1 in data.typeNames)
             {
                 Type type = AssemblyHelper.GetType(type1.name);
@@ -272,11 +273,11 @@ public class Fast2BuildTools2 : EditorWindow
                 }
                 StringBuilder code;
                 if (data.IsCompress)
-                    code = Fast2BuildMethod.BuildNew(type, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
+                    code = Fast2BuildMethod.BuildNew(type, orderId++, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
                 else
-                    code = Fast2BuildMethod.BuildNewFast(type, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
-                code.AppendLine(Fast2BuildMethod.BuildArray(type).ToString());
-                code.AppendLine(Fast2BuildMethod.BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+                    code = Fast2BuildMethod.BuildNewFast(type, orderId++, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
+                code.AppendLine(Fast2BuildMethod.BuildArray(type, orderId++).ToString());
+                code.AppendLine(Fast2BuildMethod.BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
                 var className = type.ToString().Replace(".", "").Replace("+", "");
                 File.WriteAllText(data.SavePath + $"//{className}Bind.cs", code.ToString());
                 types.Add(type);
@@ -379,9 +380,9 @@ public class Fast2BuildTools2 : EditorWindow
         SaveData();
     }
 
-    private void UpdateFields() 
+    private void UpdateFields()
     {
-        foreach (var fd in data.typeNames) 
+        foreach (var fd in data.typeNames)
         {
             UpdateField(fd);
         }
@@ -433,7 +434,7 @@ public class Fast2BuildTools2 : EditorWindow
         fd.fields = fields1;
     }
 
-    void LoadData() 
+    void LoadData()
     {
         data = PersistHelper.Deserialize<PersistentData>("fastProtoBuild.json");
         data.Init();
@@ -444,21 +445,21 @@ public class Fast2BuildTools2 : EditorWindow
         PersistHelper.Serialize(data, "fastProtoBuild.json");
     }
 
-    public class FoldoutData 
+    public class FoldoutData
     {
         public string name;
         public bool foldout;
         public List<FieldData> fields = new List<FieldData>();
     }
 
-    public class FieldData 
+    public class FieldData
     {
         public string name;
         public bool serialize;
         public int select;
     }
 
-    public class TypeData 
+    public class TypeData
     {
         public string name;
         public Type type;
@@ -476,15 +477,15 @@ public class Fast2BuildTools2 : EditorWindow
         private int sortingOrder = 1;
         private bool init;
 
-        public void Init() 
+        public void Init()
         {
             init = true;
         }
 
-        public string SavePath 
+        public string SavePath
         {
             get => savePath;
-            set 
+            set
             {
                 if (savePath != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");
@@ -542,10 +543,10 @@ public class Fast2BuildTools2 : EditorWindow
             }
         }
 
-        public int SortingOrder 
+        public int SortingOrder
         {
             get => sortingOrder;
-            set 
+            set
             {
                 if (sortingOrder != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");

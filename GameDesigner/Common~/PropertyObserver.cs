@@ -9,7 +9,7 @@ namespace Net.Common
     /// 属性观察接口
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IPropertyObserver<T>
+    public interface IPropertyObserver<T> : ICloneable
     {
         /// <summary>
         /// 属性值
@@ -48,7 +48,7 @@ namespace Net.Common
             this.value = value;
             OnValueChanged = onValueChanged;
         }
-        
+
         public virtual T GetValue()
         {
             return value;
@@ -93,6 +93,16 @@ namespace Net.Common
         {
             return base.GetHashCode();
         }
+
+        public PropertyObserver<T> Clone()
+        {
+            return new PropertyObserver<T>(Value, OnValueChanged);
+        }
+
+        object ICloneable.Clone()
+        {
+            return new PropertyObserver<T>(Value, OnValueChanged);
+        }
     }
 
     /// <summary>
@@ -128,7 +138,7 @@ namespace Net.Common
             if (this.crcValue != crcValue)
             {
                 AntiCheatHelper.OnDetected?.Invoke(name, value1, value1); //因为原值不做记录, 所以原值没有了, 需要在数据库找到原值
-                throw new Exception();
+                throw new ArgumentException($"{name}Exception!");
             }
             return value1;
         }
@@ -174,6 +184,16 @@ namespace Net.Common
         {
             return base.GetHashCode();
         }
+
+        public ObscuredPropertyObserver<T> Clone()
+        {
+            return new ObscuredPropertyObserver<T>(name, Value, OnValueChanged);
+        }
+
+        object ICloneable.Clone()
+        {
+            return new ObscuredPropertyObserver<T>(name, Value, OnValueChanged);
+        }
     }
 
     /// <summary>
@@ -182,7 +202,7 @@ namespace Net.Common
     /// <typeparam name="T"></typeparam>
     public class PropertyObserverAuto<T> : IPropertyObserver<T>
     {
-        private readonly IPropertyObserver<T> binding;
+        private IPropertyObserver<T> binding;
         public T Value { get => GetValue(); set => SetValue(value); }
         public Action<T> OnValueChanged { get => binding.OnValueChanged; set => binding.OnValueChanged = value; }
 
@@ -245,6 +265,16 @@ namespace Net.Common
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public PropertyObserverAuto<T> Clone()
+        {
+            return new PropertyObserverAuto<T>() { binding = (IPropertyObserver<T>)binding.Clone() };
+        }
+
+        object ICloneable.Clone()
+        {
+            return new PropertyObserverAuto<T>() { binding = (IPropertyObserver<T>)binding.Clone() };
         }
     }
 }

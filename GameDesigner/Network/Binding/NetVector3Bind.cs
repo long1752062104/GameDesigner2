@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct NetVector3Bind : ISerialize<Net.Vector3>, ISerialize
+    public readonly struct NetVector3Bind : ISerialize<Net.Vector3>, ISerialize
     {
+        public ushort HashCode { get { return 109; } }
+
         public void Write(Net.Vector3 value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 1;
-            byte[] bits = new byte[1];
+            var bits = new byte[1];
 
             if (value.x != 0)
             {
@@ -37,10 +39,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public Net.Vector3 Read(ISegment stream)
+        public Net.Vector3 Read(ISegment stream) 
+        {
+            var value = new Net.Vector3();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref Net.Vector3 value, ISegment stream)
 		{
-			byte[] bits = stream.Read(1);
-			var value = new Net.Vector3();
+			var bits = stream.Read(1);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.x = stream.ReadSingle();
@@ -51,7 +59,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[0], 3))
 				value.z = stream.ReadSingle();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -68,8 +75,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct NetVector3ArrayBind : ISerialize<Net.Vector3[]>, ISerialize
+	public readonly struct NetVector3ArrayBind : ISerialize<Net.Vector3[]>, ISerialize
 	{
+        public ushort HashCode { get { return 110; } }
+
 		public void Write(Net.Vector3[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -102,11 +111,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public struct NetVector3GenericBind : ISerialize<List<Net.Vector3>>, ISerialize
+	public readonly struct SystemCollectionsGenericListNetVector3Bind : ISerialize<System.Collections.Generic.List<Net.Vector3>>, ISerialize
 	{
-		public void Write(List<Net.Vector3> value, ISegment stream)
+        public ushort HashCode { get { return 111; } }
+
+		public void Write(System.Collections.Generic.List<Net.Vector3> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -116,10 +128,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<Net.Vector3> Read(ISegment stream)
+		public System.Collections.Generic.List<Net.Vector3> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<Net.Vector3>(count);
+			var value = new System.Collections.Generic.List<Net.Vector3>(count);
 			if (count == 0) return value;
 			var bind = new NetVector3Bind();
 			for (int i = 0; i < count; i++)
@@ -129,7 +141,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<Net.Vector3>)value, stream);
+			Write((System.Collections.Generic.List<Net.Vector3>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)

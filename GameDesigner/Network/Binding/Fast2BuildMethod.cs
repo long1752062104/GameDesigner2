@@ -43,16 +43,17 @@ public static class Fast2BuildMethod
     {
         var bindTypes = new HashSet<Type>();
         var codes = new Dictionary<string, string>();
+        ushort orderId = 1 * 1000;
         foreach (var type in types)
         {
             var genericCodes = new List<string>();
             StringBuilder code;
             if (IsCompress)
-                code = BuildNew(type, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
+                code = BuildNew(type, orderId++, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
             else
-                code = BuildNewFast(type, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
-            code.AppendLine(BuildArray(type).ToString());
-            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+                code = BuildNewFast(type, orderId++, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
+            code.AppendLine(BuildArray(type, orderId++).ToString());
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
             foreach (var igenericCode in genericCodes)
             {
                 var index1 = igenericCode.IndexOf("struct") + 7;
@@ -146,11 +147,12 @@ public static class Fast2BuildMethod
     public static void BuildAll(string savePath, params Type[] types)
     {
         var bindTypes = new HashSet<Type>();
+        ushort orderId = 0;
         foreach (var type in types)
         {
-            var code = BuildNew(type, true, true, new List<string>(), savePath, bindTypes);
-            code.AppendLine(BuildArray(type).ToString());
-            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type)).ToString());
+            var code = BuildNew(type, orderId++, true, true, new List<string>(), savePath, bindTypes);
+            code.AppendLine(BuildArray(type, orderId++).ToString());
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
             var className = type.ToString().Replace(".", "").Replace("+", "");
             File.WriteAllText(savePath + $"//{className}Bind.cs", code.ToString());
             bindTypes.Add(type);
@@ -159,21 +161,7 @@ public static class Fast2BuildMethod
         BuildBindingExtension(new HashSet<Type>(bindTypes), savePath);
     }
 
-    public static void Build(Type type, string savePath)
-    {
-        var str = BuildNew(type, true, true, new List<string>(), savePath);
-        var className = type.ToString().Replace(".", "").Replace("+", "");
-        File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
-    }
-
-    public static void Build(Type type, string savePath, bool serField, bool serProperty, List<string> ignores, HashSet<Type> types = null)
-    {
-        var str = BuildNew(type, serField, serProperty, ignores, savePath, types);
-        var className = type.ToString().Replace(".", "").Replace("+", "");
-        File.WriteAllText(savePath + $"//{className}Bind.cs", str.ToString());
-    }
-
-    public static StringBuilder BuildNew(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+    public static StringBuilder BuildNew(Type type, ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -246,6 +234,8 @@ namespace Binding
 {
     public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
+        public ushort HashCode { get { return {orderId}; } }
+
         public void Write({TYPE} value, ISegment stream)
         {
             int pos = stream.Position;
@@ -323,6 +313,7 @@ namespace Binding
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("{TYPE}", fullName);
         templateText = templateText.Replace("{SIZE}", $"{((members.Count - 1) / 8) + 1}");
+        templateText = templateText.Replace("{orderId}", orderId.ToString());
 
         var templateTexts = templateText.Split(new string[] { "{Split}" }, 0);
 
@@ -353,7 +344,7 @@ namespace Binding
                 templateText2 = templateText2.Replace("{BITPOS}", $"{bitPos}");
                 templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                 templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                if(members[i].IsEnum)
+                if (members[i].IsEnum)
                     templateText2 = templateText2.Replace("{READTYPE}", $"ReadEnum<{members[i].Type.ToString().Replace("+", ".")}>");
                 else
                     templateText2 = templateText2.Replace("{READTYPE}", $"Read{typecode}");
@@ -467,7 +458,7 @@ namespace Binding
                 templateText1 = templateText1.Replace("{FIELDINDEX}", $"{++bitInx1}");
                 templateText1 = templateText1.Replace("{FIELDNAME}", $"{members[i].Name}");
 
-                if(members[i].Type.IsValueType)
+                if (members[i].Type.IsValueType)
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != default({members[i].Type})");
                 else
                     templateText1 = templateText1.Replace("{Condition}", $"value.{members[i].Name} != null");
@@ -487,11 +478,10 @@ namespace Binding
         sb.Append(templateTexts[4]);
         sb.Append(sb1);
         sb.Append(templateTexts[8]);
-
         return sb;
     }
-    
-    public static StringBuilder BuildNewFast(Type type, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+
+    public static StringBuilder BuildNewFast(Type type, ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -565,6 +555,8 @@ namespace Binding
 {
     public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
+        public ushort HashCode { get { return {orderId}; } }
+
         public unsafe void Write({TYPE} value, ISegment stream)
         {
             fixed (byte* ptr = &stream.Buffer[stream.Position]) 
@@ -624,6 +616,7 @@ namespace Binding
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("{TYPE}", fullName);
         templateText = templateText.Replace("{SIZE}", $"{((members.Count - 1) / 8) + 1}");
+        templateText = templateText.Replace("{orderId}", orderId.ToString());
 
         var templateTexts = templateText.Split(new string[] { "{Split}" }, 0);
 
@@ -648,7 +641,7 @@ namespace Binding
                 {
                     members1.Add(members[i]);
                     members.RemoveAt(i);
-                    i = -1; 
+                    i = -1;
                     basisIndex++;
                 }
             }
@@ -793,7 +786,7 @@ namespace Binding
 
                 var templateText2 = templateTexts[7];
                 templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
-                templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}"); 
+                templateText2 = templateText2.Replace("{BINDTYPE}", $"{local}");
                 sb1.Append(templateText2);
             }
         }
@@ -902,14 +895,7 @@ public static class BindingExtension
         return str.ToString();
     }
 
-    public static void BuildArray(Type type, string savePath)
-    {
-        var str = BuildArray(type);
-        var className = type.FullName.Replace(".", "").Replace("+", "");
-        File.AppendAllText(savePath + $"//{className}Bind.cs", str.ToString());
-    }
-
-    public static StringBuilder BuildArray(Type type)
+    public static StringBuilder BuildArray(Type type, ushort orderId)
     {
         var sb = new StringBuilder();
         var templateText = @"
@@ -917,6 +903,8 @@ namespace Binding
 {
 	public readonly struct {TYPENAME}ArrayBind : ISerialize<{TYPE}[]>, ISerialize
 	{
+        public ushort HashCode { get { return {orderId}; } }
+
 		public void Write({TYPE}[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -953,7 +941,8 @@ namespace Binding
         var fullName = type.FullName;
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("{TYPE}", fullName);
-        
+        templateText = templateText.Replace("{orderId}", orderId.ToString());
+
         var local = typeName + "Bind";
         templateText = templateText.Replace("{BINDTYPE}", $"{local}");
 
@@ -961,14 +950,7 @@ namespace Binding
         return sb;
     }
 
-    public static void BuildGeneric(Type type, string savePath)
-    {
-        var str = BuildGeneric(type);
-        var className = type.ToString().Replace(".", "").Replace("+", "");
-        File.AppendAllText(savePath + $"//{className}Bind.cs", str.ToString());
-    }
-
-    public static StringBuilder BuildGeneric(Type type)
+    public static StringBuilder BuildGeneric(Type type, ushort orderId)
     {
         var sb = new StringBuilder();
         var templateText = @"
@@ -976,6 +958,8 @@ namespace Binding
 {
 	public readonly struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
 	{
+        public ushort HashCode { get { return {orderId}; } }
+
 		public void Write(List<TYPE> value, ISegment stream)
 		{
 			int count = value.Count;
@@ -1013,6 +997,7 @@ namespace Binding
         typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("List<TYPE>", fullName);
+        templateText = templateText.Replace("{orderId}", orderId.ToString());
 
         var itemTypeName = type.GetArrayItemType().ToString();
         itemTypeName = itemTypeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");

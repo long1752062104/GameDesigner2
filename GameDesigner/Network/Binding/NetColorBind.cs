@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct NetColorBind : ISerialize<Net.Color>, ISerialize
+    public readonly struct NetColorBind : ISerialize<Net.Color>, ISerialize
     {
+        public ushort HashCode { get { return 139; } }
+
         public void Write(Net.Color value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 1;
-            byte[] bits = new byte[1];
+            var bits = new byte[1];
 
             if (value.r != 0)
             {
@@ -43,10 +45,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public Net.Color Read(ISegment stream)
+        public Net.Color Read(ISegment stream) 
+        {
+            var value = new Net.Color();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref Net.Color value, ISegment stream)
 		{
-			byte[] bits = stream.Read(1);
-			var value = new Net.Color();
+			var bits = stream.Read(1);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.r = stream.ReadSingle();
@@ -60,7 +68,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[0], 4))
 				value.a = stream.ReadSingle();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -77,8 +84,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct NetColorArrayBind : ISerialize<Net.Color[]>, ISerialize
+	public readonly struct NetColorArrayBind : ISerialize<Net.Color[]>, ISerialize
 	{
+        public ushort HashCode { get { return 140; } }
+
 		public void Write(Net.Color[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -111,11 +120,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public struct NetColorGenericBind : ISerialize<List<Net.Color>>, ISerialize
+	public readonly struct SystemCollectionsGenericListNetColorBind : ISerialize<System.Collections.Generic.List<Net.Color>>, ISerialize
 	{
-		public void Write(List<Net.Color> value, ISegment stream)
+        public ushort HashCode { get { return 141; } }
+
+		public void Write(System.Collections.Generic.List<Net.Color> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -125,10 +137,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<Net.Color> Read(ISegment stream)
+		public System.Collections.Generic.List<Net.Color> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<Net.Color>(count);
+			var value = new System.Collections.Generic.List<Net.Color>(count);
 			if (count == 0) return value;
 			var bind = new NetColorBind();
 			for (int i = 0; i < count; i++)
@@ -138,7 +150,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<Net.Color>)value, stream);
+			Write((System.Collections.Generic.List<Net.Color>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)

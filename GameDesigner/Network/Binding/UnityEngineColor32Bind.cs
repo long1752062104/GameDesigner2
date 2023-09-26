@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct UnityEngineColor32Bind : ISerialize<UnityEngine.Color32>, ISerialize
+    public readonly struct UnityEngineColor32Bind : ISerialize<UnityEngine.Color32>, ISerialize
     {
+        public ushort HashCode { get { return 148; } }
+
         public void Write(UnityEngine.Color32 value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 1;
-            byte[] bits = new byte[1];
+            var bits = new byte[1];
 
             if (value.r != 0)
             {
@@ -43,10 +45,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public UnityEngine.Color32 Read(ISegment stream)
+        public UnityEngine.Color32 Read(ISegment stream) 
+        {
+            var value = new UnityEngine.Color32();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref UnityEngine.Color32 value, ISegment stream)
 		{
-			byte[] bits = stream.Read(1);
-			var value = new UnityEngine.Color32();
+			var bits = stream.Read(1);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.r = stream.ReadByte();
@@ -60,7 +68,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[0], 4))
 				value.a = stream.ReadByte();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -77,8 +84,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct UnityEngineColor32ArrayBind : ISerialize<UnityEngine.Color32[]>, ISerialize
+	public readonly struct UnityEngineColor32ArrayBind : ISerialize<UnityEngine.Color32[]>, ISerialize
 	{
+        public ushort HashCode { get { return 149; } }
+
 		public void Write(UnityEngine.Color32[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -111,11 +120,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public struct UnityEngineColor32GenericBind : ISerialize<List<UnityEngine.Color32>>, ISerialize
+	public readonly struct SystemCollectionsGenericListUnityEngineColor32Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Color32>>, ISerialize
 	{
-		public void Write(List<UnityEngine.Color32> value, ISegment stream)
+        public ushort HashCode { get { return 150; } }
+
+		public void Write(System.Collections.Generic.List<UnityEngine.Color32> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -125,10 +137,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<UnityEngine.Color32> Read(ISegment stream)
+		public System.Collections.Generic.List<UnityEngine.Color32> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<UnityEngine.Color32>(count);
+			var value = new System.Collections.Generic.List<UnityEngine.Color32>(count);
 			if (count == 0) return value;
 			var bind = new UnityEngineColor32Bind();
 			for (int i = 0; i < count; i++)
@@ -138,7 +150,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<UnityEngine.Color32>)value, stream);
+			Write((System.Collections.Generic.List<UnityEngine.Color32>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)

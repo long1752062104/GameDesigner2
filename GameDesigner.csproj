@@ -158,7 +158,6 @@
     <Compile Include="GameDesigner\Network\Binding\UnityEngineQuaternionBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineRectBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineRectIntBind.cs" />
-    <Compile Include="GameDesigner\Network\Binding\UnityEngineRectOffsetBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector2Bind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector2IntBind.cs" />
     <Compile Include="GameDesigner\Network\Binding\UnityEngineVector3Bind.cs" />

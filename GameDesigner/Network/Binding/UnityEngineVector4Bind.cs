@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct UnityEngineVector4Bind : ISerialize<UnityEngine.Vector4>, ISerialize
+    public readonly struct UnityEngineVector4Bind : ISerialize<UnityEngine.Vector4>, ISerialize
     {
+        public ushort HashCode { get { return 121; } }
+
         public void Write(UnityEngine.Vector4 value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 1;
-            byte[] bits = new byte[1];
+            var bits = new byte[1];
 
             if (value.x != 0)
             {
@@ -43,10 +45,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public UnityEngine.Vector4 Read(ISegment stream)
+        public UnityEngine.Vector4 Read(ISegment stream) 
+        {
+            var value = new UnityEngine.Vector4();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref UnityEngine.Vector4 value, ISegment stream)
 		{
-			byte[] bits = stream.Read(1);
-			var value = new UnityEngine.Vector4();
+			var bits = stream.Read(1);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.x = stream.ReadSingle();
@@ -60,7 +68,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[0], 4))
 				value.w = stream.ReadSingle();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -77,8 +84,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct UnityEngineVector4ArrayBind : ISerialize<UnityEngine.Vector4[]>, ISerialize
+	public readonly struct UnityEngineVector4ArrayBind : ISerialize<UnityEngine.Vector4[]>, ISerialize
 	{
+        public ushort HashCode { get { return 122; } }
+
 		public void Write(UnityEngine.Vector4[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -111,11 +120,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public struct UnityEngineVector4GenericBind : ISerialize<List<UnityEngine.Vector4>>, ISerialize
+	public readonly struct SystemCollectionsGenericListUnityEngineVector4Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Vector4>>, ISerialize
 	{
-		public void Write(List<UnityEngine.Vector4> value, ISegment stream)
+        public ushort HashCode { get { return 123; } }
+
+		public void Write(System.Collections.Generic.List<UnityEngine.Vector4> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -125,10 +137,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<UnityEngine.Vector4> Read(ISegment stream)
+		public System.Collections.Generic.List<UnityEngine.Vector4> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<UnityEngine.Vector4>(count);
+			var value = new System.Collections.Generic.List<UnityEngine.Vector4>(count);
 			if (count == 0) return value;
 			var bind = new UnityEngineVector4Bind();
 			for (int i = 0; i < count; i++)
@@ -138,7 +150,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<UnityEngine.Vector4>)value, stream);
+			Write((System.Collections.Generic.List<UnityEngine.Vector4>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)

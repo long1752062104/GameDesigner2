@@ -16,14 +16,29 @@
     using global::System.Runtime.InteropServices;
     using Net.Share;
     using Net.System;
+    using Net.Helper;
+
+    public class CollectionConvertBase
+    {
+        public virtual void Convert(object obj, IList array) { }
+    }
+    public class CollectionConvert<T> : CollectionConvertBase
+    {
+        public override void Convert(object obj, IList array)
+        {
+            if (obj is ICollection<T> collection)
+                for (int i = 0; i < array.Count; i++)
+                    collection.Add((T)array[i]);
+        }
+    }
 
     /// <summary>
     /// 提供序列化二进制类
     /// </summary>
     public class NetConvertBinary : NetConvertBase
     {
-        private static MyDictionary<ushort, Type> serializeTypes = new MyDictionary<ushort, Type>();
-        private static MyDictionary<Type, ushort> serializeType1s = new MyDictionary<Type, ushort>();
+        private static MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
+        private static MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
         private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>();
         private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>();
         private static Type nonSerialized = typeof(NonSerialized);
@@ -39,8 +54,8 @@
         /// </summary>
         public static bool Init()
         {
-            serializeTypes.Clear();
-            serializeType1s.Clear();
+            HashToTypeDict.Clear();
+            TypeToHashDict.Clear();
             serializeOnly.Clear();
             serializeIgnore.Clear();
             AddSerializeBaseType();
@@ -182,10 +197,23 @@
         /// <param name="ignoreFields">不序列化的字段名称列表</param>
         public static void AddSerializeType(Type type, string[] onlyFields = default, params string[] ignoreFields)
         {
-            if (serializeType1s.ContainsKey(type))
+            var typeHash = (ushort)HashToTypeDict.Count;
+            AddSerializeType(type, typeHash, onlyFields, ignoreFields);
+        }
+
+        /// <summary>
+        /// 添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
+        /// </summary>
+        /// <param name="type">序列化的类型</param>
+        /// <param name="typeHash">序列化的类型哈希码,用于反序列化识别</param>
+        /// <param name="onlyFields">只序列化的字段名称列表</param>
+        /// <param name="ignoreFields">不序列化的字段名称列表</param>
+        public static void AddSerializeType(Type type, ushort typeHash, string[] onlyFields = default, params string[] ignoreFields)
+        {
+            if (TypeToHashDict.ContainsKey(type))
                 throw new Exception($"已经添加{type}键，不需要添加了!");
-            serializeTypes.Add((ushort)serializeTypes.Count, type);
-            serializeType1s.Add(type, (ushort)serializeType1s.Count);
+            HashToTypeDict.Add(typeHash, type);
+            TypeToHashDict.Add(type, typeHash);
             serializeOnly.Add(type, onlyFields);
             serializeIgnore.Add(type, ignoreFields);
             GetMembers(type);
@@ -194,63 +222,11 @@
         private static void AddBaseType<T>()
         {
             var type = typeof(T);
-            if (serializeType1s.ContainsKey(type))
+            if (TypeToHashDict.ContainsKey(type))
                 return;
-            serializeTypes.Add((ushort)serializeTypes.Count, type);
-            serializeType1s.Add(type, (ushort)serializeType1s.Count);
-        }
-
-        /// <summary>
-        /// 添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
-        /// </summary>
-        /// <param name="types"></param>
-        public static void AddNetworkType(params Type[] types)
-        {
-            foreach (Type type in types)
-            {
-                AddSerializeType(type);
-            }
-        }
-
-        /// <summary>
-        /// 添加网络程序集，此方法将会添加获取传入的类的程序集并全部添加
-        /// </summary>
-        /// <param name="value">传入的类</param>
-        [Obsolete("不再建议使用此方法，请使用AddNetworkType方法来代替", true)]
-        public static void AddNetworkTypeAssembly(Type value)
-        {
-            foreach (Type type in value.Assembly.GetTypes().Where((t) =>
-            {
-                return !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericTypeDefinition & t.IsPublic;
-            }))
-            {
-                if (serializeType1s.ContainsKey(type))
-                    continue;
-                serializeTypes.Add((ushort)serializeTypes.Count, type);
-                serializeType1s.Add(type, (ushort)serializeType1s.Count);
-            }
-        }
-
-        /// <summary>
-        /// 添加网络传输程序集， 注意：添加客户端的程序集必须和服务器的程序集必须保持一致， 否则将会出现问题
-        /// </summary>
-        /// <param name="assemblies">程序集</param>
-        [Obsolete("不再建议使用此方法，请使用AddNetworkType方法来代替", true)]
-        public static void AddNetworkAssembly(Assembly[] assemblies)
-        {
-            foreach (Assembly assemblie in assemblies)
-            {
-                foreach (Type type in assemblie.GetTypes().Where((t) =>
-                {
-                    return !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericTypeDefinition & t.IsPublic;
-                }))
-                {
-                    if (serializeType1s.ContainsKey(type))
-                        continue;
-                    serializeTypes.Add((ushort)serializeTypes.Count, type);
-                    serializeType1s.Add(type, (ushort)serializeType1s.Count);
-                }
-            }
+            var typeHash = (ushort)HashToTypeDict.Count;
+            HashToTypeDict.Add(typeHash, type);
+            TypeToHashDict.Add(type, typeHash);
         }
 
         /// <summary>
@@ -260,7 +236,7 @@
         /// <returns></returns>
         public static Type IndexToType(ushort typeIndex)
         {
-            if (serializeTypes.TryGetValue(typeIndex, out Type type))
+            if (HashToTypeDict.TryGetValue(typeIndex, out Type type))
                 return type;
             return null;
         }
@@ -272,7 +248,7 @@
         /// <returns></returns>
         public static ushort TypeToIndex(Type type)
         {
-            if (serializeType1s.TryGetValue(type, out ushort typeHash))
+            if (TypeToHashDict.TryGetValue(type, out ushort typeHash))
                 return typeHash;
             throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用NetConvertBinary.AddSerializeType<{type}>()进行注册类型!");
         }
@@ -490,7 +466,7 @@
             internal Func<object, object> getValue;
             internal Action<object, object> setValue;
 #endif
-            internal MethodInfo convertMethod;
+            internal CollectionConvertBase convertMethod;
 
             internal virtual object GetValue(object obj)
             {
@@ -502,7 +478,7 @@
                 obj = v;
             }
 
-            internal virtual void GetValueCall(object callSite) 
+            internal virtual void GetValueCall(object callSite)
             {
             }
 
@@ -517,23 +493,9 @@
 
             internal void ConvertValue(object array1, IList array)
             {
-                if (convertMethod == null) 
-                {
-                    convertMethod = GetType().GetMethod("ConvertValue1", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                    convertMethod = convertMethod.MakeGenericMethod(ItemType);
-                }
-                convertMethod.Invoke(this, new object[] { array1, array });
-            }
-
-            internal void ConvertValue1<T>(object array1, IList<T> array) 
-            {
-                if (array1 is ICollection<T> collection)
-                {
-                    for (int i = 0; i < array.Count; i++)
-                    {
-                        collection.Add(array[i]);
-                    }
-                }
+                if (convertMethod == null)
+                    convertMethod = (CollectionConvertBase)Activator.CreateInstance(typeof(CollectionConvert<>).MakeGenericType(ItemType)); //如果在il2cpp报错,需要自己hook类型
+                convertMethod.Convert(array1, array);
             }
         }
 #if SERVICE
@@ -597,7 +559,7 @@
             if (!map.TryGetValue(type, out Member[] members2))
             {
                 var members1 = new List<Member>();
-                if (type.IsArray | type.IsGenericType) 
+                if (type.IsArray | type.IsGenericType)
                 {
                     var member1 = GetFPMember(null, type, type.FullName, false);
                     members1.Add(member1);
@@ -653,7 +615,7 @@
                                         continue;
                                 }
                             }
-                            else 
+                            else
                             {
                                 if (!CanSerialized(fType))
                                     continue;
@@ -768,7 +730,7 @@
             return true;
         }
 
-        private static Member GetFPMember(Type type, Type fpType, string Name, bool isClassField) 
+        private static Member GetFPMember(Type type, Type fpType, string Name, bool isClassField)
         {
 #if SERVICE
             var getValueCall = CallSite<Func<CallSite, object, object>>.Create(Binder.GetMember(0, Name, type, new CSharpArgumentInfo[]
@@ -805,7 +767,7 @@
                         CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
                     }));
                 }
-                else 
+                else
                 {
                     member1 = new Member();
                     getValueCall = null;
@@ -818,7 +780,7 @@
             else if (fpType.IsGenericType)
             {
 #if SERVICE
-                if (!isClassField) 
+                if (!isClassField)
                 {
                     member1 = new Member();
                     getValueCall = null;
@@ -829,7 +791,7 @@
                 {
                     var itemType = fpType.GenericTypeArguments[0];
                     member1.ItemType = itemType;
-                    member1.Intricate = fpType.GetGenericArguments() == null;
+                    member1.Intricate = !fpType.IsInterfaceType(typeof(IList));
                     member1.IsPrimitive1 = Type.GetTypeCode(itemType) != TypeCode.Object;
                 }
                 else if (fpType.GenericTypeArguments.Length == 2)
@@ -851,7 +813,7 @@
                         member1.IsPrimitive2 = Type.GetTypeCode(arrItemType) != TypeCode.Object;
                         member1.ItemTypes = new Type[] { arrItemType };
                     }
-                    else 
+                    else
                     {
                         member1.IsPrimitive2 = Type.GetTypeCode(valueType) != TypeCode.Object;
                         member1.ItemTypes = new Type[] { valueType };
@@ -967,7 +929,7 @@
                             {
                                 segment.WriteValue(enumerator.Value);
                             }
-                            else 
+                            else
                             {
                                 Type memberType;
                                 if (recordType)
@@ -981,7 +943,7 @@
                         }
                     }
                 }
-                else if (serializeType1s.ContainsKey(member.Type) | ignore)
+                else if (TypeToHashDict.ContainsKey(member.Type) | ignore)
                 {
                     SetBit(ref bits[bitPos], bitInx1 + 1, true);
                     Type memberType;
@@ -1038,8 +1000,8 @@
                 byte head = segment.ReadByte();
                 bool hasFunc = GetBit(head, 1);
                 bool hasMask = GetBit(head, 2);
-                if(hasFunc) obj.name = segment.ReadString();
-                if(hasMask) obj.hash = segment.ReadUInt16();
+                if (hasFunc) obj.name = segment.ReadString();
+                if (hasMask) obj.hash = segment.ReadUInt16();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
@@ -1132,7 +1094,7 @@
                     return obj;
                 obj = ReadObject(segment, type, recordType, ignore);
             }
-            if(isPush) BufferPool.Push(segment);
+            if (isPush) BufferPool.Push(segment);
             return obj;
         }
 
@@ -1199,7 +1161,7 @@
                         {
                             member.SetValue(ref obj, array);
                         }
-                        else 
+                        else
                         {
                             var array1 = Activator.CreateInstance(member.Type);
                             member.ConvertValue(array1, array);
@@ -1240,7 +1202,7 @@
                         member.SetValue(ref obj, dict);
                     }
                 }
-                else if (serializeType1s.ContainsKey(member.Type) | ignore)//如果是序列化类型
+                else if (TypeToHashDict.ContainsKey(member.Type) | ignore)//如果是序列化类型
                 {
                     Type memberType;
                     if (recordType)

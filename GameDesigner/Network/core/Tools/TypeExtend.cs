@@ -30,12 +30,15 @@ public static class TypeExtend
         return null;
     }
 
-    public static bool IsInterfaceType(this Type type, Type interfaceType)
+    public static bool IsInterfaceType(this Type type, params Type[] interfaceTypes)
     {
         foreach (var interfaceType1 in type.GetInterfaces())
         {
-            if (interfaceType1 == interfaceType)
-                return true;
+            foreach (var interfaceType2 in interfaceTypes)
+            {
+                if (interfaceType1 == interfaceType2)
+                    return true;
+            }
         }
         return false;
     }

@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Binding
 {
-    public struct NetQuaternionBind : ISerialize<Net.Quaternion>, ISerialize
+    public readonly struct NetQuaternionBind : ISerialize<Net.Quaternion>, ISerialize
     {
+        public ushort HashCode { get { return 124; } }
+
         public void Write(Net.Quaternion value, ISegment stream)
         {
             int pos = stream.Position;
             stream.Position += 1;
-            byte[] bits = new byte[1];
+            var bits = new byte[1];
 
             if (value.x != 0)
             {
@@ -43,10 +45,16 @@ namespace Binding
             stream.Position = pos1;
         }
 		
-		public Net.Quaternion Read(ISegment stream)
+        public Net.Quaternion Read(ISegment stream) 
+        {
+            var value = new Net.Quaternion();
+            Read(ref value, stream);
+            return value;
+        }
+
+		public void Read(ref Net.Quaternion value, ISegment stream)
 		{
-			byte[] bits = stream.Read(1);
-			var value = new Net.Quaternion();
+			var bits = stream.Read(1);
 
 			if(NetConvertBase.GetBit(bits[0], 1))
 				value.x = stream.ReadSingle();
@@ -60,7 +68,6 @@ namespace Binding
 			if(NetConvertBase.GetBit(bits[0], 4))
 				value.w = stream.ReadSingle();
 
-			return value;
 		}
 
         public void WriteValue(object value, ISegment stream)
@@ -77,8 +84,10 @@ namespace Binding
 
 namespace Binding
 {
-	public struct NetQuaternionArrayBind : ISerialize<Net.Quaternion[]>, ISerialize
+	public readonly struct NetQuaternionArrayBind : ISerialize<Net.Quaternion[]>, ISerialize
 	{
+        public ushort HashCode { get { return 125; } }
+
 		public void Write(Net.Quaternion[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -111,11 +120,14 @@ namespace Binding
 		}
 	}
 }
+
 namespace Binding
 {
-	public struct NetQuaternionGenericBind : ISerialize<List<Net.Quaternion>>, ISerialize
+	public readonly struct SystemCollectionsGenericListNetQuaternionBind : ISerialize<System.Collections.Generic.List<Net.Quaternion>>, ISerialize
 	{
-		public void Write(List<Net.Quaternion> value, ISegment stream)
+        public ushort HashCode { get { return 126; } }
+
+		public void Write(System.Collections.Generic.List<Net.Quaternion> value, ISegment stream)
 		{
 			int count = value.Count;
 			stream.Write(count);
@@ -125,10 +137,10 @@ namespace Binding
 				bind.Write(value1, stream);
 		}
 
-		public List<Net.Quaternion> Read(ISegment stream)
+		public System.Collections.Generic.List<Net.Quaternion> Read(ISegment stream)
 		{
 			var count = stream.ReadInt32();
-			var value = new List<Net.Quaternion>(count);
+			var value = new System.Collections.Generic.List<Net.Quaternion>(count);
 			if (count == 0) return value;
 			var bind = new NetQuaternionBind();
 			for (int i = 0; i < count; i++)
@@ -138,7 +150,7 @@ namespace Binding
 
 		public void WriteValue(object value, ISegment stream)
 		{
-			Write((List<Net.Quaternion>)value, stream);
+			Write((System.Collections.Generic.List<Net.Quaternion>)value, stream);
 		}
 
 		public object ReadValue(ISegment stream)
