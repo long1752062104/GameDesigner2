@@ -83,7 +83,7 @@ namespace Net.AI
 
         public void Free()
         {
-            if (sample != null)
+            if (sample != default)
             {
                 FreeSoloMesh(sample);
                 if (m_Paths != null)

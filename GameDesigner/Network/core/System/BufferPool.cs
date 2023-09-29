@@ -13,7 +13,7 @@ namespace Net.System
         /// </summary>
         Version1,
         /// <summary>
-        /// 版本2, 压缩率和Protobuff一样, 在测试阶段
+        /// 版本2, 压缩率和Protobuff一样
         /// </summary>
         Version2,
         /// <summary>

@@ -262,7 +262,7 @@ public class Fast2BuildTools2 : EditorWindow
                 return;
             }
             var types = new HashSet<Type>();
-            ushort orderId = (ushort)((data.SortingOrder * 1000) + 100);
+            ushort orderId = (ushort)(data.SortingOrder * 1000);
             foreach (var type1 in data.typeNames)
             {
                 Type type = AssemblyHelper.GetType(type1.name);
@@ -272,12 +272,15 @@ public class Fast2BuildTools2 : EditorWindow
                     continue;
                 }
                 StringBuilder code;
+                orderId++;
                 if (data.IsCompress)
-                    code = Fast2BuildMethod.BuildNew(type, orderId++, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
+                    code = Fast2BuildMethod.BuildNew(type, ref orderId, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
                 else
-                    code = Fast2BuildMethod.BuildNewFast(type, orderId++, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
-                code.AppendLine(Fast2BuildMethod.BuildArray(type, orderId++).ToString());
-                code.AppendLine(Fast2BuildMethod.BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
+                    code = Fast2BuildMethod.BuildNewFast(type, ref orderId, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
+                orderId++;
+                code.AppendLine(Fast2BuildMethod.BuildArray(type, ref orderId).ToString());
+                orderId++;
+                code.AppendLine(Fast2BuildMethod.BuildGeneric(typeof(List<>).MakeGenericType(type), ref orderId).ToString());
                 var className = type.ToString().Replace(".", "").Replace("+", "");
                 File.WriteAllText(data.SavePath + $"//{className}Bind.cs", code.ToString());
                 types.Add(type);

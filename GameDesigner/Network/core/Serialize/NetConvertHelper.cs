@@ -1,12 +1,15 @@
 ﻿using System.Text;
+#if !CORE
 using System.Linq;
 using System.Collections.Generic;
+#endif
 using System.Runtime.CompilerServices;
 
 namespace Net.Serialize
 {
     public class NetConvertHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteArray<T>(byte* ptr, ref int offset, T[] value) where T : struct
         {
             if (value != null)
@@ -26,6 +29,7 @@ namespace Net.Serialize
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteArray(byte* ptr, ref int offset, string[] value)
         {
             if (value != null)
@@ -45,16 +49,19 @@ namespace Net.Serialize
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteCollection<T>(byte* ptr, ref int offset, ICollection<T> value) where T : struct
         {
             WriteArray(ptr, ref offset, value?.ToArray());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteCollection(byte* ptr, ref int offset, ICollection<string> value)
         {
             WriteArray(ptr, ref offset, value?.ToArray());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T[] ReadArray<T>(byte* ptr, ref int offset) where T : struct
         {
             var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
@@ -71,6 +78,7 @@ namespace Net.Serialize
             return default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T ReadCollection<T, T1>(byte* ptr, ref int offset) where T : ICollection<T1>, new() where T1 : struct
         {
             var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
@@ -92,6 +100,7 @@ namespace Net.Serialize
             return default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T ReadCollection<T>(byte* ptr, ref int offset) where T : ICollection<string>, new()
         {
             var newValue = ReadArray(ptr, ref offset);
@@ -105,6 +114,7 @@ namespace Net.Serialize
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string[] ReadArray(byte* ptr, ref int offset)
         {
             var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
@@ -121,12 +131,14 @@ namespace Net.Serialize
             return default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Write<T>(byte* ptr, ref int offset, T value) where T : struct
         {
             Unsafe.WriteUnaligned(ptr + offset, value);
             offset += Unsafe.SizeOf<T>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Write(byte* ptr, ref int offset, string value)
         {
             if (!string.IsNullOrEmpty(value))
@@ -156,6 +168,7 @@ namespace Net.Serialize
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T Read<T>(byte* ptr, ref int offset) where T : struct
         {
             var value = Unsafe.ReadUnaligned<T>(ptr + offset);
@@ -163,6 +176,7 @@ namespace Net.Serialize
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string Read(byte* ptr, ref int offset)
         {
             var count = Unsafe.ReadUnaligned<ushort>(ptr + offset);

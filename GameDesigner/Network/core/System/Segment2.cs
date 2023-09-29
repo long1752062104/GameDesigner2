@@ -110,7 +110,7 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckRecordBitInternal(byte bitCount)
         {
-            if (((RecordBitIndex - 1) + bitCount) > 8 | RecordBitIndex == 0)
+            if ((RecordBitIndex - 1 + bitCount) > 8 | RecordBitIndex == 0)
             {
                 RecordBitIndex = 1;
                 RecordIndex = Position;

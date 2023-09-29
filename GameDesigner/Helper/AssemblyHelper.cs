@@ -1,9 +1,19 @@
+using System.Text;
+using Net.Event;
+using System.Reflection;
+using System.Collections.Generic;
+#if CORE
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using System.Runtime.Loader;
+#else
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.CSharp;
+using System.CodeDom.Compiler;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
+#endif
 
 namespace Net.Helper
 {
@@ -13,16 +23,16 @@ namespace Net.Helper
         private static readonly HashSet<string> NotTypes = new HashSet<string>();
 
         /// <summary>
-        /// Ìí¼ÓºóĞøÒª²éÕÒµÄÀàĞÍ
+        /// æ·»åŠ åç»­è¦æŸ¥æ‰¾çš„ç±»å‹
         /// </summary>
         /// <param name="type"></param>
-        public static void AddFindType(Type type) 
+        public static void AddFindType(Type type)
         {
             TypeDict[type.ToString()] = type;
         }
 
         /// <summary>
-        /// »ñÈ¡ÀàĞÍ£¬ Èç¹ûÀàĞÍÒÑ¾­»ñÈ¡¹ıÒ»´ÎÔòÖ±½ÓÈ¡£¬·ñÔò»ò²éÕÒËùÓĞ³ÌĞò¼¯»ñÈ¡ÀàĞÍ£¬Èç¹û²éÕÒµ½Ôò»áÌí¼Óµ½»º´æ×ÖµäÖĞ£¬ÏÂ´Î²»ĞèÒªÔÙ±éÀúËùÓĞ³ÌĞò¼¯
+        /// è·å–ç±»å‹ï¼Œ å¦‚æœç±»å‹å·²ç»è·å–è¿‡ä¸€æ¬¡åˆ™ç›´æ¥å–ï¼Œå¦åˆ™æˆ–æŸ¥æ‰¾æ‰€æœ‰ç¨‹åºé›†è·å–ç±»å‹ï¼Œå¦‚æœæŸ¥æ‰¾åˆ°åˆ™ä¼šæ·»åŠ åˆ°ç¼“å­˜å­—å…¸ä¸­ï¼Œä¸‹æ¬¡ä¸éœ€è¦å†éå†æ‰€æœ‰ç¨‹åºé›†
         /// </summary>
         /// <param name="typeName"></param>
         /// <returns></returns>
@@ -48,7 +58,7 @@ namespace Net.Helper
                     return type;
                 }
             }
-            if (typeName.IndexOf("[") >= 0) //ËäÈ»Ö§³ÖÁË·ºĞÍºÍ×Öµä¼ì²â, µ«ÊÇ²»Òª¸ãµÄÌ«¸´ÔÓ»¨ÀïºúÉÚµÄ»áÓ°ÏìĞÔÄÜºÍ²úÉúbug, ÕâÀï»¹ÓĞÒ»¸öÎÊÌâ, ¾ÍÊÇµ±±àÒëil2cppºó¿ÉÄÜÒ²»á»ñÈ¡²»µ½
+            if (typeName.IndexOf("[") >= 0) //è™½ç„¶æ”¯æŒäº†æ³›å‹å’Œå­—å…¸æ£€æµ‹, ä½†æ˜¯ä¸è¦æçš„å¤ªå¤æ‚èŠ±é‡Œèƒ¡å“¨çš„ä¼šå½±å“æ€§èƒ½å’Œäº§ç”Ÿbug, è¿™é‡Œè¿˜æœ‰ä¸€ä¸ªé—®é¢˜, å°±æ˜¯å½“ç¼–è¯‘il2cppåå¯èƒ½ä¹Ÿä¼šè·å–ä¸åˆ°
             {
                 var index = typeName.IndexOf("[");
                 var itemTypeName = typeName.Substring(0, index);
@@ -82,11 +92,11 @@ namespace Net.Helper
                 return type;
             }
             NotTypes.Add(typeName);
-        JMP: Event.NDebug.LogError($"ÕÒ²»µ½ÀàĞÍ:{typeName}, ÀàĞÍÌ«¸´ÔÓÊ±ĞèÒªÊ¹ÓÃ AssemblyHelper.AddFindType(type) ±ê¼ÇºóÃæÒª²éÕÒµÄÀà");
+        JMP: Event.NDebug.LogError($"æ‰¾ä¸åˆ°ç±»å‹:{typeName}, ç±»å‹å¤ªå¤æ‚æ—¶éœ€è¦ä½¿ç”¨ AssemblyHelper.AddFindType(type) æ ‡è®°åé¢è¦æŸ¥æ‰¾çš„ç±»");
             return null;
         }
 
-        public static Type GetTypeNotOptimized(string typeName) 
+        public static Type GetTypeNotOptimized(string typeName)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies)
@@ -99,11 +109,11 @@ namespace Net.Helper
         }
 
         /// <summary>
-        /// »ñÈ¡´úÂëĞÎÊ½µÄÀàĞÍÃû³Æ, °üÀ¨·ºĞÍ,Êı×é
+        /// è·å–ä»£ç å½¢å¼çš„ç±»å‹åç§°, åŒ…æ‹¬æ³›å‹,æ•°ç»„
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static string GetTypeName(Type type, 
+        public static string GetTypeName(Type type,
             string baseBegin = "", string baseEnd = "",
             string normalBegin = "", string normalEnd = "",
             string baseArrayBegin = "", string baseArrayEnd = "",
@@ -152,7 +162,7 @@ namespace Net.Helper
                 }
                 typeName = typeName.TrimEnd(',') + ">";
             }
-            else 
+            else
             {
                 typeName = type.ToString();
                 var typecode = Type.GetTypeCode(type);
@@ -169,11 +179,11 @@ namespace Net.Helper
         }
 
         /// <summary>
-        /// »ñÈ¡·ºĞÍÀàĞÍToString³É´úÂëĞÎÊ½·µ»Ø
+        /// è·å–æ³›å‹ç±»å‹ToStringæˆä»£ç å½¢å¼è¿”å›
         /// </summary>
-        /// <param name="fullName">±ØĞëÊÇ·ºĞÍ.ToString() ¶ø²»ÊÇ·ºĞÍ.FullName</param>
+        /// <param name="fullName">å¿…é¡»æ˜¯æ³›å‹.ToString() è€Œä¸æ˜¯æ³›å‹.FullName</param>
         /// <returns></returns>
-        public static string GetCodeTypeName(string fullName) 
+        public static string GetCodeTypeName(string fullName)
         {
             var sb = new StringBuilder(fullName);
             for (int i = 0; i < sb.Length; i++)
@@ -193,7 +203,7 @@ namespace Net.Helper
                             break;
                         }
                     }
-                    for (int n = i; n < sb.Length; n++) //¼æÈİdnlib¿âType.FullName
+                    for (int n = i; n < sb.Length; n++) //å…¼å®¹dnlibåº“Type.FullName
                     {
                         if (sb[n] != '<')
                             continue;
@@ -265,6 +275,119 @@ namespace Net.Helper
                 objs.Add(obj);
             }
             return objs;
+        }
+
+        public static Assembly DynamicBuild(Dictionary<string, string> codes)
+        {
+            var includeDllPaths = new HashSet<string>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assemblie in assemblies)
+            {
+                if (assemblie.IsDynamic)
+                    continue;
+                var path = assemblie.Location;
+                var name = Path.GetFileName(path);
+                //if (name.Contains("Editor"))
+                //    continue;
+                if (name.Contains("mscorlib"))
+                    continue;
+                if (!File.Exists(path))
+                    continue;
+                //if (path.Contains("PackageCache"))
+                //    continue;
+                includeDllPaths.Add(path);
+            }
+            return DynamicBuild(codes, includeDllPaths);
+        }
+
+        public static Assembly DynamicBuild(Dictionary<string, string> codes, HashSet<string> includeDllPaths)
+        {
+            Assembly assembly = null;
+#if !CORE
+            var provider = new CSharpCodeProvider();
+            var param = new CompilerParameters();
+            param.ReferencedAssemblies.AddRange(includeDllPaths.ToArray());
+            param.GenerateExecutable = false;
+            param.GenerateInMemory = true;
+            param.CompilerOptions = "/optimize+ /platform:x64 /target:library /unsafe /langversion:default";
+            var codeFiles = new List<string>();
+            foreach (var code in codes)
+            {
+                var tempFile = $"{Path.GetTempPath()}{code.Key}";
+                File.WriteAllText(tempFile, code.Value);
+                codeFiles.Add(tempFile);
+            }
+            var cr = provider.CompileAssemblyFromFile(param, codeFiles.ToArray());
+            if (cr.Errors.HasErrors)
+            {
+                NDebug.LogError("ç¼–è¯‘é”™è¯¯ï¼š");
+                foreach (CompilerError err in cr.Errors)
+                    NDebug.LogError(err.ErrorText);
+                return assembly;
+            }
+#else
+            var metadataReferences = new List<MetadataReference>();
+            foreach (var dllPath in includeDllPaths)
+                metadataReferences.Add(MetadataReference.CreateFromFile(dllPath));
+            var references = metadataReferences.ToArray();
+            var assemblyName = Path.GetRandomFileName();
+            var syntaxTrees = new List<SyntaxTree>();
+            foreach (var code in codes)
+                syntaxTrees.Add(CSharpSyntaxTree.ParseText(code.Value));
+            var compilation = CSharpCompilation.Create(assemblyName, syntaxTrees, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release, allowUnsafe: true));
+            using (var stream = new MemoryStream())
+            {
+                var result = compilation.Emit(stream);
+                if (!result.Success)
+                {
+                    var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+                    foreach (Diagnostic diagnostic in failures)
+                        NDebug.LogError($"{diagnostic.Id}: {diagnostic.GetMessage()}");
+                    return assembly;
+                }
+                else
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    assembly = Assembly.Load(stream.ToArray());
+                }
+            }
+#endif
+            NDebug.Log("åŠ¨æ€ç¼–è¯‘å®Œæˆ!");
+            return assembly;
+        }
+
+        /// <summary>
+        /// çƒ­æ›´æ–°åŠ è½½, å¯ä»¥åœ¨è¿è¡Œæ—¶æ¤å…¥dllæ‰§è¡Œä¸€æ®µä»£ç 
+        /// </summary>
+        /// <param name="dllPath">dllæ–‡ä»¶è·¯å¾„</param>
+        /// <param name="entryTypeName">å…¥å£ç±»åç§°</param>
+        /// <param name="invokeMethodName">è°ƒç”¨æ–¹æ³•åç§°, å¿…é¡»æ˜¯é™æ€çš„</param>
+        public static void HotfixLoad(string dllPath, string entryTypeName, string invokeMethodName)
+        {
+            var bytes = File.ReadAllBytes(dllPath);
+#if CORE
+            var context = new AssemblyLoadContext("Hotfix", true);
+            using (MemoryStream stream = new MemoryStream(bytes))
+            {
+                var assembly = context.LoadFromStream(stream);
+                var entryType = assembly.GetType(entryTypeName);
+                if (entryType != null)
+                {
+                    var method = entryType.GetMethod(invokeMethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    method?.Invoke(null, null);
+                }
+            }
+            context.Unload();
+#else
+            var assembly = Assembly.Load(bytes);
+            var entryType = assembly.GetType(entryTypeName);
+            if (entryType != null)
+            {
+                var method = entryType.GetMethod(invokeMethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                method?.Invoke(null, null);
+            }
+            //è¿™é‡Œæ— æ³•å¸è½½ç¨‹åºé›†, å¯èƒ½ä¼šå¯¼è‡´åŠ è½½çš„ç¨‹åºé›†è¶Šæ¥è¶Šå¤š, å†…å­˜å¯èƒ½ä¼šæ¶¨ç‚¹, æ€§èƒ½å½±å“åº”è¯¥ä¸å¤§
+#endif
         }
     }
 }

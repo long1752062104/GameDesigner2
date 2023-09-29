@@ -106,6 +106,7 @@
     <Compile Include="GameDesigner\Common~\NTransform.cs" />
     <Compile Include="GameDesigner\Common~\Singleton.cs" />
     <Compile Include="GameDesigner\Common~\TransformEntity.cs" />
+    <Compile Include="GameDesigner\ECS~\GameComponent.cs" />
     <Compile Include="GameDesigner\Network\Adapter\PackageAdapter.cs" />
     <Compile Include="GameDesigner\Network\Binding\BindingExtension.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertHelper.cs" />

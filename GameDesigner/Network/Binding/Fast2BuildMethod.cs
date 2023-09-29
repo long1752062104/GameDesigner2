@@ -36,24 +36,27 @@ public static class Fast2BuildMethod
     /// <summary>
     /// 动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
     /// </summary>
-    /// <param name="IsCompress">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
+    /// <param name="isCompress">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
     /// <param name="types"></param>
     /// <returns></returns>
-    public static bool DynamicBuild(bool IsCompress, params Type[] types)
+    public static bool DynamicBuild(bool isCompress, int sortingOrder, params Type[] types)
     {
         var bindTypes = new HashSet<Type>();
         var codes = new Dictionary<string, string>();
-        ushort orderId = 1 * 1000;
+        ushort orderId = (ushort)(sortingOrder * 1000);
         foreach (var type in types)
         {
             var genericCodes = new List<string>();
             StringBuilder code;
-            if (IsCompress)
-                code = BuildNew(type, orderId++, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
+            orderId++;
+            if (isCompress)
+                code = BuildNew(type, ref orderId, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
             else
-                code = BuildNewFast(type, orderId++, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
-            code.AppendLine(BuildArray(type, orderId++).ToString());
-            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
+                code = BuildNewFast(type, ref orderId, true, true, new List<string>(), string.Empty, bindTypes, genericCodes);
+            orderId++;
+            code.AppendLine(BuildArray(type, ref orderId).ToString());
+            orderId++;
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), ref orderId).ToString());
             foreach (var igenericCode in genericCodes)
             {
                 var index1 = igenericCode.IndexOf("struct") + 7;
@@ -66,7 +69,7 @@ public static class Fast2BuildMethod
         }
         codes.Add("Binding.BindingType.cs", BuildBindingType(bindTypes));
         codes.Add("BindingExtension.cs", BuildBindingExtension(bindTypes));
-        var dllpaths = new HashSet<string>();
+        var includeDllPaths = new HashSet<string>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
         {
@@ -82,59 +85,11 @@ public static class Fast2BuildMethod
                 continue;
             if (path.Contains("PackageCache"))
                 continue;
-            dllpaths.Add(path);
+            includeDllPaths.Add(path);
         }
-#if !CORE
-        var provider = new CSharpCodeProvider();
-        var param = new CompilerParameters();
-        param.ReferencedAssemblies.AddRange(dllpaths.ToArray());
-        param.GenerateExecutable = false;
-        param.GenerateInMemory = true;
-        param.CompilerOptions = "/optimize+ /platform:x64 /target:library /unsafe /langversion:default";
-        var codeFiles = new List<string>();
-        foreach (var code in codes)
-        {
-            var tempFile = $"{Path.GetTempPath()}{code.Key}";
-            File.WriteAllText(tempFile, code.Value);
-            codeFiles.Add(tempFile);
-        }
-        var cr = provider.CompileAssemblyFromFile(param, codeFiles.ToArray());
-        if (cr.Errors.HasErrors)
-        {
-            NDebug.LogError("编译错误：");
-            foreach (CompilerError err in cr.Errors)
-                NDebug.LogError(err.ErrorText);
-            return false;
-        }
-#else
-        var metadataReferences = new List<MetadataReference>();
-        foreach (var dllPath in dllpaths)
-            metadataReferences.Add(MetadataReference.CreateFromFile(dllPath));
-        var references = metadataReferences.ToArray();
-        var assemblyName = Path.GetRandomFileName();
-        var syntaxTrees = new List<SyntaxTree>();
-        foreach (var code in codes)
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText(code.Value));
-        var compilation = CSharpCompilation.Create(assemblyName, syntaxTrees, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release, allowUnsafe: true));
-        using (var stream = new MemoryStream())
-        {
-            var result = compilation.Emit(stream);
-            if (!result.Success)
-            {
-                var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
-                foreach (Diagnostic diagnostic in failures)
-                    NDebug.LogError($"{diagnostic.Id}: {diagnostic.GetMessage()}");
-                return false;
-            }
-            else
-            {
-                stream.Seek(0, SeekOrigin.Begin);
-                Assembly.Load(stream.ToArray());
-            }
-        }
-#endif
-        Net.Serialize.NetConvertFast2.Init();
-        NDebug.Log("动态编译完成!");
+        var assembly = AssemblyHelper.DynamicBuild(codes, includeDllPaths);
+        if (assembly != null)
+            Net.Serialize.NetConvertFast2.Init();
         return true;
     }
 
@@ -144,15 +99,22 @@ public static class Fast2BuildMethod
     /// <param name="savePath"></param>
     /// <param name="types"></param>
     /// <returns></returns>
-    public static void BuildAll(string savePath, params Type[] types)
+    public static void BuildAll(string savePath, bool isCompress, int sortingOrder, params Type[] types)
     {
         var bindTypes = new HashSet<Type>();
-        ushort orderId = 0;
+        ushort orderId = (ushort)(sortingOrder * 1000);
         foreach (var type in types)
         {
-            var code = BuildNew(type, orderId++, true, true, new List<string>(), savePath, bindTypes);
-            code.AppendLine(BuildArray(type, orderId++).ToString());
-            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), orderId++).ToString());
+            StringBuilder code;
+            orderId++;
+            if (isCompress)
+                code = BuildNew(type, ref orderId, true, true, new List<string>(), savePath, bindTypes);
+            else
+                code = BuildNewFast(type, ref orderId, true, true, new List<string>(), savePath, bindTypes);
+            orderId++;
+            code.AppendLine(BuildArray(type, ref orderId).ToString());
+            orderId++;
+            code.AppendLine(BuildGeneric(typeof(List<>).MakeGenericType(type), ref orderId).ToString());
             var className = type.ToString().Replace(".", "").Replace("+", "");
             File.WriteAllText(savePath + $"//{className}Bind.cs", code.ToString());
             bindTypes.Add(type);
@@ -161,7 +123,7 @@ public static class Fast2BuildMethod
         BuildBindingExtension(new HashSet<Type>(bindTypes), savePath);
     }
 
-    public static StringBuilder BuildNew(Type type, ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+    public static StringBuilder BuildNew(Type type, ref ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -395,7 +357,8 @@ namespace Binding
             {
                 if (members[i].ItemType1 == null)//List<T>
                 {
-                    var codeSB = BuildGenericAll(members[i].Type);
+                    orderId++;
+                    var codeSB = BuildGenericAll(members[i].Type, ref orderId);
                     var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
                     className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
                     if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
@@ -437,7 +400,8 @@ namespace Binding
                     templateText2 = templateText2.Replace("{FIELDINDEX}", $"{bitInx1}");
                     templateText2 = templateText2.Replace("{FIELDNAME}", $"{members[i].Name}");
 
-                    var text = BuildDictionary(members[i].Type, out var className1);
+                    orderId++;
+                    var text = BuildDictionary(members[i].Type, ref orderId, out var className1);
                     if (!string.IsNullOrEmpty(savePath))
                         File.WriteAllText(savePath + $"//{className1}.cs", text);
                     genericCodes?.Add(text);
@@ -481,7 +445,7 @@ namespace Binding
         return sb;
     }
 
-    public static StringBuilder BuildNewFast(Type type, ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
+    public static StringBuilder BuildNewFast(Type type, ref ushort orderId, bool serField, bool serProperty, List<string> ignores, string savePath = null, HashSet<Type> types = null, List<string> genericCodes = null)
     {
         var sb = new StringBuilder();
         var sb1 = new StringBuilder();
@@ -717,7 +681,7 @@ namespace Binding
             {
                 if (members[i].ItemType1 == null)//List<T>
                 {
-                    var codeSB = BuildGenericAll(members[i].Type);
+                    var codeSB = BuildGenericAll(members[i].Type, ref orderId);
                     var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
                     className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
                     if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
@@ -757,7 +721,8 @@ namespace Binding
                 }
                 else //Dic
                 {
-                    var text = BuildDictionary(members[i].Type, out var className1);
+                    orderId++;
+                    var text = BuildDictionary(members[i].Type, ref orderId, out var className1);
                     if (!string.IsNullOrEmpty(savePath))
                         File.WriteAllText(savePath + $"//{className1}.cs", text);
                     genericCodes?.Add(text);
@@ -895,7 +860,7 @@ public static class BindingExtension
         return str.ToString();
     }
 
-    public static StringBuilder BuildArray(Type type, ushort orderId)
+    public static StringBuilder BuildArray(Type type, ref ushort orderId)
     {
         var sb = new StringBuilder();
         var templateText = @"
@@ -950,7 +915,7 @@ namespace Binding
         return sb;
     }
 
-    public static StringBuilder BuildGeneric(Type type, ushort orderId)
+    public static StringBuilder BuildGeneric(Type type, ref ushort orderId)
     {
         var sb = new StringBuilder();
         var templateText = @"
@@ -1011,7 +976,7 @@ namespace Binding
         return sb;
     }
 
-    public static StringBuilder BuildGenericAll(Type type)
+    public static StringBuilder BuildGenericAll(Type type, ref ushort orderId)
     {
         var sb = new StringBuilder();
         var templateText = @"using Net.System;
@@ -1021,6 +986,8 @@ namespace Binding
 {
 	public readonly struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
 	{
+        public ushort HashCode { get { return {orderId}; } }
+
 		public void Write(List<TYPE> value, ISegment stream)
 		{
 			int count = value.Count;
@@ -1058,6 +1025,7 @@ namespace Binding
         typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
         templateText = templateText.Replace("{TYPENAME}", typeName);
         templateText = templateText.Replace("List<TYPE>", fullName);
+        templateText = templateText.Replace("{orderId}", orderId.ToString());
 
         var itemTypeName = type.GetArrayItemType().ToString();
         itemTypeName = itemTypeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
@@ -1071,7 +1039,7 @@ namespace Binding
         return sb;
     }
 
-    public static string BuildDictionary(Type type, out string fileTypeName)
+    public static string BuildDictionary(Type type, ref ushort orderId, out string fileTypeName)
     {
         var text =
 @"using Binding;
@@ -1081,6 +1049,8 @@ using System.Collections.Generic;
 
 public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{Dictionary}<{TKey}, {TValue}>>, ISerialize
 {
+    public ushort HashCode { get { return {orderId}; } }
+
     public void Write({Dictionary}<{TKey}, {TValue}> value, ISegment stream)
     {
         int count = value.Count;
@@ -1146,6 +1116,7 @@ public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{D
         text = text.Replace("{READ}", $"{keyRead}");
         var dictName = type.Name.Replace("`2", "");
         text = text.Replace("{Dictionary}", $"{dictName}");
+        text = text.Replace("{orderId}", orderId.ToString());
 
         fileTypeName = $"{dictName}_{args[0].ToString().Replace(".", "")}_{typeBindName}_Bind"; ;
         return text;
