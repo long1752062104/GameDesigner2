@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using System;
 
 namespace Framework
 {
@@ -9,6 +10,11 @@ namespace Framework
         private void Awake()
         {
             item.gameObject.SetActive(false);
+        }
+
+        public override void OnShowUI(string title, string info, Action<bool> action)
+        {
+            _ = OnShowTips(info, 0f);
         }
 
         public override void OnShowUI(string title, float progress)

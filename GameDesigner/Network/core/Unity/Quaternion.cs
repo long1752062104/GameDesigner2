@@ -276,7 +276,7 @@ namespace Net
         // Token: 0x04001929 RID: 6441
         private static readonly Quaternion identityQuaternion = new Quaternion(0f, 0f, 0f, 1f);
 
-        public static readonly Quaternion zero = new Quaternion(0,0,0,0);
+        public static readonly Quaternion zero = new Quaternion(0, 0, 0, 0);
 
         // Token: 0x0400192A RID: 6442
         public const float kEpsilon = 1E-06f;
@@ -432,7 +432,7 @@ namespace Net
             Quaternion qY = new Quaternion(0, sY, 0, cY);
             Quaternion qZ = new Quaternion(0, 0, sZ, cZ);
 
-            Quaternion q = (qY * qX) * qZ;
+            Quaternion q = qY * qX * qZ;
 
             return q;
         }
@@ -444,7 +444,6 @@ namespace Net
 
         public static Quaternion FromToRotation(Vector3 a, Vector3 b)
         {
-            //return UnityEngine.Quaternion.FromToRotation(a, b);
             Vector3 start = a.normalized;
             Vector3 dest = b.normalized;
             float cosTheta = Vector3.Dot(start, dest);
@@ -472,55 +471,71 @@ namespace Net
             return quaternion;
         }
 
-        public static Quaternion LookRotation(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector) 
+        public static Quaternion LookRotation(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
         {
-            var matrix = CreateLookAt(cameraPosition, cameraTarget, cameraUpVector);
+            var matrix = Matrix4x4.CreateLookAt(cameraPosition, cameraTarget, cameraUpVector);
             return matrix.GetRotation();
-        }
-
-        public static Matrix4x4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
-        {
-            Vector3 vector = Vector3.Normalize(cameraTarget - cameraPosition);
-            Vector3 vector2 = Vector3.Normalize(Vector3.Cross(cameraUpVector, vector));
-            Vector3 vector3 = Vector3.Cross(vector, vector2);
-            Matrix4x4 result = default;
-            result.m00 = vector2.x;
-            result.m01 = vector3.x;
-            result.m02 = vector.x;
-            result.m03 = 0f;
-            result.m10 = vector2.y;
-            result.m11 = vector3.y;
-            result.m12 = vector.y;
-            result.m13 = 0f;
-            result.m20 = vector2.z;
-            result.m21 = vector3.z;
-            result.m22 = vector.z;
-            result.m23 = 0f;
-            result.m30 = 0f - Vector3.Dot(vector2, cameraPosition);
-            result.m31 = 0f - Vector3.Dot(vector3, cameraPosition);
-            result.m32 = 0f - Vector3.Dot(vector, cameraPosition);
-            result.m33 = 1f;
-            return result;
         }
 
         public static Quaternion LookRotation(Vector3 forward, Vector3 upwards)
         {
-            forward.Normalize();
-            upwards.Normalize();
+            forward = Vector3.Normalize(forward);
+            var right = Vector3.Normalize(Vector3.Cross(upwards, forward));
+            upwards = Vector3.Cross(forward, right);
 
-            Vector3 right = Vector3.Cross(upwards, forward);
-            Vector3 normalizedUpwards = Vector3.Cross(forward, right);
+            var m00 = right.x;
+            var m01 = upwards.x;
+            var m02 = forward.x;
+            var m10 = right.y;
+            var m11 = upwards.y;
+            var m12 = forward.y;
+            var m20 = right.z;
+            var m21 = upwards.z;
+            var m22 = forward.z;
 
-            Quaternion rotation = identity;
+            var trace = m00 + m11 + m22;
+            var q = new Quaternion();
 
-            // 计算旋转矩阵的各个元素
-            rotation.w = Mathf.Sqrt(1f + right.x + normalizedUpwards.y + forward.z) * 0.5f;
-            float w4Recip = 1f / (4f * rotation.w);
-            rotation.x = (normalizedUpwards.z - forward.y) * w4Recip;
-            rotation.y = (forward.x - right.z) * w4Recip;
-            rotation.z = (right.y - normalizedUpwards.x) * w4Recip;
+            if (trace > 0f)
+            {
+                var num = Mathf.Sqrt(1f + trace);
+                q.w = num * 0.5f;
+                num = 0.5f / num;
+                q.x = (m21 - m12) * num;
+                q.y = (m02 - m20) * num;
+                q.z = (m10 - m01) * num;
+                return q;
+            }
 
-            return rotation;
+            if (m00 >= m11 && m00 >= m22)
+            {
+                float num = Mathf.Sqrt(1f + m00 - m11 - m22);
+                float num4 = 0.5f / num;
+                q.x = 0.5f * num;
+                q.y = (m01 + m10) * num4;
+                q.z = (m02 + m20) * num4;
+                q.w = (m12 - m21) * num4;
+                return q;
+            }
+
+            if (m11 > m22)
+            {
+                float num6 = Mathf.Sqrt(1f + m11 - m00 - m22);
+                float num3 = 0.5f / num6;
+                q.x = (m10 + m01) * num3;
+                q.y = 0.5f * num6;
+                q.z = (m21 + m12) * num3;
+                q.w = (m02 - m20) * num3;
+                return q;
+            }
+
+            var num5 = Mathf.Sqrt(1f + m22 - m00 - m11);
+            var num2 = 0.5f / num5;
+            q.x = (m20 + m02) * num2;
+            q.y = (m21 + m12) * num2;
+            q.z = 0.5f * num5;
+            q.w = (m01 - m10) * num2;
+            return q;
         }
 
         public static void CreateFromYawPitchRoll(float yaw, float pitch, float roll, out Quaternion result)

@@ -765,50 +765,27 @@ namespace Net
 
         public static Matrix4x4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
         {
-            Vector3 vector3_1 = Vector3.Normalize(cameraPosition - cameraTarget);
-            Vector3 vector3_2 = Vector3.Normalize(Vector3.Cross(cameraUpVector, vector3_1));
-            Vector3 vector1 = Vector3.Cross(vector3_1, vector3_2);
-            Matrix4x4 matrix44;
-            matrix44.m00 = vector3_2.x;
-            matrix44.m10 = vector1.x;
-            matrix44.m20 = vector3_1.x;
-            matrix44.m30 = 0.0f;
-            matrix44.m01 = vector3_2.y;
-            matrix44.m11 = vector1.y;
-            matrix44.m21 = vector3_1.y;
-            matrix44.m31 = 0.0f;
-            matrix44.m02 = vector3_2.z;
-            matrix44.m12 = vector1.z;
-            matrix44.m22 = vector3_1.z;
-            matrix44.m32 = 0.0f;
-            matrix44.m03 = -Vector3.Dot(vector3_2, cameraPosition);
-            matrix44.m13 = -Vector3.Dot(vector1, cameraPosition);
-            matrix44.m23 = -Vector3.Dot(vector3_1, cameraPosition);
-            matrix44.m33 = 1f;
-            return matrix44;
-        }
-
-        public static void CreateLookAt(ref Vector3 cameraPosition, ref Vector3 cameraTarget, ref Vector3 cameraUpVector, out Matrix4x4 matrix)
-        {
-            Vector3 vector3_1 = Vector3.Normalize(cameraPosition - cameraTarget);
-            Vector3 vector3_2 = Vector3.Normalize(Vector3.Cross(cameraUpVector, vector3_1));
-            Vector3 vector1 = Vector3.Cross(vector3_1, vector3_2);
-            matrix.m00 = vector3_2.x;
-            matrix.m10 = vector1.x;
-            matrix.m20 = vector3_1.x;
-            matrix.m30 = 0.0f;
-            matrix.m01 = vector3_2.y;
-            matrix.m11 = vector1.y;
-            matrix.m21 = vector3_1.y;
-            matrix.m31 = 0.0f;
-            matrix.m02 = vector3_2.z;
-            matrix.m12 = vector1.z;
-            matrix.m22 = vector3_1.z;
-            matrix.m32 = 0.0f;
-            matrix.m03 = -Vector3.Dot(vector3_2, cameraPosition);
-            matrix.m13 = -Vector3.Dot(vector1, cameraPosition);
-            matrix.m23 = -Vector3.Dot(vector3_1, cameraPosition);
-            matrix.m33 = 1f;
+            var vector = Vector3.Normalize(cameraTarget - cameraPosition);
+            var vector2 = Vector3.Normalize(Vector3.Cross(cameraUpVector, vector));
+            var vector3 = Vector3.Cross(vector, vector2);
+            Matrix4x4 result = default;
+            result.m00 = vector2.x;
+            result.m01 = vector3.x;
+            result.m02 = vector.x;
+            result.m03 = 0;
+            result.m10 = vector2.y;
+            result.m11 = vector3.y;
+            result.m12 = vector.y;
+            result.m13 = 0;
+            result.m20 = vector2.z;
+            result.m21 = vector3.z;
+            result.m22 = vector.z;
+            result.m23 = 0;
+            result.m30 = 0f - Vector3.Dot(vector2, cameraPosition);
+            result.m31 = 0f - Vector3.Dot(vector3, cameraPosition);
+            result.m32 = 0f - Vector3.Dot(vector, cameraPosition);
+            result.m33 = 1f;
+            return result;
         }
 
         public static Matrix4x4 CreateFromQuaternion(Quaternion quaternion)

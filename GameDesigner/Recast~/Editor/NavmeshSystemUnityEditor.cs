@@ -25,6 +25,13 @@ namespace Net.AI
                 stopwatch.Stop();
                 UnityEngine.Debug.Log($"烘焙完成,用时:{stopwatch.ElapsedMilliseconds}ms");
             }
+            if (GUILayout.Button("ReadUnityNavmesh"))
+            {
+                var stopwatch = Stopwatch.StartNew();
+                System.ReadUnityNavmesh();
+                stopwatch.Stop();
+                UnityEngine.Debug.Log($"读取Unity烘焙的网格数据完成,用时:{stopwatch.ElapsedMilliseconds}ms");
+            }
             if (GUILayout.Button("LoadNavMesh"))
             {
                 var stopwatch = Stopwatch.StartNew();
@@ -53,19 +60,12 @@ namespace Net.AI
                 stopwatch.Stop();
                 UnityEngine.Debug.Log($"保存网格模型完成,用时:{stopwatch.ElapsedMilliseconds}ms");
             }
-            if (GUILayout.Button("BakeTerrain"))
+            if (GUILayout.Button("SaveUnityNavmeshObj"))
             {
                 var stopwatch = Stopwatch.StartNew();
-                System.BakeTerrain();
+                System.SaveUnityNavmeshObj();
                 stopwatch.Stop();
-                UnityEngine.Debug.Log($"烘焙地形网格完成,用时:{stopwatch.ElapsedMilliseconds}ms");
-            }
-            if (GUILayout.Button("SaveTerrainMesh"))
-            {
-                var stopwatch = Stopwatch.StartNew();
-                System.SaveTerrainMesh();
-                stopwatch.Stop();
-                UnityEngine.Debug.Log($"保存地形网格完成,用时:{stopwatch.ElapsedMilliseconds}ms");
+                UnityEngine.Debug.Log($"保存Unity烘焙的寻路网格模型完成,用时:{stopwatch.ElapsedMilliseconds}ms");
             }
         }
     }

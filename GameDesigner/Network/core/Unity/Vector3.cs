@@ -486,7 +486,7 @@ namespace Net
         // Token: 0x06004914 RID: 18708 RVA: 0x0007E254 File Offset: 0x0007C454
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
-            return Vector3.SqrMagnitude(lhs - rhs) < 0.03f;//9.9999994E-11f;
+            return SqrMagnitude(lhs - rhs) < 0.03f;//9.9999994E-11f;
         }
 
         // Token: 0x06004915 RID: 18709 RVA: 0x0007E27C File Offset: 0x0007C47C

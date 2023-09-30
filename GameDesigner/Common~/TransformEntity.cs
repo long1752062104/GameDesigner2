@@ -1,23 +1,32 @@
 ﻿using System;
-using UnityEngine;
 
 namespace Net.Common
 {
+    public enum Space
+    {
+        World,
+        Self
+    }
+
     /// <summary>
     /// 新的Trasnform实体类, 性能可能要好点
     /// </summary>
     [Serializable]
-    public class TransformEntity
+    public class EntityTransform
     {
         private Vector3 position;
         private Quaternion rotation;
         private Vector3 scale;
 
-        public TransformEntity()
+        public EntityTransform() : this(Vector3.zero, Quaternion.identity)
         {
-            position = Vector3.zero;
-            rotation = Quaternion.identity;
-            scale = Vector3.one;
+        }
+
+        public EntityTransform(Vector3 position, Quaternion rotation)
+        {
+            this.position = position;
+            this.rotation = rotation;
+            this.scale = Vector3.one;
         }
 
         public Vector3 Position
@@ -86,6 +95,11 @@ namespace Net.Common
             get { return -rotation * Vector3.forward; }
         }
 
+        public void Translate(float x, float y, float z, Space relativeTo = Space.Self)
+        {
+            Translate(new Vector3(x, y, z), relativeTo);
+        }
+
         public void Translate(Vector3 translation, Space relativeTo = Space.Self)
         {
             if (relativeTo == Space.Self)
@@ -96,6 +110,11 @@ namespace Net.Common
             {
                 position += translation;
             }
+        }
+
+        public void Rotate(float x, float y, float z)
+        {
+            Rotate(new Vector3(x, y, z));
         }
 
         public void Rotate(Vector3 eulerRotation)
@@ -110,8 +129,13 @@ namespace Net.Common
 
         public void LookAt(Vector3 targetPosition)
         {
+            LookAt(targetPosition, Vector3.up);
+        }
+
+        public void LookAt(Vector3 targetPosition, Vector3 worldUp)
+        {
             var direction = targetPosition - position;
-            rotation = Quaternion.LookRotation(direction, Vector3.up);
+            rotation = Quaternion.LookRotation(direction, worldUp);
         }
     }
 }

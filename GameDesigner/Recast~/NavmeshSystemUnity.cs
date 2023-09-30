@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
-using AmazingAssets.TerrainToMesh;
 using UnityEngine;
 using Net.Component;
+using UnityEngine.AI;
 #if RECAST_NATIVE
 using Net.AI.Native;
 using static Net.AI.Native.RecastDll;
@@ -30,38 +30,6 @@ namespace Net.AI
         void Start()
         {
             Load();
-        }
-
-        public void ExportMesh(string filePath, Mesh mesh)
-        {
-            using (StreamWriter sw = new StreamWriter(filePath))
-            {
-                foreach (Vector3 vertex in mesh.vertices)
-                {
-                    sw.WriteLine("v " + vertex.x + " " + vertex.y + " " + vertex.z);
-                }
-
-                foreach (Vector3 normal in mesh.normals)
-                {
-                    sw.WriteLine("vn " + normal.x + " " + normal.y + " " + normal.z);
-                }
-
-                foreach (Vector2 uv in mesh.uv)
-                {
-                    sw.WriteLine("vt " + uv.x + " " + uv.y);
-                }
-
-                for (int submesh = 0; submesh < mesh.subMeshCount; submesh++)
-                {
-                    int[] triangles = mesh.GetTriangles(submesh);
-                    for (int i = 0; i < triangles.Length; i += 3)
-                    {
-                        sw.WriteLine("f " + (triangles[i] + 1) + "/" + (triangles[i] + 1) + "/" + (triangles[i] + 1) +
-                                     " " + (triangles[i + 1] + 1) + "/" + (triangles[i + 1] + 1) + "/" + (triangles[i + 1] + 1) +
-                                     " " + (triangles[i + 2] + 1) + "/" + (triangles[i + 2] + 1) + "/" + (triangles[i + 2] + 1));
-                    }
-                }
-            }
         }
 
         public string ExportMeshText(Mesh mesh)
@@ -126,9 +94,48 @@ namespace Net.AI
             UpdateNavMeshFace();
         }
 
+        public void ReadUnityNavmesh()
+        {
+            var triangulation = NavMesh.CalculateTriangulation();
+            var vertices = triangulation.vertices;
+            var triangles = triangulation.indices;
+            var mesh = new Mesh
+            {
+                vertices = vertices,
+                triangles = triangles
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            var objText = ExportMeshText(mesh);
+            DestroyImmediate(mesh);
+            System.Init();
+            var buildSettings = System.buildSettings;
+            buildSettings.agentRadius = 0f; //读取unity的烘焙数据时, 不需要留边缘, 因为unity已经留边缘
+            System.Sample.setBuildSettings(buildSettings);
+            LoadMeshData(System.Sample, objText);
+            Build(System.Sample);
+            UpdateNavMeshFace();
+        }
+
         public void SaveMeshObj()
         {
             var mesh = Merge();
+            var objText = ExportMeshText(mesh);
+            File.WriteAllText(navMashPath, objText);
+        }
+
+        public void SaveUnityNavmeshObj() 
+        {
+            var triangulation = NavMesh.CalculateTriangulation();
+            var vertices = triangulation.vertices;
+            var triangles = triangulation.indices;
+            var mesh = new Mesh
+            {
+                vertices = vertices,
+                triangles = triangles
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
             var objText = ExportMeshText(mesh);
             File.WriteAllText(navMashPath, objText);
         }
@@ -183,24 +190,6 @@ namespace Net.AI
             }
             mergedMesh.CombineMeshes(combine);
             return mergedMesh;
-        }
-
-        public void BakeTerrain()
-        {
-            var terrain = FindObjectOfType<Terrain>();
-            var mesh = terrain.terrainData.TerrainToMesh().ExportMesh(vertexCountHorizontal, vertexCountVertical, Normal.CalculateFromMesh);//AddTerrain(terrain);
-            var objText = ExportMeshText(mesh);
-            System.Init();
-            LoadMeshData(System.Sample, objText);
-            Build(System.Sample);
-            UpdateNavMeshFace();
-        }
-
-        public void SaveTerrainMesh()
-        {
-            var terrain = FindObjectOfType<Terrain>();
-            var mesh = terrain.terrainData.TerrainToMesh().ExportMesh(vertexCountHorizontal, vertexCountVertical, Normal.CalculateFromMesh); // AddTerrain(terrain);
-            ExportMesh("Assets/Terrain.obj", mesh);
         }
 
         public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight)
