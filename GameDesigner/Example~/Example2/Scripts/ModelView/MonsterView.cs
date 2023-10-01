@@ -1,3 +1,4 @@
+using Example2.Model;
 using UnityEngine;
 
 public class MonsterView : MonoBehaviour

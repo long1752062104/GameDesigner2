@@ -12,6 +12,14 @@ namespace Net.Common
     /// 新的Trasnform实体类, 性能可能要好点
     /// </summary>
     [Serializable]
+    public class TransformEntity : EntityTransform
+    {
+    }
+
+    /// <summary>
+    /// 新的Trasnform实体类, 性能可能要好点
+    /// </summary>
+    [Serializable]
     public class EntityTransform
     {
         private Vector3 position;

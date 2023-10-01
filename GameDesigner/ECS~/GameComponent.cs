@@ -9,6 +9,6 @@ namespace ECS
 {
     public class GameComponent : Component
     {
-        public TransformEntity transform = new TransformEntity();
+        public EntityTransform transform = new EntityTransform();
     }
 }

@@ -17,7 +17,7 @@ namespace Net.AI
         public float speed = 5f;
         public float agentHeight = 1f;
         public float angularSpeed = 0.25f;
-        public TransformEntity transform = new TransformEntity();
+        public EntityTransform transform = new EntityTransform();
         private readonly List<Vector3> pathPoints = new List<Vector3>();
         public FindPathMode findPathMode;
         public dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS;

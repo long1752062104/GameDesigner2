@@ -258,13 +258,6 @@
             网络组件生成工具同步指令
             </summary>
         </member>
-        <member name="T:Net.Component.EntityTransform">
-            <summary>
-            游戏物体转换实体组建
-            作者:彼岸流年  QQ:317392507
-            后期修改:龙兄 QQ:1752062104
-            </summary>
-        </member>
         <member name="T:Net.Component.RoomData">
             <summary>
             房间数据信息
@@ -296,6 +289,11 @@
             </summary>
         </member>
         <member name="T:Net.Common.TransformEntity">
+            <summary>
+            新的Trasnform实体类, 性能可能要好点
+            </summary>
+        </member>
+        <member name="T:Net.Common.EntityTransform">
             <summary>
             新的Trasnform实体类, 性能可能要好点
             </summary>
@@ -558,23 +556,14 @@
             <param name="onlyFields">只序列化的字段名称列表</param>
             <param name="ignoreFields">不序列化的字段名称列表</param>
         </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkType(System.Type[])">
+        <member name="M:Net.Serialize.NetConvertBinary.AddSerializeType(System.Type,System.UInt16,System.String[],System.String[])">
             <summary>
             添加可序列化的参数类型, 网络参数类型 如果不进行添加将不会被序列化,反序列化
             </summary>
-            <param name="types"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkTypeAssembly(System.Type)">
-            <summary>
-            添加网络程序集，此方法将会添加获取传入的类的程序集并全部添加
-            </summary>
-            <param name="value">传入的类</param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertBinary.AddNetworkAssembly(System.Reflection.Assembly[])">
-            <summary>
-            添加网络传输程序集， 注意：添加客户端的程序集必须和服务器的程序集必须保持一致， 否则将会出现问题
-            </summary>
-            <param name="assemblies">程序集</param>
+            <param name="type">序列化的类型</param>
+            <param name="typeHash">序列化的类型哈希码,用于反序列化识别</param>
+            <param name="onlyFields">只序列化的字段名称列表</param>
+            <param name="ignoreFields">不序列化的字段名称列表</param>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.IndexToType(System.UInt16)">
             <summary>
@@ -711,18 +700,12 @@
             </summary>
             <param name="type"></param>
         </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddAssembly(System.Reflection.Assembly)">
+        <member name="M:Net.Serialize.NetConvertFast.AddSerializeType(System.Type,System.UInt16)">
             <summary>
-            添加网络传输的程序集, 程序集内的所有类型都会被添加, 注意: 客户端和服务器都必须统一使用一模一样的程序集, 否则有可能出现问题!
+            添加经过网络传送的类型
             </summary>
-            <param name="assembly"></param>
-        </member>
-        <member name="M:Net.Serialize.NetConvertFast.AddNameSpaceTypes(System.Reflection.Assembly,System.String)">
-            <summary>
-            添加assembly程序集的所有nameSpace命名空间的类型
-            </summary>
-            <param name="assembly"></param>
-            <param name="nameSpace"></param>
+            <param name="type">序列化的类型</param>
+            <param name="typeHash">序列化的类型反序列化的哈希识别码</param>
         </member>
         <member name="T:Net.Serialize.ISerialize">
             <summary>
@@ -731,7 +714,7 @@
         </member>
         <member name="P:Net.Serialize.ISerialize.HashCode">
             <summary>
-            双端一致性的哈希协议码
+            双端一致性的哈希协议码 --解决子项目和父项目融合问题
             </summary>
         </member>
         <member name="M:Net.Serialize.ISerialize.WriteValue(System.Object,Net.System.ISegment)">
@@ -3323,7 +3306,7 @@
         </member>
         <member name="F:Net.System.SegmentVersion.Version2">
             <summary>
-            版本2, 压缩率和Protobuff一样, 在测试阶段
+            版本2, 压缩率和Protobuff一样
             </summary>
         </member>
         <member name="F:Net.System.SegmentVersion.Version3">
@@ -3998,6 +3981,14 @@
             </summary>
             <param name="fullName">必须是泛型.ToString() 而不是泛型.FullName</param>
             <returns></returns>
+        </member>
+        <member name="M:Net.Helper.AssemblyHelper.HotfixLoad(System.String,System.String,System.String)">
+            <summary>
+            热更新加载, 可以在运行时植入dll执行一段代码
+            </summary>
+            <param name="dllPath">dll文件路径</param>
+            <param name="entryTypeName">入口类名称</param>
+            <param name="invokeMethodName">调用方法名称, 必须是静态的</param>
         </member>
         <member name="T:Net.Helper.FilterTextHelper">
             <summary>
@@ -7962,15 +7953,15 @@
             热更层借助此组件进行更新, ilr不支持多继承, 接口继承
             </summary>
         </member>
-        <member name="M:Fast2BuildMethod.DynamicBuild(System.Boolean,System.Type[])">
+        <member name="M:Fast2BuildMethod.DynamicBuild(System.Boolean,System.Int32,System.Type[])">
             <summary>
             动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
             </summary>
-            <param name="IsCompress">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
+            <param name="isCompress">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
             <param name="types"></param>
             <returns></returns>
         </member>
-        <member name="M:Fast2BuildMethod.BuildAll(System.String,System.Type[])">
+        <member name="M:Fast2BuildMethod.BuildAll(System.String,System.Boolean,System.Int32,System.Type[])">
             <summary>
             生成所有完整的绑定类型
             </summary>

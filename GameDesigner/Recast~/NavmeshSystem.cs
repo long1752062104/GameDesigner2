@@ -104,5 +104,10 @@ namespace Net.AI
                 sample = default;
             }
         }
+
+        public void SetSettings(BuildSettings buildSettings)
+        {
+            SetBuildSettings(sample, buildSettings);
+        }
     }
 }

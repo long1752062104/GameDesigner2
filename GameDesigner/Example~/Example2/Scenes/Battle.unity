@@ -2112,6 +2112,7 @@ MonoBehaviour:
   registerObjects:
   - {fileID: 8172448054269350695, guid: 0d947c8429c27c54f8e0579b919a56c6, type: 3}
   onExitDelectAll: 1
+  waitDestroyList: []
   monsters:
   - {fileID: -8880938591081599990, guid: ef023427b690fef4ebc83ad8cce6db54, type: 3}
 --- !u!114 &1812795135
@@ -2203,7 +2204,7 @@ MonoBehaviour:
       cellSize: 0.3
       cellHeight: 0.2
       agentHeight: 2
-      agentRadius: 0.6
+      agentRadius: 0.2
       agentMaxClimb: 0.9
       agentMaxSlope: 45
       regionMinSize: 8

@@ -111,7 +111,7 @@ namespace Net.AI
             System.Init();
             var buildSettings = System.buildSettings;
             buildSettings.agentRadius = 0f; //读取unity的烘焙数据时, 不需要留边缘, 因为unity已经留边缘
-            System.Sample.setBuildSettings(buildSettings);
+            System.SetSettings(buildSettings);
             LoadMeshData(System.Sample, objText);
             Build(System.Sample);
             UpdateNavMeshFace();

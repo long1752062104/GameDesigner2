@@ -1,6 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 namespace Example2
 {
+    using Example2.Model;
     using Net.AI;
     using Net.Share;
     using Net.System;
@@ -24,7 +25,7 @@ namespace Example2
         public override void OnOtherDestroy(NetworkObject identity)
         {
             var p = identity.GetComponent<Player>();
-            if (p != null) 
+            if (p != null)
             {
                 Destroy(p.headBloodBar.gameObject);
                 Destroy(p.gameObject);
@@ -39,7 +40,7 @@ namespace Example2
                 var monsterObj = monsters[opt.index1];
                 monster = Instantiate(monsterObj, opt.position, opt.rotation);
                 monster.Self = new Monster();
-                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight, m_straightPathOptions = Recast.dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS };
+                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight };
                 monster.Self.Agent.SetPositionAndRotation(opt.position, opt.rotation);
                 monsterDics.Add(opt.identity, monster);
             }
@@ -90,7 +91,7 @@ namespace Example2
                             if (monsterDics.TryGetValue(opt.identity, out MonsterView monster))
                                 monster.gameObject.SetActive(false);
                         }
-                        
+
                     }
                     break;
                 case Command.Fire:
