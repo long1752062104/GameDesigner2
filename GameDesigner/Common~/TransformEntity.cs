@@ -143,6 +143,8 @@ namespace Net.Common
         public void LookAt(Vector3 targetPosition, Vector3 worldUp)
         {
             var direction = targetPosition - position;
+            if (direction.sqrMagnitude <= 0.001f)
+                return;
             rotation = Quaternion.LookRotation(direction, worldUp);
         }
     }
