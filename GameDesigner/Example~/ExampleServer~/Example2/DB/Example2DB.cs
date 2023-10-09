@@ -26,7 +26,7 @@ namespace Example2
         public static Example2DB I { get; private set; } = new Example2DB();
         private readonly MyDictionary<Type, HashSetSafe<IDataRow>> DataRowHandler = new MyDictionary<Type, HashSetSafe<IDataRow>>();
         private readonly ConcurrentStack<SQLiteConnection> conns = new ConcurrentStack<SQLiteConnection>();
-        public static string connStr = @"Database='D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db';Data Source='{DS}';Port={PORT};User Id='{IDNAME}';Password='{IDPWD}';charset='utf8mb4';pooling=true;useCompression=true;allowBatch=true;connectionTimeout=60;allowloadlocalinfile=true;";
+        public static string connStr = @"Data Source='D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db';";
         /// <summary>
         /// 从运行到现在的所有Sql执行次数
         /// </summary>
@@ -105,6 +105,12 @@ namespace Example2
             return CheckConn(conn1);
         }
 
+        public void CloseConnect()
+        {
+            while (conns.TryPop(out SQLiteConnection conn))
+                conn.Close();
+        }
+
         public DataTable ExecuteReader(string cmdText)
         {
             var conn = PopConnect();
@@ -142,15 +148,15 @@ namespace Example2
         }
 
         /// <summary>
-        /// 查询1: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// 查询1: select * from Example2 where id=1;
         /// <para></para>
-        /// 查询2: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// 查询2: select * from Example2 where id=1 and `index`=1;
         /// <para></para>
-        /// 查询3: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// 查询3: select * from Example2 where id=1 or `index`=1;
         /// <para></para>
-        /// 查询4: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// 查询4: select * from Example2 where id in(1,2,3,4,5);
         /// <para></para>
-        /// 查询5: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// 查询5: select * from Example2 where id not in(1,2,3,4,5);
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
@@ -160,47 +166,79 @@ namespace Example2
             var array = ExecuteQueryList<T>(cmdText);
             if (array == null)
                 return default;
+            if (array.Length == 0)
+                return default;
             return array[0];
         }
 
         /// <summary>
-        /// 查询1: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// 查询1: select * from Example2 where id=1;
         /// <para></para>
-        /// 查询2: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// 查询2: select * from Example2 where id=1 and `index`=1;
         /// <para></para>
-        /// 查询3: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// 查询3: select * from Example2 where id=1 or `index`=1;
         /// <para></para>
-        /// 查询4: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// 查询4: select * from Example2 where id in(1,2,3,4,5);
         /// <para></para>
-        /// 查询5: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// 查询5: select * from Example2 where id not in(1,2,3,4,5);
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
         public T[] ExecuteQueryList<T>(string cmdText) where T : IDataRow, new()
         {
-            using (var dt = ExecuteReader(cmdText))
+            var conn = PopConnect();
+            try
             {
-                var datas = new T[dt.Rows.Count];
-                for (int i = 0; i < dt.Rows.Count; i++)
+                using (var cmd = new SQLiteCommand())
                 {
-                    datas[i] = new T();
-                    datas[i].Init(dt.Rows[i]);
+                    cmd.CommandText = cmdText;
+                    cmd.Connection = conn;
+                    cmd.CommandTimeout = CommandTimeout;
+                    cmd.Parameters.Clear();
+                    using (var sdr = cmd.ExecuteReader())
+                    {
+                        var datas = new List<T>();
+                        while (sdr.Read())
+                        {
+                            var data = new T();
+                            for (int i = 0; i < sdr.FieldCount; i++)
+                            {
+                                var name = sdr.GetName(i);
+                                var value = sdr.GetValue(i);
+                                if (value == DBNull.Value) //空值不能进行赋值,会报错
+                                    continue;
+                                data[name] = value;
+                            }
+                            data.RowState = DataRowState.Unchanged;
+                            datas.Add(data);
+                        }
+                        QueryCount++;
+                        return datas.ToArray();
+                    }
                 }
-                return datas;
             }
+            catch (Exception ex)
+            {
+                NDebug.LogError(cmdText + " 错误: " + ex);
+            }
+            finally
+            {
+                conns.Push(conn);
+            }
+            return default;
         }
 
         /// <summary>
-        /// 查询1: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// 查询1: select * from Example2 where id=1;
         /// <para></para>
-        /// 查询2: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// 查询2: select * from Example2 where id=1 and `index`=1;
         /// <para></para>
-        /// 查询3: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// 查询3: select * from Example2 where id=1 or `index`=1;
         /// <para></para>
-        /// 查询4: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// 查询4: select * from Example2 where id in(1,2,3,4,5);
         /// <para></para>
-        /// 查询5: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// 查询5: select * from Example2 where id not in(1,2,3,4,5);
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
@@ -210,35 +248,30 @@ namespace Example2
             var array = await ExecuteQueryListAsync<T>(cmdText);
             if (array == null)
                 return default;
+            if (array.Length == 0)
+                return default;
             return array[0];
         }
 
         /// <summary>
-        /// 查询1: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1;
+        /// 查询1: select * from Example2 where id=1;
         /// <para></para>
-        /// 查询2: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 and `index`=1;
+        /// 查询2: select * from Example2 where id=1 and `index`=1;
         /// <para></para>
-        /// 查询3: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id=1 or `index`=1;
+        /// 查询3: select * from Example2 where id=1 or `index`=1;
         /// <para></para>
-        /// 查询4: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id in(1,2,3,4,5);
+        /// 查询4: select * from Example2 where id in(1,2,3,4,5);
         /// <para></para>
-        /// 查询5: select * from D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db where id not in(1,2,3,4,5);
+        /// 查询5: select * from Example2 where id not in(1,2,3,4,5);
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
         public async UniTask<T[]> ExecuteQueryListAsync<T>(string cmdText) where T : IDataRow, new()
         {
-            using (var dt = await ExecuteReaderAsync(cmdText))
-            {
-                var datas = new T[dt.Rows.Count];
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    datas[i] = new T();
-                    datas[i].Init(dt.Rows[i]);
-                }
-                return datas;
-            }
+            await UniTask.SwitchToThreadPool();
+            var datas = ExecuteQueryList<T>(cmdText);
+            return datas;
         }
 
         public async UniTaskVoid ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters, Action<int, Stopwatch> onComplete)
@@ -289,6 +322,38 @@ namespace Example2
                 NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
             }
             return -1;
+        }
+
+        public T ExecuteScalar<T>(string cmdText)
+        {
+            var conn = PopConnect();
+            var pars = new IDbDataParameter[0];
+            var count = ExecuteScalar<T>(conn, cmdText, pars);
+            conns.Push(conn);
+            return count;
+        }
+
+        private T ExecuteScalar<T>(SQLiteConnection conn, string cmdText, IDbDataParameter[] parameters)
+        {
+            try
+            {
+                using (var cmd = new SQLiteCommand())
+                {
+                    cmd.CommandText = cmdText;
+                    cmd.Connection = conn;
+                    cmd.CommandTimeout = CommandTimeout;//避免死锁一直无畏的等待, 在30秒内必须完成
+                    cmd.Parameters.AddRange(parameters);
+                    var count = (T)cmd.ExecuteScalar();
+                    QueryCount++;
+                    return count;
+                }
+            }
+            catch (Exception ex)
+            {
+                cmdText = GetCommandText(cmdText, parameters);
+                NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
+            }
+            return default;
         }
 
         private static string GetCommandText(string cmdText, IDbDataParameter[] parameters) 
@@ -367,33 +432,33 @@ namespace Example2
             return true;
         }
 
-        private void ExecuteNonQuery(string tableName, StringBuilder stringBuilder, StringBuilder deleteSb)
+        private void ExecuteNonQuery(string tableName, StringBuilder updateCmdText, StringBuilder deleteCmdText)
         {
-            if (stringBuilder.Length > 0)
+            if (updateCmdText.Length > 0)
             {
- // -- 4
+ // -- 3
                 var stopwatch = Stopwatch.StartNew();
-                var rowCount = ExecuteNonQuery(stringBuilder.ToString());
+                var rowCount = ExecuteNonQuery(updateCmdText.ToString());
                 stopwatch.Stop();
                 if (rowCount > 2000) NDebug.Log($"SQL批处理完成:{rowCount} 用时:{stopwatch.Elapsed}");
- // -- 5
+ // -- 4
             }
-            if (deleteSb.Length > 0)
+            if (deleteCmdText.Length > 0)
             {
                 var stopwatch = Stopwatch.StartNew();
-                var rowCount = ExecuteNonQuery(deleteSb.ToString());
+                var rowCount = ExecuteNonQuery(deleteCmdText.ToString());
                 stopwatch.Stop();
                 if (rowCount > 2000) NDebug.Log($"SQL批处理完成:{rowCount} 用时:{stopwatch.Elapsed}");
             }
         }
 
-        public string CheckStringValue(string value, int length)
+        public string CheckStringValue(string value, uint length)
         {
             CheckStringValue(ref value, length);
             return value;
         }
 
-        public void CheckStringValue(ref string value, int length)
+        public void CheckStringValue(ref string value, uint length)
         {
             if (value == null)
                 value = string.Empty;
@@ -401,7 +466,29 @@ namespace Example2
             value = value.Replace("'", "\\\'"); //出现'时必须转转义成\'
             value = value.Replace("|", "\\|"); //批量分隔符|
             if (value.Length >= length - 3) //必须保留三个字符做最后的判断, 如最后一个字符出现了\或'时出错问题
-                value = value.Substring(0, length);
+                value = value.Substring(0, (int)length);
+        }
+
+        /// <summary>
+        /// 当项目在其他电脑上使用时可快速还原数据库信息和所有数据表
+        /// </summary>
+        public void CreateTables()
+        {
+            connStr = @"";
+            InitConnection();
+            int count = (int)ExecuteScalar<long>($"SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'Example2'");
+            if (count <= 0) 
+            {
+                count = ExecuteNonQuery(@"");
+                NDebug.Log($"创建数据库:Example2{(count >= 0 ? "成功" : "失败")}!");
+                if (count <= 0)
+                    return;
+                CloseConnect();
+                connStr = @"Data Source='D:\Demo\Assets\Samples\GameDesigner\Example\ExampleServer~\bin\Debug\Data\example2.db';";
+                InitConnection();
+ // -- 6
+            }
+            else NDebug.Log($"数据库:Example2已存在!");
         }
     }
 }

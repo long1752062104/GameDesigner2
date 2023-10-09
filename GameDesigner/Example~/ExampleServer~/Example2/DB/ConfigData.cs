@@ -47,22 +47,22 @@ namespace Example2
         public Action<Example2HashProto, object> OnValueChanged;
 
         private Int64 id;
-        /// <summary></summary>
+        /// <summary>id</summary>
         public Int64 Id { get { return id; } set { this.id = value; } }
 
-     // -- 1
+     //1
         private readonly StringObs name = new StringObs("ConfigData_name", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>name --获得属性观察对象</summary>
         internal StringObs NameObserver => name;
 
-        /// <summary></summary>
+        /// <summary>name</summary>
         public String Name { get => GetNameValue(); set => CheckNameValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>name --同步到数据库</summary>
         internal String SyncName { get => GetNameValue(); set => CheckNameValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>name --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDName { get => GetNameValue(); set => CheckNameValue(value, 2); }
 
         private String GetNameValue() => this.name.Value;
@@ -81,7 +81,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.CONFIG_NAME, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>name --同步当前值到服务器Player对象上，需要处理</summary>
         public void NameCall(bool syncId = false)
         {
             
@@ -101,19 +101,19 @@ namespace Example2
         {
             Name = value;
         }
-     // -- 1
+     //1
         private readonly Int64Obs number = new Int64Obs("ConfigData_number", true, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>number --获得属性观察对象</summary>
         internal Int64Obs NumberObserver => number;
 
-        /// <summary></summary>
+        /// <summary>number</summary>
         public Int64 Number { get => GetNumberValue(); set => CheckNumberValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>number --同步到数据库</summary>
         internal Int64 SyncNumber { get => GetNumberValue(); set => CheckNumberValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>number --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDNumber { get => GetNumberValue(); set => CheckNumberValue(value, 2); }
 
         private Int64 GetNumberValue() => this.number.Value;
@@ -132,7 +132,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.CONFIG_NUMBER, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>number --同步当前值到服务器Player对象上，需要处理</summary>
         public void NumberCall(bool syncId = false)
         {
             
@@ -152,7 +152,7 @@ namespace Example2
         {
             Number = value;
         }
-     // -- 2
+     //2
 
         public ConfigData() { }
 
@@ -185,17 +185,24 @@ namespace Example2
             RowState = DataRowState.Added;
             Example2DB.I.Update(this);
         }
-        public string GetCellNameAndTextLength(int index, out int length)
+        public void NewTableRowSync()
+        {
+            var sb = new StringBuilder();
+            BulkLoaderBuilder(sb, false);
+            Example2DB.I.ExecuteNonQuery(sb.ToString());
+            RowState = DataRowState.Unchanged;
+        }
+        public string GetCellNameAndTextLength(int index, out uint length)
         {
             switch (index)
             {
-     // -- 3
-                case 0: length = 65536; return "id";
-     // -- 3
-                case 1: length = 65536; return "name";
-     // -- 3
-                case 2: length = 65536; return "number";
-     // -- 4
+     //3
+                case 0: length = 65535; return "id";
+     //3
+                case 1: length = 65535; return "name";
+     //3
+                case 2: length = 65535; return "number";
+     //4
             }
             throw new Exception("错误");
         }
@@ -207,13 +214,13 @@ namespace Example2
             {
                 switch (index)
                 {
-     // -- 5
+     //5
                     case 0: return this.id;
-     // -- 5
+     //5
                     case 1: return this.name.Value;
-     // -- 5
+     //5
                     case 2: return this.number.Value;
-     // -- 6
+     //6
                 }
                 throw new Exception("错误");
             }
@@ -221,30 +228,61 @@ namespace Example2
             {
                 switch (index)
                 {
-     // -- 7
+     //7
                     case 0:
                         this.id = (Int64)value;
                         break;
-     // -- 7
+     //7
                     case 1:
                         CheckNameValue((String)value, -1);
                         break;
-     // -- 7
+     //7
                     case 2:
                         CheckNumberValue((Int64)value, -1);
                         break;
-     // -- 8
+     //8
                 }
             }
         }
 
         public object this[string name]
         {
-            get { return null; }
-            set { }
+            get
+            {
+                switch (name)
+                {
+     //9
+                    case "id": return this.id;
+     //9
+                    case "name": return this.name.Value;
+     //9
+                    case "number": return this.number.Value;
+     //10
+                }
+                throw new Exception("错误");
+            }
+            set
+            {
+                switch (name)
+                {
+     //11
+                    case "id":
+                        this.id = (Int64)value;
+                        break;
+     //11
+                    case "name":
+                        CheckNameValue((String)value, -1);
+                        break;
+     //11
+                    case "number":
+                        CheckNumberValue((Int64)value, -1);
+                        break;
+     //12
+                }
+            }
         }
 
-#if SERVER
+    #if SERVER
         public void Delete(bool immediately = false)
         {
             if (immediately)
@@ -305,34 +343,30 @@ namespace Example2
         public void Update()
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-     // -- 9
             RowState = DataRowState.Modified;
             Example2DB.I.Update(this);
-     // -- 10
         }
     #endif
 
         public void Init(DataRow row)
         {
             RowState = DataRowState.Unchanged;
-     // -- 11
+     //13
             if (row[0] is Int64 id)
                 this.id = id;
-     // -- 11
+     //13
             if (row[1] is String name)
                 CheckNameValue(name, -1);
-     // -- 11
+     //13
             if (row[2] is Int64 number)
                 CheckNumberValue(number, -1);
-     // -- 12
+     //14
         }
 
         public void AddedSql(StringBuilder sb)
         {
     #if SERVER
-    
             BulkLoaderBuilder(sb);
-    
             RowState = DataRowState.Unchanged;
     #endif
         }
@@ -359,30 +393,36 @@ namespace Example2
         }
 
     #if SERVER
-        public void BulkLoaderBuilder(StringBuilder sb)
+        public void BulkLoaderBuilder(StringBuilder sb, bool isBulk = false)
         {
- // -- 14
-            string keyText = "";
-            string valueText = "";
+ //15
+            if (!isBulk)
+                sb.Append("REPLACE INTO config VALUES (");
             for (int i = 0; i < 3; i++)
             {
                 var name = GetCellNameAndTextLength(i, out var length);
                 var value = this[i];
                 if (value == null) //空的值会导致sql语句错误
+                {
+                    if (isBulk) sb.Append(@"\N|");
+                    else sb.Append($"NULL,");
                     continue;
-                keyText += $"`{name}`,";
+                }
                 if (value is string text)
                 {
                     Example2DB.I.CheckStringValue(ref text, length);
-                    valueText += $"'{text}',";
+                    if (isBulk) sb.Append(text + "|");
+                    else sb.Append($"'{text}',");
                 }
                 else if (value is DateTime dateTime)
                 {
-                    valueText += $"'{dateTime.ToString("G")}',";
+                    if (isBulk) sb.Append(dateTime.ToString("yyyy-MM-dd HH:mm:ss") + "|");
+                    else sb.Append($"'{dateTime.ToString("yyyy-MM-dd HH:mm:ss")}',");
                 }
                 else if (value is bool boolVal)
                 {
-                    valueText += $"'{boolVal}',";
+                    if (isBulk) sb.Append(boolVal ? "1|" : "0|");
+                    else sb.Append($"{(boolVal ? "1" : "0")},");
                 }
                 else if (value is byte[] buffer)
                 {
@@ -390,23 +430,26 @@ namespace Example2
                     if (buffer.Length >= length)
                     {
                         NDebug.LogError($"config表{name}列长度溢出!");
+                        if (isBulk) sb.Append(@"\N|");
+                        else sb.Append($"NULL,");
                         continue;
                     }
-                    valueText += $"'{base64Str}',";
+                    if (isBulk) sb.Append(base64Str + "|");
+                    else sb.Append($"'{base64Str}',");
                 }
                 else 
                 {
-                    valueText += $"{value},";
+                    if (isBulk) sb.Append(value + "|");
+                    else sb.Append($"{value},");
                 }
             }
-            keyText = keyText.TrimEnd(',');
-            valueText = valueText.TrimEnd(',');
-            if (!string.IsNullOrEmpty(keyText) & !string.IsNullOrEmpty(valueText))
-            {
-                sb.Append($"REPLACE INTO config ({keyText}) VALUES ({valueText});");
+            if (isBulk)
                 sb.AppendLine();
+            else
+            {
+                sb[sb.Length - 1] = ' ';
+                sb.Append(");");
             }
- // -- 15
         }
     #endif
 
@@ -437,6 +480,11 @@ namespace Example2
                 RowState = DataRowState.Modified;
             Example2DB.I.Update(this);
 #endif
+        }
+
+        public override string ToString()
+        {
+            return $"Id:{Id} Name:{Name} Number:{Number} ";
         }
     }
 }

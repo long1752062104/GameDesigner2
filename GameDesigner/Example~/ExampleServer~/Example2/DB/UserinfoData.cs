@@ -47,22 +47,22 @@ namespace Example2
         public Action<Example2HashProto, object> OnValueChanged;
 
         private Int64 id;
-        /// <summary></summary>
+        /// <summary>id</summary>
         public Int64 Id { get { return id; } set { this.id = value; } }
 
-     // -- 1
+     //1
         private readonly StringObs account = new StringObs("UserinfoData_account", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>account --获得属性观察对象</summary>
         internal StringObs AccountObserver => account;
 
-        /// <summary></summary>
+        /// <summary>account</summary>
         public String Account { get => GetAccountValue(); set => CheckAccountValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>account --同步到数据库</summary>
         internal String SyncAccount { get => GetAccountValue(); set => CheckAccountValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>account --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDAccount { get => GetAccountValue(); set => CheckAccountValue(value, 2); }
 
         private String GetAccountValue() => this.account.Value;
@@ -81,7 +81,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_ACCOUNT, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>account --同步当前值到服务器Player对象上，需要处理</summary>
         public void AccountCall(bool syncId = false)
         {
             
@@ -101,19 +101,19 @@ namespace Example2
         {
             Account = value;
         }
-     // -- 1
+     //1
         private readonly StringObs password = new StringObs("UserinfoData_password", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>password --获得属性观察对象</summary>
         internal StringObs PasswordObserver => password;
 
-        /// <summary></summary>
+        /// <summary>password</summary>
         public String Password { get => GetPasswordValue(); set => CheckPasswordValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>password --同步到数据库</summary>
         internal String SyncPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>password --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 2); }
 
         private String GetPasswordValue() => this.password.Value;
@@ -132,7 +132,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_PASSWORD, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>password --同步当前值到服务器Player对象上，需要处理</summary>
         public void PasswordCall(bool syncId = false)
         {
             
@@ -152,19 +152,19 @@ namespace Example2
         {
             Password = value;
         }
-     // -- 1
+     //1
         private readonly DoubleObs moveSpeed = new DoubleObs("UserinfoData_moveSpeed", true, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>moveSpeed --获得属性观察对象</summary>
         internal DoubleObs MoveSpeedObserver => moveSpeed;
 
-        /// <summary></summary>
+        /// <summary>moveSpeed</summary>
         public Double MoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>moveSpeed --同步到数据库</summary>
         internal Double SyncMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>moveSpeed --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Double SyncIDMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 2); }
 
         private Double GetMoveSpeedValue() => this.moveSpeed.Value;
@@ -183,7 +183,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_MOVESPEED, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>moveSpeed --同步当前值到服务器Player对象上，需要处理</summary>
         public void MoveSpeedCall(bool syncId = false)
         {
             
@@ -203,19 +203,19 @@ namespace Example2
         {
             MoveSpeed = value;
         }
-     // -- 1
+     //1
         private readonly StringObs position = new StringObs("UserinfoData_position", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>position --获得属性观察对象</summary>
         internal StringObs PositionObserver => position;
 
-        /// <summary></summary>
+        /// <summary>position</summary>
         public String Position { get => GetPositionValue(); set => CheckPositionValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>position --同步到数据库</summary>
         internal String SyncPosition { get => GetPositionValue(); set => CheckPositionValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>position --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDPosition { get => GetPositionValue(); set => CheckPositionValue(value, 2); }
 
         private String GetPositionValue() => this.position.Value;
@@ -234,7 +234,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_POSITION, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>position --同步当前值到服务器Player对象上，需要处理</summary>
         public void PositionCall(bool syncId = false)
         {
             
@@ -254,19 +254,19 @@ namespace Example2
         {
             Position = value;
         }
-     // -- 1
+     //1
         private readonly StringObs rotation = new StringObs("UserinfoData_rotation", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>rotation --获得属性观察对象</summary>
         internal StringObs RotationObserver => rotation;
 
-        /// <summary></summary>
+        /// <summary>rotation</summary>
         public String Rotation { get => GetRotationValue(); set => CheckRotationValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>rotation --同步到数据库</summary>
         internal String SyncRotation { get => GetRotationValue(); set => CheckRotationValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>rotation --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDRotation { get => GetRotationValue(); set => CheckRotationValue(value, 2); }
 
         private String GetRotationValue() => this.rotation.Value;
@@ -285,7 +285,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_ROTATION, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>rotation --同步当前值到服务器Player对象上，需要处理</summary>
         public void RotationCall(bool syncId = false)
         {
             
@@ -305,19 +305,19 @@ namespace Example2
         {
             Rotation = value;
         }
-     // -- 1
+     //1
         private readonly Int64Obs health = new Int64Obs("UserinfoData_health", true, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>health --获得属性观察对象</summary>
         internal Int64Obs HealthObserver => health;
 
-        /// <summary></summary>
+        /// <summary>health</summary>
         public Int64 Health { get => GetHealthValue(); set => CheckHealthValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>health --同步到数据库</summary>
         internal Int64 SyncHealth { get => GetHealthValue(); set => CheckHealthValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>health --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDHealth { get => GetHealthValue(); set => CheckHealthValue(value, 2); }
 
         private Int64 GetHealthValue() => this.health.Value;
@@ -336,7 +336,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTH, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>health --同步当前值到服务器Player对象上，需要处理</summary>
         public void HealthCall(bool syncId = false)
         {
             
@@ -356,19 +356,19 @@ namespace Example2
         {
             Health = value;
         }
-     // -- 1
+     //1
         private readonly Int64Obs healthMax = new Int64Obs("UserinfoData_healthMax", true, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>healthMax --获得属性观察对象</summary>
         internal Int64Obs HealthMaxObserver => healthMax;
 
-        /// <summary></summary>
+        /// <summary>healthMax</summary>
         public Int64 HealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>healthMax --同步到数据库</summary>
         internal Int64 SyncHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>healthMax --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 2); }
 
         private Int64 GetHealthMaxValue() => this.healthMax.Value;
@@ -387,7 +387,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTHMAX, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>healthMax --同步当前值到服务器Player对象上，需要处理</summary>
         public void HealthMaxCall(bool syncId = false)
         {
             
@@ -407,19 +407,19 @@ namespace Example2
         {
             HealthMax = value;
         }
-     // -- 1
+     //1
         private readonly BytesObs buffer = new BytesObs("UserinfoData_buffer", false, null);
 
-        /// <summary> --获得属性观察对象</summary>
+        /// <summary>buffer --获得属性观察对象</summary>
         internal BytesObs BufferBytesObserver => buffer;
 
-        /// <summary></summary>
+        /// <summary>buffer</summary>
         internal System.Byte[] BufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 0); }
 
-        /// <summary> --同步到数据库</summary>
+        /// <summary>buffer --同步到数据库</summary>
         internal System.Byte[] SyncBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 1); }
 
-        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary>buffer --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal System.Byte[] SyncIDBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 2); }
 
         private System.Byte[] GetBufferBytesValue() => this.buffer.Value;
@@ -437,7 +437,7 @@ namespace Example2
             OnValueChanged?.Invoke(Example2HashProto.USERINFO_BUFFER, value);
         }
 
-        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary>buffer --同步当前值到服务器Player对象上，需要处理</summary>
         public void BufferBytesCall(bool syncId = false)
         {
             object bytes = buffer.Value;
@@ -457,7 +457,7 @@ namespace Example2
         {
             BufferBytes = value;
         }
-     // -- 2
+     //2
 
         public UserinfoData() { }
 
@@ -490,29 +490,36 @@ namespace Example2
             RowState = DataRowState.Added;
             Example2DB.I.Update(this);
         }
-        public string GetCellNameAndTextLength(int index, out int length)
+        public void NewTableRowSync()
+        {
+            var sb = new StringBuilder();
+            BulkLoaderBuilder(sb, false);
+            Example2DB.I.ExecuteNonQuery(sb.ToString());
+            RowState = DataRowState.Unchanged;
+        }
+        public string GetCellNameAndTextLength(int index, out uint length)
         {
             switch (index)
             {
-     // -- 3
-                case 0: length = 65536; return "id";
-     // -- 3
-                case 1: length = 65536; return "account";
-     // -- 3
-                case 2: length = 65536; return "password";
-     // -- 3
-                case 3: length = 65536; return "moveSpeed";
-     // -- 3
-                case 4: length = 65536; return "position";
-     // -- 3
-                case 5: length = 65536; return "rotation";
-     // -- 3
-                case 6: length = 65536; return "health";
-     // -- 3
-                case 7: length = 65536; return "healthMax";
-     // -- 3
-                case 8: length = 65536; return "buffer";
-     // -- 4
+     //3
+                case 0: length = 65535; return "id";
+     //3
+                case 1: length = 65535; return "account";
+     //3
+                case 2: length = 65535; return "password";
+     //3
+                case 3: length = 65535; return "moveSpeed";
+     //3
+                case 4: length = 65535; return "position";
+     //3
+                case 5: length = 65535; return "rotation";
+     //3
+                case 6: length = 65535; return "health";
+     //3
+                case 7: length = 65535; return "healthMax";
+     //3
+                case 8: length = 1024; return "buffer";
+     //4
             }
             throw new Exception("错误");
         }
@@ -524,25 +531,25 @@ namespace Example2
             {
                 switch (index)
                 {
-     // -- 5
+     //5
                     case 0: return this.id;
-     // -- 5
+     //5
                     case 1: return this.account.Value;
-     // -- 5
+     //5
                     case 2: return this.password.Value;
-     // -- 5
+     //5
                     case 3: return this.moveSpeed.Value;
-     // -- 5
+     //5
                     case 4: return this.position.Value;
-     // -- 5
+     //5
                     case 5: return this.rotation.Value;
-     // -- 5
+     //5
                     case 6: return this.health.Value;
-     // -- 5
+     //5
                     case 7: return this.healthMax.Value;
-     // -- 5
+     //5
                     case 8: return this.buffer.Value;
-     // -- 6
+     //6
                 }
                 throw new Exception("错误");
             }
@@ -550,51 +557,118 @@ namespace Example2
             {
                 switch (index)
                 {
-     // -- 7
+     //7
                     case 0:
                         this.id = (Int64)value;
                         break;
-     // -- 7
+     //7
                     case 1:
                         CheckAccountValue((String)value, -1);
                         break;
-     // -- 7
+     //7
                     case 2:
                         CheckPasswordValue((String)value, -1);
                         break;
-     // -- 7
+     //7
                     case 3:
                         CheckMoveSpeedValue((Double)value, -1);
                         break;
-     // -- 7
+     //7
                     case 4:
                         CheckPositionValue((String)value, -1);
                         break;
-     // -- 7
+     //7
                     case 5:
                         CheckRotationValue((String)value, -1);
                         break;
-     // -- 7
+     //7
                     case 6:
                         CheckHealthValue((Int64)value, -1);
                         break;
-     // -- 7
+     //7
                     case 7:
                         CheckHealthMaxValue((Int64)value, -1);
                         break;
-     // -- 7
+     //7
                     case 8:
                         CheckBufferBytesValue((System.Byte[])value, -1);
                         break;
-     // -- 8
+     //8
                 }
             }
         }
 
-        public object this[string name] 
+        public object this[string name]
         {
-            get { return null; }
-            set { }
+            get
+            {
+                switch (name)
+                {
+     //9
+                    case "id": return this.id;
+     //9
+                    case "account": return this.account.Value;
+     //9
+                    case "password": return this.password.Value;
+     //9
+                    case "moveSpeed": return this.moveSpeed.Value;
+     //9
+                    case "position": return this.position.Value;
+     //9
+                    case "rotation": return this.rotation.Value;
+     //9
+                    case "health": return this.health.Value;
+     //9
+                    case "healthMax": return this.healthMax.Value;
+     //9
+                    case "buffer": return this.buffer.Value;
+     //10
+                }
+                throw new Exception("错误");
+            }
+            set
+            {
+                switch (name)
+                {
+     //11
+                    case "id":
+                        this.id = (Int64)value;
+                        break;
+     //11
+                    case "account":
+                        CheckAccountValue((String)value, -1);
+                        break;
+     //11
+                    case "password":
+                        CheckPasswordValue((String)value, -1);
+                        break;
+     //11
+                    case "moveSpeed":
+                        CheckMoveSpeedValue((Double)value, -1);
+                        break;
+     //11
+                    case "position":
+                        CheckPositionValue((String)value, -1);
+                        break;
+     //11
+                    case "rotation":
+                        CheckRotationValue((String)value, -1);
+                        break;
+     //11
+                    case "health":
+                        CheckHealthValue((Int64)value, -1);
+                        break;
+     //11
+                    case "healthMax":
+                        CheckHealthMaxValue((Int64)value, -1);
+                        break;
+     //11
+                    case "buffer":
+                        CheckBufferBytesValue((System.Byte[])value, -1);
+                        break;
+     //12
+                }
+            }
         }
 
     #if SERVER
@@ -658,52 +732,48 @@ namespace Example2
         public void Update()
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-     // -- 9
             RowState = DataRowState.Modified;
             Example2DB.I.Update(this);
-     // -- 10
         }
     #endif
 
         public void Init(DataRow row)
         {
             RowState = DataRowState.Unchanged;
-     // -- 11
+     //13
             if (row[0] is Int64 id)
                 this.id = id;
-     // -- 11
+     //13
             if (row[1] is String account)
                 CheckAccountValue(account, -1);
-     // -- 11
+     //13
             if (row[2] is String password)
                 CheckPasswordValue(password, -1);
-     // -- 11
+     //13
             if (row[3] is Double moveSpeed)
                 CheckMoveSpeedValue(moveSpeed, -1);
-     // -- 11
+     //13
             if (row[4] is String position)
                 CheckPositionValue(position, -1);
-     // -- 11
+     //13
             if (row[5] is String rotation)
                 CheckRotationValue(rotation, -1);
-     // -- 11
+     //13
             if (row[6] is Int64 health)
                 CheckHealthValue(health, -1);
-     // -- 11
+     //13
             if (row[7] is Int64 healthMax)
                 CheckHealthMaxValue(healthMax, -1);
-     // -- 11
+     //13
             if (row[8] is System.Byte[] buffer)
                 CheckBufferBytesValue(Convert.FromBase64String(Encoding.ASCII.GetString(buffer)), -1);
-     // -- 12
+     //14
         }
 
         public void AddedSql(StringBuilder sb)
         {
     #if SERVER
-    
             BulkLoaderBuilder(sb);
-    
             RowState = DataRowState.Unchanged;
     #endif
         }
@@ -730,30 +800,36 @@ namespace Example2
         }
 
     #if SERVER
-        public void BulkLoaderBuilder(StringBuilder sb)
+        public void BulkLoaderBuilder(StringBuilder sb, bool isBulk = false)
         {
- // -- 14
-            string keyText = "";
-            string valueText = "";
+ //15
+            if (!isBulk)
+                sb.Append("REPLACE INTO userinfo VALUES (");
             for (int i = 0; i < 9; i++)
             {
                 var name = GetCellNameAndTextLength(i, out var length);
                 var value = this[i];
                 if (value == null) //空的值会导致sql语句错误
+                {
+                    if (isBulk) sb.Append(@"\N|");
+                    else sb.Append($"NULL,");
                     continue;
-                keyText += $"`{name}`,";
+                }
                 if (value is string text)
                 {
                     Example2DB.I.CheckStringValue(ref text, length);
-                    valueText += $"'{text}',";
+                    if (isBulk) sb.Append(text + "|");
+                    else sb.Append($"'{text}',");
                 }
                 else if (value is DateTime dateTime)
                 {
-                    valueText += $"'{dateTime.ToString("G")}',";
+                    if (isBulk) sb.Append(dateTime.ToString("yyyy-MM-dd HH:mm:ss") + "|");
+                    else sb.Append($"'{dateTime.ToString("yyyy-MM-dd HH:mm:ss")}',");
                 }
                 else if (value is bool boolVal)
                 {
-                    valueText += $"'{boolVal}',";
+                    if (isBulk) sb.Append(boolVal ? "1|" : "0|");
+                    else sb.Append($"{(boolVal ? "1" : "0")},");
                 }
                 else if (value is byte[] buffer)
                 {
@@ -761,23 +837,26 @@ namespace Example2
                     if (buffer.Length >= length)
                     {
                         NDebug.LogError($"userinfo表{name}列长度溢出!");
+                        if (isBulk) sb.Append(@"\N|");
+                        else sb.Append($"NULL,");
                         continue;
                     }
-                    valueText += $"'{base64Str}',";
+                    if (isBulk) sb.Append(base64Str + "|");
+                    else sb.Append($"'{base64Str}',");
                 }
                 else 
                 {
-                    valueText += $"{value},";
+                    if (isBulk) sb.Append(value + "|");
+                    else sb.Append($"{value},");
                 }
             }
-            keyText = keyText.TrimEnd(',');
-            valueText = valueText.TrimEnd(',');
-            if (!string.IsNullOrEmpty(keyText) & !string.IsNullOrEmpty(valueText))
-            {
-                sb.Append($"REPLACE INTO userinfo ({keyText}) VALUES ({valueText});");
+            if (isBulk)
                 sb.AppendLine();
+            else
+            {
+                sb[sb.Length - 1] = ' ';
+                sb.Append(");");
             }
- // -- 15
         }
     #endif
 
@@ -808,6 +887,11 @@ namespace Example2
                 RowState = DataRowState.Modified;
             Example2DB.I.Update(this);
 #endif
+        }
+
+        public override string ToString()
+        {
+            return $"Id:{Id} Account:{Account} Password:{Password} MoveSpeed:{MoveSpeed} Position:{Position} Rotation:{Rotation} Health:{Health} HealthMax:{HealthMax} Buffer:{BufferBytes} ";
         }
     }
 }
