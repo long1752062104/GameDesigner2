@@ -63,7 +63,7 @@ namespace Net.System
         /// Mark bit at specified position
         /// </summary>
         /// <param name="bitPosition"></param>
-        [SecuritySafeCritical]
+        
         internal unsafe void MarkBit(int bitPosition)
         {
             if (useStackAlloc)
@@ -89,7 +89,7 @@ namespace Net.System
         /// </summary>
         /// <param name="bitPosition"></param>
         /// <returns></returns>
-        [SecuritySafeCritical]
+        
         internal unsafe bool IsMarked(int bitPosition)
         {
             if (useStackAlloc)
@@ -1016,7 +1016,7 @@ namespace Net.System
             }
         }
 
-        [SecuritySafeCritical]
+        
         private unsafe void IntersectWithEnumerable(IEnumerable<T> other)
         {
             Debug.Assert(m_buckets != null, "m_buckets shouldn't be null; callers should check first");
@@ -1080,7 +1080,7 @@ namespace Net.System
             }
         }
 
-        [SecuritySafeCritical]
+        
         private unsafe void SymmetricExceptWithEnumerable(IEnumerable<T> other)
         {
             int originalLastIndex = m_lastIndex;
@@ -1171,7 +1171,7 @@ namespace Net.System
         }
 
 
-        [SecuritySafeCritical]
+        
         private unsafe ElementCount CheckUniqueAndUnfoundElements(IEnumerable<T> other, bool returnIfUnfound)
         {
             ElementCount result;

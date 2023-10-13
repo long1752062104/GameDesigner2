@@ -55,7 +55,7 @@ namespace Net
         }
 
         // Token: 0x060048E7 RID: 18663 RVA: 0x0007D758 File Offset: 0x0007B958
-        [ExcludeFromDocs]
+        
         public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed)
         {
             float deltaTime = Time.deltaTime;
@@ -63,7 +63,7 @@ namespace Net
         }
 
         // Token: 0x060048E8 RID: 18664 RVA: 0x0007D780 File Offset: 0x0007B980
-        [ExcludeFromDocs]
+        
         public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime)
         {
             float deltaTime = Time.deltaTime;

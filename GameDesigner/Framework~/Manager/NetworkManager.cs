@@ -267,11 +267,11 @@ namespace Framework
             else clients[clientIndex].Client.RemoveRpc(target);
         }
 
-        public void Close(bool await, int millisecondsTimeout)
+        public void Close(bool isWait, int millisecondsTimeout)
         {
             foreach (var item in clients)
             {
-                item.Client.Close(await, millisecondsTimeout);
+                item.Client.Close(isWait, millisecondsTimeout);
             }
         }
 

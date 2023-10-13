@@ -1,15 +1,15 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using System;
+using System.Collections.Generic;
+using Net.Client;
+using Net.Share;
+using Net.System;
+using Net.Component;
+using UnityEngine;
+using Cysharp.Threading.Tasks;
+
 namespace Net.UnityComponent
 {
-    using global::System;
-    using global::System.Collections.Generic;
-    using Net.Client;
-    using Net.Component;
-    using Net.Share;
-    using Net.System;
-    using UnityEngine;
-    using Cysharp.Threading.Tasks;
-
     [Serializable]
     public class WaitDestroy
     {
@@ -36,6 +36,7 @@ namespace Net.UnityComponent
         public List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
         protected ClientBase client; //当多场景时, 退出战斗场景, 回主场景时, 先进入主场景再卸载战斗场景, 而ClientBase.Instance被赋值到其他多连接客户端对象上就会出现OnDestry时没有正确移除OnOperationSync事件
         protected Queue<Action> waitNetworkIdentityQueue = new Queue<Action>();
+        protected MyDictionary<byte, HashSet<Action<Operation>>> operationHandlerDict = new MyDictionary<byte, HashSet<Action<Operation>>>();
 
         public virtual void Start()
         {
@@ -85,9 +86,9 @@ namespace Net.UnityComponent
                 waitNetworkIdentityQueue.Enqueue(onInitComplete);
         }
 
-        public virtual void Update() 
+        public virtual void Update()
         {
-            if (NetworkTime.CanSent) 
+            if (NetworkTime.CanSent)
             {
                 for (int i = 0; i < identitys.count; i++)
                 {
@@ -108,7 +109,7 @@ namespace Net.UnityComponent
             for (int i = 0; i < waitDestroyList.Count; i++)
             {
                 waitDestroy = waitDestroyList[i];
-                if (Time.time >= waitDestroy.time) 
+                if (Time.time >= waitDestroy.time)
                 {
                     RemoveIdentity(waitDestroy.identity);
                     waitDestroyList.RemoveAt(i);
@@ -127,7 +128,7 @@ namespace Net.UnityComponent
 
         private void OnNetworkOperSync(Operation opt)
         {
-            switch (opt.cmd) 
+            switch (opt.cmd)
             {
                 case Command.Transform:
                     OnBuildOrTransformSync(opt);
@@ -149,15 +150,45 @@ namespace Net.UnityComponent
                     break;
                 case NetCmd.CallRpc:
                     var data = client.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
-                    if(!string.IsNullOrEmpty(data.name))
+                    if (!string.IsNullOrEmpty(data.name))
                         client.DispatchRpc(data.name, data.pars);
-                    else if(data.hash != 0)
+                    else if (data.hash != 0)
                         client.DispatchRpc(data.hash, data.pars);
                     break;
                 default:
+                    if (operationHandlerDict.TryGetValue(opt.cmd, out var operList))
+                    {
+                        foreach (var operAction in operList)
+                            operAction.Invoke(opt);
+                        break;
+                    }
                     OnOtherOperator(opt);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 注册帧数据处理回调
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="operCall"></param>
+        public void RegisterOperationCommand(byte cmd, Action<Operation> operCall)
+        {
+            if (!operationHandlerDict.TryGetValue(cmd, out var operList))
+                operationHandlerDict.Add(cmd, operList = new HashSet<Action<Operation>>());
+            operList.Add(operCall);
+        }
+
+        /// <summary>
+        /// 移除帧数据处理回调
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="operCall"></param>
+        public void RemoveOperationCommand(byte cmd, Action<Operation> operCall)
+        {
+            if (!operationHandlerDict.TryGetValue(cmd, out var operList))
+                operationHandlerDict.Add(cmd, operList = new HashSet<Action<Operation>>());
+            operList.Remove(operCall);
         }
 
         /// <summary>
@@ -165,7 +196,7 @@ namespace Net.UnityComponent
         /// </summary>
         /// <param name="opt"></param>
         /// <returns></returns>
-        public virtual NetworkObject OnCheckIdentity(Operation opt) 
+        public virtual NetworkObject OnCheckIdentity(Operation opt)
         {
             if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
@@ -186,7 +217,7 @@ namespace Net.UnityComponent
         /// 当BuildComponent指令或Transform指令同步时调用
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnBuildOrTransformSync(Operation opt) 
+        public virtual void OnBuildOrTransformSync(Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -199,7 +230,7 @@ namespace Net.UnityComponent
             nb.OnNetworkOperationHandler(opt);
         }
 
-        public virtual void OnSyncVarHandler(Operation opt) 
+        public virtual void OnSyncVarHandler(Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -209,7 +240,7 @@ namespace Net.UnityComponent
             identity.SyncVarHandler(opt);
         }
 
-        public virtual void SyncVarGetHandler(Operation opt) 
+        public virtual void SyncVarGetHandler(Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -225,7 +256,7 @@ namespace Net.UnityComponent
         /// 当其他网络物体被删除(入口1)
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnNetworkObjectDestroy(Operation opt) 
+        public virtual void OnNetworkObjectDestroy(Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
@@ -253,7 +284,7 @@ namespace Net.UnityComponent
                 return;
             if (identity.IsDispose)
                 return;
-            if(isPlayer)
+            if (isPlayer)
                 OnOtherExit(identity);
             OnOtherDestroy(identity);
         }

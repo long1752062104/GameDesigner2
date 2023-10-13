@@ -1830,9 +1830,9 @@ namespace Net.Client
         /// <summary>
         /// 关闭连接,释放线程以及所占资源
         /// </summary>
-        /// <param name="await">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
+        /// <param name="isWait">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
         /// <param name="millisecondsTimeout">等待毫秒数</param>
-        public virtual void Close(bool await = true, int millisecondsTimeout = 100)
+        public virtual void Close(bool isWait = true, int millisecondsTimeout = 100)
         {
             var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
@@ -1844,7 +1844,7 @@ namespace Net.Client
             openClient = false;
             NetworkState = NetworkState.ConnectClosed;
             InvokeInMainThread(OnCloseConnectHandle);
-            if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
+            if (isWait) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
             AbortedThread();
             Client?.Close();
             Client = null;

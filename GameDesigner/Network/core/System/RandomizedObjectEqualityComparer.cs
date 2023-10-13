@@ -23,7 +23,7 @@ namespace Net.System
         }
 
         // Token: 0x0600398F RID: 14735 RVA: 0x000DADD8 File Offset: 0x000D8FD8
-        [SecuritySafeCritical]
+        
         public int GetHashCode(object obj)
         {
             if (obj == null)

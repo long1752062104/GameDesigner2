@@ -1,16 +1,15 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using System;
+using System.Net;
+using Net.Client;
+using Net.Event;
+using Net.Helper;
+using Net.Share;
+using UnityEngine;
+using Cysharp.Threading.Tasks;
+
 namespace Net.Component
 {
-    using global::System;
-    using global::System.Threading;
-    using global::System.Net;
-    using Net.Client;
-    using Net.Event;
-    using Net.Share;
-    using Net.Helper;
-    using UnityEngine;
-    using Cysharp.Threading.Tasks;
-
     public enum TransportProtocol
     {
         Tcp, Gcp, Udx, Kcp, Web
