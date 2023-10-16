@@ -2165,7 +2165,7 @@ namespace Net.Server
                 return;
             if (client.RpcModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                OnDataQueueOverflow(client);
                 return;
             }
             client.RpcModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
@@ -2182,7 +2182,7 @@ namespace Net.Server
                 return;
             if (client.RpcModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                OnDataQueueOverflow(client);
                 return;
             }
             client.RpcModels.Enqueue(new RPCModel(cmd, string.Empty, pars, true, true, methodHash));
@@ -2212,7 +2212,7 @@ namespace Net.Server
                 return;
             if (client.RpcModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                OnDataQueueOverflow(client);
                 return;
             }
             if (buffer.Length / MTU > LimitQueueCount)
@@ -2237,7 +2237,7 @@ namespace Net.Server
                 return;
             if (client.RpcModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                OnDataQueueOverflow(client);
                 return;
             }
             if (buffer.Length / MTU > LimitQueueCount)
@@ -2254,7 +2254,7 @@ namespace Net.Server
                 return;
             if (client.RpcModels.Count >= LimitQueueCount)
             {
-                Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                OnDataQueueOverflow(client);
                 return;
             }
             client.RpcModels.Enqueue(model);
@@ -2348,7 +2348,7 @@ namespace Net.Server
                     continue;
                 if (client.RpcModels.Count >= LimitQueueCount)
                 {
-                    Debug.LogError($"[{client}]数据缓存列表超出限制!");
+                    OnDataQueueOverflow(client);
                     continue;
                 }
                 client.RpcModels.Enqueue(model);
@@ -2679,6 +2679,15 @@ namespace Net.Server
                 }
             }
             return IsRunServer;
+        }
+
+        /// <summary>
+        /// 当数据堆积超过<see cref="LimitQueueCount"/>后触发的提示
+        /// </summary>
+        /// <param name="client"></param>
+        protected virtual void OnDataQueueOverflow(Player client)
+        {
+            Debug.LogError($"[{client}]数据缓存列表超出限制!");
         }
     }
 }

@@ -302,6 +302,10 @@ namespace Net.Client
         /// </summary>
         public Action<RPCModel> OnSyncPropertyHandle { get; set; }
         /// <summary>
+        /// 当数据超出<see cref="LimitQueueCount"/>限制后触发的事件
+        /// </summary>
+        public Action OnDataQueueOverflow { get; set; }
+        /// <summary>
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
         protected virtual int frame { get; set; } = 5;
@@ -829,6 +833,7 @@ namespace Net.Client
             if (OnDeserializeRPC == null) OnDeserializeRPC = OnDeserializeRpcInternal;
             if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
             if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
+            if (OnDataQueueOverflow == null) OnDataQueueOverflow = OnDataQueueOverflowInternal;
             AddRpcHandle(this, false);
             if (Client == null) //如果套接字为空则说明没有连接上服务器
             {
@@ -1879,7 +1884,7 @@ namespace Net.Client
                 return;
             if (RpcModels.Count >= LimitQueueCount)
             {
-                NDebug.LogError("数据缓存列表超出限制!");
+                OnDataQueueOverflow?.Invoke();
                 return;
             }
             if (buffer.Length > 65507)
@@ -1912,7 +1917,7 @@ namespace Net.Client
                 return;
             if (RpcModels.Count >= LimitQueueCount)
             {
-                NDebug.LogError("数据缓存列表超出限制!");
+                OnDataQueueOverflow?.Invoke();
                 return;
             }
             RpcModels.Enqueue(new RPCModel(cmd, func, pars));
@@ -1934,7 +1939,7 @@ namespace Net.Client
                 return;
             if (RpcModels.Count >= LimitQueueCount)
             {
-                NDebug.LogError("数据缓存列表超出限制!");
+                OnDataQueueOverflow?.Invoke();
                 return;
             }
             RpcModels.Enqueue(model);
@@ -2299,7 +2304,7 @@ namespace Net.Client
                 return;
             if (RpcModels.Count >= LimitQueueCount)
             {
-                NDebug.LogError("数据缓存列表超出限制!");
+                OnDataQueueOverflow?.Invoke();
                 return;
             }
             RpcModels.Enqueue(model);
@@ -2325,7 +2330,7 @@ namespace Net.Client
                 return;
             if (RpcModels.Count >= LimitQueueCount)
             {
-                NDebug.LogError("数据缓存列表超出限制!");
+                OnDataQueueOverflow?.Invoke();
                 return;
             }
             var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
@@ -2549,6 +2554,11 @@ namespace Net.Client
         public bool CheckSendRT()
         {
             return RpcModels.Count < LimitQueueCount;
+        }
+
+        private void OnDataQueueOverflowInternal()
+        {
+            NDebug.LogError("数据缓存列表超出限制!");
         }
 
         public void TestRPCQueue(RPCModel model)

@@ -4,7 +4,6 @@ using System.IO;
 using System.Collections.Generic;
 using Net.Event;
 using Net.Share;
-using System.Linq;
 
 namespace Net.Config
 {

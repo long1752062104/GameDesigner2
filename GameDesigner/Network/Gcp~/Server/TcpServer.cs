@@ -19,7 +19,7 @@
     /// </summary>
     public class TcpServer<Player, Scene> : ServerBase<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
-        public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
+        public override int HeartInterval { get; set; } = 1000 * 60 * 2;//2分钟跳一次
         public override byte HeartLimit { get; set; } = 2;//确认两次
         
         protected override void CreateOtherThread()
