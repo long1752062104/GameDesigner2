@@ -88,7 +88,7 @@
         /// 用户唯一身份标识
         /// </summary>
         public int UserID { get; internal set; }
-        internal QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
+        public QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
         public QueueSafe<ISegment> RevdQueue = new QueueSafe<ISegment>();
         private ThreadGroup group;
         /// <summary>
@@ -150,6 +150,10 @@
         /// 数据大小错误, 数据被拦截修改或者其他问题导致错误
         /// </summary>
         public int DataSizeError { get; set; }
+        /// <summary>
+        /// 数据队列溢出错误, 当要发送的数据队列堆积到<see cref="ServerBase{Player, Scene}.LimitQueueCount"/> 后提示错误
+        /// </summary>
+        public int DataQueueOverflowError { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>

@@ -944,6 +944,21 @@ namespace Net.Server
                 Debug.LogError($"[{client}]CRC校验失败! {client.CRCError}/秒");
                 client.CRCError = 0;
             }
+            if (client.DataQueueOverflowError > 0)
+            {
+                Debug.LogError($"[{client}]数据缓存列表超出限制! {client.DataQueueOverflowError}/秒");
+                client.DataQueueOverflowError = 0;
+                var modelsDict = new MyDictionary<RPCModel, int>();
+                foreach (var item in client.RpcModels)
+                {
+                    if (!modelsDict.ContainsKey(item))
+                        modelsDict[item] = 0;
+                    modelsDict[item]++;
+                }
+                Debug.LogError($"[{client}] 以下是堆积了哪些数据:");
+                foreach (var item in modelsDict)
+                    Debug.LogError($"[{client}] {item.Key} 相同数据量:{item.Value}");
+            }
         }
 
         protected virtual bool CheckIsConnected(Player client, uint tick)
@@ -1191,7 +1206,7 @@ namespace Net.Server
                     DataCRCHandler(client, buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
-                else
+                else if(client.stackStream != null) //当RemoveClient后导致stackStream=null后报错问题
                 {
                     var position = buffer.Position - frame;
                     var count = buffer.Count - position;
@@ -2687,7 +2702,7 @@ namespace Net.Server
         /// <param name="client"></param>
         protected virtual void OnDataQueueOverflow(Player client)
         {
-            Debug.LogError($"[{client}]数据缓存列表超出限制!");
+            client.DataQueueOverflowError++;
         }
     }
 }

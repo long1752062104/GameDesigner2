@@ -1,4 +1,6 @@
-﻿namespace Net.Share
+﻿using System;
+
+namespace Net.Share
 {
     /// <summary>
     /// 远程过程调用模型,此类负责网络通讯中数据解析临时存储的对象
@@ -150,7 +152,7 @@
             this.kernel = kernel;
             this.serialize = serialize;
             count = buffer.Length;
-            this.methodHash = methodHash; 
+            this.methodHash = methodHash;
         }
 
         /// <summary>
@@ -177,7 +179,7 @@
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
-            this.methodHash = methodHash; 
+            this.methodHash = methodHash;
         }
 
         /// <summary>
@@ -253,6 +255,64 @@
             index = 0;
             count = buffer.Length;
             isFill = true;
+        }
+
+        /// <summary>
+        /// 复制远程调用数据模型
+        /// </summary>
+        /// <returns></returns>
+        public RPCModel Copy()
+        {
+            return new RPCModel(cmd, Buffer, kernel, false);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 23 + kernel.GetHashCode();
+            hash = hash * 23 + cmd.GetHashCode();
+            hash = hash * 23 + index.GetHashCode();
+            hash = hash * 23 + count.GetHashCode();
+            hash = hash * 23 + (func != null ? func.GetHashCode() : 0);
+            hash = hash * 23 + methodHash.GetHashCode();
+            hash = hash * 23 + serialize.GetHashCode();
+            hash = hash * 23 + bigData.GetHashCode();
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is RPCModel model)
+            {
+                if (model.cmd != cmd)
+                    return false;
+                if (model.kernel != kernel)
+                    return false;
+                if (model.index != index)
+                    return false;
+                if (model.count != count)
+                    return false;
+                if (model.func != func)
+                    return false;
+                if (model.methodHash != methodHash)
+                    return false;
+                if (model.serialize != serialize)
+                    return false;
+                if (model.bigData != bigData)
+                    return false;
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator ==(RPCModel a, RPCModel b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(RPCModel a, RPCModel b)
+        {
+            return !a.Equals(b);
         }
     }
 }
