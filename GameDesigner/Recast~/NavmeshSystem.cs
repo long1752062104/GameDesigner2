@@ -43,7 +43,13 @@ namespace Net.AI
         public void Init(string navmeshPath)
         {
             Init();
-            LoadNavMesh(sample, navmeshPath);
+            if (!LoadNavMesh(sample, navmeshPath))
+                throw new Exception($"加载寻路网格数据失败! path:{navmeshPath}");
+        }
+
+        public bool LoadNavmesh(byte[] navmeshData) //支持web写法
+        {
+            return LoadNavMesh(sample, navmeshData);
         }
 
         public List<Vector3> GetPath(Vector3 currPosition, Vector3 destination, float agentHeight = 1f, FindPathMode pathMode = FindPathMode.FindPathStraight, dtStraightPathOptions m_straightPathOptions = dtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)

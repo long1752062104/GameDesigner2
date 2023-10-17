@@ -663,7 +663,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   protocol: 4
-  ip: 127.0.0.1
+  ip: 192.168.1.7
   port: 9543
   localTest: 0
   logMode: 1

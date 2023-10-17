@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Net.Component;
 using UnityEngine.AI;
+using UnityEngine.Networking;
+using System.Collections;
+using System;
 #if RECAST_NATIVE
 using Net.AI.Native;
 using static Net.AI.Native.RecastDll;
@@ -16,20 +19,45 @@ using static Recast.RecastGlobal;
 
 namespace Net.AI
 {
+    public enum LoadPathMode
+    {
+        None = 0,
+        streamingAssetsPath,
+        persistentDataPath,
+    }
+
     public class NavmeshSystemUnity : SingleCase<NavmeshSystemUnity>
     {
         public NavmeshSystem System = new NavmeshSystem();
         public LayerMask bakeLayer;
-        public string navMashPath;
+        public LoadPathMode loadPathMode;
+        [SerializeField] private string navMashPath;
         public int vertexCountHorizontal = 100;
         public int vertexCountVertical = 100;
         private Mesh navMesh;
         public bool drawNavmesh = true;
         public bool drawWireNavmesh = true;
 
-        void Start()
+        public string NavmeshPath
         {
-            Load();
+            get
+            {
+#if UNITY_EDITOR
+                if (string.IsNullOrEmpty(navMashPath))
+                    navMashPath = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + "NavMesh.bin";
+#endif
+                if (loadPathMode == LoadPathMode.streamingAssetsPath)
+                    return Application.streamingAssetsPath + "/" + navMashPath;
+                if (loadPathMode == LoadPathMode.persistentDataPath)
+                    return Application.persistentDataPath + "/" + navMashPath;
+                return navMashPath;
+            }
+            set { navMashPath = value; }
+        }
+
+        public void Start()
+        {
+            StartCoroutine(Load());
         }
 
         public string ExportMeshText(Mesh mesh)
@@ -64,16 +92,29 @@ namespace Net.AI
             return sw.ToString();
         }
 
-        public void Load()
+        public IEnumerator Load()
         {
-            System.Init(navMashPath);
-            UpdateNavMeshFace();
+            System.Init();
+            using (UnityWebRequest request = UnityWebRequest.Get(NavmeshPath)) //兼容Web平台
+            {
+                yield return request.SendWebRequest();
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    if (!System.LoadNavmesh(request.downloadHandler.data))
+                        throw new Exception($"加载寻路网格数据失败! path:{NavmeshPath}");
+                    UpdateNavMeshFace();
+                }
+                else
+                {
+                    Debug.LogError("加载寻路网格文件失败: " + request.error);
+                }
+            }
         }
 
         public void LoadMeshObj()
         {
             System.Init();
-            LoadMeshFile(System.Sample, navMashPath);
+            LoadMeshFile(System.Sample, NavmeshPath);
             Build(System.Sample);
             UpdateNavMeshFace();
         }
@@ -81,7 +122,7 @@ namespace Net.AI
         public void Save()
         {
             System.Init();
-            SaveNavMesh(System.Sample, navMashPath);
+            SaveNavMesh(System.Sample, NavmeshPath);
         }
 
         public void Bake()
@@ -121,10 +162,10 @@ namespace Net.AI
         {
             var mesh = Merge();
             var objText = ExportMeshText(mesh);
-            File.WriteAllText(navMashPath, objText);
+            File.WriteAllText(NavmeshPath, objText);
         }
 
-        public void SaveUnityNavmeshObj() 
+        public void SaveUnityNavmeshObj()
         {
             var triangulation = NavMesh.CalculateTriangulation();
             var vertices = triangulation.vertices;
@@ -137,11 +178,12 @@ namespace Net.AI
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             var objText = ExportMeshText(mesh);
-            File.WriteAllText(navMashPath, objText);
+            File.WriteAllText(NavmeshPath, objText);
         }
 
         private unsafe void UpdateNavMeshFace()
         {
+#if UNITY_EDITOR //编译后这里没用了
             int vertsCount = GetDrawNavMeshCount(System.Sample);
             float* vertsArray = stackalloc float[vertsCount];
             GetDrawNavMesh(System.Sample, vertsArray, out vertsCount);
@@ -176,6 +218,7 @@ namespace Net.AI
             navMesh.triangles = tris;
             navMesh.colors = colors;
             navMesh.RecalculateNormals();
+#endif
         }
 
         private Mesh Merge()
@@ -217,14 +260,6 @@ namespace Net.AI
             {
                 Gizmos.color = new Color(0f, 0f, 0f, 0.3f);
                 Gizmos.DrawWireMesh(navMesh);
-            }
-        }
-
-        private void OnValidate()
-        {
-            if (string.IsNullOrEmpty(navMashPath))
-            {
-                navMashPath = Application.dataPath + "/" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + "NavMesh.bin";
             }
         }
 

@@ -108,7 +108,7 @@ namespace Net.MMORPG
             var navmesh = UnityEngine.Object.FindObjectOfType<AI.NavmeshSystemUnity>();
             if (navmesh != null)
             {
-                sceneData.navmeshPath = navmesh.navMashPath;
+                sceneData.navmeshPath = navmesh.NavmeshPath;
             }
             var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(sceneData);
             File.WriteAllText(path, jsonStr);

@@ -79,12 +79,12 @@
         /// <returns></returns>
         public static string GetIP()
         {
-            string hostName = Dns.GetHostName();
+            var hostName = Dns.GetHostName();
             var iPHostEntry = Dns.GetHostEntry(hostName);
             foreach (var address in iPHostEntry.AddressList)
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                     return address.ToString();
-            return "";
+            return string.Empty;
         }
     }
 }

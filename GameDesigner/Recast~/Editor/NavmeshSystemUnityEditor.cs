@@ -35,7 +35,7 @@ namespace Net.AI
             if (GUILayout.Button("LoadNavMesh"))
             {
                 var stopwatch = Stopwatch.StartNew();
-                System.Load();
+                System.Start();
                 stopwatch.Stop();
                 UnityEngine.Debug.Log($"加载烘焙网格完成,用时:{stopwatch.ElapsedMilliseconds}ms");
             }

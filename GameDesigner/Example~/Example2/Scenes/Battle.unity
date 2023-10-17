@@ -2227,7 +2227,8 @@ MonoBehaviour:
   bakeLayer:
     serializedVersion: 2
     m_Bits: 1
-  navMashPath: D:/Demo/Assets/BattleNavMesh.bin
+  loadPathMode: 1
+  navMashPath: BattleNavMesh.bin
   vertexCountHorizontal: 100
   vertexCountVertical: 100
   drawNavmesh: 1
