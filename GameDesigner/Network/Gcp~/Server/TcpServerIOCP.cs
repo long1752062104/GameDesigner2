@@ -22,7 +22,7 @@
     /// </summary>
     public class TcpServerIocp<Player, Scene> : TcpServer<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
     {
-        protected override void AcceptHander(Player client)
+        protected override void AcceptHander(Player client, params object[] args)
         {
             client.ReceiveArgs = new SocketAsyncEventArgs();
             var userToken = new UserToken<Player>() { client = client, segment = BufferPool.Take() };

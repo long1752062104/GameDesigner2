@@ -30,7 +30,7 @@
 #endif
         }
 
-        protected override void AcceptHander(Player client)
+        protected override void AcceptHander(Player client, params object[] args)
         {
             client.Gcp = new Plugins.GcpKernel();
             client.Gcp.MTU = (ushort)MTU;

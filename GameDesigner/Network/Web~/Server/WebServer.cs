@@ -50,8 +50,11 @@
             var remotePoint = clientSocket.RemoteEndPoint;
             if (!UserIDStack.TryPop(out int uid))
                 uid = GetCurrUserID();
-            var client = AcceptHander(clientSocket, remotePoint);
-            client.WSClient = wsClient1;
+            Player client = null;
+            wsClient1.OnOpen = () => //这里无法优化,必须要在Open事件后才能添加, AcceptHander内部有发送uid的代码导致连接断开
+            {
+                client = AcceptHander(clientSocket, remotePoint, wsClient1);
+            };
             wsClient1.OnMessage = (buffer, message) => //utf-8解析
             {
                 receiveCount += buffer.Length;
@@ -83,6 +86,11 @@
             {
                 RemoveClient(client);
             };
+        }
+
+        protected override void AcceptHander(Player client, params object[] args)
+        {
+            client.WSClient = args[0] as WebSocketConnection; //在这里赋值才不会在多线程并行状态下报null问题
         }
 
         protected override bool IsInternalCommand(Player client, RPCModel model)

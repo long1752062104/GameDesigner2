@@ -1026,7 +1026,7 @@ namespace Net.Server
             DataCRCHandler(client, segment, tcp_udp);
         }
 
-        protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint)
+        protected virtual Player AcceptHander(Socket clientSocket, EndPoint remotePoint, params object[] args)
         {
             var client = new Player();
             client.Client = clientSocket;
@@ -1040,7 +1040,7 @@ namespace Net.Server
             client.ConnectTime = DateTime.Now;
             client.Connected = true;
             OnThreadQueueSet(client);
-            AcceptHander(client);
+            AcceptHander(client, args);
             SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
             UIDClients.TryAdd(uid, client);//uid必须在这里添加, 不在登录成功后添加了
@@ -1070,7 +1070,7 @@ namespace Net.Server
             client.Group = ThreadGroups[value % ThreadGroups.Count];
         }
 
-        protected virtual void AcceptHander(Player client)
+        protected virtual void AcceptHander(Player client, params object[] args)
         {
         }
 

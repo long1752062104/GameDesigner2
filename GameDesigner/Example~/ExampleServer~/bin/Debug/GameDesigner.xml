@@ -2896,6 +2896,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Net.Share.RPCModel.Copy">
+            <summary>
+            复制远程调用数据模型
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Net.Share.RPCModelTask">
             <summary>
             远程过程调用异步模型 async和await实现和委托事件处理
@@ -4629,6 +4635,11 @@
             当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
             </summary>
         </member>
+        <member name="P:Net.Client.ClientBase.OnDataQueueOverflow">
+            <summary>
+            当数据超出<see cref="P:Net.Client.ClientBase.LimitQueueCount"/>限制后触发的事件
+            </summary>
+        </member>
         <member name="P:Net.Client.ClientBase.frame">
             <summary>
             4个字节记录数据长度 + 1CRC校验
@@ -5110,7 +5121,7 @@
             <summary>
             关闭连接,释放线程以及所占资源
             </summary>
-            <param name="await">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
+            <param name="isWait">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
             <param name="millisecondsTimeout">等待毫秒数</param>
         </member>
         <member name="M:Net.Client.ClientBase.Send(System.Byte[])">
@@ -6137,6 +6148,11 @@
         <member name="P:Net.Server.NetPlayer.DataSizeError">
             <summary>
             数据大小错误, 数据被拦截修改或者其他问题导致错误
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.DataQueueOverflowError">
+            <summary>
+            数据队列溢出错误, 当要发送的数据队列堆积到<see cref="P:Net.Server.ServerBase`2.LimitQueueCount"/> 后提示错误
             </summary>
         </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
@@ -7666,6 +7682,12 @@
             <summary>
             检查在线人数，当服务器长时间运行，显示的在线人数不对时，默认是十分钟检查一次
             </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnDataQueueOverflow(`0)">
+            <summary>
+            当数据堆积超过<see cref="P:Net.Server.ServerBase`2.LimitQueueCount"/>后触发的提示
+            </summary>
+            <param name="client"></param>
         </member>
         <member name="T:Net.Server.TcpServer`2">
             <summary>

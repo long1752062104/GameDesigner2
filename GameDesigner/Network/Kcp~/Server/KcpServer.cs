@@ -61,7 +61,7 @@
             Marshal.FreeHGlobal(ptr);
         }
 
-        protected override void AcceptHander(Player client)
+        protected override void AcceptHander(Player client, params object[] args)
         {
             client.Server = Server;
             var kcp = ikcp_create(MTU, (IntPtr)1);
