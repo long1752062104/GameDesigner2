@@ -13,15 +13,15 @@ namespace Net.System
     [Serializable]
     public class FastListSafe<T> : FastList<T>
     {
-        public override void Add(T item)
+        public override void Add(T item, out int index)
         {
             lock (SyncRoot)
             {
-                base.Add(item);
+                base.Add(item, out index);
             }
         }
 
-        public override void Add(T item, out int index)
+        public override void Add(ref T item, out int index)
         {
             lock (SyncRoot)
             {

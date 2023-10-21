@@ -415,24 +415,7 @@ static void Main(string[] args)
 这里是开发者遇到的问题, 我都会在这里详细写出来, 这样大家遇到的问题都可以先在这里查看
 
 ## TapTap游戏
-<br>1.[士兵召唤](https://www.taptap.com/app/221847)</br>
-<br>2.[我是一只鱼](https://www.taptap.com/app/220242)</br>
-<br>3.[山海经吞食天地](https://www.taptap.com/app/207447)</br>
-<br>4.[捍卫星球](https://www.taptap.com/app/170490)</br>
-<br>5.[一介散修](https://www.taptap.com/app/234010)</br>
-<br>6.[无限升级](https://www.taptap.cn/app/241449)</br>
-<br>7.[零灵：天运防线](https://www.taptap.cn/app/269522)</br>
-<br>8.[神之刃](https://www.taptap.cn/app/243180)</br>
-<br>9.[无敌从木鱼开始](https://www.taptap.cn/app/315187)</br>
-<br>10.[挂了个机](https://www.taptap.cn/app/3191)</br>
-<br>11.[放置武界](https://www.taptap.cn/app/314773)</br>
-<br>12.[吞噬修仙](https://www.taptap.cn/app/352549)</br>
-<br>12.[吞噬修仙](https://www.taptap.cn/app/352549)</br>
-<br>13.[武界传说](https://www.taptap.cn/app/381982/review)</br>
-<br>14.[多元秘境探险](https://www.taptap.cn/app/357434)</br>
-
-## Steam游戏
-<br>1.[CubeSquad:Zero](https://store.steampowered.com/app/2505450/CubeSquadZero/)</br>
+使用GDNet开发的游戏已有上百款, 为了保护游戏不被恶意攻击或看GDNet不爽的人恶意对游戏评论或差评, 从此将不再收集游戏名单!
 
 ## 使用到的第三方库和一些推荐的库
 <br>1.udx: 超强的一个udp可靠协议库,实力大于名气 www.goodudx.com</br>

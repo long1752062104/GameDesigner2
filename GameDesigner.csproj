@@ -107,6 +107,12 @@
     <Compile Include="GameDesigner\Common~\Singleton.cs" />
     <Compile Include="GameDesigner\Common~\TransformEntity.cs" />
     <Compile Include="GameDesigner\ECS~\GameComponent.cs" />
+    <Compile Include="GameDesigner\Entities~\ComponentMap.cs" />
+    <Compile Include="GameDesigner\Entities~\Entity.cs" />
+    <Compile Include="GameDesigner\Entities~\EntityWorld.cs" />
+    <Compile Include="GameDesigner\Entities~\IComponent.cs" />
+    <Compile Include="GameDesigner\Entities~\IComponentIsNull.cs" />
+    <Compile Include="GameDesigner\Entities~\IEntityUpdate.cs" />
     <Compile Include="GameDesigner\EntityFramework~\Attribute\DefaultValueAttribute.cs" />
     <Compile Include="GameDesigner\EntityFramework~\Attribute\NotNullAttribute.cs" />
     <Compile Include="GameDesigner\EntityFramework~\Attribute\RuntimeInitializeLoadType.cs" />

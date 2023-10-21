@@ -102,7 +102,7 @@ namespace Net.AOI
             return false;
         }
 
-        public bool Contains(Grid grid, IGridBody body) 
+        public bool Contains(Grid grid, IGridBody body)
         {
             if (gridType == GridType.Horizontal)
                 return grid.rect.ContainsXZ(body.Position);
@@ -121,12 +121,16 @@ namespace Net.AOI
             if (currGrid == null)
             {
                 if (gridType == GridType.Horizontal)
+                {
                     if (!worldSize.ContainsXZ(body.Position))
                         goto J;
+                }
                 else
+                {
                     if (!worldSize.Contains(body.Position))
                         goto J;
-                foreach(var grid in grids)
+                }
+                foreach (var grid in grids)
                 {
                     if (Contains(grid, body))
                     {
@@ -201,7 +205,7 @@ namespace Net.AOI
         {
             var currGrid = body.Grid;
             if (currGrid == null)
-                return; 
+                return;
             var grids = currGrid.grids;
             foreach (var grid in grids)
             {
@@ -220,7 +224,7 @@ namespace Net.AOI
         /// </summary>
         /// <param name="body"></param>
         /// <param name="other"></param>
-        private static void EnterHandler(IGridBody body, IGridBody other) 
+        private static void EnterHandler(IGridBody body, IGridBody other)
         {
             if (body == other | body.Identity == other.Identity) //当插入时会偶尔发生相同的玩家通知问题
                 return;

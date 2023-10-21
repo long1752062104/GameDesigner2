@@ -212,6 +212,20 @@ namespace Net.System
             _size++;
         }
 
+        public virtual void Add(ref T item)
+        {
+            Add(ref item, out _);
+        }
+
+        public virtual void Add(ref T item, out int index)
+        {
+            index = _size;
+            if (index == _items.Length)
+                EnsureCapacity(index + 1);
+            _items[index] = item;
+            _size++;
+        }
+
         int IList.Add(object item)
         {
             ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
