@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Net.EntityFramework
+namespace Net.Entities
 {
     public class Transform : Component, IEnumerable
     {
@@ -219,8 +219,7 @@ namespace Net.EntityFramework
 
         public void Translate(Vector3 translation, Transform relativeTo)
         {
-            bool flag = relativeTo;
-            if (flag)
+            if (relativeTo != null)
             {
                 this.position += relativeTo.TransformDirection(translation);
             }
@@ -289,8 +288,7 @@ namespace Net.EntityFramework
 
         public void LookAt(Transform target, [DefaultValue("Vector3.up")] Vector3 worldUp)
         {
-            bool flag = target;
-            if (flag)
+            if (target != null)
             {
                 this.LookAt(target.position, worldUp);
             }
@@ -298,8 +296,7 @@ namespace Net.EntityFramework
 
         public void LookAt(Transform target)
         {
-            bool flag = target;
-            if (flag)
+            if (target != null)
             {
                 this.LookAt(target.position, Vector3.up);
             }

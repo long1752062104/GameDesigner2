@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Net.EntityFramework
+namespace Net.Entities
 {
     public class ObjectName 
     {
@@ -9,35 +9,11 @@ namespace Net.EntityFramework
 
     public class Object
     {
-        private int m_InstanceID;
-
         internal ObjectName m_Name;
         public string name
         {
             get => m_Name.Name;
             set => m_Name.Name = value;
-        }
-
-        public int GetInstanceID()
-        {
-            return this.m_InstanceID;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.m_InstanceID;
-        }
-
-        public override bool Equals(object other)
-        {
-            Object @object = other as Object;
-            bool flag = @object == null && other != null && !(other is Object);
-            return !flag && this == @object;
-        }
-
-        public static implicit operator bool(Object exists)
-        {
-            return exists != null;
         }
 
         public static Object Instantiate(Object original, Vector3 position, Quaternion rotation)
@@ -272,16 +248,6 @@ namespace Net.EntityFramework
         public override string ToString()
         {
             return $"{name} ({GetType()})";
-        }
-
-        public static bool operator ==(Object x, Object y)
-        {
-            return x == y;
-        }
-
-        public static bool operator !=(Object x, Object y)
-        {
-            return x != y;
         }
     }
 }

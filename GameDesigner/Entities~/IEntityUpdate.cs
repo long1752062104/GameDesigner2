@@ -1,13 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Net.Entities
+﻿namespace Net.Entities
 {
+    public interface IEntityAwake
+    {
+        void Awake();
+    }
+
+    public interface IEntityStart
+    {
+        void Start();
+    }
+
     public interface IEntityUpdate
     {
         void Update();
+    }
+
+    public interface IEntityDestroy
+    {
+        void Destroy();
     }
 }

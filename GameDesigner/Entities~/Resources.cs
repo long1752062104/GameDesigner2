@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Net.EntityFramework
+namespace Net.Entities
 {
     public sealed class Resources
     {

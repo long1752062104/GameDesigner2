@@ -137,6 +137,7 @@ public class ImportSettingWindow : EditorWindow
         path = data.path + "/MMORPG";
         DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () => {
             Import("AOI~", "AOI", data.path + "/");//依赖
+            Import("Recast~", "Recast", data.path + "/");//依赖
         }, data.path + "/");
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
@@ -156,6 +157,10 @@ public class ImportSettingWindow : EditorWindow
         path = data.path + "/Framework";
         DrawGUI(path, "Framework", "Framework~", "Framework", null, data.path + "/");
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.HelpBox("Entities模块 可用于独立环境运行, 代替ECS模块", MessageType.Info);
+        path = data.path + "/Entities";
+        DrawGUI(path, "Entities", "Entities~", "Entities", null, data.path + "/");
 
         EditorGUILayout.HelpBox("ParrelSync插件, 可以克隆两个一模一样的项目进行网络同步调式, 极快解决联机同步问题", MessageType.Info);
         path = data.path + "/ParrelSync";
@@ -184,6 +189,7 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI~", "AOI", data.path + "/");
             Import("Recast~", "Recast", data.path + "/");
             Import("Framework~", "Framework", data.path + "/");
+            Import("Entities~", "Entities", data.path + "/");
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -200,6 +206,7 @@ public class ImportSettingWindow : EditorWindow
             Import("MMORPG~", "MMORPG", data.path + "/");
             Import("AOI~", "AOI", data.path + "/");
             Import("Recast~", "Recast", data.path + "/");
+            Import("Entities~", "Entities", data.path + "/");
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -218,6 +225,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("AOI~", "AOI", data.path + "/");
             ReImport("Recast~", "Recast", data.path + "/");
             ReImport("Framework~", "Framework", data.path + "/");
+            ReImport("Entities~", "Entities", data.path + "/");
         }
         if (data.develop == 1) 
         {
@@ -237,6 +245,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("AOI~", "AOI", data.path + "/");
                 ReverseImport("Recast~", "Recast", data.path + "/");
                 ReverseImport("Framework~", "Framework", data.path + "/");
+                ReverseImport("Entities~", "Entities", data.path + "/");
             }
         }
         GUILayout.EndScrollView();

@@ -1,47 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Net.EntityFramework
+namespace Net.Entities
 {
     public class Component : Object
     {
-        public Transform transform { get; internal set; }
-
-        public GameObject gameObject { get; internal set; }
+        public Entity Entity { get; internal set; }
 
         public Component GetComponent(Type type)
         {
-            return this.gameObject.GetComponent(type);
+            return this.Entity.GetComponent(type);
         }
 
         public unsafe T GetComponent<T>() where T : Component
         {
-            return this.gameObject.GetComponent<T>();
+            return this.Entity.GetComponent<T>();
         }
 
         public bool TryGetComponent(Type type, out Component component)
         {
-            return this.gameObject.TryGetComponent(type, out component);
+            return this.Entity.TryGetComponent(type, out component);
         }
 
-        
         public bool TryGetComponent<T>(out T component) where T : Component
         {
-            return this.gameObject.TryGetComponent<T>(out component);
+            return this.Entity.TryGetComponent<T>(out component);
         }
 
         public Component GetComponent(string type) 
         {
-            return this.gameObject.GetComponent(type);
+            return this.Entity.GetComponent(type);
         }
 
-        
         public Component GetComponentInChildren(Type t, bool includeInactive)
         {
-            return this.gameObject.GetComponentInChildren(t, includeInactive);
+            return this.Entity.GetComponentInChildren(t, includeInactive);
         }
 
-        
         public Component GetComponentInChildren(Type t)
         {
             return this.GetComponentInChildren(t, false);
@@ -52,7 +47,6 @@ namespace Net.EntityFramework
             return (T)((object)this.GetComponentInChildren(typeof(T), includeInactive));
         }
 
-        
         public T GetComponentInChildren<T>()
         {
             return (T)((object)this.GetComponentInChildren(typeof(T), false));
@@ -60,23 +54,22 @@ namespace Net.EntityFramework
 
         public Component[] GetComponentsInChildren(Type t, bool includeInactive)
         {
-            return this.gameObject.GetComponentsInChildren(t, includeInactive);
+            return this.Entity.GetComponentsInChildren(t, includeInactive);
         }
 
-        
         public Component[] GetComponentsInChildren(Type t)
         {
-            return this.gameObject.GetComponentsInChildren(t, false);
+            return this.Entity.GetComponentsInChildren(t, false);
         }
 
         public T[] GetComponentsInChildren<T>(bool includeInactive)
         {
-            return this.gameObject.GetComponentsInChildren<T>(includeInactive);
+            return this.Entity.GetComponentsInChildren<T>(includeInactive);
         }
 
         public void GetComponentsInChildren<T>(bool includeInactive, List<T> result)
         {
-            this.gameObject.GetComponentsInChildren<T>(includeInactive, result);
+            this.Entity.GetComponentsInChildren<T>(includeInactive, result);
         }
 
         public T[] GetComponentsInChildren<T>()
@@ -89,16 +82,14 @@ namespace Net.EntityFramework
             this.GetComponentsInChildren<T>(false, results);
         }
 
-        
         public Component GetComponentInParent(Type t, bool includeInactive)
         {
-            return this.gameObject.GetComponentInParent(t, includeInactive);
+            return this.Entity.GetComponentInParent(t, includeInactive);
         }
 
-        
         public Component GetComponentInParent(Type t)
         {
-            return this.gameObject.GetComponentInParent(t, false);
+            return this.Entity.GetComponentInParent(t, false);
         }
 
         public T GetComponentInParent<T>([DefaultValue("false")] bool includeInactive)
@@ -113,10 +104,9 @@ namespace Net.EntityFramework
 
         public Component[] GetComponentsInParent(Type t, [DefaultValue("false")] bool includeInactive)
         {
-            return this.gameObject.GetComponentsInParent(t, includeInactive);
+            return this.Entity.GetComponentsInParent(t, includeInactive);
         }
 
-        
         public Component[] GetComponentsInParent(Type t)
         {
             return this.GetComponentsInParent(t, false);
@@ -124,12 +114,12 @@ namespace Net.EntityFramework
 
         public T[] GetComponentsInParent<T>(bool includeInactive)
         {
-            return this.gameObject.GetComponentsInParent<T>(includeInactive);
+            return this.Entity.GetComponentsInParent<T>(includeInactive);
         }
 
         public void GetComponentsInParent<T>(bool includeInactive, List<T> results)
         {
-            this.gameObject.GetComponentsInParent<T>(includeInactive, results);
+            this.Entity.GetComponentsInParent<T>(includeInactive, results);
         }
 
         public T[] GetComponentsInParent<T>()
@@ -139,39 +129,39 @@ namespace Net.EntityFramework
 
         public Component[] GetComponents(Type type)
         {
-            return this.gameObject.GetComponents(type);
+            return this.Entity.GetComponents(type);
         }
 
         public void GetComponents(Type type, List<Component> results)
         {
-            this.gameObject.GetComponents(type, results);
+            this.Entity.GetComponents(type, results);
         }
 
         public void GetComponents<T>(List<T> results)
         {
-            this.gameObject.GetComponents(results);
+            this.Entity.GetComponents(results);
         }
 
         public string tag
         {
             get
             {
-                return this.gameObject.tag;
+                return this.Entity.tag;
             }
             set
             {
-                this.gameObject.tag = value;
+                this.Entity.tag = value;
             }
         }
 
         public T[] GetComponents<T>()
         {
-            return this.gameObject.GetComponents<T>();
+            return this.Entity.GetComponents<T>();
         }
 
         public bool CompareTag(string tag)
         {
-            return this.gameObject.CompareTag(tag);
+            return this.Entity.CompareTag(tag);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Net.EntityFramework
+namespace Net.Entities
 {
     [Serializable]
     public class DefaultValueAttribute : Attribute

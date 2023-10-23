@@ -1,78 +1,107 @@
-﻿using Net.System;
+﻿using Net.Event;
+using Net.System;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Net.Entities
 {
-    public unsafe class EntityWorld
+    public class EntityWorld
     {
-        public List<Entity> EntityList { get; set; }
-        public MyDictionary<Type, FastList<IComponent>> Components { get; set; }
-        private MyDictionary<Type, IComponent> DefaultComponents { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public FastList<Entity> EntityRoots { get; set; }
+        private TimerTick TimerTick { get; set; }
+        private Stopwatch Stopwatch { get; set; }
 
         public EntityWorld()
         {
-            EntityList = new List<Entity>();
-            Components = new MyDictionary<Type, FastList<IComponent>>();
-            DefaultComponents = new MyDictionary<Type, IComponent>();
+            EntityRoots = new FastList<Entity>();
+            TimerTick = new TimerTick();
+            Stopwatch = Stopwatch.StartNew();
+        }
+        public EntityWorld(string name) : this()
+        {
+            this.Name = name;
         }
 
-        public Entity CreateEntity()
+        public void Init()
         {
-            var entity = new Entity(this);
-            return entity;
+            CollectAttributes();
         }
 
-        public Entity CreateEntity(params Type[] components)
+        public void CollectAttributes()
         {
-            var entity = new Entity(this);
-            foreach (var component in components)
-                entity.AddComponent(component);
-            return entity;
-        }
-
-        public ref T GetEntityComponent<T>(Entity entity) where T : IComponent, new()
-        {
-            var componentType = typeof(T);
-            if (Components.TryGetValue(componentType, out var components))
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assemblie in assemblies)
             {
-                foreach (var componentId in entity.componentIds)
+                Type[] types = null;
+                try
                 {
-                    if (components[componentId].Entity == entity)
+                    types = assemblie.GetTypes().Where(t => t.IsClass).ToArray();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    foreach (Exception loadEx in ex.LoaderExceptions)
                     {
-                        T component1 = (T)components._items[componentId];
-                        return ref component1;
+                        NDebug.LogError("Type load error: " + loadEx.Message);
+                    }
+                }
+                if (types == null)
+                    continue;
+                foreach (var type in types)
+                {
+                    var staticMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    foreach (var staticMethod in staticMethods)
+                    {
+                        var attribute = staticMethod.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>();
+                        if (attribute == null)
+                            continue;
+                        if (attribute.loadType == RuntimeInitializeLoadType.AfterSceneLoad)
+                            staticMethod.Invoke(null, null);
                     }
                 }
             }
-            T component = TryGetDefaultComponent<T>();
-            return ref component;
         }
 
-        private T TryGetDefaultComponent<T>() where T : IComponent, new()
+        public void Simulate(uint dt = 17, bool sleep = false)
         {
-            var componentType = typeof(T);
-            if (!DefaultComponents.TryGetValue(componentType, out var component))
+            var tick = (uint)Environment.TickCount;
+            if (TimerTick.CheckTimeout(tick, dt, sleep))
+                Execute();
+        }
+
+        private void Execute()
+        {
+            Stopwatch.Restart();
+            for (int i = 0; i < EntityRoots.Count; i++)
             {
-                component = new T();
-                DefaultComponents.Add(componentType, component);
+                EntityRoots[i].Execute();
             }
-            return (T)component;
+            Stopwatch.Stop();
+            //NDebug.Log(Stopwatch.Elapsed);
         }
 
-        public ref IComponent AddEntityComponent(Entity entity, Type componentType)
+        public Entity CreateEntity(string name, params Type[] components)
         {
-            if (!Components.TryGetValue(componentType, out var components))
-                Components.Add(componentType, components = new FastList<IComponent>());
-            var component = (IComponent)Activator.CreateInstance(componentType);
-            component.Entity = entity;
-            entity.componentIds.Add(components.Count);
-            components.Add(ref component);
-            return ref component;
+            var entity = new Entity(name, components);
+            entity.World = this;
+            entity.Parent = null;
+            return entity;
+        }
+
+        public Entity CreateEntity(string name, Entity parent, params Type[] components)
+        {
+            var entity = new Entity(name, components);
+            entity.World = this;
+            entity.Parent = parent;
+            return entity;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}";
         }
     }
 }
