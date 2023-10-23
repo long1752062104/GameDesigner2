@@ -12,6 +12,8 @@
     using Net.Serialize;
     using Newtonsoft_X.Json;
     using Debug = Event.NDebug;
+    using global::System.Security.Cryptography.X509Certificates;
+    using Net.Helper;
 
     /// <summary>
     /// web网络服务器 2020.8.25 七夕
@@ -30,11 +32,22 @@
         /// websocket连接策略, 有wss和ws
         /// </summary>
         public string Scheme { get; set; } = "ws";
+        /// <summary>
+        /// 证书
+        /// </summary>
+        public X509Certificate2 Certificate { get; set; }
+        /// <summary>
+        /// 使用默认证书, 用于开发调式环境
+        /// </summary>
+        public bool UseDefaultCertificate { get; set; }
 
         protected override void CreateServerSocket(ushort port)
         {
             Server = new WebSocketServer($"{Scheme}://{NetPort.GetIP()}:{port}");
             Server.ListenerSocket.NoDelay = true;
+            if (Scheme == "wss" & Certificate == null & UseDefaultCertificate)
+                Certificate = CertificateHelper.CreateX509Certificate2();
+            Server.Certificate = Certificate;
             Server.Start(AcceptConnect);
         }
 

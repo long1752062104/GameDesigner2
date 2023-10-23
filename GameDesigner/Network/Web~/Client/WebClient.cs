@@ -1,21 +1,24 @@
-﻿namespace Net.Client
-{
-    using Net.Event;
-    using Net.Share;
-    using Newtonsoft_X.Json;
-    using global::System;
-    using global::System.Collections.Generic;
-    using global::System.IO;
-    using global::System.Threading;
-    using global::System.Threading.Tasks;
-    using Net.System;
-    using UnityWebSocket;
-    using Cysharp.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using Net.Event;
+using Net.Share;
+using Net.System;
+using UnityWebSocket;
+using Newtonsoft_X.Json;
+using Cysharp.Threading.Tasks;
+using Net.Helper;
 #if COCOS2D_JS
-    using global::System.Text;
-    using Net.Serialize;
+using System.Text;
+using Net.Serialize;
 #endif
 
+namespace Net.Client
+{
     /// <summary>
     /// web客户端类型
     /// 第三版本 2020.9.14
@@ -24,16 +27,40 @@
     public class WebClient : ClientBase
     {
         public WebSocket WSClient { get; private set; }
-        
         /// <summary>
-        /// 构造不可靠传输客户端
+        /// 证书
+        /// </summary>
+        public X509Certificate2 Certificate { get; set; }
+        /// <summary>
+        /// 使用默认证书, 用于开发调式环境
+        /// </summary>
+        public bool UseDefaultCertificate { get; set; }
+
+        private static bool InitCertificateValidation;
+
+        /// <summary>
+        /// 构造websocket客户端
         /// </summary>
         public WebClient()
         {
+            if (!InitCertificateValidation)
+            {
+                InitCertificateValidation = true;
+                ServicePointManager.ServerCertificateValidationCallback -= ServerCertificateValidationCallback;
+                ServicePointManager.ServerCertificateValidationCallback += ServerCertificateValidationCallback;
+            }
         }
 
         /// <summary>
-        /// 构造不可靠传输客户端
+        /// 证书验证
+        /// </summary>
+        private static bool ServerCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, global::System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 构造websocket客户端
         /// </summary>
         /// <param name="useUnityThread">使用unity多线程?</param>
         public WebClient(bool useUnityThread) : this()
@@ -56,6 +83,9 @@
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
                 WSClient = new WebSocket($"{Scheme}://{host}:{port}/");
+                if (Scheme == "wss" & Certificate == null & UseDefaultCertificate)
+                    Certificate = CertificateHelper.CreateX509Certificate2();
+                WSClient.Certificate = Certificate;
                 WSClient.OnError += (sender, e) =>
                 {
                     NDebug.LogError(e.Exception);
@@ -79,7 +109,7 @@
                         RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars());
                         RPCDataHandle(model1, null);
                     }
-                    else if (e.IsBinary) 
+                    else if (e.IsBinary)
                     {
                         var data = e.RawData;
                         receiveCount += data.Length;
@@ -95,7 +125,7 @@
                 var tick = (uint)Environment.TickCount + 8000u;
                 while (UID == 0)
                 {
-                    await Task.Yield();
+                    await UniTask.Yield();
                     if ((uint)Environment.TickCount >= tick)
                         throw new Exception("uid赋值失败!");
                     if (!openClient)
@@ -106,13 +136,13 @@
                 Connected = true;
                 StartupThread();
                 result(true);
-                return await Task.FromResult(true);
+                return await UniTask.FromResult(true);
             }
             catch (Exception ex)
             {
                 NDebug.Log("连接错误: " + ex.ToString());
                 result(false);
-                return await Task.FromResult(false);
+                return await UniTask.FromResult(false);
             }
         }
 

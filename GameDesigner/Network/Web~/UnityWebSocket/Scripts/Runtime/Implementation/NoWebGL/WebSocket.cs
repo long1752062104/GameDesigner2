@@ -6,6 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Net;
+using System.Net.Security;
 
 namespace UnityWebSocket
 {
@@ -47,6 +50,8 @@ namespace UnityWebSocket
         private ClientWebSocket socket;
         private bool isOpening => socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open;
 
+        public X509Certificate2 Certificate { get; set; }
+
         #region APIs 
         public WebSocket(string address)
         {
@@ -85,6 +90,8 @@ namespace UnityWebSocket
                     socket.Options.AddSubProtocol(protocol);
                 }
             }
+            if (Certificate != null)
+                socket.Options.ClientCertificates.Add(Certificate);
             Task.Run(ConnectTask);
         }
 
