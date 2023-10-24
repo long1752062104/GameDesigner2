@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Net;
-using System.Net.Security;
 
 namespace UnityWebSocket
 {

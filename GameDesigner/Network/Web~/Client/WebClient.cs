@@ -31,10 +31,6 @@ namespace Net.Client
         /// 证书
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
-        /// <summary>
-        /// 使用默认证书, 用于开发调式环境
-        /// </summary>
-        public bool UseDefaultCertificate { get; set; }
 
         private static bool InitCertificateValidation;
 
@@ -83,9 +79,11 @@ namespace Net.Client
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
                 WSClient = new WebSocket($"{Scheme}://{host}:{port}/");
-                if (Scheme == "wss" & Certificate == null & UseDefaultCertificate)
-                    Certificate = CertificateHelper.CreateX509Certificate2();
+#if UNITY_EDITOR || !UNITY_WEBGL
+                if (Scheme == "wss" & Certificate == null)
+                    Certificate = CertificateHelper.GetDefaultCertificate();
                 WSClient.Certificate = Certificate;
+#endif
                 WSClient.OnError += (sender, e) =>
                 {
                     NDebug.LogError(e.Exception);
