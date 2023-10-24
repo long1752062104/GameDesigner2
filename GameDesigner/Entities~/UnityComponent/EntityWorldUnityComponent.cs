@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Net.Common;
 using Net.Entities;
 
@@ -12,3 +13,4 @@ namespace Net.UnityComponent
         }
     }
 }
+#endif
