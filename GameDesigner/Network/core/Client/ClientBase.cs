@@ -463,15 +463,7 @@ namespace Net.Client
         /// 网络循环事件处理
         /// </summary>
         protected TimerEvent LoopEvent = new TimerEvent();
-        /// <summary>
-        /// websocket连接策略, 有wss和ws
-        /// </summary>
-        public string Scheme { get; set; } = "ws";
-        /// <summary>
-        /// Ssl类型
-        /// </summary>
-        public SslProtocols SslProtocols { get; set; }
-
+        
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -2574,6 +2566,14 @@ namespace Net.Client
         public void Dispose()
         {
             Close();
+        }
+
+        /// <summary>
+        /// 当设置配置信息
+        /// </summary>
+        /// <param name="args"></param>
+        public virtual void OnSetConfigInfo(params object[] args)
+        {
         }
     }
 }

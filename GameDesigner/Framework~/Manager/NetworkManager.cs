@@ -7,6 +7,7 @@ using System.Net;
 using System;
 using Net.Helper;
 using Cysharp.Threading.Tasks;
+using System.Security.Authentication;
 
 namespace Framework
 {
@@ -52,6 +53,15 @@ namespace Framework
     }
 
     [Serializable]
+    public class WebSetting
+    {
+        public string scheme = "ws";
+        public SslProtocols sslProtocols;
+        public string pfxPath;
+        public string password;
+    }
+
+    [Serializable]
     public class ClientGourp
     {
         public string name;
@@ -67,7 +77,7 @@ namespace Framework
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
-        public string scheme = "ws";
+        public WebSetting webSetting = new WebSetting();
 
         public ClientBase Client
         {
@@ -86,7 +96,7 @@ namespace Framework
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
                 _client.SetHeartTime(heartLimit, heartInterval);
-                _client.Scheme = scheme;
+                _client.OnSetConfigInfo(webSetting.scheme, webSetting.sslProtocols, webSetting.pfxPath, webSetting.password);
                 return _client;
             }
             set { _client = value; }

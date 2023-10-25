@@ -671,12 +671,17 @@ MonoBehaviour:
   authorize: 0
   startConnect: 1
   singleThread: 0
-  reconnectCount: 0
-  reconnectInterval: 0
+  reconnectCount: 10
+  reconnectInterval: 2000
   heartLimit: 5
   heartInterval: 1000
-  scheme: ws
+  webSetting:
+    scheme: wss
+    sslProtocols: 192
+    pfxPath: 
+    password: 
   dontDestroyOnLoad: 1
+  dedicatedServer: 0
 --- !u!4 &1254267027
 Transform:
   m_ObjectHideFlags: 0

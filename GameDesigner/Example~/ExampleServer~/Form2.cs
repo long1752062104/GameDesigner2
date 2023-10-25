@@ -57,6 +57,8 @@ namespace ExampleServer
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter3());
             server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Player>(server));
+            server.Scheme = "wss";
+            server.SslProtocols = System.Security.Authentication.SslProtocols.Tls;
             server.Run((ushort)port);//启动
             run = true;
             button1.Text = "关闭";

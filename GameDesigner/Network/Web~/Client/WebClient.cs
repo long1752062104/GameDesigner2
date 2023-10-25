@@ -32,10 +32,18 @@ namespace Net.Client
     {
         public WebSocket WSClient { get; private set; }
         /// <summary>
+        /// websocket连接策略, 有wss和ws
+        /// </summary>
+        public string Scheme { get; set; } = "ws";
+        /// <summary>
+        /// Ssl类型
+        /// </summary>
+        public SslProtocols SslProtocols { get; set; }
+        /// <summary>
         /// 证书
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
-        
+
         /// <summary>
         /// 构造websocket客户端
         /// </summary>
@@ -57,6 +65,20 @@ namespace Net.Client
 #if !UNITY_EDITOR
             Close();
 #endif
+        }
+
+        public override void OnSetConfigInfo(params object[] args)
+        {
+            Scheme = args[0].ToString();
+            SslProtocols = (SslProtocols)args[1];
+            var pfxPath = args[2].ToString();
+            var password = args[3].ToString();
+            if (string.IsNullOrEmpty(pfxPath))
+                return;
+            if (!File.Exists(pfxPath))
+                return;
+            var pfxData = File.ReadAllBytes(pfxPath);
+            Certificate = new X509Certificate2(pfxData, password);
         }
 
         protected override async UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)

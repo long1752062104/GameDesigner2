@@ -30,7 +30,7 @@ namespace Net.Component
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
-        public string scheme = "ws";
+        public WebSetting webSetting = new WebSetting();
 
         public ClientBase Client
         {
@@ -50,7 +50,7 @@ namespace Net.Component
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
                 _client.SetHeartTime(heartLimit, heartInterval);
-                _client.Scheme = scheme;
+                _client.OnSetConfigInfo(webSetting.scheme, webSetting.sslProtocols, webSetting.pfxPath, webSetting.password);
                 return _client;
             }
             set { _client = value; }
@@ -68,23 +68,6 @@ namespace Net.Component
             if (localTest) _client.host = "127.0.0.1";
 #endif
             _client.port = port;
-            //switch (type)
-            //{
-            //    case SerializeAdapterType.Default:
-            //        break;
-            //    case SerializeAdapterType.PB_JSON_FAST:
-            //        _client.AddAdapter(new Adapter.SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
-            //        break;
-            //    case SerializeAdapterType.Binary:
-            //        _client.AddAdapter(new Adapter.SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
-            //        break;
-            //    case SerializeAdapterType.Binary2:
-            //        _client.AddAdapter(new Adapter.SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
-            //        break;
-            //    case SerializeAdapterType.Binary3:
-            //        _client.AddAdapter(new Adapter.SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
-            //        break;
-            //}
             return _client.Connect(result =>
             {
                 if (result)

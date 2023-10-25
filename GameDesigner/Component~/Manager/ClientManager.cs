@@ -45,6 +45,15 @@ namespace Net.Component
         OnlyWarnAndError,
     }
 
+    [Serializable]
+    public class WebSetting
+    {
+        public string scheme = "ws";
+        public SslProtocols sslProtocols;
+        public string pfxPath;
+        public string password;
+    }
+
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
     public class ClientManager : SingleCase<ClientManager>, ISendHandle
     {
@@ -65,8 +74,7 @@ namespace Net.Component
         public int reconnectInterval = 2000;
         public byte heartLimit = 5;
         public int heartInterval = 1000;
-        public string scheme = "ws";
-        public SslProtocols sslProtocols;
+        public WebSetting webSetting = new WebSetting();
         public bool dontDestroyOnLoad = true;
         public bool dedicatedServer;
 
@@ -90,8 +98,7 @@ namespace Net.Component
                     _client.ReconnectCount = reconnectCount;
                     _client.ReconnectInterval = reconnectInterval;
                     _client.SetHeartTime(heartLimit, heartInterval);
-                    _client.Scheme = scheme;
-                    _client.SslProtocols = sslProtocols;
+                    _client.OnSetConfigInfo(webSetting.scheme, webSetting.sslProtocols, webSetting.pfxPath, webSetting.password);
                 }
                 return _client;
             }
@@ -116,7 +123,7 @@ namespace Net.Component
         }
 
         // Use this for initialization
-        void Start()
+        protected virtual void Start()
         {
 #if !UNITY_EDITOR
             if (dedicatedServer)
