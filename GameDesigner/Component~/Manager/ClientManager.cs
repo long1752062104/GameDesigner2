@@ -76,7 +76,6 @@ namespace Net.Component
         public int heartInterval = 1000;
         public WebSetting webSetting = new WebSetting();
         public bool dontDestroyOnLoad = true;
-        public bool dedicatedServer;
 
 #pragma warning disable IDE1006 // 命名样式
         public ClientBase client
@@ -125,13 +124,11 @@ namespace Net.Component
         // Use this for initialization
         protected virtual void Start()
         {
-#if !UNITY_EDITOR
-            if (dedicatedServer)
-                NDebug.BindLogAll(Console.WriteLine);
-            else
-#endif
+#if !UNITY_EDITOR && UNITY_SERVER
+            NDebug.BindLogAll(Console.WriteLine);
+#else
             BindLog();
-
+#endif
             if (startConnect)
                 Connect();
         }
@@ -164,10 +161,12 @@ namespace Net.Component
         public UniTask<bool> Connect()
         {
             _client = client;
+#if !UNITY_WEBGL
             var ips = Dns.GetHostAddresses(ip);
             if (ips.Length > 0)
                 _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
             else
+#endif
                 _client.host = ip;
 #if UNITY_EDITOR
             if (localTest) _client.host = "127.0.0.1";

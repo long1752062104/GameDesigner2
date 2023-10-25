@@ -314,7 +314,7 @@
             return true;
         }
 
-#if SERVICE
+#if SERVICE || (UNITY_SERVER && !UNITY_EDITOR)
         static NDebug()
         {
             ThreadManager.Invoke("OutputLog", OutputLog, true);
@@ -398,7 +398,7 @@
         {
             if (logQueue.Count >= LogMax)
                 return;
-#if SERVICE
+#if SERVICE || (UNITY_SERVER && !UNITY_EDITOR)
             logQueue.Enqueue(message);
 #else
             LogHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Log] {message}");
@@ -416,7 +416,7 @@
         {
             if (errorQueue.Count >= LogErrorMax)
                 return;
-#if SERVICE
+#if SERVICE || (UNITY_SERVER && !UNITY_EDITOR)
             errorQueue.Enqueue(message);
 #else
             LogErrorHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Error] {message}");
@@ -434,7 +434,7 @@
         {
             if (warningQueue.Count >= LogWarningMax)
                 return;
-#if SERVICE
+#if SERVICE || (UNITY_SERVER && !UNITY_EDITOR)
             warningQueue.Enqueue(message);
 #else
             LogWarningHandle?.Invoke($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][Warning] {message}");
