@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -8,10 +7,15 @@ using System.Security.Cryptography.X509Certificates;
 using Net.Event;
 using Net.Share;
 using Net.System;
-using UnityWebSocket;
 using Newtonsoft_X.Json;
 using Cysharp.Threading.Tasks;
 using Net.Helper;
+using System.Security.Authentication;
+#if !UNITY_EDITOR && UNITY_WEBGL
+using UnityWebSocket;
+#else
+using WebSocketSharp;
+#endif
 #if COCOS2D_JS
 using System.Text;
 using Net.Serialize;
@@ -31,28 +35,12 @@ namespace Net.Client
         /// 证书
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
-
-        private static bool InitCertificateValidation;
-
+        
         /// <summary>
         /// 构造websocket客户端
         /// </summary>
         public WebClient()
         {
-            if (!InitCertificateValidation)
-            {
-                InitCertificateValidation = true;
-                ServicePointManager.ServerCertificateValidationCallback -= ServerCertificateValidationCallback;
-                ServicePointManager.ServerCertificateValidationCallback += ServerCertificateValidationCallback;
-            }
-        }
-
-        /// <summary>
-        /// 证书验证
-        /// </summary>
-        private static bool ServerCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, global::System.Net.Security.SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
         }
 
         /// <summary>
@@ -80,9 +68,14 @@ namespace Net.Client
                     host = NetPort.GetIP();
                 WSClient = new WebSocket($"{Scheme}://{host}:{port}/");
 #if UNITY_EDITOR || !UNITY_WEBGL
-                if (Scheme == "wss" & Certificate == null)
-                    Certificate = CertificateHelper.GetDefaultCertificate();
-                WSClient.Certificate = Certificate;
+                if (Scheme == "wss")
+                {
+                    if (Certificate == null)
+                        Certificate = CertificateHelper.GetDefaultCertificate();
+                    WSClient.SslConfiguration.ClientCertificates = new X509CertificateCollection { Certificate };
+                    WSClient.SslConfiguration.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    WSClient.SslConfiguration.EnabledSslProtocols = SslProtocols;
+                }
 #endif
                 WSClient.OnError += (sender, e) =>
                 {

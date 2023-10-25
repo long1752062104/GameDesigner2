@@ -134,10 +134,18 @@ namespace GameDesigner
             if (s.actionSystem)
             {
                 sm.stateMachine.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[6], "animMode"), sm.stateMachine.animMode);
-                if (sm.stateMachine.animMode == AnimationMode.Animation)
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("animation"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[7], "animation"));
-                else
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("animator"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "animator"));
+                switch (sm.stateMachine.animMode)
+                {
+                    case AnimationMode.Animation:
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("animation"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[7], "animation"));
+                        break;
+                    case AnimationMode.Animator:
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("animator"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "animator"));
+                        break;
+                    case AnimationMode.MeshAnimator:
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("meshAnimator"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "meshAnimator"));
+                        break;
+                }
                 s.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[9], "animPlayMode"), (int)s.animPlayMode, new GUIContent[]{
                     new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[10],"Random"),
                     new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[11],"Sequence") }
@@ -787,7 +795,7 @@ namespace GameDesigner
         {
             if (stateManager == null)
                 return;
-            stateManager.OnScriptReload();
+            stateManager.OnValidate();
         }
     }
 

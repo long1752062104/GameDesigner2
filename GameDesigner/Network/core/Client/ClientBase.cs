@@ -15,30 +15,31 @@
 *被误传为原始软件。
 *  3. 本通知不得从任何来源分发中删除或更改。
 */
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using Cysharp.Threading.Tasks;
+using Net.Event;
+using Net.Share;
+using Net.System;
+using Net.Serialize;
+using Net.Helper;
+using Net.Server;
+using Net.Adapter;
+using System.Security.Authentication;
+
 namespace Net.Client
 {
-    using global::System;
-    using global::System.Collections.Concurrent;
-    using global::System.Collections.Generic;
-    using global::System.IO;
-    using global::System.Net;
-    using global::System.Net.NetworkInformation;
-    using global::System.Net.Sockets;
-    using global::System.Reflection;
-    using global::System.Text;
-    using global::System.Threading;
-    using global::System.Threading.Tasks;
-    using global::System.Security.Cryptography;
-    using global::System.Text.RegularExpressions;
-    using Cysharp.Threading.Tasks;
-    using Net.Event;
-    using Net.Share;
-    using Net.System;
-    using Net.Serialize;
-    using Net.Helper;
-    using Net.Server;
-    using Net.Adapter;
-
     /// <summary>
     /// 网络客户端核心基类 2019.3.3
     /// </summary>
@@ -466,6 +467,10 @@ namespace Net.Client
         /// websocket连接策略, 有wss和ws
         /// </summary>
         public string Scheme { get; set; } = "ws";
+        /// <summary>
+        /// Ssl类型
+        /// </summary>
+        public SslProtocols SslProtocols { get; set; }
 
         /// <summary>
         /// 构造函数

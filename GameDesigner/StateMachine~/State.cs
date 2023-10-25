@@ -17,7 +17,9 @@ namespace GameDesigner
         /// <summary>
         /// 新版动画
         /// </summary>
-        Animator
+        Animator,
+
+        MeshAnimator,
     }
 
     /// <summary>
@@ -132,8 +134,15 @@ namespace GameDesigner
                     break;
                 case AnimationMode.Animator:
                     stateMachine.animator.speed = animSpeed;
-                    if(action.rewind) stateMachine.animator.Rebind();
+                    if (action.rewind) stateMachine.animator.Rebind();
                     stateMachine.animator.Play(action.clipName);
+                    break;
+                case AnimationMode.MeshAnimator:
+#if SHADER_ANIMATED
+                    stateMachine.meshAnimator.speed = animSpeed;
+                    if (action.rewind) stateMachine.meshAnimator.RestartAnim();
+                    stateMachine.meshAnimator.Play(action.clipName);
+#endif
                     break;
             }
         }
@@ -141,7 +150,7 @@ namespace GameDesigner
         /// <summary>
         /// 状态每一帧
         /// </summary>
-		public void OnUpdateState()
+		public void UpdateAction()
         {
             bool isPlaying = true;
             var action = Action;
@@ -154,6 +163,11 @@ namespace GameDesigner
                     break;
                 case AnimationMode.Animator:
                     action.animTime = stateMachine.animator.GetCurrentAnimatorStateInfo(0).normalizedTime / 1f * 100f;
+                    break;
+                case AnimationMode.MeshAnimator:
+#if SHADER_ANIMATED
+                    action.animTime = stateMachine.meshAnimator.currentAnimTime / stateMachine.meshAnimator.currentAnimation.Length * 100f;
+#endif
                     break;
             }
             if (action.animTime >= action.animTimeMax | !isPlaying)
@@ -209,6 +223,38 @@ namespace GameDesigner
             foreach (ActionBehaviour behaviour in Action.behaviours) //当子动作停止
                 if (behaviour.Active)
                     behaviour.OnStop(Action);
+        }
+
+        internal void Init()
+        {
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                var behaviour = (StateBehaviour)behaviours[i].InitBehaviour();
+                behaviours[i] = behaviour;
+                behaviour.OnInit();
+            }
+            foreach (var t in transitions)
+            {
+                t.Init();
+            }
+            if (actionSystem)
+            {
+                foreach (var action in actions)
+                {
+                    action.Init();
+                }
+            }
+        }
+
+        internal void Update()
+        {
+            if (actionSystem)
+                UpdateAction();
+            foreach (StateBehaviour behaviour in behaviours)
+                if (behaviour.Active)
+                    behaviour.OnUpdate();
+            for (int i = 0; i < transitions.Count; i++)
+                transitions[i].Update();
         }
     }
 }

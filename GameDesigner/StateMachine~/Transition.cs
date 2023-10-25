@@ -1,4 +1,7 @@
-﻿namespace GameDesigner
+﻿using System;
+using UnityEngine;
+
+namespace GameDesigner
 {
     /// <summary>
     /// 状态连接组件 2017年12月6日
@@ -73,6 +76,36 @@
             for (int i = 0; i < state.transitions.Count; i++)
                 state.transitions[i].ID = i;
             return t;
+        }
+
+        internal void Init()
+        {
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                var behaviour = (TransitionBehaviour)behaviours[i].InitBehaviour();
+                behaviour.transitionID = i;
+                behaviours[i] = behaviour;
+                behaviour.OnInit();
+            }
+        }
+
+        internal void Update()
+        {
+            foreach (TransitionBehaviour behaviour in behaviours)
+                if (behaviour.Active)
+                    behaviour.OnUpdate(ref isEnterNextState);
+            if (model == TransitionModel.ExitTime)
+            {
+                time += Time.deltaTime;
+                if (time > exitTime)
+                    isEnterNextState = true;
+            }
+            if (isEnterNextState)
+            {
+                stateMachine.EnterNextState(stateMachine.currState, nextState);
+                time = 0;
+                isEnterNextState = false;
+            }
         }
     }
 }

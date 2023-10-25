@@ -1,4 +1,4 @@
-﻿using Fleck;
+﻿using WebSocketSharp;
 
 namespace Net.Server
 {
@@ -10,7 +10,7 @@ namespace Net.Server
         /// <summary>
         /// webSocket套接字
         /// </summary>
-        public WebSocketConnection WSClient { get; set; }
+        public WebSocket WSClient { get; set; }
 
         public override void Dispose()
         {

@@ -7,6 +7,7 @@ using Net.Helper;
 using Net.Share;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System.Security.Authentication;
 
 namespace Net.Component
 {
@@ -15,7 +16,7 @@ namespace Net.Component
         Tcp, Gcp, Udx, Kcp, Web
     }
 
-    public enum LogMode 
+    public enum LogMode
     {
         None,
         /// <summary>
@@ -65,7 +66,9 @@ namespace Net.Component
         public byte heartLimit = 5;
         public int heartInterval = 1000;
         public string scheme = "ws";
+        public SslProtocols sslProtocols;
         public bool dontDestroyOnLoad = true;
+        public bool dedicatedServer;
 
 #pragma warning disable IDE1006 // 命名样式
         public ClientBase client
@@ -88,6 +91,7 @@ namespace Net.Component
                     _client.ReconnectInterval = reconnectInterval;
                     _client.SetHeartTime(heartLimit, heartInterval);
                     _client.Scheme = scheme;
+                    _client.SslProtocols = sslProtocols;
                 }
                 return _client;
             }
@@ -114,6 +118,19 @@ namespace Net.Component
         // Use this for initialization
         void Start()
         {
+#if !UNITY_EDITOR
+            if (dedicatedServer)
+                NDebug.BindLogAll(Console.WriteLine);
+            else
+#endif
+            BindLog();
+
+            if (startConnect)
+                Connect();
+        }
+
+        private void BindLog()
+        {
             switch (logMode)
             {
                 case LogMode.Default:
@@ -135,8 +152,6 @@ namespace Net.Component
                     NDebug.BindLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
-            if (startConnect)
-                Connect();
         }
 
         public UniTask<bool> Connect()

@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Networking;
-using System.IO;
 using System;
 
 namespace UnityWebSocket.Editor

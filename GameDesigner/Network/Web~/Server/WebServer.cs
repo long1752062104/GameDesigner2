@@ -1,20 +1,17 @@
-﻿namespace Net.Server
-{
-    using global::System;
-    using global::System.Collections.Generic;
-    using global::System.Net;
-    using global::System.Net.Sockets;
-    using global::System.Text;
-    using global::System.Threading;
-    using Fleck;
-    using Net.Share;
-    using Net.System;
-    using Net.Serialize;
-    using Newtonsoft_X.Json;
-    using Debug = Event.NDebug;
-    using global::System.Security.Cryptography.X509Certificates;
-    using Net.Helper;
+﻿using System;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using Net.Share;
+using Net.System;
+using Net.Helper;
+using Newtonsoft_X.Json;
+using WebSocketSharp.Server;
+using WebSocketSharp;
+using Debug = Net.Event.NDebug;
 
+namespace Net.Server
+{
     /// <summary>
     /// web网络服务器 2020.8.25 七夕
     /// 通过JavaScript脚本, httml网页进行连接. 和 WebClient连接
@@ -36,70 +33,79 @@
         /// 证书
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
+        /// <summary>
+        /// Ssl类型
+        /// </summary>
+        public SslProtocols SslProtocols { get; set; }
+
+        internal class WebServerBehavior : WebSocketBehavior
+        {
+            internal WebServer<Player, Scene> Server;
+            internal Player client;
+
+            protected override void OnOpen()
+            {
+                var context = WebSocket.Context;
+                var remotePoint = context.UserEndPoint;
+                client = Server.AcceptHander(null, remotePoint, WebSocket);
+            }
+
+            protected override void OnMessage(MessageEventArgs e)
+            {
+                var buffer = e.RawData;
+                Server.receiveCount += buffer.Length;
+                Server.receiveAmount++;
+                client.BytesReceived += buffer.Length;
+                if (e.IsBinary)
+                {
+                    ISegment segment;
+                    switch (BufferPool.Version)
+                    {
+                        case SegmentVersion.Version2:
+                            segment = new Segment2(buffer, false);
+                            break;
+                        case SegmentVersion.Version3:
+                            segment = new ArraySegment(buffer, false);
+                            break;
+                        default:
+                            segment = new Segment(buffer, false);
+                            break;
+                    }
+                    client.RevdQueue.Enqueue(segment);
+                }
+                else if (e.IsText)
+                {
+                    Server.WSRevdHandler(client, buffer, e.Data);
+                }
+            }
+
+            protected override void OnClose(CloseEventArgs e)
+            {
+                Server.RemoveClient(client);
+            }
+        }
 
         protected override void CreateServerSocket(ushort port)
         {
             Server = new WebSocketServer($"{Scheme}://{NetPort.GetIP()}:{port}");
-            Server.ListenerSocket.NoDelay = true;
-            if (Scheme == "wss" & Certificate == null)
-                Certificate = CertificateHelper.GetDefaultCertificate();
-            Server.Certificate = Certificate;
-            Server.Start(AcceptConnect);
+            if (Scheme == "wss")
+            {
+                if (Certificate == null)
+                    Certificate = CertificateHelper.GetDefaultCertificate();
+                Server.SslConfiguration.ServerCertificate = Certificate;
+                Server.SslConfiguration.EnabledSslProtocols = SslProtocols;
+            }
+            Server.AddWebSocketService<WebServerBehavior>("/", client => client.Server = this);
+            Server.Start();
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
         {
         }
 
-        //开始接受客户端连接
-        private void AcceptConnect(IWebSocketConnection wsClient)
-        {
-            var wsClient1 = wsClient as WebSocketConnection;
-            var clientSocket = ((SocketWrapper)wsClient1.Socket)._socket;
-            var remotePoint = clientSocket.RemoteEndPoint;
-            if (!UserIDStack.TryPop(out int uid))
-                uid = GetCurrUserID();
-            Player client = null;
-            wsClient1.OnOpen = () => //这里无法优化,必须要在Open事件后才能添加, AcceptHander内部有发送uid的代码导致连接断开
-            {
-                client = AcceptHander(clientSocket, remotePoint, wsClient1);
-            };
-            wsClient1.OnMessage = (buffer, message) => //utf-8解析
-            {
-                receiveCount += buffer.Length;
-                receiveAmount++;
-                client.BytesReceived += buffer.Length;
-                WSRevdHandler(client, buffer, message);
-            };
-            wsClient1.OnBinary = (buffer) =>
-            {
-                ISegment segment;
-                switch (BufferPool.Version)
-                {
-                    case SegmentVersion.Version2:
-                        segment = new Segment2(buffer, false);
-                        break;
-                    case SegmentVersion.Version3:
-                        segment = new ArraySegment(buffer, false);
-                        break;
-                    default:
-                        segment = new Segment(buffer, false);
-                        break;
-                }
-                receiveCount += buffer.Length;
-                receiveAmount++;
-                client.BytesReceived += buffer.Length;
-                client.RevdQueue.Enqueue(segment);
-            };
-            wsClient1.OnClose = () =>
-            {
-                RemoveClient(client);
-            };
-        }
-
         protected override void AcceptHander(Player client, params object[] args)
         {
-            client.WSClient = args[0] as WebSocketConnection; //在这里赋值才不会在多线程并行状态下报null问题
+            client.WSClient = args[0] as WebSocket; //在这里赋值才不会在多线程并行状态下报null问题
         }
 
         protected override bool IsInternalCommand(Player client, RPCModel model)
@@ -144,7 +150,7 @@
         public override void Close()
         {
             base.Close();
-            Server.Dispose();
+            Server.Stop();
         }
 
 #if COCOS2D_JS

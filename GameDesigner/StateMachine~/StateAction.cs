@@ -1,4 +1,6 @@
-﻿namespace GameDesigner
+﻿using System;
+
+namespace GameDesigner
 {
     /// <summary>
     /// ARPG状态动作
@@ -31,5 +33,15 @@
         /// 动作是否完成?, 当动画播放结束后为True, 否则为false
         /// </summary>
         public bool IsComplete => animTime >= animTimeMax - 1;
+
+        internal void Init()
+        {
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                var behaviour = (ActionBehaviour)behaviours[i].InitBehaviour();
+                behaviours[i] = behaviour;
+                behaviour.OnInit();
+            }
+        }
     }
 }
