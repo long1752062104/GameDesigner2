@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Net.System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -18,8 +19,12 @@ namespace GameDesigner
         /// 新版动画
         /// </summary>
         Animator,
-
+#if SHADER_ANIMATED
+        /// <summary>
+        /// Shader GPU网格动画
+        /// </summary>
         MeshAnimator,
+#endif
     }
 
     /// <summary>
@@ -46,7 +51,7 @@ namespace GameDesigner
         /// <summary>
         /// 状态连接集合
         /// </summary>
-		public List<Transition> transitions = new List<Transition>();
+		public Transition[] transitions = new Transition[0];
         /// <summary>
         /// 动作系统 使用为真 , 不使用为假
         /// </summary>
@@ -78,7 +83,8 @@ namespace GameDesigner
         /// <summary>
         /// 状态动作集合
         /// </summary>
-		public List<StateAction> actions = new List<StateAction>();
+		public StateAction[] actions = new StateAction[0];
+        internal bool IsPlaying;
 
         public State() { }
 
@@ -101,159 +107,106 @@ namespace GameDesigner
         public State(StateMachine _stateMachine)
         {
             stateMachine = _stateMachine;
-            ID = stateMachine.states.Count;
-            stateMachine.states.Add(this);
-            actions.Add(new StateAction() { ID = ID, stateMachine = stateMachine });
+            ID = stateMachine.states.Length;
+            ArrayExtend.Add(ref stateMachine.states, this);
+            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine });
             stateMachine.UpdateStates();
         }
 
         /// <summary>
         /// 当前状态动作
         /// </summary>
-        public StateAction Action => actions[actionIndex % actions.Count];
+        public StateAction Action => actions[actionIndex % actions.Length];
 
         /// <summary>
         /// 进入状态
         /// </summary>
-		public void OnEnterState()
+		public void Enter()
         {
-            var action = Action;
+            IsPlaying = true;
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
-                actionIndex = Random.Range(0, actions.Count);
+                actionIndex = Random.Range(0, actions.Length);
             else
                 actionIndex++;
-            foreach (ActionBehaviour behaviour in action.behaviours) //当子动作的动画开始进入时调用
-                if (behaviour.Active)
-                    behaviour.OnEnter(Action);
-            switch (stateMachine.animMode)
+            for (int i = 0; i < behaviours.Length; i++)
             {
-                case AnimationMode.Animation:
-                    stateMachine.animation[action.clipName].speed = animSpeed;
-                    if (action.rewind) stateMachine.animation.Rewind(action.clipName);
-                    stateMachine.animation.Play(action.clipName);
-                    break;
-                case AnimationMode.Animator:
-                    stateMachine.animator.speed = animSpeed;
-                    if (action.rewind) stateMachine.animator.Rebind();
-                    stateMachine.animator.Play(action.clipName);
-                    break;
-                case AnimationMode.MeshAnimator:
-#if SHADER_ANIMATED
-                    stateMachine.meshAnimator.speed = animSpeed;
-                    if (action.rewind) stateMachine.meshAnimator.RestartAnim();
-                    stateMachine.meshAnimator.Play(action.clipName);
-#endif
-                    break;
+                var behaviour = behaviours[i] as StateBehaviour;
+                if (behaviour.Active)
+                    behaviour.OnEnter();
             }
+            for (int i = 0; i < transitions.Length; i++)
+            {
+                var transition = transitions[i];
+                transition.time = 0;
+            }
+            if (actionSystem)
+                Action.Enter(animSpeed);
         }
 
-        /// <summary>
-        /// 状态每一帧
-        /// </summary>
-		public void UpdateAction()
+        internal void Exit()
         {
-            bool isPlaying = true;
-            var action = Action;
-            switch (stateMachine.animMode)
+            for (int i = 0; i < behaviours.Length; i++)
             {
-                case AnimationMode.Animation:
-                    var animState = stateMachine.animation[action.clipName];
-                    action.animTime = animState.time / animState.length * 100f;
-                    isPlaying = stateMachine.animation.isPlaying;
-                    break;
-                case AnimationMode.Animator:
-                    action.animTime = stateMachine.animator.GetCurrentAnimatorStateInfo(0).normalizedTime / 1f * 100f;
-                    break;
-                case AnimationMode.MeshAnimator:
-#if SHADER_ANIMATED
-                    action.animTime = stateMachine.meshAnimator.currentAnimTime / stateMachine.meshAnimator.currentAnimation.Length * 100f;
-#endif
-                    break;
-            }
-            if (action.animTime >= action.animTimeMax | !isPlaying)
-            {
-                if (isExitState & transitions.Count > 0)
-                {
-                    transitions[DstStateID].isEnterNextState = true;
-                    return;
-                }
-                if (animLoop)
-                {
-                    OnExitState();//退出函数
-                    OnActionExit();
-                    if (stateMachine.stateID == ID)//如果在动作行为里面有切换状态代码, 则不需要重载函数了, 否则重载当前状态
-                        OnEnterState();//重载进入函数
-                    return;
-                }
-                else OnStop();
-            }
-            foreach (ActionBehaviour behaviour in action.behaviours)
+                var behaviour = behaviours[i] as StateBehaviour;
                 if (behaviour.Active)
-                    behaviour.OnUpdate(action);
-        }
-
-        /// <summary>
-        /// 当退出状态
-        /// </summary>
-		public void OnExitState()
-        {
-            foreach (ActionBehaviour behaviour in Action.behaviours) //当子动作结束
-                if (behaviour.Active)
-                    behaviour.OnExit(Action);
+                    behaviour.OnExit();
+            }
+            if (actionSystem)
+                Action.Exit();
         }
 
         /// <summary>
         /// 当子动作处于循环播放模式时, 子动作每次播放完成动画都会调用一次
         /// </summary>
-        private void OnActionExit()
+        internal void OnActionExit()
         {
-            foreach (StateBehaviour behaviour in behaviours) //当子动作停止
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i] as StateBehaviour;
                 if (behaviour.Active)
                     behaviour.OnActionExit();
+            }
         }
 
         /// <summary>
         /// 当动作停止
         /// </summary>
-        public void OnStop()
+        public void OnActionStop()
         {
-            foreach (StateBehaviour behaviour in behaviours) //当子动作停止
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i] as StateBehaviour;
                 if (behaviour.Active)
                     behaviour.OnStop();
-            foreach (ActionBehaviour behaviour in Action.behaviours) //当子动作停止
-                if (behaviour.Active)
-                    behaviour.OnStop(Action);
+            }
         }
 
         internal void Init()
         {
-            for (int i = 0; i < behaviours.Count; i++)
+            for (int i = 0; i < behaviours.Length; i++)
             {
-                var behaviour = (StateBehaviour)behaviours[i].InitBehaviour();
+                var behaviour = behaviours[i].InitBehaviour();
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
             foreach (var t in transitions)
-            {
                 t.Init();
-            }
             if (actionSystem)
-            {
                 foreach (var action in actions)
-                {
                     action.Init();
-                }
-            }
         }
 
         internal void Update()
         {
             if (actionSystem)
-                UpdateAction();
-            foreach (StateBehaviour behaviour in behaviours)
+                Action.Update(this);
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i] as StateBehaviour;
                 if (behaviour.Active)
                     behaviour.OnUpdate();
-            for (int i = 0; i < transitions.Count; i++)
+            }
+            for (int i = 0; i < transitions.Length; i++)
                 transitions[i].Update();
         }
     }

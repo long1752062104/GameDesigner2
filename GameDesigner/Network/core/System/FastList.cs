@@ -212,20 +212,6 @@ namespace Net.System
             _size++;
         }
 
-        public virtual void Add(ref T item)
-        {
-            Add(ref item, out _);
-        }
-
-        public virtual void Add(ref T item, out int index)
-        {
-            index = _size;
-            if (index == _items.Length)
-                EnsureCapacity(index + 1);
-            _items[index] = item;
-            _size++;
-        }
-
         int IList.Add(object item)
         {
             ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
@@ -793,7 +779,7 @@ namespace Net.System
             RemoveAtInternal(index);
         }
 
-        private bool RemoveAtInternal(int index)
+        protected virtual bool RemoveAtInternal(int index)
         {
             if (index >= _size | index < 0)
                 return false;
@@ -934,9 +920,9 @@ namespace Net.System
             return true;
         }
 
-        internal T[] _items;
+        public T[] _items;
 
-        private int _size;
+        public int _size;
 
         [NonSerialized]
         private object _syncRoot;

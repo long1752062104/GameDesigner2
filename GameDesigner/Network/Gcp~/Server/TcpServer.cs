@@ -4,12 +4,10 @@
     using global::System.Net;
     using global::System.Net.Sockets;
     using global::System.Threading;
-    using global::System.Security.Cryptography;
     using Net.Share;
     using Net.System;
     using Net.Helper;
     using Debug = Event.NDebug;
-    using global::System.Drawing;
 
     /// <summary>
     /// TCP服务器类型
@@ -184,9 +182,6 @@
             return stream.ToArray();
         }
 
-#if TEST1
-        ListSafe<byte> list = new ListSafe<byte>();
-#endif
         protected override void SendByteData(Player client, byte[] buffer)
         {
             if (!client.Client.Connected)
@@ -195,15 +190,6 @@
                 return;
             if (client.Client.Poll(0, SelectMode.SelectWrite))
             {
-#if TEST1
-                list.AddRange(buffer);
-                do 
-                {
-                    var buffer1 = list.GetRemoveRange(0, RandomHelper.Range(0, buffer.Length));
-                    Net.Client.ClientBase.Instance.ReceiveTest(buffer1);
-                }
-                while (client.tcpRPCModels.Count == 0 & list.Count > 0);
-#else
                 int count1 = client.Client.Send(buffer, 0, buffer.Length, SocketFlags.None, out SocketError error);
                 if (error != SocketError.Success | count1 <= 0)
                 {
@@ -214,7 +200,6 @@
                     Debug.LogError($"发送了{buffer.Length - count1}个字节失败!");
                 sendAmount++;
                 sendCount += buffer.Length;
-#endif
             }
             else
             {

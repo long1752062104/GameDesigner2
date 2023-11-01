@@ -40,7 +40,7 @@ namespace GameDesigner
             {
                 if (stateMachine == null)
                     return;
-                if (stateMachine.states.Count > 0)
+                if (stateMachine.states.Length > 0)
                     UpdateScrollPosition(stateMachine.states[0].rect.position - new Vector2(position.size.x / 2 - 75, position.size.y / 2 - 15)); //更新滑动矩阵
                 else
                     UpdateScrollPosition(Center); //归位到矩形的中心
@@ -112,8 +112,8 @@ namespace GameDesigner
                         DrawConnection(state.rect.center, t.nextState.rect.center, Color.green, 1, true);
                         if (Event.current.keyCode == KeyCode.Delete)
                         {
-                            state.transitions.Remove(t);
-                            for (int i = 0; i < state.transitions.Count; i++)
+                            ArrayExtend.Remove(ref state.transitions, t);
+                            for (int i = 0; i < state.transitions.Length; i++)
                                 state.transitions[i].ID = i;
                             return;
                         }
@@ -136,7 +136,7 @@ namespace GameDesigner
                             state.ID
                         };
                     }
-                    if (state.transitions.Count == 0)
+                    if (state.transitions.Length == 0)
                         selectTransition = null;
                     else
                         selectTransition = state.transitions[0];
@@ -156,11 +156,11 @@ namespace GameDesigner
             {
                 if (state == stateMachine.defaultState & stateMachine.selectState == stateMachine.defaultState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.defaultAndSelectStyle);
-                else if (state == stateMachine.defaultState & state.ID == stateMachine.stateID)
+                else if (state == stateMachine.defaultState & state.ID == stateMachine.stateId)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.defaultAndRuntimeIndexStyle);
                 else if (state == stateMachine.defaultState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.stateInDefaultStyle);
-                else if (stateMachine.stateID == state.ID)
+                else if (stateMachine.stateId == state.ID)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.indexInRuntimeStyle);
                 else if (state == stateMachine.selectState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.selectStateStyle);
@@ -220,7 +220,7 @@ namespace GameDesigner
 
         private void SelectStatesInRect(Rect r)
         {
-            for (int i = 0; i < stateMachine.states.Count; i++)
+            for (int i = 0; i < stateMachine.states.Length; i++)
             {
                 Rect rect = stateMachine.states[i].rect;
                 if (rect.xMax < r.x || rect.x > r.xMax || rect.yMax < r.y || rect.y > r.yMax)
@@ -360,12 +360,12 @@ namespace GameDesigner
         {
             foreach (var state in stateMachine.states)
             {
-                for (int n = 0; n < state.transitions.Count; n++)
+                for (int n = 0; n < state.transitions.Length; n++)
                 {
                     if (state.transitions[n].nextState == null)
                         continue;
                     if (stateMachine.selectStates.Contains(state.transitions[n].nextState.ID))
-                        state.transitions.RemoveAt(n);
+                        ArrayExtend.RemoveAt(ref state.transitions, n);
                 }
             }
             var ids = new List<int>();
@@ -373,11 +373,11 @@ namespace GameDesigner
                 ids.Add(stateMachine.states[i].ID);
             while (ids.Count > 0)
             {
-                for (int i = 0; i < stateMachine.states.Count; i++)
+                for (int i = 0; i < stateMachine.states.Length; i++)
                 {
                     if (stateMachine.states[i].ID == ids[0])
                     {
-                        stateMachine.states.RemoveAt(i);
+                        ArrayExtend.RemoveAt(ref stateMachine.states, i);
                         EditorUtility.SetDirty(stateMachine);
                         break;
                     }
@@ -408,8 +408,9 @@ namespace GameDesigner
                             return;
                     }
                     GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[95]), false, () => {
-                        State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.LANGUAGE[96] + stateMachine.states.Count, mousePosition);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[95]), false, () =>
+                    {
+                        State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.LANGUAGE[96] + stateMachine.states.Length, mousePosition);
                     });
                     if (stateMachine.selectState != null)
                     {
@@ -419,18 +420,18 @@ namespace GameDesigner
                             var seles = stateMachine.selectStates;
                             State s = Net.CloneHelper.DeepCopy<State>(stateMachine.states[seles[0]]);
                             s.perID = s.ID;
-                            s.ID = stateMachine.states.Count;
+                            s.ID = stateMachine.states.Length;
                             s.rect.center = mousePosition;
-                            stateMachine.states.Add(s);
+                            ArrayExtend.Add(ref stateMachine.states, s);
                             states.Add(s);
                             Vector2 dis = stateMachine.states[seles[0]].rect.center - mousePosition;
                             for (int i = 1; i < stateMachine.selectStates.Count; ++i)
                             {
                                 State ss = Net.CloneHelper.DeepCopy<State>(stateMachine.states[seles[i]]);
                                 ss.perID = ss.ID;
-                                ss.ID = stateMachine.states.Count;
+                                ss.ID = stateMachine.states.Length;
                                 ss.rect.position -= dis;
-                                stateMachine.states.Add(ss);
+                                ArrayExtend.Add(ref stateMachine.states, ss);
                                 states.Add(ss);
                             }
                             foreach (var state in states)

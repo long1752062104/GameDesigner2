@@ -7,6 +7,9 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
+#if SHADER_ANIMATED
+using FSG.MeshAnimator.ShaderAnimated;
+#endif
 
 namespace GameDesigner
 {
@@ -16,9 +19,9 @@ namespace GameDesigner
     {
         private static StateManager stateManager = null;
         public static string createScriptName = "NewStateBehaviour";
-		public static string stateActionScriptPath = "/Actions/StateActions";
-		public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
-		public static string transitionScriptPath = "/Actions/Transitions";
+        public static string stateActionScriptPath = "/Actions/StateActions";
+        public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
+        public static string transitionScriptPath = "/Actions/Transitions";
         private static bool findBehaviours;
         private static bool findBehaviours1;
         private static bool findBehaviours2;
@@ -31,7 +34,7 @@ namespace GameDesigner
         {
             stateManager = target as StateManager;
             var stateMachine = stateManager.stateMachine;
-            if (stateMachine != null) 
+            if (stateMachine != null)
             {
                 if (stateMachine.animation == null)
                     stateMachine.animation = stateManager.GetComponentInChildren<Animation>();
@@ -61,9 +64,25 @@ namespace GameDesigner
                         }
                     }
                 }
+#if SHADER_ANIMATED
+                if (stateMachine.meshAnimator == null)
+                    stateMachine.meshAnimator = stateManager.GetComponentInChildren<ShaderMeshAnimator>();
+                if (stateMachine.meshAnimator != null)
+                {
+                    var clips = stateMachine.meshAnimator.animations;
+                    if (stateMachine.clipNames.Count != clips.Length)
+                    {
+                        stateMachine.clipNames.Clear();
+                        foreach (var clip in clips)
+                        {
+                            stateMachine.clipNames.Add(clip.AnimationName);
+                        }
+                    }
+                }
+#endif
             }
             StateMachineWindow.stateMachine = stateManager.stateMachine;
-            if (findBehaviourTypes == null) 
+            if (findBehaviourTypes == null)
             {
                 findBehaviourTypes = new List<Type>();
                 AddBehaviourTypes(findBehaviourTypes, typeof(StateBehaviour));
@@ -80,7 +99,7 @@ namespace GameDesigner
             }
         }
 
-        private void AddBehaviourTypes(List<Type> types, Type type) 
+        private void AddBehaviourTypes(List<Type> types, Type type)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies)
@@ -104,7 +123,7 @@ namespace GameDesigner
             {
                 DrawState(stateManager.stateMachine.selectState, stateManager);
                 EditorGUILayout.Space();
-                for (int i = 0; i < stateManager.stateMachine.selectState.transitions.Count; ++i)
+                for (int i = 0; i < stateManager.stateMachine.selectState.transitions.Length; ++i)
                     DrawTransition(stateManager.stateMachine.selectState.transitions[i]);
             }
             else if (StateMachineWindow.selectTransition != null)
@@ -115,112 +134,245 @@ namespace GameDesigner
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(stateManager.stateMachine);
             Repaint();
-            J: serializedObject.ApplyModifiedProperties();
+        J: serializedObject.ApplyModifiedProperties();
         }
+
+        private static SerializedObject _stateMachineObject;
+        private static SerializedObject StateMachineObject
+        {
+            get
+            {
+                if (_stateMachineObject == null)
+                    _stateMachineObject = new SerializedObject(stateManager.stateMachine);
+                return _stateMachineObject;
+            }
+        }
+
+        private static SerializedProperty _statesProperty;
+        private static SerializedProperty StatesProperty
+        {
+            get
+            {
+                if (_statesProperty == null)
+                    _statesProperty = StateMachineObject.FindProperty("states").GetArrayElementAtIndex(stateManager.stateMachine.selectState.ID);
+                return _statesProperty;
+            }
+        }
+
+        private static SerializedProperty _nameProperty;
+        private static SerializedProperty NameProperty
+        {
+            get
+            {
+                if (_nameProperty == null)
+                    _nameProperty = StatesProperty.FindPropertyRelative("name");
+                return _nameProperty;
+            }
+        }
+
+        private static SerializedProperty _actionSystemProperty;
+        private static SerializedProperty ActionSystemProperty
+        {
+            get
+            {
+                if (_actionSystemProperty == null)
+                    _actionSystemProperty = StatesProperty.FindPropertyRelative("actionSystem");
+                return _actionSystemProperty;
+            }
+        }
+
+        private static SerializedProperty _animSpeedProperty;
+        private static SerializedProperty animSpeedProperty
+        {
+            get
+            {
+                if (_animSpeedProperty == null)
+                    _animSpeedProperty = StatesProperty.FindPropertyRelative("animSpeed");
+                return _animSpeedProperty;
+            }
+        }
+
+        private static SerializedProperty _animLoopProperty;
+        private static SerializedProperty animLoopProperty
+        {
+            get
+            {
+                if (_animLoopProperty == null)
+                    _animLoopProperty = StatesProperty.FindPropertyRelative("animLoop");
+                return _animLoopProperty;
+            }
+        }
+
+        private static SerializedProperty _actionsProperty;
+        private static SerializedProperty actionsProperty
+        {
+            get
+            {
+                if (_actionsProperty == null)
+                    _actionsProperty = StatesProperty.FindPropertyRelative("actions");
+                return _actionsProperty;
+            }
+        }
+
+        private static SerializedProperty _animationProperty;
+        private static SerializedProperty animationProperty
+        {
+            get
+            {
+                if (_animationProperty == null)
+                    _animationProperty = StateMachineObject.FindProperty("animation");
+                return _animationProperty;
+            }
+        }
+
+        private static SerializedProperty _animatorProperty;
+        private static SerializedProperty animatorProperty
+        {
+            get
+            {
+                if (_animatorProperty == null)
+                    _animatorProperty = StateMachineObject.FindProperty("animator");
+                return _animatorProperty;
+            }
+        }
+
+        private static SerializedProperty _meshAnimatorProperty;
+        private static SerializedProperty meshAnimatorProperty
+        {
+            get
+            {
+                if (_meshAnimatorProperty == null)
+                    _meshAnimatorProperty = StateMachineObject.FindProperty("meshAnimator");
+                return _meshAnimatorProperty;
+            }
+        }
+
+        private static void ResetPropertys()
+        {
+            _stateMachineObject = null;
+            _statesProperty = null;
+            _nameProperty = null;
+            _actionSystemProperty = null;
+            _animSpeedProperty = null;
+            _animLoopProperty = null;
+            _actionsProperty = null;
+            _animationProperty = null;
+            _animatorProperty = null;
+            _meshAnimatorProperty = null;
+        }
+
+        private static State CurrentState;
 
         /// <summary>
         /// 绘制状态监视面板属性
         /// </summary>
-        public static void DrawState(State s, StateManager sm)
+        public static void DrawState(State state, StateManager sm)
         {
-            var serializedObject = new SerializedObject(sm.stateMachine);
-            var serializedProperty = serializedObject.FindProperty("states").GetArrayElementAtIndex(s.ID);
-            serializedObject.Update();
+            if (CurrentState != state)
+            {
+                CurrentState = state;
+                ResetPropertys();
+            }
+            StateMachineObject.Update();
             GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[2], GUI.skin.GetStyle("dragtabdropwindow"));
             EditorGUILayout.BeginVertical("ProgressBarBack");
-            EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative("name"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[3], "name"));
-            EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[4], "stateID"), s.ID);
-            EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative("actionSystem"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[5], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
-            if (s.actionSystem)
+            EditorGUILayout.PropertyField(NameProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[3], "name"));
+            EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[4], "stateID"), state.ID);
+            EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[5], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
+            if (state.actionSystem)
             {
                 sm.stateMachine.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[6], "animMode"), sm.stateMachine.animMode);
                 switch (sm.stateMachine.animMode)
                 {
                     case AnimationMode.Animation:
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("animation"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[7], "animation"));
+                        EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[7], "animation"));
                         break;
                     case AnimationMode.Animator:
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("animator"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "animator"));
+                        EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "animator"));
                         break;
+#if SHADER_ANIMATED
                     case AnimationMode.MeshAnimator:
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("meshAnimator"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "meshAnimator"));
+                        EditorGUILayout.PropertyField(meshAnimatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "meshAnimator"));
                         break;
+#endif
                 }
-                s.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[9], "animPlayMode"), (int)s.animPlayMode, new GUIContent[]{
+                state.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[9], "animPlayMode"), (int)state.animPlayMode, new GUIContent[]{
                     new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[10],"Random"),
                     new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[11],"Sequence") }
                 );
-                EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative("animSpeed"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[12], "animSpeed"), true);
-                EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative("animLoop"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[13], "animLoop"), true);
-                s.isExitState = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[14], "isExitState"), s.isExitState);
-                if (s.isExitState)
-                    s.DstStateID = EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[15], s.DstStateID, Array.ConvertAll(s.transitions.ToArray(), new Converter<Transition, string>(delegate (Transition t) { return t.currState.name + " -> " + t.nextState.name + "   ID:" + t.nextState.ID; })));
+                EditorGUILayout.PropertyField(animSpeedProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[12], "animSpeed"), true);
+                EditorGUILayout.PropertyField(animLoopProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[13], "animLoop"), true);
+                state.isExitState = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[14], "isExitState"), state.isExitState);
+                if (state.isExitState)
+                    state.DstStateID = EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[15], state.DstStateID, Array.ConvertAll(state.transitions.ToArray(), new Converter<Transition, string>(delegate (Transition t) { return t.currState.name + " -> " + t.nextState.name + "   ID:" + t.nextState.ID; })));
                 BlueprintGUILayout.BeginStyleVertical(BlueprintGUILayout.Instance.LANGUAGE[16], "ProgressBarBack");
                 EditorGUI.indentLevel = 1;
                 Rect actRect = EditorGUILayout.GetControlRect();
-                s.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), s.foldout, BlueprintGUILayout.Instance.LANGUAGE[17], true);
+                state.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), state.foldout, BlueprintGUILayout.Instance.LANGUAGE[17], true);
 
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[18]))
                 {
-                    s.actions.Add(new StateAction() { ID = s.ID, stateMachine = s.stateMachine });
+                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = state.stateMachine });
+                    return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[19]))
                 {
-                    if (s.actions.Count > 1)
-                    {
-                        s.actions.RemoveAt(s.actions.Count - 1);
-                    }
+                    if (state.actions.Length > 1)
+                        ArrayExtend.RemoveAt(ref state.actions, state.actions.Length - 1);
+                    return;
                 }
 
-                if (s.foldout)
+                if (state.foldout)
                 {
-                    var actionsProperty = serializedProperty.FindPropertyRelative("actions");
                     EditorGUI.indentLevel = 2;
-                    for (int a = 0; a < s.actions.Count; ++a)
+                    for (int x = 0; x < state.actions.Length; ++x)
                     {
-                        var actionProperty = actionsProperty.GetArrayElementAtIndex(a);
-                        StateAction act = s.actions[a];
+                        var actionProperty = actionsProperty.GetArrayElementAtIndex(x);
+                        if (actionProperty == null)
+                            continue;
+                        var act = state.actions[x];
                         Rect foldoutRect = EditorGUILayout.GetControlRect();
-                        act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[20] + a, "actions[" + a + "]"), true);
+                        act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[20] + x, "actions[" + x + "]"), true);
                         if (foldoutRect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                         {
                             var menu = new GenericMenu();
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[21]), false, (obj) =>
                             {
-                                s.actions.RemoveAt((int)obj);
-                            }, a);
+                                ArrayExtend.RemoveAt(ref state.actions, (int)obj);
+                            }, x);
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[22]), false, (obj) =>
                             {
-                                StateSystem.Component = s.actions[(int)obj];
-                            }, a);
+                                StateSystem.Component = state.actions[(int)obj];
+                            }, x);
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[23]), StateSystem.CopyComponent != null, () =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
-                                    s.actions.Add(Net.CloneHelper.DeepCopy<StateAction>(stateAction));
+                                    ArrayExtend.Add(ref state.actions, Net.CloneHelper.DeepCopy<StateAction>(stateAction));
                             });
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[24]), StateSystem.CopyComponent != null, (obj) =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
                                 {
                                     var index = (int)obj;
-                                    if (stateAction == s.actions[index])//如果要黏贴的动作是复制的动作则返回
+                                    if (stateAction == state.actions[index])//如果要黏贴的动作是复制的动作则返回
                                         return;
-                                    s.actions[index] = Net.CloneHelper.DeepCopy<StateAction>(stateAction);
+                                    state.actions[index] = Net.CloneHelper.DeepCopy<StateAction>(stateAction);
                                 }
-                            }, a);
+                            }, x);
                             menu.ShowAsContext();
                         }
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            try {
-                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[25], "clipIndex"), act.clipIndex, Array.ConvertAll(s.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
-                                act.clipName = s.stateMachine.clipNames[act.clipIndex];
-                            } catch { }
+                            try
+                            {
+                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[25], "clipIndex"), act.clipIndex, Array.ConvertAll(state.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
+                                act.clipName = state.stateMachine.clipNames[act.clipIndex];
+                            }
+                            catch { }
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[32], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[33], "animTimeMax"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("rewind"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "rewind"));
-                            for (int i = 0; i < act.behaviours.Count; ++i)
+                            for (int i = 0; i < act.behaviours.Length; ++i)
                             {
                                 EditorGUILayout.BeginHorizontal();
                                 Rect rect = EditorGUILayout.GetControlRect();
@@ -230,7 +382,7 @@ namespace GameDesigner
                                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                                 {
                                     act.behaviours[i].OnDestroyComponent();
-                                    act.behaviours.RemoveAt(i);
+                                    ArrayExtend.RemoveAt(ref act.behaviours, i);
                                     continue;
                                 }
                                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -240,7 +392,7 @@ namespace GameDesigner
                                     {
                                         var index = (int)obj;
                                         act.behaviours[index].OnDestroyComponent();
-                                        act.behaviours.RemoveAt(index);
+                                        ArrayExtend.RemoveAt(ref act.behaviours, index);
                                         return;
                                     }, i);
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[48]), false, (obj) =>
@@ -248,12 +400,12 @@ namespace GameDesigner
                                         var index = (int)obj;
                                         StateSystem.CopyComponent = act.behaviours[index];
                                     }, i);
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[49]), StateSystem.CopyComponent != null, ()=>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[49]), StateSystem.CopyComponent != null, () =>
                                     {
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
                                             ActionBehaviour ab = (ActionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                                            act.behaviours.Add(ab);
+                                            ArrayExtend.Add(ref act.behaviours, ab);
                                         }
                                     });
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[50]), StateSystem.CopyComponent != null, (obj) =>
@@ -279,7 +431,7 @@ namespace GameDesigner
                                 if (act.behaviours[i].show)
                                 {
                                     EditorGUI.indentLevel = 4;
-                                    if (!act.behaviours[i].OnInspectorGUI(s))
+                                    if (!act.behaviours[i].OnInspectorGUI(state))
                                         foreach (var metadata in act.behaviours[i].metadatas)
                                             PropertyField(metadata, 60f, 5, 4);
                                     GUILayout.Space(4);
@@ -303,8 +455,8 @@ namespace GameDesigner
                                         {
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas(act.stateMachine);
-                                            stb.ID = s.ID;
-                                            act.behaviours.Add(stb);
+                                            stb.ID = state.ID;
+                                            ArrayExtend.Add(ref act.behaviours, stb);
                                             findBehaviours1 = false;
                                             EditorUtility.SetDirty(act.stateMachine);
                                         }
@@ -312,8 +464,8 @@ namespace GameDesigner
                                         {
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas(sm.stateMachine);
-                                            stb.ID = s.ID;
-                                            act.behaviours.Add(stb);
+                                            stb.ID = state.ID;
+                                            ArrayExtend.Add(ref act.behaviours, stb);
                                             findBehaviours1 = false;
                                             compiling = false;
                                             EditorUtility.SetDirty(act.stateMachine);
@@ -346,10 +498,10 @@ namespace GameDesigner
                 BlueprintGUILayout.EndStyleVertical();
             }
             EditorGUILayout.Space();
-            DrawBehaviours(s);
+            DrawBehaviours(state);
             EditorGUILayout.Space();
             EditorGUILayout.EndVertical();
-            serializedObject.ApplyModifiedProperties();
+            StateMachineObject.ApplyModifiedProperties();
         }
 
         /// <summary>
@@ -360,7 +512,7 @@ namespace GameDesigner
             GUILayout.Space(10);
             GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
             GUILayout.Space(5);
-            for (int i = 0; i < s.behaviours.Count; ++i)
+            for (int i = 0; i < s.behaviours.Length; ++i)
             {
                 EditorGUI.indentLevel = 1;
                 EditorGUILayout.BeginHorizontal();
@@ -371,7 +523,7 @@ namespace GameDesigner
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
                     s.behaviours[i].OnDestroyComponent();
-                    s.behaviours.RemoveAt(i);
+                    ArrayExtend.RemoveAt(ref s.behaviours, i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -381,7 +533,7 @@ namespace GameDesigner
                     {
                         var index = (int)obj;
                         s.behaviours[index].OnDestroyComponent();
-                        s.behaviours.RemoveAt(index);
+                        ArrayExtend.RemoveAt(ref s.behaviours, index);
                         return;
                     }, i);
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[56]), false, (obj) =>
@@ -394,7 +546,7 @@ namespace GameDesigner
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
                             var ab = (StateBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                            s.behaviours.Add(ab);
+                            ArrayExtend.Add(ref s.behaviours, ab);
                         }
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[58]), StateSystem.CopyComponent != null, (obj) =>
@@ -449,7 +601,7 @@ namespace GameDesigner
                             var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
-                            s.behaviours.Add(stb);
+                            ArrayExtend.Add(ref s.behaviours, stb);
                             findBehaviours = false;
                             EditorUtility.SetDirty(s.stateMachine);
                         }
@@ -458,7 +610,7 @@ namespace GameDesigner
                             var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
-                            s.behaviours.Add(stb);
+                            ArrayExtend.Add(ref s.behaviours, stb);
                             findBehaviours = false;
                             compiling = false;
                             EditorUtility.SetDirty(s.stateMachine);
@@ -538,12 +690,12 @@ namespace GameDesigner
                 metadata.value = EditorGUILayout.CurveField(metadata.name, (AnimationCurve)metadata.value);
             else if (metadata.type == TypeCode.Object)
                 metadata.value = EditorGUILayout.ObjectField(metadata.name, (Object)metadata.value, metadata.Type, true);
-            else if (metadata.type == TypeCode.GenericType | metadata.type == TypeCode.Array) 
+            else if (metadata.type == TypeCode.GenericType | metadata.type == TypeCode.Array)
             {
                 var rect = EditorGUILayout.GetControlRect();
                 rect.x += width;
                 metadata.foldout = EditorGUI.BeginFoldoutHeaderGroup(rect, metadata.foldout, metadata.name);
-                if (metadata.foldout) 
+                if (metadata.foldout)
                 {
                     EditorGUI.indentLevel = arrayBeginSpace;
                     EditorGUI.BeginChangeCheck();
@@ -562,7 +714,7 @@ namespace GameDesigner
                             IList list2 = (IList)Activator.CreateInstance(metadata.Type);
                             for (int i = 0; i < list1.Count; i++)
                                 list2.Add(list1[i]);
-                            list = list2; 
+                            list = list2;
                         }
                         else list = list1;
                     }
@@ -645,10 +797,10 @@ namespace GameDesigner
 
             EditorGUILayout.Space();
 
-            tr.model = (TransitionModel)EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[64], (int)tr.model, Enum.GetNames(typeof(TransitionModel)), GUI.skin.GetStyle("PreDropDown"));
-            switch (tr.model)
+            tr.mode = (TransitionMode)EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[64], (int)tr.mode, Enum.GetNames(typeof(TransitionMode)), GUI.skin.GetStyle("PreDropDown"));
+            switch (tr.mode)
             {
-                case TransitionModel.ExitTime:
+                case TransitionMode.ExitTime:
                     tr.time = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.LANGUAGE[65], tr.time, GUI.skin.GetStyle("PreDropDown"));
                     tr.exitTime = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.LANGUAGE[66], tr.exitTime, GUI.skin.GetStyle("PreDropDown"));
                     EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.LANGUAGE[67], MessageType.Info);
@@ -664,11 +816,11 @@ namespace GameDesigner
             GUILayout.Space(10);
             GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
 
-            for (int i = 0; i < tr.behaviours.Count; ++i)
+            for (int i = 0; i < tr.behaviours.Length; ++i)
             {
                 if (tr.behaviours[i] == null)
                 {
-                    tr.behaviours.RemoveAt(i);
+                    ArrayExtend.RemoveAt(ref tr.behaviours, i);
                     continue;
                 }
                 EditorGUI.indentLevel = 1;
@@ -680,7 +832,7 @@ namespace GameDesigner
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
                     tr.behaviours[i].OnDestroyComponent();
-                    tr.behaviours.RemoveAt(i);
+                    ArrayExtend.RemoveAt(ref tr.behaviours, i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -690,7 +842,7 @@ namespace GameDesigner
                     {
                         var index = (int)obj;
                         tr.behaviours[index].OnDestroyComponent();
-                        tr.behaviours.RemoveAt(index);
+                        ArrayExtend.RemoveAt(ref tr.behaviours, index);
                         return;
                     }, i);
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[70]), false, (obj) =>
@@ -703,7 +855,7 @@ namespace GameDesigner
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
                         {
                             TransitionBehaviour ab = (TransitionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                            tr.behaviours.Add(ab);
+                            ArrayExtend.Add(ref tr.behaviours, ab);
                         }
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[72]), StateSystem.CopyComponent != null, (obj) =>
@@ -755,14 +907,14 @@ namespace GameDesigner
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
-                        tr.behaviours.Add(stb);
+                        ArrayExtend.Add(ref tr.behaviours, stb);
                         findBehaviours2 = false;
                     }
                     if (compiling & type.Name == createScriptName)
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
-                        tr.behaviours.Add(stb);
+                        ArrayExtend.Add(ref tr.behaviours, stb);
                         findBehaviours2 = false;
                         compiling = false;
                     }

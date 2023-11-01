@@ -1027,12 +1027,12 @@ namespace Net.Client
             }
         }
 
-        protected void InvokeNetworkEvent(Action action, Action<bool> action1, bool isConnect)
+        protected void InvokeNetworkEvent(Action connectResult, Action<bool> connectResult1, bool isConnect)
         {
             InvokeInMainThread(() =>
             {
-                action?.Invoke();
-                action1?.Invoke(isConnect);
+                connectResult1?.Invoke(isConnect); //Connect的事件先执行
+                connectResult?.Invoke();
             });
         }
 

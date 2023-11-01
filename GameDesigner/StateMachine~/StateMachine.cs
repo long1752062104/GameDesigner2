@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Net.System;
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
 #endif
@@ -17,18 +17,22 @@ namespace GameDesigner
         /// <summary>
         /// 默认状态ID
         /// </summary>
-		public int defaulID = 0;
+		public int defaulId;
         /// <summary>
         /// 当前运行的状态索引
         /// </summary>
-		public int stateID = 0;
+		public int stateId;
+        /// <summary>
+        /// 切换的状态id
+        /// </summary>
+        internal int nextId;
         /// <summary>
         /// 所有状态
         /// </summary>
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public List<State> states = new List<State>();
+        public State[] states = new State[0];
         /// <summary>
         /// 选中的状态,可以多选
         /// </summary>
@@ -62,13 +66,7 @@ namespace GameDesigner
         /// </summary>
         /// <param name="stateID"></param>
         /// <returns></returns>
-        public State this[int stateID]
-        {
-            get
-            {
-                return states[stateID];
-            }
-        }
+        public State this[int stateID] => states[stateID];
 
         /// <summary>
         /// 获取 或 设置 默认状态
@@ -77,17 +75,17 @@ namespace GameDesigner
         {
             get
             {
-                if (defaulID < states.Count)
-                    return states[defaulID];
+                if (defaulId < states.Length)
+                    return states[defaulId];
                 return null;
             }
-            set { defaulID = value.ID; }
+            set { defaulId = value.ID; }
         }
 
         /// <summary>
         /// 当前状态
         /// </summary>
-		public State currState => states[stateID];
+		public State currState => states[stateId];
 
         /// <summary>
         /// 选择的状态
@@ -130,14 +128,14 @@ namespace GameDesigner
         /// <returns></returns>
         public static StateMachine CreateStateMachineInstance(string name = "machine")
         {
-            StateMachine stateMachine = new GameObject(name).AddComponent<StateMachine>();
+            var stateMachine = new GameObject(name).AddComponent<StateMachine>();
             stateMachine.name = name;
             return stateMachine;
         }
 
         public void UpdateStates()
         {
-            for (int i = 0; i < states.Count; i++)
+            for (int i = 0; i < states.Length; i++)
             {
                 int id = states[i].ID;
                 foreach (var state1 in states)
@@ -150,18 +148,12 @@ namespace GameDesigner
                             transition.nextStateID = i;
                     }
                     foreach (var behaviour in state1.behaviours)
-                    {
                         if (behaviour.ID == id)
                             behaviour.ID = i;
-                    }
                     foreach (var action in state1.actions)
-                    {
                         foreach (var behaviour in action.behaviours)
-                        {
                             if (behaviour.ID == id)
                                 behaviour.ID = i;
-                        }
-                    }
                 }
                 states[i].ID = i;
             }
@@ -169,44 +161,32 @@ namespace GameDesigner
 
         public void Init()
         {
-            foreach (var state in states)
+#if SHADER_ANIMATED
+            if (animMode == AnimationMode.MeshAnimator)
             {
-                state.Init();
+                meshAnimator.OnAnimationFinished += (name) =>
+                {
+                    currState.IsPlaying = false;
+                };
             }
+#endif
+            foreach (var state in states)
+                state.Init();
             if (defaultState.actionSystem)
-                defaultState.OnEnterState();
+                defaultState.Enter();
         }
 
-        /// <summary>
-        /// 当退出状态时处理连接事件
-        /// </summary>
-        /// <param name="state">要退出的状态</param>
-        public void OnStateTransitionExit(State state)
+        internal void Execute()
         {
-            foreach (var transition in state.transitions)
-                if (transition.model == TransitionModel.ExitTime)
-                    transition.time = 0;
-        }
-
-        /// <summary>
-        /// 当进入下一个状态
-        /// </summary>
-        /// <param name="currState">当前状态</param>
-        /// <param name="enterState">要进入的状态</param>
-        public void EnterNextState(State currState, State enterState)
-        {
-            foreach (StateBehaviour behaviour in currState.behaviours)//先退出当前的所有行为状态OnExitState的方法
-                if (behaviour.Active)
-                    behaviour.OnExit();
-            OnStateTransitionExit(currState);
-            foreach (StateBehaviour behaviour in enterState.behaviours)//最后进入新的状态前调用这个新状态的所有行为类的OnEnterState方法
-                if (behaviour.Active)
-                    behaviour.OnEnter();
-            if (currState.actionSystem)
-                currState.OnExitState();
-            if (enterState.actionSystem)
-                enterState.OnEnterState();
-            stateID = enterState.ID;
+            if (stateId != nextId)
+            {
+                var currIdTemo = stateId;
+                var nextIdTemp = nextId; //防止进入或退出行为又执行了EnterNextState切换了状态
+                stateId = nextId;
+                states[currIdTemo].Exit();
+                states[nextIdTemp].Enter();
+            }
+            currState.Update();
         }
 
         /// <summary>
@@ -215,7 +195,7 @@ namespace GameDesigner
         /// <param name="nextStateIndex">下一个状态的ID</param>
 		public void EnterNextState(int nextStateIndex)
         {
-            EnterNextState(currState, states[nextStateIndex]);
+            ChangeState(nextStateIndex, true);
         }
 
         /// <summary>
@@ -224,21 +204,19 @@ namespace GameDesigner
         /// <param name="stateID"></param>
         public void StatusEntry(int stateID)
         {
-            if (this.stateID == stateID)
-                return;
-            EnterNextState(stateID);
+            ChangeState(stateID);
         }
 
         /// <summary>
         /// 切换状态
         /// </summary>
-        /// <param name="stateID"></param>
+        /// <param name="stateId"></param>
         /// <param name="force"></param>
-        public void ChangeState(int stateID, bool force = false) 
+        public void ChangeState(int stateId, bool force = false)
         {
-            if (this.stateID == stateID & !force)
+            if (this.stateId == stateId & !force)
                 return;
-            EnterNextState(stateID);
+            nextId = stateId;
         }
 
         private void OnDestroy()
@@ -246,23 +224,13 @@ namespace GameDesigner
             foreach (var state in states)
             {
                 foreach (var behaviour in state.behaviours)
-                {
                     behaviour.OnDestroyComponent();
-                }
                 foreach (var transition in state.transitions)
-                {
                     foreach (var behaviour in transition.behaviours)
-                    {
                         behaviour.OnDestroyComponent();
-                    }
-                }
                 foreach (var action in state.actions)
-                {
                     foreach (var behaviour in action.behaviours)
-                    {
                         behaviour.OnDestroyComponent();
-                    }
-                }
             }
         }
 
@@ -271,12 +239,12 @@ namespace GameDesigner
         {
             foreach (var state in states)
             {
-                for (int i = 0; i < state.behaviours.Count; i++)
+                for (int i = 0; i < state.behaviours.Length; i++)
                 {
                     var type = AssemblyHelper.GetType(state.behaviours[i].name);
                     if (type == null)
                     {
-                        state.behaviours.RemoveAt(i);
+                        ArrayExtend.RemoveAt(ref state.behaviours, i);
                         if (i >= 0) i--;
                         continue;
                     }
@@ -291,12 +259,12 @@ namespace GameDesigner
                 }
                 foreach (var t in state.transitions)
                 {
-                    for (int i = 0; i < t.behaviours.Count; i++)
+                    for (int i = 0; i < t.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(t.behaviours[i].name);
                         if (type == null)
                         {
-                            t.behaviours.RemoveAt(i);
+                            ArrayExtend.RemoveAt(ref t.behaviours, i);
                             if (i >= 0) i--;
                             continue;
                         }
@@ -312,12 +280,12 @@ namespace GameDesigner
                 }
                 foreach (var a in state.actions)
                 {
-                    for (int i = 0; i < a.behaviours.Count; i++)
+                    for (int i = 0; i < a.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(a.behaviours[i].name);
                         if (type == null)
                         {
-                            a.behaviours.RemoveAt(i);
+                            ArrayExtend.RemoveAt(ref a.behaviours, i);
                             if (i >= 0) i--;
                             continue;
                         }

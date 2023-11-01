@@ -11,7 +11,7 @@ public class ImportSettingWindow : EditorWindow
     private Data data;
     private readonly string[] displayedOptions = new string[] { "使用者", "开发者" };
 
-    public class Data 
+    public class Data
     {
         public string path = "Assets/Plugins/GameDesigner";
         public int develop;
@@ -44,7 +44,7 @@ public class ImportSettingWindow : EditorWindow
         PersistHelper.Serialize(data, "importdata.json");
     }
 
-    private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import /*= null*/, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/) 
+    private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import /*= null*/, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/)
     {
         if (Directory.Exists(path))
         {
@@ -95,58 +95,61 @@ public class ImportSettingWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+        var pathRoot = $"{Application.dataPath}/{data.path.Replace("Assets", string.Empty)}/"; //防止指向磁盘根目录问题
         EditorGUILayout.HelpBox("Tcp&Gcp模块 基础网络协议模块", MessageType.Info);
-        var path = data.path + "/Network/Gcp";
-        DrawGUI(path, "Gcp", "Network/Gcp~", "Network/Gcp", null, data.path + "/");
+        var path = pathRoot + "Network/Gcp";
+        DrawGUI(path, "Gcp", "Network/Gcp~", "Network/Gcp", null, pathRoot);
 
         EditorGUILayout.HelpBox("Udx模块 可用于帧同步，视频流，直播流，大数据传输", MessageType.Info);
-        path = data.path + "/Network/Udx";
-        DrawGUI(path, "Udx", "Network/Udx~", "Network/Udx", null, data.path + "/");
-        
+        path = pathRoot + "Network/Udx";
+        DrawGUI(path, "Udx", "Network/Udx~", "Network/Udx", null, pathRoot);
+
         EditorGUILayout.HelpBox("Kcp模块 可用于帧同步 即时游戏", MessageType.Info);
-        path = data.path + "/Network/Kcp";
-        DrawGUI(path, "Kcp", "Network/Kcp~", "Network/Kcp", null, data.path + "/");
-        
+        path = pathRoot + "Network/Kcp";
+        DrawGUI(path, "Kcp", "Network/Kcp~", "Network/Kcp", null, pathRoot);
+
         EditorGUILayout.HelpBox("Web模块 可用于网页游戏 WebGL", MessageType.Info);
-        path = data.path + "/Network/Web";
-        DrawGUI(path, "Web", "Network/Web~", "Network/Web", null, data.path + "/");
-        
+        path = pathRoot + "Network/Web";
+        DrawGUI(path, "Web", "Network/Web~", "Network/Web", null, pathRoot);
+
         EditorGUILayout.HelpBox("StateMachine模块 可用格斗游戏，或基础游戏动作设计", MessageType.Info);
-        path = data.path + "/StateMachine";
-        DrawGUI(path, "StateMachine", "StateMachine~", "StateMachine", null, data.path + "/");
-        
+        path = pathRoot + "StateMachine";
+        DrawGUI(path, "StateMachine", "StateMachine~", "StateMachine", null, pathRoot);
+
         EditorGUILayout.HelpBox("NetworkComponents模块 封装了一套完整的客户端网络组件", MessageType.Info);
-        path = data.path + "/Component";
-        DrawGUI(path, "NetworkComponent", "Component~", "Component", ()=> {
-            Import("Common~", "Common", data.path + "/");//依赖
-        }, data.path + "/");
+        path = pathRoot + "Component";
+        DrawGUI(path, "NetworkComponent", "Component~", "Component", () =>
+        {
+            Import("Common~", "Common", pathRoot);//依赖
+        }, pathRoot);
 
         EditorGUILayout.HelpBox("MVC模块 可用于帧同步设计，视图，逻辑分离", MessageType.Info);
-        path = data.path + "/MVC";
-        DrawGUI(path, "MVC", "MVC~", "MVC", null, data.path + "/"); 
-        
+        path = pathRoot + "MVC";
+        DrawGUI(path, "MVC", "MVC~", "MVC", null, pathRoot);
+
         EditorGUILayout.HelpBox("ECS模块 可用于双端的独立代码运行", MessageType.Info);
-        path = data.path + "/ECS";
-        DrawGUI(path, "ECS", "ECS~", "ECS", null, data.path + "/");
-        
+        path = pathRoot + "ECS";
+        DrawGUI(path, "ECS", "ECS~", "ECS", null, pathRoot);
+
         EditorGUILayout.HelpBox("Common模块 常用模块", MessageType.Info);
-        path = data.path + "/Common";
-        DrawGUI(path, "Common", "Common~", "Common", null, data.path + "/");
-        
+        path = pathRoot + "Common";
+        DrawGUI(path, "Common", "Common~", "Common", null, pathRoot);
+
         EditorGUILayout.HelpBox("MMORPG模块 用于MMORPG设计怪物点, 巡逻点, 地图数据等", MessageType.Info);
-        path = data.path + "/MMORPG";
-        DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () => {
-            Import("AOI~", "AOI", data.path + "/");//依赖
-            Import("Recast~", "Recast", data.path + "/");//依赖
-        }, data.path + "/");
+        path = pathRoot + "MMORPG";
+        DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () =>
+        {
+            Import("AOI~", "AOI", pathRoot);//依赖
+            Import("Recast~", "Recast", pathRoot);//依赖
+        }, pathRoot);
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
-        path = data.path + "/AOI";
-        DrawGUI(path, "AOI", "AOI~", "AOI", null, data.path + "/");
+        path = pathRoot + "AOI";
+        DrawGUI(path, "AOI", "AOI~", "AOI", null, pathRoot);
 
         EditorGUILayout.HelpBox("Recast & Detour寻路模块 用于双端AI寻路", MessageType.Info);
-        path = data.path + "/Recast";
-        DrawGUI(path, "Recast", "Recast~", "Recast", null, data.path + "/");
+        path = pathRoot + "Recast";
+        DrawGUI(path, "Recast", "Recast~", "Recast", null, pathRoot);
 
         EditorGUILayout.HelpBox("Framework模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
         EditorGUILayout.BeginHorizontal();
@@ -154,98 +157,98 @@ public class ImportSettingWindow : EditorWindow
         {
             Application.OpenURL(@"https://gitee.com/focus-creative-games/hybridclr_unity");
         }
-        path = data.path + "/Framework";
-        DrawGUI(path, "Framework", "Framework~", "Framework", null, data.path + "/");
+        path = pathRoot + "Framework";
+        DrawGUI(path, "Framework", "Framework~", "Framework", null, pathRoot);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.HelpBox("Entities模块 可用于独立环境运行, 代替ECS模块", MessageType.Info);
-        path = data.path + "/Entities";
-        DrawGUI(path, "Entities", "Entities~", "Entities", null, data.path + "/");
+        path = pathRoot + "Entities";
+        DrawGUI(path, "Entities", "Entities~", "Entities", null, pathRoot);
 
         EditorGUILayout.HelpBox("ParrelSync插件, 可以克隆两个一模一样的项目进行网络同步调式, 极快解决联机同步问题", MessageType.Info);
-        path = data.path + "/ParrelSync";
-        DrawGUI(path, "ParrelSync", "ParrelSync~", "ParrelSync", null, data.path + "/");
+        path = pathRoot + "ParrelSync";
+        DrawGUI(path, "ParrelSync", "ParrelSync~", "ParrelSync", null, pathRoot);
 
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", data.path + "/");
-            Import("Component~", "Component", data.path + "/");
-            Import("Common~", "Common", data.path + "/");
+            Import("Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Component~", "Component", pathRoot);
+            Import("Common~", "Common", pathRoot);
         }
         EditorGUILayout.HelpBox("所有模块导入", MessageType.Warning);
         if (GUILayout.Button("所有模块导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", data.path + "/");
-            Import("Network/Udx~", "Network/Udx", data.path + "/");
-            Import("Network/Kcp~", "Network/Kcp", data.path + "/");
-            Import("Network/Web~", "Network/Web", data.path + "/");
-            Import("Component~", "Component", data.path + "/");
-            Import("StateMachine~", "StateMachine", data.path + "/");
-            Import("MVC~", "MVC", data.path + "/");
-            Import("ECS~", "ECS", data.path + "/");
-            Import("Common~", "Common", data.path + "/");
-            Import("MMORPG~", "MMORPG", data.path + "/");
-            Import("AOI~", "AOI", data.path + "/");
-            Import("Recast~", "Recast", data.path + "/");
-            Import("Framework~", "Framework", data.path + "/");
-            Import("Entities~", "Entities", data.path + "/");
+            Import("Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Network/Udx~", "Network/Udx", pathRoot);
+            Import("Network/Kcp~", "Network/Kcp", pathRoot);
+            Import("Network/Web~", "Network/Web", pathRoot);
+            Import("Component~", "Component", pathRoot);
+            Import("StateMachine~", "StateMachine", pathRoot);
+            Import("MVC~", "MVC", pathRoot);
+            Import("ECS~", "ECS", pathRoot);
+            Import("Common~", "Common", pathRoot);
+            Import("MMORPG~", "MMORPG", pathRoot);
+            Import("AOI~", "AOI", pathRoot);
+            Import("Recast~", "Recast", pathRoot);
+            Import("Framework~", "Framework", pathRoot);
+            Import("Entities~", "Entities", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", data.path + "/");
-            Import("Network/Udx~", "Network/Udx", data.path + "/");
-            Import("Network/Kcp~", "Network/Kcp", data.path + "/");
-            Import("Network/Web~", "Network/Web", data.path + "/");
-            Import("Component~", "Component", data.path + "/");
-            Import("StateMachine~", "StateMachine", data.path + "/");
-            Import("MVC~", "MVC", data.path + "/");
-            Import("ECS~", "ECS", data.path + "/");
-            Import("Common~", "Common", data.path + "/");
-            Import("MMORPG~", "MMORPG", data.path + "/");
-            Import("AOI~", "AOI", data.path + "/");
-            Import("Recast~", "Recast", data.path + "/");
-            Import("Entities~", "Entities", data.path + "/");
+            Import("Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Network/Udx~", "Network/Udx", pathRoot);
+            Import("Network/Kcp~", "Network/Kcp", pathRoot);
+            Import("Network/Web~", "Network/Web", pathRoot);
+            Import("Component~", "Component", pathRoot);
+            Import("StateMachine~", "StateMachine", pathRoot);
+            Import("MVC~", "MVC", pathRoot);
+            Import("ECS~", "ECS", pathRoot);
+            Import("Common~", "Common", pathRoot);
+            Import("MMORPG~", "MMORPG", pathRoot);
+            Import("AOI~", "AOI", pathRoot);
+            Import("Recast~", "Recast", pathRoot);
+            Import("Entities~", "Entities", pathRoot);
             Import("Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
         if (GUILayout.Button("重新导入已导入的模块", GUILayout.Height(20)))
         {
-            ReImport("Network/Gcp~", "Network/Gcp", data.path + "/");
-            ReImport("Network/Udx~", "Network/Udx", data.path + "/");
-            ReImport("Network/Kcp~", "Network/Kcp", data.path + "/");
-            ReImport("Network/Web~", "Network/Web", data.path + "/");
-            ReImport("Component~", "Component", data.path + "/");
-            ReImport("StateMachine~", "StateMachine", data.path + "/");
-            ReImport("MVC~", "MVC", data.path + "/");
-            ReImport("ECS~", "ECS", data.path + "/");
-            ReImport("Common~", "Common", data.path + "/");
-            ReImport("MMORPG~", "MMORPG", data.path + "/");
-            ReImport("AOI~", "AOI", data.path + "/");
-            ReImport("Recast~", "Recast", data.path + "/");
-            ReImport("Framework~", "Framework", data.path + "/");
-            ReImport("Entities~", "Entities", data.path + "/");
+            ReImport("Network/Gcp~", "Network/Gcp", pathRoot);
+            ReImport("Network/Udx~", "Network/Udx", pathRoot);
+            ReImport("Network/Kcp~", "Network/Kcp", pathRoot);
+            ReImport("Network/Web~", "Network/Web", pathRoot);
+            ReImport("Component~", "Component", pathRoot);
+            ReImport("StateMachine~", "StateMachine", pathRoot);
+            ReImport("MVC~", "MVC", pathRoot);
+            ReImport("ECS~", "ECS", pathRoot);
+            ReImport("Common~", "Common", pathRoot);
+            ReImport("MMORPG~", "MMORPG", pathRoot);
+            ReImport("AOI~", "AOI", pathRoot);
+            ReImport("Recast~", "Recast", pathRoot);
+            ReImport("Framework~", "Framework", pathRoot);
+            ReImport("Entities~", "Entities", pathRoot);
         }
-        if (data.develop == 1) 
+        if (data.develop == 1)
         {
             EditorGUILayout.HelpBox("反导已导入的模块", MessageType.Warning);
             if (GUILayout.Button("反导已导入的模块", GUILayout.Height(20)))
             {
-                ReverseImport("Network/Gcp~", "Network/Gcp", data.path + "/");
-                ReverseImport("Network/Udx~", "Network/Udx", data.path + "/");
-                ReverseImport("Network/Kcp~", "Network/Kcp", data.path + "/");
-                ReverseImport("Network/Web~", "Network/Web", data.path + "/");
-                ReverseImport("Component~", "Component", data.path + "/");
-                ReverseImport("StateMachine~", "StateMachine", data.path + "/");
-                ReverseImport("MVC~", "MVC", data.path + "/");
-                ReverseImport("ECS~", "ECS", data.path + "/");
-                ReverseImport("Common~", "Common", data.path + "/");
-                ReverseImport("MMORPG~", "MMORPG", data.path + "/");
-                ReverseImport("AOI~", "AOI", data.path + "/");
-                ReverseImport("Recast~", "Recast", data.path + "/");
-                ReverseImport("Framework~", "Framework", data.path + "/");
-                ReverseImport("Entities~", "Entities", data.path + "/");
+                ReverseImport("Network/Gcp~", "Network/Gcp", pathRoot);
+                ReverseImport("Network/Udx~", "Network/Udx", pathRoot);
+                ReverseImport("Network/Kcp~", "Network/Kcp", pathRoot);
+                ReverseImport("Network/Web~", "Network/Web", pathRoot);
+                ReverseImport("Component~", "Component", pathRoot);
+                ReverseImport("StateMachine~", "StateMachine", pathRoot);
+                ReverseImport("MVC~", "MVC", pathRoot);
+                ReverseImport("ECS~", "ECS", pathRoot);
+                ReverseImport("Common~", "Common", pathRoot);
+                ReverseImport("MMORPG~", "MMORPG", pathRoot);
+                ReverseImport("AOI~", "AOI", pathRoot);
+                ReverseImport("Recast~", "Recast", pathRoot);
+                ReverseImport("Framework~", "Framework", pathRoot);
+                ReverseImport("Entities~", "Entities", pathRoot);
             }
         }
         GUILayout.EndScrollView();
@@ -255,18 +258,18 @@ public class ImportSettingWindow : EditorWindow
         {
             Application.OpenURL(@"https://gitee.com/leng_yue/GameDesigner");
         }
-        if (GUILayout.Button("加入QQ群:825240544", GUILayout.Height(20))) 
+        if (GUILayout.Button("加入QQ群:825240544", GUILayout.Height(20)))
         {
             Application.OpenURL(@"https://jq.qq.com/?_wv=1027&k=nx1Psgjz");
         }
         if (GUILayout.Button("版本:2022.12.12", GUILayout.Height(20)))
         {
         }
-        GUILayout.EndHorizontal(); 
+        GUILayout.EndHorizontal();
         GUILayout.Space(10);
     }
 
-    private static void ReImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/)
+    private static void ReImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath)
     {
         var rootPath = "Packages/com.gamedesigner.network";//包的根路径
         if (!Directory.Exists(rootPath))
@@ -283,7 +286,7 @@ public class ImportSettingWindow : EditorWindow
         Import(sourceProtocolName, copyToProtocolName, pluginsPath);
     }
 
-    private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/)
+    private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath)
     {
         var rootPath = "Packages/com.gamedesigner.network";//包的根路径
         if (!Directory.Exists(rootPath))
@@ -314,7 +317,7 @@ public class ImportSettingWindow : EditorWindow
         AssetDatabase.Refresh();
     }
 
-    private static void ReverseImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/)
+    private static void ReverseImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath)
     {
         var rootPath = "Packages/com.gamedesigner.network";//包的根路径
         if (!Directory.Exists(rootPath))

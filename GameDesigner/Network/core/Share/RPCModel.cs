@@ -3,7 +3,7 @@
 namespace Net.Share
 {
     /// <summary>
-    /// 远程过程调用模型,此类负责网络通讯中数据解析临时存储的对象
+    /// 远程过程调用模型,此类负责网络通讯中数据解析临时缓存的对象
     /// </summary>
     public struct RPCModel
     {

@@ -21,14 +21,6 @@ namespace Net.System
             }
         }
 
-        public override void Add(ref T item, out int index)
-        {
-            lock (SyncRoot)
-            {
-                base.Add(item, out index);
-            }
-        }
-
         public override void AddRange(IEnumerable<T> collection)
         {
             lock (SyncRoot)

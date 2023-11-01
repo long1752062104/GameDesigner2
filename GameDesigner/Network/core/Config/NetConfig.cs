@@ -55,7 +55,7 @@ namespace Net.Config
             get
             {
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-                var path = Unity.UnitySynchronizationContext.Get(() => UnityEngine.Application.persistentDataPath);
+                var path = Unity.UnityThreadContext.Get(() => UnityEngine.Application.persistentDataPath);
 #else
                 var path = AppDomain.CurrentDomain.BaseDirectory;
 #endif
@@ -71,7 +71,7 @@ namespace Net.Config
             get 
             {
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-                var path = Unity.UnitySynchronizationContext.Get(() => UnityEngine.Application.streamingAssetsPath);
+                var path = Unity.UnityThreadContext.Get(() => UnityEngine.Application.streamingAssetsPath);
 #else
                 var path = AppDomain.CurrentDomain.BaseDirectory;
 #endif
@@ -90,7 +90,7 @@ namespace Net.Config
                 if (!string.IsNullOrEmpty(dataPath))
                     return dataPath;
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-                dataPath = Unity.UnitySynchronizationContext.Get(() => UnityEngine.Application.dataPath); //根路径必须保证在项目内, 这样编译之后才能读取
+                dataPath = Unity.UnityThreadContext.Get(() => UnityEngine.Application.dataPath); //根路径必须保证在项目内, 这样编译之后才能读取
 #else
                 dataPath = AppDomain.CurrentDomain.BaseDirectory;
 #endif
@@ -125,7 +125,7 @@ namespace Net.Config
             init = true;
             var configPath = ConfigPath + "/network.config";
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-            Unity.UnitySynchronizationContext.Post((o) => _ = LoadConfigFile(o.ToString()), configPath);
+            Unity.UnityThreadContext.Invoke((o) => _ = LoadConfigFile(o.ToString()), configPath);
 #else
             if (File.Exists(configPath))
             {

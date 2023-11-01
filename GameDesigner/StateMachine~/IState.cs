@@ -14,7 +14,7 @@ namespace GameDesigner
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public List<BehaviourBase> behaviours = new List<BehaviourBase>();
+        public BehaviourBase[] behaviours = new BehaviourBase[0];
         public StateMachine stateMachine = null;
         public StateManager stateManager => stateMachine.stateManager;
 
@@ -55,7 +55,7 @@ namespace GameDesigner
         /// <returns></returns>
         public T GetComponent<T>() where T : BehaviourBase
         {
-            for (int i = 0; i < behaviours.Count; i++)
+            for (int i = 0; i < behaviours.Length; i++)
                 if (behaviours[i] is T component)
                     return component;
             return null;
@@ -69,7 +69,7 @@ namespace GameDesigner
         public T[] GetComponents<T>() where T : BehaviourBase
         {
             var components = new List<T>();
-            for (int i = 0; i < behaviours.Count; i++)
+            for (int i = 0; i < behaviours.Length; i++)
                 if (behaviours[i] is T component)
                     components.Add(component);
             return components.ToArray();

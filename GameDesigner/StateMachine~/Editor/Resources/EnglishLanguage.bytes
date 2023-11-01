@@ -18,7 +18,7 @@ Action tree
 Action Tree Set
 Add action
 Remove action
-Action - -->
+Action ->
 Remove action
 Copy action
 Paste new action
@@ -32,7 +32,7 @@ Quit playback
 Sound object
 Animation time
 Animation length
-Animation events
+mesh Animated
 Skill object
 Skill generation
 instantiation

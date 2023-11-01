@@ -286,7 +286,6 @@
     <Compile Include="GameDesigner\Network\core\Unity\Matrix4x4.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Quaternion.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Rect.cs" />
-    <Compile Include="GameDesigner\Network\core\Unity\UnitySynchronizationContext.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector2.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector3.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector4.cs" />

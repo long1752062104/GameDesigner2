@@ -7,27 +7,27 @@ namespace GameDesigner
     /// 状态连接组件 2017年12月6日
     /// 版本修改2019.8.27
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public sealed class Transition : StateBase
     {
         public int currStateID, nextStateID;
         /// <summary>
         /// 当前状态
         /// </summary>
-		public State currState 
-        { 
-            get 
+		public State currState
+        {
+            get
             {
                 foreach (var item in stateMachine.states)
                     if (item.ID == currStateID)
                         return item;
                 return null;
-            } 
+            }
         }
         /// <summary>
         /// 下一个状态
         /// </summary>
-		public State nextState 
+		public State nextState
         {
             get
             {
@@ -40,7 +40,7 @@ namespace GameDesigner
         /// <summary>
         /// 连接控制模式
         /// </summary>
-		public TransitionModel model = TransitionModel.ScriptControl;
+		public TransitionMode mode = TransitionMode.ScriptControl;
         /// <summary>
         /// 当前时间
         /// </summary>
@@ -72,15 +72,15 @@ namespace GameDesigner
                 nextStateID = nextState.ID,
                 stateMachine = state.stateMachine
             };
-            state.transitions.Add(t);
-            for (int i = 0; i < state.transitions.Count; i++)
+            ArrayExtend.Add(ref state.transitions, t);
+            for (int i = 0; i < state.transitions.Length; i++)
                 state.transitions[i].ID = i;
             return t;
         }
 
         internal void Init()
         {
-            for (int i = 0; i < behaviours.Count; i++)
+            for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = (TransitionBehaviour)behaviours[i].InitBehaviour();
                 behaviour.transitionID = i;
@@ -91,10 +91,13 @@ namespace GameDesigner
 
         internal void Update()
         {
-            foreach (TransitionBehaviour behaviour in behaviours)
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i] as TransitionBehaviour;
                 if (behaviour.Active)
                     behaviour.OnUpdate(ref isEnterNextState);
-            if (model == TransitionModel.ExitTime)
+            }
+            if (mode == TransitionMode.ExitTime)
             {
                 time += Time.deltaTime;
                 if (time > exitTime)
@@ -102,9 +105,9 @@ namespace GameDesigner
             }
             if (isEnterNextState)
             {
-                stateMachine.EnterNextState(stateMachine.currState, nextState);
                 time = 0;
                 isEnterNextState = false;
+                stateMachine.ChangeState(nextStateID, true);
             }
         }
     }

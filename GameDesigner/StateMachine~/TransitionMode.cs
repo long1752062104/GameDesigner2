@@ -4,7 +4,7 @@
     /// 状态过渡事件选项模式
     /// </summary>
 
-    public enum TransitionModel
+    public enum TransitionMode
     {
         /// <summary>
         /// 用时间来跳转状态

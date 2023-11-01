@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
 #endif
@@ -67,17 +66,10 @@ namespace GameDesigner
             stateMachine.Init();
         }
 
-        private void Update()
+        public void Execute()
         {
-            stateMachine.currState.Update();
+            stateMachine.Execute();
         }
-
-        /// <summary>
-        /// 当进入下一个状态
-        /// </summary>
-        /// <param name="currState">当前状态</param>
-        /// <param name="enterState">要进入的状态</param>
-        public void EnterNextState(State currState, State enterState) => stateMachine.EnterNextState(currState, enterState);
 
         /// <summary>
         /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
@@ -91,6 +83,13 @@ namespace GameDesigner
         /// <param name="stateID"></param>
         public void StatusEntry(int stateID) => stateMachine.StatusEntry(stateID);
 
+        /// <summary>
+        /// 切换状态
+        /// </summary>
+        /// <param name="stateId"></param>
+        /// <param name="force"></param>
+        public void ChangeState(int stateId, bool force = false) => stateMachine.ChangeState(stateId, force);
+
 #if UNITY_EDITOR
         public void OnValidate()
         {
@@ -99,5 +98,15 @@ namespace GameDesigner
             stateMachine.OnScriptReload();
         }
 #endif
+
+        private void OnEnable()
+        {
+            StateMachineSystem.AddStateManager(this);
+        }
+
+        private void OnDisable()
+        {
+            StateMachineSystem.RemoveStateManager(this);
+        }
     }
 }

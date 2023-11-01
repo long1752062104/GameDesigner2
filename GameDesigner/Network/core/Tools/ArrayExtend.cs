@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +7,7 @@ using Object = UnityEngine.Object;
 #endif
 public static class ArrayExtend
 {
+    #region 数组For
     public static void For<T>(this T[] self, Action<T> action)
     {
         for (int i = 0; i < self.Length; i++)
@@ -47,6 +47,7 @@ public static class ArrayExtend
             action(i, self[i]);
         }
     }
+    #endregion
 
     /// <summary>
     /// 随机一个值,在数组0-count范围内
@@ -388,6 +389,7 @@ public static class ArrayExtend
     }
 #endif
 
+    #region HashSet For
     public static void For<T>(this HashSet<T> self, Action<T> action)
     {
         foreach (T t in self)
@@ -395,6 +397,7 @@ public static class ArrayExtend
             action(t);
         }
     }
+    #endregion
 
     public static T[] ToArray<T>(this HashSet<T> self)
     {
@@ -460,5 +463,31 @@ public static class ArrayExtend
         }
         item = default;
         return false;
+    }
+
+    public static void Add<T>(ref T[] self, T item)
+    {
+        var size = self.Length;
+        var array = new T[size + 1];
+        Array.Copy(self, 0, array, 0, size);
+        array[size] = item;
+        self = array;
+    }
+
+    public static void Remove<T>(ref T[] self, T item)
+    {
+        var index = Array.IndexOf(self, item);
+        if (index == -1)
+            return;
+        RemoveAt(ref self, index);
+    }
+
+    public static void RemoveAt<T>(ref T[] self, int index)
+    {
+        var size = self.Length - 1;
+        Array.Copy(self, index + 1, self, index, size - index);
+        var array = new T[size];
+        Array.Copy(self, 0, array, 0, size);
+        self = array;
     }
 }
