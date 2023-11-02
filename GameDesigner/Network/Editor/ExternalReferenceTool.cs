@@ -41,9 +41,7 @@ public class ExternalReferenceTool : EditorWindow
             if (!string.IsNullOrEmpty(csprojPath))
             {
                 //相对于Assets路径
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(csprojPath));
-                config.csprojPaths.Add(relativeUri.ToString());
+                config.csprojPaths.Add(PathHelper.GetRelativePath(Application.dataPath, csprojPath));
             }
             SaveData();
         }
@@ -72,9 +70,7 @@ public class ExternalReferenceTool : EditorWindow
                 if (!config.paths.Contains(path))
                 {
                     //相对于Assets路径
-                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    config.paths.Add(relativeUri.ToString());
+                    config.paths.Add(PathHelper.GetRelativePath(Application.dataPath, path));
                 }
             }
             SaveData();
@@ -122,23 +118,16 @@ public class ExternalReferenceTool : EditorWindow
                     var fileList = new List<string>();
                     //相对于服务器路径
                     var csPath = Path.GetFullPath(csprojPath);
-                    var uri = new Uri(csPath);
-                    var uri1 = new Uri(path1);
-                    var relativeUri = uri.MakeRelativeUri(uri1);
-                    path1 = relativeUri.ToString().Replace('/', '\\');
+                    path1 = PathHelper.GetRelativePath(csPath, path1).Replace('/', '\\');
                     //只包含三级目录的相对路径
-                    uri1 = new Uri(dirName);
-                    relativeUri = uri.MakeRelativeUri(uri1);
-                    dirName = relativeUri.ToString().Replace('/', '\\');
+                    dirName = PathHelper.GetRelativePath(csPath, dirName).Replace('/', '\\');
                     foreach (var file in files)
                     {
                         foreach (var pattern in patterns)
                         {
                             if (file.EndsWith(pattern)) 
                             {
-                                uri1 = new Uri(file);
-                                relativeUri = uri.MakeRelativeUri(uri1);
-                                var rPath = relativeUri.ToString().Replace('/', '\\');
+                                var rPath = PathHelper.GetRelativePath(csPath, file).Replace('/', '\\');
                                 fileList.Add(rPath);
                                 break;
                             }

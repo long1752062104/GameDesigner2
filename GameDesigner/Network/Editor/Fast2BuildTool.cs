@@ -249,9 +249,7 @@ public class Fast2BuildTools2 : EditorWindow
         {
             var savePath = EditorUtility.OpenFolderPanel("保存路径", "", "");
             //相对于Assets路径
-            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-            var relativeUri = uri.MakeRelativeUri(new Uri(savePath));
-            data.SavePath = relativeUri.ToString();
+            data.SavePath = PathHelper.GetRelativePath(Application.dataPath, savePath);
         }
         GUILayout.EndHorizontal();
         if (GUILayout.Button("生成绑定代码", GUILayout.Height(30)))

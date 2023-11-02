@@ -95,7 +95,7 @@ namespace Net.AI
         public IEnumerator Load()
         {
             System.Init();
-            using (UnityWebRequest request = UnityWebRequest.Get(NavmeshPath)) //兼容Web平台
+            using (UnityWebRequest request = UnityWebRequest.Get("file:///" + NavmeshPath)) //兼容Web平台
             {
                 yield return request.SendWebRequest();
                 if (request.result == UnityWebRequest.Result.Success)

@@ -1,10 +1,10 @@
 using Newtonsoft_X.Json;
 using System.IO;
 
-namespace Net.Helper 
+namespace Net.Helper
 {
     /// <summary>
-    /// 持久化数据记录帮助类
+    /// 鎸佷箙鍖栨暟鎹褰曞府鍔╃被
     /// </summary>
     public class PersistHelper
     {
@@ -54,7 +54,7 @@ namespace Net.Helper
 #if UNITY_EDITOR
             var path = "ProjectSettings/gdnet/";
 #else
-        var path = Net.Config.Config.BasePath + "/ProjectSettings/gdnet/";
+            var path = Net.Config.Config.BasePath + "/ProjectSettings/gdnet/";
 #endif
             return path;
         }

@@ -88,9 +88,7 @@ public class ImportSettingWindow : EditorWindow
         {
             var importPath = EditorUtility.OpenFolderPanel("选择导入路径", "", "");
             //相对于Assets路径
-            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-            var relativeUri = uri.MakeRelativeUri(new Uri(importPath));
-            data.path = relativeUri.ToString();
+            data.path = PathHelper.GetRelativePath(Application.dataPath, importPath);
             SaveData();
         }
         EditorGUILayout.EndHorizontal();

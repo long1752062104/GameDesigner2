@@ -25,27 +25,25 @@ namespace Net.MMORPG
         }
         void OnGUI()
         {
-            EditorGUILayout.HelpBox("Éú³Éµ±Ç°´ò¿ª³¡¾°µÄÊı¾İ, ²¢ÇÒÒÔµ±Ç°³¡¾°ÃûÎªµØÍ¼Êı¾İÎÄ¼şÃû", MessageType.Info);
+            EditorGUILayout.HelpBox("ç”Ÿæˆå½“å‰æ‰“å¼€åœºæ™¯çš„æ•°æ®, å¹¶ä¸”ä»¥å½“å‰åœºæ™¯åä¸ºåœ°å›¾æ•°æ®æ–‡ä»¶å", MessageType.Info);
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Éú³ÉÂ·¾¶:", data.savePath);
-            if (GUILayout.Button("Ñ¡ÔñÂ·¾¶", GUILayout.Width(100)))
+            EditorGUILayout.LabelField("ç”Ÿæˆè·¯å¾„:", data.savePath);
+            if (GUILayout.Button("é€‰æ‹©è·¯å¾„", GUILayout.Width(100)))
             {
-                var savePath = EditorUtility.OpenFolderPanel("µØÍ¼Êı¾İÂ·¾¶", "", "");
+                var savePath = EditorUtility.OpenFolderPanel("åœ°å›¾æ•°æ®è·¯å¾„", "", "");
                 if (!string.IsNullOrEmpty(savePath))
                 {
-                    //Ïà¶ÔÓÚAssetsÂ·¾¶
-                    var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                    var relativeUri = uri.MakeRelativeUri(new Uri(savePath));
-                    data.savePath = relativeUri.ToString();
+                    //ç›¸å¯¹äºAssetsè·¯å¾„
+                    data.savePath = PathHelper.GetRelativePath(Application.dataPath, savePath);
                 }
                 SaveData();
             }
             GUILayout.EndHorizontal();
-            if (GUILayout.Button("Éú³ÉµØÍ¼Êı¾İ", GUILayout.Height(40)))
+            if (GUILayout.Button("ç”Ÿæˆåœ°å›¾æ•°æ®", GUILayout.Height(40)))
             {
                 if (string.IsNullOrEmpty(data.savePath))
                 {
-                    EditorUtility.DisplayDialog("ÌáÊ¾", "ÇëÑ¡ÔñÉú³É½Å±¾Â·¾¶!", "È·¶¨");
+                    EditorUtility.DisplayDialog("æç¤º", "è¯·é€‰æ‹©ç”Ÿæˆè„šæœ¬è·¯å¾„!", "ç¡®å®š");
                     return;
                 }
                 var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();

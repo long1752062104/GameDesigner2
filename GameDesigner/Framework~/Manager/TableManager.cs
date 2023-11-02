@@ -21,7 +21,7 @@ namespace Framework
                 path = Application.streamingAssetsPath + $"/AssetBundles/Table/GameConfig.json";
             else
                 path = Application.persistentDataPath + $"/AssetBundles/Table/GameConfig.json";
-            using (var request = UnityWebRequest.Get(path)) 
+            using (var request = UnityWebRequest.Get("file:///" + path)) 
             {
                 var oper = request.SendWebRequest();
                 while (!oper.isDone)
@@ -30,7 +30,7 @@ namespace Framework
                 }
                 if (!string.IsNullOrEmpty(request.error))
                 {
-                    Global.Logger.LogError("µã»÷²Ëµ¥GameDesigner/Framework/GenerateExcelDataÉú³Éexecl±íÊı¾İ! " + request.error);
+                    Global.Logger.LogError("ç‚¹å‡»èœå•GameDesigner/Framework/GenerateExcelDataç”Ÿæˆexeclè¡¨æ•°æ®! " + request.error);
                     return;
                 }
                 var jsonStr = request.downloadHandler.text;
@@ -39,7 +39,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// »ñÈ¡Ä³¸ö±í
+        /// è·å–æŸä¸ªè¡¨
         /// </summary>
         /// <param name="sheetName"></param>
         /// <returns></returns>
@@ -49,10 +49,10 @@ namespace Framework
         }
 
         /// <summary>
-        /// »ñÈ¡excel±í¸ñÊı¾İ£¬filterExpression²ÎÊıÀı×Ó: "Name = 'UI_Message'"
+        /// è·å–excelè¡¨æ ¼æ•°æ®ï¼ŒfilterExpressionå‚æ•°ä¾‹å­: "Name = 'UI_Message'"
         /// </summary>
-        /// <typeparam name="T">Òª»ñÈ¡µÄÀàĞÍ</typeparam>
-        /// <param name="filterExpression">¹ıÂË±í´ïÊ½</param>
+        /// <typeparam name="T">è¦è·å–çš„ç±»å‹</typeparam>
+        /// <param name="filterExpression">è¿‡æ»¤è¡¨è¾¾å¼</param>
         /// <returns></returns>
         public T GetDataConfig<T>(string filterExpression) where T : IDataConfig, new()
         {
@@ -60,10 +60,10 @@ namespace Framework
         }
 
         /// <summary>
-        /// »ñÈ¡excel±í¸ñÊı¾İ£¬filterExpression²ÎÊıÀı×Ó: "Name = 'UI_Message'"
+        /// è·å–excelè¡¨æ ¼æ•°æ®ï¼ŒfilterExpressionå‚æ•°ä¾‹å­: "Name = 'UI_Message'"
         /// </summary>
-        /// <typeparam name="T">Òª»ñÈ¡µÄÀàĞÍ</typeparam>
-        /// <param name="filterExpression">¹ıÂË±í´ïÊ½</param>
+        /// <typeparam name="T">è¦è·å–çš„ç±»å‹</typeparam>
+        /// <param name="filterExpression">è¿‡æ»¤è¡¨è¾¾å¼</param>
         /// <returns></returns>
         public T[] GetDataConfigs<T>(string filterExpression) where T : IDataConfig, new()
         {

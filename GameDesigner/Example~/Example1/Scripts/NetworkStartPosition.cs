@@ -4,7 +4,6 @@ using Net.Component;
 using Net.Share;
 using Net.System;
 using Net.UnityComponent;
-using System.Threading.Tasks;
 using UnityEngine;
 namespace Example1
 {
@@ -14,29 +13,30 @@ namespace Example1
         public Vector2 offsetX = new Vector2(-20, 20);
         public Vector2 offsetZ = new Vector2(-20, 20);
         private uint delay, frame;
+        private int pingId;
 
         // Start is called before the first frame update
-        async void Start()
+        void Start()
         {
-            while (!NetworkObject.IsInitIdentity)
+            NetworkSceneManager.Instance.WaitNetworkIdentityInit(() =>
             {
-                await Task.Yield();
-            }
-            OnConnectedHandle();
-            ClientBase.Instance.OnPingCallback += PingCall;
-            ThreadManager.Invoke(1f, ()=> {
-                ClientBase.Instance.Ping();
-                return true;
+                OnConnectedHandle();
+                ClientBase.Instance.OnPingCallback += PingCall;
+                pingId = ThreadManager.Invoke(1f, () =>
+                {
+                    ClientBase.Instance.Ping();
+                    return true;
+                });
+                ClientBase.Instance.OnOperationSync += OnOperationSync;
             });
-            ClientBase.Instance.OnOperationSync += OnOperationSync;
         }
 
-        private void PingCall(uint ms) 
+        private void PingCall(uint ms)
         {
             delay = ms;
         }
 
-        private void OnOperationSync(OperationList list) 
+        private void OnOperationSync(OperationList list)
         {
             frame = list.frame;
         }
@@ -64,6 +64,7 @@ namespace Example1
                 return;
             ClientBase.Instance.OnOperationSync -= OnOperationSync;
             ClientBase.Instance.OnPingCallback -= PingCall;
+            ThreadManager.Event.RemoveEvent(pingId);
         }
     }
 }

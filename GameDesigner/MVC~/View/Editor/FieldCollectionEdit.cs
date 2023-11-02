@@ -296,9 +296,7 @@ namespace MVC.View
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 //相对于Assets路径
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                path = relativeUri.ToString();
+                path = PathHelper.GetRelativePath(Application.dataPath, path);
                 path = path.Replace('/', '\\');
                 if (!data.savePath.Contains(path))
                 {
@@ -319,9 +317,7 @@ namespace MVC.View
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 //相对于Assets路径
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                path = relativeUri.ToString();
+                path = PathHelper.GetRelativePath(Application.dataPath, path);
                 path = path.Replace('/', '\\');
                 if (!data.savePathExt.Contains(path))
                 {
@@ -336,9 +332,7 @@ namespace MVC.View
             {
                 var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
                 //相对于Assets路径
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                data.csprojFile = relativeUri.ToString();
+                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path);
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();

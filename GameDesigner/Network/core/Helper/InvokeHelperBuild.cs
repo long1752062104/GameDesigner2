@@ -953,9 +953,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                         continue;
                     var path = sequence.Document.Url;
                     //相对于Assets路径
-                    var uri = new Uri(UnityEngine.Application.dataPath);
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    path = relativeUri.ToString();
+                    path = PathHelper.GetRelativePath(UnityEngine.Application.dataPath, path);
                     path = path.Replace('\\', '/');
                     cache[type.FullName + "." + method.Name] = new SequencePoint(path, sequence.StartLine - 1);
                 }
@@ -985,9 +983,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                         continue;
                     var path = sequence.Document.Url;
                     //相对于Assets路径
-                    var uri = new Uri(UnityEngine.Application.dataPath);
-                    var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                    path = relativeUri.ToString();
+                    path = PathHelper.GetRelativePath(UnityEngine.Application.dataPath, path);
                     path = path.Replace('\\', '/');
                     cache[type.FullName] = new SequencePoint(path, sequence.StartLine - 1);
                 }
@@ -1161,9 +1157,7 @@ internal static class HelperFileInfo
                 path1 = Path.GetFullPath(path1.Replace('/', '\\'));
 
                 //相对于Assets路径
-                var uri = new Uri(csprojPath);
-                var relativeUri = uri.MakeRelativeUri(new Uri(path1));
-                var relativePath = relativeUri.ToString();
+                var relativePath = PathHelper.GetRelativePath(csprojPath, path1);
 
                 if (!File.Exists(csprojPath))
                     continue;

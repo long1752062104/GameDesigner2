@@ -26,6 +26,9 @@ namespace Net.Unity
     /// <summary>
     /// Unity主线程中心, 当多线程在主线程调用时可以使用Call或Invoke方法
     /// </summary>
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoad]
+#endif
     public class UnityThreadContext
     {
         private static int mainThreadId;
@@ -34,6 +37,11 @@ namespace Net.Unity
         /// </summary>
         public static int MainThreadId => mainThreadId;
         private static UnityThreadContextLoopRunner runner;
+
+        static UnityThreadContext()
+        {
+            mainThreadId = Thread.CurrentThread.ManagedThreadId;
+        }
 
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Initialize()

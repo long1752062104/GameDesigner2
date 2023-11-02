@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Net.Config
 {
-    public class Config 
+    public class Config
     {
         private static bool init;
         private static bool useMemoryStream = true;
@@ -16,12 +16,12 @@ namespace Net.Config
         [Obsolete("文件流已废弃, 统一内存流")]
         public static bool UseMemoryStream
         {
-            get 
+            get
             {
                 Init();
                 return useMemoryStream;
             }
-            set 
+            set
             {
                 useMemoryStream = value;
                 Save();
@@ -68,7 +68,7 @@ namespace Net.Config
         /// </summary>
         public static string ConfigPath
         {
-            get 
+            get
             {
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
                 var path = Unity.UnityThreadContext.Get(() => UnityEngine.Application.streamingAssetsPath);
@@ -83,7 +83,7 @@ namespace Net.Config
         /// <summary>
         /// 获取项目路径
         /// </summary>
-        public static string DataPath 
+        public static string DataPath
         {
             get
             {
@@ -102,7 +102,7 @@ namespace Net.Config
         /// <summary>
         /// 在主线程处理所有网络功能? 否则会在多线程进行
         /// </summary>
-        public static bool MainThreadTick 
+        public static bool MainThreadTick
         {
             get
             {
@@ -143,13 +143,13 @@ namespace Net.Config
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
         private static async UniTaskVoid LoadConfigFile(string configPath)
         {
-            var request = UnityEngine.Networking.UnityWebRequest.Get(configPath);
+            var request = UnityEngine.Networking.UnityWebRequest.Get("file:///" + configPath); //支持mac方式
             var oper = request.SendWebRequest();
             while (!oper.isDone)
                 await UniTask.Yield();
             if (!string.IsNullOrEmpty(request.error))
             {
-                Net.Event.NDebug.LogError($"初始化配置错误:{request.error} {configPath}");
+                Event.NDebug.LogError($"初始化配置错误:{request.error} {configPath}");
                 Save();
                 return;
             }

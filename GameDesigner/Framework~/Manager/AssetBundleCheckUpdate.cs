@@ -34,7 +34,7 @@ namespace Framework
         private IEnumerator CheckUpdate()
         {
             var versionUrl = url + "AssetBundles/Version.txt";
-            var request = UnityWebRequest.Get(versionUrl);
+            var request = UnityWebRequest.Get("file:///" + versionUrl);
             yield return request.SendWebRequest();
             if (!string.IsNullOrEmpty(request.error))
             {

@@ -17,7 +17,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     [MenuItem("GameDesigner/Network/InvokeHelper")]
     static void ShowWindow()
     {
-        var window = GetWindow<InvokeHelperTools>("×Ö¶ÎÍ¬²½£¬Ô¶³Ì¹ı³Ìµ÷ÓÃ°ïÖú¹¤¾ß");
+        var window = GetWindow<InvokeHelperTools>("å­—æ®µåŒæ­¥ï¼Œè¿œç¨‹è¿‡ç¨‹è°ƒç”¨å¸®åŠ©å·¥å…·");
         window.Show();
     }
 
@@ -49,15 +49,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         EditorGUI.PropertyField(rect, configProperty.FindPropertyRelative("savePath"));
         rect.position = new Vector2(rect.position.x + (position.width - 90f), rect.position.y + 25f);
         rect.size = new Vector2(70f, 20f);
-        if (GUI.Button(rect, "Ñ¡ÔñÂ·¾¶"))
+        if (GUI.Button(rect, "é€‰æ‹©è·¯å¾„"))
         {
-            var path = EditorUtility.OpenFolderPanel("Ñ¡ÔñÂ·¾¶", "", "");
+            var path = EditorUtility.OpenFolderPanel("é€‰æ‹©è·¯å¾„", "", "");
             if (!string.IsNullOrEmpty(path))
             {
-                //Ïà¶ÔÓÚAssetsÂ·¾¶
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                Config.savePath = relativeUri.ToString();
+                //ç›¸å¯¹äºAssetsè·¯å¾„
+                Config.savePath = PathHelper.GetRelativePath(Application.dataPath, path);
             }
             SaveData();
         }
@@ -67,20 +65,18 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         EditorGUI.PropertyField(rect, property, true);
         rect.position = new Vector2(rect.position.x + (position.width - 90f), rect.position.y + 25f);
         rect.size = new Vector2(70f, 20f);
-        if (GUI.Button(rect, "Ñ¡ÔñÎÄ¼ş"))
+        if (GUI.Button(rect, "é€‰æ‹©æ–‡ä»¶"))
         {
-            var path = EditorUtility.OpenFilePanelWithFilters("Ñ¡ÔñÎÄ¼ş", "", new string[] { "dll files", "dll,exe", "All files", "*" });
+            var path = EditorUtility.OpenFilePanelWithFilters("é€‰æ‹©æ–‡ä»¶", "", new string[] { "dll files", "dll,exe", "All files", "*" });
             if (!string.IsNullOrEmpty(path))
             {
-                //Ïà¶ÔÓÚAssetsÂ·¾¶
-                var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                Config.dllPaths.Add(relativeUri.ToString());
+                //ç›¸å¯¹äºAssetsè·¯å¾„
+                Config.dllPaths.Add(PathHelper.GetRelativePath(Application.dataPath, path));
             }
             SaveData();
         }
         rect = EditorGUILayout.GetControlRect();
-        EditorGUI.LabelField(rect, "Rpc¸¨Öú");
+        EditorGUI.LabelField(rect, "Rpcè¾…åŠ©");
         rect = EditorGUILayout.GetControlRect();
         Config.foldout = EditorGUI.Foldout(rect, Config.foldout, "RpcConfig", true);
         if (Config.foldout)
@@ -125,15 +121,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     EditorGUI.PropertyField(rect, arrayElement.FindPropertyRelative("csprojPath"));
                     rect.position = new Vector2(rect.position.x + (position.width - 90f), rect.position.y + 25f);
                     rect.size = new Vector2(70f, 20f);
-                    if (GUI.Button(rect, "Ñ¡ÔñÎÄ¼ş"))
+                    if (GUI.Button(rect, "é€‰æ‹©æ–‡ä»¶"))
                     {
-                        var path = EditorUtility.OpenFilePanel("Ñ¡ÔñÎÄ¼ş", "", "csproj");
+                        var path = EditorUtility.OpenFilePanel("é€‰æ‹©æ–‡ä»¶", "", "csproj");
                         if (!string.IsNullOrEmpty(path))
                         {
-                            //Ïà¶ÔÓÚAssetsÂ·¾¶
-                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                            rpc.csprojPath = relativeUri.ToString();
+                            //ç›¸å¯¹äºAssetsè·¯å¾„
+                            rpc.csprojPath = PathHelper.GetRelativePath(Application.dataPath, path);
                         }
                         SaveData();
                     }
@@ -142,15 +136,13 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     EditorGUI.PropertyField(rect, arrayElement.FindPropertyRelative("savePath"));
                     rect.position = new Vector2(rect.position.x + (position.width - 90f), rect.position.y + 25f);
                     rect.size = new Vector2(70f, 20f);
-                    if (GUI.Button(rect, "Ñ¡ÔñÂ·¾¶"))
+                    if (GUI.Button(rect, "é€‰æ‹©è·¯å¾„"))
                     {
-                        var path = EditorUtility.OpenFolderPanel("Ñ¡ÔñÂ·¾¶", "", "");
+                        var path = EditorUtility.OpenFolderPanel("é€‰æ‹©è·¯å¾„", "", "");
                         if (!string.IsNullOrEmpty(path))
                         {
-                            //Ïà¶ÔÓÚAssetsÂ·¾¶
-                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                            rpc.savePath = relativeUri.ToString();
+                            //ç›¸å¯¹äºAssetsè·¯å¾„
+                            rpc.savePath = PathHelper.GetRelativePath(Application.dataPath, path);
                         }
                         SaveData();
                     }
@@ -164,15 +156,12 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     EditorGUI.PropertyField(rect, property, true);
                     rect.position = new Vector2(rect.position.x + (position.width - 90f), rect.position.y + 25f);
                     rect.size = new Vector2(70f, 20f);
-                    if (GUI.Button(rect, "Ñ¡ÔñÎÄ¼ş"))
+                    if (GUI.Button(rect, "é€‰æ‹©æ–‡ä»¶"))
                     {
-                        var path = EditorUtility.OpenFilePanelWithFilters("Ñ¡ÔñÎÄ¼ş", "", new string[] { "dll files", "dll,exe", "All files", "*" });
+                        var path = EditorUtility.OpenFilePanelWithFilters("é€‰æ‹©æ–‡ä»¶", "", new string[] { "dll files", "dll,exe", "All files", "*" });
                         if (!string.IsNullOrEmpty(path))
                         {
-                            //Ïà¶ÔÓÚAssetsÂ·¾¶
-                            var uri = new Uri(Application.dataPath.Replace('/', '\\'));
-                            var relativeUri = uri.MakeRelativeUri(new Uri(path));
-                            rpc.dllPaths.Add(relativeUri.ToString());
+                            rpc.dllPaths.Add(PathHelper.GetRelativePath(Application.dataPath, path));
                         }
                         SaveData();
                     }
@@ -183,19 +172,19 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         EditorGUI.indentLevel = 0;
         EditorGUILayout.GetControlRect(GUILayout.Height(10));
         GUILayout.EndScrollView();
-        if (GUILayout.Button("±£´æÅäÖÃ", GUILayout.Height(30)))
+        if (GUILayout.Button("ä¿å­˜é…ç½®", GUILayout.Height(30)))
         {
             SaveData();
-            Debug.Log("±£´æÍê³É!");
+            Debug.Log("ä¿å­˜å®Œæˆ!");
         }
-        if (GUILayout.Button("Ö´ĞĞ", GUILayout.Height(30)))
+        if (GUILayout.Button("æ‰§è¡Œ", GUILayout.Height(30)))
         {
             SaveData();
             InvokeHelperBuild.OnScriptCompilation(Config, Config.syncVarClientEnable, Config.syncVarServerEnable);
-            Debug.Log("¸üĞÂÍê³É!");
+            Debug.Log("æ›´æ–°å®Œæˆ!");
             AssetDatabase.Refresh();
         }
-        if (GUILayout.Button("ÏîÄ¿Â·¾¶´òÓ¡", GUILayout.Height(30)))
+        if (GUILayout.Button("é¡¹ç›®è·¯å¾„æ‰“å°", GUILayout.Height(30)))
         {
             Debug.Log(Net.Config.Config.BasePath);
         }
@@ -242,7 +231,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
         path = "Library/ScriptAssemblies/Assembly-CSharp.dll";
         foreach (var dllPath in Config.dllPaths)
         {
-            if (dllPath.Contains("Assembly-CSharp.dll"))//Èç¹ûÃ»ÓĞÕâ¸ö³ÌĞò¼¯¾ÍĞèÒªÌí¼Ó, Õâ¸öÊÇÄ¬ÈÏµÄ, Èç¹û¿ËÂ¡ÁËÏîÄ¿»òÕßÒÆÖ²ÏîÄ¿³öÏÖÂ·¾¶²»¶ÔĞèÒªÒÆ³ıÇå³ıdllPaths
+            if (dllPath.Contains("Assembly-CSharp.dll"))//å¦‚æœæ²¡æœ‰è¿™ä¸ªç¨‹åºé›†å°±éœ€è¦æ·»åŠ , è¿™ä¸ªæ˜¯é»˜è®¤çš„, å¦‚æœå…‹éš†äº†é¡¹ç›®æˆ–è€…ç§»æ¤é¡¹ç›®å‡ºç°è·¯å¾„ä¸å¯¹éœ€è¦ç§»é™¤æ¸…é™¤dllPaths
             {
                 contains = true;
                 break;
