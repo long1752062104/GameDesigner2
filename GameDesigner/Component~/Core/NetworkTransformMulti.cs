@@ -111,9 +111,9 @@ namespace Net.UnityComponent
         internal void Init(int identity)
         {
             this.identity = identity;
-            position = transform.localPosition;
-            rotation = transform.localRotation;
-            localScale = transform.localScale;
+            netPosition = position = transform.localPosition;
+            netRotation = rotation = transform.localRotation;
+            netLocalScale = localScale = transform.localScale;
         }
 
         internal void Check(int identity, int index, int netIndex)

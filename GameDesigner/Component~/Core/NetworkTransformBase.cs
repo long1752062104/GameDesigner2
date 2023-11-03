@@ -65,6 +65,9 @@ namespace Net.UnityComponent
         {
             base.Start();
             netObj.CanDestroy = false;
+            netPosition = position = transform.position;
+            netRotation = rotation = transform.rotation;
+            netLocalScale = localScale = transform.localScale;
         }
 
         // Update is called once per frame
@@ -177,7 +180,7 @@ namespace Net.UnityComponent
             }
         }
 
-        public void SetNetworkPosition(Net.Vector3 position) 
+        public void SetNetworkPosition(Net.Vector3 position)
         {
             netPosition = position;
         }
