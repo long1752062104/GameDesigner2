@@ -33,6 +33,7 @@ namespace GameDesigner
         {
             if (initMode == RuntimeInitMode.Start)
                 Init();
+            stateMachine.Init(); //解决awake初始化其他组件还没被初始化导致获取失效
         }
 
         private void Init()
@@ -63,7 +64,6 @@ namespace GameDesigner
 #endif
                 stateMachine = sm;
             }
-            stateMachine.Init();
         }
 
         public void Execute()

@@ -110,7 +110,7 @@ namespace GameDesigner
         /// <summary>
         /// 状态管理
         /// </summary>
-		public StateManager stateManager
+        public StateManager stateManager
         {
             get
             {
@@ -120,6 +120,8 @@ namespace GameDesigner
             }
             set { _stateManager = value; }
         }
+
+        private bool isInitialize;
 
         /// <summary>
         /// 创建状态机实例
@@ -161,6 +163,8 @@ namespace GameDesigner
 
         public void Init()
         {
+            if (isInitialize)
+                return;
 #if SHADER_ANIMATED
             if (animMode == AnimationMode.MeshAnimator)
             {
@@ -174,10 +178,13 @@ namespace GameDesigner
                 state.Init();
             if (defaultState.actionSystem)
                 defaultState.Enter();
+            isInitialize = true;
         }
 
         internal void Execute()
         {
+            if (!isInitialize)
+                return;
             if (stateId != nextId)
             {
                 var currIdTemo = stateId;
