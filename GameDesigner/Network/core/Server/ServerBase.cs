@@ -197,15 +197,7 @@ namespace Net.Server
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
         protected virtual byte frame { get; set; } = 5;
-        /// <summary>
-        /// 每个客户端接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
-        /// </summary>
-        //public int StackBufferSize { get; set; } = 5242880;
         public int PackageSize { get; set; } = 1024 * 1024 * 5;
-        /// <summary>
-        /// 允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
-        /// </summary>
-        //public int StackNumberMax { get; set; } = 50;
         /// <summary>
         /// 心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 但发送的数据也会增加. [开发调式时尽量把心跳值设置高点]
@@ -256,24 +248,6 @@ namespace Net.Server
         /// 组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
         /// </summary>
         public int PackageLength { get; set; } = 1000;
-        protected bool md5crc;
-        /// <summary>
-        /// 采用md5 + 随机种子校验
-        /// </summary>
-        [Obsolete("此属性已不再使用,请使用AddAdapter方法添加数据加密适配器!")]
-        public virtual bool MD5CRC
-        {
-            get => md5crc;
-            set
-            {
-                md5crc = value;
-                //frame = (byte)(value ? 1 + 16 : 1);
-            }
-        }
-        /// <summary>
-        /// 随机种子密码
-        /// </summary>
-        public int Password { get; set; } = 123456789;
         /// <summary>
         /// 限制发送队列长度
         /// </summary>
@@ -304,6 +278,23 @@ namespace Net.Server
         /// 数据包适配器
         /// </summary>
         public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
+        /// <summary>
+        /// 服务器线程管理
+        /// </summary>
+        protected internal Dictionary<string, Thread> ServerThreads = new Dictionary<string, Thread>();
+        private int sendFileTick, recvFileTick;
+        /// <summary>
+        /// 序列化适配器
+        /// </summary>
+        public ISerializeAdapter SerializeAdapter { get; set; }
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public int Version { get; set; } = 1;
+        /// <summary>
+        /// 大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
+        /// </summary>
+        public int BigDataCacheLength { get; set; } = 1024 * 1024 * 10;
         #endregion
 
         #region 服务器事件处理
@@ -394,7 +385,7 @@ namespace Net.Server
         /// <summary>
         /// 当客户端发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
         /// </summary>
-        public Func<Player, FileData, bool> OnReceiveFileHandle { get; set; }
+        public Func<Player, BigData, bool> OnReceiveFileHandle { get; set; }
         /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
@@ -403,19 +394,6 @@ namespace Net.Server
         /// 当发送的文件进度
         /// </summary>
         public Action<Player, RTProgress> OnSendFileProgress { get; set; }
-        /// <summary>
-        /// 服务器线程管理
-        /// </summary>
-        protected internal Dictionary<string, Thread> threads = new Dictionary<string, Thread>();
-        private int sendFileTick, recvFileTick;
-        /// <summary>
-        /// 序列化适配器
-        /// </summary>
-        public ISerializeAdapter SerializeAdapter { get; set; }
-        /// <summary>
-        /// 版本号
-        /// </summary>
-        public int Version { get; set; } = 1;
         #endregion
 
         /// <summary>
@@ -560,7 +538,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="client">当前客户端</param>
         /// <param name="fileData"></param>
-        protected virtual bool OnReceiveFile(Player client, FileData fileData) { return true; }
+        protected virtual bool OnReceiveFile(Player client, BigData fileData) { return true; }
 
         /// <summary>
         /// 当接收到客户端使用<see cref="Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
@@ -687,7 +665,7 @@ namespace Net.Server
         {
             var thread = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneTickHandle" };
             thread.Start();
-            threads.Add("SceneTickHandle", thread);
+            ServerThreads.Add("SceneTickHandle", thread);
         }
 
         protected virtual void CreateOtherThread() { }
@@ -705,7 +683,7 @@ namespace Net.Server
                 receive.Start(group);
                 group.Thread = receive;
                 ThreadGroups.Add(group);
-                threads.Add("NetworkProcessing" + i, receive);
+                ServerThreads.Add("NetworkProcessing" + i, receive);
             }
         }
 
@@ -958,6 +936,11 @@ namespace Net.Server
                 foreach (var item in modelsDict)
                     Debug.LogError($"[{client}] {item.Key} 相同数据量:{item.Value}");
             }
+            if (client.BigDataCacheLengthError > 0)
+            {
+                Debug.LogError($"[{client}]大数据缓存超出限制,在服务器类属性BigDataCacheLength设置大数据缓存最大长度! {client.BigDataCacheLengthError}/秒");
+                client.BigDataCacheLengthError = 0;
+            }
         }
 
         protected virtual bool CheckIsConnected(Player client, uint tick)
@@ -1033,7 +1016,6 @@ namespace Net.Server
             if (!UserIDStack.TryPop(out int uid))
                 uid = GetCurrUserID();
             client.UserID = uid;
-            //client.PlayerID = uid.ToString(); //已经搬到登录时处理
             client.Name = uid.ToString();
             client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
             client.ConnectTime = DateTime.Now;
@@ -1205,7 +1187,7 @@ namespace Net.Server
                     DataCRCHandler(client, buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
-                else if(client.stackStream != null) //当RemoveClient后导致stackStream=null后报错问题
+                else if (client.stackStream != null) //当RemoveClient后导致stackStream=null后报错问题
                 {
                     var position = buffer.Position - frame;
                     var count = buffer.Count - position;
@@ -1272,7 +1254,7 @@ namespace Net.Server
                     SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
                     break;
                 case NetCmd.Download:
-                    DownloadHandler(client, segment.ReadInt32());
+                    UploadDataHandler(client, segment.ReadByte(), segment.ReadInt32());
                     break;
                 default:
                     if (CheckIsQueueUp(client))
@@ -1281,12 +1263,6 @@ namespace Net.Server
                         LoginHandler(client);
                     break;
             }
-        }
-
-        protected void DownloadHandler(Player client, int key)
-        {
-            if (client.ftpDic.TryGetValue(key, out FileData fileData))
-                SendFile(client, key, fileData);
         }
 
         private bool CheckIsQueueUp(Player client)
@@ -1411,76 +1387,11 @@ namespace Net.Server
                 case NetCmd.SyncVarP2P:
                     SyncVarHelper.SyncVarHandler(client.SyncVarDic, model.Buffer);
                     break;
-                case NetCmd.SendFile:
-                    {
-                        var key = segment.ReadInt32();
-                        var length = segment.ReadInt64();
-                        var fileName = segment.ReadString();
-                        var buffer = segment.ReadByteArray();
-                        if (!client.ftpDic.TryGetValue(key, out FileData fileData))
-                        {
-                            fileData = new FileData();
-                            string path;
-                            if (OnDownloadFileHandle != null)
-                            {
-                                path = OnDownloadFileHandle(client, fileName);
-                                var path1 = Path.GetDirectoryName(path);
-                                if (!Directory.Exists(path1))
-                                {
-                                    Debug.LogError($"[{client}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                int count = 0;
-                                var downloadPath = Environment.CurrentDirectory + "/download/";
-                                if (!Directory.Exists(downloadPath))
-                                    Directory.CreateDirectory(downloadPath);
-                                do
-                                {
-                                    count++;
-                                    path = downloadPath + $"{fileName}{count}.temp";
-                                }
-                                while (File.Exists(path));
-                            }
-                            fileData.fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-                            fileData.fileName = fileName;
-                            client.ftpDic.Add(key, fileData);
-                        }
-                        fileData.fileStream.Write(buffer, 0, buffer.Length);
-                        fileData.Length += buffer.Length;
-                        if (fileData.Length >= length)
-                        {
-                            client.ftpDic.Remove(key);
-                            OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete));
-                            fileData.fileStream.Position = 0;
-                            var isDelete = true;
-                            if (OnReceiveFileHandle != null)
-                                isDelete = OnReceiveFileHandle(client, fileData);
-                            if (isDelete)
-                            {
-                                fileData.fileStream.Close();
-                                File.Delete(fileData.fileStream.Name);
-                            }
-                        }
-                        else
-                        {
-                            var len = segment.Count;
-                            segment.SetPositionLength(0);
-                            segment.Write(key);
-                            SendRT(client, NetCmd.Download, segment.ToArray(false));
-                            segment.Count = len;
-                            if (Environment.TickCount >= recvFileTick)
-                            {
-                                recvFileTick = Environment.TickCount + 1000;
-                                OnRevdFileProgress?.Invoke(client, new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download));
-                            }
-                        }
-                    }
+                case NetCmd.UploadData:
+                    DownloadDataHandler(client, segment);
                     break;
                 case NetCmd.Download:
-                    DownloadHandler(client, segment.ReadInt32());
+                    UploadDataHandler(client, segment.ReadByte(), segment.ReadInt32());
                     break;
                 case NetCmd.Identify:
                     SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
@@ -1492,6 +1403,109 @@ namespace Net.Server
                     client.OnRevdBufferHandle(model);
                     OnRevdBufferHandle(client, model);
                     break;
+            }
+        }
+
+        protected virtual void UploadDataHandler(Player client, byte cmd, int id)
+        {
+            if (client.BigDataDic.TryGetValue(id, out BigData data))
+                SendFile(client, cmd, id, data);
+        }
+
+        protected virtual void DownloadDataHandler(Player client, ISegment segment)
+        {
+            var cmd = segment.ReadByte();
+            var type = segment.ReadByte();
+            var id = segment.ReadInt32();
+            var length = segment.ReadInt32();
+            var name = segment.ReadString();
+            var buffer = segment.ReadByteArray();
+            if (length > BigDataCacheLength)
+            {
+                client.BigDataCacheLengthError++;
+                return;
+            }
+            if (!client.BigDataDic.TryGetValue(id, out BigData data))
+            {
+                data = new BigData();
+                if (type == 0)
+                {
+                    string path;
+                    if (OnDownloadFileHandle != null)
+                    {
+                        path = OnDownloadFileHandle(client, name);
+                        var path1 = Path.GetDirectoryName(path);
+                        if (!Directory.Exists(path1))
+                        {
+                            Debug.LogError($"[{client}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        int count = 0;
+                        var downloadPath = Environment.CurrentDirectory + "/download/";
+                        if (!Directory.Exists(downloadPath))
+                            Directory.CreateDirectory(downloadPath);
+                        do
+                        {
+                            count++;
+                            path = downloadPath + $"{name}{count}.temp";
+                        }
+                        while (File.Exists(path));
+                    }
+                    data.Stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                }
+                else
+                {
+                    data.Stream = new MemoryStream(length);
+                }
+                data.Id = id;
+                data.Name = name;
+                client.BigDataDic.Add(id, data);
+            }
+            data.Stream.Write(buffer, 0, buffer.Length);
+            data.Length += buffer.Length;
+            if (data.Length >= length)
+            {
+                client.BigDataDic.Remove(id);
+                OnRevdFileProgress?.Invoke(client, new RTProgress(name, data.Length / (float)length * 100f, RTState.Complete));
+                data.Stream.Position = 0;
+                if (type == 0)
+                {
+                    var isDelete = true;
+                    if (OnReceiveFileHandle != null)
+                        isDelete = OnReceiveFileHandle(client, data);
+                    if (isDelete)
+                    {
+                        data.Stream.Close();
+                        File.Delete((data.Stream as FileStream).Name);
+                    }
+                }
+                else
+                {
+                    buffer = new byte[length];
+                    data.Stream.Read(buffer, 0, length);
+                    data.Stream.Dispose();
+                    var model = new RPCModel(cmd, buffer);
+                    client.OnRevdBufferHandle(model);
+                    OnRevdBufferHandle(client, model);
+                }
+            }
+            else
+            {
+                var len = segment.Count;
+                segment.SetPositionLength(0);
+                segment.Write(cmd);
+                segment.Write(id);
+                SendRT(client, NetCmd.Download, segment.ToArray(false));
+                segment.Count = len;
+                if (Environment.TickCount >= recvFileTick)
+                {
+                    recvFileTick = Environment.TickCount + 1000;
+                    if (type == 0)
+                        OnRevdFileProgress?.Invoke(client, new RTProgress(name, data.Length / (float)length * 100f, RTState.Download));
+                }
             }
         }
 
@@ -2032,9 +2046,9 @@ namespace Net.Server
             }
             if (this == Instance)//有多个服务器实例, 需要
                 Instance = null;
-            foreach (var item in threads)
+            foreach (var item in ServerThreads)
                 item.Value.Interrupt();
-            threads.Clear();
+            ServerThreads.Clear();
             RcvQueues.Clear();
             OnStartingHandle -= OnStarting;
             OnStartupCompletedHandle -= OnStartupCompleted;
@@ -2229,12 +2243,14 @@ namespace Net.Server
                 OnDataQueueOverflow(client);
                 return;
             }
-            if (buffer.Length / MTU > LimitQueueCount)
+            var count = buffer.Length;
+            var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+            if (count >= size)
             {
-                Debug.LogError($"[{client}]数据太大，请分块发送!");
+                SendFile(client, cmd, new MemoryStream(buffer), string.Empty);
                 return;
             }
-            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
+            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = count > short.MaxValue });
         }
 
         /// <summary>
@@ -2595,47 +2611,57 @@ namespace Net.Server
                 return false;
             }
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
-            var fileData = new FileData
-            {
-                ID = fileStream.GetHashCode(),
-                fileStream = fileStream,
-                fileName = Path.GetFileName(filePath),
-                bufferSize = bufferSize
-            };
-            client.ftpDic.Add(fileData.ID, fileData);
-            SendFile(client, fileData.ID, fileData);
+            SendFile(client, NetCmd.UploadData, fileStream, Path.GetFileName(filePath), bufferSize);
             return true;
         }
 
-        private void SendFile(Player client, int key, FileData fileData)
+        private void SendFile(Player client, byte cmd, Stream stream, string name, int bufferSize = 50000)
         {
-            var fileStream = fileData.fileStream;
-            bool complete = false;
-            long bufferSize = fileData.bufferSize;
-            if (fileStream.Position + fileData.bufferSize >= fileStream.Length)
+            var data = new BigData
             {
-                bufferSize = fileStream.Length - fileStream.Position;
+                Id = stream.GetHashCode(),
+                Stream = stream,
+                Name = name,
+                bufferSize = bufferSize
+            };
+            client.BigDataDic.Add(data.Id, data);
+            SendFile(client, cmd, data.Id, data);
+        }
+
+        private void SendFile(Player client, byte cmd, int id, BigData fileData)
+        {
+            var stream = fileData.Stream;
+            var complete = false;
+            long bufferSize = fileData.bufferSize;
+            if (stream.Position + fileData.bufferSize >= stream.Length)
+            {
+                bufferSize = stream.Length - stream.Position;
                 complete = true;
             }
-            byte[] buffer = new byte[bufferSize];
-            fileStream.Read(buffer, 0, buffer.Length);
-            var size = (fileData.fileName.Length * 2) + 12;
-            var segment1 = BufferPool.Take((int)bufferSize + size);
-            segment1.Write(fileData.ID);
-            segment1.Write(fileData.fileStream.Length);
-            segment1.Write(fileData.fileName);
-            segment1.Write(buffer);
-            SendRT(client, NetCmd.SendFile, segment1.ToArray(true));
+            var buffer = new byte[bufferSize];
+            stream.Read(buffer, 0, buffer.Length);
+            var size = (fileData.Name.Length * 2) + 12;
+            var segment = BufferPool.Take((int)bufferSize + size);
+            var type = (byte)(fileData.Stream is FileStream ? 0 : 1);
+            segment.Write(cmd);
+            segment.Write(type);
+            segment.Write(fileData.Id);
+            segment.Write(fileData.Stream.Length);
+            segment.Write(fileData.Name);
+            segment.Write(buffer);
+            SendRT(client, NetCmd.UploadData, segment.ToArray(true));
             if (complete)
             {
-                OnSendFileProgress?.Invoke(client, new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete));
-                client.ftpDic.Remove(key);
-                fileData.fileStream.Close();
+                if (OnSendFileProgress != null & type == 0)
+                    OnSendFileProgress(client, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Complete));
+                client.BigDataDic.Remove(id);
+                fileData.Stream.Close();
             }
             else if (Environment.TickCount >= sendFileTick)
             {
                 sendFileTick = Environment.TickCount + 1000;
-                OnSendFileProgress?.Invoke(client, new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending));
+                if (OnSendFileProgress != null & type == 0)
+                    OnSendFileProgress(client, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Sending));
             }
         }
 

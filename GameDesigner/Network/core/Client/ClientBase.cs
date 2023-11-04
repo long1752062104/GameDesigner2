@@ -46,7 +46,7 @@ namespace Net.Client
     public abstract class ClientBase : INetClient, ISendHandle, IRpcHandler, IDisposable
     {
         /// <summary>
-        /// UDP客户端套接字
+        /// 客户端套接字
         /// </summary>
         public Socket Client { get; protected set; }
         /// <summary>
@@ -269,7 +269,7 @@ namespace Net.Client
         /// <summary>
         /// 当服务器发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
         /// </summary>
-        public Func<FileData, bool> OnReceiveFileHandle { get; set; }
+        public Func<BigData, bool> OnReceiveFileHandle { get; set; }
         /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
@@ -335,15 +335,11 @@ namespace Net.Client
         /// <summary>
         /// 同步线程上下文任务队列
         /// </summary>
-        public QueueSafe<Action> WorkerQueue = new QueueSafe<Action>();
+        public QueueSafe<IThreadArgs> WorkerQueue = new QueueSafe<IThreadArgs>();
         /// <summary>
         /// 接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
         public int PackageSize { get; set; } = 1024 * 1024 * 5;
-        /// <summary>
-        /// 允许叠包最大次数，如果数据包太大，接收数据的次数超出StackNumberMax值，则会清除叠包缓存器 默认可叠包50次
-        /// </summary>
-        //public int StackNumberMax { get; set; } = 50;
         /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
         /// </summary>
@@ -387,29 +383,11 @@ namespace Net.Client
         /// 组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
         /// </summary>
         public int PackageLength { get; set; } = 1000;
-        protected bool md5crc;
-        /// <summary>
-        /// 采用md5 + 随机种子校验
-        /// </summary>
-        [Obsolete("此属性已不再使用,请使用AddAdapter方法添加数据加密适配器!")]
-        public virtual bool MD5CRC
-        {
-            get => md5crc;
-            set
-            {
-                md5crc = value;
-                //frame = value ? 1 + 16 : 1;
-            }
-        }
-        /// <summary>
-        /// 随机种子密码
-        /// </summary>
-        public int Password { get; set; } = 123456789;
         /// <summary>
         /// 限制发送队列长度
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
-        private readonly MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
+        private readonly MyDictionary<int, BigData> BigDataDic = new MyDictionary<int, BigData>();
         protected int singleThreadHandlerID, networkTickID, networkFlowHandlerID, heartHandlerID;
         private int sendFileTick, recvFileTick;
         /// <summary>
@@ -435,11 +413,7 @@ namespace Net.Client
         public int SendInterval
         {
             get => sendInterval;
-            set
-            {
-                //ThreadManager.Event.GetEvent(sendHandlerID)?.SetIntervalTime((uint)value);
-                sendInterval = value;
-            }
+            set => sendInterval = value;
         }
         protected readonly object SyncRoot = new object();
         public IGcp Gcp { get; set; }
@@ -459,11 +433,12 @@ namespace Net.Client
         /// 数据包适配器
         /// </summary>
         public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
+
         /// <summary>
         /// 网络循环事件处理
         /// </summary>
         protected TimerEvent LoopEvent = new TimerEvent();
-        
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -702,7 +677,7 @@ namespace Net.Client
             int count = WorkerQueue.Count;
             for (int i = 0; i < count; i++)
                 if (WorkerQueue.TryDequeue(out var callback))
-                    callback?.Invoke();
+                    callback.Invoke();
             count = RpcWorkQueue.Count;
             for (int i = 0; i < count; i++)
             {
@@ -831,6 +806,7 @@ namespace Net.Client
             if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
             if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
             if (OnDataQueueOverflow == null) OnDataQueueOverflow = OnDataQueueOverflowInternal;
+            if (OnSwitchPortHandle == null) OnSwitchPortHandle = OnSwitchPortInternal;
             AddRpcHandle(this, false);
             if (Client == null) //如果套接字为空则说明没有连接上服务器
             {
@@ -927,7 +903,17 @@ namespace Net.Client
 
         protected void InvokeInMainThread(Action action)
         {
-            WorkerQueue.Enqueue(action);
+            WorkerQueue.Enqueue(new ThreadSpan(action));
+        }
+
+        protected void InvokeInMainThread<T>(Action<T> action, T arg)
+        {
+            WorkerQueue.Enqueue(new ThreadArgsGeneric<T>(action, arg));
+        }
+
+        protected void InvokeInMainThread<T, T1>(Action<T, T1> action, T arg1, T1 arg2)
+        {
+            WorkerQueue.Enqueue(new ThreadArgsGeneric<T, T1>(action, arg1, arg2));
         }
 
         /// <summary>
@@ -970,14 +956,14 @@ namespace Net.Client
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeInMainThread(() => result(true, ip));
+                    InvokeInMainThread(result, true, ip);
                 }
                 catch (Exception ex)
                 {
                     isDone = true;
                     client?.Close();
                     client = null;
-                    InvokeInMainThread(() => result(false, ex.ToString()));
+                    InvokeInMainThread(result, false, ex.ToString());
                 }
             });
         }
@@ -1014,26 +1000,19 @@ namespace Net.Client
             if (isConnect)
             {
                 NetworkState = NetworkState.Connected;
-                InvokeNetworkEvent(OnConnectedHandle, action, true);
+                InvokeInMainThread(action, true);
+                InvokeInMainThread(OnConnectedHandle);
                 NDebug.Log("成功连接服务器...");
             }
             else
             {
                 NetworkState = NetworkState.ConnectFailed;
-                InvokeNetworkEvent(OnConnectFailedHandle, action, false);
+                InvokeInMainThread(action, false);
+                InvokeInMainThread(OnConnectFailedHandle);
                 NDebug.LogError("服务器尚未开启或连接IP端口错误!");
                 if (!UseUnityThread)
                     NetworkUpdate();
             }
-        }
-
-        protected void InvokeNetworkEvent(Action connectResult, Action<bool> connectResult1, bool isConnect)
-        {
-            InvokeInMainThread(() =>
-            {
-                connectResult1?.Invoke(isConnect); //Connect的事件先执行
-                connectResult?.Invoke();
-            });
         }
 
         /// <summary>
@@ -1392,12 +1371,12 @@ namespace Net.Client
                     model.pars = func.pars;
                     model.methodHash = func.hash;
                 }
-                RPCDataHandle(model, buffer);//解析协议完成
+                CommandHandler(model, buffer);//解析协议完成
             J: buffer.Position = position;
             }
         }
 
-        protected virtual void RPCDataHandle(RPCModel model, ISegment segment)
+        protected virtual void CommandHandler(RPCModel model, ISegment segment)
         {
             resolveAmount++;
             switch (model.cmd)
@@ -1470,13 +1449,7 @@ namespace Net.Client
                     Connected = true;
                     break;
                 case NetCmd.SwitchPort:
-                    InvokeInMainThread(() =>
-                    {
-                        if (OnSwitchPortHandle != null)
-                            OnSwitchPortHandle(model.AsString, model.AsUshort);
-                        else
-                            OnSwitchPortInternal(model.AsString, model.AsUshort);
-                    });
+                    InvokeInMainThread(OnSwitchPortHandle, model.AsString, model.AsUshort);
                     break;
                 case NetCmd.Identify:
                     UID = PreUserId = segment.ReadInt32();
@@ -1486,7 +1459,7 @@ namespace Net.Client
                     var adapterType = segment.ReadString();
                     var version = segment.ReadInt32();
                     if (version != Version)
-                        InvokeInMainThread(() => OnUpdateVersion?.Invoke(version));
+                        InvokeInMainThread(OnUpdateVersion, version);
                     if (string.IsNullOrEmpty(adapterType))
                         return;
                     var type = AssemblyHelper.GetType(adapterType);
@@ -1494,8 +1467,8 @@ namespace Net.Client
                     AddAdapter(adapter);
                     break;
                 case NetCmd.OperationSync:
-                    var list = OnDeserializeOPT(model.buffer, model.index, model.count);
-                    InvokeInMainThread(() => OnOperationSync?.Invoke(list));
+                    var operList = OnDeserializeOPT(model.buffer, model.index, model.count);
+                    InvokeInMainThread(OnOperationSync, operList);
                     break;
                 case NetCmd.Ping:
                     RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
@@ -1503,135 +1476,153 @@ namespace Net.Client
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
                     var delayTime = (uint)Environment.TickCount - ticks;
-                    InvokeInMainThread(() => OnPingCallback?.Invoke(delayTime));
+                    InvokeInMainThread(OnPingCallback, delayTime);
                     break;
                 case NetCmd.P2P:
                     {
                         var address = segment.ReadInt64();
                         var port = segment.ReadInt32();
                         var endPoint = new IPEndPoint(address, port);
-                        InvokeInMainThread(() => OnP2PCallback?.Invoke(endPoint));
+                        InvokeInMainThread(OnP2PCallback, endPoint);
                     }
                     break;
                 case NetCmd.SyncVarP2P:
                     SyncVarHelper.SyncVarHandler(SyncVarDic, model.Buffer);
                     break;
-                case NetCmd.SendFile:
-                    {
-                        var key = segment.ReadInt32();
-                        var length = segment.ReadInt64();
-                        var fileName = segment.ReadString();
-                        var buffer = segment.ReadByteArray();
-                        if (!ftpDic.TryGetValue(key, out FileData fileData))
-                        {
-                            fileData = new FileData();
-                            string path;
-                            if (OnDownloadFileHandle != null)
-                            {
-                                path = OnDownloadFileHandle(fileName);
-                                var path1 = Path.GetDirectoryName(path);
-                                if (!Directory.Exists(path1))
-                                {
-                                    NDebug.LogError("文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                int count = 0;
-                                string downloadPath;
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-                                downloadPath = Net.Config.Config.BasePath + "/download/";
-#else
-                                downloadPath = Environment.CurrentDirectory + "/download/";
-#endif
-                                if (!Directory.Exists(downloadPath))
-                                    Directory.CreateDirectory(downloadPath);
-                                do
-                                {
-                                    count++;
-                                    path = downloadPath + $"{fileName}{count}.temp";
-                                }
-                                while (File.Exists(path));
-                            }
-                            fileData.ID = key;
-                            fileData.fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-                            fileData.fileName = fileName;
-                            ftpDic.Add(key, fileData);
-                        }
-                        fileData.fileStream.Write(buffer, 0, buffer.Length);
-                        fileData.Length += buffer.Length;
-                        if (fileData.Length >= length)
-                        {
-                            ftpDic.Remove(key);
-                            fileData.fileStream.Position = 0;
-                            InvokeInMainThread(() =>
-                            {
-                                OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Complete));
-                                var isDelete = true;
-                                if (OnReceiveFileHandle != null)
-                                    isDelete = OnReceiveFileHandle(fileData);
-                                fileData.fileStream.Close();
-                                if (isDelete)
-                                    File.Delete(fileData.fileStream.Name);
-                            });
-                        }
-                        else
-                        {
-                            var len = segment.Count;
-                            segment.SetPositionLength(0);
-                            segment.Write(key);
-                            SendRT(NetCmd.Download, segment.ToArray(false));
-                            segment.Count = len;
-                            if (Environment.TickCount >= recvFileTick)
-                            {
-                                recvFileTick = Environment.TickCount + 1000;
-                                InvokeInMainThread(() => OnRevdFileProgress?.Invoke(new RTProgress(fileName, fileData.Length / (float)length * 100f, RTState.Download)));
-                            }
-                        }
-                    }
+                case NetCmd.UploadData:
+                    DownloadDataHandler(segment);
                     break;
                 case NetCmd.Download:
-                    {
-                        var key = segment.ReadInt32();
-                        if (ftpDic.TryGetValue(key, out FileData fileData))
-                            SendFile(key, fileData);
-                    }
+                    UploadDataHandler(segment.ReadByte(), segment.ReadInt32());
                     break;
                 case NetCmd.QueueUp:
                     {
                         var totalCount = segment.ReadInt32();
                         var queueUpCount = segment.ReadInt32();
-                        InvokeInMainThread(() => OnWhenQueuing?.Invoke(totalCount, queueUpCount));
+                        InvokeInMainThread(OnWhenQueuing, totalCount, queueUpCount);
                     }
                     break;
                 case NetCmd.QueueCancellation:
-                    {
-                        InvokeInMainThread(OnQueueCancellation);
-                    }
+                    InvokeInMainThread(OnQueueCancellation);
                     break;
                 case NetCmd.ServerFull:
-                    {
-                        InvokeInMainThread(OnServerFull);
-                    }
+                    InvokeInMainThread(OnServerFull);
                     break;
                 case NetCmd.SyncPropertyData:
-                    {
-                        InvokeInMainThread(() => OnSyncPropertyHandle?.Invoke(model)); //属性同步没有用到Buffer
-                    }
+                    InvokeInMainThread(OnSyncPropertyHandle, model); //属性同步没有用到Buffer
                     break;
                 default:
-                    {
-                        InvokeInMainThread(model);
-                    }
+                    InvokeInMainThread(model);
                     break;
+            }
+        }
+
+        public virtual void UploadDataHandler(byte cmd, int id)
+        {
+            if (BigDataDic.TryGetValue(id, out BigData data))
+                SendFile(cmd, id, data);
+        }
+
+        public virtual void DownloadDataHandler(ISegment segment)
+        {
+            var cmd = segment.ReadByte();
+            var type = segment.ReadByte();
+            var id = segment.ReadInt32();
+            var length = segment.ReadInt32();
+            var name = segment.ReadString();
+            var buffer = segment.ReadByteArray();
+            if (!BigDataDic.TryGetValue(id, out BigData data))
+            {
+                data = new BigData();
+                if (type == 0)
+                {
+                    string path;
+                    if (OnDownloadFileHandle != null)
+                    {
+                        path = OnDownloadFileHandle(name);
+                        var path1 = Path.GetDirectoryName(path);
+                        if (!Directory.Exists(path1))
+                        {
+                            NDebug.LogError("文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        int count = 0;
+                        string downloadPath;
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+                        downloadPath = Net.Config.Config.BasePath + "/download/";
+#else
+                        downloadPath = Environment.CurrentDirectory + "/download/";
+#endif
+                        if (!Directory.Exists(downloadPath))
+                            Directory.CreateDirectory(downloadPath);
+                        do
+                        {
+                            count++;
+                            path = downloadPath + $"{name}{count}.temp";
+                        }
+                        while (File.Exists(path));
+                    }
+                    data.Stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                }
+                else
+                {
+                    data.Stream = new MemoryStream(length);
+                }
+                data.Id = id;
+                data.Name = name;
+                BigDataDic.Add(id, data);
+            }
+            data.Stream.Write(buffer, 0, buffer.Length);
+            data.Length += buffer.Length;
+            if (data.Length >= length)
+            {
+                BigDataDic.Remove(id);
+                data.Stream.Position = 0;
+                InvokeInMainThread(() =>
+                {
+                    if (type == 0)
+                    {
+                        OnRevdFileProgress?.Invoke(new RTProgress(name, data.Length / (float)length * 100f, RTState.Complete));
+                        var isDelete = true;
+                        if (OnReceiveFileHandle != null)
+                            isDelete = OnReceiveFileHandle(data);
+                        data.Stream.Close();
+                        if (isDelete)
+                            File.Delete((data.Stream as FileStream).Name);
+                    }
+                    else
+                    {
+                        buffer = new byte[length];
+                        data.Stream.Read(buffer, 0, length);
+                        data.Stream.Dispose();
+                        var model = new RPCModel(cmd, buffer);
+                        OnReceiveDataHandle?.Invoke(model);
+                    }
+                });
+            }
+            else
+            {
+                var len = segment.Count;
+                segment.SetPositionLength(0);
+                segment.Write(cmd);
+                segment.Write(id);
+                SendRT(NetCmd.Download, segment.ToArray(false));
+                segment.Count = len;
+                if (Environment.TickCount >= recvFileTick)
+                {
+                    recvFileTick = Environment.TickCount + 1000;
+                    InvokeInMainThread(OnRevdFileProgress, new RTProgress(name, data.Length / (float)length * 100f, RTState.Download));
+                }
             }
         }
 
         protected virtual void InvokeInMainThread(RPCModel model)
         {
             model.Flush(); //先缓存起来, 当切换到主线程后才能得到正确的数据
-            InvokeInMainThread(() => OnReceiveDataHandle?.Invoke(model));
+            InvokeInMainThread(OnReceiveDataHandle, model);
         }
 
         protected virtual void OnSwitchPortInternal(string host, ushort port)
@@ -1644,7 +1635,7 @@ namespace Net.Client
         {
             float bfb = currValue / (float)dataCount * 100f;
             var progress = new RTProgress(bfb, RTState.Sending);
-            InvokeInMainThread(() => OnRevdRTProgress?.Invoke(progress));
+            InvokeInMainThread(OnRevdRTProgress, progress);
         }
 
         /// <summary>
@@ -1877,19 +1868,7 @@ namespace Net.Client
         /// <param name="buffer">发送字节数组缓冲区</param>
         public virtual void Send(byte cmd, byte[] buffer)
         {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            if (buffer.Length > 65507)
-            {
-                NDebug.LogError("数据太大，请分段发送!");
-                return;
-            }
-            RpcModels.Enqueue(new RPCModel(cmd, buffer) { bigData = buffer.Length > short.MaxValue });
+            SendRT(cmd, buffer);
         }
 
         /// <summary>
@@ -2003,7 +1982,7 @@ namespace Net.Client
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, timeoutMilliseconds, intercept, pars);
+            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, timeoutMilliseconds, intercept, null, pars);
         }
 
         /// <summary>
@@ -2067,7 +2046,7 @@ namespace Net.Client
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
+            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, null, pars);
         }
         #endregion
 
@@ -2137,7 +2116,7 @@ namespace Net.Client
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, func, callbackFunc, (ushort)0, 0, timeoutMilliseconds, intercept, pars);
+            return Call(cmd, func, callbackFunc, (ushort)0, 0, timeoutMilliseconds, intercept, null, pars);
         }
 
         /// <summary>
@@ -2206,11 +2185,11 @@ namespace Net.Client
         /// <returns></returns>
         public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
-            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, timeoutMilliseconds, intercept, pars);
+            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, timeoutMilliseconds, intercept, null, pars);
         }
         #endregion
 
-        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort methodHash, ushort callbackFunc1, int timeoutMilliseconds, bool intercept, params object[] pars)
+        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort methodHash, ushort callbackFunc1, int timeoutMilliseconds, bool intercept, byte[] buffer, params object[] pars)
         {
             var model = new RPCModelTask();
             RPCMethodBody body;
@@ -2230,6 +2209,8 @@ namespace Net.Client
             else body = OnRpcTaskRegister(callbackFunc1, callbackFunc);
             if (methodHash != 0)
                 SendRT(new RPCModel(cmd, methodHash, pars));
+            else if (buffer != null)
+                SendRT(new RPCModel(cmd, buffer));
             else
                 SendRT(new RPCModel(cmd, func, pars, true, true));
             if (timeoutMilliseconds == -1)
@@ -2330,13 +2311,14 @@ namespace Net.Client
                 OnDataQueueOverflow?.Invoke();
                 return;
             }
+            var count = buffer.Length;
             var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
-            if (buffer.Length > size)
+            if (count >= size)
             {
-                NDebug.LogError("数据太大，请分段发送!");
+                SendFile(cmd, new MemoryStream(buffer), string.Empty);
                 return;
             }
-            RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
+            RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = count > short.MaxValue });
         }
 
         /// <summary>
@@ -2480,7 +2462,7 @@ namespace Net.Client
         /// <param name="filePath"></param>
         /// <param name="bufferSize">每次发送数据大小</param>
         /// <returns></returns>
-        public bool SendFile(string filePath, int bufferSize = 50000)
+        public bool SendFile(string filePath)
         {
             var path1 = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(path1))
@@ -2488,50 +2470,58 @@ namespace Net.Client
                 NDebug.LogError("文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
                 return false;
             }
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
-            var fileData = new FileData
-            {
-                ID = fileStream.GetHashCode(),
-                fileStream = fileStream,
-                fileName = Path.GetFileName(filePath),
-                bufferSize = bufferSize
-            };
-            ftpDic.Add(fileData.ID, fileData);
-            SendFile(fileData.ID, fileData);
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            SendFile(NetCmd.UploadData, fileStream, Path.GetFileName(filePath));
             return true;
         }
 
-        private void SendFile(int key, FileData fileData)
+        private void SendFile(byte cmd, Stream stream, string name)
         {
-            var fileStream = fileData.fileStream;
-            bool complete = false;
-            long bufferSize = fileData.bufferSize;
-            if (fileStream.Position + fileData.bufferSize >= fileStream.Length)
+            var data = new BigData
             {
-                bufferSize = fileStream.Length - fileStream.Position;
+                Id = stream.GetHashCode(),
+                Stream = stream,
+                Name = name,
+                bufferSize = 50000 / (BigDataDic.Count + 1)
+            };
+            BigDataDic.Add(data.Id, data);
+            SendFile(cmd, data.Id, data);
+        }
+
+        private void SendFile(byte cmd, int id, BigData fileData)
+        {
+            var stream = fileData.Stream;
+            var complete = false;
+            long bufferSize = fileData.bufferSize;
+            if (stream.Position + fileData.bufferSize >= stream.Length)
+            {
+                bufferSize = stream.Length - stream.Position;
                 complete = true;
             }
-            byte[] buffer = new byte[bufferSize];
-            fileStream.Read(buffer, 0, buffer.Length);
-            var size = (fileData.fileName.Length * 2) + 12;
-            var segment1 = BufferPool.Take((int)bufferSize + size);
-            segment1.Write(fileData.ID);
-            segment1.Write(fileData.fileStream.Length);
-            segment1.Write(fileData.fileName);
-            segment1.Write(buffer);
-            SendRT(NetCmd.SendFile, segment1.ToArray(true));
+            var buffer = new byte[bufferSize];
+            stream.Read(buffer, 0, buffer.Length);
+            var size = (fileData.Name.Length * 2) + 12;
+            var segment = BufferPool.Take((int)bufferSize + size);
+            var type = (byte)(fileData.Stream is FileStream ? 0 : 1);
+            segment.Write(cmd);
+            segment.Write(type);
+            segment.Write(fileData.Id);
+            segment.Write((int)fileData.Stream.Length);
+            segment.Write(fileData.Name);
+            segment.Write(buffer);
+            SendRT(NetCmd.UploadData, segment.ToArray(true));
             if (complete)
             {
-                if (OnSendFileProgress != null)
-                    InvokeInMainThread(() => OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Complete)));
-                ftpDic.Remove(key);
-                fileData.fileStream.Close();
+                if (OnSendFileProgress != null & type == 0)
+                    InvokeInMainThread(OnSendFileProgress, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Complete));
+                BigDataDic.Remove(id);
+                fileData.Stream.Close();
             }
             else if (Environment.TickCount >= sendFileTick)
             {
                 sendFileTick = Environment.TickCount + 1000;
-                if (OnSendFileProgress != null)
-                    InvokeInMainThread(() => OnSendFileProgress(new RTProgress(fileData.fileName, fileStream.Position / (float)fileStream.Length * 100f, RTState.Sending)));
+                if (OnSendFileProgress != null & type == 0)
+                    InvokeInMainThread(OnSendFileProgress, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Sending));
             }
         }
 

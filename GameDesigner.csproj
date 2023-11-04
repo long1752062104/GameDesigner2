@@ -125,6 +125,7 @@
     <Compile Include="GameDesigner\Network\Binding\BindingExtension.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVariable.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\ThreadArgs.cs" />
     <Compile Include="GameDesigner\Network\core\System\FastHashSet.cs" />
     <Compile Include="GameDesigner\Network\core\System\ISegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\SafeDictionary.cs" />
@@ -205,9 +206,7 @@
     <Compile Include="GameDesigner\Network\core\Share\AckQueue.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ConnectState.cs" />
     <Compile Include="GameDesigner\Network\core\Share\Constituency.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\DataModel.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\EventHandle.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\FileData.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\BigData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\FuncData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IAdapter.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDataConfig.cs" />

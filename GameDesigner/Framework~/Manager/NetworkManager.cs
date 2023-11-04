@@ -287,7 +287,7 @@ namespace Framework
 
         public void CallUnity(Action ptr)
         {
-            clients[0].Client.WorkerQueue.Enqueue(ptr);
+            clients[0].Client.WorkerQueue.Enqueue(new ThreadSpan(ptr));
         }
 
         public void DispatcherRpc(ushort hash, params object[] parms)

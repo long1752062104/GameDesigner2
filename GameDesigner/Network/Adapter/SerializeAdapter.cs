@@ -10,22 +10,13 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter : ISerializeAdapter
     {
-        [Obsolete("此处加密会影响性能,所以可以在ServerBase.PackageAdapter和ClientBase.PackageAdapter设置数据加密适配器")]
-        public bool IsEncrypt { get; set; }
-        public int Password { get; set; } = 758426581;
-
         public byte[] OnSerializeRpc(RPCModel model)
         {
-            var buffer = NetConvertBinary.SerializeModel(model);
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToEncrypt(Password, buffer);
-            return buffer;
+            return NetConvertBinary.SerializeModel(model);
         }
 
         public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
         {
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToDecrypt(Password, buffer, index, count);
             return NetConvertBinary.DeserializeModel(buffer, index, count);
         }
 
@@ -46,22 +37,13 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeFastAdapter : ISerializeAdapter
     {
-        [Obsolete("此处加密会影响性能,所以可以在ServerBase.PackageAdapter和ClientBase.PackageAdapter设置数据加密适配器")]
-        public bool IsEncrypt { get; set; }
-        public int Password { get; set; } = 758426581;
-
         public byte[] OnSerializeRpc(RPCModel model)
         {
-            var buffer = NetConvertFast.Serialize(model);
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToEncrypt(Password, buffer);
-            return buffer;
+            return NetConvertFast.Serialize(model);
         }
 
         public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
         {
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToDecrypt(Password, buffer, index, count);
             return NetConvertFast.Deserialize(buffer, index, count);
         }
 
@@ -82,22 +64,13 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter2 : ISerializeAdapter
     {
-        [Obsolete("此处加密会影响性能,所以可以在ServerBase.PackageAdapter和ClientBase.PackageAdapter设置数据加密适配器")]
-        public bool IsEncrypt { get; set; }
-        public int Password { get; set; } = 758426581;
-
         public byte[] OnSerializeRpc(RPCModel model)
         {
-            var buffer = NetConvertBinary.SerializeModel(model);
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToEncrypt(Password, buffer);
-            return buffer;
+            return NetConvertBinary.SerializeModel(model);
         }
 
         public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
         {
-            //if (IsEncrypt)
-            //    Helper.EncryptHelper.ToDecrypt(Password, buffer, index, count);
             return NetConvertBinary.DeserializeModel(buffer, index, count);
         }
 
@@ -118,10 +91,6 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter3 : ISerializeAdapter
     {
-        [Obsolete("此处加密会影响性能,所以可以在ServerBase.PackageAdapter和ClientBase.PackageAdapter设置数据加密适配器")]
-        public bool IsEncrypt { get; set; }
-        public int Password { get; set; } = 758426581;
-
         public byte[] OnSerializeRpc(RPCModel model)
         {
             var buffer = NetConvertFast2.SerializeModel(model);

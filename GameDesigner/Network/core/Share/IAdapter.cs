@@ -25,15 +25,6 @@ namespace Net.Share
     /// </summary>
     public interface ISerializeAdapter : IAdapter
     {
-        /// <summary>
-        /// 是否加密传输?
-        /// </summary>
-        bool IsEncrypt { get; set; }
-        /// <summary>
-        /// 加密密码
-        /// </summary>
-        int Password { get; set; }
-
         byte[] OnSerializeRpc(RPCModel model);
 
         FuncData OnDeserializeRpc(byte[] buffer, int index, int count);

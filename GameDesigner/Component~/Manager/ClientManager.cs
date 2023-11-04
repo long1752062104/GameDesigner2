@@ -167,7 +167,7 @@ namespace Net.Component
                 _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
             else
 #endif
-                _client.host = ip;
+            _client.host = ip;
 #if UNITY_EDITOR
             if (localTest) _client.host = "127.0.0.1";
 #endif
@@ -263,7 +263,7 @@ namespace Net.Component
 
         public static void CallUnity(Action ptr)
         {
-            I.client.WorkerQueue.Enqueue(ptr);
+            I.client.WorkerQueue.Enqueue(new ThreadSpan(ptr));
         }
 
         #region 发送接口实现

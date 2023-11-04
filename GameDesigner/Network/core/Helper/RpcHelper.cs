@@ -139,15 +139,9 @@ namespace Net.Helper
                     continue;
                 modelTask.model = model;
                 modelTask.IsCompleted = true;
-                var callback = modelTask.callback;
-                if (callback != null)
-                {
-                    var data = new RPCData(callback.Target, callback.Method, model.pars);
-                    handle.RpcWorkQueue.Enqueue(data);
-                    return;
-                }
                 if (modelTask.intercept)
                     return;
+                break; //只能执行一次, 不能全部循环执行
             }
             if (body.Count <= 0)
             {

@@ -111,7 +111,7 @@
         /// 是否处于连接
         /// </summary>
         public bool Connected { get; set; }
-        internal MyDictionary<int, FileData> ftpDic = new MyDictionary<int, FileData>();
+        internal MyDictionary<int, BigData> BigDataDic = new MyDictionary<int, BigData>();
         private byte[] addressBuffer;
         /// <summary>
         /// 确定是否是冗余连接
@@ -154,6 +154,10 @@
         /// 数据队列溢出错误, 当要发送的数据队列堆积到<see cref="ServerBase{Player, Scene}.LimitQueueCount"/> 后提示错误
         /// </summary>
         public int DataQueueOverflowError { get; set; }
+        /// <summary>
+        /// 大数据传输缓存最大长度错误次数, 请在<see cref="ServerBase{Player, Scene}.BigDataCacheLength"/>设置最大缓存长度
+        /// </summary>
+        public int BigDataCacheLengthError { get; set; }
 
         #region 创建网络客户端(玩家)
         /// <summary>

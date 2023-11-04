@@ -12,7 +12,7 @@ using Cysharp.Threading.Tasks;
 namespace Net.Component
 {
     [Serializable]
-    public class ClientGourp 
+    public class ClientGourp
     {
         public string name;
         public ClientBase _client;
@@ -266,7 +266,7 @@ namespace Net.Component
 
         public static void CallUnity(Action ptr)
         {
-            I.clients[0].Client.WorkerQueue.Enqueue(ptr);
+            I.clients[0].Client.WorkerQueue.Enqueue(new ThreadSpan(ptr));
         }
 
         public static void DispatcherRpc(ushort hash, params object[] parms)

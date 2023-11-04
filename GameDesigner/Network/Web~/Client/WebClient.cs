@@ -120,7 +120,7 @@ namespace Net.Client
                         receiveAmount++;
                         MessageModel model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
                         RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars());
-                        RPCDataHandle(model1, null);
+                        CommandHandler(model1, null);
                     }
                     else if (e.IsBinary)
                     {

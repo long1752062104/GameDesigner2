@@ -24,7 +24,7 @@
         {
             var thread = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
             thread.Start();
-            threads.Add("ProcessAcceptConnect", thread);
+            ServerThreads.Add("ProcessAcceptConnect", thread);
         }
 
         protected override void CreateServerSocket(ushort port)

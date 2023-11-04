@@ -16,8 +16,6 @@ namespace Net.Component
     public class SerializeAdapter : SingleCase<SerializeAdapter>
     {
         public SerializeAdapterType type;
-        public bool isEncrypt = false;//数据加密?
-        public int password = 758426581;
 
         protected override void Awake()
         {
@@ -28,20 +26,21 @@ namespace Net.Component
         public void Init()
         {
             var cm = GetComponent<ClientManager>();
-            switch (type) {
+            switch (type)
+            {
                 case SerializeAdapterType.Default:
                     break;
                 case SerializeAdapterType.PB_JSON_FAST:
-                    cm.client.AddAdapter(new Adapter.SerializeFastAdapter() { IsEncrypt = isEncrypt, Password = password });
+                    cm.client.AddAdapter(new Adapter.SerializeFastAdapter());
                     break;
                 case SerializeAdapterType.Binary:
-                    cm.client.AddAdapter(new Adapter.SerializeAdapter() { IsEncrypt = isEncrypt, Password = password });
+                    cm.client.AddAdapter(new Adapter.SerializeAdapter());
                     break;
                 case SerializeAdapterType.Binary2:
-                    cm.client.AddAdapter(new Adapter.SerializeAdapter2() { IsEncrypt = isEncrypt, Password = password });
+                    cm.client.AddAdapter(new Adapter.SerializeAdapter2());
                     break;
                 case SerializeAdapterType.Binary3:
-                    cm.client.AddAdapter(new Adapter.SerializeAdapter3() { IsEncrypt = isEncrypt, Password = password });
+                    cm.client.AddAdapter(new Adapter.SerializeAdapter3());
                     break;
             }
         }
