@@ -1,55 +1,54 @@
-using System.Collections.Generic;
-using System;
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class InvokeHelperConfigObject : ScriptableObject
+namespace Net.Config 
 {
-    public InvokeHelperConfig Config = new InvokeHelperConfig();
-}
-#elif SERVICE
-public class Header : Attribute 
-{
-    public Header(string text) { }
-}
-#endif
-[Serializable]
-public class InvokeHelperConfig
-{
-    [Header("true:µ±½Å±¾±àÒëºóµ÷ÓÃ£¬¼ì²âÉú³ÉSyncVarºÍRpcµÄ´úÂë£¬false:²»ÆôÓÃ¼ì²â")]
-    public bool onReloadInvoke = true;
-    [Header("true:ÔÚunityÆôÓÃ×Ö¶ÎÍ¬²½°ïÖúÀàÉú³ÉµÄ´úÂë false:ÔËĞĞÊ±¶¯Ì¬±àÒë×Ö¶ÎÍ¬²½°ïÖúÀà")]
-    public bool syncVarClientEnable;
-    [Header("true:ÔÚserverÆôÓÃ×Ö¶ÎÍ¬²½°ïÖúÀàÉú³ÉµÄ´úÂë false:ÔËĞĞÊ±¶¯Ì¬±àÒë×Ö¶ÎÍ¬²½°ïÖúÀà")]
-    public bool syncVarServerEnable;
-    [Header("ÊÕ¼¯ºó¶ËRpc¸øÇ°¶Ëµ÷ÓÃ")]
-    public bool collectRpc;
-    [Header("SyncVarÍ¬²½×Ö¶Î¼ÇÂ¼Àà, ¿ÉÓÃÓÚ¶¨Òå×Ö¶ÎÎª»ùÀà, µ«ÊÇ¸³ÖµÈ´ÊÇÅÉÉúÀà¶ÔÏó")]
-    public bool recordType;
-    [Header("Éú³ÉµÄ½Å±¾´æ·ÅÂ·¾¶(unity)")]
-    public string savePath;
-    [Header("ÊÕ¼¯³ÌĞò¼¯Â·¾¶(unity)")]
-    public List<string> dllPaths = new List<string>();
-    [Header("Rpc¸¨Öú")]
-#if UNITY_2020_1_OR_NEWER && UNITY_EDITOR
-    [NonReorderable]
-#endif
-    public List<InvokeHelperConfigData> rpcConfig = new List<InvokeHelperConfigData>();
-    public bool foldout;
-    public int rpcConfigSize;
-}
+    public class InvokeHelperConfigObject : ScriptableObject
+    {
+        public InvokeHelperConfig Config = new InvokeHelperConfig();
+    }
 
-[Serializable]
-public class InvokeHelperConfigData 
-{
-    public string name;
-    [Header("VSÏîÄ¿ÎÄ¼şÂ·¾¶")]
-    public string csprojPath;
-    [Header("Éú³ÉµÄºó¶Ë½Å±¾´æ·ÅÂ·¾¶")]
-    public string savePath;
-    [Header("ÊÕ¼¯Ç°¶ËRpc¸øºó¶Ëµ÷ÓÃ")]
-    public bool collectRpc;
-    [Header("ÊÕ¼¯³ÌĞò¼¯Â·¾¶")]
-    public List<string> dllPaths = new List<string>();
-    public bool foldout;
+    [Serializable]
+    public class InvokeHelperConfig
+    {
+        [Header("true:å½“è„šæœ¬ç¼–è¯‘åè°ƒç”¨ï¼Œæ£€æµ‹ç”ŸæˆSyncVarå’ŒRpcçš„ä»£ç ï¼Œfalse:ä¸å¯ç”¨æ£€æµ‹")]
+        public bool onReloadInvoke = true;
+        [Header("true:åœ¨unityå¯ç”¨å­—æ®µåŒæ­¥å¸®åŠ©ç±»ç”Ÿæˆçš„ä»£ç  false:è¿è¡Œæ—¶åŠ¨æ€ç¼–è¯‘å­—æ®µåŒæ­¥å¸®åŠ©ç±»")]
+        public bool syncVarClientEnable;
+        [Header("true:åœ¨serverå¯ç”¨å­—æ®µåŒæ­¥å¸®åŠ©ç±»ç”Ÿæˆçš„ä»£ç  false:è¿è¡Œæ—¶åŠ¨æ€ç¼–è¯‘å­—æ®µåŒæ­¥å¸®åŠ©ç±»")]
+        public bool syncVarServerEnable;
+        [Header("æ”¶é›†åç«¯Rpcç»™å‰ç«¯è°ƒç”¨")]
+        public bool collectRpc;
+        [Header("SyncVaråŒæ­¥å­—æ®µè®°å½•ç±», å¯ç”¨äºå®šä¹‰å­—æ®µä¸ºåŸºç±», ä½†æ˜¯èµ‹å€¼å´æ˜¯æ´¾ç”Ÿç±»å¯¹è±¡")]
+        public bool recordType;
+        [Header("ç”Ÿæˆçš„è„šæœ¬å­˜æ”¾è·¯å¾„(unity)")]
+        public string savePath;
+        [Header("æ”¶é›†ç¨‹åºé›†è·¯å¾„(unity)")]
+        public List<string> dllPaths = new List<string>();
+        [Header("Rpcè¾…åŠ©")]
+#if UNITY_2020_1_OR_NEWER && UNITY_EDITOR
+        [NonReorderable]
+#endif
+        public List<InvokeHelperConfigData> rpcConfig = new List<InvokeHelperConfigData>();
+        public bool foldout;
+        public int rpcConfigSize;
+    }
+
+    [Serializable]
+    public class InvokeHelperConfigData
+    {
+        public string name;
+        [Header("VSé¡¹ç›®æ–‡ä»¶è·¯å¾„")]
+        public string csprojPath;
+        [Header("ç”Ÿæˆçš„åç«¯è„šæœ¬å­˜æ”¾è·¯å¾„")]
+        public string savePath;
+        [Header("æ”¶é›†å‰ç«¯Rpcç»™åç«¯è°ƒç”¨")]
+        public bool collectRpc;
+        [Header("æ”¶é›†ç¨‹åºé›†è·¯å¾„")]
+        public List<string> dllPaths = new List<string>();
+        public bool foldout;
+    }
 }
+#endif

@@ -1,7 +1,7 @@
 #if (UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL) && UNITY_EDITOR
 using Net;
+using Net.Config;
 using Net.Helper;
-using System;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;

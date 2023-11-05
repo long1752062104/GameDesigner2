@@ -11,13 +11,13 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE SERVICE CORE SerializeTest</DefineConstants>
     <Optimize>False</Optimize>
+    <DefineConstants>$(DefineConstants);SERVICE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE SERVICE CORE SerializeTest</DefineConstants>
     <Optimize>False</Optimize>
+    <DefineConstants>$(DefineConstants);SERVICE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

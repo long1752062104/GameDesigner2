@@ -8,6 +8,7 @@ using System.Xml;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using Net.Config;
 #if UNITY_EDITOR
 using dnlib.DotNet;
 #endif
