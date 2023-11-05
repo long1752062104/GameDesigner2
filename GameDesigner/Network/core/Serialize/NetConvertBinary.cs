@@ -966,7 +966,7 @@
         public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
             FuncData obj = default;
-            var segment = new Segment(buffer, index, count, false);
+            var segment = BufferPool.NewSegment(buffer, index, count, false);
             try
             {
                 count += index;
@@ -994,7 +994,7 @@
         public static FuncData DeserializeModel(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
             FuncData obj = default;
-            var segment = new Segment(buffer, index, count, false);
+            var segment = BufferPool.NewSegment(buffer, index, count, false);
             try
             {
                 byte head = segment.ReadByte();
@@ -1038,7 +1038,8 @@
         /// <returns></returns>
         public static T DeserializeObject<T>(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
         {
-            return DeserializeObject<T>(new Segment(buffer, index, count, false), default, recordType, ignore);
+            var segment = BufferPool.NewSegment(buffer, index, count, false);
+            return DeserializeObject<T>(segment, default, recordType, ignore);
         }
 
         /// <summary>

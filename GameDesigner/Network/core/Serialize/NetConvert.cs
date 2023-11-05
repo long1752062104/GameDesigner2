@@ -68,7 +68,7 @@
             FuncData fdata = default;
             try 
             {
-                var segment = new Segment(buffer, index, count, false);
+                var segment = BufferPool.NewSegment(buffer, index, count, false);
                 byte head = segment.ReadByte();
                 bool hasFunc = GetBit(head, 1);
                 bool hasMask = GetBit(head, 2);

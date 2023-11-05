@@ -1,25 +1,22 @@
 ﻿using System;
+using System.Drawing;
 using System.Reflection;
 
 namespace Net.System
 {
     /// <summary>
-    /// 分片版本控制
+    /// 内存片段类型
     /// </summary>
-    public enum SegmentVersion 
+    public enum SegmentType
     {
         /// <summary>
-        /// 版本1, 已稳定
+        /// 使用内存片(类内存段)
         /// </summary>
-        Version1,
+        Segment = 1,
         /// <summary>
-        /// 版本2, 压缩率和Protobuff一样
+        /// 使用内存片(结构内存段)
         /// </summary>
-        Version2,
-        /// <summary>
-        /// 版本3, 结构分片
-        /// </summary>
-        Version3,
+        ArraySegment,
     }
 
     /// <summary>
@@ -36,9 +33,9 @@ namespace Net.System
         /// </summary>
         public static bool Log { get; set; }
         /// <summary>
-        /// 使用的分片版本
+        /// 使用的缓存块类型
         /// </summary>
-        public static SegmentVersion Version = SegmentVersion.Version1;
+        public static SegmentType SegmentType = SegmentType.Segment;
 
         private static readonly GStack<ISegment>[] STACKS = new GStack<ISegment>[37];
         private static readonly int[] TABLE = new int[] {
@@ -120,12 +117,8 @@ namespace Net.System
                         goto J1;
                     goto J2;
                 }
-                if (Version == SegmentVersion.Version1)
-                    segment = new Segment(new byte[size], 0, size);
-                else if (Version == SegmentVersion.Version2)
-                    segment = new Segment2(new byte[size], 0, size);
-                else
-                    segment = new ArraySegment(new byte[size], 0, size);
+                var buffer = new byte[size];
+                segment = BufferPool.NewSegment(buffer, 0, size, true);
             J2: segment.IsDespose = false;
                 segment.ReferenceCount++;
                 segment.Init();
@@ -137,7 +130,7 @@ namespace Net.System
         /// 压入数据片, 等待复用
         /// </summary>
         /// <param name="segment"></param>
-        public static void Push(ISegment segment) 
+        public static void Push(ISegment segment)
         {
 #if !SerializeTest
             lock (SyncRoot)
@@ -159,6 +152,29 @@ namespace Net.System
                 }
             }
         }
+
+        /// <summary>
+        /// 创建内存块
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="isRecovery"></param>
+        /// <returns>根据版本设置创建接口对象</returns>
+        public static ISegment NewSegment(byte[] buffer, int index, int count, bool isRecovery = false)
+        {
+            ISegment segment;
+            switch (BufferPool.SegmentType)
+            {
+                case SegmentType.ArraySegment:
+                    segment = new ArraySegment(buffer, index, count, isRecovery);
+                    break;
+                default:
+                    segment = new Segment(buffer, index, count, isRecovery);
+                    break;
+            }
+            return segment;
+        }
     }
 
     public static class ObjectPool<T> where T : new()
@@ -175,7 +191,7 @@ namespace Net.System
 
         public static T Take()
         {
-            lock (STACK) 
+            lock (STACK)
             {
                 if (STACK.TryPop(out T obj))
                     return obj;
@@ -203,7 +219,7 @@ namespace Net.System
             }
         }
 
-        public static void Clear() 
+        public static void Clear()
         {
             lock (STACK)
             {

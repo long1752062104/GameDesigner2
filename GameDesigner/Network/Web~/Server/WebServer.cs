@@ -53,24 +53,13 @@ namespace Net.Server
             protected override void OnMessage(MessageEventArgs e)
             {
                 var buffer = e.RawData;
-                Server.receiveCount += buffer.Length;
+                var count = buffer.Length;
+                Server.receiveCount += count;
                 Server.receiveAmount++;
-                client.BytesReceived += buffer.Length;
+                client.BytesReceived += count;
                 if (e.IsBinary)
                 {
-                    ISegment segment;
-                    switch (BufferPool.Version)
-                    {
-                        case SegmentVersion.Version2:
-                            segment = new Segment2(buffer, false);
-                            break;
-                        case SegmentVersion.Version3:
-                            segment = new ArraySegment(buffer, false);
-                            break;
-                        default:
-                            segment = new Segment(buffer, false);
-                            break;
-                    }
+                    var segment = BufferPool.NewSegment(buffer, 0, count, false);
                     client.RevdQueue.Enqueue(segment);
                 }
                 else if (e.IsText)

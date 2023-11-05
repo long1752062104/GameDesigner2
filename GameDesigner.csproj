@@ -267,7 +267,6 @@
     <Compile Include="GameDesigner\Network\core\System\RandomizedObjectEqualityComparer.cs" />
     <Compile Include="GameDesigner\Network\core\System\RandomSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\Segment.cs" />
-    <Compile Include="GameDesigner\Network\core\System\Segment2.cs" />
     <Compile Include="GameDesigner\Network\core\System\StackSafe.cs" />
     <Compile Include="GameDesigner\Network\core\System\ThreadManager.cs" />
     <Compile Include="GameDesigner\Network\core\System\ThrowHelper.cs" />

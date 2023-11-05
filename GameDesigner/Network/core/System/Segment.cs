@@ -44,10 +44,6 @@ namespace Net.System
         /// 引用次数
         /// </summary>
         public int ReferenceCount { get; set; }
-        /// <summary>
-        /// 字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
-        /// </summary>
-        public static byte StringRecordSize = 2;
 
         /// <summary>
         /// 获取或设置总内存位置索引
@@ -114,7 +110,7 @@ namespace Net.System
             Position = 0;
         }
 
-        public virtual void SetPosition(int position) 
+        public virtual void SetPosition(int position)
         {
             Position = position;
         }
@@ -583,22 +579,20 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual unsafe void Write(ushort value)
         {
-            if (value == 0)
+            if (value < 128)
             {
-                WriteByte(0);
+                WriteByte((byte)value);
                 return;
             }
-            fixed (byte* ptr = &Buffer[Position])
+            while (value > 0)
             {
-                byte num = 0;
-                while (value > 0)
+                if (value <= 127)
                 {
-                    num++;
-                    ptr[num] = (byte)(value >> 0);
-                    value >>= 8;
+                    WriteByte((byte)value);
+                    break;
                 }
-                ptr[0] = num;
-                Position += num + 1;
+                WriteByte((byte)((value & 127) | 128));
+                value >>= 7;
             }
         }
 
@@ -623,22 +617,20 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual unsafe void Write(uint value)
         {
-            if (value == 0)
+            if (value < 128U)
             {
-                WriteByte(0);
+                WriteByte((byte)value);
                 return;
             }
-            fixed (byte* ptr = &Buffer[Position])
+            while (value > 0)
             {
-                byte num = 0;
-                while (value > 0)
+                if (value <= 127U)
                 {
-                    num++;
-                    ptr[num] = (byte)(value >> 0);
-                    value >>= 8;
+                    WriteByte((byte)value);
+                    break;
                 }
-                ptr[0] = num;
-                Position += num + 1;
+                WriteByte((byte)((value & 127U) | 128U));
+                value >>= 7;
             }
         }
 
@@ -651,8 +643,8 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(float value)
         {
-            var ptr1 = *(uint*)&value;
-            Write(ptr1);
+            var ptr = *(uint*)&value;
+            Write(ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -664,22 +656,20 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual unsafe void Write(ulong value)
         {
-            if (value == 0)
+            if (value < 128UL)
             {
-                WriteByte(0);
+                WriteByte((byte)value);
                 return;
             }
-            fixed (byte* ptr = &Buffer[Position])
+            while (value > 0)
             {
-                byte num = 0;
-                while (value > 0)
+                if (value <= 127UL)
                 {
-                    num++;
-                    ptr[num] = (byte)(value >> 0);
-                    value >>= 8;
+                    WriteByte((byte)value);
+                    break;
                 }
-                ptr[0] = num;
-                Position += num + 1;
+                WriteByte((byte)((value & 127UL) | 128UL));
+                value >>= 7;
             }
         }
 
@@ -692,15 +682,15 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(double value)
         {
-            var ptr1 = *(ulong*)&value;
-            Write(ptr1);
+            var ptr = *(ulong*)&value;
+            Write(ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(decimal value)
         {
-            var ptr1 = &value;
-            Write(ptr1, 16);
+            var ptr = &value;
+            Write(ptr, 16);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -743,19 +733,15 @@ namespace Net.System
                 WriteByte(0);
                 return;
             }
+            var count = value.Length;
             fixed (char* ptr = value)
             {
+                int byteCount = UTF8Encoding.UTF8.GetByteCount(ptr, count);
+                Write(byteCount);
                 fixed (byte* ptr1 = &Buffer[Position])
                 {
-                    ptr1[0] = StringRecordSize;
-                    int size = StringRecordSize + 1;
-                    int count = Encoding.UTF8.GetBytes(ptr, value.Length, ptr1 + size, value.Length * 3);
-                    Position += size + count;
-                    for (int num = 1; num < size; num++)//必须重置StringRecordSize位,问题:从内存池取出之前已使用的脏数据后出现问题
-                    {
-                        ptr1[num] = (byte)(count >> 0);
-                        count >>= 8;
-                    }
+                    Encoding.UTF8.GetBytes(ptr, count, ptr1, byteCount);
+                    Position += byteCount;
                 }
             }
         }
@@ -1242,27 +1228,22 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual unsafe uint ReadUInt32()
         {
-            byte num = Buffer[Position];
-            Position++;//不安全代码中 i++和++i没区别
-            if (num == 0)
-                return 0;
             fixed (byte* ptr = &Buffer[Position])
             {
-                Position += num;
-                uint value = 0;
-                if (BitConverter.IsLittleEndian)
+                uint result = 0u;
+                int count = 0;
+                for (int i = 0; i < 5; i++) //最高值可达到5字节
                 {
-                    for (byte i = 0; i < num; i++)
-                        value |= (uint)ptr[i] << (i * 8);
-                    return value;
+                    var value = ptr[i];
+                    result |= (value & 127u) << (i * 7);
+                    if (value < 128)
+                    {
+                        count = i + 1;
+                        break;
+                    }
                 }
-                else
-                {
-                    num -= 1;
-                    for (byte i = num; i >= 0; i--)
-                        value |= (uint)ptr[i] << (i * 8);
-                    return value;
-                }
+                Position += count;
+                return result;
             }
         }
 
@@ -1298,27 +1279,22 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual unsafe ulong ReadUInt64()
         {
-            byte num = Buffer[Position];
-            Position++;//不安全代码中 i++和++i没区别
-            if (num == 0)
-                return 0;
             fixed (byte* ptr = &Buffer[Position])
             {
-                Position += num;
-                ulong value = 0;
-                if (BitConverter.IsLittleEndian)
+                ulong result = 0u;
+                int count = 0;
+                for (int i = 0; i < 9; i++) //最高值可达到9字节
                 {
-                    for (byte i = 0; i < num; i++)
-                        value |= (ulong)ptr[i] << (i * 8);
-                    return value;
+                    var value = ptr[i];
+                    result |= (value & 127ul) << (i * 7);
+                    if (value < 128)
+                    {
+                        count = i + 1;
+                        break;
+                    }
                 }
-                else
-                {
-                    num -= 1;
-                    for (byte i = num; i >= 0; i--)
-                        value |= (ulong)ptr[i] << (i * 8);
-                    return value;
-                }
+                Position += count;
+                return result;
             }
         }
 

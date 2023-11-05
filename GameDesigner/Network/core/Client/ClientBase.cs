@@ -1085,7 +1085,7 @@ namespace Net.Client
 
         protected internal virtual OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
         {
-            var segment = new Segment(buffer, index, count, false);
+            var segment = BufferPool.NewSegment(buffer, index, count, false);
             return NetConvertFast2.DeserializeObject<OperationList>(segment);
         }
 
