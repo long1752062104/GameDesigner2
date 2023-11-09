@@ -364,6 +364,15 @@
             开发调式阶段证书数据
             </summary>
         </member>
+        <member name="M:Net.Helper.PathHelper.GetRelativePath(System.String,System.String,System.Boolean)">
+            <summary>
+            获取相对路径
+            </summary>
+            <param name="root"></param>
+            <param name="fullPath"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
         <member name="P:Net.Helper.AntiCheatHelper.IsActive">
             <summary>
             是否激活防作弊检测
@@ -1165,59 +1174,32 @@
             服务器区端口
             </summary>
         </member>
-        <member name="T:Net.Share.EventHandle">
-            <summary>
-            事件处理结构
-            </summary>
-        </member>
-        <member name="F:Net.Share.EventHandle.obj">
-            <summary>
-            事件对象
-            </summary>
-        </member>
-        <member name="F:Net.Share.EventHandle.action">
-            <summary>
-            事件委托
-            </summary>
-        </member>
-        <member name="M:Net.Share.EventHandle.#ctor(System.Action{System.Object},System.Object)">
-            <summary>
-            构造
-            </summary>
-            <param name="action"></param>
-            <param name="obj"></param>
-        </member>
-        <member name="M:Net.Share.EventHandle.Invoke">
-            <summary>
-            处理事件
-            </summary>
-        </member>
-        <member name="T:Net.Share.FileData">
+        <member name="T:Net.Share.BigData">
             <summary>
             文件传输数据
             </summary>
         </member>
-        <member name="F:Net.Share.FileData.ID">
+        <member name="F:Net.Share.BigData.Id">
             <summary>
             文件唯一标识
             </summary>
         </member>
-        <member name="F:Net.Share.FileData.fileName">
+        <member name="F:Net.Share.BigData.Name">
             <summary>
             传输的文件名称
             </summary>
         </member>
-        <member name="F:Net.Share.FileData.bufferSize">
+        <member name="F:Net.Share.BigData.bufferSize">
             <summary>
             每次发送的数据大小
             </summary>
         </member>
-        <member name="F:Net.Share.FileData.Length">
+        <member name="F:Net.Share.BigData.Length">
             <summary>
             文件总长度
             </summary>
         </member>
-        <member name="F:Net.Share.FileData.fileStream">
+        <member name="F:Net.Share.BigData.Stream">
             <summary>
             实际文件写入对象
             </summary>
@@ -1283,16 +1265,6 @@
         <member name="T:Net.Share.ISerializeAdapter">
             <summary>
             序列化适配器
-            </summary>
-        </member>
-        <member name="P:Net.Share.ISerializeAdapter.IsEncrypt">
-            <summary>
-            是否加密传输?
-            </summary>
-        </member>
-        <member name="P:Net.Share.ISerializeAdapter.Password">
-            <summary>
-            加密密码
             </summary>
         </member>
         <member name="T:Net.Share.IRPCAdapter">
@@ -2216,14 +2188,14 @@
             字段或属性同步指令 内部指令 (客户端与服务器的Player字段同步)
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.SendFile">
+        <member name="F:Net.Share.NetCmd.UploadData">
             <summary>
-            发送文件
+            上传数据(大数据)
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.Download">
             <summary>
-            下载文件
+            下载数据(大数据)
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SingleCall">
@@ -2976,7 +2948,7 @@
         </member>
         <member name="T:Net.Share.RPCModel">
             <summary>
-            远程过程调用模型,此类负责网络通讯中数据解析临时存储的对象
+            远程过程调用模型,此类负责网络通讯中数据解析临时缓存的对象
             </summary>
         </member>
         <member name="F:Net.Share.RPCModel.kernel">
@@ -3447,11 +3419,6 @@
             引用次数
             </summary>
         </member>
-        <member name="F:Net.System.ArraySegment.StringRecordSize">
-            <summary>
-            字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
-            </summary>
-        </member>
         <member name="P:Net.System.ArraySegment.Item(System.Int32)">
             <summary>
             获取或设置总内存位置索引
@@ -3500,24 +3467,19 @@
             <param name="value"></param>
             <param name="recordLength">是否记录此次写入的字节长度?</param>
         </member>
-        <member name="T:Net.System.SegmentVersion">
+        <member name="T:Net.System.SegmentType">
             <summary>
-            分片版本控制
+            内存片段类型
             </summary>
         </member>
-        <member name="F:Net.System.SegmentVersion.Version1">
+        <member name="F:Net.System.SegmentType.Segment">
             <summary>
-            版本1, 已稳定
+            使用内存片(类内存段)
             </summary>
         </member>
-        <member name="F:Net.System.SegmentVersion.Version2">
+        <member name="F:Net.System.SegmentType.ArraySegment">
             <summary>
-            版本2, 压缩率和Protobuff一样
-            </summary>
-        </member>
-        <member name="F:Net.System.SegmentVersion.Version3">
-            <summary>
-            版本3, 结构分片
+            使用内存片(结构内存段)
             </summary>
         </member>
         <member name="T:Net.System.BufferPool">
@@ -3535,9 +3497,9 @@
             当没有合理回收内存，导致内存泄漏被回收后提示
             </summary>
         </member>
-        <member name="F:Net.System.BufferPool.Version">
+        <member name="F:Net.System.BufferPool.SegmentType">
             <summary>
-            使用的分片版本
+            使用的缓存块类型
             </summary>
         </member>
         <member name="M:Net.System.BufferPool.Take">
@@ -3558,6 +3520,16 @@
             压入数据片, 等待复用
             </summary>
             <param name="segment"></param>
+        </member>
+        <member name="M:Net.System.BufferPool.NewSegment(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            创建内存块
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+            <param name="isRecovery"></param>
+            <returns>根据版本设置创建接口对象</returns>
         </member>
         <member name="T:Net.System.ArrayPool`1">
             <summary>
@@ -4033,11 +4005,6 @@
             引用次数
             </summary>
         </member>
-        <member name="F:Net.System.Segment.StringRecordSize">
-            <summary>
-            字符串记录的字节大小 1字节255个字符, 2字节65535个字符 3字节16777216字符 4字节4294967296
-            </summary>
-        </member>
         <member name="P:Net.System.Segment.Item(System.Int32)">
             <summary>
             获取或设置总内存位置索引
@@ -4085,31 +4052,6 @@
             </summary>
             <param name="value"></param>
             <param name="recordLength">是否记录此次写入的字节长度?</param>
-        </member>
-        <member name="T:Net.System.Segment2">
-            <summary>
-            内存数据片段
-            </summary>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[])">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.Segment2.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
         </member>
         <member name="T:Net.System.ThreadManager">
             <summary>
@@ -4331,7 +4273,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.Client">
             <summary>
-            UDP客户端套接字
+            客户端套接字
             </summary>
         </member>
         <member name="F:Net.Client.ClientBase.host">
@@ -4743,16 +4685,6 @@
             组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.MD5CRC">
-            <summary>
-            采用md5 + 随机种子校验
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Password">
-            <summary>
-            随机种子密码
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.LimitQueueCount">
             <summary>
             限制发送队列长度
@@ -5094,7 +5026,7 @@
             </summary>
             <param name="opt"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddOperations(System.Collections.Generic.List{Net.Share.Operation})">
+        <member name="M:Net.Client.ClientBase.AddOperations(System.Collections.Generic.ICollection{Net.Share.Operation})">
             <summary>
             添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
             而Send则是直接发送
@@ -5454,9 +5386,9 @@
             字段,属性同步处理线程
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.SendFile(System.String,System.Int32)">
+        <member name="M:Net.Client.ClientBase.SendFile(System.String)">
             <summary>
-            发送文件, 服务器可以通过重写<see cref="M:Net.Server.ServerBase`2.OnReceiveFile(`0,Net.Share.FileData)"/>方法来接收 或 使用事件<see cref="P:Net.Server.ServerBase`2.OnReceiveFileHandle"/>来监听并处理
+            发送文件, 服务器可以通过重写<see cref="M:Net.Server.ServerBase`2.OnReceiveFile(`0,Net.Share.BigData)"/>方法来接收 或 使用事件<see cref="P:Net.Server.ServerBase`2.OnReceiveFileHandle"/>来监听并处理
             </summary>
             <param name="filePath"></param>
             <param name="bufferSize">每次发送数据大小</param>
@@ -6182,6 +6114,11 @@
             数据队列溢出错误, 当要发送的数据队列堆积到<see cref="P:Net.Server.ServerBase`2.LimitQueueCount"/> 后提示错误
             </summary>
         </member>
+        <member name="P:Net.Server.NetPlayer.BigDataCacheLengthError">
+            <summary>
+            大数据传输缓存最大长度错误次数, 请在<see cref="P:Net.Server.ServerBase`2.BigDataCacheLength"/>设置最大缓存长度
+            </summary>
+        </member>
         <member name="M:Net.Server.NetPlayer.#ctor">
             <summary>
             构造网络客户端
@@ -6747,11 +6684,6 @@
             4个字节记录数据长度 + 1CRC校验
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.PackageSize">
-            <summary>
-            每个客户端接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
-            </summary>
-        </member>
         <member name="P:Net.Server.ServerBase`2.HeartInterval">
             <summary>
             心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
@@ -6813,16 +6745,6 @@
             组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`2.MD5CRC">
-            <summary>
-            采用md5 + 随机种子校验
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.Password">
-            <summary>
-            随机种子密码
-            </summary>
-        </member>
         <member name="P:Net.Server.ServerBase`2.LimitQueueCount">
             <summary>
             限制发送队列长度
@@ -6856,6 +6778,26 @@
         <member name="P:Net.Server.ServerBase`2.PackageAdapter">
             <summary>
             数据包适配器
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`2.ServerThreads">
+            <summary>
+            服务器线程管理
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.SerializeAdapter">
+            <summary>
+            序列化适配器
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Version">
+            <summary>
+            版本号
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.BigDataCacheLength">
+            <summary>
+            大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`2.OnStartingHandle">
@@ -6978,21 +6920,6 @@
             当发送的文件进度
             </summary>
         </member>
-        <member name="F:Net.Server.ServerBase`2.threads">
-            <summary>
-            服务器线程管理
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.SerializeAdapter">
-            <summary>
-            序列化适配器
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.Version">
-            <summary>
-            版本号
-            </summary>
-        </member>
         <member name="M:Net.Server.ServerBase`2.#ctor">
             <summary>
             构造网络服务器函数
@@ -7102,7 +7029,7 @@
             <param name="client">当前客户端</param>
             <param name="model"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`2.OnReceiveFile(`0,Net.Share.FileData)">
+        <member name="M:Net.Server.ServerBase`2.OnReceiveFile(`0,Net.Share.BigData)">
             <summary>
             当接收到客户端发送的文件
             </summary>
@@ -7869,29 +7796,6 @@
             <summary>
             默认web服务器，当不需要处理Player对象和Scene对象时可使用
             </summary>
-        </member>
-        <member name="T:Net.Unity.UnitySynchronizationContext">
-            <summary>
-            unity线程同步中心管理类
-            </summary>
-        </member>
-        <member name="P:Net.Unity.UnitySynchronizationContext.Context">
-            <summary>
-            线程同步中心核心对象
-            </summary>
-        </member>
-        <member name="P:Net.Unity.UnitySynchronizationContext.MainThreadId">
-            <summary>
-            unity主线程id
-            </summary>
-        </member>
-        <member name="M:Net.Unity.UnitySynchronizationContext.Get``1(System.Func{``0})">
-            <summary>
-            在主线程调用, 并返回结果到此线程, 如果此线程是主线程, 则直接调用并返回
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="ptr"></param>
-            <returns></returns>
         </member>
         <member name="F:Net.Plugins.Cmd.Frame">
             <summary>

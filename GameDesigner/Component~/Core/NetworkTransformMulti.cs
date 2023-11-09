@@ -18,6 +18,17 @@ namespace Net.UnityComponent
         public override void Start()
         {
             base.Start();
+            InitChilds(); //实例化后再赋值位置时再次初始化位置用到
+        }
+
+        public override void OnNetworkObjectCreate(Operation opt)
+        {
+            base.OnNetworkObjectCreate(opt);
+            InitChilds(); //实例化后就要初始化子物体信息, 否则会出现子物体的大小变成0,0,0的问题
+        }
+
+        private void InitChilds()
+        {
             for (int i = 0; i < childs.Length; i++)
             {
                 childs[i].Init(i + 1);

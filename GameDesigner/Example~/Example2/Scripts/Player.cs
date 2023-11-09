@@ -62,13 +62,15 @@ namespace Example2
                 GetComponentInChildren<Animation>().Play("soldierDieFront");
                 if (IsLocal)
                 {
-                    StateEvent.AddEvent(1f, () =>
-                    {
-                        headBloodBar.gameObject.SetActive(false);
-                        GameEvent.OnPlayerDead?.Invoke();
-                    });
+                    Invoke(nameof(DeadDelay), 1f);
                 }
             }
+        }
+
+        private void DeadDelay()
+        {
+            headBloodBar.gameObject.SetActive(false);
+            GameEvent.OnPlayerDead?.Invoke();
         }
     }
 }
