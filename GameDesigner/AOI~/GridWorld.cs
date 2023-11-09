@@ -61,14 +61,11 @@ namespace Net.AOI
                 var grid = grids[i];
                 grid.Id = i;
                 var rect = new Rect(grid.rect.x - width, grid.rect.y - height, width * 3, height * 3);
-                index = 0;
                 for (int j = 0; j < grids.Length; j++)
                 {
                     var grid1 = grids[j];
                     if (rect.Contains(grid1.rect.position))
-                    {
-                        grid.grids[index++] = grid1;
-                    }
+                        ArrayExtend.Add(ref grid.grids, grid1);
                 }
             }
         }

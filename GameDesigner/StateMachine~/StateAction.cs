@@ -129,7 +129,7 @@ namespace GameDesigner
                     }
                     state.OnActionExit();
                     if (stateMachine.nextId == state.ID)//如果在动作行为里面有切换状态代码, 则不需要重载函数了, 否则重载当前状态
-                        state.Enter();//重载进入函数
+                        state.Enter(state.actionIndex);//重载进入函数
                     return;
                 }
                 else

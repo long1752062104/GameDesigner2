@@ -107,7 +107,7 @@ namespace GameDesigner
             {
                 time = 0;
                 isEnterNextState = false;
-                stateMachine.ChangeState(nextStateID, true);
+                stateMachine.ChangeState(nextStateID, 0, true);
             }
         }
     }

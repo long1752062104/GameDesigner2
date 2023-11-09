@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -113,9 +113,9 @@ namespace GameDesigner
         {
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stateMachine"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[0]));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[114]));
-            if (GUILayout.Button(BlueprintSetting.Instance.LANGUAGE[1], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("stateMachine"), new GUIContent(BlueprintGUILayout.Instance.Language["State Machine Controller"]));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.Language["initMode"]));
+            if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
                 StateMachineWindow.Init(stateManager.stateMachine);
             if (stateManager.stateMachine == null)
                 goto J;
@@ -274,48 +274,49 @@ namespace GameDesigner
                 ResetPropertys();
             }
             StateMachineObject.Update();
-            GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[2], GUI.skin.GetStyle("dragtabdropwindow"));
+            GUILayout.Button(BlueprintGUILayout.Instance.Language["State attribute"], GUI.skin.GetStyle("dragtabdropwindow"));
             EditorGUILayout.BeginVertical("ProgressBarBack");
-            EditorGUILayout.PropertyField(NameProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[3], "name"));
-            EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[4], "stateID"), state.ID);
-            EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[5], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
+            EditorGUILayout.PropertyField(NameProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Status name"], "name"));
+            EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.Language["Status identifier"], "stateID"), state.ID);
+            EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Action system"], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
             if (state.actionSystem)
             {
-                sm.stateMachine.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[6], "animMode"), sm.stateMachine.animMode);
+                sm.stateMachine.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.Language["Animation mode"], "animMode"), sm.stateMachine.animMode);
                 switch (sm.stateMachine.animMode)
                 {
                     case AnimationMode.Animation:
-                        EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[7], "animation"));
+                        EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Old animation"], "animation"));
                         break;
                     case AnimationMode.Animator:
-                        EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[8], "animator"));
+                        EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["New animation"], "animator"));
                         break;
 #if SHADER_ANIMATED
                     case AnimationMode.MeshAnimator:
-                        EditorGUILayout.PropertyField(meshAnimatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[34], "meshAnimator"));
+                        EditorGUILayout.PropertyField(meshAnimatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE["mesh Animated"], "meshAnimator"));
                         break;
 #endif
                 }
-                state.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[9], "animPlayMode"), (int)state.animPlayMode, new GUIContent[]{
-                    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[10],"Random"),
-                    new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[11],"Sequence") }
-                );
-                EditorGUILayout.PropertyField(animSpeedProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[12], "animSpeed"), true);
-                EditorGUILayout.PropertyField(animLoopProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[13], "animLoop"), true);
-                state.isExitState = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[14], "isExitState"), state.isExitState);
+                state.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Action execution mode"], "animPlayMode"), (int)state.animPlayMode, new GUIContent[]{
+                    new GUIContent(BlueprintGUILayout.Instance.Language["Action randomised"],"Random"),
+                    new GUIContent(BlueprintGUILayout.Instance.Language["Action sequence"],"Sequence"),
+                    new GUIContent(BlueprintGUILayout.Instance.Language["Action none"],"None")
+                });
+                EditorGUILayout.PropertyField(animSpeedProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation speed"], "animSpeed"), true);
+                EditorGUILayout.PropertyField(animLoopProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation cycle?"], "animLoop"), true);
+                state.isExitState = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.Language["Exit status at end of action"], "isExitState"), state.isExitState);
                 if (state.isExitState)
-                    state.DstStateID = EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[15], state.DstStateID, Array.ConvertAll(state.transitions.ToArray(), new Converter<Transition, string>(delegate (Transition t) { return t.currState.name + " -> " + t.nextState.name + "   ID:" + t.nextState.ID; })));
-                BlueprintGUILayout.BeginStyleVertical(BlueprintGUILayout.Instance.LANGUAGE[16], "ProgressBarBack");
+                    state.DstStateID = EditorGUILayout.Popup(BlueprintGUILayout.Instance.Language["get into the state"], state.DstStateID, Array.ConvertAll(state.transitions.ToArray(), new Converter<Transition, string>(delegate (Transition t) { return t.currState.name + " -> " + t.nextState.name + "   ID:" + t.nextState.ID; })));
+                BlueprintGUILayout.BeginStyleVertical(BlueprintGUILayout.Instance.Language["Action tree"], "ProgressBarBack");
                 EditorGUI.indentLevel = 1;
                 Rect actRect = EditorGUILayout.GetControlRect();
-                state.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), state.foldout, BlueprintGUILayout.Instance.LANGUAGE[17], true);
+                state.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), state.foldout, BlueprintGUILayout.Instance.Language["Action Tree Set"], true);
 
-                if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[18]))
+                if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
                     ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = state.stateMachine });
                     return;
                 }
-                if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.LANGUAGE[19]))
+                if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
                 {
                     if (state.actions.Length > 1)
                         ArrayExtend.RemoveAt(ref state.actions, state.actions.Length - 1);
@@ -332,24 +333,24 @@ namespace GameDesigner
                             continue;
                         var act = state.actions[x];
                         Rect foldoutRect = EditorGUILayout.GetControlRect();
-                        act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[20] + x, "actions[" + x + "]"), true);
+                        act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.Language["Action ->"] + x, "actions[" + x + "]"), true);
                         if (foldoutRect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                         {
                             var menu = new GenericMenu();
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[21]), false, (obj) =>
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove action"]), false, (obj) =>
                             {
                                 ArrayExtend.RemoveAt(ref state.actions, (int)obj);
                             }, x);
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[22]), false, (obj) =>
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy action"]), false, (obj) =>
                             {
                                 StateSystem.Component = state.actions[(int)obj];
                             }, x);
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[23]), StateSystem.CopyComponent != null, () =>
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste new action"]), StateSystem.CopyComponent != null, () =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
                                     ArrayExtend.Add(ref state.actions, Net.CloneHelper.DeepCopy<StateAction>(stateAction));
                             });
-                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[24]), StateSystem.CopyComponent != null, (obj) =>
+                            menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste action value"]), StateSystem.CopyComponent != null, (obj) =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
                                 {
@@ -366,12 +367,12 @@ namespace GameDesigner
                             EditorGUI.indentLevel = 3;
                             try
                             {
-                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[25], "clipIndex"), act.clipIndex, Array.ConvertAll(state.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
+                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(state.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
                                 act.clipName = state.stateMachine.clipNames[act.clipIndex];
                             }
                             catch { }
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[32], "animTime"));
-                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[33], "animTimeMax"));
+                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
+                            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));
                             for (int i = 0; i < act.behaviours.Length; ++i)
                             {
                                 EditorGUILayout.BeginHorizontal();
@@ -388,19 +389,19 @@ namespace GameDesigner
                                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                                 {
                                     var menu = new GenericMenu();
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[47]), false, (obj) =>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove action scripts"]), false, (obj) =>
                                     {
                                         var index = (int)obj;
                                         act.behaviours[index].OnDestroyComponent();
                                         ArrayExtend.RemoveAt(ref act.behaviours, index);
                                         return;
                                     }, i);
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[48]), false, (obj) =>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy action scripts"]), false, (obj) =>
                                     {
                                         var index = (int)obj;
                                         StateSystem.CopyComponent = act.behaviours[index];
                                     }, i);
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[49]), StateSystem.CopyComponent != null, () =>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste new action scripts"]), StateSystem.CopyComponent != null, () =>
                                     {
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
@@ -408,7 +409,7 @@ namespace GameDesigner
                                             ArrayExtend.Add(ref act.behaviours, ab);
                                         }
                                     });
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[50]), StateSystem.CopyComponent != null, (obj) =>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste action script values"]), StateSystem.CopyComponent != null, (obj) =>
                                     {
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
@@ -417,7 +418,7 @@ namespace GameDesigner
                                                 act.behaviours[index] = (ActionBehaviour)Net.CloneHelper.DeepCopy(StateSystem.CopyComponent);
                                         }
                                     }, i);
-                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[78]), false, (obj) =>
+                                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Edit action scripts"]), false, (obj) =>
                                     {
                                         var index = (int)obj;
                                         var scriptName = act.behaviours[index].name;
@@ -442,7 +443,7 @@ namespace GameDesigner
                             }
                             Rect r = EditorGUILayout.GetControlRect();
                             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
-                            if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[51]))
+                            if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Add action scripts"]))
                                 findBehaviours1 = true;
                             if (findBehaviours1)
                             {
@@ -475,11 +476,11 @@ namespace GameDesigner
                                 catch { }
                                 EditorGUILayout.Space();
                                 EditorGUI.indentLevel = 0;
-                                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[52]);
+                                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.Language["Create action script paths:"]);
                                 stateActionScriptPath = EditorGUILayout.TextField(stateActionScriptPath);
                                 Rect addRect = EditorGUILayout.GetControlRect();
                                 createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
-                                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 100f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[53]))
+                                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 100f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.Language["Create action scripts"]))
                                 {
                                     var text = Resources.Load<TextAsset>("ActionBehaviourScript");
                                     var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
@@ -487,7 +488,7 @@ namespace GameDesigner
                                     ScriptTools.CreateScript(Application.dataPath + stateActionScriptPath, createScriptName, scriptCode);
                                     compiling = true;
                                 }
-                                if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[54]))
+                                if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
                                     findBehaviours1 = false;
                             }
                             EditorGUILayout.Space();
@@ -529,19 +530,19 @@ namespace GameDesigner
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                 {
                     var menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[55]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove status scripts"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         s.behaviours[index].OnDestroyComponent();
                         ArrayExtend.RemoveAt(ref s.behaviours, index);
                         return;
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[56]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy status script"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         StateSystem.CopyComponent = s.behaviours[index];
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[57]), StateSystem.CopyComponent != null, delegate ()
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste a new status script"]), StateSystem.CopyComponent != null, delegate ()
                     {
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
@@ -549,7 +550,7 @@ namespace GameDesigner
                             ArrayExtend.Add(ref s.behaviours, ab);
                         }
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[58]), StateSystem.CopyComponent != null, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste status script values"]), StateSystem.CopyComponent != null, (obj) =>
                     {
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
@@ -558,7 +559,7 @@ namespace GameDesigner
                                 s.behaviours[index] = (StateBehaviour)Net.CloneHelper.DeepCopy(behaviour);
                         }
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[79]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Edit status script"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         var scriptName = s.behaviours[index].name;
@@ -587,7 +588,7 @@ namespace GameDesigner
 
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
-            if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[59]))
+            if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Adding status scripts"]))
                 findBehaviours = true;
             if (findBehaviours)
             {
@@ -620,11 +621,11 @@ namespace GameDesigner
                 catch { }
                 EditorGUILayout.Space();
                 EditorGUI.indentLevel = 0;
-                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[60]);
+                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.Language["Create a status script path:"]);
                 stateBehaviourScriptPath = EditorGUILayout.TextField(stateBehaviourScriptPath);
                 Rect addRect = EditorGUILayout.GetControlRect();
                 createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
-                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[61]))
+                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.Language["Create status scripts"]))
                 {
                     var text = Resources.Load<TextAsset>("StateBehaviourScript");
                     var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
@@ -632,7 +633,7 @@ namespace GameDesigner
                     ScriptTools.CreateScript(Application.dataPath + stateBehaviourScriptPath, createScriptName, scriptCode);
                     compiling = true;
                 }
-                if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[62]))
+                if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
                     findBehaviours = false;
             }
         }
@@ -791,19 +792,19 @@ namespace GameDesigner
             style.fontStyle = FontStyle.Bold;
             style.font = Resources.Load<Font>("Arial");
             style.normal.textColor = Color.red;
-            GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[63] + tr.currState.name + " -> " + tr.nextState.name, style);
+            GUILayout.Button(BlueprintGUILayout.Instance.Language["Connection properties"] + tr.currState.name + " -> " + tr.nextState.name, style);
             tr.name = tr.currState.name + " -> " + tr.nextState.name;
             EditorGUILayout.BeginVertical("ProgressBarBack");
 
             EditorGUILayout.Space();
 
-            tr.mode = (TransitionMode)EditorGUILayout.Popup(BlueprintGUILayout.Instance.LANGUAGE[64], (int)tr.mode, Enum.GetNames(typeof(TransitionMode)), GUI.skin.GetStyle("PreDropDown"));
+            tr.mode = (TransitionMode)EditorGUILayout.Popup(BlueprintGUILayout.Instance.Language["Connection mode"], (int)tr.mode, Enum.GetNames(typeof(TransitionMode)), GUI.skin.GetStyle("PreDropDown"));
             switch (tr.mode)
             {
                 case TransitionMode.ExitTime:
-                    tr.time = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.LANGUAGE[65], tr.time, GUI.skin.GetStyle("PreDropDown"));
-                    tr.exitTime = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.LANGUAGE[66], tr.exitTime, GUI.skin.GetStyle("PreDropDown"));
-                    EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.LANGUAGE[67], MessageType.Info);
+                    tr.time = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.Language["current time"], tr.time, GUI.skin.GetStyle("PreDropDown"));
+                    tr.exitTime = EditorGUILayout.FloatField(BlueprintGUILayout.Instance.Language["End time"], tr.exitTime, GUI.skin.GetStyle("PreDropDown"));
+                    EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.Language["The current time will automatically enter the next state at the end of the time."], MessageType.Info);
                     break;
             }
 
@@ -811,7 +812,7 @@ namespace GameDesigner
             GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
             GUILayout.Space(10);
 
-            tr.isEnterNextState = EditorGUILayout.Toggle(BlueprintGUILayout.Instance.LANGUAGE[68], tr.isEnterNextState);
+            tr.isEnterNextState = EditorGUILayout.Toggle(BlueprintGUILayout.Instance.Language["Enter the next state"], tr.isEnterNextState);
 
             GUILayout.Space(10);
             GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
@@ -838,19 +839,19 @@ namespace GameDesigner
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                 {
                     var menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[69]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove connection scripts"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         tr.behaviours[index].OnDestroyComponent();
                         ArrayExtend.RemoveAt(ref tr.behaviours, index);
                         return;
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[70]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy connection scripts"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         StateSystem.CopyComponent = tr.behaviours[index];
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[71]), StateSystem.CopyComponent != null, () =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste a new connection script"]), StateSystem.CopyComponent != null, () =>
                     {
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
                         {
@@ -858,14 +859,14 @@ namespace GameDesigner
                             ArrayExtend.Add(ref tr.behaviours, ab);
                         }
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[72]), StateSystem.CopyComponent != null, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste connection script values"]), StateSystem.CopyComponent != null, (obj) =>
                     {
                         var index = (int)obj;
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
                             if (behaviour.name == tr.behaviours[index].name)
                                 tr.behaviours[index] = (TransitionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
                     }, i);
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[80]), false, (obj) =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Edit connection script"]), false, (obj) =>
                     {
                         var index = (int)obj;
                         var scriptName = tr.behaviours[index].name;
@@ -896,7 +897,7 @@ namespace GameDesigner
 
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
-            if (GUI.Button(rr, BlueprintGUILayout.Instance.LANGUAGE[73]))
+            if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Add connection scripts"]))
                 findBehaviours2 = true;
             if (findBehaviours2)
             {
@@ -921,11 +922,11 @@ namespace GameDesigner
                 }
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.LANGUAGE[74]);
+                EditorGUILayout.LabelField(BlueprintGUILayout.Instance.Language["Create a connection script path:"]);
                 transitionScriptPath = EditorGUILayout.TextField(transitionScriptPath);
                 Rect addRect = EditorGUILayout.GetControlRect();
                 createScriptName = EditorGUI.TextField(new Rect(addRect.position, new Vector2(addRect.size.x - 125f, 18)), createScriptName);
-                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.LANGUAGE[75]))
+                if (GUI.Button(new Rect(new Vector2(addRect.size.x - 105f, addRect.position.y), new Vector2(120, 18)), BlueprintGUILayout.Instance.Language["Create connection scripts"]))
                 {
                     var text = Resources.Load<TextAsset>("TransitionBehaviorScript");
                     var scriptCode = text.text.Split(new string[] { "\r\n" }, 0);
@@ -933,11 +934,11 @@ namespace GameDesigner
                     ScriptTools.CreateScript(Application.dataPath + transitionScriptPath, createScriptName, scriptCode);
                     compiling = true;
                 }
-                if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[76]))
+                if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
                     findBehaviours2 = false;
             }
             GUILayout.Space(10);
-            EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.LANGUAGE[77], MessageType.Info);
+            EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.Language["You can create a connection behavior script to control the state to the next state"], MessageType.Info);
             GUILayout.Space(10);
             EditorGUILayout.EndHorizontal();
         }

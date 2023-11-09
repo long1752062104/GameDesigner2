@@ -1,130 +1,131 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameDesigner 
+namespace GameDesigner
 {
     /// <summary>
-    /// ÒôĞ§Ä£Ê½
+    /// éŸ³æ•ˆæ¨¡å¼
     /// </summary>
 	public enum AudioMode
     {
         /// <summary>
-        /// ½øÈë×´Ì¬²¥·ÅÒôĞ§
+        /// è¿›å…¥çŠ¶æ€æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
 		EnterPlay,
         /// <summary>
-        /// ¶¯»­ÊÂ¼ş²¥·ÅÒôĞ§
+        /// åŠ¨ç”»äº‹ä»¶æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
 		AnimEvent,
         /// <summary>
-        /// ÍË³ö×´Ì¬²¥·ÅÒôĞ§
+        /// é€€å‡ºçŠ¶æ€æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
 		ExitPlay
     }
 
     /// <summary>
-    /// ¼¼ÄÜÉú³ÉÄ£Ê½
+    /// æŠ€èƒ½ç”Ÿæˆæ¨¡å¼
     /// </summary>
 	public enum ActiveMode
     {
         /// <summary>
-        /// ÊµÀı»¯
+        /// å®ä¾‹åŒ–
         /// </summary>
 		Instantiate,
         /// <summary>
-        /// ¶ÔÏó³Ø
+        /// å¯¹è±¡æ± 
         /// </summary>
 		ObjectPool,
         /// <summary>
-        /// ¼¤»îÄ£Ê½
+        /// æ¿€æ´»æ¨¡å¼
         /// </summary>
         Active,
     }
 
     /// <summary>
-    /// ¼¼ÄÜÎïÌåÉèÖÃÄ£Ê½
+    /// æŠ€èƒ½ç‰©ä½“è®¾ç½®æ¨¡å¼
     /// </summary>
 	public enum SpwanMode
     {
         None,
         /// <summary>
-        /// ÉèÖÃ¼¼ÄÜÎïÌåÔÚ×ÔÉíÎ»ÖÃ
+        /// è®¾ç½®æŠ€èƒ½ç‰©ä½“åœ¨è‡ªèº«ä½ç½®
         /// </summary>
 		localPosition,
         /// <summary>
-        /// ÉèÖÃ¼¼ÄÜÎïÌåÔÚ¸¸¶ÔÏóÎ»ÖÃºÍ³ÉÎª¸¸¶ÔÏóµÄ×ÓÎïÌå
+        /// è®¾ç½®æŠ€èƒ½ç‰©ä½“åœ¨çˆ¶å¯¹è±¡ä½ç½®å’Œæˆä¸ºçˆ¶å¯¹è±¡çš„å­ç‰©ä½“
         /// </summary>
 		SetParent,
         /// <summary>
-        /// ÉèÖÃ¼¼ÄÜÎïÌåÔÚ¸¸¶ÔÏóÎ»ÖÃ
+        /// è®¾ç½®æŠ€èƒ½ç‰©ä½“åœ¨çˆ¶å¯¹è±¡ä½ç½®
         /// </summary>
 		SetInTargetPosition,
         /// <summary>
-        /// ¼¤»îÄ£Ê½µÄ×ÔÉíÎ»ÖÃ
+        /// æ¿€æ´»æ¨¡å¼çš„è‡ªèº«ä½ç½®
         /// </summary>
         ActiveLocalPosition,
     }
 
     /// <summary>
-    /// ÄÚÖÃµÄ¼¼ÄÜ¶¯×÷ĞĞÎª×é¼ş, ´Ë×é¼ş°üº¬²¥·ÅÒôĞ§, ´¦Àí¼¼ÄÜÌØĞ§
+    /// å†…ç½®çš„æŠ€èƒ½åŠ¨ä½œè¡Œä¸ºç»„ä»¶, æ­¤ç»„ä»¶åŒ…å«æ’­æ”¾éŸ³æ•ˆ, å¤„ç†æŠ€èƒ½ç‰¹æ•ˆ
     /// </summary>
     public class ActionCore : ActionBehaviour
     {
         /// <summary>
-        /// ¶¯»­ÊÂ¼şÊ±¼ä
+        /// åŠ¨ç”»äº‹ä»¶æ—¶é—´
         /// </summary>
 		public float animEventTime = 50f;
         /// <summary>
-        /// ÊÇ·ñÒÑµ½´ïÊÂ¼şÊ±¼ä»ò³¬¹ıÊÂ¼şÊ±¼ä£¬µ½Îªtrue£¬Ã»µ½Îªflase
+        /// æ˜¯å¦å·²åˆ°è¾¾äº‹ä»¶æ—¶é—´æˆ–è¶…è¿‡äº‹ä»¶æ—¶é—´ï¼Œåˆ°ä¸ºtrueï¼Œæ²¡åˆ°ä¸ºflase
         /// </summary>
 		[HideField]
         public bool eventEnter = false;
         /// <summary>
-        /// ¼¼ÄÜÁ£×ÓÎïÌå
+        /// æŠ€èƒ½ç²’å­ç‰©ä½“
         /// </summary>
 		public GameObject effectSpwan = null;
         /// <summary>
-        /// Á£×ÓÎïÌåÉú³ÉÄ£Ê½
+        /// ç²’å­ç‰©ä½“ç”Ÿæˆæ¨¡å¼
         /// </summary>
 		public ActiveMode activeMode = ActiveMode.Instantiate;
         /// <summary>
-        /// Á£×ÓÎïÌåÏú»Ù»ò¹Ø±ÕÊ±¼ä
+        /// ç²’å­ç‰©ä½“é”€æ¯æˆ–å…³é—­æ—¶é—´
         /// </summary>
 		public float spwanTime = 1f;
         /// <summary>
-        /// Á£×ÓÎïÌå¶ÔÏó³Ø
+        /// ç²’å­ç‰©ä½“å¯¹è±¡æ± 
         /// </summary>
 		public List<GameObject> activeObjs = new List<GameObject>();
         /// <summary>
-        /// Á£×ÓÎ»ÖÃÉèÖÃ
+        /// ç²’å­ä½ç½®è®¾ç½®
         /// </summary>
 		public SpwanMode spwanmode = SpwanMode.localPosition;
         /// <summary>
-        /// ×÷ÎªÁ£×Ó¹ÒÔØµÄ¸¸¶ÔÏó »ò ×÷ÎªÁ£×ÓÉú³ÉÔÚ´Ëparent¶ÔÏóµÄÎ»ÖÃ
+        /// ä½œä¸ºç²’å­æŒ‚è½½çš„çˆ¶å¯¹è±¡ æˆ– ä½œä¸ºç²’å­ç”Ÿæˆåœ¨æ­¤parentå¯¹è±¡çš„ä½ç½®
         /// </summary>
 		public Transform parent = null;
         /// <summary>
-        /// Á£×Ó³öÉúÎ»ÖÃ
+        /// ç²’å­å‡ºç”Ÿä½ç½®
         /// </summary>
 		public Vector3 effectPostion = new Vector3(0, 1.5f, 2f);
         /// <summary>
-        /// Á£×Ó½Ç¶È
+        /// ç²’å­è§’åº¦
         /// </summary>
         public Vector3 effectEulerAngles;
         /// <summary>
-        /// ÊÇ·ñ²¥·ÅÒôĞ§
+        /// æ˜¯å¦æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
         public bool isPlayAudio = false;
         /// <summary>
-        /// ÒôĞ§´¥·¢Ä£Ê½
+        /// éŸ³æ•ˆè§¦å‘æ¨¡å¼
         /// </summary>
 		public AudioMode audioModel = AudioMode.AnimEvent;
         /// <summary>
-        /// ÒôĞ§¼ô¼­
+        /// éŸ³æ•ˆå‰ªè¾‘
         /// </summary>
 		public List<AudioClip> audioClips = new List<AudioClip>();
         /// <summary>
-        /// ÒôĞ§Ë÷Òı
+        /// éŸ³æ•ˆç´¢å¼•
         /// </summary>
 		[HideField]
         public int audioIndex = 0;
@@ -163,10 +164,7 @@ namespace GameDesigner
                                 go.transform.SetParent(null);
                                 SetPosition(stateManager, go);
                                 active = true;
-                                StateEvent.AddEvent(spwanTime, () =>
-                                {
-                                    if (go != null) go.SetActive(false);
-                                });
+                                _ = HideSpwanTime(go);
                                 break;
                             }
                         }
@@ -174,10 +172,7 @@ namespace GameDesigner
                         {
                             var go = InstantiateSpwan(stateManager);
                             activeObjs.Add(go);
-                            StateEvent.AddEvent(spwanTime, () =>
-                            {
-                                if(go != null) go.SetActive(false);
-                            });
+                            _ = HideSpwanTime(go);
                         }
                     }
                     else
@@ -196,13 +191,20 @@ namespace GameDesigner
             }
         }
 
+        private async UniTaskVoid HideSpwanTime(GameObject gameObject)
+        {
+            await UniTask.Delay((int)(spwanTime * 1000));
+            if (gameObject != null)
+                gameObject.SetActive(false);
+        }
+
         /// <summary>
-        /// µ±¶¯»­ÊÂ¼ş´¥·¢
+        /// å½“åŠ¨ç”»äº‹ä»¶è§¦å‘
         /// </summary>
         public virtual void OnAnimationEvent(StateAction action) { }
 
         /// <summary>
-        /// ÉèÖÃ¼¼ÄÜÎ»ÖÃ
+        /// è®¾ç½®æŠ€èƒ½ä½ç½®
         /// </summary>
 		private void SetPosition(StateManager stateManager, GameObject go)
         {
@@ -233,7 +235,7 @@ namespace GameDesigner
         }
 
         /// <summary>
-        /// ¼¼ÄÜÊµÀı»¯
+        /// æŠ€èƒ½å®ä¾‹åŒ–
         /// </summary>
 		private GameObject InstantiateSpwan(StateManager stateManager)
         {
@@ -244,7 +246,7 @@ namespace GameDesigner
         }
 
         /// <summary>
-        /// µ±¼¼ÄÜÎïÌåÊµÀı»¯
+        /// å½“æŠ€èƒ½ç‰©ä½“å®ä¾‹åŒ–
         /// </summary>
         /// <param name="effect"></param>
         public virtual void OnSpwanEffect(GameObject effect) { }

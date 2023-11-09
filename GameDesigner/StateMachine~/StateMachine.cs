@@ -27,6 +27,10 @@ namespace GameDesigner
         /// </summary>
         internal int nextId;
         /// <summary>
+        /// 切换下一个状态的动作索引
+        /// </summary>
+        internal int nextActionId;
+        /// <summary>
         /// 所有状态
         /// </summary>
 #if UNITY_2020_1_OR_NEWER
@@ -177,7 +181,7 @@ namespace GameDesigner
             foreach (var state in states)
                 state.Init();
             if (defaultState.actionSystem)
-                defaultState.Enter();
+                defaultState.Enter(0);
             isInitialize = true;
         }
 
@@ -191,7 +195,7 @@ namespace GameDesigner
                 var nextIdTemp = nextId; //防止进入或退出行为又执行了EnterNextState切换了状态
                 stateId = nextId;
                 states[currIdTemo].Exit();
-                states[nextIdTemp].Enter();
+                states[nextIdTemp].Enter(nextActionId);
             }
             currState.Update();
         }
@@ -200,18 +204,18 @@ namespace GameDesigner
         /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
         /// </summary>
         /// <param name="nextStateIndex">下一个状态的ID</param>
-		public void EnterNextState(int nextStateIndex)
+		public void EnterNextState(int nextStateIndex, int actionId = 0)
         {
-            ChangeState(nextStateIndex, true);
+            ChangeState(nextStateIndex, actionId, true);
         }
 
         /// <summary>
         /// 进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
         /// </summary>
         /// <param name="stateID"></param>
-        public void StatusEntry(int stateID)
+        public void StatusEntry(int stateID, int actionId = 0)
         {
-            ChangeState(stateID);
+            ChangeState(stateID, actionId);
         }
 
         /// <summary>
@@ -219,11 +223,12 @@ namespace GameDesigner
         /// </summary>
         /// <param name="stateId"></param>
         /// <param name="force"></param>
-        public void ChangeState(int stateId, bool force = false)
+        public void ChangeState(int stateId, int actionId = 0, bool force = false)
         {
             if (this.stateId == stateId & !force)
                 return;
             nextId = stateId;
+            nextActionId = actionId;
         }
 
         private void OnDestroy()

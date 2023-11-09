@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -25,10 +25,19 @@ public class PluginSettings : EditorWindow
             var obj = Resources.Load<TextAsset>("EnglishLanguage");
             text = System.Text.Encoding.UTF8.GetString(obj.bytes);
         }
+        string[] texts;
         if (text.Contains("\r\n")) //个别机器不知道什么情况, 只有\n
-            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\r\n" }, 0);
+            texts = text.Split(new string[] { "\r\n" }, 0);
         else
-            BlueprintSetting.Instance.LANGUAGE = text.Split(new string[] { "\n" }, 0);
+            texts = text.Split(new string[] { "\n" }, 0);
+        BlueprintSetting.Instance.Language.Clear();
+        foreach (var item in texts)
+        {
+            var items = item.Split('|');
+            if (items.Length != 2)
+                continue;
+            BlueprintSetting.Instance.Language[items[0]] = items[1];
+        }
     }
 
     [MenuItem("GameDesigner/PluginSettings")]
@@ -46,7 +55,7 @@ public class PluginSettings : EditorWindow
             language = BlueprintSetting.Instance.language;
             InitPlugin();
         }
-        BlueprintSetting.Instance.language = (PluginLanguage)EditorGUILayout.EnumPopup(BlueprintSetting.Instance.LANGUAGE[83], BlueprintSetting.Instance.language);
+        BlueprintSetting.Instance.language = (PluginLanguage)EditorGUILayout.EnumPopup(BlueprintSetting.Instance.Language["PluginLanguage"], BlueprintSetting.Instance.language);
     }
 }
 #endif

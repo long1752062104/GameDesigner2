@@ -11,8 +11,14 @@ namespace Net.AOI
     {
         public int Id;
         public Rect rect;
-        public Grid[] grids = new Grid[9];//九宫格列表
+        public Grid[] grids;//九宫格列表
         public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();//格子的物体
+
+        public Grid() 
+        {
+            grids = new Grid[0]; //不能直接给9个格子, 因为边界格子没有九个
+        }
+
         /// <summary>
         /// 获取九宫格的所有物体
         /// </summary>
@@ -24,14 +30,17 @@ namespace Net.AOI
                 gridBodies.Add(gridBody);
             return gridBodies;
         }
+
         public IEnumerator<IGridBody> GetEnumerator()
         {
             return new Enumerator(this);
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new Enumerator(this);
         }
+
         public struct Enumerator : IEnumerator<IGridBody>, IEnumerator
         {
             private readonly Grid grid;

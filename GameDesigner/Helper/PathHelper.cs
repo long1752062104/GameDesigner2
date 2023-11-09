@@ -15,12 +15,12 @@ namespace Net.Helper
         /// <exception cref="Exception"></exception>
         public static string GetRelativePath(string root, string fullPath, bool isRevise = false)
         {
-            var rootPathUri = new Uri(Revise(root));
-            var fullPathUri = new Uri(Revise(fullPath));
+            var rootPathUri = new Uri(PlatformReplace(root));
+            var fullPathUri = new Uri(PlatformReplace(fullPath));
             var relativeUri = rootPathUri.MakeRelativeUri(fullPathUri);
             var relativePath = relativeUri.ToString();
             if (isRevise)
-                return Revise(relativePath);
+                return PlatformReplace(relativePath);
             return relativePath;
         }
 
@@ -29,10 +29,10 @@ namespace Net.Helper
             var fullPath = string.Empty;
             foreach (var path in paths)
                 fullPath += path + Path.DirectorySeparatorChar;
-            return Revise(fullPath);
+            return PlatformReplace(fullPath);
         }
 
-        public static string Revise(string path)
+        public static string PlatformReplace(string path)
         {
             var separator = Path.DirectorySeparatorChar;
             char temp;

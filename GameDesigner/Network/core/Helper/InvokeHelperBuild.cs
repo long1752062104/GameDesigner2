@@ -1153,9 +1153,9 @@ internal static class HelperFileInfo
     }
 }";
                 var csprojPath = config.rpcConfig[i].csprojPath;
-                csprojPath = Path.GetFullPath(PathHelper.Revise(csprojPath));
+                csprojPath = Path.GetFullPath(PathHelper.PlatformReplace(csprojPath));
                 var path1 = config.rpcConfig[i].savePath + "/SyncVarHandlerGenerate.cs";
-                path1 = Path.GetFullPath(PathHelper.Revise(path1));
+                path1 = Path.GetFullPath(PathHelper.PlatformReplace(path1));
 
                 //相对于Assets路径
                 var relativePath = PathHelper.GetRelativePath(csprojPath, path1);

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -15,11 +15,11 @@ namespace GameDesigner
         [MenuItem("GameDesigner/StateMachine/StateMachine")]
         public static void Init()
         {
-            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
+            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.Language["Game Designer Editor Window"], true);
         }
         public static void Init(StateMachine stateMachine)
         {
-            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.LANGUAGE[84], true);
+            GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.Language["Game Designer Editor Window"], true);
             StateMachineWindow.stateMachine = stateMachine;
         }
 
@@ -36,7 +36,7 @@ namespace GameDesigner
                 StateManagerEditor.OnScriptReload();
                 Debug.Log("刷新脚本成功!");
             }
-            if (GUILayout.Button(BlueprintGUILayout.Instance.LANGUAGE[85], GUILayout.Width(50)))
+            if (GUILayout.Button(BlueprintGUILayout.Instance.Language["reset"], GUILayout.Width(50)))
             {
                 if (stateMachine == null)
                     return;
@@ -67,15 +67,15 @@ namespace GameDesigner
             if (currentType == EventType.MouseDown & Event.current.button == 1)
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[86]), false, delegate
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create a state machine"]), false, delegate
                 {
                     if (Selection.activeGameObject == null)
                     {
                         EditorUtility.DisplayDialog(
-                            BlueprintGUILayout.Instance.LANGUAGE[87],
-                            BlueprintGUILayout.Instance.LANGUAGE[88],
-                            BlueprintGUILayout.Instance.LANGUAGE[89],
-                            BlueprintGUILayout.Instance.LANGUAGE[90]);
+                            BlueprintGUILayout.Instance.Language["Tips!"],
+                            BlueprintGUILayout.Instance.Language["Please select the object and click to create the state machine!"],
+                            BlueprintGUILayout.Instance.Language["yes"],
+                            BlueprintGUILayout.Instance.Language["no"]);
                     }
                     else if (Selection.activeGameObject.GetComponent<StateManager>())
                     {
@@ -333,21 +333,21 @@ namespace GameDesigner
             else if (currentType == EventType.MouseDown & currentEvent.button == 1)
             {
                 var menu = new GenericMenu();
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[91]), false, () =>
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create transition"]), false, () =>
                 {
                     makeTransition = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[92]), false, () =>
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Default state"]), false, () =>
                 {
                     stateMachine.defaultState = state;
                 });
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[93]), false, () =>
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Replication state"]), false, () =>
                 {
                     stateMachine.selectState = state;
                 });
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[94]), false, () => { DeletedState(); });
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["deleted state"]), false, () => { DeletedState(); });
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -408,13 +408,13 @@ namespace GameDesigner
                             return;
                     }
                     GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[95]), false, () =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create state"]), false, () =>
                     {
-                        State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.LANGUAGE[96] + stateMachine.states.Length, mousePosition);
+                        State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.Language["New state"] + stateMachine.states.Length, mousePosition);
                     });
                     if (stateMachine.selectState != null)
                     {
-                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[97]), false, () =>
+                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste Selection Status"]), false, () =>
                         {
                             List<State> states = new List<State>();
                             var seles = stateMachine.selectStates;
@@ -445,18 +445,18 @@ namespace GameDesigner
                                 list.Add(states[i].ID);
                             stateMachine.selectStates = list;
                         });
-                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[98]), false, delegate { DeletedState(); });
+                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete Selection State"]), false, delegate { DeletedState(); });
                     }
                     menu.AddSeparator("");
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[99]), false, delegate
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create and replace state machines"]), false, delegate
                     {
                         if (Selection.activeGameObject == null)
                         {
                             EditorUtility.DisplayDialog(
-                                BlueprintGUILayout.Instance.LANGUAGE[100],
-                                BlueprintGUILayout.Instance.LANGUAGE[101],
-                                BlueprintGUILayout.Instance.LANGUAGE[102],
-                                BlueprintGUILayout.Instance.LANGUAGE[103]);
+                                BlueprintGUILayout.Instance.Language["Tips!"],
+                                BlueprintGUILayout.Instance.Language["Please select the object and click to create the state machine!"],
+                                BlueprintGUILayout.Instance.Language["yes"],
+                                BlueprintGUILayout.Instance.Language["no"]);
                             return;
                         }
                         if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
@@ -468,31 +468,31 @@ namespace GameDesigner
                         manager.stateMachine = machine;
                         machine.transform.SetParent(manager.transform);
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[104]), false, () =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create and replace state machines"]), false, () =>
                     {
                         if (Selection.activeGameObject == null)
                         {
                             EditorUtility.DisplayDialog(
-                                BlueprintGUILayout.Instance.LANGUAGE[105],
-                                BlueprintGUILayout.Instance.LANGUAGE[106],
-                                BlueprintGUILayout.Instance.LANGUAGE[107],
-                                BlueprintGUILayout.Instance.LANGUAGE[108]);
+                                BlueprintGUILayout.Instance.Language["Tips!"],
+                                BlueprintGUILayout.Instance.Language["Please select the object and click to create the state machine!"],
+                                BlueprintGUILayout.Instance.Language["yes"],
+                                BlueprintGUILayout.Instance.Language["no"]);
                             return;
                         }
                         if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
                             manager = Selection.activeGameObject.AddComponent<StateManager>();
-                        StateMachine machine = StateMachine.CreateStateMachineInstance(BlueprintGUILayout.Instance.LANGUAGE[109]);
+                        StateMachine machine = StateMachine.CreateStateMachineInstance(BlueprintGUILayout.Instance.Language["New state machine"]);
                         Undo.RegisterCreatedObjectUndo(machine.gameObject, machine.name);
                         manager.stateMachine = machine;
                         machine.transform.SetParent(manager.transform);
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[110]), false, () =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state machine"]), false, () =>
                     {
                         if (stateMachine == null)
                             return;
                         Undo.DestroyObjectImmediate(stateMachine.gameObject);
                     });
-                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.LANGUAGE[111]), false, () =>
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state manager"]), false, () =>
                     {
                         if (stateMachine == null)
                             return;

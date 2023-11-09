@@ -75,20 +75,20 @@ namespace GameDesigner
         /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
         /// </summary>
         /// <param name="nextStateIndex">下一个状态的ID</param>
-		public void EnterNextState(int nextStateIndex) => stateMachine.EnterNextState(nextStateIndex);
+		public void EnterNextState(int nextStateIndex, int actionId = 0) => stateMachine.EnterNextState(nextStateIndex, actionId);
 
         /// <summary>
         /// 进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
         /// </summary>
         /// <param name="stateID"></param>
-        public void StatusEntry(int stateID) => stateMachine.StatusEntry(stateID);
+        public void StatusEntry(int stateID, int actionId = 0) => stateMachine.StatusEntry(stateID, actionId);
 
         /// <summary>
         /// 切换状态
         /// </summary>
         /// <param name="stateId"></param>
         /// <param name="force"></param>
-        public void ChangeState(int stateId, bool force = false) => stateMachine.ChangeState(stateId, force);
+        public void ChangeState(int stateId, int actionId = 0, bool force = false) => stateMachine.ChangeState(stateId, actionId, force);
 
 #if UNITY_EDITOR
         public void OnValidate()

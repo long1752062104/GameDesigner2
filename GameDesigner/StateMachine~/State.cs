@@ -32,6 +32,7 @@ namespace GameDesigner
     /// </summary>
 	public enum AnimPlayMode
     {
+        None,
         /// <summary>
         /// 随机播放动画
         /// </summary>
@@ -121,13 +122,15 @@ namespace GameDesigner
         /// <summary>
         /// 进入状态
         /// </summary>
-		public void Enter()
+		public void Enter(int actionIdx)
         {
             IsPlaying = true;
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
                 actionIndex = Random.Range(0, actions.Length);
-            else
+            else if (animPlayMode == AnimPlayMode.Sequence)
                 actionIndex++;
+            else
+                actionIndex = actionIdx;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as StateBehaviour;
