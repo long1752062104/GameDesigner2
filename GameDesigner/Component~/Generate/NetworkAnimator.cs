@@ -57,7 +57,7 @@ namespace BuildComponent
                     return;
                 fields[1] = value;
                 self.rootPosition = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -79,7 +79,7 @@ namespace BuildComponent
                     return;
                 fields[2] = value;
                 self.rootRotation = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -101,7 +101,7 @@ namespace BuildComponent
                     return;
                 fields[3] = value;
                 self.applyRootMotion = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -123,7 +123,7 @@ namespace BuildComponent
                     return;
                 fields[4] = value;
                 self.updateMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -145,7 +145,7 @@ namespace BuildComponent
                     return;
                 fields[5] = value;
                 self.bodyPosition = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -167,7 +167,7 @@ namespace BuildComponent
                     return;
                 fields[6] = value;
                 self.bodyRotation = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -189,7 +189,7 @@ namespace BuildComponent
                     return;
                 fields[7] = value;
                 self.stabilizeFeet = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -211,7 +211,7 @@ namespace BuildComponent
                     return;
                 fields[8] = value;
                 self.feetPivotActive = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -233,7 +233,7 @@ namespace BuildComponent
                     return;
                 fields[9] = value;
                 self.speed = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -255,7 +255,7 @@ namespace BuildComponent
                     return;
                 fields[10] = value;
                 self.cullingMode = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -277,7 +277,7 @@ namespace BuildComponent
                     return;
                 fields[11] = value;
                 self.playbackTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -299,7 +299,7 @@ namespace BuildComponent
                     return;
                 fields[12] = value;
                 self.recorderStartTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -321,7 +321,7 @@ namespace BuildComponent
                     return;
                 fields[13] = value;
                 self.recorderStopTime = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -343,7 +343,7 @@ namespace BuildComponent
                     return;
                 fields[14] = value;
                 self.runtimeAnimatorController = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -365,7 +365,7 @@ namespace BuildComponent
                     return;
                 fields[15] = value;
                 self.avatar = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -387,7 +387,7 @@ namespace BuildComponent
                     return;
                 fields[16] = value;
                 self.layersAffectMassCenter = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -409,7 +409,7 @@ namespace BuildComponent
                     return;
                 fields[17] = value;
                 self.logWarnings = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -431,7 +431,7 @@ namespace BuildComponent
                     return;
                 fields[18] = value;
                 self.fireEvents = value;
-                ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
                 {
                     index = netObj.registerObjectIndex,
                     index1 = NetComponentID,
@@ -480,7 +480,7 @@ namespace BuildComponent
 			fields[21] = name;
 			fields[22] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -503,7 +503,7 @@ namespace BuildComponent
 			fields[26] = dampTime;
 			fields[27] = deltaTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value,dampTime,deltaTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -524,7 +524,7 @@ namespace BuildComponent
 			fields[29] = id;
 			fields[30] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -547,7 +547,7 @@ namespace BuildComponent
 			fields[34] = dampTime;
 			fields[35] = deltaTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value,dampTime,deltaTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -576,7 +576,7 @@ namespace BuildComponent
 			fields[37] = name;
 			fields[38] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -597,7 +597,7 @@ namespace BuildComponent
 			fields[40] = id;
 			fields[41] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -626,7 +626,7 @@ namespace BuildComponent
 			fields[43] = name;
 			fields[44] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -647,7 +647,7 @@ namespace BuildComponent
 			fields[46] = id;
 			fields[47] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -667,7 +667,7 @@ namespace BuildComponent
             if (name.Equals(fields[49]) &  !always) return;
 			fields[49] = name;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -687,7 +687,7 @@ namespace BuildComponent
             if (id.Equals(fields[51]) &  !always) return;
 			fields[51] = id;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -707,7 +707,7 @@ namespace BuildComponent
             if (name.Equals(fields[53]) &  !always) return;
 			fields[53] = name;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { name, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -727,7 +727,7 @@ namespace BuildComponent
             if (id.Equals(fields[55]) &  !always) return;
 			fields[55] = id;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { id, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -760,7 +760,7 @@ namespace BuildComponent
 			fields[57] = goal;
 			fields[58] = goalPosition;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,goalPosition, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -785,7 +785,7 @@ namespace BuildComponent
 			fields[60] = goal;
 			fields[61] = goalRotation;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,goalRotation, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -810,7 +810,7 @@ namespace BuildComponent
 			fields[63] = goal;
 			fields[64] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -835,7 +835,7 @@ namespace BuildComponent
 			fields[66] = goal;
 			fields[67] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { goal,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -860,7 +860,7 @@ namespace BuildComponent
 			fields[69] = hint;
 			fields[70] = hintPosition;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { hint,hintPosition, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -885,7 +885,7 @@ namespace BuildComponent
 			fields[72] = hint;
 			fields[73] = value;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { hint,value, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -905,7 +905,7 @@ namespace BuildComponent
             if (lookAtPosition.Equals(fields[75]) &  !always) return;
 			fields[75] = lookAtPosition;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { lookAtPosition, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -925,7 +925,7 @@ namespace BuildComponent
             if (weight.Equals(fields[77]) &  !always) return;
 			fields[77] = weight;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -946,7 +946,7 @@ namespace BuildComponent
 			fields[79] = weight;
 			fields[80] = bodyWeight;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -968,7 +968,7 @@ namespace BuildComponent
 			fields[83] = bodyWeight;
 			fields[84] = headWeight;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -991,7 +991,7 @@ namespace BuildComponent
 			fields[88] = headWeight;
 			fields[89] = eyesWeight;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight,eyesWeight, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1015,7 +1015,7 @@ namespace BuildComponent
 			fields[94] = eyesWeight;
 			fields[95] = clampWeight;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { weight,bodyWeight,headWeight,eyesWeight,clampWeight, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1036,7 +1036,7 @@ namespace BuildComponent
 			fields[97] = humanBoneId;
 			fields[98] = rotation;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { humanBoneId,rotation, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1084,7 +1084,7 @@ namespace BuildComponent
             if ( !always) return;
 			
             var buffer = SerializeModel(new RPCModel() { pars = new object[] {  } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1105,7 +1105,7 @@ namespace BuildComponent
 			fields[101] = stateName;
 			fields[102] = fixedTransitionDuration;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1127,7 +1127,7 @@ namespace BuildComponent
 			fields[105] = fixedTransitionDuration;
 			fields[106] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1150,7 +1150,7 @@ namespace BuildComponent
 			fields[110] = layer;
 			fields[111] = fixedTimeOffset;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer,fixedTimeOffset, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1174,7 +1174,7 @@ namespace BuildComponent
 			fields[116] = fixedTimeOffset;
 			fields[117] = normalizedTransitionTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,fixedTransitionDuration,layer,fixedTimeOffset,normalizedTransitionTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1197,7 +1197,7 @@ namespace BuildComponent
 			fields[121] = layer;
 			fields[122] = fixedTimeOffset;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration,layer,fixedTimeOffset, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1219,7 +1219,7 @@ namespace BuildComponent
 			fields[125] = fixedTransitionDuration;
 			fields[126] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1240,7 +1240,7 @@ namespace BuildComponent
 			fields[128] = stateHashName;
 			fields[129] = fixedTransitionDuration;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,fixedTransitionDuration, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1263,7 +1263,7 @@ namespace BuildComponent
 			fields[133] = layer;
 			fields[134] = normalizedTimeOffset;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer,normalizedTimeOffset, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1285,7 +1285,7 @@ namespace BuildComponent
 			fields[137] = normalizedTransitionDuration;
 			fields[138] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1306,7 +1306,7 @@ namespace BuildComponent
 			fields[140] = stateName;
 			fields[141] = normalizedTransitionDuration;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1330,7 +1330,7 @@ namespace BuildComponent
 			fields[146] = normalizedTimeOffset;
 			fields[147] = normalizedTransitionTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,normalizedTransitionDuration,layer,normalizedTimeOffset,normalizedTransitionTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1353,7 +1353,7 @@ namespace BuildComponent
 			fields[151] = layer;
 			fields[152] = normalizedTimeOffset;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration,layer,normalizedTimeOffset, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1375,7 +1375,7 @@ namespace BuildComponent
 			fields[155] = normalizedTransitionDuration;
 			fields[156] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1396,7 +1396,7 @@ namespace BuildComponent
 			fields[158] = stateHashName;
 			fields[159] = normalizedTransitionDuration;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateHashName,normalizedTransitionDuration, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1417,7 +1417,7 @@ namespace BuildComponent
 			fields[161] = stateName;
 			fields[162] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1437,7 +1437,7 @@ namespace BuildComponent
             if (stateName.Equals(fields[164]) &  !always) return;
 			fields[164] = stateName;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1459,7 +1459,7 @@ namespace BuildComponent
 			fields[167] = layer;
 			fields[168] = fixedTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer,fixedTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1480,7 +1480,7 @@ namespace BuildComponent
 			fields[170] = stateNameHash;
 			fields[171] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1500,7 +1500,7 @@ namespace BuildComponent
             if (stateNameHash.Equals(fields[173]) &  !always) return;
 			fields[173] = stateNameHash;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1521,7 +1521,7 @@ namespace BuildComponent
 			fields[175] = stateName;
 			fields[176] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1541,7 +1541,7 @@ namespace BuildComponent
             if (stateName.Equals(fields[178]) &  !always) return;
 			fields[178] = stateName;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1563,7 +1563,7 @@ namespace BuildComponent
 			fields[181] = layer;
 			fields[182] = normalizedTime;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateName,layer,normalizedTime, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1584,7 +1584,7 @@ namespace BuildComponent
 			fields[184] = stateNameHash;
 			fields[185] = layer;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash,layer, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1604,7 +1604,7 @@ namespace BuildComponent
             if (stateNameHash.Equals(fields[187]) &  !always) return;
 			fields[187] = stateNameHash;
             var buffer = SerializeModel(new RPCModel() { pars = new object[] { stateNameHash, } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
@@ -1628,7 +1628,7 @@ namespace BuildComponent
             if ( !always) return;
 			
             var buffer = SerializeModel(new RPCModel() { pars = new object[] {  } });
-            ClientBase.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,

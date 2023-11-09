@@ -37,6 +37,7 @@ namespace Net.UnityComponent
         protected ClientBase client; //当多场景时, 退出战斗场景, 回主场景时, 先进入主场景再卸载战斗场景, 而ClientBase.Instance被赋值到其他多连接客户端对象上就会出现OnDestry时没有正确移除OnOperationSync事件
         protected Queue<Action> waitNetworkIdentityQueue = new Queue<Action>();
         protected MyDictionary<byte, HashSet<Action<Operation>>> operationHandlerDict = new MyDictionary<byte, HashSet<Action<Operation>>>();
+        protected FastList<Operation> operations = new FastList<Operation>();
 
         public virtual void Start()
         {
@@ -104,6 +105,11 @@ namespace Net.UnityComponent
                     identity.NetworkUpdate();
                     identity.CheckSyncVar();
                     identity.PropertyAutoCheckHandler();
+                }
+                if (client != null)
+                {
+                    client.AddOperations(operations);
+                    operations._size = 0;
                 }
             }
             WaitDestroy waitDestroy;
@@ -351,6 +357,15 @@ namespace Net.UnityComponent
             if (client == null)
                 return;
             client.OnOperationSync -= OperationSync;
+        }
+
+        /// <summary>
+        /// 添加场景同步操作
+        /// </summary>
+        /// <param name="operation"></param>
+        public void AddOperation(Operation operation)
+        {
+            operations.Add(operation);
         }
     }
 }

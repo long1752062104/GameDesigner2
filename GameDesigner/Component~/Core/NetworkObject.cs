@@ -137,7 +137,7 @@ namespace Net.UnityComponent
                 syncVarInfos.Add(info.id, info);
                 if (!isLocal)
                 {
-                    ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarGet, m_identity)
+                    NetworkSceneManager.Instance.AddOperation(new Operation(NetCmd.SyncVarGet, m_identity)
                     {
                         index = registerObjectIndex,
                         index1 = info.id,
@@ -157,7 +157,7 @@ namespace Net.UnityComponent
 
         private void SyncVarSend(byte[] buffer) 
         {
-            ClientBase.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
             {
                 uid = ClientBase.Instance.UID,
                 index = registerObjectIndex,
@@ -217,7 +217,7 @@ namespace Net.UnityComponent
 
         public void SendDestroyCommand()
         {
-            ClientBase.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
         internal static void PushIdentity(int identity)

@@ -1705,7 +1705,7 @@ namespace Net.Client
         /// 而Send则是直接发送
         /// </summary>
         /// <param name="opts"></param>
-        public void AddOperations(List<Operation> opts)
+        public void AddOperations(ICollection<Operation> opts)
         {
             foreach (Operation opt in opts)
                 AddOperation(opt);

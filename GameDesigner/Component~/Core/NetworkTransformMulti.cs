@@ -49,7 +49,7 @@ namespace Net.UnityComponent
 
         public override void StartSyncTransformState()
         {
-            ClientBase.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
@@ -123,7 +123,7 @@ namespace Net.UnityComponent
                 position = transform.localPosition;
                 rotation = transform.localRotation;
                 localScale = transform.localScale;
-                ClientBase.Instance.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+                NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
                 {
                     cmd1 = (byte)mode,
                     uid = ClientBase.Instance.UID,
