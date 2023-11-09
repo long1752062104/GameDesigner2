@@ -36,7 +36,7 @@ namespace Net.Component
                 world.Init(xPos, zPos, xMax, zMax, width, height);
             }
             Gizmos.color = Color.cyan;
-            for (int i = 0; i < world.grids.Count; i++)
+            for (int i = 0; i < world.grids.Length; i++)
             {
                 Draw(world.grids[i]);
             }

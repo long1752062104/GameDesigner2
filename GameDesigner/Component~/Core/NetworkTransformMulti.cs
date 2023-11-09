@@ -24,7 +24,7 @@ namespace Net.UnityComponent
             }
         }
 
-        public override void Update()
+        public override void NetworkUpdate()
         {
             if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;

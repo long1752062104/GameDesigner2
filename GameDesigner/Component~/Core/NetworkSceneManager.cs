@@ -101,6 +101,7 @@ namespace Net.UnityComponent
                         continue;
                     if (identity.IsDispose)
                         continue;
+                    identity.NetworkUpdate();
                     identity.CheckSyncVar();
                     identity.PropertyAutoCheckHandler();
                 }

@@ -1,6 +1,8 @@
 using System;
+using System.IO;
+using System.Runtime.InteropServices;
 
-namespace Net.Helper 
+namespace Net.Helper
 {
     public class PathHelper
     {
@@ -11,42 +13,38 @@ namespace Net.Helper
         /// <param name="fullPath"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static string GetRelativePath(string root, string fullPath) 
+        public static string GetRelativePath(string root, string fullPath, bool isRevise = false)
         {
-            Uri urlRoot;
-            try 
-            {
-                urlRoot = new Uri(root);
-            }
-            catch 
-            {
-                try
-                {
-                    urlRoot = new Uri(root.Replace('/', '\\'));
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            Uri fullPathRoot;
-            try
-            {
-                fullPathRoot = new Uri(fullPath);
-            }
-            catch
-            {
-                try
-                {
-                    fullPathRoot = new Uri(fullPath.Replace('/', '\\'));
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            var relativeUri = urlRoot.MakeRelativeUri(fullPathRoot);
-            return relativeUri.ToString();
+            var rootPathUri = new Uri(Revise(root));
+            var fullPathUri = new Uri(Revise(fullPath));
+            var relativeUri = rootPathUri.MakeRelativeUri(fullPathUri);
+            var relativePath = relativeUri.ToString();
+            if (isRevise)
+                return Revise(relativePath);
+            return relativePath;
+        }
+
+        public static string Combine(params string[] paths)
+        {
+            var fullPath = string.Empty;
+            foreach (var path in paths)
+                fullPath += path + Path.DirectorySeparatorChar;
+            return Revise(fullPath);
+        }
+
+        public static string Revise(string path)
+        {
+            var separator = Path.DirectorySeparatorChar;
+            char temp;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                temp = '/';
+            else
+                temp = '\\';
+            path = path.Replace(temp, separator);
+            var separators = $"{separator}{separator}";
+            while (path.Contains(separators))
+                path = path.Replace(separators, separator.ToString());
+            return path;
         }
     }
 }

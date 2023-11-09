@@ -109,6 +109,13 @@ namespace Net.UnityComponent
         {
             netObj.RemoveSyncVar(this);
         }
+
+        /// <summary>
+        /// 网络更新帧
+        /// </summary>
+        public virtual void NetworkUpdate()
+        {
+        }
     }
 }
 #endif

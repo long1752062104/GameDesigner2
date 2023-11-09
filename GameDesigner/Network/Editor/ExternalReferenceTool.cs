@@ -112,22 +112,22 @@ public class ExternalReferenceTool : EditorWindow
                 {
                     var path1 = Path.GetFullPath(path);
                     var dir = new DirectoryInfo(path1);
-                    var dirName = dir.Parent.FullName + "\\";
+                    var dirName = dir.Parent.FullName + Path.DirectorySeparatorChar;
                     var files = Directory.GetFiles(path1, "*.*", SearchOption.AllDirectories);
                     var patterns = config.searchPattern.Replace("*", "").Split('|');
                     var fileList = new List<string>();
                     //相对于服务器路径
                     var csPath = Path.GetFullPath(csprojPath);
-                    path1 = PathHelper.GetRelativePath(csPath, path1).Replace('/', '\\');
+                    path1 = PathHelper.GetRelativePath(csPath, path1, true);
                     //只包含三级目录的相对路径
-                    dirName = PathHelper.GetRelativePath(csPath, dirName).Replace('/', '\\');
+                    dirName = PathHelper.GetRelativePath(csPath, dirName, true);
                     foreach (var file in files)
                     {
                         foreach (var pattern in patterns)
                         {
-                            if (file.EndsWith(pattern)) 
+                            if (file.EndsWith(pattern))
                             {
-                                var rPath = PathHelper.GetRelativePath(csPath, file).Replace('/', '\\');
+                                var rPath = PathHelper.GetRelativePath(csPath, file, true);
                                 fileList.Add(rPath);
                                 break;
                             }
@@ -172,7 +172,7 @@ public class ExternalReferenceTool : EditorWindow
                                         break;
                                     }
                                 }
-                                if (!isExist) 
+                                if (!isExist)
                                 {
                                     if (file.EndsWith(".cs"))
                                     {
@@ -224,7 +224,7 @@ public class ExternalReferenceTool : EditorWindow
                                 e.AppendChild(e1);
                                 node.AppendChild(e);
                             }
-                            else 
+                            else
                             {
                                 var e = xml.CreateElement("Content", namespaceURI);
                                 e.SetAttribute("Include", file);

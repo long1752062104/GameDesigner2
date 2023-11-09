@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Linq;
 using Net.System;
-using UnityEngine;
 
 namespace Net.AOI
 {
@@ -27,7 +26,7 @@ namespace Net.AOI
     [Serializable]
     public class GridWorld
     {
-        public List<Grid> grids = new List<Grid>();
+        public Grid[] grids = new Grid[0];
         public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();
         public Rect worldSize;
         public GridType gridType = GridType.Horizontal;
@@ -43,29 +42,32 @@ namespace Net.AOI
         /// <param name="height">格子高度</param>
         public void Init(float xPos, float zPos, uint xMax, uint zMax, int width, int height)
         {
-            grids.Clear();
+            grids = new Grid[xMax * zMax];
             worldSize = new Rect(xPos, zPos, width * xMax, height * zMax);
+            int index = 0;
             for (int z = 0; z < zMax; z++)
             {
                 float xPos1 = xPos;
                 for (int x = 0; x < xMax; x++)
                 {
                     var rect = new Rect(xPos1, zPos, width, height);
-                    grids.Add(new Grid() { rect = rect });
+                    grids[index++] = new Grid() { rect = rect };
                     xPos1 += width;
                 }
                 zPos += height;
             }
-            for (int i = 0; i < grids.Count; i++)
+            for (int i = 0; i < grids.Length; i++)
             {
                 var grid = grids[i];
                 grid.Id = i;
                 var rect = new Rect(grid.rect.x - width, grid.rect.y - height, width * 3, height * 3);
-                foreach (var grid1 in grids)
+                index = 0;
+                for (int j = 0; j < grids.Length; j++)
                 {
+                    var grid1 = grids[j];
                     if (rect.Contains(grid1.rect.position))
                     {
-                        grid.grids.Add(grid1);
+                        grid.grids[index++] = grid1;
                     }
                 }
             }
@@ -81,18 +83,21 @@ namespace Net.AOI
             if (body.Grid != null) //防止多次插入
                 return false;
             body.OnStart();
-            foreach (var grid in grids)
+            for (int i = 0; i < grids.Length; i++)
             {
+                var grid = grids[i];
                 if (Contains(grid, body))
                 {
                     grid.gridBodies.Add(body);
                     body.Grid = grid;
                     body.ID = gridBodies.Count;
                     gridBodies.Add(body);
-                    foreach (var grid1 in grid.grids)
+                    for (int j = 0; j < grid.grids.Length; j++)
                     {
-                        foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
+                        var grid1 = grid.grids[j];
+                        for (int k = 0; k < grid1.gridBodies.Count; k++) //通知新格子, 此物体进来了
                         {
+                            var item2 = grid1.gridBodies[k];
                             EnterHandler(body, item2);
                         }
                     }
@@ -130,16 +135,19 @@ namespace Net.AOI
                     if (!worldSize.Contains(body.Position))
                         goto J;
                 }
-                foreach (var grid in grids)
+                for (int i = 0; i < grids.Length; i++)
                 {
+                    var grid = grids[i];
                     if (Contains(grid, body))
                     {
                         grid.gridBodies.Add(body);
                         body.Grid = grid;
-                        foreach (var grid1 in grid.grids)
+                        for (int j = 0; j < grid.grids.Length; j++)
                         {
-                            foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
+                            var grid1 = grid.grids[j];
+                            for (int k = 0; k < grid1.gridBodies.Count; k++) //通知新格子, 此物体进来了
                             {
+                                var item2 = grid1.gridBodies[k];
                                 EnterHandler(body, item2);
                             }
                         }
@@ -151,27 +159,32 @@ namespace Net.AOI
             if (Contains(currGrid, body))
                 return currGrid;
             var oldGrids = currGrid.grids;
-            foreach (var grid in oldGrids)//遍历当前物体所在的九宫格
+            for (int i = 0; i < oldGrids.Length; i++) //遍历当前物体所在的九宫格
             {
+                var grid = oldGrids[i];
                 if (Contains(grid, body))//如果物体还在九宫格的其中一个格子
                 {
                     var newGrids = grid.grids;
-                    foreach (var grid1 in newGrids)//遍历当前所在的九宫格,如果是新进来的格子, 则通知新格子此物体进来了
+                    for (int j = 0; j < newGrids.Length; j++) //遍历当前所在的九宫格,如果是新进来的格子, 则通知新格子此物体进来了
                     {
+                        var grid1 = newGrids[j];
                         if (!oldGrids.Contains(grid1))//如果当前为新格子, 则通知
                         {
-                            foreach (var item2 in grid1.gridBodies)//通知新格子, 此物体进来了
+                            for (int k = 0; k < grid1.gridBodies.Count; k++) //通知新格子, 此物体进来了
                             {
+                                var item2 = grid1.gridBodies[k];
                                 EnterHandler(body, item2);
                             }
                         }
                     }
-                    foreach (var grid1 in oldGrids)//遍历当前所在的九宫格,如果已经离开的九宫格则调用离开方法
+                    for (int k = 0; k < oldGrids.Length; k++) //遍历当前所在的九宫格,如果已经离开的九宫格则调用离开方法
                     {
+                        var grid1 = oldGrids[k];
                         if (!newGrids.Contains(grid1))//如果已经离开了旧的格子
                         {
-                            foreach (var item2 in grid1.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                            for (int j = 0; j < grid1.gridBodies.Count; j++) //通知离开的格子的所有物体, 此物体离开了
                             {
+                                var item2 = grid1.gridBodies[j];
                                 ExitHandler(body, item2);
                             }
                         }
@@ -183,10 +196,12 @@ namespace Net.AOI
                     return grid;
                 }
             }
-            foreach (var grid in oldGrids)//拖拽瞬移过程
+            for (int i = 0; i < oldGrids.Length; i++) //拖拽瞬移过程
             {
-                foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                var grid = oldGrids[i];
+                for (int j = 0; j < grid.gridBodies.Count; j++) //通知离开的格子的所有物体, 此物体离开了
                 {
+                    var item2 = grid.gridBodies[j];
                     ExitHandler(body, item2);
                 }
             }
@@ -207,10 +222,12 @@ namespace Net.AOI
             if (currGrid == null)
                 return;
             var grids = currGrid.grids;
-            foreach (var grid in grids)
+            for (int i = 0; i < grids.Length; i++)
             {
-                foreach (var item2 in grid.gridBodies)//通知离开的格子的所有物体, 此物体离开了
+                var grid = grids[i];
+                for (int j = 0; j < grid.gridBodies.Count; j++) //通知离开的格子的所有物体, 此物体离开了
                 {
+                    var item2 = grid.gridBodies[j];
                     ExitHandler(body, item2);
                 }
             }
@@ -266,8 +283,9 @@ namespace Net.AOI
         /// </summary>
         public void UpdateHandler()
         {
-            foreach (var body in gridBodies)
+            for (int i = 0; i < gridBodies._size; i++)
             {
+                var body = gridBodies._items[i];
                 TryGetGrid(body);
                 body.OnBodyUpdate(); //如果OnBodyUpdate放在前面并且调用Remove方法会出现问题
             }

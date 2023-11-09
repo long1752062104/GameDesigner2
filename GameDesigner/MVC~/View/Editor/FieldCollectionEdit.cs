@@ -296,8 +296,7 @@ namespace MVC.View
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 //相对于Assets路径
-                path = PathHelper.GetRelativePath(Application.dataPath, path);
-                path = path.Replace('/', '\\');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, true);
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
@@ -317,8 +316,7 @@ namespace MVC.View
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 //相对于Assets路径
-                path = PathHelper.GetRelativePath(Application.dataPath, path);
-                path = path.Replace('/', '\\');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, true);
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);

@@ -74,7 +74,7 @@ namespace Net.Component
             if (Grid == null)
                 return; 
             Gizmos.color = Color.green;
-            for (int i = 0; i < Grid.grids.Count; i++)
+            for (int i = 0; i < Grid.grids.Length; i++)
             {
                 Draw(Grid.grids[i]);
             }
@@ -91,7 +91,7 @@ namespace Net.Component
             if (Grid == null)
                 return;
             Gizmos.color = Color.green;
-            for (int i = 0; i < Grid.grids.Count; i++)
+            for (int i = 0; i < Grid.grids.Length; i++)
             {
                 Draw(Grid.grids[i]);
             } 

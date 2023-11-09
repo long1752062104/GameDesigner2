@@ -1,14 +1,16 @@
-﻿namespace Net.Server
-{
-    using global::System;
-    using global::System.Net;
-    using global::System.Runtime.InteropServices;
-    using global::System.Text;
-    using Net.Share;
-    using Net.System;
-    using Udx;
-    using Debug = Event.NDebug;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text;
+using Net.Helper;
+using Net.Share;
+using Net.System;
+using Udx;
+using Debug = Net.Event.NDebug;
 
+namespace Net.Server
+{
     /// <summary>
     /// udx服务器类型  只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
     /// 第三版本 2020.9.14
@@ -33,9 +35,9 @@
         protected override void CreateServerSocket(ushort port)
         {
 #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_ANDROID && !UNITY_IOS && WINDOWS
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            if (!global::System.IO.File.Exists(path + "\\udxapi.dll"))
-                throw new global::System.IO.FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到udxapi.dll复制到{path}目录下.");
+            var path = AppDomain.CurrentDomain.BaseDirectory;
+            if (!File.Exists(PathHelper.Combine(path, "udxapi.dll")))
+                throw new FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到udxapi.dll复制到{path}目录下.");
 #endif
             if (!UdxLib.INIT)
             {

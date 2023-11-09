@@ -265,6 +265,17 @@ namespace Net.UnityComponent
             return 10000 + ((uid + 1 - 10000) * Capacity);
         }
 
+        internal void NetworkUpdate()
+        {
+            for (int i = 0; i < networkBehaviours.Count; i++)
+            {
+                var networkBehaviour = networkBehaviours[i];
+                if (networkBehaviour == null)
+                    continue;
+                networkBehaviour.NetworkUpdate();
+            }
+        }
+
 #if UNITY_EDITOR
         private void OnValidate()
         {

@@ -8,6 +8,7 @@
     using global::System.Windows.Forms;
 #endif
     using Net.System;
+    using Net.Helper;
 
     public enum LogType
     {
@@ -40,7 +41,7 @@
         private int cursorTop;
         private bool collapse;
 
-        public ConsoleDebug(bool collapse) 
+        public ConsoleDebug(bool collapse)
         {
             this.collapse = collapse;
         }
@@ -80,7 +81,7 @@
                 if (Console.CursorTop > cursorTop)
                     cursorTop = Console.CursorTop;
             }
-            else 
+            else
             {
                 var info = $"[{time.ToString("yyyy-MM-dd HH:mm:ss")}][";
                 Console.Write(info);
@@ -119,7 +120,7 @@
         /// </summary>
         public Brush ErrorColor = Brushes.Red;
 
-        public FormDebug(ListBox listBox, Brush backgroundColor = null) 
+        public FormDebug(ListBox listBox, Brush backgroundColor = null)
         {
             if (backgroundColor == null)
                 backgroundColor = Brushes.Black;
@@ -172,7 +173,7 @@
     }
 #endif
 
-    public interface IDebug 
+    public interface IDebug
     {
         void Output(DateTime time, LogType log, string msg);
     }
@@ -180,7 +181,7 @@
     /// <summary>
     /// 写入日志模式
     /// </summary>
-    public enum WriteLogMode 
+    public enum WriteLogMode
     {
         /// <summary>
         /// 啥都不干
@@ -261,7 +262,7 @@
         public static WriteLogMode WriteFileMode
         {
             get { return writeFileMode; }
-            set 
+            set
             {
                 writeFileMode = value;
                 if (value != WriteLogMode.None & fileStream == null)
@@ -293,7 +294,7 @@
             try
             {
                 var now = DateTime.Now;
-                var path = Config.Config.ConfigPath + $"\\Log\\{now.Year}\\{now.Month.ToString("00")}\\";
+                var path = PathHelper.Combine(Config.Config.ConfigPath, $"/Log/{now.Year}/{now.Month.ToString("00")}/");
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
                 path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";

@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using Net.Helper;
 using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
@@ -14,20 +15,19 @@ public class ConfigSetting : EditorWindow
 
     private void OnGUI()
     {
-        EditorGUILayout.HelpBox("1.Èç¹ûÔÚUnityÖ÷Ïß³Ì¸üĞÂÍøÂçËùÓĞÊÂ¼ş, ½«»á¼õÉÙÏß³Ì¿ªÏú, Í¬Ê±Ò²»áÕ¼ÓÃÖ÷Ïß³ÌµÄCpuÊ±¼ä, " +
-            "Äã¿ÉÒÔÊ¹ÓÃ·ÖÎöÆ÷²é¿´ĞÔÄÜ, Èç¹û¶ÔÄãµÄÏîÄ¿Ã»ÓĞÈÎºÎÓ°Ïì, ¿ÉÊ¹ÓÃ´Ë·½°¸! 2.Èç¹ûÔÚ¶àÏß³Ì¸üĞÂËùÓĞÍøÂçÊÂ¼ş, ¿ÉÒÔ±ÜÃâÖ÷Ïß³ÌÕ¼ÓÃÎÊÌâ, " +
-            "µ«Ò²»á²úÉúÏß³Ì¿ªÏú, Ä¿Ç°À´¿´CPUºËĞÄÊıÁ¿Ôö´ó, ¶ÔÕâ¸öÎÊÌâÓ¦¸Ã²»»á²úÉú¶à´óÓ°Ïì, " +
-            "ÎÒÕâÀï¸ø³öµÄ·½°¸ÊÇ: Èç¹û¶à¿Í»§¶Ë, ¿ÉÒÔ¿¼ÂÇÊ¹ÓÃµ¥Ïß³Ì¸üĞÂËùÓĞÍøÂçÊÂ¼ş Èç¹ûÊÇµ¥¸ö¿Í»§¶ËµÄ»°, ¿ÉÒÔÊ¹ÓÃ¶àÏß³ÌÀ´¸üĞÂ!", MessageType.Info);
-        Net.Config.Config.MainThreadTick = EditorGUILayout.Toggle("UnityÖ÷Ïß³Ì´¦ÀíÍøÂç:", Net.Config.Config.MainThreadTick);
-        Net.Config.Config.BaseCapacity = EditorGUILayout.IntField("½ÓÊÕ»º³åÇø»ù´¡ÈİÁ¿:", Net.Config.Config.BaseCapacity);
-        EditorGUILayout.TextField("ÍøÂç²Ù×÷µÄ»ù´¡Â·¾¶:", Net.Config.Config.BasePath);
-        if (GUILayout.Button("´ò¿ªÅäÖÃÎÄ¼ş¼Ğ"))
+        EditorGUILayout.HelpBox("1.å¦‚æœåœ¨Unityä¸»çº¿ç¨‹æ›´æ–°ç½‘ç»œæ‰€æœ‰äº‹ä»¶, å°†ä¼šå‡å°‘çº¿ç¨‹å¼€é”€, åŒæ—¶ä¹Ÿä¼šå ç”¨ä¸»çº¿ç¨‹çš„Cpuæ—¶é—´, " +
+            "ä½ å¯ä»¥ä½¿ç”¨åˆ†æå™¨æŸ¥çœ‹æ€§èƒ½, å¦‚æœå¯¹ä½ çš„é¡¹ç›®æ²¡æœ‰ä»»ä½•å½±å“, å¯ä½¿ç”¨æ­¤æ–¹æ¡ˆ! 2.å¦‚æœåœ¨å¤šçº¿ç¨‹æ›´æ–°æ‰€æœ‰ç½‘ç»œäº‹ä»¶, å¯ä»¥é¿å…ä¸»çº¿ç¨‹å ç”¨é—®é¢˜, " +
+            "ä½†ä¹Ÿä¼šäº§ç”Ÿçº¿ç¨‹å¼€é”€, ç›®å‰æ¥çœ‹CPUæ ¸å¿ƒæ•°é‡å¢å¤§, å¯¹è¿™ä¸ªé—®é¢˜åº”è¯¥ä¸ä¼šäº§ç”Ÿå¤šå¤§å½±å“, " +
+            "æˆ‘è¿™é‡Œç»™å‡ºçš„æ–¹æ¡ˆæ˜¯: å¦‚æœå¤šå®¢æˆ·ç«¯, å¯ä»¥è€ƒè™‘ä½¿ç”¨å•çº¿ç¨‹æ›´æ–°æ‰€æœ‰ç½‘ç»œäº‹ä»¶ å¦‚æœæ˜¯å•ä¸ªå®¢æˆ·ç«¯çš„è¯, å¯ä»¥ä½¿ç”¨å¤šçº¿ç¨‹æ¥æ›´æ–°!", MessageType.Info);
+        Net.Config.Config.MainThreadTick = EditorGUILayout.Toggle("Unityä¸»çº¿ç¨‹å¤„ç†ç½‘ç»œ:", Net.Config.Config.MainThreadTick);
+        Net.Config.Config.BaseCapacity = EditorGUILayout.IntField("æ¥æ”¶ç¼“å†²åŒºåŸºç¡€å®¹é‡:", Net.Config.Config.BaseCapacity);
+        EditorGUILayout.TextField("ç½‘ç»œæ“ä½œçš„åŸºç¡€è·¯å¾„:", Net.Config.Config.BasePath);
+        if (GUILayout.Button("æ‰“å¼€é…ç½®æ–‡ä»¶å¤¹"))
         {
-            var configPath = Net.Config.Config.ConfigPath;
-            configPath = configPath.Replace('/', '\\');
-            Process.Start("explorer.exe", configPath + "\\");
+            var configPath = PathHelper.Combine(Net.Config.Config.ConfigPath, "/");
+            Process.Start("explorer.exe", configPath);
         }
-        if (GUILayout.Button("´ò¿ªÅäÖÃÎÄ¼ş"))
+        if (GUILayout.Button("æ‰“å¼€é…ç½®æ–‡ä»¶"))
         {
             var configPath = Net.Config.Config.ConfigPath + "/network.config";
             Process.Start("notepad.exe", configPath);

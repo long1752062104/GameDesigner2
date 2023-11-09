@@ -9,8 +9,9 @@
     using Kcp;
     using Net.Share;
     using Net.System;
+    using Net.Helper;
     using static Kcp.KcpLib;
-
+    
     /// <summary>
     /// kcp服务器
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
@@ -26,8 +27,8 @@
         public override void Start(ushort port = 9543)
         {
 #if SERVICE
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            if (!File.Exists(path + "\\kcp.dll"))
+            var path = AppDomain.CurrentDomain.BaseDirectory;
+            if (!File.Exists(PathHelper.Combine(path, "kcp.dll")))
                 throw new FileNotFoundException($"kcp.dll没有在程序根目录中! 请从GameDesigner文件夹下找到kcp.dll复制到{path}目录下.");
 #endif
             base.Start(port);
@@ -119,7 +120,7 @@
     /// <summary>
     /// 默认kcp服务器，当不需要处理Player对象和Scene对象时可使用
     /// </summary>
-    public class KcpServer : KcpServer<KcpPlayer, NetScene<KcpPlayer>> 
+    public class KcpServer : KcpServer<KcpPlayer, NetScene<KcpPlayer>>
     {
     }
 }

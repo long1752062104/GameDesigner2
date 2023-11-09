@@ -11,7 +11,7 @@ namespace Net.AOI
     {
         public int Id;
         public Rect rect;
-        public List<Grid> grids = new List<Grid>();//九宫格列表
+        public Grid[] grids = new Grid[9];//九宫格列表
         public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();//格子的物体
         /// <summary>
         /// 获取九宫格的所有物体
@@ -38,8 +38,8 @@ namespace Net.AOI
             private int index;
             private int gridInx;
             private IGridBody current;
-            public IGridBody Current => current;
-            object IEnumerator.Current => Current;
+            public readonly IGridBody Current => current;
+            readonly object IEnumerator.Current => Current;
             internal Enumerator(Grid grid)
             {
                 this.grid = grid;
@@ -50,7 +50,7 @@ namespace Net.AOI
             public bool MoveNext()
             {
                 var grid = this.grid;
-            J: if (gridInx < grid.grids.Count)
+            J: if (gridInx < grid.grids.Length)
                 {
                     var gridBodies = grid.grids[gridInx].gridBodies;
                     if (index < gridBodies.Count)

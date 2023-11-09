@@ -70,8 +70,7 @@ namespace Net.UnityComponent
             netLocalScale = localScale = transform.localScale;
         }
 
-        // Update is called once per frame
-        public virtual void Update()
+        public override void NetworkUpdate()
         {
             if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;

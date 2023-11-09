@@ -32,7 +32,7 @@ namespace Net.Helper
     public class ScriptHelper
     {
         private static Dictionary<string, SequencePoint> cache;
-        public static Dictionary<string, SequencePoint> Cache 
+        public static Dictionary<string, SequencePoint> Cache
         {
             get
             {
@@ -350,7 +350,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                                 code = code.Replace("TYPETOINDEX", $"segment.Write(NetConvertBinary.TypeToIndex(type));");
                                 code = code.Replace("INDEXTOTYPE", $"var type = NetConvertBinary.IndexToType(segment.ReadUInt16());");
                             }
-                            else 
+                            else
                             {
                                 code = code.Replace("GETTYPE", "");
                                 code = code.Replace("TYPETOINDEX", "");
@@ -476,7 +476,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 
             sb.Append(codes[4]);
             sb.Append(setgetSb.ToString());
-            sb.Append(codes[7]); 
+            sb.Append(codes[7]);
             sb.Append(codes[8]);
             var text = sb.ToString();
 
@@ -513,7 +513,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                 typeSig = typeDef.ToTypeSig();
                 if (typeSig != null)
                 {
-                    if (typeLoop.Add(typeSig.FullName)) 
+                    if (typeLoop.Add(typeSig.FullName))
                     {
                         if (typeSig.IsArray | typeSig.IsValueArray | typeSig.IsSZArray | typeSig.IsSingleOrMultiDimensionalArray | typeSig.IsGenericInstanceType)
                             AddArrayOrListEquals(typeSig, streams, equalsSbs, typeLoop);
@@ -621,7 +621,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                         equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
                         AddArrayOrListEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
                     }
-                    else if (ft1.FieldType.IsGenericInstanceType) 
+                    else if (ft1.FieldType.IsGenericInstanceType)
                     {
                         equalsSb.AppendLine($"\t\tif (!Equals(a.{ft1.Name}, b.{ft1.Name})) return false;");
                         AddArrayOrListEquals(ft1.FieldType, streams, equalsSbs, typeLoop);
@@ -954,7 +954,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                         continue;
                     var path = sequence.Document.Url;
                     //相对于Assets路径
-                    path = PathHelper.GetRelativePath(UnityEngine.Application.dataPath, path);
+                    path = PathHelper.GetRelativePath(UnityEngine.Application.dataPath, path, true);
                     path = path.Replace('\\', '/');
                     cache[type.FullName + "." + method.Name] = new SequencePoint(path, sequence.StartLine - 1);
                 }
@@ -1080,7 +1080,7 @@ using System.Runtime.CompilerServices;
             var serverTypes3 = new List<TypeDef>();
             foreach (var item in serverTypes)
                 serverTypes3.AddRange(item);
-            if(config.collectRpc)
+            if (config.collectRpc)
                 text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
             text += @"/// <summary>SyncVar动态编译定位路径</summary>
 internal static class HelperFileInfo 
@@ -1153,9 +1153,9 @@ internal static class HelperFileInfo
     }
 }";
                 var csprojPath = config.rpcConfig[i].csprojPath;
-                csprojPath = Path.GetFullPath(csprojPath.Replace('/', '\\'));
+                csprojPath = Path.GetFullPath(PathHelper.Revise(csprojPath));
                 var path1 = config.rpcConfig[i].savePath + "/SyncVarHandlerGenerate.cs";
-                path1 = Path.GetFullPath(path1.Replace('/', '\\'));
+                path1 = Path.GetFullPath(PathHelper.Revise(path1));
 
                 //相对于Assets路径
                 var relativePath = PathHelper.GetRelativePath(csprojPath, path1);
