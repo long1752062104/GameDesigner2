@@ -217,7 +217,10 @@ namespace Net.UnityComponent
 
         public void SendDestroyCommand()
         {
-            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Destroy, m_identity));
+            var sm = NetworkSceneManager.Instance;
+            if (sm == null)
+                return;
+            sm.AddOperation(new Operation(Command.Destroy, m_identity));
         }
 
         internal static void PushIdentity(int identity)
