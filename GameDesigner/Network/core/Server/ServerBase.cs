@@ -572,8 +572,7 @@ namespace Net.Server
             InitUserID();//之前放最下面会出现bug! 当处于tcp协议时,当关闭服务器重启时直接有客户端连接触发Accept后, uid还没被初始化, 导致uid=0的问题
             Debug.BindLogAll(Log);
             OnStartingHandle();
-            if (Instance == null)
-                Instance = this;
+            CheckInstance();
             AddRpc(this, true, null);
             CreateServerSocket(port);
             IsRunServer = true;
@@ -587,6 +586,12 @@ namespace Net.Server
 #if WINDOWS
             Win32KernelAPI.timeBeginPeriod(1);
 #endif
+        }
+
+        protected virtual void CheckInstance()
+        {
+            if (Instance == null)
+                Instance = this;
         }
 
         protected virtual void AddDefaultScene() { }
@@ -1638,8 +1643,7 @@ namespace Net.Server
                 m_NotGen2.Clear();
                 #endregion
             }
-            if (this == Instance)//有多个服务器实例, 需要
-                Instance = null;
+            FreeInstance();
             foreach (var item in ServerThreads)
                 item.Value.Interrupt();
             ServerThreads.Clear();
@@ -1658,6 +1662,12 @@ namespace Net.Server
             Debug.LogHandle -= Log;
             Debug.LogWarningHandle -= Log;
             Debug.LogErrorHandle -= Log;
+        }
+
+        protected virtual void FreeInstance()
+        {
+            if (this == Instance)//有多个服务器实例, 需要
+                Instance = null;
         }
 
         /// <summary>
@@ -2330,8 +2340,8 @@ namespace Net.Server
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
     /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
     /// </summary>
-    public abstract class ServerBase<Player, Scene> : ServerBase<Player>, IServerHandle<Player, Scene> 
-        where Player : NetPlayer, new() 
+    public abstract class ServerBase<Player, Scene> : ServerBase<Player>, IServerHandle<Player, Scene>
+        where Player : NetPlayer, new()
         where Scene : NetScene<Player>, new()
     {
         #region 属性
@@ -2420,6 +2430,20 @@ namespace Net.Server
             Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
         }
         #endregion
+
+        protected override void CheckInstance()
+        {
+            base.CheckInstance();
+            if (Instance == null)
+                Instance = this;
+        }
+
+        protected override void FreeInstance()
+        {
+            base.FreeInstance();
+            if (Instance == this)
+                Instance = null;
+        }
 
         protected override void AddDefaultScene()
         {
