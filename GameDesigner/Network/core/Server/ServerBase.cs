@@ -17,7 +17,6 @@
 */
 namespace Net.Server
 {
-
     using global::System;
     using global::System.Collections.Concurrent;
     using global::System.Collections.Generic;
@@ -40,11 +39,10 @@ namespace Net.Server
     using Debug = Event.NDebug;
 
     /// <summary>
-    /// 网络服务器核心基类 2019.11.22
+    /// 网络服务器核心基类 2023.11.13
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-    /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
     /// </summary>
-    public abstract class ServerBase<Player, Scene> : IServerHandle<Player, Scene> where Player : NetPlayer, new() where Scene : NetScene<Player>, new()
+    public abstract class ServerBase<Player> : IServerHandle<Player> where Player : NetPlayer, new()
     {
         #region 属性
         /// <summary>
@@ -126,13 +124,9 @@ namespace Net.Server
             }
         }
         /// <summary>
-        /// 服务器场景，key是场景名或房间名，关卡名。 value是(场景或房间，关卡等)对象
-        /// </summary>
-        public ConcurrentDictionary<string, Scene> Scenes { get; set; } = new ConcurrentDictionary<string, Scene>();
-        /// <summary>
         /// 网络服务器单例
         /// </summary>
-        public static ServerBase<Player, Scene> Instance { get; protected set; }
+        public static ServerBase<Player> Instance { get; protected set; }
         /// <summary>
         /// 当前玩家在线人数
         /// </summary>
@@ -197,6 +191,9 @@ namespace Net.Server
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
         protected virtual byte frame { get; set; } = 5;
+        /// <summary>
+        /// 接收缓冲区最大可接收的数据包大小 (默认是5m)
+        /// </summary>
         public int PackageSize { get; set; } = 1024 * 1024 * 5;
         /// <summary>
         /// 心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
@@ -419,13 +416,6 @@ namespace Net.Server
         public Player this[int uid] => UIDClients[uid];
 
         /// <summary>
-        /// 场景索引
-        /// </summary>
-        /// <param name="sceneID"></param>
-        /// <returns></returns>
-        public Scene this[string sceneID] => Scenes[sceneID];
-
-        /// <summary>
         /// 获得所有在线的客户端对象
         /// </summary>
         /// <returns></returns>
@@ -436,15 +426,6 @@ namespace Net.Server
                 if (p.Login)
                     players.Add(p);
             return players;
-        }
-
-        /// <summary>
-        /// 获得所有服务器场景
-        /// </summary>
-        /// <returns></returns>
-        public List<Scene> GetScenes()
-        {
-            return new List<Scene>(Scenes.Values);
         }
         #endregion
 
@@ -474,25 +455,10 @@ namespace Net.Server
         protected virtual void OnStartupCompleted() { Debug.Log("服务器启动成功!"); }
 
         /// <summary>
-        /// 当添加默认网络场景，服务器初始化后会默认创建一个主场景，供所有玩家刚登陆成功分配的临时场景，默认初始化场景人数为1000人
-        /// </summary>
-        /// <returns>返回值string：网络玩家所在的场景名称 , 返回值NetScene：网络玩家的场景对象</returns>
-        protected virtual Scene OnAddDefaultScene()
-        {
-            return new Scene { Name = MainSceneName, sceneCapacity = 1000 };
-        }
-
-        /// <summary>
         /// 当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void OnAddPlayerToScene(Player client)
-        {
-            if (Scenes.TryGetValue(MainSceneName, out Scene scene))
-            {
-                scene.AddPlayer(client);//将网络玩家添加到主场景集合中
-            }
-        }
+        protected virtual void OnAddPlayerToScene(Player client) { }
 
         /// <summary>
         /// 当有客户端连接
@@ -519,14 +485,6 @@ namespace Net.Server
         protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client}]断开{(client.Redundant ? "冗余" : "")}连接!"); }
 
         /// <summary>
-        /// 当开始调用服务器RPC函数 或 开始调用自定义网络命令时 可设置请求客户端的client为全局字段，方便在服务器RPC函数内引用!!!
-        /// 在多线程时有1%不安全，当出现client赋值到其他玩家对象时，可在网络方法加<see langword="[Rpc(NetCmd.SafeCall)]"/>特性
-        /// </summary>
-        /// <param name="client">发送请求数据的客户端</param>
-        [Obsolete("请重写OnRpcExecute方法实现!")]
-        protected virtual void OnInvokeRpc(Player client) { }
-
-        /// <summary>
         /// 当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
         /// </summary>
         /// <param name="client">当前客户端</param>
@@ -545,13 +503,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="client">当前客户端</param>
         /// <param name="list">操作列表</param>
-        protected virtual void OnOperationSync(Player client, OperationList list)
-        {
-            if (client.OnOperationSync(list))
-                return;
-            if (client.Scene is Scene scene)
-                scene.OnOperationSync(client, list);
-        }
+        protected virtual void OnOperationSync(Player client, OperationList list) { }
 
         /// <summary>
         /// 当客户端发送的大数据时, 可监听此事件显示进度值
@@ -589,15 +541,7 @@ namespace Net.Server
         /// 当客户端使用场景转发命令会调用此方法
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void OnSceneRelay(Player client, RPCModel model)
-        {
-            if (!(client.Scene is Scene scene))
-            {
-                client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
-                return;
-            }
-            Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
-        }
+        protected virtual void OnSceneRelay(Player client, RPCModel model) { }
 
         /// <summary>
         /// 当客户端使用公告转发命令会调用此方法
@@ -645,15 +589,7 @@ namespace Net.Server
 #endif
         }
 
-        protected virtual void AddDefaultScene()
-        {
-            var scene = OnAddDefaultScene();
-            if (scene != null)
-            {
-                MainSceneName = scene.Name;
-                CreateScene(scene);
-            }
-        }
+        protected virtual void AddDefaultScene() { }
 
         protected virtual void AddLoopEvent()
         {
@@ -661,12 +597,7 @@ namespace Net.Server
             ThreadManager.Invoke("CheckOnLinePlayers", 1000 * 60 * 10, CheckOnLinePlayers);
         }
 
-        protected virtual void CreateSceneTickThread()
-        {
-            var thread = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneTickHandle" };
-            thread.Start();
-            ServerThreads.Add("SceneTickHandle", thread);
-        }
+        protected virtual void CreateSceneTickThread() { }
 
         protected virtual void CreateOtherThread() { }
 
@@ -719,83 +650,7 @@ namespace Net.Server
         /// <summary>
         /// 网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
         /// </summary>
-        protected virtual void SceneUpdateHandle()
-        {
-            var timer = new TimerTick();
-            uint tick = (uint)Environment.TickCount;
-            uint fpsTick = tick + 1000;
-            while (IsRunServer)
-            {
-                try
-                {
-                    tick = (uint)Environment.TickCount;
-                    if (timer.CheckTimeout(tick, (uint)SyncSceneTime, true))
-                    {
-                        var result = Parallel.ForEach(Scenes.Values, scene =>
-                        {
-                            try
-                            {
-                                scene.UpdateLock(this, NetCmd.OperationSync);
-                                scene.currFps++;
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.LogError("场景轮询异常:" + ex);
-                            }
-                        });
-                        while (!result.IsCompleted)
-                        {
-                            Thread.Sleep(1);
-                        }
-                    }
-                    if (tick >= fpsTick)
-                    {
-                        foreach (var scene in Scenes.Values)
-                        {
-                            scene.preFps = scene.currFps;
-                            scene.currFps = 0;
-                        }
-                        fpsTick = tick + 1000;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("场景更新异常:" + ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 调用服务器单线程, 每帧调用
-        /// </summary>
-        /// <param name="ptr"></param>
-        /// <returns>可用于结束事件的id</returns>
-        public int Invoke(Func<bool> ptr)
-        {
-            return ThreadManager.Invoke(0, ptr);
-        }
-
-        /// <summary>
-        /// 调用服务器单线程
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="ptr"></param>
-        /// <returns>可用于结束事件的id</returns>
-        public int Invoke(float time, Action ptr)
-        {
-            return ThreadManager.Event.AddEvent(time, ptr);
-        }
-
-        /// <summary>
-        /// 调用服务器单线程计算器, 如果不返回false, 就会每time秒调用
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="ptr"></param>
-        /// <returns>可用于结束事件的id</returns>
-        public int Invoke(float time, Func<bool> ptr)
-        {
-            return ThreadManager.Invoke(time, ptr);
-        }
+        protected virtual void SceneUpdateHandle() { }
 
         /// <summary>
         /// 流量统计线程
@@ -1067,17 +922,6 @@ namespace Net.Server
             segment.Write(Version);
             SendRT(client, NetCmd.Identify, segment.ToArray(true));
         }
-
-#if TEST1
-        internal void ReceiveTest(byte[] buffer)//本机测试
-        {
-            var client = UIDClients[10000];
-            var segment = new Segment(buffer, false);
-            receiveCount += segment.Count;
-            receiveAmount++;
-            client.revdQueue.Enqueue(new RevdDataBuffer() { client = client, buffer = segment, tcp_udp = true });
-        }
-#endif
 
         protected virtual void DataCRCHandler(Player client, ISegment buffer, bool isTcp)
         {
@@ -1719,246 +1563,6 @@ namespace Net.Server
         }
 
         /// <summary>
-        /// 创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-        /// </summary>
-        /// <param name="player">创建网络场景的玩家实体</param>
-        /// <param name="name">要创建的场景号或场景名称</param>
-        /// <returns></returns>
-        public Scene CreateScene(Player player, string name)
-        {
-            return CreateScene(player, name, new Scene() { Name = name });
-        }
-
-        /// <summary>
-        /// 创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-        /// </summary>
-        /// <param name="player">创建网络场景的玩家实体</param>
-        /// <param name="scene">创建场景的实体</param>
-        /// <returns></returns>
-        public Scene CreateScene(Player player, Scene scene)
-        {
-            return CreateScene(player, scene.Name, scene);
-        }
-
-        /// <summary>
-        /// 创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-        /// </summary>
-        /// <param name="player">创建网络场景的玩家实体</param>
-        /// <param name="name">要创建的场景号或场景名称</param>
-        /// <param name="scene">创建场景的实体</param>
-        /// <returns></returns>
-        public Scene CreateScene(Player player, string name, Scene scene)
-        {
-            scene.Name = name;
-            return CreateScene(player, scene, out _);
-        }
-
-        public Scene CreateScene(Player player, Scene scene, out Scene oldScene)
-        {
-            oldScene = player.Scene as Scene;
-            if (string.IsNullOrEmpty(scene.Name))
-                return null;
-            if (Scenes.TryAdd(scene.Name, scene))
-            {
-                if (oldScene != null)
-                    oldScene.Remove(player);
-                OnSceneGroupSet(scene);
-                scene.AddPlayer(player);
-                scene.onSerializeOpt = OnSerializeOpt;
-                scene.onSerializeRpc = OnSerializeRPC;
-                return scene;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public Scene CreateScene(string name)
-        {
-            return CreateScene(name, new Scene());
-        }
-
-        /// <summary>
-        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="scene"></param>
-        /// <returns></returns>
-        public Scene CreateScene(string name, Scene scene)
-        {
-            scene.Name = name;
-            return CreateScene(scene);
-        }
-
-        /// <summary>
-        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="scene"></param>
-        /// <returns></returns>
-        public Scene CreateScene(Scene scene)
-        {
-            if (string.IsNullOrEmpty(scene.Name))
-            {
-                Debug.LogError("创建的场景必须给名称,场景名称必须是唯一的!");
-                return null;
-            }
-            if (Scenes.TryAdd(scene.Name, scene))
-            {
-                OnSceneGroupSet(scene);
-                scene.onSerializeOpt = OnSerializeOpt;
-                scene.onSerializeRpc = OnSerializeRPC;
-                return scene;
-            }
-            return null;
-        }
-
-        protected virtual void OnSceneGroupSet(Scene scene)
-        {
-        }
-
-        /// <summary>
-        /// 退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
-        /// </summary>
-        /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
-        /// <returns></returns>
-        public Scene JoinScene(Player player, string name) => SwitchScene(player, name);
-
-        public Scene JoinScene(Player player, Scene scene) => SwitchScene(player, scene);
-
-        /// <summary>
-        /// 进入场景 - 成功进入返回true，进入失败返回false
-        /// </summary>
-        /// <param name="player">要进入sceneID场景的玩家实体</param>
-        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
-        /// <returns></returns>
-        public Scene EnterScene(Player player, string name) => SwitchScene(player, name);
-
-        public Scene EnterScene(Player player, Scene scene) => SwitchScene(player, scene);
-
-        /// <summary>
-        /// 切换场景
-        /// </summary>
-        /// <param name="player">要操作的玩家</param>
-        /// <param name="name">场景名称</param>
-        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
-        public Scene SwitchScene(Player player, string name)
-        {
-            return SwitchScene(player, name, out _);
-        }
-
-        /// <summary>
-        /// 切换场景
-        /// </summary>
-        /// <param name="player">要操作的玩家</param>
-        /// <param name="name">场景名称</param>
-        /// <param name="oldScene">上次所在的场景</param>
-        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
-        public Scene SwitchScene(Player player, string name, out Scene oldScene)
-        {
-            oldScene = player.Scene as Scene;
-            if (string.IsNullOrEmpty(name))
-                return null;
-            if (oldScene != null)
-                if (oldScene.Name == name) //如果已经在这个场景, 直接返回对象
-                    return oldScene;
-            if (Scenes.TryGetValue(name, out Scene scene1))
-                return SwitchScene(player, scene1, out _);
-            return null;
-        }
-
-        /// <summary>
-        /// 切换场景
-        /// </summary>
-        /// <param name="player">要操作的玩家</param>
-        /// <param name="enterScene">要进入的场景</param>
-        /// <returns>进入的场景</returns>
-        public Scene SwitchScene(Player player, Scene enterScene)
-        {
-            return SwitchScene(player, enterScene, out _);
-        }
-
-        /// <summary>
-        /// 切换场景
-        /// </summary>
-        /// <param name="player">要操作的玩家</param>
-        /// <param name="enterScene">要进入的场景</param>
-        /// <param name="oldScene">上次所在的场景</param>
-        /// <returns>进入的场景</returns>
-        public Scene SwitchScene(Player player, Scene enterScene, out Scene oldScene)
-        {
-            oldScene = player.Scene as Scene;
-            if (oldScene != null)
-                oldScene.Remove(player);
-            enterScene.AddPlayer(player);
-            return enterScene;
-        }
-
-        /// <summary>
-        /// 退出场景 exitCurrentSceneCall回调时已经不包含player对象
-        /// </summary>
-        /// <param name="player"></param>
-        /// <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-        public void ExitScene(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
-        {
-            RemoveScenePlayer(player, isEntMain, exitCurrentSceneCall);
-        }
-
-        /// <summary>
-        /// 移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
-        /// </summary>
-        /// <param name="name">要移除的场景id</param>
-        /// <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-        /// <returns></returns>
-        public bool RemoveScene(string name, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
-        {
-            if (Scenes.TryRemove(name, out Scene scene))
-            {
-                exitCurrentSceneCall?.Invoke(scene);
-                if (addToMainScene)
-                {
-                    var mainScene = Scenes[MainSceneName];
-                    if (mainScene != null)
-                        mainScene.AddPlayers(scene.Players);
-                }
-                scene.RemoveScene();
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 将玩家从当前所在的场景移除掉， 移除之后此客户端将会进入默认主场景 call回调时已经不包含player对象
-        /// </summary>
-        /// <param name="player">要执行的玩家实体</param>
-        /// <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
-        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-        /// <returns></returns>
-        public bool RemoveScenePlayer(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
-        {
-            if (string.IsNullOrEmpty(player.SceneName))
-                return false;
-            if (Scenes.TryGetValue(player.SceneName, out Scene scene))
-            {
-                scene.Remove(player);
-                exitCurrentSceneCall?.Invoke(scene);
-                if (isEntMain)
-                {
-                    Scene mainScene = Scenes[MainSceneName];
-                    mainScene.AddPlayer(player);
-                }
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
         /// 从所有在线玩家字典中删除(移除)玩家实体
         /// </summary>
         /// <param name="player"></param>
@@ -1982,7 +1586,7 @@ namespace Net.Server
             UIDClients.TryRemove(client.UserID, out _);
             OnRemoveClientHandle(client);
             client.OnRemoveClient();
-            ExitScene(client, false);
+            ExitSceneHandler(client);
             client.Dispose();
             if (client.UserID > 0)
                 UserIDStack.Push(client.UserID);
@@ -1997,16 +1601,6 @@ namespace Net.Server
                 client1.QueueUpNo = 0;
                 SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
             }
-        }
-
-        /// <summary>
-        /// 场景是否存在?
-        /// </summary>
-        /// <param name="sceneID"></param>
-        /// <returns></returns>
-        public bool IsHasScene(string sceneID)
-        {
-            return Scenes.ContainsKey(sceneID);
         }
 
         /// <summary>
@@ -2437,11 +2031,6 @@ namespace Net.Server
             RpcHelper.RemoveRpc(this, target);
         }
 
-        //public void CheckRpc() 
-        //{
-        //    RpcHelper.CheckRpc(this);
-        //}
-
         /// <summary>
         /// playerID玩家是否在线?
         /// </summary>
@@ -2487,7 +2076,7 @@ namespace Net.Server
         protected void SignOutInternal(Player client)
         {
             SendDirect(client);
-            ExitScene(client, false);
+            ExitSceneHandler(client);
             OnSignOut(client);
             client.OnSignOut();
             client.Login = false;
@@ -2729,5 +2318,425 @@ namespace Net.Server
         {
             client.DataQueueOverflowError++;
         }
+
+        /// <summary>
+        /// 退出场景处理
+        /// </summary>
+        protected virtual void ExitSceneHandler(Player client) { }
+    }
+
+    /// <summary>
+    /// 网络服务器核心基类 2019.11.22
+    /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+    /// <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+    /// </summary>
+    public abstract class ServerBase<Player, Scene> : ServerBase<Player>, IServerHandle<Player, Scene> 
+        where Player : NetPlayer, new() 
+        where Scene : NetScene<Player>, new()
+    {
+        #region 属性
+        /// <summary>
+        /// 服务器场景，key是场景名或房间名，关卡名。 value是(场景或房间，关卡等)对象
+        /// </summary>
+        public ConcurrentDictionary<string, Scene> Scenes { get; set; } = new ConcurrentDictionary<string, Scene>();
+        /// <summary>
+        /// 网络服务器单例
+        /// </summary>
+        public new static ServerBase<Player, Scene> Instance { get; protected set; }
+        #endregion
+
+        /// <summary>
+        /// 构造网络服务器函数
+        /// </summary>
+        public ServerBase()
+        {
+        }
+
+        #region 索引
+        /// <summary>
+        /// 场景索引
+        /// </summary>
+        /// <param name="sceneID"></param>
+        /// <returns></returns>
+        public Scene this[string sceneID] => Scenes[sceneID];
+
+        /// <summary>
+        /// 获得所有服务器场景
+        /// </summary>
+        /// <returns></returns>
+        public List<Scene> GetScenes()
+        {
+            return new List<Scene>(Scenes.Values);
+        }
+        #endregion
+
+        #region 重写方法
+        /// <summary>
+        /// 当添加默认网络场景，服务器初始化后会默认创建一个主场景，供所有玩家刚登陆成功分配的临时场景，默认初始化场景人数为1000人
+        /// </summary>
+        /// <returns>返回值string：网络玩家所在的场景名称 , 返回值NetScene：网络玩家的场景对象</returns>
+        protected virtual Scene OnAddDefaultScene()
+        {
+            return new Scene { Name = MainSceneName, sceneCapacity = 1000 };
+        }
+
+        /// <summary>
+        /// 当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
+        /// </summary>
+        /// <param name="client"></param>
+        protected override void OnAddPlayerToScene(Player client)
+        {
+            if (Scenes.TryGetValue(MainSceneName, out Scene scene))
+            {
+                scene.AddPlayer(client);//将网络玩家添加到主场景集合中
+            }
+        }
+
+        /// <summary>
+        /// 当接收到客户端使用<see cref="Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
+        /// </summary>
+        /// <param name="client">当前客户端</param>
+        /// <param name="list">操作列表</param>
+        protected override void OnOperationSync(Player client, OperationList list)
+        {
+            if (client.OnOperationSync(list))
+                return;
+            if (client.Scene is Scene scene)
+                scene.OnOperationSync(client, list);
+        }
+
+        /// <summary>
+        /// 当客户端使用场景转发命令会调用此方法
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="model"></param>
+        protected override void OnSceneRelay(Player client, RPCModel model)
+        {
+            if (!(client.Scene is Scene scene))
+            {
+                client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                return;
+            }
+            Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+        }
+        #endregion
+
+        protected override void AddDefaultScene()
+        {
+            var scene = OnAddDefaultScene();
+            if (scene != null)
+            {
+                MainSceneName = scene.Name;
+                CreateScene(scene);
+            }
+        }
+
+        protected override void CreateSceneTickThread()
+        {
+            var thread = new Thread(SceneUpdateHandle) { IsBackground = true, Name = "SceneTickHandle" };
+            thread.Start();
+            ServerThreads.Add("SceneTickHandle", thread);
+        }
+
+        /// <summary>
+        /// 网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
+        /// </summary>
+        protected override void SceneUpdateHandle()
+        {
+            var timer = new TimerTick();
+            uint tick = (uint)Environment.TickCount;
+            uint fpsTick = tick + 1000;
+            while (IsRunServer)
+            {
+                try
+                {
+                    tick = (uint)Environment.TickCount;
+                    if (timer.CheckTimeout(tick, (uint)SyncSceneTime, true))
+                    {
+                        var result = Parallel.ForEach(Scenes.Values, scene =>
+                        {
+                            try
+                            {
+                                scene.UpdateLock(this, NetCmd.OperationSync);
+                                scene.currFps++;
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogError("场景轮询异常:" + ex);
+                            }
+                        });
+                        while (!result.IsCompleted)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }
+                    if (tick >= fpsTick)
+                    {
+                        foreach (var scene in Scenes.Values)
+                        {
+                            scene.preFps = scene.currFps;
+                            scene.currFps = 0;
+                        }
+                        fpsTick = tick + 1000;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("场景更新异常:" + ex);
+                }
+            }
+        }
+
+        #region 场景API
+        /// <summary>
+        /// 创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+        /// </summary>
+        /// <param name="player">创建网络场景的玩家实体</param>
+        /// <param name="name">要创建的场景号或场景名称</param>
+        /// <returns></returns>
+        public Scene CreateScene(Player player, string name)
+        {
+            return CreateScene(player, name, new Scene() { Name = name });
+        }
+
+        /// <summary>
+        /// 创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+        /// </summary>
+        /// <param name="player">创建网络场景的玩家实体</param>
+        /// <param name="scene">创建场景的实体</param>
+        /// <returns></returns>
+        public Scene CreateScene(Player player, Scene scene)
+        {
+            return CreateScene(player, scene.Name, scene);
+        }
+
+        /// <summary>
+        /// 创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+        /// </summary>
+        /// <param name="player">创建网络场景的玩家实体</param>
+        /// <param name="name">要创建的场景号或场景名称</param>
+        /// <param name="scene">创建场景的实体</param>
+        /// <returns></returns>
+        public Scene CreateScene(Player player, string name, Scene scene)
+        {
+            scene.Name = name;
+            return CreateScene(player, scene, out _);
+        }
+
+        public Scene CreateScene(Player player, Scene scene, out Scene oldScene)
+        {
+            oldScene = player.Scene as Scene;
+            if (string.IsNullOrEmpty(scene.Name))
+                return null;
+            if (Scenes.TryAdd(scene.Name, scene))
+            {
+                if (oldScene != null)
+                    oldScene.Remove(player);
+                OnSceneGroupSet(scene);
+                scene.AddPlayer(player);
+                scene.onSerializeOpt = OnSerializeOpt;
+                scene.onSerializeRpc = OnSerializeRPC;
+                return scene;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Scene CreateScene(string name)
+        {
+            return CreateScene(name, new Scene());
+        }
+
+        /// <summary>
+        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        public Scene CreateScene(string name, Scene scene)
+        {
+            scene.Name = name;
+            return CreateScene(scene);
+        }
+
+        /// <summary>
+        /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        public Scene CreateScene(Scene scene)
+        {
+            if (string.IsNullOrEmpty(scene.Name))
+            {
+                Debug.LogError("创建的场景必须给名称,场景名称必须是唯一的!");
+                return null;
+            }
+            if (Scenes.TryAdd(scene.Name, scene))
+            {
+                OnSceneGroupSet(scene);
+                scene.onSerializeOpt = OnSerializeOpt;
+                scene.onSerializeRpc = OnSerializeRPC;
+                return scene;
+            }
+            return null;
+        }
+
+        protected virtual void OnSceneGroupSet(Scene scene)
+        {
+        }
+
+        /// <summary>
+        /// 退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
+        /// </summary>
+        /// <param name="player">要进入sceneID场景的玩家实体</param>
+        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
+        /// <returns></returns>
+        public Scene JoinScene(Player player, string name) => SwitchScene(player, name);
+
+        public Scene JoinScene(Player player, Scene scene) => SwitchScene(player, scene);
+
+        /// <summary>
+        /// 进入场景 - 成功进入返回true，进入失败返回false
+        /// </summary>
+        /// <param name="player">要进入sceneID场景的玩家实体</param>
+        /// <param name="name">场景ID，要切换到的场景号或场景名称</param>
+        /// <returns></returns>
+        public Scene EnterScene(Player player, string name) => SwitchScene(player, name);
+
+        public Scene EnterScene(Player player, Scene scene) => SwitchScene(player, scene);
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="name">场景名称</param>
+        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        public Scene SwitchScene(Player player, string name)
+        {
+            return SwitchScene(player, name, out _);
+        }
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="name">场景名称</param>
+        /// <param name="oldScene">上次所在的场景</param>
+        /// <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        public Scene SwitchScene(Player player, string name, out Scene oldScene)
+        {
+            oldScene = player.Scene as Scene;
+            if (string.IsNullOrEmpty(name))
+                return null;
+            if (oldScene != null)
+                if (oldScene.Name == name) //如果已经在这个场景, 直接返回对象
+                    return oldScene;
+            if (Scenes.TryGetValue(name, out Scene scene1))
+                return SwitchScene(player, scene1, out _);
+            return null;
+        }
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="enterScene">要进入的场景</param>
+        /// <returns>进入的场景</returns>
+        public Scene SwitchScene(Player player, Scene enterScene)
+        {
+            return SwitchScene(player, enterScene, out _);
+        }
+
+        /// <summary>
+        /// 切换场景
+        /// </summary>
+        /// <param name="player">要操作的玩家</param>
+        /// <param name="enterScene">要进入的场景</param>
+        /// <param name="oldScene">上次所在的场景</param>
+        /// <returns>进入的场景</returns>
+        public Scene SwitchScene(Player player, Scene enterScene, out Scene oldScene)
+        {
+            oldScene = player.Scene as Scene;
+            if (oldScene != null)
+                oldScene.Remove(player);
+            enterScene.AddPlayer(player);
+            return enterScene;
+        }
+
+        /// <summary>
+        /// 退出场景 exitCurrentSceneCall回调时已经不包含player对象
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
+        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+        public void ExitScene(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
+        {
+            RemoveScenePlayer(player, isEntMain, exitCurrentSceneCall);
+        }
+
+        /// <summary>
+        /// 移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
+        /// </summary>
+        /// <param name="name">要移除的场景id</param>
+        /// <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
+        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+        /// <returns></returns>
+        public bool RemoveScene(string name, bool addToMainScene = true, Action<Scene> exitCurrentSceneCall = null)
+        {
+            if (Scenes.TryRemove(name, out Scene scene))
+            {
+                exitCurrentSceneCall?.Invoke(scene);
+                if (addToMainScene)
+                {
+                    var mainScene = Scenes[MainSceneName];
+                    if (mainScene != null)
+                        mainScene.AddPlayers(scene.Players);
+                }
+                scene.RemoveScene();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 将玩家从当前所在的场景移除掉， 移除之后此客户端将会进入默认主场景 call回调时已经不包含player对象
+        /// </summary>
+        /// <param name="player">要执行的玩家实体</param>
+        /// <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
+        /// <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+        /// <returns></returns>
+        public bool RemoveScenePlayer(Player player, bool isEntMain = true, Action<Scene> exitCurrentSceneCall = null)
+        {
+            if (string.IsNullOrEmpty(player.SceneName))
+                return false;
+            if (Scenes.TryGetValue(player.SceneName, out Scene scene))
+            {
+                scene.Remove(player);
+                exitCurrentSceneCall?.Invoke(scene);
+                if (isEntMain)
+                {
+                    Scene mainScene = Scenes[MainSceneName];
+                    mainScene.AddPlayer(player);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 场景是否存在?
+        /// </summary>
+        /// <param name="sceneID"></param>
+        /// <returns></returns>
+        public bool IsHasScene(string sceneID)
+        {
+            return Scenes.ContainsKey(sceneID);
+        }
+        #endregion
     }
 }

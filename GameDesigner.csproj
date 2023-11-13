@@ -287,10 +287,6 @@
     <Compile Include="GameDesigner\Network\core\Unity\Vector2.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector3.cs" />
     <Compile Include="GameDesigner\Network\core\Unity\Vector4.cs" />
-    <Compile Include="GameDesigner\Network\Editor\DebugTools.cs" />
-    <Compile Include="GameDesigner\Network\Editor\ExternalReferenceTool.cs" />
-    <Compile Include="GameDesigner\Network\Editor\Fast2BuildTool.cs" />
-    <Compile Include="GameDesigner\Network\Editor\InvokeHelperTools.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Client\TcpClient.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Client\UdpClient.cs" />
     <Compile Include="GameDesigner\Network\Gcp~\Plugins\GcpKernel.cs" />
@@ -307,6 +303,8 @@
     <Compile Include="GameDesigner\Network\Udx~\Server\UdxServer.cs" />
     <Compile Include="GameDesigner\Network\Udx~\UDX\UdxLib.cs" />
     <Compile Include="GameDesigner\Network\Web~\Client\WebClient.cs" />
+    <Compile Include="GameDesigner\Network\Web~\Server\HttpPlayer.cs" />
+    <Compile Include="GameDesigner\Network\Web~\Server\HttpServer.cs" />
     <Compile Include="GameDesigner\Network\Web~\Server\WebPlayer.cs" />
     <Compile Include="GameDesigner\Network\Web~\Server\WebServer.cs" />
     <Compile Include="GameDesigner\Network\Web~\WebsocketSharp\ByteOrder.cs" />
