@@ -1,7 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using System;
+using System.Net;
 using Net.Client;
-using Net.Event;
 using Net.Helper;
 using Net.Share;
 using UnityEngine;
