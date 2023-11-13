@@ -335,7 +335,7 @@ namespace Net.Client
         /// <summary>
         /// 同步线程上下文任务队列
         /// </summary>
-        public QueueSafe<IThreadArgs> WorkerQueue = new QueueSafe<IThreadArgs>();
+        public JobQueueHelper WorkerQueue = new JobQueueHelper();
         /// <summary>
         /// 接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
@@ -674,11 +674,8 @@ namespace Net.Client
         /// </summary>
         public void NetworkUpdate()
         {
-            int count = WorkerQueue.Count;
-            for (int i = 0; i < count; i++)
-                if (WorkerQueue.TryDequeue(out var callback))
-                    callback.Invoke();
-            count = RpcWorkQueue.Count;
+            WorkerQueue.Execute();
+            var count = RpcWorkQueue.Count;
             for (int i = 0; i < count; i++)
             {
                 if (RpcWorkQueue.TryDequeue(out IRPCData buffer))
@@ -903,17 +900,17 @@ namespace Net.Client
 
         protected void InvokeInMainThread(Action action)
         {
-            WorkerQueue.Enqueue(new ThreadSpan(action));
+            WorkerQueue.Call(action);
         }
 
         protected void InvokeInMainThread<T>(Action<T> action, T arg)
         {
-            WorkerQueue.Enqueue(new ThreadArgsGeneric<T>(action, arg));
+            WorkerQueue.Call(action, arg);
         }
 
         protected void InvokeInMainThread<T, T1>(Action<T, T1> action, T arg1, T1 arg2)
         {
-            WorkerQueue.Enqueue(new ThreadArgsGeneric<T, T1>(action, arg1, arg2));
+            WorkerQueue.Call(action, arg1, arg2);
         }
 
         /// <summary>
@@ -985,7 +982,7 @@ namespace Net.Client
                 StartThread("NetworkProcessing", NetworkProcessing);
             else
 #endif
-            singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
+                singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
             networkTickID = LoopEvent.AddEvent("NetworkTick", 0, NetworkTick);
             networkFlowHandlerID = LoopEvent.AddEvent("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = LoopEvent.AddEvent("HeartHandler", HeartInterval, HeartHandler);

@@ -125,7 +125,7 @@ namespace Net.Config
             init = true;
             var configPath = ConfigPath + "/network.config";
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-            Unity.UnityThreadContext.Invoke((o) => _ = LoadConfigFile(o.ToString()), configPath);
+            Unity.UnityThreadContext.Call((configPath) => _ = LoadConfigFile(configPath), configPath);
 #else
             if (File.Exists(configPath))
             {

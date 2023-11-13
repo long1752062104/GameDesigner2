@@ -1,28 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Net.System;
+using Net.Helper;
 using UnityEngine.LowLevel;
 
 namespace Net.Unity
 {
-    readonly struct UnityThreadContextData
-    {
-        public readonly Action<object> action;
-        public readonly object arg;
-
-        public UnityThreadContextData(Action<object> action, object arg)
-        {
-            this.action = action;
-            this.arg = arg;
-        }
-
-        internal void Invoke()
-        {
-            action?.Invoke(arg);
-        }
-    }
-
     /// <summary>
     /// Unity主线程中心, 当多线程在主线程调用时可以使用Call或Invoke方法
     /// </summary>
@@ -36,7 +19,7 @@ namespace Net.Unity
         /// unity主线程id
         /// </summary>
         public static int MainThreadId => mainThreadId;
-        private static UnityThreadContextLoopRunner runner;
+        private static JobQueueHelper runner;
 
         static UnityThreadContext()
         {
@@ -48,11 +31,11 @@ namespace Net.Unity
         {
             mainThreadId = Thread.CurrentThread.ManagedThreadId;
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            runner = new UnityThreadContextLoopRunner();
+            runner = new JobQueueHelper();
             var runnerLoop = new PlayerLoopSystem
             {
                 type = runner.GetType(),
-                updateDelegate = runner.Run
+                updateDelegate = runner.Execute
             };
             var copyList = new List<PlayerLoopSystem>(playerLoop.subSystemList)
             {
@@ -66,20 +49,42 @@ namespace Net.Unity
         /// 在Unity主线程调用
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="arg"></param>
-        public static void Call(Action<object> action, object arg = null) => Invoke(action, arg);
+        public static void Call(Action action)
+        {
+            if (Thread.CurrentThread.ManagedThreadId == mainThreadId)
+                action();
+            else
+                runner.Call(action);
+        }
 
         /// <summary>
         /// 在Unity主线程调用
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="action"></param>
         /// <param name="arg"></param>
-        public static void Invoke(Action<object> action, object arg = null)
+        public static void Call<T>(Action<T> action, T arg)
         {
             if (Thread.CurrentThread.ManagedThreadId == mainThreadId)
                 action(arg);
             else
-                runner.WorkQueue.Enqueue(new UnityThreadContextData(action, arg));
+                runner.Call(action, arg);
+        }
+
+        /// <summary>
+        /// 在Unity主线程调用
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="arg1"></param>
+        /// <param name="arg2"></param>
+        public static void Call<T, T1>(Action<T, T1> action, T arg1, T1 arg2)
+        {
+            if (Thread.CurrentThread.ManagedThreadId == mainThreadId)
+                action(arg1, arg2);
+            else
+                runner.Call(action, arg1, arg2);
         }
 
         /// <summary>
@@ -94,27 +99,14 @@ namespace Net.Unity
                 return ptr();
             var complete = false;
             T result = default;
-            runner.WorkQueue.Enqueue(new UnityThreadContextData((arg) =>
+            runner.Call((arg) =>
             {
-                try { result = ((Func<T>)arg).Invoke(); }
+                try { result = arg.Invoke(); }
                 finally { complete = true; }
-            }, ptr));
+            }, ptr);
             while (!complete)
                 Thread.Sleep(1);
             return result;
-        }
-    }
-
-    class UnityThreadContextLoopRunner
-    {
-        internal QueueSafe<UnityThreadContextData> WorkQueue = new QueueSafe<UnityThreadContextData>();
-
-        internal void Run()
-        {
-            while (WorkQueue.TryDequeue(out var contextData))
-            {
-                contextData.Invoke();
-            }
         }
     }
 }

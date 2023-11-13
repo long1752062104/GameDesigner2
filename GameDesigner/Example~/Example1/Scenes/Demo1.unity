@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748171, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -169,6 +169,7 @@ MonoBehaviour:
   registerObjects:
   - {fileID: 4847355157178916962, guid: 620281380f4a5e2488aa5e1506ef2e10, type: 3}
   onExitDelectAll: 1
+  waitDestroyList: []
 --- !u!4 &133550540
 Transform:
   m_ObjectHideFlags: 0
@@ -179,6 +180,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -272,6 +274,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -318,6 +321,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 20, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -331,6 +335,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1508966928}
+  - component: {fileID: 1508966931}
   - component: {fileID: 1508966927}
   - component: {fileID: 1508966930}
   m_Layer: 0
@@ -356,14 +361,20 @@ MonoBehaviour:
   ip: 127.0.0.1
   port: 9543
   localTest: 0
-  logMode: 1
   debugRpc: 1
-  frameRate: 60
   authorize: 0
   startConnect: 1
-  md5CRC: 0
+  singleThread: 0
   reconnectCount: 10
   reconnectInterval: 2000
+  heartLimit: 5
+  heartInterval: 1000
+  webSetting:
+    scheme: ws
+    sslProtocols: 0
+    pfxPath: 
+    password: 
+  dontDestroyOnLoad: 1
 --- !u!4 &1508966928
 Transform:
   m_ObjectHideFlags: 0
@@ -374,6 +385,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -391,7 +403,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 4
-  isEncrypt: 0
+--- !u!114 &1508966931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508966926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73321eaf521b62a46b5772def811a952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logMode: 1
 --- !u!1001 &1803060355
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -536,6 +560,7 @@ Transform:
   m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
   m_LocalPosition: {x: 0, y: 20, z: -35}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0

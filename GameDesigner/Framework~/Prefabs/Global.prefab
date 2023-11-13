@@ -202,6 +202,7 @@ GameObject:
   - component: {fileID: 7599921650345442015}
   - component: {fileID: 4587307809564096770}
   - component: {fileID: 5583643705473538055}
+  - component: {fileID: 6413150380459871410}
   m_Layer: 0
   m_Name: Global
   m_TagString: Untagged
@@ -381,7 +382,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db691785b001ca84da86bec494fe3db6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logMode: 1
   clients:
   - name: GameClient
     protocol: 0
@@ -391,11 +391,16 @@ MonoBehaviour:
     debugRpc: 1
     authorize: 0
     startConnect: 1
+    singleThread: 0
     reconnectCount: 10
     reconnectInterval: 2000
     heartLimit: 5
     heartInterval: 1000
-    scheme: ws
+    webSetting:
+      scheme: ws
+      sslProtocols: 0
+      pfxPath: 
+      password: 
 --- !u!114 &1357167453226861322
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -445,6 +450,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20163aad90dffba4983339d8ac2b3caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6413150380459871410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4109322260658001645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73321eaf521b62a46b5772def811a952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logMode: 1
 --- !u!1 &4109322260782628951
 GameObject:
   m_ObjectHideFlags: 0

@@ -60,11 +60,11 @@ namespace Example1
 
         private void OnDestroy()
         {
+            ThreadManager.Event.RemoveEvent(pingId);
             if (ClientBase.Instance == null)
                 return;
             ClientBase.Instance.OnOperationSync -= OnOperationSync;
             ClientBase.Instance.OnPingCallback -= PingCall;
-            ThreadManager.Event.RemoveEvent(pingId);
         }
     }
 }

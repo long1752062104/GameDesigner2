@@ -1,6 +1,5 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using System;
-using System.Net;
 using Net.Client;
 using Net.Event;
 using Net.Helper;
@@ -65,7 +64,6 @@ namespace Net.Component
 #if UNITY_EDITOR
         public bool localTest;
 #endif
-        public LogMode logMode = LogMode.Default;
         public bool debugRpc = true;
         public bool authorize;
         public bool startConnect = true;
@@ -124,38 +122,8 @@ namespace Net.Component
         // Use this for initialization
         protected virtual void Start()
         {
-#if !UNITY_EDITOR && UNITY_SERVER
-            NDebug.BindLogAll(Console.WriteLine);
-#else
-            BindLog();
-#endif
             if (startConnect)
                 Connect();
-        }
-
-        private void BindLog()
-        {
-            switch (logMode)
-            {
-                case LogMode.Default:
-                    NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
-                    break;
-                case LogMode.LogAll:
-                    NDebug.BindLogAll(Debug.Log);
-                    break;
-                case LogMode.LogAndWarning:
-                    NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
-                    break;
-                case LogMode.WarnAndError:
-                    NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
-                    break;
-                case LogMode.OnlyError:
-                    NDebug.BindLogAll(null, null, Debug.LogError);
-                    break;
-                case LogMode.OnlyWarnAndError:
-                    NDebug.BindLogAll(null, Debug.LogError, Debug.LogError);
-                    break;
-            }
         }
 
         public UniTask<bool> Connect()
@@ -195,27 +163,6 @@ namespace Net.Component
             if (!mainInstance)
                 return;
             _client?.Close();
-            switch (logMode)
-            {
-                case LogMode.Default:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
-                    break;
-                case LogMode.LogAll:
-                    NDebug.RemoveLogAll(Debug.Log);
-                    break;
-                case LogMode.LogAndWarning:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
-                    break;
-                case LogMode.WarnAndError:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
-                    break;
-                case LogMode.OnlyError:
-                    NDebug.RemoveLogAll(null, null, Debug.LogError);
-                    break;
-                case LogMode.OnlyWarnAndError:
-                    NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
-                    break;
-            }
         }
 
         /// <summary>
@@ -263,7 +210,7 @@ namespace Net.Component
 
         public static void CallUnity(Action ptr)
         {
-            I.client.WorkerQueue.Enqueue(new ThreadSpan(ptr));
+            I.client.WorkerQueue.Call(ptr);
         }
 
         #region 发送接口实现

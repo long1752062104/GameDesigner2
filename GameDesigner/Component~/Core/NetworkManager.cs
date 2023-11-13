@@ -59,11 +59,13 @@ namespace Net.Component
         public UniTask<bool> Connect()
         {
             _client = Client;
+#if !UNITY_WEBGL
             var ips = Dns.GetHostAddresses(ip);
             if (ips.Length > 0)
                 _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
             else
-                _client.host = ip;
+#endif
+            _client.host = ip;
 #if UNITY_EDITOR
             if (localTest) _client.host = "127.0.0.1";
 #endif
@@ -85,10 +87,8 @@ namespace Net.Component
         }
     }
 
-    public class NetworkManager : SingleCase<NetworkManager>
+    public class NetworkManagerBase : MonoBehaviour
     {
-        public LogMode logMode = LogMode.Default;
-        public bool dontDestroyOnLoad = true;
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
@@ -100,46 +100,20 @@ namespace Net.Component
             set { clients[index].Client = value; }
         }
 
-        protected override void Awake()
+        public virtual void Awake()
         {
-            base.Awake();
-            if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
-            Application.runInBackground = true;
         }
 
         // Use this for initialization
-        void Start()
+        public virtual void Start()
         {
-            switch (logMode)
-            {
-                case LogMode.Default:
-                    NDebug.BindLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
-                    break;
-                case LogMode.LogAll:
-                    NDebug.BindLogAll(Debug.Log);
-                    break;
-                case LogMode.LogAndWarning:
-                    NDebug.BindLogAll(Debug.Log, Debug.Log, Debug.LogError);
-                    break;
-                case LogMode.WarnAndError:
-                    NDebug.BindLogAll(Debug.Log, Debug.LogError, Debug.LogError);
-                    break;
-                case LogMode.OnlyError:
-                    NDebug.BindLogAll(null, null, Debug.LogError);
-                    break;
-                case LogMode.OnlyWarnAndError:
-                    NDebug.BindLogAll(null, Debug.LogError, Debug.LogError);
-                    break;
-            }
             foreach (var client in clients)
-            {
                 if (client.startConnect)
                     client.Connect();
-            }
         }
 
         // Update is called once per frame
-        void Update()
+        public virtual void Update()
         {
             for (int i = 0; i < clients.Count; i++)
             {
@@ -149,7 +123,7 @@ namespace Net.Component
             }
         }
 
-        void OnDestroy()
+        public virtual void OnDestroy()
         {
             for (int i = 0; i < clients.Count; i++)
             {
@@ -157,32 +131,11 @@ namespace Net.Component
                     continue;
                 clients[i]._client.Close();
             }
-            switch (logMode)
-            {
-                case LogMode.Default:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.LogWarning, Debug.LogError);
-                    break;
-                case LogMode.LogAll:
-                    NDebug.RemoveLogAll(Debug.Log);
-                    break;
-                case LogMode.LogAndWarning:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.Log, Debug.LogError);
-                    break;
-                case LogMode.WarnAndError:
-                    NDebug.RemoveLogAll(Debug.Log, Debug.LogError, Debug.LogError);
-                    break;
-                case LogMode.OnlyError:
-                    NDebug.RemoveLogAll(null, null, Debug.LogError);
-                    break;
-                case LogMode.OnlyWarnAndError:
-                    NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
-                    break;
-            }
         }
 
-        public static void BindNetworkAll(INetworkHandle handle)
+        public void BindNetworkAll(INetworkHandle handle)
         {
-            foreach (var item in I.clients)
+            foreach (var item in clients)
             {
                 item.Client.BindNetworkHandle(handle);
             }
@@ -192,18 +145,18 @@ namespace Net.Component
         /// 添加索引0的客户端rpc, 也就是1的客户端
         /// </summary>
         /// <param name="target"></param>
-        public static void AddRpcOne(object target)
+        public void AddRpcOne(object target)
         {
-            I.clients[0].Client.AddRpc(target);
+            clients[0].Client.AddRpc(target);
         }
 
         /// <summary>
         /// 添加索引1的客户端, 也就是2的客户端
         /// </summary>
         /// <param name="target"></param>
-        public static void AddRpcTwo(object target)
+        public void AddRpcTwo(object target)
         {
-            I.clients[1].Client.AddRpc(target);
+            clients[1].Client.AddRpc(target);
         }
 
         /// <summary>
@@ -211,33 +164,30 @@ namespace Net.Component
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <param name="target"></param>
-        public static void AddRpc(int clientIndex, object target)
+        public void AddRpc(int clientIndex, object target)
         {
             if (clientIndex < 0)
-                foreach (var item in I.clients)
+                foreach (var item in clients)
                     item.Client.AddRpc(target);
-            else I.clients[clientIndex].Client.AddRpc(target);
+            else clients[clientIndex].Client.AddRpc(target);
         }
 
         /// <summary>
         /// 移除索引0的客户端rpc, 也就是1的客户端
         /// </summary>
         /// <param name="target"></param>
-        public static void RemoveRpcOne(object target)
+        public void RemoveRpcOne(object target)
         {
-            I.clients[0].Client.RemoveRpc(target);
+            clients[0].Client.RemoveRpc(target);
         }
 
         /// <summary>
         /// 移除索引1的客户端rpc, 也就是2的客户端
         /// </summary>
         /// <param name="target"></param>
-        public static void RemoveRpcTwo(object target)
+        public void RemoveRpcTwo(object target)
         {
-            var i = Instance;
-            if (i == null)
-                return;
-            i.clients[1].Client.RemoveRpc(target);
+            clients[1].Client.RemoveRpc(target);
         }
 
         /// <summary>
@@ -245,33 +195,54 @@ namespace Net.Component
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <param name="target"></param>
-        public static void RemoveRpc(int clientIndex, object target)
+        public void RemoveRpc(int clientIndex, object target)
         {
-            var i = Instance;
-            if (i == null)
-                return;
             if (clientIndex < 0)
-                foreach (var item in i.clients)
+                foreach (var item in clients)
                     item.Client.RemoveRpc(target);
-            else i.clients[clientIndex].Client.RemoveRpc(target);
+            else clients[clientIndex].Client.RemoveRpc(target);
         }
 
-        public static void Close(bool v1, int v2)
+        public void Close(bool v1, int v2)
         {
-            foreach (var item in I.clients)
+            foreach (var item in clients)
             {
                 item.Client.Close(v1, v2);
             }
         }
 
-        public static void CallUnity(Action ptr)
+        public void CallUnity(Action ptr)
         {
-            I.clients[0].Client.WorkerQueue.Enqueue(new ThreadSpan(ptr));
+            clients[0].Client.WorkerQueue.Call(ptr);
         }
 
-        public static void DispatcherRpc(ushort hash, params object[] parms)
+        public void DispatcherRpc(ushort hash, params object[] parms)
         {
-            I.clients[1].Client.DispatchRpc(hash, parms);
+            clients[1].Client.DispatchRpc(hash, parms);
+        }
+    }
+
+    public class NetworkManager : NetworkManagerBase
+    {
+        private static NetworkManager instance;
+        public static NetworkManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = FindObjectOfType<NetworkManager>();
+                return instance;
+            }
+        }
+        public static NetworkManager I => Instance;
+        public bool dontDestroyOnLoad = true;
+
+        public override void Awake()
+        {
+            instance = this;
+            if (dontDestroyOnLoad)
+                DontDestroyOnLoad(gameObject);
+            Application.runInBackground = true;
         }
     }
 }

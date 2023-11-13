@@ -75,13 +75,9 @@ namespace Net.System
                 playerLoop.subSystemList = copyList.ToArray();
                 PlayerLoop.SetPlayerLoop(playerLoop);
             }
-#if !UNITY_WEBGL //在webgl平台下 必须是主线程
-            else //解决有的Unity不改代码每次运行不会调用静态构造函数导致的问题
-            {
-                Init();
-                Start();
-            }
-#endif
+            //解决优化模式每次运行不会重新加载程序集调用静态构造函数导致的问题
+            Init();
+            Start();
         }
 
         private static void Start()
@@ -149,7 +145,7 @@ namespace Net.System
             }
         }
 
-        public static int Invoke(Func<bool> ptr, bool isAsync = false) 
+        public static int Invoke(Func<bool> ptr, bool isAsync = false)
         {
             return Event.AddEvent(0, ptr, isAsync);
         }
@@ -183,7 +179,7 @@ namespace Net.System
     /// <summary>
     /// 事件管理器
     /// </summary>
-    public class EventManager 
+    public class EventManager
     {
         /// <summary>
         /// 计时事件属性

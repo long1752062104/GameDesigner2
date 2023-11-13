@@ -176,7 +176,7 @@
             }
         }
 
-        internal void UpdateLock(IServerSendHandle<Player> handle, byte cmd) 
+        public void UpdateLock(IServerSendHandle<Player> handle, byte cmd) 
         {
             lock (this) //解决多线程问题
             {

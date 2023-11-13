@@ -116,10 +116,7 @@ public class ImportSettingWindow : EditorWindow
 
         EditorGUILayout.HelpBox("NetworkComponents模块 封装了一套完整的客户端网络组件", MessageType.Info);
         path = pathRoot + "Component";
-        DrawGUI(path, "NetworkComponent", "Component~", "Component", () =>
-        {
-            Import("Common~", "Common", pathRoot);//依赖
-        }, pathRoot);
+        DrawGUI(path, "NetworkComponent", "Component~", "Component", null, pathRoot);
 
         EditorGUILayout.HelpBox("MVC模块 可用于帧同步设计，视图，逻辑分离", MessageType.Info);
         path = pathRoot + "MVC";
@@ -128,10 +125,6 @@ public class ImportSettingWindow : EditorWindow
         EditorGUILayout.HelpBox("ECS模块 可用于双端的独立代码运行", MessageType.Info);
         path = pathRoot + "ECS";
         DrawGUI(path, "ECS", "ECS~", "ECS", null, pathRoot);
-
-        EditorGUILayout.HelpBox("Common模块 常用模块", MessageType.Info);
-        path = pathRoot + "Common";
-        DrawGUI(path, "Common", "Common~", "Common", null, pathRoot);
 
         EditorGUILayout.HelpBox("MMORPG模块 用于MMORPG设计怪物点, 巡逻点, 地图数据等", MessageType.Info);
         path = pathRoot + "MMORPG";
@@ -172,7 +165,6 @@ public class ImportSettingWindow : EditorWindow
         {
             Import("Network/Gcp~", "Network/Gcp", pathRoot);
             Import("Component~", "Component", pathRoot);
-            Import("Common~", "Common", pathRoot);
         }
         EditorGUILayout.HelpBox("所有模块导入", MessageType.Warning);
         if (GUILayout.Button("所有模块导入", GUILayout.Height(20)))
@@ -185,7 +177,6 @@ public class ImportSettingWindow : EditorWindow
             Import("StateMachine~", "StateMachine", pathRoot);
             Import("MVC~", "MVC", pathRoot);
             Import("ECS~", "ECS", pathRoot);
-            Import("Common~", "Common", pathRoot);
             Import("MMORPG~", "MMORPG", pathRoot);
             Import("AOI~", "AOI", pathRoot);
             Import("Recast~", "Recast", pathRoot);
@@ -203,7 +194,6 @@ public class ImportSettingWindow : EditorWindow
             Import("StateMachine~", "StateMachine", pathRoot);
             Import("MVC~", "MVC", pathRoot);
             Import("ECS~", "ECS", pathRoot);
-            Import("Common~", "Common", pathRoot);
             Import("MMORPG~", "MMORPG", pathRoot);
             Import("AOI~", "AOI", pathRoot);
             Import("Recast~", "Recast", pathRoot);
@@ -221,7 +211,6 @@ public class ImportSettingWindow : EditorWindow
             ReImport("StateMachine~", "StateMachine", pathRoot);
             ReImport("MVC~", "MVC", pathRoot);
             ReImport("ECS~", "ECS", pathRoot);
-            ReImport("Common~", "Common", pathRoot);
             ReImport("MMORPG~", "MMORPG", pathRoot);
             ReImport("AOI~", "AOI", pathRoot);
             ReImport("Recast~", "Recast", pathRoot);
@@ -241,7 +230,6 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("StateMachine~", "StateMachine", pathRoot);
                 ReverseImport("MVC~", "MVC", pathRoot);
                 ReverseImport("ECS~", "ECS", pathRoot);
-                ReverseImport("Common~", "Common", pathRoot);
                 ReverseImport("MMORPG~", "MMORPG", pathRoot);
                 ReverseImport("AOI~", "AOI", pathRoot);
                 ReverseImport("Recast~", "Recast", pathRoot);

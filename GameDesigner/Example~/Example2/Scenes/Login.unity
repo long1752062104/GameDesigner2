@@ -626,6 +626,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1254267027}
+  - component: {fileID: 1254267028}
   - component: {fileID: 1254267026}
   - component: {fileID: 1254267025}
   m_Layer: 0
@@ -648,8 +649,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 4
-  isEncrypt: 0
-  password: 758426581
 --- !u!114 &1254267026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -666,7 +665,6 @@ MonoBehaviour:
   ip: 192.168.1.7
   port: 9543
   localTest: 0
-  logMode: 1
   debugRpc: 1
   authorize: 0
   startConnect: 1
@@ -681,7 +679,6 @@ MonoBehaviour:
     pfxPath: 
     password: 
   dontDestroyOnLoad: 1
-  dedicatedServer: 0
 --- !u!4 &1254267027
 Transform:
   m_ObjectHideFlags: 0
@@ -697,6 +694,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1254267028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254267024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73321eaf521b62a46b5772def811a952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logMode: 1
 --- !u!1 &1458482645
 GameObject:
   m_ObjectHideFlags: 0
