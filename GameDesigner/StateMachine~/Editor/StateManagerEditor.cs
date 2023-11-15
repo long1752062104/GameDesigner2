@@ -54,13 +54,17 @@ namespace GameDesigner
                     stateMachine.animator = stateManager.GetComponentInChildren<Animator>();
                 if (stateMachine.animator != null)
                 {
-                    var clips = stateMachine.animator.runtimeAnimatorController.animationClips;
-                    if (stateMachine.clipNames.Count != clips.Length)
+                    if (stateMachine.animator.runtimeAnimatorController is UnityEditor.Animations.AnimatorController controller)
                     {
-                        stateMachine.clipNames.Clear();
-                        foreach (var clip in clips)
+                        var layer = controller.layers[0];
+                        var states = layer.stateMachine.states;
+                        if (stateMachine.clipNames.Count != states.Length)
                         {
-                            stateMachine.clipNames.Add(clip.name);
+                            stateMachine.clipNames.Clear();
+                            foreach (var state in states)
+                            {
+                                stateMachine.clipNames.Add(state.state.name);
+                            }
                         }
                     }
                 }
