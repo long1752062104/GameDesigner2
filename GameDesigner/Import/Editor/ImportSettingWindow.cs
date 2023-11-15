@@ -288,6 +288,9 @@ public class ImportSettingWindow : EditorWindow
             Debug.LogError("找不到路径:" + path);
             return;
         }
+        var commonPath = $"{pluginsPath}/Common/";
+        if (Directory.Exists(commonPath))
+            try { Directory.Delete(commonPath, true); } catch { } //删除Common文件夹, 因为Common已经内置了
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
         foreach (var file in files)
         {
