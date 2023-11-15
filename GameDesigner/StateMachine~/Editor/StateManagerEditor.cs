@@ -41,14 +41,9 @@ namespace GameDesigner
                 if (stateMachine.animation != null)
                 {
                     var clips = AnimationUtility.GetAnimationClips(stateMachine.animation.gameObject);
-                    if (stateMachine.clipNames.Count != clips.Length)
-                    {
-                        stateMachine.clipNames.Clear();
-                        foreach (var clip in clips)
-                        {
-                            stateMachine.clipNames.Add(clip.name);
-                        }
-                    }
+                    stateMachine.clipNames.Clear();
+                    foreach (var clip in clips)
+                        stateMachine.clipNames.Add(clip.name);
                 }
                 if (stateMachine.animator == null)
                     stateMachine.animator = stateManager.GetComponentInChildren<Animator>();
@@ -58,14 +53,9 @@ namespace GameDesigner
                     {
                         var layer = controller.layers[0];
                         var states = layer.stateMachine.states;
-                        if (stateMachine.clipNames.Count != states.Length)
-                        {
-                            stateMachine.clipNames.Clear();
-                            foreach (var state in states)
-                            {
-                                stateMachine.clipNames.Add(state.state.name);
-                            }
-                        }
+                        stateMachine.clipNames.Clear();
+                        foreach (var state in states)
+                            stateMachine.clipNames.Add(state.state.name);
                     }
                 }
 #if SHADER_ANIMATED
