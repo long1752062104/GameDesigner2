@@ -472,9 +472,9 @@
         /// <summary>
         /// 绑定控制台输出
         /// </summary>
-        public static void BindConsoleLog(bool collapse = true)
+        public static void BindConsoleLog(bool collapse = true, int logOutputMax = 1000)
         {
-            BindDebug(new ConsoleDebug(collapse));
+            BindDebug(new ConsoleDebug(collapse) { count = logOutputMax });
         }
 
         /// <summary>
