@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Object = UnityEngine.Object;
 using UnityEngine;
 using Framework;
+using System.Linq;
 
-namespace Framework 
+namespace Framework
 {
     public class ObjectPool : MonoBehaviour
     {
@@ -63,47 +64,29 @@ public static class ObjectPoolExt
     public static void RecyclingObjects<T>(this List<T> self) where T : Object
     {
         for (int i = 0; i < self.Count; i++)
-        {
-            if (self[i] != null)
-            {
-                Global.Pool.Recycling(self[i]);
-                if (self[i] is GameObject go)
-                    go.SetActive(false);
-                else if (self[i] is Component com)
-                    com.gameObject.SetActive(false);
-            }
-        }
+            self[i]?.RecyclingObject();
         self.Clear();
+    }
+
+    public static void RecyclingObject<T>(this T self) where T : Object
+    {
+        Global.Pool.Recycling(self);
+        if (self is GameObject go)
+            go.SetActive(false);
+        else if (self is Component com)
+            com.gameObject.SetActive(false);
     }
 
     public static void RecyclingObjects<T>(this T[] self) where T : Object
     {
         for (int i = 0; i < self.Length; i++)
-        {
-            if (self[i] != null)
-            {
-                Global.Pool.Recycling(self[i]);
-                if (self[i] is GameObject go)
-                    go.SetActive(false);
-                else if (self[i] is Component com)
-                    com.gameObject.SetActive(false);
-            }
-        }
+            self[i]?.RecyclingObject();
     }
 
     public static void RecyclingObjects<Key, Value>(this Dictionary<Key, Value> self) where Value : Object
     {
         foreach (var item in self)
-        {
-            if (item.Value != null)
-            {
-                Global.Pool.Recycling(item.Value);
-                if (item.Value is GameObject go)
-                    go.SetActive(false);
-                else if (item.Value is Component com)
-                    com.gameObject.SetActive(false);
-            }
-        }
+            item.Value?.RecyclingObject();
         self.Clear();
     }
 }

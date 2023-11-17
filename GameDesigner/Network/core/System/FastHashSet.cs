@@ -1316,7 +1316,11 @@ namespace Net.System
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException("不能移除索引!");
+            if (m_slots[index].hashCode >= 0)
+            {
+                T value = m_slots[index].value;
+                Remove(value);
+            }
         }
 
         #endregion
