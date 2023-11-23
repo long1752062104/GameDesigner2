@@ -40,11 +40,16 @@ namespace MVC.View
     }
 
     [CustomEditor(typeof(FieldCollection))]
+    [CanEditMultipleObjects]
     public class FieldCollectionEdit : Editor
     {
+        private FieldCollection self;
+        private Vector2 scrollPosition;
+
         private void OnEnable()
         {
-            FieldCollectionEntity.OnEnable(target as FieldCollection);
+            self = target as FieldCollection;
+            FieldCollectionEntity.OnEnable(self);
         }
 
         private void OnDisable()
@@ -54,9 +59,37 @@ namespace MVC.View
 
         public override void OnInspectorGUI()
         {
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+            for (int i = 0; i < self.fields.Count; i++)
+            {
+                var field1 = self.fields[i];
+                EditorGUILayout.BeginHorizontal();
+                EditorGUI.BeginChangeCheck();
+                field1.name = EditorGUILayout.TextField(field1.name, GUI.skin.label, GUILayout.MaxWidth(100));
+                if (field1.typeNames == null)
+                    field1.Update();
+                field1.componentIndex = EditorGUILayout.Popup(field1.componentIndex, field1.typeNames, GUILayout.MaxWidth(200));
+                field1.typeName = field1.typeNames[field1.componentIndex];
+                field1.target = EditorGUILayout.ObjectField(field1.target, field1.Type, true);
+                if (GUILayout.Button("x", GUILayout.Width(25)))
+                {
+                    self.fields.RemoveAt(i);
+                    EditorUtility.SetDirty(self);
+                }
+                if (EditorGUI.EndChangeCheck())
+                {
+                    field1.Update();
+                    EditorUtility.SetDirty(self);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            GUILayout.EndScrollView();
             if (GUILayout.Button("打开收集器界面"))
-                FieldCollectionWindow.Init(target as FieldCollection);
-            FieldCollectionEntity.OnDragGUI();
+                FieldCollectionWindow.Init(self);
+            if (GUILayout.Button("生成脚本(hotfix)"))
+                FieldCollectionEntity.CodeGenerationHotfix(self);
+            if (GUILayout.Button("生成脚本(主工程)"))
+                FieldCollectionEntity.CodeGenerationMain(self);
         }
     }
 
@@ -186,7 +219,7 @@ namespace MVC.View
                                 selectObject = objects[objects.Count - 1];
                                 AddField(objects[objects.Count - 1].GetType().ToString());
                             }
-                            else if (obj is Component component) 
+                            else if (obj is Component component)
                             {
                                 selectObject = component;
                                 AddField(component.GetType().ToString());
@@ -295,7 +328,6 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                //相对于Assets路径
                 path = PathHelper.GetRelativePath(Application.dataPath, path, true);
                 if (!data.savePath.Contains(path))
                 {
@@ -315,7 +347,6 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                //相对于Assets路径
                 path = PathHelper.GetRelativePath(Application.dataPath, path, true);
                 if (!data.savePathExt.Contains(path))
                 {
@@ -329,8 +360,7 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
                 var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                //相对于Assets路径
-                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path);
+                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, true);
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();
@@ -348,8 +378,14 @@ namespace MVC.View
             field.genericType = EditorGUILayout.Toggle("继承泛型", field.genericType);
             field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.inheritTypes.ToArray());
             if (GUILayout.Button("生成脚本(hotfix)"))
-            {
-                var codeTemplate = @"namespace {nameSpace} 
+                CodeGenerationHotfix(field);
+            if (GUILayout.Button("生成脚本(主工程)"))
+                CodeGenerationMain(field);
+        }
+
+        internal static void CodeGenerationHotfix(FieldCollection field)
+        {
+            var codeTemplate = @"namespace {nameSpace} 
 {
 --
     public partial class {typeName} : {inherit}
@@ -368,7 +404,7 @@ namespace MVC.View
     }
 --
 }";
-                var codeTemplate1 = @"namespace {nameSpace} 
+            var codeTemplate1 = @"namespace {nameSpace} 
 {
 --
     public partial class {typeName}
@@ -388,175 +424,176 @@ namespace MVC.View
     }
 --
 }";
-                string scriptCode;
+            string scriptCode;
+            {
+                var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                if (string.IsNullOrEmpty(field.fieldName))
+                    field.fieldName = field.name;
+                codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
+                var typeName = field.fieldName;
+                codeTemplate = codeTemplate.Replace("{typeName}", typeName);
+                var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+                codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
+                var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                var sb = new StringBuilder();
+                var sb1 = new StringBuilder();
+                if (hasns)
+                    sb.Append(codes[0]);
+                sb.Append(codes[1]);
+                for (int i = 0; i < field.fields.Count; i++)
                 {
-                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
-                    if (string.IsNullOrEmpty(field.fieldName))
-                        field.fieldName = field.name;
-                    codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
-                    var typeName = field.fieldName;
-                    codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
-                    codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
-                    var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
-                    var sb = new StringBuilder();
-                    var sb1 = new StringBuilder();
-                    if (hasns)
-                        sb.Append(codes[0]);
-                    sb.Append(codes[1]);
-                    for (int i = 0; i < field.fields.Count; i++)
+                    var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
+                    fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                    sb.Append(fieldCode);
+
+                    fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                    fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                    fieldCode = fieldCode.Replace("{index}", i.ToString());
+                    sb1.Append(fieldCode);
+                }
+                sb.AppendLine();
+                sb.Append(codes[3]);
+                sb.Append(sb1.ToString());
+                sb.Append(codes[5]);
+                if (hasns)
+                    sb.Append(codes[6]);
+                scriptCode = sb.ToString();
+                if (!hasns)
+                {
+                    var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    sb.Clear();
+                    for (int i = 0; i < scriptCodes.Length; i++)
                     {
-                        var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
-                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                        if (scriptCodes[i].StartsWith("        "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        else if (scriptCodes[i].StartsWith("    "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        sb.AppendLine(scriptCodes[i]);
+                    }
+                    scriptCode = sb.ToString();
+                }
+                while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
+                    scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
+            }
+
+            string scriptCode1;
+            {
+                var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                if (string.IsNullOrEmpty(field.fieldName))
+                    field.fieldName = field.name;
+                codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
+                var typeName = field.fieldName;
+                codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
+                var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+                codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
+                var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                var sb = new StringBuilder();
+                var sb1 = new StringBuilder();
+                if (hasns)
+                    sb.Append(codes[0]);
+                sb.Append(codes[1]);
+                sb.Append(codes[2]);
+                for (int i = 0; i < field.fields.Count; i++)
+                {
+                    if (field.fields[i].Type == typeof(Button))
+                    {
+                        var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
+                        var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
                         sb.Append(fieldCode);
 
-                        fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
-                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
-                        fieldCode = fieldCode.Replace("{index}", i.ToString());
+                        fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
                         sb1.Append(fieldCode);
                     }
-                    sb.AppendLine();
-                    sb.Append(codes[3]);
-                    sb.Append(sb1.ToString());
-                    sb.Append(codes[5]);
-                    if (hasns)
-                        sb.Append(codes[6]);
-                    scriptCode = sb.ToString();
-                    if (!hasns)
+                    else if (field.fields[i].Type == typeof(Toggle))
                     {
-                        var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                        sb.Clear();
-                        for (int i = 0; i < scriptCodes.Length; i++)
-                        {
-                            if (scriptCodes[i].StartsWith("        "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            else if (scriptCodes[i].StartsWith("    "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            sb.AppendLine(scriptCodes[i]);
-                        }
-                        scriptCode = sb.ToString();
+                        var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
+                        var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                        sb.Append(fieldCode);
+
+                        fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
+                        sb1.Append(fieldCode);
                     }
-                    while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
-                        scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
                 }
-
-                string scriptCode1;
+                sb.Append(codes[4]);
+                sb.AppendLine();
+                sb.Append(sb1.ToString());
+                sb.Append(codes[6]);
+                if (hasns)
+                    sb.Append(codes[7]);
+                scriptCode1 = sb.ToString();
+                if (!hasns)
                 {
-                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
-                    if (string.IsNullOrEmpty(field.fieldName))
-                        field.fieldName = field.name;
-                    codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
-                    var typeName = field.fieldName;
-                    codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
-                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
-                    codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
-                    var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
-                    var sb = new StringBuilder();
-                    var sb1 = new StringBuilder();
-                    if (hasns)
-                        sb.Append(codes[0]);
-                    sb.Append(codes[1]);
-                    sb.Append(codes[2]);
-                    for (int i = 0; i < field.fields.Count; i++)
+                    var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    sb.Clear();
+                    for (int i = 0; i < scriptCodes.Length; i++)
                     {
-                        if (field.fields[i].Type == typeof(Button))
-                        {
-                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
-                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
-                            sb.Append(fieldCode);
-
-                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
-                            sb1.Append(fieldCode);
-                        }
-                        else if (field.fields[i].Type == typeof(Toggle))
-                        {
-                            var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
-                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
-                            sb.Append(fieldCode);
-
-                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
-                            sb1.Append(fieldCode);
-                        }
+                        if (scriptCodes[i].StartsWith("        "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        else if (scriptCodes[i].StartsWith("    "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        sb.AppendLine(scriptCodes[i]);
                     }
-                    sb.Append(codes[4]);
-                    sb.AppendLine();
-                    sb.Append(sb1.ToString());
-                    sb.Append(codes[6]);
-                    if (hasns)
-                        sb.Append(codes[7]);
                     scriptCode1 = sb.ToString();
-                    if (!hasns)
-                    {
-                        var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                        sb.Clear();
-                        for (int i = 0; i < scriptCodes.Length; i++)
-                        {
-                            if (scriptCodes[i].StartsWith("        "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            else if (scriptCodes[i].StartsWith("    "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            sb.AppendLine(scriptCodes[i]);
-                        }
-                        scriptCode1 = sb.ToString();
-                    }
-                    while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
-                        scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
                 }
-
-                var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    var path = files[0];
-                    File.WriteAllText(path, scriptCode);
-                    Debug.Log($"生成成功:{path}");
-                }
-                else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
-                {
-                    var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
-                    File.WriteAllText(path, scriptCode);
-                    Debug.Log($"生成成功:{path}");
-                }
-                var path1 = string.Empty;
-                var hasExt = false;
-                files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    path1 = files[0];
-                    hasExt = true;
-                }
-                else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
-                {
-                    path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
-                    hasExt = true;
-                }
-                if (hasExt)
-                {
-                    if (!File.Exists(path1))
-                    {
-                        File.WriteAllText(path1, scriptCode1);
-                    }
-                    else
-                    {
-                        var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "忽略", "尾部添加");
-                        switch (code)
-                        {
-                            case 0:
-                                File.WriteAllText(path1, scriptCode1);
-                                break;
-                            case 2:
-                                File.AppendAllText(path1, $"\r\n/*{scriptCode1}*/");
-                                break;
-                            default:
-                                goto J;
-                        }
-                    }
-                    Debug.Log($"生成成功:{path1}");
-                }
-                J: AssetDatabase.Refresh();
+                while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
+                    scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
             }
-            if (GUILayout.Button("生成脚本(主工程)"))
+
+            var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
+            if (files.Length > 0)
             {
-                var codeTemplate = @"namespace {nameSpace} 
+                var path = files[0];
+                File.WriteAllText(path, scriptCode);
+                Debug.Log($"生成成功:{path}");
+            }
+            else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
+            {
+                var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
+                File.WriteAllText(path, scriptCode);
+                Debug.Log($"生成成功:{path}");
+            }
+            var path1 = string.Empty;
+            var hasExt = false;
+            files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
+            if (files.Length > 0)
+            {
+                path1 = files[0];
+                hasExt = true;
+            }
+            else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
+            {
+                path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
+                hasExt = true;
+            }
+            if (hasExt)
+            {
+                if (!File.Exists(path1))
+                {
+                    File.WriteAllText(path1, scriptCode1);
+                }
+                else
+                {
+                    var code = EditorUtility.DisplayDialogComplex("写入脚本文件", "脚本已存在, 是否替换? 或 尾部添加?", "替换", "忽略", "尾部添加");
+                    switch (code)
+                    {
+                        case 0:
+                            File.WriteAllText(path1, scriptCode1);
+                            break;
+                        case 2:
+                            File.AppendAllText(path1, $"\r\n/*{scriptCode1}*/");
+                            break;
+                        default:
+                            goto J;
+                    }
+                }
+                Debug.Log($"生成成功:{path1}");
+            }
+        J: AssetDatabase.Refresh();
+        }
+
+        internal static void CodeGenerationMain(FieldCollection field)
+        {
+            var codeTemplate = @"namespace {nameSpace} 
 {
 --
     public partial class {typeName} : {inherit}
@@ -573,7 +610,7 @@ namespace MVC.View
     }
 --
 }";
-                var codeTemplate1 = @"namespace {nameSpace} 
+            var codeTemplate1 = @"namespace {nameSpace} 
 {
 --
     //项目需要用到UTF8编码进行保存, 默认情况下是中文编码(GB2312), 如果更新MVC后发现脚本的中文乱码则需要处理一下
@@ -596,226 +633,225 @@ namespace MVC.View
     }
 --
 }";
-                string scriptCode;
+            string scriptCode;
+            {
+                var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                if (string.IsNullOrEmpty(field.fieldName))
+                    field.fieldName = field.name;
+                codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
+                var typeName = field.fieldName;
+                codeTemplate = codeTemplate.Replace("{typeName}", typeName);
+                var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+                codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
+                var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                var sb = new StringBuilder();
+                var sb1 = new StringBuilder();
+                if (hasns)
+                    sb.Append(codes[0]);
+                sb.Append(codes[1]);
+                for (int i = 0; i < field.fields.Count; i++)
                 {
-                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
-                    if (string.IsNullOrEmpty(field.fieldName))
-                        field.fieldName = field.name;
-                    codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
-                    var typeName = field.fieldName;
-                    codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
-                    codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
-                    var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
-                    var sb = new StringBuilder();
-                    var sb1 = new StringBuilder();
-                    if (hasns)
-                        sb.Append(codes[0]);
-                    sb.Append(codes[1]);
-                    for (int i = 0; i < field.fields.Count; i++)
-                    {
-                        var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
-                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
-                        sb.Append(fieldCode);
+                    var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
+                    fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                    sb.Append(fieldCode);
 
-                        int index = -1;
-                        if (field.fields[i].Type == typeof(GameObject))
+                    int index = -1;
+                    if (field.fields[i].Type == typeof(GameObject))
+                    {
+                        fieldCode = codes[4].Replace("{fieldType}", "UnityEngine.Transform");
+                        fieldCode = fieldCode.Replace("{extend}", ".gameObject");
+                        var components = field.GetComponentsInChildren(typeof(Transform), true);
+                        for (int x = 0; x < components.Length; x++)
                         {
-                            fieldCode = codes[4].Replace("{fieldType}", "UnityEngine.Transform");
-                            fieldCode = fieldCode.Replace("{extend}", ".gameObject");
-                            var components = field.GetComponentsInChildren(typeof(Transform), true);
-                            for (int x = 0; x < components.Length; x++)
+                            if (components[x].gameObject == field.fields[i].target)
                             {
-                                if (components[x].gameObject == field.fields[i].target)
-                                {
-                                    index = x;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
-                            fieldCode = fieldCode.Replace("{extend}", "");
-                            var components = field.GetComponentsInChildren(field.fields[i].Type, true);
-                            for (int x = 0; x < components.Length; x++)
-                            {
-                                if (components[x] == field.fields[i].target)
-                                {
-                                    index = x;
-                                    break;
-                                }
-                            }
-                        }
-                        fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
-                        fieldCode = fieldCode.Replace("{index}", index.ToString());
-                        sb1.Append(fieldCode);
-                    }
-                    sb.AppendLine();
-                    sb.Append(codes[3]);
-                    sb.Append(sb1.ToString());
-                    sb.Append(codes[5]);
-                    if (hasns)
-                        sb.Append(codes[6]);
-                    scriptCode = sb.ToString();
-                    if (!hasns)
-                    {
-                        var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                        sb.Clear();
-                        for (int i = 0; i < scriptCodes.Length; i++)
-                        {
-                            if (scriptCodes[i].StartsWith("        "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            else if (scriptCodes[i].StartsWith("    "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            sb.AppendLine(scriptCodes[i]);
-                        }
-                        scriptCode = sb.ToString();
-                    }
-                    while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
-                        scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-                    var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
-                    if (files.Length > 0)
-                    {
-                        var path = files[0];
-                        File.WriteAllText(path, scriptCode);
-                        Debug.Log($"生成成功:{path}");
-                    }
-                    else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
-                    {
-                        var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
-                        File.WriteAllText(path, scriptCode);
-                        Debug.Log($"生成成功:{path}");
-                    }
-                }
-
-                string scriptCode1;
-                {
-                    var hasns = !string.IsNullOrEmpty(data.nameSpace);
-                    if (string.IsNullOrEmpty(field.fieldName))
-                        field.fieldName = field.name;
-                    codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
-                    var typeName = field.fieldName;
-                    codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
-                    var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
-                    codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
-                    var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
-                    var sb = new StringBuilder();
-                    var sb1 = new StringBuilder();
-                    if (hasns)
-                        sb.Append(codes[0]);
-                    sb.Append(codes[1]);
-                    sb.Append(codes[2]);
-                    for (int i = 0; i < field.fields.Count; i++)
-                    {
-                        if (field.fields[i].Type == typeof(Button))
-                        {
-                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
-                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
-                            sb.Append(fieldCode);
-
-                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
-                            sb1.Append(fieldCode);
-                        }
-                        else if (field.fields[i].Type == typeof(Toggle))
-                        {
-                            var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
-                            var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
-                            sb.Append(fieldCode);
-
-                            fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
-                            sb1.Append(fieldCode);
-                        }
-                    }
-                    sb.Append(codes[4]);
-                    sb.AppendLine();
-                    sb.Append(sb1.ToString());
-                    sb.Append(codes[6]);
-                    if (hasns)
-                        sb.Append(codes[7]);
-                    scriptCode1 = sb.ToString();
-                    if (!hasns)
-                    {
-                        var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                        sb.Clear();
-                        for (int i = 0; i < scriptCodes.Length; i++)
-                        {
-                            if (scriptCodes[i].StartsWith("        "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            else if (scriptCodes[i].StartsWith("    "))
-                                scriptCodes[i] = scriptCodes[i].Remove(0, 4);
-                            sb.AppendLine(scriptCodes[i]);
-                        }
-                        scriptCode1 = sb.ToString();
-                    }
-                    while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
-                        scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
-                    var path1 = string.Empty;
-                    var hasExt = false;
-                    var files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
-                    if (files.Length > 0)
-                    {
-                        path1 = files[0];
-                        hasExt = true;
-                        var lines = new List<string>(File.ReadAllLines(path1));
-                        int startIndex = 0;
-                        for (int i = 0; i < lines.Count; i++)
-                        {
-                            if (lines[i].Contains("private void Start()"))
-                            {
-                                startIndex = i + 2;
+                                index = x;
                                 break;
                             }
                         }
-                        for (int i = 0; i < field.fields.Count; i++)
+                    }
+                    else
+                    {
+                        fieldCode = codes[4].Replace("{fieldType}", field.fields[i].Type.ToString());
+                        fieldCode = fieldCode.Replace("{extend}", "");
+                        var components = field.GetComponentsInChildren(field.fields[i].Type, true);
+                        for (int x = 0; x < components.Length; x++)
                         {
-                            var isBtn = field.fields[i].Type == typeof(Button);
-                            var isToggle = field.fields[i].Type == typeof(Toggle);
-                            if (!isBtn & !isToggle)
-                                continue;
-                            var addListenerText = $"{field.fields[i].name}.onClick.AddListener";
-                            if (!Contains(lines, addListenerText))
+                            if (components[x] == field.fields[i].target)
                             {
-                                addListenerText = $"{field.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{field.fields[i].name}{(isBtn ? "Click" : "Changed")});";
-                                lines.Insert(startIndex, (hasns ? "            " : "        ") + addListenerText);
-                                startIndex++;
-                                var fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");
-                                var fieldCodes = fieldCode.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                                for (int x = 0; x < fieldCodes.Length; x++)
-                                {
-                                    var fieldCode2 = fieldCodes[x];
-                                    if (!hasns)
-                                    {
-                                        if (fieldCode2.StartsWith("        "))
-                                            fieldCode2 = fieldCode2.Remove(0, 4);
-                                        else if (fieldCode2.StartsWith("    "))
-                                            fieldCode2 = fieldCode2.Remove(0, 4);
-                                    }
-                                    lines.Insert(lines.Count - (hasns ? 2 : 1), fieldCode2);
-                                }
+                                index = x;
+                                break;
                             }
                         }
-                        scriptCode1 = "";
-                        for (int i = 0; i < lines.Count; i++)
-                            scriptCode1 += lines[i] + "\r\n";
                     }
-                    else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
+                    fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                    fieldCode = fieldCode.Replace("{index}", index.ToString());
+                    sb1.Append(fieldCode);
+                }
+                sb.AppendLine();
+                sb.Append(codes[3]);
+                sb.Append(sb1.ToString());
+                sb.Append(codes[5]);
+                if (hasns)
+                    sb.Append(codes[6]);
+                scriptCode = sb.ToString();
+                if (!hasns)
+                {
+                    var scriptCodes = scriptCode.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    sb.Clear();
+                    for (int i = 0; i < scriptCodes.Length; i++)
                     {
-                        path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
-                        hasExt = true;
+                        if (scriptCodes[i].StartsWith("        "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        else if (scriptCodes[i].StartsWith("    "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        sb.AppendLine(scriptCodes[i]);
                     }
-                    if (hasExt) 
+                    scriptCode = sb.ToString();
+                }
+                while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
+                    scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
+                var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
+                {
+                    var path = files[0];
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
+                }
+                else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
+                {
+                    var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
+                    File.WriteAllText(path, scriptCode);
+                    Debug.Log($"生成成功:{path}");
+                }
+            }
+
+            string scriptCode1;
+            {
+                var hasns = !string.IsNullOrEmpty(data.nameSpace);
+                if (string.IsNullOrEmpty(field.fieldName))
+                    field.fieldName = field.name;
+                codeTemplate1 = codeTemplate1.Replace("{nameSpace}", data.nameSpace);
+                var typeName = field.fieldName;
+                codeTemplate1 = codeTemplate1.Replace("{typeName}", typeName);
+                var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+                codeTemplate1 = codeTemplate1.Replace("{inherit}", inheritType);
+                var codes = codeTemplate1.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
+                var sb = new StringBuilder();
+                var sb1 = new StringBuilder();
+                if (hasns)
+                    sb.Append(codes[0]);
+                sb.Append(codes[1]);
+                sb.Append(codes[2]);
+                for (int i = 0; i < field.fields.Count; i++)
+                {
+                    if (field.fields[i].Type == typeof(Button))
                     {
-                        File.WriteAllText(path1, scriptCode1);
-                        Debug.Log($"生成成功:{path1}");
+                        var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
+                        var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                        sb.Append(fieldCode);
+
+                        fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
+                        sb1.Append(fieldCode);
+                    }
+                    else if (field.fields[i].Type == typeof(Toggle))
+                    {
+                        var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
+                        var fieldCode = codes[3].Replace("{AddListener}", addListenerText);
+                        sb.Append(fieldCode);
+
+                        fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
+                        sb1.Append(fieldCode);
                     }
                 }
-                AssetDatabase.Refresh();
-                field.compiling = true;
+                sb.Append(codes[4]);
+                sb.AppendLine();
+                sb.Append(sb1.ToString());
+                sb.Append(codes[6]);
+                if (hasns)
+                    sb.Append(codes[7]);
+                scriptCode1 = sb.ToString();
+                if (!hasns)
+                {
+                    var scriptCodes = scriptCode1.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    sb.Clear();
+                    for (int i = 0; i < scriptCodes.Length; i++)
+                    {
+                        if (scriptCodes[i].StartsWith("        "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        else if (scriptCodes[i].StartsWith("    "))
+                            scriptCodes[i] = scriptCodes[i].Remove(0, 4);
+                        sb.AppendLine(scriptCodes[i]);
+                    }
+                    scriptCode1 = sb.ToString();
+                }
+                while (scriptCode1.EndsWith("\n") | scriptCode1.EndsWith("\r"))
+                    scriptCode1 = scriptCode1.Remove(scriptCode1.Length - 1, 1);
+                var path1 = string.Empty;
+                var hasExt = false;
+                var files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
+                if (files.Length > 0)
+                {
+                    path1 = files[0];
+                    hasExt = true;
+                    var lines = new List<string>(File.ReadAllLines(path1));
+                    int startIndex = 0;
+                    for (int i = 0; i < lines.Count; i++)
+                    {
+                        if (lines[i].Contains("private void Start()"))
+                        {
+                            startIndex = i + 2;
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < field.fields.Count; i++)
+                    {
+                        var isBtn = field.fields[i].Type == typeof(Button);
+                        var isToggle = field.fields[i].Type == typeof(Toggle);
+                        if (!isBtn & !isToggle)
+                            continue;
+                        var addListenerText = $"{field.fields[i].name}.onClick.AddListener";
+                        if (!Contains(lines, addListenerText))
+                        {
+                            addListenerText = $"{field.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{field.fields[i].name}{(isBtn ? "Click" : "Changed")});";
+                            lines.Insert(startIndex, (hasns ? "            " : "        ") + addListenerText);
+                            startIndex++;
+                            var fieldCode = codes[5].Replace("{methodEvent}", $"On{field.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");
+                            var fieldCodes = fieldCode.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                            for (int x = 0; x < fieldCodes.Length; x++)
+                            {
+                                var fieldCode2 = fieldCodes[x];
+                                if (!hasns)
+                                {
+                                    if (fieldCode2.StartsWith("        "))
+                                        fieldCode2 = fieldCode2.Remove(0, 4);
+                                    else if (fieldCode2.StartsWith("    "))
+                                        fieldCode2 = fieldCode2.Remove(0, 4);
+                                }
+                                lines.Insert(lines.Count - (hasns ? 2 : 1), fieldCode2);
+                            }
+                        }
+                    }
+                    scriptCode1 = "";
+                    for (int i = 0; i < lines.Count; i++)
+                        scriptCode1 += lines[i] + "\r\n";
+                }
+                else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
+                {
+                    path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
+                    hasExt = true;
+                }
+                if (hasExt)
+                {
+                    File.WriteAllText(path1, scriptCode1);
+                    Debug.Log($"生成成功:{path1}");
+                }
             }
+            AssetDatabase.Refresh();
+            field.compiling = true;
         }
 
-        static bool Contains(List<string> list, string text) 
+        static bool Contains(List<string> list, string text)
         {
             for (int i = 0; i < list.Count; i++)
             {
