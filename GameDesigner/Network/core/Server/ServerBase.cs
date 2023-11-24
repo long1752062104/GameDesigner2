@@ -2703,6 +2703,11 @@ namespace Net.Server
             RemoveScenePlayer(player, isEntMain, exitCurrentSceneCall);
         }
 
+        protected override void ExitSceneHandler(Player client)
+        {
+            ExitScene(client, false);
+        }
+
         /// <summary>
         /// 移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
         /// </summary>
