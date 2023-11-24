@@ -67,7 +67,7 @@ namespace MVC.View
                 {
                     for (int i = 0; i < components.Length; i++)
                     {
-                        if (components[i].GetType() == Type) 
+                        if (components[i].GetType() == Type)
                         {
                             target = components[i];
                             componentIndex = i + 1; // +1是前面有gameobject
@@ -149,16 +149,6 @@ namespace MVC.View
             }
         }
 
-        public T GetField<T>(string name) where T : Object
-        {
-            return fieldsDic[name] as T;
-        }
-
-        public T GetField<T>(int index) where T : Object
-        {
-            return fields[index].target as T;
-        }
-
         public T Get<T>(string name) where T : Object
         {
             return fieldsDic[name] as T;
@@ -167,6 +157,16 @@ namespace MVC.View
         public T Get<T>(int index) where T : Object
         {
             return fields[index].target as T;
+        }
+
+        public void Set(string name, Object value)
+        {
+            fieldsDic[name] = value;
+        }
+
+        public void Set(int index, Object value)
+        {
+            fields[index].target = value;
         }
     }
 }
