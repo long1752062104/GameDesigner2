@@ -472,14 +472,13 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var path1 = string.Empty;
-            var hasExt = false;
-            var files = Directory.GetFiles("Assets", $"{field.fieldName}Ext.cs", SearchOption.AllDirectories);
-            if (files.Length > 0)
+            var path = data.SavePathExt(field.savePathExtInx);
+            if (string.IsNullOrEmpty(path))
+                return;
+            path += $"/{field.fieldName}Ext.cs";
+            if (File.Exists(path))
             {
-                path1 = files[0];
-                hasExt = true;
-                var lines = new List<string>(File.ReadAllLines(path1));
+                var lines = new List<string>(File.ReadAllLines(path));
                 int startIndex = 0;
                 for (int i = 0; i < lines.Count; i++)
                 {
@@ -520,16 +519,8 @@ namespace MVC.View
                 for (int i = 0; i < lines.Count; i++)
                     scriptCode += lines[i] + "\r\n";
             }
-            else if (!string.IsNullOrEmpty(data.SavePathExt(field.savePathExtInx)))
-            {
-                path1 = data.SavePathExt(field.savePathExtInx) + $"/{field.fieldName}Ext.cs";
-                hasExt = true;
-            }
-            if (hasExt)
-            {
-                File.WriteAllText(path1, scriptCode);
-                Debug.Log($"生成成功:{path1}");
-            }
+            File.WriteAllText(path, scriptCode);
+            Debug.Log($"生成成功:{path}");
         }
 
         private static void CodeGenerationFieldPart()
@@ -596,19 +587,12 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var files = Directory.GetFiles("Assets", $"{field.fieldName}.cs", SearchOption.AllDirectories);
-            if (files.Length > 0)
-            {
-                var path = files[0];
-                File.WriteAllText(path, scriptCode);
-                Debug.Log($"生成成功:{path}");
-            }
-            else if (!string.IsNullOrEmpty(data.SavePath(field.savePathInx)))
-            {
-                var path = data.SavePath(field.savePathInx) + $"/{field.fieldName}.cs";
-                File.WriteAllText(path, scriptCode);
-                Debug.Log($"生成成功:{path}");
-            }
+            var path = data.SavePath(field.savePathInx);
+            if (string.IsNullOrEmpty(path))
+                return;
+            path += $"/{field.fieldName}.cs";
+            File.WriteAllText(path, scriptCode);
+            Debug.Log($"生成成功:{path}");
         }
 
         private static bool Contains(List<string> list, string text)
