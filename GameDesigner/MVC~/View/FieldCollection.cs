@@ -86,7 +86,6 @@ namespace MVC.View
         public bool compiling;
         public int savePathInx;
         public int savePathExtInx;
-        public bool genericType;
         public int inheritTypeInx;
 #endif
         private bool init;

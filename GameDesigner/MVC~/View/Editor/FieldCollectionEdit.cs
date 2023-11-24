@@ -112,10 +112,54 @@ namespace MVC.View
             public bool addField;
             public bool seleAddField;
             internal string addInheritType;
-            public List<string> inheritTypes = new List<string>() { "Net.Component.SingleCase", "UnityEngine.MonoBehaviour" };
+            public List<InheritData> inheritTypes = new List<InheritData>()
+            {
+                new InheritData(false, "UnityEngine.MonoBehaviour"),
+                new InheritData(true, "Net.Component.SingleCase")
+            };
             internal string SavePath(int savePathIndex) => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
             internal string SavePathExt(int savePathExtIndex) => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
-            internal string InheritType(int index) => inheritTypes[index];
+            internal InheritData InheritType(int index) => inheritTypes[index];
+            private string[] inheritTypesStr = new string[0];
+            internal string[] InheritTypesStr
+            {
+                get
+                {
+                    if (inheritTypesStr.Length != inheritTypes.Count)
+                    {
+                        inheritTypesStr = new string[inheritTypes.Count];
+                        for (int i = 0; i < inheritTypesStr.Length; i++)
+                            inheritTypesStr[i] = inheritTypes[i].inheritType;
+                    }
+                    return inheritTypesStr;
+                }
+            }
+        }
+
+        public class InheritData
+        {
+            public bool genericType;
+            public string inheritType;
+
+            public InheritData() { }
+
+            public InheritData(bool genericType, string inheritType)
+            {
+                this.genericType = genericType;
+                this.inheritType = inheritType;
+            }
+
+            public override int GetHashCode()
+            {
+                return inheritType.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is InheritData obj1)
+                    return GetHashCode() == obj1.GetHashCode();
+                return false;
+            }
         }
 
         internal static void OnEnable(FieldCollection target)
@@ -326,7 +370,7 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                path = PathHelper.GetRelativePath(Application.dataPath, path, true);
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
@@ -345,7 +389,7 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                path = PathHelper.GetRelativePath(Application.dataPath, path, true);
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);
@@ -358,23 +402,25 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
                 var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, true);
+                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();
             data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
             if (GUILayout.Button("添加", GUILayout.Width(50f)))
             {
-                if (!data.inheritTypes.Contains(data.addInheritType))
-                    data.inheritTypes.Add(data.addInheritType);
+                var inheritData = new InheritData(false, data.addInheritType);
+                if (!data.inheritTypes.Contains(inheritData))
+                    data.inheritTypes.Add(inheritData);
             }
             if (GUILayout.Button("删除", GUILayout.Width(50f)))
             {
-                data.inheritTypes.Remove(data.addInheritType);
+                data.inheritTypes.Remove(new InheritData(false, data.addInheritType));
             }
             EditorGUILayout.EndHorizontal();
-            field.genericType = EditorGUILayout.Toggle("继承泛型", field.genericType);
-            field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.inheritTypes.ToArray());
+            var inheritData1 = data.InheritType(field.inheritTypeInx);
+            field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.InheritTypesStr);
+            inheritData1.genericType = EditorGUILayout.Toggle("继承泛型", inheritData1.genericType);
             if (GUILayout.Button("代码生成"))
                 CodeGeneration(field);
         }
@@ -422,7 +468,8 @@ namespace MVC.View
             codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
             var typeName = field.fieldName;
             codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-            var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+            var inheritData = data.InheritType(field.inheritTypeInx);
+            var inheritType = inheritData.genericType ? $"{inheritData.inheritType}<{typeName}>" : inheritData.inheritType;
             codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
             var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
             var codeText = new StringBuilder();
@@ -554,7 +601,8 @@ namespace MVC.View
             codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
             var typeName = field.fieldName;
             codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-            var inheritType = field.genericType ? $"{data.InheritType(field.inheritTypeInx)}<{typeName}>" : data.InheritType(field.inheritTypeInx);
+            var inheritData = data.InheritType(field.inheritTypeInx);
+            var inheritType = inheritData.genericType ? $"{inheritData.inheritType}<{typeName}>" : inheritData.inheritType;
             codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
             var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
             var codeText = new StringBuilder();

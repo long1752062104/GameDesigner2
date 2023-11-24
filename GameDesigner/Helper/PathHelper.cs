@@ -24,6 +24,22 @@ namespace Net.Helper
             return relativePath;
         }
 
+        /// <summary>
+        /// 获取相对路径
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string GetRelativePath(string root, string fullPath, char separator)
+        {
+            var rootPathUri = new Uri(PlatformReplace(root));
+            var fullPathUri = new Uri(PlatformReplace(fullPath));
+            var relativeUri = rootPathUri.MakeRelativeUri(fullPathUri);
+            var relativePath = relativeUri.ToString();
+            return PlatformReplace(relativePath, separator);
+        }
+
         public static string Combine(params string[] paths)
         {
             var fullPath = string.Empty;
@@ -40,6 +56,16 @@ namespace Net.Helper
                 temp = '/';
             else
                 temp = '\\';
+            path = path.Replace(temp, separator);
+            var separators = $"{separator}{separator}";
+            while (path.Contains(separators))
+                path = path.Replace(separators, separator.ToString());
+            return path;
+        }
+
+        public static string PlatformReplace(string path, char separator)
+        {
+            var temp = Path.DirectorySeparatorChar;
             path = path.Replace(temp, separator);
             var separators = $"{separator}{separator}";
             while (path.Contains(separators))
