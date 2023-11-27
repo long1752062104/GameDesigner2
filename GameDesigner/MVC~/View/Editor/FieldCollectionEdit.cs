@@ -40,11 +40,9 @@ namespace MVC.View
     }
 
     [CustomEditor(typeof(FieldCollection))]
-    [CanEditMultipleObjects]
     public class FieldCollectionEdit : Editor
     {
         private FieldCollection self;
-        private Vector2 scrollPosition;
 
         private void OnEnable()
         {
@@ -59,32 +57,14 @@ namespace MVC.View
 
         public override void OnInspectorGUI()
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
             for (int i = 0; i < self.fields.Count; i++)
             {
                 var field1 = self.fields[i];
-                EditorGUILayout.BeginHorizontal();
-                EditorGUI.BeginChangeCheck();
-                field1.name = EditorGUILayout.TextField(field1.name, GUI.skin.label, GUILayout.MaxWidth(100));
                 if (field1.typeNames == null)
                     field1.Update();
-                field1.componentIndex = EditorGUILayout.Popup(field1.componentIndex, field1.typeNames, GUILayout.MaxWidth(200));
-                field1.typeName = field1.typeNames[field1.componentIndex];
-                field1.target = EditorGUILayout.ObjectField(field1.target, field1.Type, true);
-                if (GUILayout.Button("x", GUILayout.Width(25)))
-                {
-                    self.fields.RemoveAt(i);
-                    EditorUtility.SetDirty(self);
-                }
-                if (EditorGUI.EndChangeCheck())
-                {
-                    field1.Update();
-                    EditorUtility.SetDirty(self);
-                }
-                EditorGUILayout.EndHorizontal();
+                field1.target = EditorGUILayout.ObjectField(field1.name, field1.target, field1.Type, true);
             }
-            GUILayout.EndScrollView();
-            if (GUILayout.Button("打开收集器界面"))
+            if (GUILayout.Button("详细界面"))
                 FieldCollectionWindow.Init(self);
             if (GUILayout.Button("代码生成"))
                 FieldCollectionEntity.CodeGeneration(self);
@@ -370,6 +350,8 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                if (string.IsNullOrEmpty(path))
+                    return;
                 path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 if (!data.savePath.Contains(path))
                 {
@@ -389,6 +371,8 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
             {
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                if (string.IsNullOrEmpty(path))
+                    return;
                 path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 if (!data.savePathExt.Contains(path))
                 {
@@ -402,25 +386,36 @@ namespace MVC.View
             if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
             {
                 var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
+                if (string.IsNullOrEmpty(path))
+                    return;
                 data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, '/');
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();
             data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
-            if (GUILayout.Button("添加", GUILayout.Width(50f)))
+            if (GUILayout.Button("添加", GUILayout.Width(60f)))
             {
-                var inheritData = new InheritData(false, data.addInheritType);
-                if (!data.inheritTypes.Contains(inheritData))
-                    data.inheritTypes.Add(inheritData);
-            }
-            if (GUILayout.Button("删除", GUILayout.Width(50f)))
-            {
-                data.inheritTypes.Remove(new InheritData(false, data.addInheritType));
+                if (!string.IsNullOrEmpty(data.addInheritType))
+                {
+                    var inheritData = new InheritData(false, data.addInheritType);
+                    if (!data.inheritTypes.Contains(inheritData))
+                        data.inheritTypes.Add(inheritData);
+                }
             }
             EditorGUILayout.EndHorizontal();
             var inheritData1 = data.InheritType(field.inheritTypeInx);
+            inheritData1.genericType = EditorGUILayout.Toggle("泛型类型", inheritData1.genericType);
+            EditorGUILayout.BeginHorizontal();
             field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.InheritTypesStr);
-            inheritData1.genericType = EditorGUILayout.Toggle("继承泛型", inheritData1.genericType);
+            if (GUILayout.Button("删除", GUILayout.Width(60f)))
+            {
+                if (data.inheritTypes.Count > 1)
+                {
+                    field.inheritTypeInx = 0;
+                    data.inheritTypes.Remove(inheritData1);
+                }
+            }
+            EditorGUILayout.EndHorizontal();
             if (GUILayout.Button("代码生成"))
                 CodeGeneration(field);
         }
@@ -586,12 +581,14 @@ namespace MVC.View
             this.collect = collect;
         }
 
-        public void OnValidate()
+#if UNITY_EDITOR
+        private void OnValidate()
         {
             var getComponentMethod = GetType().GetMethod(""GetComponent"", new System.Type[] { typeof(System.Type) }); //当处于热更新脚本, 不继承MonoBehaviour时处理
             if (getComponentMethod != null)
                 collect = getComponentMethod.Invoke(this, new object[] { typeof(MVC.View.FieldCollection) }) as MVC.View.FieldCollection;
         }
+#endif
     }
 --
 }";
@@ -677,7 +674,8 @@ namespace MVC.View
                     return;
                 if (fieldCollection.TryGetComponent(type, out var component))
                 {
-                    component.GetType().GetMethod("OnValidate", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(component, null);
+                    var onValidateMethod = component.GetType().GetMethod("OnValidate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    onValidateMethod.Invoke(component, null);
                     return;
                 }
                 fieldCollection.gameObject.AddComponent(type);

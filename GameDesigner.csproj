@@ -584,6 +584,8 @@
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Utilities\TypeInformation.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\Utilities\ValidationUtils.cs" />
     <Compile Include="GameDesigner\Serialize\Newtonsoft.Json\WriteState.cs" />
+    <Compile Include="GameDesigner\SqlBuild\Attributes\SqlColumn.cs" />
+    <Compile Include="GameDesigner\SqlBuild\Attributes\SqlTable.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
