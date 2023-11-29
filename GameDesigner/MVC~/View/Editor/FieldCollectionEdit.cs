@@ -230,6 +230,10 @@ namespace MVC.View
         internal static void LoadData()
         {
             data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
+            for (int i = 0; i < data.savePath.Count; i++)
+                data.savePath[i] = data.savePath[i].Replace('/', '\\');
+            for (int i = 0; i < data.savePathExt.Count; i++)
+                data.savePathExt[i] = data.savePathExt[i].Replace('/', '\\');
         }
 
         static void SaveData()
@@ -373,7 +377,7 @@ namespace MVC.View
                 SaveData();
             }
             var rect1 = EditorGUILayout.GetControlRect();
-            collect.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", collect.savePathInx, data.savePath.ToArray());
+            collect.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "生成路径:", collect.savePathInx, data.savePath.ToArray());
             if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
             {
                 if (data.savePath.Count > 0)
@@ -385,7 +389,7 @@ namespace MVC.View
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 if (string.IsNullOrEmpty(path))
                     return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '\\');
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
@@ -394,7 +398,7 @@ namespace MVC.View
                 SaveData();
             }
             var rect4 = EditorGUILayout.GetControlRect();
-            collect.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", collect.savePathExtInx, data.savePathExt.ToArray());
+            collect.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "扩展路径:", collect.savePathExtInx, data.savePathExt.ToArray());
             if (GUI.Button(new Rect(rect4.x + rect4.width - 90, rect4.y, 30, rect4.height), "x"))
             {
                 if (data.savePathExt.Count > 0)
@@ -406,7 +410,7 @@ namespace MVC.View
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 if (string.IsNullOrEmpty(path))
                     return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '/');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '\\');
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);
