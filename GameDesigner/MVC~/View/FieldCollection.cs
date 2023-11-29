@@ -18,6 +18,8 @@ namespace MVC.View
 #if UNITY_EDITOR
             public int componentIndex;
             public string[] typeNames;
+            public bool enableLabel;
+            public string label;
 #endif
             private Type type;
             public Type Type

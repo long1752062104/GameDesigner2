@@ -10,6 +10,8 @@ namespace MVC.View
     using System.Text;
     using UnityEditor;
     using UnityEditor.Callbacks;
+    using UnityEditor.UIElements;
+    using UnityEditorInternal;
     using UnityEngine;
     using UnityEngine.UI;
     using Object = UnityEngine.Object;
@@ -62,6 +64,8 @@ namespace MVC.View
                 var field1 = self.fields[i];
                 if (field1.typeNames == null)
                     field1.Update();
+                if (field1.enableLabel)
+                    EditorGUILayout.LabelField(field1.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
                 field1.target = EditorGUILayout.ObjectField(field1.name, field1.target, field1.Type, true);
             }
             if (GUILayout.Button("详细界面"))
@@ -73,12 +77,13 @@ namespace MVC.View
 
     public class FieldCollectionEntity
     {
-        private static FieldCollection field;
+        private static FieldCollection collect;
         internal static string search = "", search1 = "", fieldName = "";
         internal static Object selectObject;
         internal static JsonSave data = new JsonSave();
         private static Vector2 scrollPosition;
         private static string searchAssemblies;
+        private static ReorderableList fieldList;
 
         public class JsonSave
         {
@@ -145,7 +150,12 @@ namespace MVC.View
         internal static void OnEnable(FieldCollection target)
         {
             LoadData();
-            field = target;
+            collect = target;
+            fieldList = new ReorderableList(target.fields, typeof(FieldCollection.Field), true, false, false, false)
+            {
+                elementHeightCallback = OnElementHeightCallback,
+                drawElementCallback = OnDrawElementCallback
+            };
             searchAssemblies = data.searchAssemblies;
             if (!string.IsNullOrEmpty(searchAssemblies))
             {
@@ -165,11 +175,54 @@ namespace MVC.View
             }
         }
 
+        private static float OnElementHeightCallback(int index)
+        {
+            var field = collect.fields[index];
+            if (field.enableLabel)
+                return 40f;
+            return 20f;
+        }
+
+        private static void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            var field = collect.fields[index];
+            if (field.enableLabel)
+            {
+                rect.height = 20f;
+                field.label = EditorGUI.TextField(new Rect(rect) { width = 100 }, field.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
+                rect.y += 20f;
+            }
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginChangeCheck();
+            field.name = EditorGUI.TextField(new Rect(rect) { width = 150 }, field.name, GUI.skin.label);
+            if (field.typeNames == null)
+                field.Update();
+            field.componentIndex = EditorGUI.Popup(new Rect(rect) { x = 150, width = 200 }, field.componentIndex, field.typeNames);
+            field.typeName = field.typeNames[field.componentIndex];
+            field.target = EditorGUI.ObjectField(new Rect(rect) { x = 355, width = rect.width - 385 }, field.target, field.Type, true);
+            if (GUI.Button(new Rect(rect) { x = rect.width - 25, width = 25 }, field.enableLabel ? "-" : "+"))
+            {
+                field.enableLabel = !field.enableLabel;
+                EditorUtility.SetDirty(collect);
+            }
+            if (GUI.Button(new Rect(rect) { x = rect.width, width = 25 }, "x"))
+            {
+                collect.fields.RemoveAt(index);
+                EditorUtility.SetDirty(collect);
+            }
+            if (EditorGUI.EndChangeCheck())
+            {
+                field.Update();
+                EditorUtility.SetDirty(collect);
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
         internal static void OnDisable()
         {
             SaveData();
-            if (field != null)
-                EditorUtility.SetDirty(field);
+            if (collect != null)
+                EditorUtility.SetDirty(collect);
         }
 
         internal static void LoadData()
@@ -186,21 +239,21 @@ namespace MVC.View
         {
             var name = fieldName;
             if (name == "")
-                name = "name" + field.nameIndex++;
-            foreach (var f in field.fields)
+                name = "name" + collect.nameIndex++;
+            foreach (var f in collect.fields)
             {
                 if (f.name == fieldName)
                 {
-                    name += field.nameIndex++;
+                    name += collect.nameIndex++;
                     break;
                 }
             }
             var field1 = new FieldCollection.Field() { name = name, typeName = typeName };
-            field.fields.Add(field1);
+            collect.fields.Add(field1);
             if (selectObject != null)
                 field1.target = selectObject;
             field1.Update();
-            EditorUtility.SetDirty(field);
+            EditorUtility.SetDirty(collect);
         }
 
         public static void OnDragGuiWindow()
@@ -299,9 +352,9 @@ namespace MVC.View
 
         public static void OnDragGUI()
         {
-            if (field == null)
+            if (collect == null)
                 return;
-            field.fieldName = EditorGUILayout.TextField("收集器名称", field.fieldName);
+            collect.fieldName = EditorGUILayout.TextField("收集器名称", collect.fieldName);
             data.searchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.searchAssemblies);
             if (data.searchAssemblies != searchAssemblies)
             {
@@ -309,29 +362,7 @@ namespace MVC.View
                 SaveData();
             }
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
-            for (int i = 0; i < field.fields.Count; i++)
-            {
-                var field1 = field.fields[i];
-                EditorGUILayout.BeginHorizontal();
-                EditorGUI.BeginChangeCheck();
-                field1.name = EditorGUILayout.TextField(field1.name, GUI.skin.label, GUILayout.MaxWidth(100));
-                if (field1.typeNames == null)
-                    field1.Update();
-                field1.componentIndex = EditorGUILayout.Popup(field1.componentIndex, field1.typeNames, GUILayout.MaxWidth(200));
-                field1.typeName = field1.typeNames[field1.componentIndex];
-                field1.target = EditorGUILayout.ObjectField(field1.target, field1.Type, true);
-                if (GUILayout.Button("x", GUILayout.Width(25)))
-                {
-                    field.fields.RemoveAt(i);
-                    EditorUtility.SetDirty(field);
-                }
-                if (EditorGUI.EndChangeCheck())
-                {
-                    field1.Update();
-                    EditorUtility.SetDirty(field);
-                }
-                EditorGUILayout.EndHorizontal();
-            }
+            fieldList.DoLayoutList();
             GUILayout.EndScrollView();
             data.nameSpace = EditorGUILayout.TextField("命名空间", data.nameSpace);
             if (data.nameSpace != data.nameSpace1)
@@ -340,11 +371,11 @@ namespace MVC.View
                 SaveData();
             }
             var rect1 = EditorGUILayout.GetControlRect();
-            field.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", field.savePathInx, data.savePath.ToArray());
+            collect.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "组件生成路径:", collect.savePathInx, data.savePath.ToArray());
             if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
             {
                 if (data.savePath.Count > 0)
-                    data.savePath.RemoveAt(field.savePathInx);
+                    data.savePath.RemoveAt(collect.savePathInx);
                 SaveData();
             }
             if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
@@ -356,16 +387,16 @@ namespace MVC.View
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
-                    field.savePathInx = data.savePath.Count - 1;
+                    collect.savePathInx = data.savePath.Count - 1;
                 }
                 SaveData();
             }
             var rect4 = EditorGUILayout.GetControlRect();
-            field.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", field.savePathExtInx, data.savePathExt.ToArray());
+            collect.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "组件扩展路径:", collect.savePathExtInx, data.savePathExt.ToArray());
             if (GUI.Button(new Rect(rect4.x + rect4.width - 90, rect4.y, 30, rect4.height), "x"))
             {
                 if (data.savePathExt.Count > 0)
-                    data.savePathExt.RemoveAt(field.savePathExtInx);
+                    data.savePathExt.RemoveAt(collect.savePathExtInx);
                 SaveData();
             }
             if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
@@ -377,7 +408,7 @@ namespace MVC.View
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);
-                    field.savePathExtInx = data.savePathExt.Count - 1;
+                    collect.savePathExtInx = data.savePathExt.Count - 1;
                 }
                 SaveData();
             }
@@ -403,21 +434,21 @@ namespace MVC.View
                 }
             }
             EditorGUILayout.EndHorizontal();
-            var inheritData1 = data.InheritType(field.inheritTypeInx);
+            var inheritData1 = data.InheritType(collect.inheritTypeInx);
             inheritData1.genericType = EditorGUILayout.Toggle("泛型类型", inheritData1.genericType);
             EditorGUILayout.BeginHorizontal();
-            field.inheritTypeInx = EditorGUILayout.Popup("继承类型", field.inheritTypeInx, data.InheritTypesStr);
+            collect.inheritTypeInx = EditorGUILayout.Popup("继承类型", collect.inheritTypeInx, data.InheritTypesStr);
             if (GUILayout.Button("删除", GUILayout.Width(60f)))
             {
                 if (data.inheritTypes.Count > 1)
                 {
-                    field.inheritTypeInx = 0;
+                    collect.inheritTypeInx = 0;
                     data.inheritTypes.Remove(inheritData1);
                 }
             }
             EditorGUILayout.EndHorizontal();
             if (GUILayout.Button("代码生成"))
-                CodeGeneration(field);
+                CodeGeneration(collect);
         }
 
         internal static void CodeGeneration(FieldCollection field)
@@ -458,12 +489,12 @@ namespace MVC.View
 --
 }";
             var hasns = !string.IsNullOrEmpty(data.nameSpace);
-            if (string.IsNullOrEmpty(field.fieldName))
-                field.fieldName = field.name;
+            if (string.IsNullOrEmpty(collect.fieldName))
+                collect.fieldName = collect.name;
             codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
-            var typeName = field.fieldName;
+            var typeName = collect.fieldName;
             codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-            var inheritData = data.InheritType(field.inheritTypeInx);
+            var inheritData = data.InheritType(collect.inheritTypeInx);
             var inheritType = inheritData.genericType ? $"{inheritData.inheritType}<{typeName}>" : inheritData.inheritType;
             codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
             var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
@@ -471,24 +502,24 @@ namespace MVC.View
             var lostenerCodeText = new StringBuilder();
             if (hasns) codeText.Append(codes[0]);
             codeText.Append(codes[1]);
-            for (int i = 0; i < field.fields.Count; i++)
+            for (int i = 0; i < collect.fields.Count; i++)
             {
-                if (field.fields[i].Type == typeof(Button))
+                if (collect.fields[i].Type == typeof(Button))
                 {
-                    var addListenerText = $"{field.fields[i].name}.onClick.AddListener(On{field.fields[i].name}Click);";
+                    var addListenerText = $"{collect.fields[i].name}.onClick.AddListener(On{collect.fields[i].name}Click);";
                     var fieldCode = codes[2].Replace("{AddListener}", addListenerText);
                     codeText.Append(fieldCode);
 
-                    fieldCode = codes[4].Replace("{methodEvent}", $"On{field.fields[i].name}Click()");
+                    fieldCode = codes[4].Replace("{methodEvent}", $"On{collect.fields[i].name}Click()");
                     lostenerCodeText.Append(fieldCode);
                 }
-                else if (field.fields[i].Type == typeof(Toggle))
+                else if (collect.fields[i].Type == typeof(Toggle))
                 {
-                    var addListenerText = $"{field.fields[i].name}.onValueChanged.AddListener(On{field.fields[i].name}Changed);";
+                    var addListenerText = $"{collect.fields[i].name}.onValueChanged.AddListener(On{collect.fields[i].name}Changed);";
                     var fieldCode = codes[2].Replace("{AddListener}", addListenerText);
                     codeText.Append(fieldCode);
 
-                    fieldCode = codes[4].Replace("{methodEvent}", $"On{field.fields[i].name}Changed(bool isOn)");
+                    fieldCode = codes[4].Replace("{methodEvent}", $"On{collect.fields[i].name}Changed(bool isOn)");
                     lostenerCodeText.Append(fieldCode);
                 }
             }
@@ -514,10 +545,10 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var path = data.SavePathExt(field.savePathExtInx);
+            var path = data.SavePathExt(collect.savePathExtInx);
             if (string.IsNullOrEmpty(path))
                 return;
-            path += $"/{field.fieldName}Ext.cs";
+            path += $"/{collect.fieldName}Ext.cs";
             if (File.Exists(path))
             {
                 var lines = new List<string>(File.ReadAllLines(path));
@@ -530,18 +561,18 @@ namespace MVC.View
                         break;
                     }
                 }
-                for (int i = 0; i < field.fields.Count; i++)
+                for (int i = 0; i < collect.fields.Count; i++)
                 {
-                    var isBtn = field.fields[i].Type == typeof(Button);
-                    var isToggle = field.fields[i].Type == typeof(Toggle);
+                    var isBtn = collect.fields[i].Type == typeof(Button);
+                    var isToggle = collect.fields[i].Type == typeof(Toggle);
                     if (!isBtn & !isToggle)
                         continue;
-                    var addListenerText = $"{field.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{field.fields[i].name}{(isBtn ? "Click" : "Changed")});";
+                    var addListenerText = $"{collect.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{collect.fields[i].name}{(isBtn ? "Click" : "Changed")});";
                     if (!Contains(lines, addListenerText))
                     {
                         lines.Insert(startIndex, (hasns ? "            " : "        ") + addListenerText);
                         startIndex++;
-                        var fieldCode = codes[4].Replace("{methodEvent}", $"On{field.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");
+                        var fieldCode = codes[4].Replace("{methodEvent}", $"On{collect.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");
                         var fieldCodes = fieldCode.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                         for (int x = 0; x < fieldCodes.Length; x++)
                         {
@@ -593,22 +624,22 @@ namespace MVC.View
 --
 }";
             var hasns = !string.IsNullOrEmpty(data.nameSpace);
-            if (string.IsNullOrEmpty(field.fieldName))
-                field.fieldName = field.name;
+            if (string.IsNullOrEmpty(collect.fieldName))
+                collect.fieldName = collect.name;
             codeTemplate = codeTemplate.Replace("{nameSpace}", data.nameSpace);
-            var typeName = field.fieldName;
+            var typeName = collect.fieldName;
             codeTemplate = codeTemplate.Replace("{typeName}", typeName);
-            var inheritData = data.InheritType(field.inheritTypeInx);
+            var inheritData = data.InheritType(collect.inheritTypeInx);
             var inheritType = inheritData.genericType ? $"{inheritData.inheritType}<{typeName}>" : inheritData.inheritType;
             codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
             var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
             var codeText = new StringBuilder();
             if (hasns) codeText.Append(codes[0]);
             codeText.Append(codes[1]);
-            for (int i = 0; i < field.fields.Count; i++)
+            for (int i = 0; i < collect.fields.Count; i++)
             {
-                var fieldCode = codes[2].Replace("{fieldType}", field.fields[i].Type.ToString());
-                fieldCode = fieldCode.Replace("{fieldName}", field.fields[i].name);
+                var fieldCode = codes[2].Replace("{fieldType}", collect.fields[i].Type.ToString());
+                fieldCode = fieldCode.Replace("{fieldName}", collect.fields[i].name);
                 fieldCode = fieldCode.Replace("{index}", i.ToString());
                 codeText.Append(fieldCode);
             }
@@ -632,10 +663,10 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var path = data.SavePath(field.savePathInx);
+            var path = data.SavePath(collect.savePathInx);
             if (string.IsNullOrEmpty(path))
                 return;
-            path += $"/{field.fieldName}.cs";
+            path += $"/{collect.fieldName}.cs";
             File.WriteAllText(path, scriptCode);
             Debug.Log($"生成成功:{path}");
         }
