@@ -70,6 +70,8 @@ namespace MVC.View
             }
             if (GUILayout.Button("详细界面"))
                 FieldCollectionWindow.Init(self);
+            if (GUILayout.Button("编辑脚本"))
+                FieldCollectionEntity.OpenScript(self);
             if (GUILayout.Button("代码生成"))
                 FieldCollectionEntity.CodeGeneration(self);
         }
@@ -447,6 +449,8 @@ namespace MVC.View
                 }
             }
             EditorGUILayout.EndHorizontal();
+            if (GUILayout.Button("编辑脚本"))
+                OpenScript(collect);
             if (GUILayout.Button("代码生成"))
                 CodeGeneration(collect);
         }
@@ -457,6 +461,18 @@ namespace MVC.View
             CodeGenerationEditPart();
             AssetDatabase.Refresh();
             field.compiling = true;
+        }
+
+        internal static void OpenScript(FieldCollection collect)
+        {
+            var path = data.SavePathExt(collect.savePathExtInx);
+            if (string.IsNullOrEmpty(path))
+                return;
+            path += $"/{collect.fieldName}Ext.cs";
+            if (File.Exists(path))
+                InternalEditorUtility.OpenFileAtLineExternal(path, 0, 0);
+            else
+                Debug.Log("文件未生成!");
         }
 
         private static void CodeGenerationEditPart()
