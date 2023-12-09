@@ -421,7 +421,7 @@ namespace Net.Server
         /// <returns></returns>
         public List<Player> GetClients()
         {
-            List<Player> players = new List<Player>();
+            var players = new List<Player>();
             foreach (Player p in AllClients.Values)
                 if (p.Login)
                     players.Add(p);

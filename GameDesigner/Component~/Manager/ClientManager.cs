@@ -1,58 +1,13 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using System;
-using System.Net;
 using Net.Client;
 using Net.Helper;
 using Net.Share;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using System.Security.Authentication;
 
 namespace Net.Component
 {
-    public enum TransportProtocol
-    {
-        Tcp, Gcp, Udx, Kcp, Web
-    }
-
-    public enum LogMode
-    {
-        None,
-        /// <summary>
-        /// 消息输出, 警告输出, 错误输出, 三种模式各自输出
-        /// </summary>
-        Default,
-        /// <summary>
-        /// 所有消息输出都以白色消息输出
-        /// </summary>
-        LogAll,
-        /// <summary>
-        /// 警告信息和消息一起输出为白色
-        /// </summary>
-        LogAndWarning,
-        /// <summary>
-        /// 警告和错误都输出为红色提示
-        /// </summary>
-        WarnAndError,
-        /// <summary>
-        /// 只输出错误日志
-        /// </summary>
-        OnlyError,
-        /// <summary>
-        /// 只输入警告和错误日志
-        /// </summary>
-        OnlyWarnAndError,
-    }
-
-    [Serializable]
-    public class WebSetting
-    {
-        public string scheme = "ws";
-        public SslProtocols sslProtocols;
-        public string pfxPath;
-        public string password;
-    }
-
     [DefaultExecutionOrder(1)]//在NetworkTransform组件之前执行OnDestroy，控制NetworkTransform处于Control模式时退出游戏会同步删除所有网络物体
     public class ClientManager : SingleCase<ClientManager>, ISendHandle
     {
@@ -130,7 +85,7 @@ namespace Net.Component
         {
             _client = client;
 #if !UNITY_WEBGL
-            var ips = Dns.GetHostAddresses(ip);
+            var ips = global::System.Net.Dns.GetHostAddresses(ip);
             if (ips.Length > 0)
                 _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
             else

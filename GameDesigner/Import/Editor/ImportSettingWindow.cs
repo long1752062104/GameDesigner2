@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using Net.Helper;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +16,29 @@ public class ImportSettingWindow : EditorWindow
     {
         public string path = "Assets/Plugins/GameDesigner";
         public int develop;
+        public bool[] copyAssemblys = new bool[]
+        {
+            false, //gcp
+            false, //udx
+            false, //kcp
+            false, //web
+            false, //stateMachine
+            false, //networkComponent
+            false, //mvc
+            false, //ecs
+            false, //mmorpg
+            false, //aoi
+            false, //recast
+            true, //framework
+            false, //entities
+            false, //parrelSync
+            false, //ext1
+            false, //ext2
+            false, //ext3
+            false, //ext4
+            false, //ext5
+            false, //ext6
+        };
     }
 
     [MenuItem("GameDesigner/Import Window", priority = 0)]
@@ -44,15 +68,18 @@ public class ImportSettingWindow : EditorWindow
         PersistHelper.Serialize(data, "importdata.json");
     }
 
-    private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import /*= null*/, string pluginsPath /*= "Assets/Plugins/GameDesigner/"*/)
+    private void DrawGUI(string path, string name, string sourceProtocolName, string copyToProtocolName, Action import, string pluginsPath)
     {
+        GUILayout.BeginHorizontal();
+        var copyAssemblyIndex = copyAssemblyDict[name];
+        var copyAssembly = data.copyAssemblys[copyAssemblyIndex];
+        data.copyAssemblys[copyAssemblyIndex] = GUILayout.Toggle(copyAssembly, "程序集定义", GUILayout.Width(80));
         if (Directory.Exists(path))
         {
-            GUILayout.BeginHorizontal();
             if (GUILayout.Button($"重新导入{name}模块"))
             {
                 import?.Invoke();
-                Import(sourceProtocolName, copyToProtocolName, pluginsPath);
+                Import(name, sourceProtocolName, copyToProtocolName, pluginsPath);
             }
             if (data.develop == 1)
             {
@@ -67,21 +94,31 @@ public class ImportSettingWindow : EditorWindow
                 AssetDatabase.Refresh();
             }
             GUI.color = Color.white;
-            GUILayout.EndHorizontal();
         }
-        else if (GUILayout.Button($"导入{name}模块"))
+        else
         {
-            import?.Invoke();
-            Import(sourceProtocolName, copyToProtocolName, pluginsPath);
+            if (GUILayout.Button($"导入{name}模块"))
+            {
+                import?.Invoke();
+                Import(name, sourceProtocolName, copyToProtocolName, pluginsPath);
+            }
         }
+        GUILayout.EndHorizontal();
     }
+
+    private readonly Dictionary<string, int> copyAssemblyDict = new Dictionary<string, int>()
+    {
+        { "Gcp", 0 },{ "Udx", 1 },{ "Kcp", 2 },{ "Web", 3 },{ "StateMachine", 4 },
+        { "NetworkComponent", 5 },{ "Component", 5 },
+        { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
+        { "AOI", 9 },{ "Recast", 10 },{ "Framework", 11 },
+        { "Entities", 12 },{ "ParrelSync", 13 },
+    };
 
     private void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
         data.develop = EditorGUILayout.Popup("使用模式", data.develop, displayedOptions);
-        if (EditorGUI.EndChangeCheck())
-            SaveData();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("导入路径:", data.path);
         if (GUILayout.Button("选择路径", GUILayout.Width(80)))
@@ -130,8 +167,8 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "MMORPG";
         DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () =>
         {
-            Import("AOI~", "AOI", pathRoot);//依赖
-            Import("Recast~", "Recast", pathRoot);//依赖
+            Import("AOI", "AOI~", "AOI", pathRoot);//依赖
+            Import("Recast", "Recast~", "Recast", pathRoot);//依赖
         }, pathRoot);
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
@@ -163,59 +200,59 @@ public class ImportSettingWindow : EditorWindow
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", pathRoot);
-            Import("Component~", "Component", pathRoot);
+            Import("Gcp", "Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Component", "Component~", "Component", pathRoot);
         }
         EditorGUILayout.HelpBox("所有模块导入", MessageType.Warning);
         if (GUILayout.Button("所有模块导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", pathRoot);
-            Import("Network/Udx~", "Network/Udx", pathRoot);
-            Import("Network/Kcp~", "Network/Kcp", pathRoot);
-            Import("Network/Web~", "Network/Web", pathRoot);
-            Import("Component~", "Component", pathRoot);
-            Import("StateMachine~", "StateMachine", pathRoot);
-            Import("MVC~", "MVC", pathRoot);
-            Import("ECS~", "ECS", pathRoot);
-            Import("MMORPG~", "MMORPG", pathRoot);
-            Import("AOI~", "AOI", pathRoot);
-            Import("Recast~", "Recast", pathRoot);
-            Import("Framework~", "Framework", pathRoot);
-            Import("Entities~", "Entities", pathRoot);
+            Import("Gcp", "Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Udx", "Network/Udx~", "Network/Udx", pathRoot);
+            Import("Kcp", "Network/Kcp~", "Network/Kcp", pathRoot);
+            Import("Web", "Network/Web~", "Network/Web", pathRoot);
+            Import("Component", "Component~", "Component", pathRoot);
+            Import("StateMachine", "StateMachine~", "StateMachine", pathRoot);
+            Import("MVC", "MVC~", "MVC", pathRoot);
+            Import("ECS", "ECS~", "ECS", pathRoot);
+            Import("MMORPG", "MMORPG~", "MMORPG", pathRoot);
+            Import("AOI", "AOI~", "AOI", pathRoot);
+            Import("Recast", "Recast~", "Recast", pathRoot);
+            Import("Framework", "Framework~", "Framework", pathRoot);
+            Import("Entities", "Entities~", "Entities", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
         {
-            Import("Network/Gcp~", "Network/Gcp", pathRoot);
-            Import("Network/Udx~", "Network/Udx", pathRoot);
-            Import("Network/Kcp~", "Network/Kcp", pathRoot);
-            Import("Network/Web~", "Network/Web", pathRoot);
-            Import("Component~", "Component", pathRoot);
-            Import("StateMachine~", "StateMachine", pathRoot);
-            Import("MVC~", "MVC", pathRoot);
-            Import("ECS~", "ECS", pathRoot);
-            Import("MMORPG~", "MMORPG", pathRoot);
-            Import("AOI~", "AOI", pathRoot);
-            Import("Recast~", "Recast", pathRoot);
-            Import("Entities~", "Entities", pathRoot);
-            Import("Example~", "Example", "Assets/Samples/GameDesigner/");
+            Import("Gcp", "Network/Gcp~", "Network/Gcp", pathRoot);
+            Import("Udx", "Network/Udx~", "Network/Udx", pathRoot);
+            Import("Kcp", "Network/Kcp~", "Network/Kcp", pathRoot);
+            Import("Web", "Network/Web~", "Network/Web", pathRoot);
+            Import("Component", "Component~", "Component", pathRoot);
+            Import("StateMachine", "StateMachine~", "StateMachine", pathRoot);
+            Import("MVC", "MVC~", "MVC", pathRoot);
+            Import("ECS", "ECS~", "ECS", pathRoot);
+            Import("MMORPG", "MMORPG~", "MMORPG", pathRoot);
+            Import("AOI", "AOI~", "AOI", pathRoot);
+            Import("Recast", "Recast~", "Recast", pathRoot);
+            Import("Entities", "Entities~", "Entities", pathRoot);
+            Import("Example", "Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
         if (GUILayout.Button("重新导入已导入的模块", GUILayout.Height(20)))
         {
-            ReImport("Network/Gcp~", "Network/Gcp", pathRoot);
-            ReImport("Network/Udx~", "Network/Udx", pathRoot);
-            ReImport("Network/Kcp~", "Network/Kcp", pathRoot);
-            ReImport("Network/Web~", "Network/Web", pathRoot);
-            ReImport("Component~", "Component", pathRoot);
-            ReImport("StateMachine~", "StateMachine", pathRoot);
-            ReImport("MVC~", "MVC", pathRoot);
-            ReImport("ECS~", "ECS", pathRoot);
-            ReImport("MMORPG~", "MMORPG", pathRoot);
-            ReImport("AOI~", "AOI", pathRoot);
-            ReImport("Recast~", "Recast", pathRoot);
-            ReImport("Framework~", "Framework", pathRoot);
-            ReImport("Entities~", "Entities", pathRoot);
+            ReImport("Gcp", "Network/Gcp~", "Network/Gcp", pathRoot);
+            ReImport("Udx", "Network/Udx~", "Network/Udx", pathRoot);
+            ReImport("Kcp", "Network/Kcp~", "Network/Kcp", pathRoot);
+            ReImport("Web", "Network/Web~", "Network/Web", pathRoot);
+            ReImport("Component", "Component~", "Component", pathRoot);
+            ReImport("StateMachine", "StateMachine~", "StateMachine", pathRoot);
+            ReImport("MVC", "MVC~", "MVC", pathRoot);
+            ReImport("ECS", "ECS~", "ECS", pathRoot);
+            ReImport("MMORPG", "MMORPG~", "MMORPG", pathRoot);
+            ReImport("AOI", "AOI~", "AOI", pathRoot);
+            ReImport("Recast", "Recast~", "Recast", pathRoot);
+            ReImport("Framework", "Framework~", "Framework", pathRoot);
+            ReImport("Entities", "Entities~", "Entities", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -253,9 +290,11 @@ public class ImportSettingWindow : EditorWindow
         }
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
+        if (EditorGUI.EndChangeCheck())
+            SaveData();
     }
 
-    private static void ReImport(string sourceProtocolName, string copyToProtocolName, string pluginsPath)
+    private void ReImport(string name, string sourceProtocolName, string copyToProtocolName, string pluginsPath)
     {
         var rootPath = "Packages/com.gamedesigner.network";//包的根路径
         if (!Directory.Exists(rootPath))
@@ -269,10 +308,10 @@ public class ImportSettingWindow : EditorWindow
         if (!Directory.Exists(path))
             return;
         try { Directory.Delete(path, true); } catch { } //删除原文件再导入新文件
-        Import(sourceProtocolName, copyToProtocolName, pluginsPath);
+        Import(name, sourceProtocolName, copyToProtocolName, pluginsPath);
     }
 
-    private static void Import(string sourceProtocolName, string copyToProtocolName, string pluginsPath)
+    private void Import(string name, string sourceProtocolName, string copyToProtocolName, string pluginsPath)
     {
         var rootPath = "Packages/com.gamedesigner.network";//包的根路径
         if (!Directory.Exists(rootPath))
@@ -291,9 +330,17 @@ public class ImportSettingWindow : EditorWindow
         var commonPath = $"{pluginsPath}/Common/";
         if (Directory.Exists(commonPath))
             try { Directory.Delete(commonPath, true); } catch { } //删除Common文件夹, 因为Common已经内置了
+        var copyAssemblyIndex = copyAssemblyDict[name];
+        var copyAssembly = data.copyAssemblys[copyAssemblyIndex];
         var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
         foreach (var file in files)
         {
+            if (!copyAssembly)
+            {
+                var ext = Path.GetExtension(file);
+                if (ext.Contains(".asmdef"))
+                    continue;
+            }
             var item = file.Split(new string[] { sourceProtocolName }, StringSplitOptions.RemoveEmptyEntries);
             var newPath = $"{pluginsPath}{copyToProtocolName}/{item[1]}";
             var path1 = Path.GetDirectoryName(newPath);
