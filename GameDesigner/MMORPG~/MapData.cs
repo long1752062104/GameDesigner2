@@ -88,7 +88,8 @@ namespace Net.MMORPG
                 var monsterPoint = item.GetComponent<MonsterPoint>();
                 sceneData.monsterPoints.Add(new MapMonsterPoint()
                 {
-                    patrolPath = new PatrolPath() { waypoints = item.waypointsList },
+                    name = item.name,
+                    patrolPath = new PatrolPath() { waypoints = item.WorldPointList },
                     monsters = monsterPoint.monsters,
                 });
             }
