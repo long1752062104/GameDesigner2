@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Net.Event;
 
 namespace Net.Config
 {
@@ -143,13 +144,17 @@ namespace Net.Config
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
         private static async UniTaskVoid LoadConfigFile(string configPath)
         {
+#if UNITY_STANDALONE_OSX
             var request = UnityEngine.Networking.UnityWebRequest.Get("file:///" + configPath); //支持mac方式
+#else
+            var request = UnityEngine.Networking.UnityWebRequest.Get(configPath);
+#endif
             var oper = request.SendWebRequest();
             while (!oper.isDone)
                 await UniTask.Yield();
             if (!string.IsNullOrEmpty(request.error))
             {
-                Event.NDebug.LogError($"初始化配置错误:{request.error} {configPath}");
+                NDebug.LogError($"初始化配置错误:{request.error} {configPath}");
                 Save();
                 return;
             }
