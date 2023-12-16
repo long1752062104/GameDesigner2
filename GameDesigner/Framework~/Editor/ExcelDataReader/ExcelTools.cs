@@ -2,26 +2,18 @@ using UnityEditor;
 using System.IO;
 using ExcelDataReader;
 using UnityEngine;
-using System;
 using System.Data;
 using System.Text;
 using Framework;
 
 public class ExcelTools
 {
-    [MenuItem("GameDesigner/Framework/GenerateExcelData", priority = 2)]
-    public static void GenerateExcelData(AssetBundleMode mode)
+    public static void GenerateExcelData()
     {
-        string path;
-        if (mode == AssetBundleMode.LocalPath)
-            path = Directory.GetCurrentDirectory() + $"/AssetBundles/Table/GameConfig.json";
-        else if (mode == AssetBundleMode.StreamingAssetsPath)
-            path = Application.streamingAssetsPath + $"/AssetBundles/Table/GameConfig.json";
-        else
-            path = Application.persistentDataPath + $"/AssetBundles/Table/GameConfig.json";
+        var path = GlobalSetting.Instance.tablePath + "/GameConfig.bytes";
         if (!Directory.Exists(Path.GetDirectoryName(path)))
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-        string excelPath = "Tools/Excel/GameConfig.xls";
+        var excelPath = "Tools/Excel/GameConfig.xls";
         var temp = excelPath + ".temp";
         File.Copy(excelPath, temp, true);
         try
@@ -33,7 +25,7 @@ public class ExcelTools
                     var dataSet = reader.AsDataSet();
                     var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(dataSet);
                     File.WriteAllText(path, jsonStr);
-                    Debug.Log("生成表格数据完成! " + Environment.CurrentDirectory + "/" + path);
+                    Debug.Log("生成表格数据完成! " + path);
                 }
             }
         }
@@ -99,7 +91,7 @@ public class ExcelTools
                         sb.Append(sb1.ToString());
                         sb.Append(text2[4]);
                         var text5 = sb.ToString();
-                        File.WriteAllText($"Assets/Scripts/Data/Config/{table.TableName}DataConfig.cs", text5);
+                        File.WriteAllText($"{GlobalSetting.Instance.excelConfigScriptPath}/{table.TableName}DataConfig.cs", text5);
                         Debug.Log($"生成表:{table.TableName}完成!");
                     }
                     Debug.Log("全部表生成完毕!");
@@ -116,9 +108,7 @@ public class ExcelTools
     [MenuItem("GameDesigner/Framework/GenerateExcelDataAll", priority = 4)]
     public static void GenerateExcelDataAll()
     {
-        GenerateExcelData(AssetBundleMode.LocalPath);
-        GenerateExcelData(AssetBundleMode.StreamingAssetsPath);
-        GenerateExcelData(AssetBundleMode.HFSPath);
+        GenerateExcelData();
         GenerateExcelDataToCs();
     }
 }

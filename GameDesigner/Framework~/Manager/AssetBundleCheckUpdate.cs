@@ -23,10 +23,10 @@ namespace Framework
                 StartCoroutine(CheckUpdate());
         }
 
-        private async UniTaskVoid LocalLoadAB()
+        public async UniTaskVoid LocalLoadAB()
         {
+            await Global.Resources.InitAssetBundleInfos();
             await Global.Table.Init();
-            Global.Resources.InitAssetBundleInfos();
             LoadMetadataForAOTAssemblies();
             Global.I.OnInit();
         }

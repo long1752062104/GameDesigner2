@@ -118,7 +118,7 @@ namespace Net.System
                     goto J2;
                 }
                 var buffer = new byte[size];
-                segment = BufferPool.NewSegment(buffer, 0, size, true);
+                segment = NewSegment(buffer, 0, size, true);
             J2: segment.IsDespose = false;
                 segment.ReferenceCount++;
                 segment.Init();
@@ -164,7 +164,7 @@ namespace Net.System
         public static ISegment NewSegment(byte[] buffer, int index, int count, bool isRecovery = false)
         {
             ISegment segment;
-            switch (BufferPool.SegmentType)
+            switch (SegmentType)
             {
                 case SegmentType.ArraySegment:
                     segment = new ArraySegment(buffer, index, count, isRecovery);

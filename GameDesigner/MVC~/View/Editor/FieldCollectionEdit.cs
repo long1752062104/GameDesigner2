@@ -389,7 +389,7 @@ namespace MVC.View
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 if (string.IsNullOrEmpty(path))
                     return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '\\');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
                 if (!data.savePath.Contains(path))
                 {
                     data.savePath.Add(path);
@@ -410,7 +410,7 @@ namespace MVC.View
                 var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
                 if (string.IsNullOrEmpty(path))
                     return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '\\');
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
                 if (!data.savePathExt.Contains(path))
                 {
                     data.savePathExt.Add(path);
@@ -425,7 +425,7 @@ namespace MVC.View
                 var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
                 if (string.IsNullOrEmpty(path))
                     return;
-                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, '/');
+                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, '\\', '/');
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();
@@ -587,9 +587,10 @@ namespace MVC.View
                     var isToggle = collect.fields[i].Type == typeof(Toggle);
                     if (!isBtn & !isToggle)
                         continue;
-                    var addListenerText = $"{collect.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener(On{collect.fields[i].name}{(isBtn ? "Click" : "Changed")});";
+                    var addListenerText = $"{collect.fields[i].name}.{(isBtn ? "onClick" : "onValueChanged")}.AddListener"; //监听的方法有时候需要改动,所以只判断一半
                     if (!Contains(lines, addListenerText))
                     {
+                        addListenerText += $"(On{collect.fields[i].name}{(isBtn ? "Click" : "Changed")});";
                         lines.Insert(startIndex, (hasns ? "            " : "        ") + addListenerText);
                         startIndex++;
                         var fieldCode = codes[4].Replace("{methodEvent}", $"On{collect.fields[i].name}{(isBtn ? "Click()" : "Changed(bool isOn)")}");

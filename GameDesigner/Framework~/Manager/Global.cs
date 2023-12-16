@@ -64,7 +64,7 @@ namespace Framework
         /// </summary>
         public virtual void OnInit()
         {
-            Resources.Instantiate(entryRes);
+            Resources.Instantiate<GameObject>(entryRes);
         }
     }
 }

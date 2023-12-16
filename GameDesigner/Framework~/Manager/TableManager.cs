@@ -1,5 +1,4 @@
 using System.Data;
-using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
@@ -10,17 +9,11 @@ namespace Framework
 {
     public class TableManager : MonoBehaviour
     {
-        private readonly TableConfig tableConfig = new TableConfig();
+        protected readonly TableConfig tableConfig = new TableConfig();
 
-        internal async UniTask Init()
+        public virtual async UniTask Init()
         {
-            string path;
-            if (Global.I.Mode == AssetBundleMode.LocalPath)
-                path = Directory.GetCurrentDirectory() + $"/AssetBundles/Table/GameConfig.json";
-            else if (Global.I.Mode == AssetBundleMode.StreamingAssetsPath)
-                path = Application.streamingAssetsPath + $"/AssetBundles/Table/GameConfig.json";
-            else
-                path = Application.persistentDataPath + $"/AssetBundles/Table/GameConfig.json";
+            var path = GlobalSetting.Instance.tablePath + "/GameConfig.bytes";
             using (var request = UnityWebRequest.Get("file:///" + path)) 
             {
                 var oper = request.SendWebRequest();

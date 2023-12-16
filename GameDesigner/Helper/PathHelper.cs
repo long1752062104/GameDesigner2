@@ -31,13 +31,13 @@ namespace Net.Helper
         /// <param name="fullPath"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static string GetRelativePath(string root, string fullPath, char separator)
+        public static string GetRelativePath(string root, string fullPath, char oldSeparator, char replaceSeparator)
         {
             var rootPathUri = new Uri(PlatformReplace(root));
             var fullPathUri = new Uri(PlatformReplace(fullPath));
             var relativeUri = rootPathUri.MakeRelativeUri(fullPathUri);
             var relativePath = relativeUri.ToString();
-            return PlatformReplace(relativePath, separator);
+            return PlatformReplace(relativePath, oldSeparator, replaceSeparator);
         }
 
         public static string Combine(params string[] paths)
@@ -65,11 +65,15 @@ namespace Net.Helper
 
         public static string PlatformReplace(string path, char separator)
         {
-            var temp = Path.DirectorySeparatorChar;
-            path = path.Replace(temp, separator);
-            var separators = $"{separator}{separator}";
+            return PlatformReplace(path, Path.DirectorySeparatorChar, separator);
+        }
+
+        public static string PlatformReplace(string path, char oldSeparator, char replaceSeparator)
+        {
+            path = path.Replace(oldSeparator, replaceSeparator);
+            var separators = $"{replaceSeparator}{replaceSeparator}";
             while (path.Contains(separators))
-                path = path.Replace(separators, separator.ToString());
+                path = path.Replace(separators, replaceSeparator.ToString());
             return path;
         }
     }

@@ -3,43 +3,16 @@ using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.IO;
+using Cysharp.Threading.Tasks;
 
 namespace Framework
 {
-    public enum AssetBundleType
-    {
-        None,
-        Prefabs,
-        UIPrefabs,
-        Animation,
-        Audio,
-        Shader,
-        Font,
-        Material,
-        Mesh,
-        Model,
-        PhysicMaterial,
-        Scene,
-        Script,
-        Sprite,
-        Texture,
-        Video,
-        UI,
-        Other,
-        Other1,
-        Other2,
-        Other3,
-        All
-    }
-
     [Serializable]
     public class AssetBundleInfo
     {
         public string name;
-        public AssetBundleType type;
         public string path;
         internal AssetBundle assetBundle;
-
         public AssetBundle AssetBundle => assetBundle;
     }
 
@@ -57,10 +30,6 @@ namespace Framework
         /// HFS服务器下载资源更新
         /// </summary>
         HFSPath,
-        /// <summary>
-        /// 内部资源加载模式
-        /// </summary>
-        Resources,
     }
 
     public class ResourcesManager : MonoBehaviour
@@ -69,9 +38,8 @@ namespace Framework
         [NonReorderable]
 #endif
         public List<AssetBundleInfo> assetBundleInfos = new List<AssetBundleInfo>();
-        private readonly Dictionary<AssetBundleType, AssetBundleInfo> assetBundleDict = new Dictionary<AssetBundleType, AssetBundleInfo>();
 
-        public void InitAssetBundleInfos()
+        public virtual async UniTask InitAssetBundleInfos()
         {
             string abPath;
             if (Global.I.Mode == AssetBundleMode.StreamingAssetsPath)
@@ -82,44 +50,13 @@ namespace Framework
                 return;
             foreach (var info in assetBundleInfos)
             {
-                assetBundleDict[info.type] = info;
                 if (File.Exists(abPath + info.path))
                 {
                     if (info.assetBundle != null)
                         info.assetBundle.Unload(true);
-                    info.assetBundle = AssetBundle.LoadFromFile(abPath + info.path);
+                    info.assetBundle = await AssetBundle.LoadFromFileAsync(abPath + info.path);
                 }
             }
-        }
-
-        public T LoadAsset<T>(AssetBundleType type, string assetPath) where T : Object
-        {
-            T assetObj;
-            if (assetBundleDict.TryGetValue(type, out var assetBundleInfo))
-            {
-                if (assetBundleInfo.assetBundle != null)
-                {
-                    assetObj = assetBundleInfo.assetBundle.LoadAsset<T>(assetPath);
-                    if(assetObj != null)
-                        return assetObj;
-                }
-            }
-#if UNITY_EDITOR
-            assetObj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            if (assetObj != null)
-                return assetObj;
-#endif
-            var path = assetPath;
-            var index = path.LastIndexOf('.');
-            if (index >= 0)
-                path = path.Remove(index, path.Length - index);
-            index = path.IndexOf("Resources/");
-            if (index >= 0)
-                path = path.Remove(0, index + 10);
-            assetObj = Resources.Load<T>(path);
-            if (assetObj != null)
-                return assetObj;
-            throw new Exception("找不到资源:" + assetPath);
         }
 
         /// <summary>
@@ -128,7 +65,7 @@ namespace Framework
         /// <typeparam name="T"></typeparam>
         /// <param name="assetPath"></param>
         /// <returns></returns>
-        public T LoadAssetWithAll<T>(string assetPath) where T : Object
+        public virtual T LoadAsset<T>(string assetPath) where T : Object
         {
             T assetObj;
             foreach (var assetBundleInfo in assetBundleInfos)
@@ -157,24 +94,9 @@ namespace Framework
             throw new Exception("找不到资源:" + assetPath);
         }
 
-        public GameObject Instantiate(string assetPath, Transform parent = null)
-        {
-            return Instantiate(AssetBundleType.All, assetPath, parent);
-        }
-
-        public GameObject Instantiate(AssetBundleType type, string assetPath, Transform parent = null)
-        {
-            return Instantiate<GameObject>(type, assetPath, parent);
-        }
-
         public T Instantiate<T>(string assetPath, Transform parent = null) where T : Object
         {
-            return Instantiate<T>(AssetBundleType.All, assetPath, parent);
-        }
-
-        public T Instantiate<T>(AssetBundleType type, string assetPath, Transform parent = null) where T : Object
-        {
-            var assetObj = LoadAsset<GameObject>(type, assetPath);
+            var assetObj = LoadAsset<GameObject>(assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");
@@ -182,7 +104,7 @@ namespace Framework
             }
             var obj = Instantiate(assetObj, parent);
             if (typeof(T).IsSubclassOf(typeof(Component)))
-                return obj.GetComponent<T>();
+                return obj.GetComponent(typeof(T)) as T;
             return obj as T;
         }
     }

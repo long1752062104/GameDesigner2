@@ -10,7 +10,7 @@ namespace Framework
     }
 
     /// <summary>
-    /// ÒôĞ§¹ÜÀí
+    /// éŸ³æ•ˆç®¡ç†
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -19,8 +19,8 @@ namespace Framework
         private readonly List<AudioDesc> sources = new List<AudioDesc>();
 
         /// <summary>
-        /// ²¥·ÅÒôĞ§¼ô¼­
-        /// ²ÎÊıclip : ·ÅÈëÄãÒª²¥·ÅµÄÒôÔ´
+        /// æ’­æ”¾éŸ³æ•ˆå‰ªè¾‘
+        /// å‚æ•°clip : æ”¾å…¥ä½ è¦æ’­æ”¾çš„éŸ³æº
         /// </summary>
         public void Play(AudioClip clip)
         {
@@ -28,9 +28,9 @@ namespace Framework
         }
 
         /// <summary>
-        /// ²¥·ÅÒôĞ§¼ô¼­
-        /// ²ÎÊıclip : ·ÅÈëÄãÒª²¥·ÅµÄÒôÔ´
-        /// ²ÎÊıvolume : ÉùÒô´óĞ¡µ÷½Ú
+        /// æ’­æ”¾éŸ³æ•ˆå‰ªè¾‘
+        /// å‚æ•°clip : æ”¾å…¥ä½ è¦æ’­æ”¾çš„éŸ³æº
+        /// å‚æ•°volume : å£°éŸ³å¤§å°è°ƒèŠ‚
         /// </summary>
         public int Play(AudioClip clip, float volume)
         {
@@ -38,9 +38,9 @@ namespace Framework
         }
 
         /// <summary>
-        /// ²¥·ÅÒôĞ§¼ô¼­
-        /// ²ÎÊıclip : ·ÅÈëÄãÒª²¥·ÅµÄÒôÔ´
-        /// ²ÎÊıvolume : ÉùÒô´óĞ¡µ÷½Ú
+        /// æ’­æ”¾éŸ³æ•ˆå‰ªè¾‘
+        /// å‚æ•°clip : æ”¾å…¥ä½ è¦æ’­æ”¾çš„éŸ³æº
+        /// å‚æ•°volume : å£°éŸ³å¤§å°è°ƒèŠ‚
         /// </summary>
         public int Play(AudioClip clip, float volume, bool loop)
         {
@@ -48,7 +48,7 @@ namespace Framework
                 return -1;
             foreach (var desc in sources)
             {
-                if (!desc.source.isPlaying)//Èç¹ûÒôĞ§¼ô¼­´æÔÚ ²¢ÇÒ ÒôĞ§Ã»ÓĞ±»²¥·Å Ôò¿ÉÒÔÖ´ĞĞ²¥·ÅÒôĞ§
+                if (!desc.source.isPlaying)//å¦‚æœéŸ³æ•ˆå‰ªè¾‘å­˜åœ¨ å¹¶ä¸” éŸ³æ•ˆæ²¡æœ‰è¢«æ’­æ”¾ åˆ™å¯ä»¥æ‰§è¡Œæ’­æ”¾éŸ³æ•ˆ
                 {
                     SetAudioDesc(desc, clip, volume, loop);
                     return desc.Id;
@@ -87,7 +87,7 @@ namespace Framework
 
         public int PlaySound(string clipRes, float volume, bool isLoop)
         {
-            var audioClip = Global.Resources.LoadAsset<AudioClip>(AssetBundleType.All, clipRes);
+            var audioClip = Global.Resources.LoadAsset<AudioClip>(clipRes);
             return Play(audioClip, volume, isLoop);
         }
     }

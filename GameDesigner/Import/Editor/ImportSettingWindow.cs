@@ -180,14 +180,8 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "Recast", "Recast~", "Recast", null, pathRoot);
 
         EditorGUILayout.HelpBox("Framework模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("HyBridCLR地址,下载或Git导入包"))
-        {
-            Application.OpenURL(@"https://gitee.com/focus-creative-games/hybridclr_unity");
-        }
         path = pathRoot + "Framework";
         DrawGUI(path, "Framework", "Framework~", "Framework", null, pathRoot);
-        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.HelpBox("Entities模块 可用于独立环境运行, 代替ECS模块", MessageType.Info);
         path = pathRoot + "Entities";

@@ -1,17 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
-namespace Framework 
+namespace Framework
 {
+    [CreateAssetMenu(fileName = "Global Setting", menuName = "Framework/CreateGlobalSetting", order = 1)]
     public class GlobalSetting : ScriptableObject
     {
         public string Version = "1.0.1";
         public bool AutoIncrement = true;
+        public string tablePath = "Assets/Resources/Table";
+        public string excelConfigScriptPath = "Assets/Scripts/Data/Config";
+        public string hotfixPath;
 
         private static GlobalSetting instance;
         public static GlobalSetting Instance
@@ -20,6 +24,14 @@ namespace Framework
             {
                 if (instance == null)
                     instance = Resources.Load<GlobalSetting>("Global Setting");
+                if (instance == null)
+                {
+                    instance = CreateInstance<GlobalSetting>();
+#if UNITY_EDITOR
+                    UnityEditor.AssetDatabase.CreateAsset(instance, "Assets/Resources/Global Setting.asset");
+                    UnityEditor.AssetDatabase.SaveAssets();
+#endif
+                }
                 return instance;
             }
         }

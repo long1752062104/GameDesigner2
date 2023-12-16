@@ -61,9 +61,9 @@ namespace Framework
             var paths = new List<string>() {
             "Assets/Scripts/Data/DB/", "Assets/Scripts/Data/DBExt/", "Assets/Scripts/Data/Proto/",
             "Assets/Scripts/Data/Binding/", "Assets/Scripts/Data/BindingExt/", "Assets/Resources/Audio",
-            "Assets/Resources/Prefabs", "Assets/Resources/UI", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
+            "Assets/Resources/Prefabs", "Assets/Resources/UI", "Assets/Resources/Table", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
             "Assets/Scripts/Framework/Manager",
-        };
+            };
 
             foreach (var item in paths)
             {
@@ -84,6 +84,11 @@ namespace Framework
 
             path = "Assets/Plugins/GameDesigner/Framework/Template/TableManager.txt";
             excelPath1 = "Assets/Scripts/Framework/Manager/TableManager.cs";
+            if (!File.Exists(excelPath1))
+                File.Copy(path, excelPath1);
+
+            path = "Assets/Plugins/GameDesigner/Framework/Template/ResourcesManager.txt";
+            excelPath1 = "Assets/Scripts/Framework/Manager/ResourcesManager.cs";
             if (!File.Exists(excelPath1))
                 File.Copy(path, excelPath1);
 
