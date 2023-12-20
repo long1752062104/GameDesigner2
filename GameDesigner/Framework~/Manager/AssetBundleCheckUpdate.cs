@@ -102,9 +102,17 @@ namespace Framework
             {
                 var localAssetBundleUrl = $"{Global.I.AssetBundlePath}/{assetBundleInfo.name}";
                 if (localAssetBundleDict.TryGetValue(assetBundleInfo.name, out var assetBundleInfo1))
+                {
                     if (assetBundleInfo1.md5 == assetBundleInfo.md5)
                         if (File.Exists(localAssetBundleUrl))
                             continue;
+                }
+                else if (File.Exists(localAssetBundleUrl))
+                {
+                    var md5 = EncryptHelper.GetMD5(File.ReadAllBytes(localAssetBundleUrl));
+                    if (md5 == assetBundleInfo.md5)
+                        continue;
+                }
                 assetBundleInfos.Add(assetBundleInfo);
                 totalSize += (ulong)assetBundleInfo.fileSize;
             }

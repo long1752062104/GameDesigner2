@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Net.Share;
@@ -38,6 +39,10 @@ namespace Net.Server
         /// Ssl类型
         /// </summary>
         public SslProtocols SslProtocols { get; set; }
+        /// <summary>
+        /// 文档根路径, 指定你的网站文件根路径
+        /// </summary>
+        public string DocumentRootPath { get; set; }
 
         protected override void CreateServerSocket(ushort port)
         {
@@ -49,9 +54,11 @@ namespace Net.Server
                 Server.SslConfiguration.ServerCertificate = Certificate;
                 Server.SslConfiguration.EnabledSslProtocols = SslProtocols;
             }
+            Server.DocumentRootPath = DocumentRootPath;
             Server.OnConnect += OnConnectHandler;
             Server.OnGet += OnGetHandler;
             Server.OnPut += OnPutHandler;
+            Server.OnHead += OnHeadHandler;
             Server.Start();
         }
 
@@ -68,7 +75,59 @@ namespace Net.Server
 
         protected virtual void OnGetHandler(object sender, HttpRequestEventArgs e)
         {
+            var req = e.Request;
+            var res = e.Response;
+            var path = req.RawUrl;
+            if (path == "/")
+                path += "index.html";
+            byte[] contents;
+            if (!e.TryReadFile(path, out contents))
+            {
+                res.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
+            if (path.EndsWith(".html"))
+            {
+                res.ContentType = "text/html";
+                res.ContentEncoding = Encoding.UTF8;
+            }
+            else if (path.EndsWith(".js"))
+            {
+                res.ContentType = "application/javascript";
+                res.ContentEncoding = Encoding.UTF8;
+            }
+            res.ContentLength64 = contents.LongLength;
+            res.Close(contents, true);
+            sendAmount++;
+            sendCount += contents.Length;
+            Debug.Log(path);
+        }
 
+        protected virtual void OnHeadHandler(object sender, HttpRequestEventArgs e)
+        {
+            var req = e.Request;
+            var res = e.Response;
+            var path = req.RawUrl;
+            if (path == "/")
+                path += "index.html";
+            if (!e.TryReadFileLength(path, out var length))
+            {
+                res.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
+            if (path.EndsWith(".html"))
+            {
+                res.ContentType = "text/html";
+                res.ContentEncoding = Encoding.UTF8;
+            }
+            else if (path.EndsWith(".js"))
+            {
+                res.ContentType = "application/javascript";
+                res.ContentEncoding = Encoding.UTF8;
+            }
+            res.Headers.Add("Custom-Header", length.ToString());
+            res.Close();
+            Debug.Log(path);
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)

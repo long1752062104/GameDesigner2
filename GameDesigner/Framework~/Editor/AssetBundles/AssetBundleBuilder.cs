@@ -90,6 +90,8 @@ namespace Framework
         public string packageFormat;
         public bool encrypt;
         public int password = 154789548;
+        [Tooltip("AssetBundle文件如果超过理想大小, 则进行分包")]
+        public long singlePackageSize = 1024 * 1024 * 20; //单包最大20m
         public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
@@ -254,7 +256,7 @@ namespace Framework
             if (type == CollectType.AllDirectoriesSplitHashName | type == CollectType.TopDirectoryOnlyHashName | type == CollectType.AllDirectoriesHashName)
                 assetBundleName = Net.Helper.EncryptHelper.GetMD5(assetPath);
             else
-                assetBundleName = assetPath.Replace("\\", "_").Replace("/", "_").Replace(".", "_").ToLower();
+                assetBundleName = assetPath.Replace("\\", "_").Replace("/", "_").Replace(".", "_").Replace(" ", "").ToLower();
             if (!string.IsNullOrEmpty(assetBundleBuilder.packageFormat))
                 assetBundleName += "." + assetBundleBuilder.packageFormat;
             return assetBundleName;
@@ -361,7 +363,6 @@ namespace Framework
                 return true;
 
             }).ToList();
-            var assetBundleName = GetAssetBundleName(assetPath, type);
             for (int i = 0; i < files.Count; i++)
             {
                 files[i] = files[i].Replace('\\', '/');
@@ -383,22 +384,38 @@ namespace Framework
                     files.RemoveAt(i);
                     if (i >= 0) i--;
                 }
-                else
+            }
+            int count = 1;
+            while (files.Count > 0)
+            {
+                long totalSize = 0;
+                var assetBundleName = GetAssetBundleName(assetPath, type);
+                int sizeIndex = files.Count;
+                for (int i = 0; i < files.Count; i++)
+                {
+                    totalSize += new FileInfo(files[i]).Length;
+                    if (totalSize >= assetBundleBuilder.singlePackageSize)
+                    {
+                        sizeIndex = i == 0 ? 1 : i; //解决不足1死循环问题
+                        assetBundleName += "_" + count++;
+                        break;
+                    }
+                }
+                var assetNames = files.GetRange(0, sizeIndex);
+                files.RemoveRange(0, sizeIndex);
+                for (int i = 0; i < assetNames.Count; i++)
                 {
                     assetInfoList.Add(new AssetInfo()
                     {
-                        name = Path.GetFileName(files[i]),
-                        path = files[i],
+                        name = Path.GetFileName(assetNames[i]),
+                        path = assetNames[i],
                         assetBundleName = assetBundleName,
                     });
                 }
-            }
-            if (files.Count > 0)
-            {
                 var assetBundleBuild = new AssetBundleBuild
                 {
                     assetBundleName = assetBundleName,
-                    assetNames = files.ToArray()
+                    assetNames = assetNames.ToArray()
                 };
                 buildList.Add(assetBundleName, assetBundleBuild);
             }

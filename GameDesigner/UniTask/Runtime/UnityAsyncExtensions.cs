@@ -775,20 +775,20 @@ namespace Cysharp.Threading.Tasks
                     continuationAction = null;
                     var result = asyncOperation.webRequest;
                     asyncOperation = null;
-                    if (result.IsError())
-                    {
-                        throw new UnityWebRequestException(result);
-                    }
+                    //if (result.IsError())
+                    //{
+                    //    throw new UnityWebRequestException(result);
+                    //}
                     return result;
                 }
                 else
                 {
                     var result = asyncOperation.webRequest;
                     asyncOperation = null;
-                    if (result.IsError())
-                    {
-                        throw new UnityWebRequestException(result);
-                    }
+                    //if (result.IsError())
+                    //{
+                    //    throw new UnityWebRequestException(result);
+                    //}
                     return result;
                 }
             }
