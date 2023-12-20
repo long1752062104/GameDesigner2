@@ -112,7 +112,7 @@ public class ExternalReferenceTools : EditorWindow
         }
         if (GUILayout.Button("编译dll!", GUILayout.Height(30)))
         {
-            
+
         }
         if (EditorGUI.EndChangeCheck())
             SaveData();
@@ -162,6 +162,8 @@ public class ExternalReferenceTools : EditorWindow
             {
                 foreach (var pattern in patterns)
                 {
+                    if (string.IsNullOrEmpty(pattern))
+                        continue;
                     if (file.EndsWith(pattern))
                     {
                         var rPath = PathHelper.GetRelativePath(csPath, file, true);

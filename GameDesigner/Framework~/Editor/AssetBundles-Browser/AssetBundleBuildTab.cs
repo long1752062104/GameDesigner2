@@ -168,7 +168,7 @@ namespace AssetBundleBrowser
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
             m_CompressionContent = new GUIContent("Compression", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
 
-            m_Version = new GUIContent("Version", "当前版本");
+            m_Version = new GUIContent("Version", "褰撳墠鐗堟湰");
 
             if (m_UserData.m_UseDefaultPath)
             {
@@ -288,19 +288,6 @@ namespace AssetBundleBrowser
                 }
             }
 
-            var version = EditorGUILayout.TextField("Version", GlobalSetting.Instance.Version);
-            if (GlobalSetting.Instance.Version != version)
-            {
-                GlobalSetting.Instance.Version = version;
-                EditorUtility.SetDirty(GlobalSetting.Instance);
-            }
-            var autoIncrement = EditorGUILayout.Toggle("自动更新版本号", GlobalSetting.Instance.AutoIncrement);
-            if (GlobalSetting.Instance.AutoIncrement != autoIncrement)
-            {
-                GlobalSetting.Instance.AutoIncrement = autoIncrement;
-                EditorUtility.SetDirty(GlobalSetting.Instance);
-            }
-
             // build.
             EditorGUILayout.Space();
             if (GUILayout.Button("Build") )
@@ -364,19 +351,12 @@ namespace AssetBundleBrowser
                 }
             }
 
-            var versionFile = m_UserData.m_OutputPath + "/../Version.txt";
-            var version = GlobalSetting.Instance.CheckAutoIncrement();
-            var dict = GlobalSetting.Instance.GetVersionPathDict();
-            dict["Version"] = version;
-
             var buildInfo = new ABBuildInfo();
             buildInfo.outputDirectory = m_UserData.m_OutputPath;
             buildInfo.options = opt;
             buildInfo.buildTarget = (BuildTarget)m_UserData.m_BuildTarget;
             buildInfo.onBuild = (assetBundleName) =>
             {
-                var path = m_UserData.m_OutputPath + "/" + assetBundleName;
-                dict[path] = GlobalSetting.ToMD5(path);
                 if (m_InspectTab == null)
                     return;
                 m_InspectTab.AddBundleFolder(buildInfo.outputDirectory);
@@ -385,22 +365,6 @@ namespace AssetBundleBrowser
 
             AssetBundleModel.Model.DataSource.BuildAssetBundles(buildInfo, m_ManageTab);
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-
-            var dllFiles = Directory.GetFiles("AssetBundles/Hotfix/", "*.bytes");
-            foreach (var file in dllFiles)
-            {
-                var path = "AssetBundles/Hotfix/" + Path.GetFileName(file);
-                dict[path] = GlobalSetting.ToMD5(path);
-            }
-
-            dllFiles = Directory.GetFiles("AssetBundles/Table/", "*.json");
-            foreach (var file in dllFiles)
-            {
-                var path = "AssetBundles/Table/" + Path.GetFileName(file);
-                dict[path] = GlobalSetting.ToMD5(path);
-            }
-
-            GlobalSetting.Instance.SaveVersionDict(dict);
 
             if (m_CopyToStreaming.state)
                 DirectoryCopy("AssetBundles", m_streamingPath);

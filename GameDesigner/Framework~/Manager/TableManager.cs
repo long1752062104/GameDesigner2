@@ -1,7 +1,5 @@
 using System.Data;
 using UnityEngine;
-using UnityEngine.Networking;
-using Cysharp.Threading.Tasks;
 using Net.Config;
 using Net.Share;
 
@@ -9,26 +7,19 @@ namespace Framework
 {
     public class TableManager : MonoBehaviour
     {
+        public string tablePath = "Assets/Arts/Table/GameConfig.bytes";
         protected readonly TableConfig tableConfig = new TableConfig();
 
-        public virtual async UniTask Init()
+        public virtual void Init()
         {
-            var path = GlobalSetting.Instance.tablePath + "/GameConfig.bytes";
-            using (var request = UnityWebRequest.Get("file:///" + path)) 
+            var textAsset = Global.Resources.LoadAsset<TextAsset>(tablePath);
+            if (textAsset == null)
             {
-                var oper = request.SendWebRequest();
-                while (!oper.isDone)
-                {
-                    await UniTask.Yield();
-                }
-                if (!string.IsNullOrEmpty(request.error))
-                {
-                    Global.Logger.LogError("点击菜单GameDesigner/Framework/GenerateExcelData生成execl表数据! " + request.error);
-                    return;
-                }
-                var jsonStr = request.downloadHandler.text;
-                tableConfig.LoadTable(jsonStr);
+                Debug.LogError("获取游戏配置失败!");
+                return;
             }
+            var jsonStr = textAsset.text;
+            tableConfig.LoadTable(jsonStr);
         }
 
         /// <summary>

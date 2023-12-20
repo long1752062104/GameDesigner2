@@ -11,7 +11,7 @@ namespace Net.Component
         private void Awake()
         {
 #if !UNITY_EDITOR && UNITY_SERVER
-            NDebug.BindLogAll(Console.WriteLine);
+            NDebug.BindLogAll(System.Console.WriteLine);
 #else
             BindLog();
 #endif

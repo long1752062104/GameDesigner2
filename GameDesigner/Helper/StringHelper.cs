@@ -105,5 +105,15 @@ namespace Net.Helper
                 self = self.Replace(item, "");
             return self;
         }
+
+        public static bool StartsWith(this string self, string text)
+        {
+            if (self.Length < text.Length)
+                return false;
+            for (int i = 0; i < text.Length; i++)
+                if (self[i] != text[i])
+                    return false;
+            return true;
+        }
     }
 }

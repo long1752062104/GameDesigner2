@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.IO;
-using Cysharp.Threading.Tasks;
+using System.Text;
 
 namespace Framework
 {
@@ -11,9 +11,17 @@ namespace Framework
     public class AssetBundleInfo
     {
         public string name;
-        public string path;
-        internal AssetBundle assetBundle;
-        public AssetBundle AssetBundle => assetBundle;
+        public string md5;
+        public int fileSize;
+
+        public AssetBundleInfo() { }
+
+        public AssetBundleInfo(string name, string md5, int fileSize)
+        {
+            this.name = name;
+            this.md5 = md5;
+            this.fileSize = fileSize;
+        }
     }
 
     public enum AssetBundleMode
@@ -21,15 +29,23 @@ namespace Framework
         /// <summary>
         /// 本机路径, 也就是编辑器路径
         /// </summary>
-        LocalPath,
+        EditorMode,
         /// <summary>
         /// 流路径, 不需要网络下载的模式
         /// </summary>
-        StreamingAssetsPath,
+        LocalMode,
         /// <summary>
         /// HFS服务器下载资源更新
         /// </summary>
-        HFSPath,
+        ServerMode,
+    }
+
+    [Serializable]
+    public class AssetInfo
+    {
+        public string name;
+        public string path;
+        public string assetBundleName;
     }
 
     public class ResourcesManager : MonoBehaviour
@@ -37,26 +53,59 @@ namespace Framework
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public List<AssetBundleInfo> assetBundleInfos = new List<AssetBundleInfo>();
+        public Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
+        public Dictionary<string, AssetInfo> assetInfos = new Dictionary<string, AssetInfo>();
+        private AssetBundle manifestBundle;
+        private AssetBundleManifest assetBundleManifest;
+        public bool encrypt;
+        public int password = 154789548;
 
-        public virtual async UniTask InitAssetBundleInfos()
+        public virtual void Init()
         {
-            string abPath;
-            if (Global.I.Mode == AssetBundleMode.StreamingAssetsPath)
-                abPath = Application.streamingAssetsPath + "/";
-            else if (Global.I.Mode == AssetBundleMode.HFSPath)
-                abPath = Application.persistentDataPath + "/";
-            else
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return;
-            foreach (var info in assetBundleInfos)
+            var assetBundlePath = Global.I.AssetBundlePath;
+            var assetInfoList = assetBundlePath + "AssetInfoList.json";
+            if (!File.Exists(assetInfoList))
             {
-                if (File.Exists(abPath + info.path))
-                {
-                    if (info.assetBundle != null)
-                        info.assetBundle.Unload(true);
-                    info.assetBundle = await AssetBundle.LoadFromFileAsync(abPath + info.path);
-                }
+                Debug.LogError("请构建AB包后再运行!");
+                return;
             }
+            var json = LoadAssetFileReadAllText(assetInfoList);
+            var assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<List<AssetInfo>>(json);
+            foreach (var assetInfo in assetInfos)
+                this.assetInfos.Add(assetInfo.path, assetInfo);
+            var manifestBundlePath = $"{assetBundlePath}{Global.I.version}";
+            manifestBundle = LoadAssetBundle(manifestBundlePath);
+            assetBundleManifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+        }
+
+        public virtual string LoadAssetFileReadAllText(string assetPath)
+        {
+            var bytes = LoadAssetFile(assetPath);
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        public virtual AssetBundle LoadAssetBundle(string assetBundlePath)
+        {
+            var bytes = LoadAssetFile(assetBundlePath);
+            var assetBundle = AssetBundle.LoadFromMemory(bytes);
+            return assetBundle;
+        }
+
+        public virtual byte[] LoadAssetFile(string assetPath)
+        {
+            var bytes = File.ReadAllBytes(assetPath);
+            if (encrypt)
+                Net.Helper.EncryptHelper.ToDecrypt(password, bytes);
+            return bytes;
+        }
+
+        public virtual void OnDestroy()
+        {
+            manifestBundle?.Unload(true);
+            foreach (var AssetBundleInfo in assetBundles)
+                AssetBundleInfo.Value?.Unload(true);
         }
 
         /// <summary>
@@ -67,31 +116,35 @@ namespace Framework
         /// <returns></returns>
         public virtual T LoadAsset<T>(string assetPath) where T : Object
         {
-            T assetObj;
-            foreach (var assetBundleInfo in assetBundleInfos)
-            {
-                if (assetBundleInfo.assetBundle == null)
-                    continue;
-                assetObj = assetBundleInfo.assetBundle.LoadAsset<T>(assetPath);
-                if (assetObj != null)
-                    return assetObj;
-            }
 #if UNITY_EDITOR
-            assetObj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            if (assetObj != null)
-                return assetObj;
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
 #endif
-            var path = assetPath;
-            var index = path.LastIndexOf('.');
-            if (index >= 0)
-                path = path.Remove(index, path.Length - index);
-            index = path.IndexOf("Resources/");
-            if (index >= 0)
-                path = path.Remove(0, index + 10);
-            assetObj = Resources.Load<T>(path);
-            if (assetObj != null)
-                return assetObj;
-            throw new Exception("找不到资源:" + assetPath);
+            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+                return default;
+            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
+            {
+                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
+                if (File.Exists(fullPath))
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
+                else return default;
+                DirectDependencies(assetInfoBase.assetBundleName);
+            }
+            return assetBundle.LoadAsset<T>(assetPath);
+        }
+
+        protected virtual void DirectDependencies(string assetBundleName)
+        {
+            var dependencies = assetBundleManifest.GetDirectDependencies(assetBundleName);
+            foreach (var dependencie in dependencies)
+            {
+                if (assetBundles.ContainsKey(dependencie))
+                    continue;
+                var fullPath = Global.I.AssetBundlePath + dependencie;
+                var assetBundle = LoadAssetBundle(fullPath);
+                assetBundles.Add(dependencie, assetBundle);
+                DirectDependencies(dependencie);
+            }
         }
 
         public T Instantiate<T>(string assetPath, Transform parent = null) where T : Object

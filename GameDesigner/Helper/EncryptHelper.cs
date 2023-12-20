@@ -113,16 +113,18 @@ namespace Net.Helper
 
         public static string GetMD5(string text)
         {
+            var bytValue = Encoding.UTF8.GetBytes(text);
+            return GetMD5(bytValue);
+        }
+
+        public static string GetMD5(byte[] bytValue)
+        {
             var md5 = new MD5CryptoServiceProvider();
-            byte[] bytValue, bytHash;
-            bytValue = Encoding.UTF8.GetBytes(text);
-            bytHash = md5.ComputeHash(bytValue);
+            var bytHash = md5.ComputeHash(bytValue);
             md5.Clear();
             string sTemp = "";
             for (int i = 0; i < bytHash.Length; i++)
-            {
                 sTemp += bytHash[i].ToString("X").PadLeft(2, '0');
-            }
             return sTemp.ToLower();
         }
     }

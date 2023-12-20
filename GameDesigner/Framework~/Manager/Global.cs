@@ -1,4 +1,5 @@
 using Net.Component;
+using System.Reflection;
 using UnityEngine;
 
 namespace Framework
@@ -35,10 +36,26 @@ namespace Framework
         public static EventManager Event;
         public static PlayerPrefsManager PlayerPrefs;
 
-        public AssetBundleMode Mode = AssetBundleMode.LocalPath;
-        public string entryRes = "Assets/Resources/Prefabs/GameEntry.prefab";
+        public AssetBundleMode Mode = AssetBundleMode.EditorMode;
+        public Platform platform;
+        public string version = "1.0.0";
+        public string entryRes = "Assets/Arts/Prefabs/GameEntry.prefab";
 
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
+
+        public string AssetBundlePath
+        {
+            get
+            {
+                if (Mode == AssetBundleMode.LocalMode)
+                    return $"{Application.streamingAssetsPath}/AssetBundles/{platform}/{version}/";
+                if (Mode == AssetBundleMode.ServerMode)
+                    return $"{Application.persistentDataPath}/AssetBundles/{platform}/{version}/";
+                return string.Empty;
+            }
+        }
+
+        public static Assembly HotfixAssembly { get; set; }
 
         protected override void Awake()
         {

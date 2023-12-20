@@ -81,7 +81,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ReferenceResolution: {x: 2560, y: 1440}
   m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -265,7 +265,9 @@ MonoBehaviour:
   event: {fileID: 4587307809564096770}
   playerPrefs: {fileID: 5583643705473538055}
   Mode: 0
-  entryRes: Assets/Resources/Prefabs/GameEntry.prefab
+  platform: 19
+  version: 1.0.0
+  entryRes: Assets/Arts/Prefabs/GameEntry.prefab
 --- !u!114 &4109322260658001646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,9 +280,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54df94d8110ca0147b0f57b5ad5b8996, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  assetBundleInfos:
-  - name: data
-    path: AssetBundles/StandaloneWindows/data
 --- !u!114 &4109322260658001640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,7 +314,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0f62e7e9324ec04e8d36665f359ece0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  url: http://192.168.1.4/
+  url: http://192.168.1.5/
+  metadataList: Assets/Arts/Hotfix/MetadataList.bytes
+  hotfixDll: Assets/Arts/Hotfix/Main.dll.bytes
 --- !u!114 &4109322260658001642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,6 +329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04d6e8295b51d9e41ad689a79a94b790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tablePath: Assets/Arts/Table/GameConfig.bytes
 --- !u!114 &4109322260658001557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,6 +424,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EnableLog: 1
+  logMode: 4
 --- !u!114 &7599921650345442015
 MonoBehaviour:
   m_ObjectHideFlags: 0

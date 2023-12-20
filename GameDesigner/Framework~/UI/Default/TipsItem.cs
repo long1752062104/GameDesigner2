@@ -12,11 +12,12 @@ namespace Framework
 
         private async void OnEnable()
         {
-            transform.localScale = Vector3.zero;
+            transform.localPosition = Vector3.zero;
+            transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
             transform.DOScale(1f, 0.2f);
             await UniTask.Delay((int)(time * 1000f));
-            transform.DOScale(0f, 0.2f);
-            await UniTask.Delay(300);
+            transform.DOLocalMoveY(450f, 0.8f);
+            await UniTask.Delay(800);
             gameObject.SetActive(false);
             Global.Pool.Recycling(this);
         }

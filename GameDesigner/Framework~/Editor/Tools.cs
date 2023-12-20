@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace Framework 
+namespace Framework
 {
     public class Tools
     {
@@ -60,8 +60,8 @@ namespace Framework
 
             var paths = new List<string>() {
             "Assets/Scripts/Data/DB/", "Assets/Scripts/Data/DBExt/", "Assets/Scripts/Data/Proto/",
-            "Assets/Scripts/Data/Binding/", "Assets/Scripts/Data/BindingExt/", "Assets/Resources/Audio",
-            "Assets/Resources/Prefabs", "Assets/Resources/UI", "Assets/Resources/Table", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
+            "Assets/Scripts/Data/Binding/", "Assets/Scripts/Data/BindingExt/", "Assets/Arts/Audio",
+            "Assets/Arts/Prefabs", "Assets/Arts/UI", "Assets/Arts/Table", "Assets/Scripts/Data/Config", "Assets/Scripts/Data/ConfigExt",
             "Assets/Scripts/Framework/Manager",
             };
 
@@ -99,6 +99,26 @@ namespace Framework
 
             Debug.Log($"环境安装完成!");
             AssetDatabase.Refresh();
+        }
+
+        [MenuItem("GameDesigner/Framework/启用HybridCLR", false, 6)]
+        private static void EnableHybridCLR()
+        {
+            bool isChecked = Menu.GetChecked("GameDesigner/Framework/启用HybridCLR");
+            Menu.SetChecked("GameDesigner/Framework/启用HybridCLR", !isChecked);
+            BuildTargetGroup currentBuildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+            string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(currentBuildTargetGroup);
+            if (!isChecked)
+            {
+                if (!defineSymbols.Contains("HYBRIDCLR"))
+                    defineSymbols += ";HYBRIDCLR";
+            }
+            else
+            {
+                if (defineSymbols.Contains("HYBRIDCLR"))
+                    defineSymbols = defineSymbols.Replace("HYBRIDCLR", "");
+            }
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(currentBuildTargetGroup, defineSymbols);
         }
     }
 }

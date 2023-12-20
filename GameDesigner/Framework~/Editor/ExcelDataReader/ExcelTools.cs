@@ -10,9 +10,10 @@ public class ExcelTools
 {
     public static void GenerateExcelData()
     {
-        var path = GlobalSetting.Instance.tablePath + "/GameConfig.bytes";
-        if (!Directory.Exists(Path.GetDirectoryName(path)))
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+        var tablePath = AssetBundleBuilder.Instance.tablePath;
+        var path = tablePath + "/GameConfig.bytes";
+        if (!Directory.Exists(tablePath))
+            Directory.CreateDirectory(tablePath);
         var excelPath = "Tools/Excel/GameConfig.xls";
         var temp = excelPath + ".temp";
         File.Copy(excelPath, temp, true);
@@ -91,7 +92,7 @@ public class ExcelTools
                         sb.Append(sb1.ToString());
                         sb.Append(text2[4]);
                         var text5 = sb.ToString();
-                        File.WriteAllText($"{GlobalSetting.Instance.excelConfigScriptPath}/{table.TableName}DataConfig.cs", text5);
+                        File.WriteAllText($"{AssetBundleBuilder.Instance.tableScriptPath}/{table.TableName}DataConfig.cs", text5);
                         Debug.Log($"生成表:{table.TableName}完成!");
                     }
                     Debug.Log("全部表生成完毕!");
