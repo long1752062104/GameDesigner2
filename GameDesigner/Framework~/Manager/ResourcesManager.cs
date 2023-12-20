@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Cysharp.Threading.Tasks;
 
 namespace Framework
 {
@@ -131,6 +132,44 @@ namespace Framework
                 DirectDependencies(assetInfoBase.assetBundleName);
             }
             return assetBundle.LoadAsset<T>(assetPath);
+        }
+
+        public virtual async UniTask<T> LoadAssetAsync<T>(string assetPath) where T : Object
+        {
+#if UNITY_EDITOR
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
+#endif
+            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+                return default;
+            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
+            {
+                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
+                if (File.Exists(fullPath))
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
+                else return default;
+                DirectDependencies(assetInfoBase.assetBundleName);
+            }
+            var assetObject = await assetBundle.LoadAssetAsync<T>(assetPath) as T;
+            return assetObject;
+        }
+
+        public virtual void LoadAssetScene(string assetPath)
+        {
+#if UNITY_EDITOR
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
+                return;
+#endif
+            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+                return;
+            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
+            {
+                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
+                if (File.Exists(fullPath))
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
+                else return;
+                DirectDependencies(assetInfoBase.assetBundleName);
+            }
         }
 
         protected virtual void DirectDependencies(string assetBundleName)

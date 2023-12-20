@@ -94,9 +94,9 @@ namespace Net.MMORPG
                 });
             }
             var aoiMgr = UnityEngine.Object.FindObjectOfType<Component.AOIManager>();
-            if (aoiMgr != null) 
+            if (aoiMgr != null)
             {
-                sceneData.aoiData = new MapAOIData() 
+                sceneData.aoiData = new MapAOIData()
                 {
                     xPos = aoiMgr.xPos,
                     zPos = aoiMgr.zPos,
@@ -106,10 +106,18 @@ namespace Net.MMORPG
                     height = aoiMgr.height,
                 };
             }
-            var navmesh = UnityEngine.Object.FindObjectOfType<AI.NavmeshSystemUnity>();
-            if (navmesh != null)
+            var navmeshSystemUnityType = Helper.AssemblyHelper.GetTypeNotOptimized("Net.AI.NavmeshSystemUnity");
+            if (navmeshSystemUnityType != null)
             {
-                sceneData.navmeshPath = navmesh.NavmeshPath;
+                var navmesh = UnityEngine.Object.FindObjectOfType(navmeshSystemUnityType);
+                if (navmesh != null)
+                {
+                    var navmeshPath = navmeshSystemUnityType.GetProperty("NavmeshPath");
+                    if (navmeshPath != null)
+                    {
+                        sceneData.navmeshPath = navmeshPath.GetValue(navmesh) as string;
+                    }
+                }
             }
             var jsonStr = Newtonsoft_X.Json.JsonConvert.SerializeObject(sceneData);
             File.WriteAllText(path, jsonStr);

@@ -168,7 +168,7 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () =>
         {
             Import("AOI", "AOI~", "AOI", pathRoot);//依赖
-            Import("Recast", "Recast~", "Recast", pathRoot);//依赖
+            //Import("Recast", "Recast~", "Recast", pathRoot);//依赖 2020版本或以下编译不了!
         }, pathRoot);
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
