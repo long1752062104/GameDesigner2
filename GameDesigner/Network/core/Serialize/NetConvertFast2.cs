@@ -70,8 +70,8 @@
     {
         private static readonly MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
         private static readonly MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
-        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>();
-        private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>();
+        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>(true);
+        private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>(true);
 
         static NetConvertFast2()
         {

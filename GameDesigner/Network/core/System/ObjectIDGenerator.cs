@@ -11,7 +11,7 @@ namespace Net.System
     public class ObjectIDGenerator
     {
         private long m_currentCount;
-        public MyDictionary<object, long> dict = new MyDictionary<object, long>();
+        public MyDictionary<object, long> dict = new MyDictionary<object, long>(true);
 
         public virtual long GetId(object obj)
         {

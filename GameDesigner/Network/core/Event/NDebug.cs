@@ -36,7 +36,7 @@
     /// </summary>
     public class ConsoleDebug : IDebug
     {
-        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
+        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>(true);
         public int count = 1000;
         private int cursorTop;
         private bool collapse;
@@ -100,7 +100,7 @@
     /// </summary>
     public class FormDebug : IDebug
     {
-        private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
+        private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>(true);
         public int count = 1000;
         public ListBox listBox;
         /// <summary>

@@ -7,7 +7,7 @@ namespace Net.Share
     public class RPCMethodBody
     {
         public QueueSafe<RPCModelTask> CallWaitQueue = new QueueSafe<RPCModelTask>();
-        public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>();
+        public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>(true);
         public int Count => RpcDict.Count;
 
         internal void Add(object key, IRPCMethod value)

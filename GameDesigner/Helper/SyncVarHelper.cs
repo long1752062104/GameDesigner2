@@ -10,22 +10,17 @@ namespace Net.Helper
     {
         public static void InitSyncVar(MemberInfo member, object target, Action<SyncVarInfo> onSyncVarCollect)
         {
+            Type memberType = null;
             SyncVarInfo syncVarInfo = null;
             if (member is FieldInfo fieldInfo)
-            {
-                if (fieldInfo.FieldType.IsSubclassOf(typeof(SyncVarInfo)))
-                {
-                    syncVarInfo = Activator.CreateInstance(fieldInfo.FieldType) as SyncVarInfo;
-                    syncVarInfo.SetMemberInfo(member);
-                    onSyncVarCollect(syncVarInfo);
-                    return;
-                }
-            }
+                memberType = fieldInfo.FieldType;
             if (member is PropertyInfo propertyInfo)
+                memberType = propertyInfo.PropertyType;
+            if (memberType != null)
             {
-                if (propertyInfo.PropertyType.IsSubclassOf(typeof(SyncVarInfo)))
+                if (memberType.IsSubclassOf(typeof(SyncVarInfo)))
                 {
-                    syncVarInfo = Activator.CreateInstance(propertyInfo.PropertyType) as SyncVarInfo;
+                    syncVarInfo = Activator.CreateInstance(memberType) as SyncVarInfo;
                     syncVarInfo.SetMemberInfo(member);
                     onSyncVarCollect(syncVarInfo);
                     return;
@@ -123,7 +118,7 @@ namespace Net.Helper
             foreach (var item in syncVarList)
             {
                 var syncVar = item.Value;
-                if(syncVar.EqualsTarget(target))
+                if (syncVar.EqualsTarget(target))
                     syncVar.isDispose = true;
             }
         }

@@ -38,9 +38,9 @@
     public class NetConvertBinary : NetConvertBase
     {
         private static MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
-        private static MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
-        private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>();
-        private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>();
+        private static MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>(true);
+        private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>(true);
+        private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>(true);
         private static Type nonSerialized = typeof(NonSerialized);
         private static MyDictionary<Type, Member[]> map;
 
@@ -139,7 +139,7 @@
             AddBaseType<List<DateTime[]>>();
             AddBaseType<List<decimal[]>>();
             //基础结构类型初始化
-            map = new MyDictionary<Type, Member[]>
+            map = new MyDictionary<Type, Member[]>(true)
             {
                 { typeof(byte), new Member[] { new Member() { Type = typeof(byte), IsPrimitive = true, TypeCode = TypeCode.Byte } } },
                 { typeof(sbyte), new Member[] { new Member() { Type = typeof(sbyte), IsPrimitive = true, TypeCode = TypeCode.SByte } } },

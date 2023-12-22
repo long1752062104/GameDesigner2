@@ -64,7 +64,7 @@ namespace Net.Client
         /// <summary>
         /// 远程方法优化字典
         /// </summary>
-        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>();
+        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>(true);
         /// <summary>
         /// 远程方法哈希字典
         /// </summary>
@@ -72,11 +72,11 @@ namespace Net.Client
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
-        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>(true);
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>(true);
         /// <summary>
         /// 字段同步信息
         /// </summary>
