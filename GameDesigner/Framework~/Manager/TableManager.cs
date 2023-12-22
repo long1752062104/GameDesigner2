@@ -8,7 +8,7 @@ namespace Framework
     public class TableManager : MonoBehaviour
     {
         public string tablePath = "Assets/Arts/Table/GameConfig.bytes";
-        protected readonly TableConfig tableConfig = new TableConfig();
+        protected TableConfig tableConfig = new TableConfig();
 
         public virtual void Init()
         {
@@ -52,6 +52,16 @@ namespace Framework
         public T[] GetDataConfigs<T>(string filterExpression) where T : IDataConfig, new()
         {
             return tableConfig.GetDataConfigs<T>(filterExpression);
+        }
+
+        /// <summary>
+        /// 转移对象信息, 保留对象数据, 可能旧的TableManager被销毁, 转移数据给新的TableManager组件
+        /// </summary>
+        /// <param name="tableManager"></param>
+        public void Change(TableManager tableManager)
+        {
+            tableConfig = tableManager.tableConfig;
+            tableManager.tableConfig = null;
         }
     }
 }

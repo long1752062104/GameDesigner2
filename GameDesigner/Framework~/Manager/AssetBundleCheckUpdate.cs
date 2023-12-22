@@ -18,7 +18,7 @@ namespace Framework
         public string metadataList = "Assets/Arts/Hotfix/MetadataList.bytes";
         public string hotfixDll = "Assets/Arts/Hotfix/Main.dll.bytes";
 
-        void Start()
+        public virtual void Start()
         {
             var mode = Global.I.Mode;
             if (mode == AssetBundleMode.EditorMode | mode == AssetBundleMode.LocalMode)
@@ -175,6 +175,8 @@ namespace Framework
         private void LoadMetadataForAOTAssemblies()
         {
 #if HYBRIDCLR
+            if (Global.HotfixAssembly != null)
+                return;
             var textAsset = Global.Resources.LoadAsset<TextAsset>(metadataList);
             if (textAsset == null)
             {

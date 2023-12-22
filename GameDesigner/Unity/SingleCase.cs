@@ -48,11 +48,16 @@ namespace Net.Component
         {
             get { return Instance; }
         }
+        /// <summary>
+        /// 对象是否被销毁, 当你继承重写Awake时, 如果前面销毁了, 就不需要往下执行了, 往下执行可能会出问题
+        /// </summary>
+        public bool IsDestroy { get; set; }
 
         protected virtual void Awake()
         {
             if (instance != null & instance != this)
             {
+                IsDestroy = true;
                 Destroy(gameObject);
                 return;
             }

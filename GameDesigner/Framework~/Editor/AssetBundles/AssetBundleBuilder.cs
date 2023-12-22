@@ -480,35 +480,40 @@ namespace Framework
 #if HYBRIDCLR
         public void CopyHotUpdateAssembliesToStreamingAssets(string hotfixAssembliesDstDir)
         {
-            var target = EditorUserBuildSettings.activeBuildTarget;
-            var hotfixDllSrcDir = SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target);
             if (!Directory.Exists(hotfixAssembliesDstDir))
                 Directory.CreateDirectory(hotfixAssembliesDstDir);
-            var assemblyNames = new List<string>(assetBundleBuilder.AOTMetaAssemblyNames);
-            assemblyNames.AddRange(SettingsUtil.HotUpdateAssemblyFilesExcludePreserved);
+            var target = EditorUserBuildSettings.activeBuildTarget;
+            var stripDir = SettingsUtil.GetAssembliesPostIl2CppStripDir(target);
             var metadataList = new List<string>();
-            foreach (var assemblyName in assemblyNames)
-            {
-                var dllPath = $"{hotfixDllSrcDir}/{assemblyName}";
-                if (File.Exists(dllPath))
-                {
-                    var dllBytesPath = $"{hotfixAssembliesDstDir}/{assemblyName}.bytes";
-                    File.Copy(dllPath, dllBytesPath, true);
-                    if (assemblyName != assetBundleBuilder.MainAssemblyName)
-                        metadataList.Add(dllBytesPath);
-                }
-                if (!assetBundleBuilder.copyPdb)
-                    continue;
-                dllPath = $"{hotfixDllSrcDir}/{assemblyName.Replace("dll", "pdb")}";
-                if (File.Exists(dllPath))
-                {
-                    var pdbBytesPath = $"{hotfixAssembliesDstDir}/{assemblyName.Replace("dll", "pdb")}.bytes";
-                    File.Copy(dllPath, pdbBytesPath, true);
-                }
-            }
+            foreach (var assemblyName in assetBundleBuilder.AOTMetaAssemblyNames)
+                CopyAssembliesToHotfixPath(metadataList, stripDir, hotfixAssembliesDstDir, assemblyName);
+            stripDir = SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target);
+            foreach (var assemblyName in SettingsUtil.HotUpdateAssemblyFilesExcludePreserved)
+                CopyAssembliesToHotfixPath(null, stripDir, hotfixAssembliesDstDir, assemblyName);
             var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(metadataList);
             File.WriteAllText($"{hotfixAssembliesDstDir}/MetadataList.bytes", json);
             AssetDatabase.Refresh();
+        }
+
+        private void CopyAssembliesToHotfixPath(List<string> metadataList, string stripDir, string hotfixAssembliesDstDir, string assemblyName)
+        {
+            if (!assemblyName.EndsWith(".dll"))
+                assemblyName += ".dll";
+            var dllPath = $"{stripDir}/{assemblyName}";
+            if (File.Exists(dllPath))
+            {
+                var dllBytesPath = $"{hotfixAssembliesDstDir}/{assemblyName}.bytes";
+                File.Copy(dllPath, dllBytesPath, true);
+                metadataList?.Add(dllBytesPath);
+            }
+            if (!assetBundleBuilder.copyPdb)
+                return;
+            dllPath = dllPath.Replace("dll", "pdb");
+            if (File.Exists(dllPath))
+            {
+                var pdbBytesPath = $"{hotfixAssembliesDstDir}/{assemblyName.Replace("dll", "pdb")}.bytes";
+                File.Copy(dllPath, pdbBytesPath, true);
+            }
         }
 #endif
     }

@@ -105,6 +105,8 @@ namespace Framework
         public virtual void OnDestroy()
         {
             manifestBundle?.Unload(true);
+            if (assetBundles == null)
+                return;
             foreach (var AssetBundleInfo in assetBundles)
                 AssetBundleInfo.Value?.Unload(true);
         }
@@ -198,6 +200,22 @@ namespace Framework
             if (typeof(T).IsSubclassOf(typeof(Component)))
                 return obj.GetComponent(typeof(T)) as T;
             return obj as T;
+        }
+
+        /// <summary>
+        /// 转移对象信息, 保留对象数据, 可能旧的ResourcesManager被销毁, 转移数据给新的ResourcesManager组件
+        /// </summary>
+        /// <param name="resources"></param>
+        public void Change(ResourcesManager resources)
+        {
+            assetBundles = resources.assetBundles;
+            assetInfos = resources.assetInfos;
+            manifestBundle = resources.manifestBundle;
+            assetBundleManifest = resources.assetBundleManifest;
+            resources.assetBundles = null;
+            resources.assetInfos = null;
+            resources.manifestBundle = null;
+            resources.assetBundleManifest = null;
         }
     }
 }

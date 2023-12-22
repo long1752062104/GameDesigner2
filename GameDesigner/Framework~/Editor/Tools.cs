@@ -92,6 +92,11 @@ namespace Framework
             if (!File.Exists(excelPath1))
                 File.Copy(path, excelPath1);
 
+            path = "Assets/Plugins/GameDesigner/Framework/Template/AssetBundleCheckUpdate.txt";
+            excelPath1 = "Assets/Scripts/Framework/Manager/AssetBundleCheckUpdate.cs";
+            if (!File.Exists(excelPath1))
+                File.Copy(path, excelPath1);
+
             path = "Assets/Plugins/GameDesigner/Framework/Template/EventCommand.txt";
             excelPath1 = "Assets/Scripts/Data/EventCommand.cs";
             if (!File.Exists(excelPath1))

@@ -40,9 +40,9 @@ namespace Framework
         public Platform platform;
         public string version = "1.0.0";
         public string entryRes = "Assets/Arts/Prefabs/GameEntry.prefab";
+        public bool dontDestroyOnLoad = true;
 
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
-
         public string AssetBundlePath
         {
             get
@@ -54,12 +54,16 @@ namespace Framework
                 return string.Empty;
             }
         }
-
         public static Assembly HotfixAssembly { get; set; }
 
         protected override void Awake()
         {
             base.Awake();
+            Initialize();
+        }
+
+        protected virtual void Initialize()
+        {
             Resources = resources;
             UI = ui;
             CheckUpdate = checkUpdate;
@@ -73,7 +77,8 @@ namespace Framework
             Pool = pool;
             Event = @event;
             PlayerPrefs = playerPrefs;
-            DontDestroyOnLoad(gameObject);
+            if (dontDestroyOnLoad)
+                DontDestroyOnLoad(gameObject);
         }
 
         /// <summary>
