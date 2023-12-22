@@ -4,6 +4,7 @@ using Net.System;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using WebSocketSharp;
 
 namespace Net.Helper
 {
@@ -68,8 +69,10 @@ namespace Net.Helper
                             handle.RpcHashDic.Add(rpc.hash, body = new RPCMethodBody());
                         body.Add(target, item);
                     }
-                    if (!handle.RpcDic.TryGetValue(item.method.Name, out body))
-                        handle.RpcDic.Add(item.method.Name, body = new RPCMethodBody());
+
+                    var funcName = rpc.func.IsNullOrEmpty() ? item.method.Name : rpc.func;
+                    if (!handle.RpcDic.TryGetValue(funcName, out body))
+                        handle.RpcDic.Add(funcName, body = new RPCMethodBody());
                     body.Add(target, item);
                 }
                 var syncVar = member.syncVar;
