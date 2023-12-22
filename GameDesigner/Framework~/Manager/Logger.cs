@@ -8,6 +8,7 @@ namespace Framework
     {
         public bool EnableLog = true;
         public LogMode logMode = LogMode.Default;
+        public WriteLogMode writeLogMode = WriteLogMode.None;
 
         private void Awake()
         {
@@ -16,6 +17,34 @@ namespace Framework
 #else
             BindLog();
 #endif
+            NDebug.WriteFileMode = writeLogMode;
+            Application.logMessageReceivedThreaded += CaptureLogThread;
+        }
+
+        private void CaptureLogThread(string condition, string stackTrace, UnityEngine.LogType type)
+        {
+            var writeFileMode = NDebug.WriteFileMode;
+            if (writeFileMode == WriteLogMode.None)
+                return;
+            switch (type)
+            {
+                case UnityEngine.LogType.Error:
+                    if (writeFileMode == WriteLogMode.Error | writeFileMode == WriteLogMode.WarnAndError | writeFileMode == WriteLogMode.All)
+                        NDebug.WriteLog(condition + " : " + stackTrace);
+                    break;
+                case UnityEngine.LogType.Warning:
+                    if (writeFileMode == WriteLogMode.Warn | writeFileMode == WriteLogMode.WarnAndError | writeFileMode == WriteLogMode.All)
+                        NDebug.WriteLog(condition + " : " + stackTrace);
+                    break;
+                case UnityEngine.LogType.Log:
+                    if (writeFileMode == WriteLogMode.Log | writeFileMode == WriteLogMode.All)
+                        NDebug.WriteLog(condition + " : " + stackTrace);
+                    break;
+                default:
+                    if (writeFileMode == WriteLogMode.All)
+                        NDebug.WriteLog(condition + " : " + stackTrace);
+                    break;
+            }
         }
 
         private void BindLog()

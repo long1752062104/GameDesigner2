@@ -1,4 +1,4 @@
-﻿namespace Net.Event
+namespace Net.Event
 {
     using global::System;
     using global::System.IO;
@@ -443,6 +443,19 @@
             if (!ThreadManager.IsRuning)
                 UnityEngine.Debug.LogWarning(message);
 #endif
+        }
+
+        /// <summary>
+        /// 写入日志文件
+        /// </summary>
+        /// <param name="message"></param>
+        public static void WriteLog(object message)
+        {
+            if (fileStream == null)
+                return;
+            var bytes = Encoding.UTF8.GetBytes(message.ToString());
+            fileStream.Write(bytes, 0, bytes.Length);
+            fileStream.Flush();
         }
 
         public static void BindLogAll(Action<string> log)
