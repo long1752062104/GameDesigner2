@@ -94,6 +94,7 @@ namespace Net.Component
                     NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
+            Application.logMessageReceivedThreaded -= CaptureLogThread;
         }
     }
 }

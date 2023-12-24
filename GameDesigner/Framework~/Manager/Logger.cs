@@ -95,6 +95,7 @@ namespace Framework
                     NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
+            Application.logMessageReceivedThreaded -= CaptureLogThread;
         }
 
         public void Log(object message)

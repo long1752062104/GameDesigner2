@@ -20,6 +20,7 @@ namespace MVC.View
             public string[] typeNames;
             public bool enableLabel;
             public string label;
+            public string note;
 #endif
             private Type type;
             public Type Type

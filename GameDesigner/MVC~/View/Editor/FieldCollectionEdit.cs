@@ -10,7 +10,6 @@ namespace MVC.View
     using System.Text;
     using UnityEditor;
     using UnityEditor.Callbacks;
-    using UnityEditor.UIElements;
     using UnityEditorInternal;
     using UnityEngine;
     using UnityEngine.UI;
@@ -61,12 +60,13 @@ namespace MVC.View
         {
             for (int i = 0; i < self.fields.Count; i++)
             {
-                var field1 = self.fields[i];
-                if (field1.typeNames == null)
-                    field1.Update();
-                if (field1.enableLabel)
-                    EditorGUILayout.LabelField(field1.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
-                field1.target = EditorGUILayout.ObjectField(field1.name, field1.target, field1.Type, true);
+                var field = self.fields[i];
+                if (field.typeNames == null)
+                    field.Update();
+                if (field.enableLabel)
+                    EditorGUILayout.LabelField(field.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
+                var content = new GUIContent(field.name, field.note);
+                field.target = EditorGUILayout.ObjectField(content, field.target, field.Type, true);
             }
             if (GUILayout.Button("详细界面"))
                 FieldCollectionWindow.Init(self);
@@ -180,9 +180,10 @@ namespace MVC.View
         private static float OnElementHeightCallback(int index)
         {
             var field = collect.fields[index];
+            float height = 20f;
             if (field.enableLabel)
-                return 40f;
-            return 20f;
+                height += 20f;
+            return height;
         }
 
         private static void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
@@ -191,7 +192,7 @@ namespace MVC.View
             if (field.enableLabel)
             {
                 rect.height = 20f;
-                field.label = EditorGUI.TextField(new Rect(rect) { width = 100 }, field.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
+                field.label = EditorGUI.TextField(new Rect(rect) { width = rect.width }, field.label, new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
                 rect.y += 20f;
             }
             EditorGUILayout.BeginHorizontal();
@@ -201,7 +202,14 @@ namespace MVC.View
                 field.Update();
             field.componentIndex = EditorGUI.Popup(new Rect(rect) { x = 150, width = 200 }, field.componentIndex, field.typeNames);
             field.typeName = field.typeNames[field.componentIndex];
-            field.target = EditorGUI.ObjectField(new Rect(rect) { x = 355, width = rect.width - 385 }, field.target, field.Type, true);
+            field.target = EditorGUI.ObjectField(new Rect(rect) { x = 355, width = 150 }, field.target, field.Type, true);
+            field.note = EditorGUI.TextField(new Rect(rect) { x = 510, width = rect.width - 540 }, field.note);
+            if (string.IsNullOrEmpty(field.note))
+            {
+                var style = new GUIStyle(GUI.skin.label);
+                style.normal.textColor = Color.grey;
+                EditorGUI.LabelField(new Rect(rect) { x = 512, width = rect.width - 538 }, "注释!", style);
+            }
             if (GUI.Button(new Rect(rect) { x = rect.width - 25, width = 25 }, field.enableLabel ? "-" : "+"))
             {
                 field.enableLabel = !field.enableLabel;
@@ -626,6 +634,7 @@ namespace MVC.View
     {
         public MVC.View.FieldCollection collect;
 --
+        {note}
         public {fieldType} {fieldName} { get => collect.Get<{fieldType}>({index}); set => collect.Set({index}, value); }
 --
         public void Init(MVC.View.FieldCollection collect)
@@ -662,6 +671,7 @@ namespace MVC.View
                 var fieldCode = codes[2].Replace("{fieldType}", collect.fields[i].Type.ToString());
                 fieldCode = fieldCode.Replace("{fieldName}", collect.fields[i].name);
                 fieldCode = fieldCode.Replace("{index}", i.ToString());
+                fieldCode = fieldCode.Replace("{note}", string.IsNullOrEmpty(collect.fields[i].note) ? "" : $"/// <summary>{collect.fields[i].note}</summary>");
                 codeText.Append(fieldCode);
             }
             codeText.AppendLine();
