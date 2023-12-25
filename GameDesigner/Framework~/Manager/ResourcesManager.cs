@@ -45,8 +45,20 @@ namespace Framework
     public class AssetInfo
     {
         public string name;
-        public string path;
         public string assetBundleName;
+        public string md5;
+    }
+
+    public class AssetManifest
+    {
+        public Dictionary<string, string[]> dependencies = new Dictionary<string, string[]>();
+
+        public string[] GetDirectDependencies(string assetBundleName)
+        {
+            if (dependencies.TryGetValue(assetBundleName, out var directDependencies))
+                return directDependencies;
+            return new string[0];
+        }
     }
 
     public class ResourcesManager : MonoBehaviour
@@ -56,8 +68,7 @@ namespace Framework
 #endif
         public Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
         public Dictionary<string, AssetInfo> assetInfos = new Dictionary<string, AssetInfo>();
-        private AssetBundle manifestBundle;
-        private AssetBundleManifest assetBundleManifest;
+        private AssetManifest assetBundleManifest;
         public bool encrypt;
         public int password = 154789548;
 
@@ -66,19 +77,22 @@ namespace Framework
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return;
             var assetBundlePath = Global.I.AssetBundlePath;
-            var assetInfoList = assetBundlePath + "AssetInfoList.json";
+            var assetInfoList = assetBundlePath + "assetInfoList.json";
             if (!File.Exists(assetInfoList))
             {
                 Debug.LogError("请构建AB包后再运行!");
                 return;
             }
             var json = LoadAssetFileReadAllText(assetInfoList);
-            var assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<List<AssetInfo>>(json);
-            foreach (var assetInfo in assetInfos)
-                this.assetInfos.Add(assetInfo.path, assetInfo);
-            var manifestBundlePath = $"{assetBundlePath}{Global.I.version}";
-            manifestBundle = LoadAssetBundle(manifestBundlePath);
-            assetBundleManifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(json);
+            var manifestBundlePath = assetBundlePath + "assetBundleManifest.json";
+            if (!File.Exists(manifestBundlePath))
+            {
+                Debug.LogError("请构建AB包后再运行!");
+                return;
+            }
+            json = LoadAssetFileReadAllText(manifestBundlePath);
+            assetBundleManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(json);
         }
 
         public virtual string LoadAssetFileReadAllText(string assetPath)
@@ -104,7 +118,6 @@ namespace Framework
 
         public virtual void OnDestroy()
         {
-            manifestBundle?.Unload(true);
             if (assetBundles == null)
                 return;
             foreach (var AssetBundleInfo in assetBundles)
@@ -210,11 +223,9 @@ namespace Framework
         {
             assetBundles = resources.assetBundles;
             assetInfos = resources.assetInfos;
-            manifestBundle = resources.manifestBundle;
             assetBundleManifest = resources.assetBundleManifest;
             resources.assetBundles = null;
             resources.assetInfos = null;
-            resources.manifestBundle = null;
             resources.assetBundleManifest = null;
         }
     }

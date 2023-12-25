@@ -209,21 +209,55 @@ namespace Framework
                 if (assetBundleBuilder.DryRunBuild)
                     opt |= BuildAssetBundleOptions.DryRunBuild;
                 var buildList = new Dictionary<string, AssetBundleBuild>();
-                var assetInfoList = new List<AssetInfo>();
+                var assetInfoList = new Dictionary<string, AssetInfo>();
                 string[] files;
-                foreach (var package in assetBundleBuilder.Packages)
+                for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
                 {
+                    var package = assetBundleBuilder.Packages[i];
                     if (!package.enable)
                         continue;
                     var assetPath = AssetDatabase.GetAssetPath(package.path);
-                    AssetBundleCollect(buildList, assetInfoList, assetPath, package);
+                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
                 }
+                EditorUtility.ClearProgressBar();
+                Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
                 var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
                 if (!Directory.Exists(outputPath))
                     Directory.CreateDirectory(outputPath);
-                BuildPipeline.BuildAssetBundles(outputPath, buildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
-                var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList);
-                File.WriteAllText(outputPath + "AssetInfoList.json", json);
+                var assetInfoListPath = outputPath + "assetInfoList.json";
+                var assetInfoListSource = new Dictionary<string, AssetInfo>();
+                if (File.Exists(assetInfoListPath))
+                    assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(File.ReadAllText(assetInfoListPath));
+                var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
+                foreach (var assetInfo in assetInfoList)
+                {
+                    if (assetInfoListSource.TryGetValue(assetInfo.Key, out var assetInfo1))
+                        if (assetInfo.Value.md5 == assetInfo1.md5)
+                            continue;
+                    if (buildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
+                        assetBundleBuildList[assetInfo.Value.assetBundleName] = assetBundleBuild;
+                }
+                Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
+                if (assetBundleBuildList.Count == 0)
+                {
+                    Debug.Log("没有增量更新包!");
+                    return;
+                }
+                var assetBundleManifest = BuildPipeline.BuildAssetBundles(outputPath, assetBundleBuildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
+                var manifestPath = outputPath + "assetBundleManifest.json";
+                var assetManifest = new AssetManifest();
+                if (File.Exists(manifestPath))
+                    assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(File.ReadAllText(manifestPath));
+                if (assetBundleManifest != null)
+                {
+                    var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
+                    foreach (var allAssetBundle in allAssetBundles)
+                        assetManifest.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
+                }
+                var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
+                File.WriteAllText(outputPath + "assetBundleManifest.json", json);
+                json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
+                File.WriteAllText(outputPath + "assetInfoList.json", json);
                 var assetBundleInfos = new List<AssetBundleInfo>();
                 files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
                 foreach (var file in files)
@@ -233,11 +267,12 @@ namespace Framework
                     {
                         Net.Helper.EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
                         File.WriteAllBytes(file, bytes);
+                        Debug.Log($"加密文件:{file}完成!");
                     }
                     var md5 = Net.Helper.EncryptHelper.GetMD5(bytes);
                     assetBundleInfos.Add(new AssetBundleInfo(Path.GetFileName(file), md5, bytes.Length));
                 }
-                json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos);
+                json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);
                 File.WriteAllText(outputPath + "../" + "version.json", json);
                 if (assetBundleBuilder.copyToStreamingAssets)
                 {
@@ -262,8 +297,9 @@ namespace Framework
             return assetBundleName;
         }
 
-        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, List<AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package)
+        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, float progress)
         {
+            EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集路径:{assetPath}", progress);
             var type = package.type;
             SearchOption searchOption;
             if (type == CollectType.AllDirectories)
@@ -375,14 +411,18 @@ namespace Framework
                         assetNames = new string[] { files[i] }
                     };
                     buildList.Add(sceneAssetBundleName, assetBundleBuild);
-                    assetInfoList.Add(new AssetInfo()
+                    var lastModified = File.GetLastWriteTime(files[i]);
+                    var lastModified1 = File.GetLastWriteTime(files[i] + ".meta");
+                    var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+                    assetInfoList.Add(files[i], new AssetInfo()
                     {
                         name = Path.GetFileName(files[i]),
-                        path = files[i],
                         assetBundleName = sceneAssetBundleName,
+                        md5 = md5,
                     });
                     files.RemoveAt(i);
                     if (i >= 0) i--;
+                    EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{sceneAssetBundleName}完成!", progress);
                 }
             }
             int count = 1;
@@ -405,11 +445,14 @@ namespace Framework
                 files.RemoveRange(0, sizeIndex);
                 for (int i = 0; i < assetNames.Count; i++)
                 {
-                    assetInfoList.Add(new AssetInfo()
+                    var lastModified = File.GetLastWriteTime(assetNames[i]);
+                    var lastModified1 = File.GetLastWriteTime(assetNames[i] + ".meta");
+                    var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+                    assetInfoList.Add(assetNames[i], new AssetInfo()
                     {
                         name = Path.GetFileName(assetNames[i]),
-                        path = assetNames[i],
                         assetBundleName = assetBundleName,
+                        md5 = md5,
                     });
                 }
                 var assetBundleBuild = new AssetBundleBuild
@@ -418,13 +461,14 @@ namespace Framework
                     assetNames = assetNames.ToArray()
                 };
                 buildList.Add(assetBundleName, assetBundleBuild);
+                EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{assetBundleName}完成!", progress);
             }
             if (type < CollectType.AllDirectoriesSplit)
                 return;
             var directories = Directory.GetDirectories(assetPath);
             foreach (var directorie in directories)
             {
-                AssetBundleCollect(buildList, assetInfoList, directorie, package);
+                AssetBundleCollect(buildList, assetInfoList, directorie, package, progress);
             }
         }
 
