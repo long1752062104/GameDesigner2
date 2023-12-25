@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -126,6 +127,25 @@ namespace Net.Helper
             for (int i = 0; i < bytHash.Length; i++)
                 sTemp += bytHash[i].ToString("X").PadLeft(2, '0');
             return sTemp.ToLower();
+        }
+
+        public static string GetMD5(Stream inputStream)
+        {
+            var md5 = new MD5CryptoServiceProvider();
+            var bytHash = md5.ComputeHash(inputStream);
+            md5.Clear();
+            string sTemp = "";
+            for (int i = 0; i < bytHash.Length; i++)
+                sTemp += bytHash[i].ToString("X").PadLeft(2, '0');
+            return sTemp.ToLower();
+        }
+
+        public static string ToMD5(string filePath)
+        {
+            using (var stream = new FileStream(filePath, FileMode.Open))
+            {
+                return GetMD5(stream);
+            }
         }
     }
 }

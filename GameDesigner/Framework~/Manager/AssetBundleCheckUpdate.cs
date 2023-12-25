@@ -17,6 +17,7 @@ namespace Framework
         public string url = "http://192.168.1.5/";
         public string metadataList = "Assets/Arts/Hotfix/MetadataList.bytes";
         public string hotfixDll = "Assets/Arts/Hotfix/Main.dll.bytes";
+        public bool checkFileMD5;
 
         public virtual void Start()
         {
@@ -98,24 +99,31 @@ namespace Framework
             var assetBundleInfos = new List<AssetBundleInfo>();
             ulong totalSize = 0;
             ulong currSize = 0;
+            int index = 0;
+            int count = serverAssetBundleDict.Count;
+            Global.UI.Loading.ShowUI("正在检查资源中...", 0f);
             foreach (var assetBundleInfo in serverAssetBundleDict.Values)
             {
                 var localAssetBundleUrl = $"{Global.I.AssetBundlePath}/{assetBundleInfo.name}";
+                Global.UI.Loading.ShowUI($"检查资源:{assetBundleInfo.name}", index++ / (float)count);
+                await UniTask.Yield();
                 if (localAssetBundleDict.TryGetValue(assetBundleInfo.name, out var assetBundleInfo1))
                 {
-                    if (assetBundleInfo1.md5 == assetBundleInfo.md5)
-                        if (File.Exists(localAssetBundleUrl))
-                            continue;
+                    if (assetBundleInfo1.md5 != assetBundleInfo.md5)
+                        goto J;
                 }
-                else if (File.Exists(localAssetBundleUrl))
+                if (File.Exists(localAssetBundleUrl))
                 {
-                    var md5 = EncryptHelper.GetMD5(File.ReadAllBytes(localAssetBundleUrl));
+                    if (!checkFileMD5)
+                        continue;
+                    var md5 = EncryptHelper.ToMD5(localAssetBundleUrl);
                     if (md5 == assetBundleInfo.md5)
                         continue;
                 }
-                assetBundleInfos.Add(assetBundleInfo);
+            J: assetBundleInfos.Add(assetBundleInfo);
                 totalSize += (ulong)assetBundleInfo.fileSize;
             }
+            Global.UI.Loading.HideUI();
             if (totalSize > 0)
             {
                 var msgClose = false;
