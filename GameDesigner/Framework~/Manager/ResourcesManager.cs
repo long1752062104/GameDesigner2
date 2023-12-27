@@ -74,8 +74,10 @@ namespace Framework
 
         public virtual void Init()
         {
+#if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return;
+#endif
             var assetBundlePath = Global.I.AssetBundlePath;
             var assetInfoList = assetBundlePath + "assetInfoList.json";
             if (!File.Exists(assetInfoList))
