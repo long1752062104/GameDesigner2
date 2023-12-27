@@ -51,11 +51,14 @@ namespace GameDesigner
                 {
                     if (stateMachine.animator.runtimeAnimatorController is UnityEditor.Animations.AnimatorController controller)
                     {
-                        var layer = controller.layers[0];
-                        var states = layer.stateMachine.states;
-                        stateMachine.clipNames.Clear();
-                        foreach (var state in states)
-                            stateMachine.clipNames.Add(state.state.name);
+                        if (controller.layers.Length > 0) //打AB包后选择这里是0
+                        {
+                            var layer = controller.layers[0];
+                            var states = layer.stateMachine.states;
+                            stateMachine.clipNames.Clear();
+                            foreach (var state in states)
+                                stateMachine.clipNames.Add(state.state.name);
+                        }
                     }
                 }
 #if SHADER_ANIMATED
@@ -293,7 +296,7 @@ namespace GameDesigner
                 state.animPlayMode = (AnimPlayMode)EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Action execution mode"], "animPlayMode"), (int)state.animPlayMode, new GUIContent[]{
                     new GUIContent(BlueprintGUILayout.Instance.Language["Action randomised"],"Random"),
                     new GUIContent(BlueprintGUILayout.Instance.Language["Action sequence"],"Sequence"),
-                    new GUIContent(BlueprintGUILayout.Instance.Language["Action none"],"None")
+                    new GUIContent(BlueprintGUILayout.Instance.Language["Action none"],"Code")
                 });
                 EditorGUILayout.PropertyField(animSpeedProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation speed"], "animSpeed"), true);
                 EditorGUILayout.PropertyField(animLoopProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation cycle?"], "animLoop"), true);

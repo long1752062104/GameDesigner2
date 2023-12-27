@@ -1,6 +1,4 @@
-﻿using Net.System;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -32,7 +30,6 @@ namespace GameDesigner
     /// </summary>
 	public enum AnimPlayMode
     {
-        None,
         /// <summary>
         /// 随机播放动画
         /// </summary>
@@ -41,6 +38,10 @@ namespace GameDesigner
         /// 顺序播放动画
         /// </summary>
 		Sequence,
+        /// <summary>
+        /// 代码控制模式
+        /// </summary>
+        Code,
     }
 
     /// <summary>
