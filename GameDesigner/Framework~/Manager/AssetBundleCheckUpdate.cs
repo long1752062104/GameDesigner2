@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Text;
 #if HYBRIDCLR
 using HybridCLR;
 #endif
@@ -48,7 +49,10 @@ namespace Framework
                     error?.Invoke(request.error);
                     return null;
                 }
-                var text = request.downloadHandler.text;
+                var jsonBytes = request.downloadHandler.data;
+                if (Global.I.compressionJson)
+                    jsonBytes = UnZipHelper.Decompress(jsonBytes);
+                var text = Encoding.UTF8.GetString(jsonBytes);
                 var assetBundleInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<List<AssetBundleInfo>>(text);
                 var assetBundleDict = new Dictionary<string, AssetBundleInfo>();
                 foreach (var item in assetBundleInfos)
@@ -89,7 +93,10 @@ namespace Framework
             if (!result)
                 return;
             var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(serverAssetBundleDict.Values.ToList());
-            File.WriteAllText(versionUrl, json);
+            var jsonBytes = Encoding.UTF8.GetBytes(json);
+            if (Global.I.compressionJson)
+                jsonBytes = UnZipHelper.Compress(jsonBytes);
+            File.WriteAllBytes(versionUrl, jsonBytes);
             await UniTask.Delay(1000);
             LoadAssetBundle();
         }

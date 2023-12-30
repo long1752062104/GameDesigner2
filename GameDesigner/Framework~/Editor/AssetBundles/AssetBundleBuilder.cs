@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using System.Text;
 #if HYBRIDCLR
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
@@ -92,6 +93,7 @@ namespace Framework
         public int password = 154789548;
         [Tooltip("AssetBundle文件如果超过理想大小, 则进行分包")]
         public long singlePackageSize = 1024 * 1024 * 20; //单包最大20m
+        public bool compressionJson;
         public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
@@ -227,7 +229,13 @@ namespace Framework
                 var assetInfoListPath = outputPath + "assetInfoList.json";
                 var assetInfoListSource = new Dictionary<string, AssetInfo>();
                 if (File.Exists(assetInfoListPath))
-                    assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(File.ReadAllText(assetInfoListPath));
+                {
+                    var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
+                    if (assetBundleBuilder.compressionJson)
+                        assetInfoListBytes = Net.Helper.UnZipHelper.Decompress(assetInfoListBytes);
+                    var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
+                    assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
+                }
                 var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
                 foreach (var assetInfo in assetInfoList)
                 {
@@ -247,7 +255,13 @@ namespace Framework
                 var manifestPath = outputPath + "assetBundleManifest.json";
                 var assetManifest = new AssetManifest();
                 if (File.Exists(manifestPath))
-                    assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(File.ReadAllText(manifestPath));
+                {
+                    var manifestBytes = File.ReadAllBytes(manifestPath);
+                    if (assetBundleBuilder.compressionJson)
+                        manifestBytes = Net.Helper.UnZipHelper.Decompress(manifestBytes);
+                    var manifestJson = Encoding.UTF8.GetString(manifestBytes);
+                    assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
+                }
                 if (assetBundleManifest != null)
                 {
                     var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
@@ -255,11 +269,17 @@ namespace Framework
                         assetManifest.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
                 }
                 var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
-                File.WriteAllText(outputPath + "assetBundleManifest.json", json);
+                byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+                if (assetBundleBuilder.compressionJson)
+                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
+                File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
                 json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
-                File.WriteAllText(outputPath + "assetInfoList.json", json);
+                jsonBytes = Encoding.UTF8.GetBytes(json);
+                if (assetBundleBuilder.compressionJson)
+                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
+                File.WriteAllBytes(outputPath + "assetInfoList.json", jsonBytes);
                 var assetBundleInfos = new List<AssetBundleInfo>();
-                files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
+                files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta") && !s.EndsWith(".manifest")).ToArray();
                 foreach (var file in files)
                 {
                     var bytes = File.ReadAllBytes(file);
@@ -273,7 +293,10 @@ namespace Framework
                     assetBundleInfos.Add(new AssetBundleInfo(Path.GetFileName(file), md5, bytes.Length));
                 }
                 json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);
-                File.WriteAllText(outputPath + "../" + "version.json", json);
+                jsonBytes = Encoding.UTF8.GetBytes(json);
+                if (assetBundleBuilder.compressionJson)
+                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
+                File.WriteAllBytes(outputPath + "../" + "version.json", jsonBytes);
                 if (assetBundleBuilder.copyToStreamingAssets)
                 {
                     var m_streamingPath = Application.streamingAssetsPath + "/AssetBundles/";

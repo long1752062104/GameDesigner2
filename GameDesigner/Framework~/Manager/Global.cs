@@ -40,8 +40,9 @@ namespace Framework
         public Platform platform;
         public string version = "1.0.0";
         public string entryRes = "Assets/Arts/Prefabs/GameEntry.prefab";
+        public bool compressionJson;
         public bool dontDestroyOnLoad = true;
-
+        
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
         public string AssetBundlePath
         {

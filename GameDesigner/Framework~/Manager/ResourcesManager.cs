@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Cysharp.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 namespace Framework
 {
@@ -100,6 +101,8 @@ namespace Framework
         public virtual string LoadAssetFileReadAllText(string assetPath)
         {
             var bytes = LoadAssetFile(assetPath);
+            if (Global.I.compressionJson)
+                bytes = Net.Helper.UnZipHelper.Decompress(bytes);
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -107,6 +110,13 @@ namespace Framework
         {
             var bytes = LoadAssetFile(assetBundlePath);
             var assetBundle = AssetBundle.LoadFromMemory(bytes);
+            return assetBundle;
+        }
+
+        public virtual async UniTask<AssetBundle> LoadAssetBundleAsync(string assetBundlePath)
+        {
+            var bytes = LoadAssetFile(assetBundlePath);
+            var assetBundle = await AssetBundle.LoadFromMemoryAsync(bytes);
             return assetBundle;
         }
 
@@ -138,17 +148,11 @@ namespace Framework
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
 #endif
-            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+            var assetBundle = GetAssetBundle(assetPath);
+            if (assetBundle == null)
                 return default;
-            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
-            {
-                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
-                if (File.Exists(fullPath))
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
-                else return default;
-                DirectDependencies(assetInfoBase.assetBundleName);
-            }
-            return assetBundle.LoadAsset<T>(assetPath);
+            var assetObject = assetBundle.LoadAsset<T>(assetPath);
+            return assetObject;
         }
 
         public virtual async UniTask<T> LoadAssetAsync<T>(string assetPath) where T : Object
@@ -157,6 +161,59 @@ namespace Framework
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
 #endif
+            var assetBundle = await GetAssetBundleAsync(assetPath);
+            if (assetBundle == null)
+                return default;
+            var assetObject = await assetBundle.LoadAssetAsync<T>(assetPath) as T;
+            return assetObject;
+        }
+
+        public virtual T[] LoadAssetWithSubAssets<T>(string assetPath) where T : Object
+        {
+            Object[] assetObjects;
+#if UNITY_EDITOR
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
+            {
+                assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                goto J;
+            }
+#endif
+            var assetBundle = GetAssetBundle(assetPath);
+            if (assetBundle == null)
+                return default;
+            assetObjects = assetBundle.LoadAssetWithSubAssets(assetPath);
+        J: var subAssets = new List<T>(assetObjects.Length);
+            for (int i = 0; i < assetObjects.Length; i++)
+                if (assetObjects[i] is T assetObject) //这里获取Sprite, 这里的第一个元素会是Texture2D
+                    subAssets.Add(assetObject);
+            return subAssets.ToArray();
+        }
+
+        public virtual async UniTask<T[]> LoadAssetWithSubAssetsAsync<T>(string assetPath) where T : Object
+        {
+            Object[] assetObjects;
+#if UNITY_EDITOR
+            if (Global.I.Mode == AssetBundleMode.EditorMode)
+            {
+                assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                goto J;
+            }
+#endif
+            var assetBundle = await GetAssetBundleAsync(assetPath);
+            if (assetBundle == null)
+                return default;
+            var assetBundleRequest = assetBundle.LoadAssetWithSubAssetsAsync(assetPath);
+            await assetBundleRequest;
+            assetObjects = assetBundleRequest.allAssets;
+        J: var subAssets = new List<T>(assetObjects.Length);
+            for (int i = 0; i < assetObjects.Length; i++)
+                if (assetObjects[i] is T assetObject) //这里获取Sprite, 这里的第一个元素会是Texture2D
+                    subAssets.Add(assetObject);
+            return subAssets.ToArray();
+        }
+
+        protected virtual AssetBundle GetAssetBundle(string assetPath)
+        {
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
                 return default;
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
@@ -167,26 +224,49 @@ namespace Framework
                 else return default;
                 DirectDependencies(assetInfoBase.assetBundleName);
             }
-            var assetObject = await assetBundle.LoadAssetAsync<T>(assetPath) as T;
-            return assetObject;
+            return assetBundle;
         }
 
-        public virtual void LoadAssetScene(string assetPath)
+        protected virtual async UniTask<AssetBundle> GetAssetBundleAsync(string assetPath)
         {
-#if UNITY_EDITOR
-            if (Global.I.Mode == AssetBundleMode.EditorMode)
-                return;
-#endif
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
-                return;
+                return default;
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
             {
                 var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
                 if (File.Exists(fullPath))
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
-                else return;
-                DirectDependencies(assetInfoBase.assetBundleName);
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = await LoadAssetBundleAsync(fullPath));
+                else return default;
+                await DirectDependenciesAsync(assetInfoBase.assetBundleName);
             }
+            return assetBundle;
+        }
+
+        public virtual bool LoadAssetScene(string assetPath, LoadSceneMode mode = LoadSceneMode.Single)
+        {
+            var assetBundle = GetAssetBundle(assetPath);
+            if (assetBundle == null)
+                return false;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(assetPath, mode);
+            return true;
+        }
+
+        public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single)
+        {
+            var assetBundle = await GetAssetBundleAsync(assetPath);
+            if (assetBundle == null)
+                return;
+            var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(assetPath, mode);
+            op.allowSceneActivation = false;
+            while (op.progress < 0.9f)
+            {
+                Global.UI.Loading.ShowUI("加载场景中", op.progress);
+                await UniTask.Yield();
+            }
+            Global.UI.Loading.ShowUI("加载完成", 1f);
+            await UniTask.Delay(1000);
+            op.allowSceneActivation = true;
+            Global.UI.Loading.HideUI();
         }
 
         protected virtual void DirectDependencies(string assetBundleName)
@@ -203,9 +283,37 @@ namespace Framework
             }
         }
 
+        protected virtual async UniTask DirectDependenciesAsync(string assetBundleName)
+        {
+            var dependencies = assetBundleManifest.GetDirectDependencies(assetBundleName);
+            foreach (var dependencie in dependencies)
+            {
+                if (assetBundles.ContainsKey(dependencie))
+                    continue;
+                var fullPath = Global.I.AssetBundlePath + dependencie;
+                var assetBundle = await LoadAssetBundleAsync(fullPath);
+                assetBundles.Add(dependencie, assetBundle);
+                await DirectDependenciesAsync(dependencie);
+            }
+        }
+
         public T Instantiate<T>(string assetPath, Transform parent = null) where T : Object
         {
             var assetObj = LoadAsset<GameObject>(assetPath);
+            if (assetObj == null)
+            {
+                Global.Logger.LogError($"资源加载失败:{assetPath}");
+                return null;
+            }
+            var obj = Instantiate(assetObj, parent);
+            if (typeof(T).IsSubclassOf(typeof(Component)))
+                return obj.GetComponent(typeof(T)) as T;
+            return obj as T;
+        }
+
+        public async UniTask<T> InstantiateAsync<T>(string assetPath, Transform parent = null) where T : Object
+        {
+            var assetObj = await LoadAssetAsync<GameObject>(assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");

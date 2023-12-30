@@ -1,4 +1,4 @@
-﻿namespace Net.Share
+﻿namespace Net.Helper
 {
     using global::System.IO;
     using global::System.IO.Compression;
@@ -36,6 +36,18 @@
         /// <param name="index"></param>
         /// <param name="count"></param>
         /// <returns></returns>
+        public static byte[] Decompress(byte[] data)
+        {
+            return Decompress(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// 返回解压后的字节数组
+        /// </summary>
+        /// <param name="data">原始字节数组</param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
         public static byte[] Decompress(byte[] data, int index, int count)
         {
             using (MemoryStream stream = new MemoryStream(data, index, count))
@@ -51,7 +63,6 @@
                 }
             }
         }
-
         #endregion
     }
 }
