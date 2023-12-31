@@ -52,10 +52,19 @@
         public object target;
         public FieldInfo field;
         public Object Value;
-        public List<Object> values = new List<Object>();
+        public List<Object> values;
+        public List<Object> Values
+        {
+            get
+            {
+                values ??= new List<Object>();
+                return values;
+            }
+            set { values = value; }
+        }
         private object _value;
         public object value
-        { 
+        {
             get
             {
                 if (target != null & field != null)
@@ -64,7 +73,7 @@
                     _value = Read();
                 return _value;
             }
-            set 
+            set
             {
                 _value = value;
                 if (target != null & field != null)
@@ -73,9 +82,10 @@
             }
         }
         private Type _type;
-        public Type Type 
+        public Type Type
         {
-            get {
+            get
+            {
                 if (_type == null)
                     _type = AssemblyHelper.GetType(typeName);
                 return _type;
@@ -87,12 +97,15 @@
             get
             {
                 if (_itemType == null)
-                    _itemType = Type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0];
+                    if (!GenericTypeArguments.TryGetValue(Type, out _itemType))
+                        GenericTypeArguments.Add(Type, _itemType = Type.GetInterface(typeof(IList<>).FullName).GenericTypeArguments[0]);
                 return _itemType;
             }
         }
         public int arraySize;
         public bool foldout;
+
+        static readonly Dictionary<Type, Type> GenericTypeArguments = new Dictionary<Type, Type>();
 
         public Metadata() { }
         public Metadata(string name, string fullName, TypeCode type, object target, FieldInfo field)
@@ -107,7 +120,7 @@
 
         public object Read()
         {
-            switch (type) 
+            switch (type)
             {
                 case TypeCode.Byte:
                     return Convert.ToByte(data);
@@ -166,12 +179,12 @@
                     if (itemType == typeof(Object) | itemType.IsSubclassOf(typeof(Object)))
                     {
                         IList list = (IList)Activator.CreateInstance(Type);
-                        for (int i = 0; i < values.Count; i++)
+                        for (int i = 0; i < Values.Count; i++)
                         {
-                            if (values[i] == null) 
+                            if (Values[i] == null)
                                 list.Add(null);
                             else
-                                list.Add(values[i]);
+                                list.Add(Values[i]);
                         }
                         return list;
                     }
@@ -179,11 +192,11 @@
                 case TypeCode.Array:
                     if (itemType == typeof(Object) | itemType.IsSubclassOf(typeof(Object)))
                     {
-                        IList list = Array.CreateInstance(itemType, values.Count);
-                        for (int i = 0; i < values.Count; i++)
+                        IList list = Array.CreateInstance(itemType, Values.Count);
+                        for (int i = 0; i < Values.Count; i++)
                         {
-                            if (values[i] == null) continue;
-                            list[i] = values[i];
+                            if (Values[i] == null) continue;
+                            list[i] = Values[i];
                         }
                         return list;
                     }
@@ -239,10 +252,10 @@
                 {
                     if (itemType == typeof(Object) | itemType.IsSubclassOf(typeof(Object)))
                     {
-                        values.Clear();
+                        Values.Clear();
                         IList list = (IList)value;
                         for (int i = 0; i < list.Count; i++)
-                            values.Add(list[i] as Object);
+                            Values.Add(list[i] as Object);
                     }
                     else data = Newtonsoft_X.Json.JsonConvert.SerializeObject(value);
                 }
@@ -283,7 +296,16 @@
         [HideField]
         public bool Active = true;
         [HideField]
-        public List<Metadata> metadatas = new List<Metadata>();
+        public List<Metadata> metadatas;
+        public List<Metadata> Metadatas
+        {
+            get
+            {
+                metadatas ??= new List<Metadata>();
+                return metadatas;
+            }
+            set { metadatas = value; }
+        }
         [HideField]
         public StateMachine stateMachine;
         public StateManager stateManager => stateMachine.stateManager;
@@ -306,7 +328,7 @@
             this.stateMachine = stateMachine;
             name = type.ToString();
             var fields = type.GetFields();
-            metadatas.Clear();
+            Metadatas.Clear();
             foreach (var field in fields)
             {
                 if (field.IsStatic | field.GetCustomAttribute<HideField>() != null)
@@ -321,42 +343,42 @@
             if (code == System.TypeCode.Object)
             {
                 if (field.FieldType.IsSubclassOf(typeof(Object)) | field.FieldType == typeof(Object))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Object, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Object, this, field));
                 else if (field.FieldType == typeof(Vector2))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector2, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector2, this, field));
                 else if (field.FieldType == typeof(Vector3))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector3, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector3, this, field));
                 else if (field.FieldType == typeof(Vector4))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector4, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Vector4, this, field));
                 else if (field.FieldType == typeof(Quaternion))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Quaternion, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Quaternion, this, field));
                 else if (field.FieldType == typeof(Rect))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Rect, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Rect, this, field));
                 else if (field.FieldType == typeof(Color))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color, this, field));
                 else if (field.FieldType == typeof(Color32))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color32, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Color32, this, field));
                 else if (field.FieldType == typeof(AnimationCurve))
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.AnimationCurve, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.AnimationCurve, this, field));
                 else if (field.FieldType.IsGenericType)
                 {
                     var gta = field.FieldType.GenericTypeArguments;
                     if (gta.Length > 1)
                         return;
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.GenericType, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.GenericType, this, field));
                 }
                 else if (field.FieldType.IsArray)
-                    metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Array, this, field));
+                    Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Array, this, field));
             }
             else if (field.FieldType.IsEnum)
-                metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Enum, this, field));
-            else metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), (TypeCode)code, this, field));
+                Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), TypeCode.Enum, this, field));
+            else Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), (TypeCode)code, this, field));
         }
 
         public void Reload(Type type, StateMachine stateMachine, List<Metadata> metadatas)
         {
             InitMetadatas(stateMachine, type);
-            foreach (var item in this.metadatas)
+            foreach (var item in this.Metadatas)
             {
                 foreach (var item1 in metadatas)
                 {
@@ -364,7 +386,7 @@
                     {
                         item.data = item1.data;
                         item.Value = item1.Value;
-                        item.values = item1.values;
+                        item.Values = item1.Values;
                         item.arraySize = item1.arraySize;
                         item.foldout = item1.foldout;
                         item.field.SetValue(this, item1.value);
@@ -419,7 +441,7 @@
         /// 重写此方法，方法内只需要一行return GetClassFileInfo();即可，此方法用于查找你的类在哪个cs文件
         /// </summary>
         /// <returns></returns>
-        public virtual ClassFileInfo FindClassFile(string typeName) 
+        public virtual ClassFileInfo FindClassFile(string typeName)
         {
             throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();");
         }
@@ -448,9 +470,9 @@
             runtimeBehaviour.Active = Active;
             runtimeBehaviour.ID = ID;
             runtimeBehaviour.name = name;
-            runtimeBehaviour.metadatas = metadatas;
+            runtimeBehaviour.Metadatas = Metadatas;
             runtimeBehaviour.show = show;
-            foreach (var metadata in metadatas)
+            foreach (var metadata in Metadatas)
             {
                 var field = type.GetField(metadata.name);
                 if (field == null)

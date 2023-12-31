@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Runtime.Loader;
 #else
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;

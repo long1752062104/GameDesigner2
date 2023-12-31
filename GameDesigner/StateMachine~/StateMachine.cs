@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Net.System;
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
 #endif
@@ -36,23 +35,23 @@ namespace GameDesigner
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public State[] states = new State[0];
+        public State[] states;// = new State[0];
         /// <summary>
         /// 选中的状态,可以多选
         /// </summary>
-		public List<int> selectStates = new List<int>();
+		public List<int> selectStates;// = new List<int>();
         /// <summary>
         /// 动画选择模式
         /// </summary>
-        public AnimationMode animMode = AnimationMode.Animation;
+        public AnimationMode animMode;// = AnimationMode.Animation;
         /// <summary>
         /// 旧版动画组件
         /// </summary>
-		public new Animation animation = null;
+		public new Animation animation;
         /// <summary>
         /// 新版动画组件
         /// </summary>
-        public Animator animator = null;
+        public Animator animator;
 
 #if SHADER_ANIMATED
         /// <summary>
@@ -63,7 +62,7 @@ namespace GameDesigner
         /// <summary>
         /// 动画剪辑
         /// </summary>
-        public List<string> clipNames = new List<string>();
+        public List<string> clipNames;// = new List<string>();
 
         /// <summary>
         /// 以状态ID取出状态对象
@@ -110,7 +109,7 @@ namespace GameDesigner
         }
 
         [SerializeField]
-        private StateManager _stateManager = null;
+        private StateManager _stateManager;
         /// <summary>
         /// 状态管理
         /// </summary>
@@ -136,6 +135,8 @@ namespace GameDesigner
         {
             var stateMachine = new GameObject(name).AddComponent<StateMachine>();
             stateMachine.name = name;
+            stateMachine.states = new State[0];
+            stateMachine.selectStates = new List<int>();
             return stateMachine;
         }
 
@@ -260,7 +261,7 @@ namespace GameDesigner
                         if (i >= 0) i--;
                         continue;
                     }
-                    var metadatas = new List<Metadata>(state.behaviours[i].metadatas);
+                    var metadatas = new List<Metadata>(state.behaviours[i].Metadatas);
                     var active = state.behaviours[i].Active;
                     var show = state.behaviours[i].show;
                     state.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
@@ -280,7 +281,7 @@ namespace GameDesigner
                             if (i >= 0) i--;
                             continue;
                         }
-                        var metadatas = new List<Metadata>(t.behaviours[i].metadatas);
+                        var metadatas = new List<Metadata>(t.behaviours[i].Metadatas);
                         var active = t.behaviours[i].Active;
                         var show = t.behaviours[i].show;
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
@@ -301,7 +302,7 @@ namespace GameDesigner
                             if (i >= 0) i--;
                             continue;
                         }
-                        var metadatas = new List<Metadata>(a.behaviours[i].metadatas);
+                        var metadatas = new List<Metadata>(a.behaviours[i].Metadatas);
                         var active = a.behaviours[i].Active;
                         var show = a.behaviours[i].show;
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);

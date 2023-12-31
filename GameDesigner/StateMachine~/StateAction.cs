@@ -11,19 +11,19 @@ namespace GameDesigner
         /// <summary>
         /// 动画剪辑名称
         /// </summary>
-		public string clipName = "";
+		public string clipName;
         /// <summary>
         /// 动画剪辑索引
         /// </summary>
-		public int clipIndex = 0;
+		public int clipIndex;
         /// <summary>
         /// 当前动画时间
         /// </summary>
-		public float animTime = 0;
+		public float animTime;
         /// <summary>
         /// 动画结束时间
         /// </summary>
-		public float animTimeMax = 100;
+		public float animTimeMax = 100f;
         private bool isStop;
 
         /// <summary>

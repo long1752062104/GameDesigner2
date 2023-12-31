@@ -22,9 +22,7 @@ namespace GameDesigner
         public static string stateActionScriptPath = "/Actions/StateActions";
         public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
         public static string transitionScriptPath = "/Actions/Transitions";
-        private static bool findBehaviours;
-        private static bool findBehaviours1;
-        private static bool findBehaviours2;
+        private static StateBase addBehaviourState;
         private static bool compiling;
         private static List<Type> findBehaviourTypes;
         private static List<Type> findBehaviourTypes1;
@@ -289,7 +287,7 @@ namespace GameDesigner
                         break;
 #if SHADER_ANIMATED
                     case AnimationMode.MeshAnimator:
-                        EditorGUILayout.PropertyField(meshAnimatorProperty, new GUIContent(BlueprintGUILayout.Instance.LANGUAGE["mesh Animated"], "meshAnimator"));
+                        EditorGUILayout.PropertyField(meshAnimatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["mesh Animated"], "meshAnimator"));
                         break;
 #endif
                 }
@@ -310,7 +308,7 @@ namespace GameDesigner
 
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
-                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = state.stateMachine });
+                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = state.stateMachine, behaviours = new BehaviourBase[0] });
                     return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
@@ -430,7 +428,7 @@ namespace GameDesigner
                                 {
                                     EditorGUI.indentLevel = 4;
                                     if (!act.behaviours[i].OnInspectorGUI(state))
-                                        foreach (var metadata in act.behaviours[i].metadatas)
+                                        foreach (var metadata in act.behaviours[i].Metadatas)
                                             PropertyField(metadata, 60f, 5, 4);
                                     GUILayout.Space(4);
                                     GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
@@ -441,8 +439,8 @@ namespace GameDesigner
                             Rect r = EditorGUILayout.GetControlRect();
                             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
                             if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Add action scripts"]))
-                                findBehaviours1 = true;
-                            if (findBehaviours1)
+                                addBehaviourState = act;
+                            if (addBehaviourState == act)
                             {
                                 EditorGUILayout.Space();
                                 try
@@ -455,7 +453,7 @@ namespace GameDesigner
                                             stb.InitMetadatas(act.stateMachine);
                                             stb.ID = state.ID;
                                             ArrayExtend.Add(ref act.behaviours, stb);
-                                            findBehaviours1 = false;
+                                            addBehaviourState = null;
                                             EditorUtility.SetDirty(act.stateMachine);
                                         }
                                         if (compiling & type.Name == createScriptName)
@@ -464,7 +462,7 @@ namespace GameDesigner
                                             stb.InitMetadatas(sm.stateMachine);
                                             stb.ID = state.ID;
                                             ArrayExtend.Add(ref act.behaviours, stb);
-                                            findBehaviours1 = false;
+                                            addBehaviourState = null;
                                             compiling = false;
                                             EditorUtility.SetDirty(act.stateMachine);
                                         }
@@ -486,7 +484,7 @@ namespace GameDesigner
                                     compiling = true;
                                 }
                                 if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
-                                    findBehaviours1 = false;
+                                    addBehaviourState = null;
                             }
                             EditorGUILayout.Space();
                         }
@@ -572,7 +570,7 @@ namespace GameDesigner
                     EditorGUI.indentLevel = 2;
                     if (!s.behaviours[i].OnInspectorGUI(s))
                     {
-                        foreach (var metadata in s.behaviours[i].metadatas)
+                        foreach (var metadata in s.behaviours[i].Metadatas)
                         {
                             PropertyField(metadata);
                         }
@@ -586,8 +584,8 @@ namespace GameDesigner
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
             if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Adding status scripts"]))
-                findBehaviours = true;
-            if (findBehaviours)
+                addBehaviourState = s;
+            if (addBehaviourState == s)
             {
                 try
                 {
@@ -600,7 +598,7 @@ namespace GameDesigner
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             ArrayExtend.Add(ref s.behaviours, stb);
-                            findBehaviours = false;
+                            addBehaviourState = null;
                             EditorUtility.SetDirty(s.stateMachine);
                         }
                         if (compiling & type.Name == createScriptName)
@@ -609,7 +607,7 @@ namespace GameDesigner
                             stb.InitMetadatas(s.stateMachine);
                             stb.ID = s.ID;
                             ArrayExtend.Add(ref s.behaviours, stb);
-                            findBehaviours = false;
+                            addBehaviourState = null;
                             compiling = false;
                             EditorUtility.SetDirty(s.stateMachine);
                         }
@@ -631,7 +629,7 @@ namespace GameDesigner
                     compiling = true;
                 }
                 if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
-                    findBehaviours = false;
+                    addBehaviourState = null;
             }
         }
 
@@ -879,7 +877,7 @@ namespace GameDesigner
                     EditorGUI.indentLevel = 2;
                     if (!tr.behaviours[i].OnInspectorGUI(tr.currState))
                     {
-                        foreach (var metadata in tr.behaviours[i].metadatas)
+                        foreach (var metadata in tr.behaviours[i].Metadatas)
                         {
                             PropertyField(metadata);
                         }
@@ -895,8 +893,8 @@ namespace GameDesigner
             Rect r = EditorGUILayout.GetControlRect();
             Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
             if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Add connection scripts"]))
-                findBehaviours2 = true;
-            if (findBehaviours2)
+                addBehaviourState = tr;
+            if (addBehaviourState == tr)
             {
                 EditorGUILayout.Space();
                 foreach (var type in findBehaviourTypes2)
@@ -906,14 +904,14 @@ namespace GameDesigner
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         ArrayExtend.Add(ref tr.behaviours, stb);
-                        findBehaviours2 = false;
+                        addBehaviourState = null;
                     }
                     if (compiling & type.Name == createScriptName)
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas(tr.stateMachine);
                         ArrayExtend.Add(ref tr.behaviours, stb);
-                        findBehaviours2 = false;
+                        addBehaviourState = null;
                         compiling = false;
                     }
                 }
@@ -932,7 +930,7 @@ namespace GameDesigner
                     compiling = true;
                 }
                 if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
-                    findBehaviours2 = false;
+                    addBehaviourState = null;
             }
             GUILayout.Space(10);
             EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.Language["You can create a connection behavior script to control the state to the next state"], MessageType.Info);

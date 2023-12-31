@@ -53,11 +53,11 @@ namespace GameDesigner
         /// <summary>
         /// 状态连接集合
         /// </summary>
-		public Transition[] transitions = new Transition[0];
+		public Transition[] transitions;
         /// <summary>
         /// 动作系统 使用为真 , 不使用为假
         /// </summary>
-		public bool actionSystem = false;
+		public bool actionSystem;
         /// <summary>
         /// 动画循环?
         /// </summary>
@@ -65,11 +65,11 @@ namespace GameDesigner
         /// <summary>
         /// 动画模式
         /// </summary>
-        public AnimPlayMode animPlayMode = AnimPlayMode.Random;
+        public AnimPlayMode animPlayMode;
         /// <summary>
         /// 动作索引
         /// </summary>
-		public int actionIndex = 0;
+		public int actionIndex;
         /// <summary>
         /// 动画速度
         /// </summary>
@@ -77,15 +77,15 @@ namespace GameDesigner
         /// <summary>
         /// 动画结束是否进入下一个状态
         /// </summary>
-        public bool isExitState = false;
+        public bool isExitState;
         /// <summary>
         /// 动画结束进入下一个状态的ID
         /// </summary>
-        public int DstStateID = 0;
+        public int DstStateID;
         /// <summary>
         /// 状态动作集合
         /// </summary>
-		public StateAction[] actions = new StateAction[0];
+		public StateAction[] actions;
         internal bool IsPlaying;
 
         public State() { }
@@ -96,9 +96,11 @@ namespace GameDesigner
         /// </summary>
         public static State CreateStateInstance(StateMachine stateMachine, string stateName, Vector2 position)
         {
-            var state = new State(stateMachine);
-            state.name = stateName;
-            state.rect.position = position;
+            var state = new State(stateMachine)
+            {
+                name = stateName,
+                rect = new Rect(position, new Vector2(150, 30))
+            };
             return state;
         }
 #endif
@@ -108,10 +110,13 @@ namespace GameDesigner
         /// </summary>
         public State(StateMachine _stateMachine)
         {
+            behaviours = new BehaviourBase[0];
+            transitions = new Transition[0];
+            actions = new StateAction[0];
             stateMachine = _stateMachine;
             ID = stateMachine.states.Length;
             ArrayExtend.Add(ref stateMachine.states, this);
-            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine });
+            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine, behaviours = new BehaviourBase[0] });
             stateMachine.UpdateStates();
         }
 

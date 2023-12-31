@@ -407,14 +407,14 @@ namespace GameDesigner
                         if (state.rect.Contains(currentEvent.mousePosition))
                             return;
                     }
-                    GenericMenu menu = new GenericMenu();
+                    var menu = new GenericMenu();
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create state"]), false, () =>
                     {
                         State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.Language["New state"] + stateMachine.states.Length, mousePosition);
                     });
                     if (stateMachine.selectState != null)
                     {
-                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste Selection Status"]), false, () =>
+                        menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste Selection Status"]), false, (GenericMenu.MenuFunction)(() =>
                         {
                             List<State> states = new List<State>();
                             var seles = stateMachine.selectStates;
@@ -444,7 +444,7 @@ namespace GameDesigner
                             for (int i = 0; i < states.Count; ++i)
                                 list.Add(states[i].ID);
                             stateMachine.selectStates = list;
-                        });
+                        }));
                         menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete Selection State"]), false, delegate { DeletedState(); });
                     }
                     menu.AddSeparator("");

@@ -221,8 +221,8 @@ namespace GameDesigner
         {
             GL.PushMatrix();
             GL.Begin(1);
-            this.DrawGridLines(scaledCanvasSize, GraphEditor.GridMinorSize, offset, new Color(0f, 0f, 0f, 0.1f));
-            this.DrawGridLines(scaledCanvasSize, GraphEditor.GridMajorSize, offset, new Color(0f, 0f, 0f, 0.15f));
+            DrawGridLines(scaledCanvasSize, GridMinorSize, offset, new Color(0f, 0f, 0f, 0.1f));
+            DrawGridLines(scaledCanvasSize, GridMajorSize, offset, new Color(0f, 0f, 0f, 0.15f));
             GL.End();
             GL.PopMatrix();
         }
@@ -232,11 +232,11 @@ namespace GameDesigner
             GL.Color(gridColor);
             for (float i = rect.x + (offset.x < 0f ? gridSize : 0f) + offset.x % gridSize; i < rect.x + rect.width; i = i + gridSize)
             {
-                this.DrawLine(new Vector2(i, rect.y), new Vector2(i, rect.y + rect.height));
+                DrawLine(new Vector2(i, rect.y), new Vector2(i, rect.y + rect.height));
             }
             for (float j = rect.y + (offset.y < 0f ? gridSize : 0f) + offset.y % gridSize; j < rect.y + rect.height; j = j + gridSize)
             {
-                this.DrawLine(new Vector2(rect.x, j), new Vector2(rect.x + rect.width, j));
+                DrawLine(new Vector2(rect.x, j), new Vector2(rect.x + rect.width, j));
             }
         }
 
@@ -256,8 +256,8 @@ namespace GameDesigner
             Vector3 cross = Vector3.Cross((start - end).normalized, Vector3.forward);
             if (offset)
             {
-                start = start + cross * offsetValue;
-                end = end + cross * offsetValue;
+                start += cross * offsetValue;
+                end += cross * offsetValue;
             }
 
             if (drawAAPolyLineOrBezier)
@@ -267,7 +267,7 @@ namespace GameDesigner
                 Vector3 vector3 = end - start;
                 Vector3 vector31 = vector3.normalized;
                 Vector3 vector32 = (vector3 * 0.5f) + start;
-                vector32 = vector32 - (cross * 0.5f);
+                vector32 -= cross * 0.5f;
                 Vector3 vector33 = vector32 + vector31;
                 for (int i = 0; i < arrows; i++)
                 {

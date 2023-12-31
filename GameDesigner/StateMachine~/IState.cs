@@ -14,14 +14,14 @@ namespace GameDesigner
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public BehaviourBase[] behaviours = new BehaviourBase[0];
-        public StateMachine stateMachine = null;
+        public BehaviourBase[] behaviours;// = new BehaviourBase[0];
+        public StateMachine stateMachine;
         public StateManager stateManager => stateMachine.stateManager;
 
 #if UNITY_EDITOR
         [HideInInspector]
         public bool foldout = true;
-        public Rect rect = new Rect(10, 10, 150, 30);
+        public Rect rect;// = new Rect(10, 10, 150, 30);
 #endif
 
         /// <summary>

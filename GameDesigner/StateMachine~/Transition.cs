@@ -52,7 +52,7 @@ namespace GameDesigner
         /// <summary>
         /// 是否进入下一个状态?
         /// </summary>
-		public bool isEnterNextState = false;
+		public bool isEnterNextState;
 
         public Transition() { }
 
@@ -70,7 +70,8 @@ namespace GameDesigner
                 name = transitionName,
                 currStateID = state.ID,
                 nextStateID = nextState.ID,
-                stateMachine = state.stateMachine
+                stateMachine = state.stateMachine,
+                behaviours = new BehaviourBase[0],
             };
             ArrayExtend.Add(ref state.transitions, t);
             for (int i = 0; i < state.transitions.Length; i++)
