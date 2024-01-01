@@ -62,7 +62,7 @@ namespace Framework
         public CollectType type;
         public Object path;
         public FilterOptions filter;
-        public List<Object> filterDirectorys = new List<Object>();
+        public List<Object> filters = new List<Object>();
     }
 
     public class AssetBundleBuilder : ScriptableObject
@@ -154,6 +154,26 @@ namespace Framework
     public class AssetBundleBuilderEditor : Editor
     {
         private AssetBundleBuilder assetBundleBuilder;
+        private readonly Dictionary<FilterOptions, string[]> filterOptionDict = new()
+        {
+            { FilterOptions.AnimationClip, new string[]{ ".anim" } },
+            { FilterOptions.AudioClip, new string[]{ ".ogg", ".wav", ".mp3" } },
+            { FilterOptions.AudioMixer, new string[]{ ".mixer" } },
+            { FilterOptions.ComputeShader, new string[]{ ".compute" } },
+            { FilterOptions.Font, new string[]{ ".ttf", ".fontsettings", ".TTF" } },
+            { FilterOptions.GUISkin, new string[]{ ".guiskin" } },
+            { FilterOptions.Material, new string[]{ ".mat" } },
+            { FilterOptions.Mesh, new string[]{ ".fbx", ".FBX", ".obj" } },
+            { FilterOptions.Model, new string[]{ ".fbx", ".FBX", ".obj" } },
+            { FilterOptions.PhysicMaterial, new string[]{ ".physicMaterial" } },
+            { FilterOptions.Prefab, new string[]{ ".prefab" } },
+            { FilterOptions.Scene, new string[]{ ".unity" } },
+            { FilterOptions.Script, new string[]{ ".cs" } },
+            { FilterOptions.Shader, new string[]{ ".shader" } },
+            { FilterOptions.Sprite, new string[]{ ".jpg", ".png", ".bmp", ".tiff", ".psd", ".svg", ".jpeg" } },
+            { FilterOptions.Texture, new string[]{ ".jpg", ".png", ".bmp", ".tiff", ".psd", ".svg", ".jpeg" } },
+            { FilterOptions.VideoClip, new string[]{ ".mp4", ".avi", ".mkv", ".flv", ".wmv" } },
+        };
 
         private void OnEnable()
         {
@@ -219,7 +239,11 @@ namespace Framework
                     if (!package.enable)
                         continue;
                     var assetPath = AssetDatabase.GetAssetPath(package.path);
-                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
+                    var isFolder = AssetDatabase.IsValidFolder(assetPath);
+                    if (isFolder)
+                        AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
+                    else
+                        AddSinglePackage(buildList, assetInfoList, assetPath, package);
                 }
                 EditorUtility.ClearProgressBar();
                 Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
@@ -336,113 +360,30 @@ namespace Framework
                 if (s.EndsWith(".cs"))
                     return false;
                 s = s.Replace('\\', '/');
-                foreach (var filterDirectory in package.filterDirectorys)
+                foreach (var filterObject in package.filters)
                 {
-                    var assetPath = AssetDatabase.GetAssetPath(filterDirectory);
+                    var assetPath = AssetDatabase.GetAssetPath(filterObject);
                     if (Net.Helper.StringHelper.StartsWith(s, assetPath))
                         return false;
                 }
                 foreach (FilterOptions flag in Enum.GetValues(typeof(FilterOptions)))
                 {
-                    if (package.filter.HasFlag(flag))
-                    {
-                        switch (flag)
-                        {
-                            case FilterOptions.AnimationClip:
-                                if (s.EndsWith(".anim"))
-                                    return false;
-                                break;
-                            case FilterOptions.AudioClip:
-                                if (s.EndsWith(".ogg") | s.EndsWith(".wav") | s.EndsWith(".mp3"))
-                                    return false;
-                                break;
-                            case FilterOptions.AudioMixer:
-                                if (s.EndsWith(".mixer"))
-                                    return false;
-                                break;
-                            case FilterOptions.ComputeShader:
-                                if (s.EndsWith(".compute"))
-                                    return false;
-                                break;
-                            case FilterOptions.Font:
-                                if (s.EndsWith(".ttf") | s.EndsWith(".fontsettings") | s.EndsWith(".TTF"))
-                                    return false;
-                                break;
-                            case FilterOptions.GUISkin:
-                                if (s.EndsWith(".guiskin"))
-                                    return false;
-                                break;
-                            case FilterOptions.Material:
-                                if (s.EndsWith(".mat"))
-                                    return false;
-                                break;
-                            case FilterOptions.Mesh:
-                                if (s.EndsWith(".fbx") | s.EndsWith(".FBX"))
-                                    return false;
-                                break;
-                            case FilterOptions.Model:
-                                if (s.EndsWith(".fbx") | s.EndsWith(".FBX"))
-                                    return false;
-                                break;
-                            case FilterOptions.PhysicMaterial:
-                                if (s.EndsWith(".physicMaterial"))
-                                    return false;
-                                break;
-                            case FilterOptions.Prefab:
-                                if (s.EndsWith(".prefab"))
-                                    return false;
-                                break;
-                            case FilterOptions.Scene:
-                                if (s.EndsWith(".unity"))
-                                    return false;
-                                break;
-                            case FilterOptions.Script:
-                                if (s.EndsWith(".cs"))
-                                    return false;
-                                break;
-                            case FilterOptions.Shader:
-                                if (s.EndsWith(".shader"))
-                                    return false;
-                                break;
-                            case FilterOptions.Sprite:
-                                if (s.EndsWith(".jpg") | s.EndsWith(".png"))
-                                    return false;
-                                break;
-                            case FilterOptions.Texture:
-                                if (s.EndsWith(".jpg") | s.EndsWith(".png"))
-                                    return false;
-                                break;
-                            case FilterOptions.VideoClip:
-                                if (s.EndsWith(".mp4") | s.EndsWith(".avi") | s.EndsWith(".mkv") | s.EndsWith(".flv") | s.EndsWith(".wmv"))
-                                    return false;
-                                break;
-                        }
-                    }
+                    if (!package.filter.HasFlag(flag))
+                        continue;
+                    if (!filterOptionDict.TryGetValue(flag, out var expands))
+                        continue;
+                    foreach (var expand in expands)
+                        if (s.EndsWith(expand))
+                            return false;
                 }
                 return true;
-
             }).ToList();
             for (int i = 0; i < files.Count; i++)
             {
                 files[i] = files[i].Replace('\\', '/');
                 if (files[i].EndsWith(".unity"))
                 {
-                    var sceneAssetBundleName = GetAssetBundleName(files[i], type);
-                    var assetBundleBuild = new AssetBundleBuild
-                    {
-                        assetBundleName = sceneAssetBundleName,
-                        assetNames = new string[] { files[i] }
-                    };
-                    buildList.Add(sceneAssetBundleName, assetBundleBuild);
-                    var lastModified = File.GetLastWriteTime(files[i]);
-                    var lastModified1 = File.GetLastWriteTime(files[i] + ".meta");
-                    var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
-                    assetInfoList.Add(files[i], new AssetInfo()
-                    {
-                        name = Path.GetFileName(files[i]),
-                        assetBundleName = sceneAssetBundleName,
-                        md5 = md5,
-                    });
+                    var sceneAssetBundleName = AddSinglePackage(buildList, assetInfoList, files[i], package);
                     files.RemoveAt(i);
                     if (i >= 0) i--;
                     EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{sceneAssetBundleName}完成!", progress);
@@ -493,6 +434,27 @@ namespace Framework
             {
                 AssetBundleCollect(buildList, assetInfoList, directorie, package, progress);
             }
+        }
+
+        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package)
+        {
+            var sceneAssetBundleName = GetAssetBundleName(assetPath, package.type);
+            var assetBundleBuild = new AssetBundleBuild
+            {
+                assetBundleName = sceneAssetBundleName,
+                assetNames = new string[] { assetPath }
+            };
+            buildList.Add(sceneAssetBundleName, assetBundleBuild);
+            var lastModified = File.GetLastWriteTime(assetPath);
+            var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
+            var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+            assetInfoList.Add(assetPath, new AssetInfo()
+            {
+                name = Path.GetFileName(assetPath),
+                assetBundleName = sceneAssetBundleName,
+                md5 = md5,
+            });
+            return sceneAssetBundleName;
         }
 
         public string CheckAutoIncrement()

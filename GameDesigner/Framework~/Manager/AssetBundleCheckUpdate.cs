@@ -23,7 +23,7 @@ namespace Framework
         public virtual void Start()
         {
             var mode = Global.I.Mode;
-            if (mode == AssetBundleMode.EditorMode | mode == AssetBundleMode.LocalMode)
+            if ((byte)mode <= 2)
                 LoadAssetBundle();
             else
                 _ = CheckAssetBundleUpdate();

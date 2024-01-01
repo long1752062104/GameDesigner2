@@ -24,7 +24,7 @@ namespace Framework
             Loading = _Loading;
             Message = _Message;
             Tips = _Tips;
-            AddForm(_Loading); 
+            AddForm(_Loading);
             AddForm(_Message);
             AddForm(_Tips);
         }
@@ -101,7 +101,7 @@ namespace Framework
             return form;
         }
 
-        private UIBase InstantiateForm(string formName) 
+        private UIBase InstantiateForm(string formName)
         {
             var dataTable = Global.Table.GetTable(sheetName);
             var dataRows = dataTable.Select($"Name = '{formName}'");
@@ -145,7 +145,7 @@ namespace Framework
                     //form.transform.SetAsLastSibling();
                 }
             }
-            else 
+            else
             {
                 form.HideUI(isBack, pars);
             }
@@ -157,7 +157,7 @@ namespace Framework
             return GetForm(formName) as T;
         }
 
-        public UIBase GetForm(string formName) 
+        public UIBase GetForm(string formName)
         {
             formDict.TryGetValue(formName, out var form);
             return form;

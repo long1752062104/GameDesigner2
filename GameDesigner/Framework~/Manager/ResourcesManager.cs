@@ -3,9 +3,9 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Framework
 {
@@ -26,12 +26,16 @@ namespace Framework
         }
     }
 
-    public enum AssetBundleMode
+    public enum AssetBundleMode : byte
     {
         /// <summary>
         /// 本机路径, 也就是编辑器路径
         /// </summary>
         EditorMode,
+        /// <summary>
+        /// Resource加载模式
+        /// </summary>
+        ResourceMode,
         /// <summary>
         /// 流路径, 不需要网络下载的模式
         /// </summary>
@@ -75,10 +79,8 @@ namespace Framework
 
         public virtual void Init()
         {
-#if UNITY_EDITOR
-            if (Global.I.Mode == AssetBundleMode.EditorMode)
+            if ((byte)Global.I.Mode <= 1)
                 return;
-#endif
             var assetBundlePath = Global.I.AssetBundlePath;
             var assetInfoList = assetBundlePath + "assetInfoList.json";
             if (!File.Exists(assetInfoList))
@@ -148,6 +150,14 @@ namespace Framework
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
 #endif
+            if (Global.I.Mode == AssetBundleMode.ResourceMode)
+            {
+                var index = assetPath.IndexOf("Resources");
+                assetPath = assetPath.Remove(0, index + 10);
+                index = assetPath.LastIndexOf(".");
+                assetPath = assetPath.Remove(index, assetPath.Length - index);
+                return Resources.Load<T>(assetPath);
+            }
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
@@ -161,6 +171,14 @@ namespace Framework
             if (Global.I.Mode == AssetBundleMode.EditorMode)
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
 #endif
+            if (Global.I.Mode == AssetBundleMode.ResourceMode)
+            {
+                var index = assetPath.IndexOf("Resources");
+                assetPath = assetPath.Remove(0, index + 10);
+                index = assetPath.LastIndexOf(".");
+                assetPath = assetPath.Remove(index, assetPath.Length - index);
+                return Resources.Load<T>(assetPath);
+            }
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
@@ -178,6 +196,14 @@ namespace Framework
                 goto J;
             }
 #endif
+            if (Global.I.Mode == AssetBundleMode.ResourceMode)
+            {
+                var index = assetPath.IndexOf("Resources");
+                assetPath = assetPath.Remove(0, index + 10);
+                index = assetPath.LastIndexOf(".");
+                assetPath = assetPath.Remove(index, assetPath.Length - index);
+                return Resources.LoadAll<T>(assetPath);
+            }
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
@@ -199,6 +225,14 @@ namespace Framework
                 goto J;
             }
 #endif
+            if (Global.I.Mode == AssetBundleMode.ResourceMode)
+            {
+                var index = assetPath.IndexOf("Resources");
+                assetPath = assetPath.Remove(0, index + 10);
+                index = assetPath.LastIndexOf(".");
+                assetPath = assetPath.Remove(index, assetPath.Length - index);
+                return Resources.LoadAll<T>(assetPath);
+            }
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
@@ -215,7 +249,10 @@ namespace Framework
         protected virtual AssetBundle GetAssetBundle(string assetPath)
         {
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+            {
+                Global.Logger.LogError($"加载资源:{assetPath}失败!");
                 return default;
+            }
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
             {
                 var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
@@ -230,7 +267,10 @@ namespace Framework
         protected virtual async UniTask<AssetBundle> GetAssetBundleAsync(string assetPath)
         {
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+            {
+                Global.Logger.LogError($"加载资源:{assetPath}失败!");
                 return default;
+            }
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
             {
                 var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
@@ -244,29 +284,40 @@ namespace Framework
 
         public virtual bool LoadAssetScene(string assetPath, LoadSceneMode mode = LoadSceneMode.Single)
         {
+            if ((byte)Global.I.Mode <= 1)
+            {
+                assetPath = Path.GetFileNameWithoutExtension(assetPath);
+                goto J;
+            }
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return false;
-            UnityEngine.SceneManagement.SceneManager.LoadScene(assetPath, mode);
+            J: UnityEngine.SceneManagement.SceneManager.LoadScene(assetPath, mode);
             return true;
         }
 
-        public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single)
+        public virtual async UniTask LoadAssetSceneAsync(string assetPath, Action onLoadComplete = null, LoadSceneMode mode = LoadSceneMode.Single)
         {
+            if ((byte)Global.I.Mode <= 1)
+            {
+                assetPath = Path.GetFileNameWithoutExtension(assetPath);
+                goto J;
+            }
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return;
-            var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(assetPath, mode);
-            op.allowSceneActivation = false;
-            while (op.progress < 0.9f)
+            J: var asyncOper = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(assetPath, mode);
+            asyncOper.allowSceneActivation = false;
+            while (asyncOper.progress < 0.9f)
             {
-                Global.UI.Loading.ShowUI("加载场景中", op.progress);
+                Global.UI.Loading.ShowUI("加载场景中..." + (asyncOper.progress * 100f).ToString("f0") + "%", asyncOper.progress);
                 await UniTask.Yield();
             }
             Global.UI.Loading.ShowUI("加载完成", 1f);
             await UniTask.Delay(1000);
-            op.allowSceneActivation = true;
+            asyncOper.allowSceneActivation = true;
             Global.UI.Loading.HideUI();
+            onLoadComplete?.Invoke();
         }
 
         protected virtual void DirectDependencies(string assetBundleName)
@@ -299,19 +350,29 @@ namespace Framework
 
         public T Instantiate<T>(string assetPath, Transform parent = null) where T : Object
         {
+            return Instantiate<T>(assetPath, Vector3.zero, Quaternion.identity, parent);
+        }
+
+        public async UniTask<T> InstantiateAsync<T>(string assetPath, Transform parent = null) where T : Object
+        {
+            return await InstantiateAsync<T>(assetPath, Vector3.zero, Quaternion.identity, parent);
+        }
+
+        public T Instantiate<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
+        {
             var assetObj = LoadAsset<GameObject>(assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");
                 return null;
             }
-            var obj = Instantiate(assetObj, parent);
-            if (typeof(T).IsSubclassOf(typeof(Component)))
-                return obj.GetComponent(typeof(T)) as T;
+            var obj = Instantiate(assetObj, position, rotation, parent);
+            if (obj.TryGetComponent(typeof(T), out var component))
+                return component as T;
             return obj as T;
         }
 
-        public async UniTask<T> InstantiateAsync<T>(string assetPath, Transform parent = null) where T : Object
+        public async UniTask<T> InstantiateAsync<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
         {
             var assetObj = await LoadAssetAsync<GameObject>(assetPath);
             if (assetObj == null)
@@ -319,9 +380,9 @@ namespace Framework
                 Global.Logger.LogError($"资源加载失败:{assetPath}");
                 return null;
             }
-            var obj = Instantiate(assetObj, parent);
-            if (typeof(T).IsSubclassOf(typeof(Component)))
-                return obj.GetComponent(typeof(T)) as T;
+            var obj = Instantiate(assetObj, position, rotation, parent);
+            if (obj.TryGetComponent(typeof(T), out var component))
+                return component as T;
             return obj as T;
         }
 

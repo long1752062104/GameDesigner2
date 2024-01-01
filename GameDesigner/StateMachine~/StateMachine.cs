@@ -137,6 +137,7 @@ namespace GameDesigner
             stateMachine.name = name;
             stateMachine.states = new State[0];
             stateMachine.selectStates = new List<int>();
+            stateMachine.clipNames = new List<string>();
             return stateMachine;
         }
 
@@ -252,6 +253,7 @@ namespace GameDesigner
         {
             foreach (var state in states)
             {
+                state.stateMachine = this;
                 for (int i = 0; i < state.behaviours.Length; i++)
                 {
                     var type = AssemblyHelper.GetType(state.behaviours[i].name);
@@ -269,9 +271,11 @@ namespace GameDesigner
                     state.behaviours[i].ID = state.ID;
                     state.behaviours[i].Active = active;
                     state.behaviours[i].show = show;
+                    state.behaviours[i].stateMachine = this;
                 }
                 foreach (var t in state.transitions)
                 {
+                    t.stateMachine = this;
                     for (int i = 0; i < t.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(t.behaviours[i].name);
@@ -289,10 +293,12 @@ namespace GameDesigner
                         t.behaviours[i].ID = state.ID;
                         t.behaviours[i].Active = active;
                         t.behaviours[i].show = show;
+                        t.behaviours[i].stateMachine = this;
                     }
                 }
                 foreach (var a in state.actions)
                 {
+                    a.stateMachine = this;
                     for (int i = 0; i < a.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(a.behaviours[i].name);
@@ -310,6 +316,7 @@ namespace GameDesigner
                         a.behaviours[i].ID = state.ID;
                         a.behaviours[i].Active = active;
                         a.behaviours[i].show = show;
+                        a.behaviours[i].stateMachine = this;
                     }
                 }
             }
