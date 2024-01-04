@@ -338,7 +338,7 @@ namespace Framework
             if (type == CollectType.AllDirectoriesSplitHashName | type == CollectType.TopDirectoryOnlyHashName | type == CollectType.AllDirectoriesHashName)
                 assetBundleName = Net.Helper.EncryptHelper.GetMD5(assetPath);
             else
-                assetBundleName = assetPath.Replace("\\", "_").Replace("/", "_").Replace(".", "_").Replace(" ", "").ToLower();
+                assetBundleName = assetPath.Replace("\\", "_").Replace("/", "_").Replace(".", "_").Replace(" ", "").Replace("-", "_").ToLower();
             if (!string.IsNullOrEmpty(assetBundleBuilder.packageFormat))
                 assetBundleName += "." + assetBundleBuilder.packageFormat;
             return assetBundleName;
