@@ -1719,19 +1719,16 @@ namespace Net.Server
         public void Send(Player client, RPCModel model) => SendRT(client, model);
 
         /// <summary>
-        /// 发送网络可靠传输数据, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">发送的客户端</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
         public virtual void SendRT(Player client, string func, params object[] pars) => Call(client, func, pars);
-
         /// <summary>
-        /// 发送可靠网络传输, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">发送的客户端</param>
         /// <param name="cmd">网络命令</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
@@ -1742,16 +1739,34 @@ namespace Net.Server
         public virtual void SendRT(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, methodHash, pars);
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void SendIn(Player client, string func, params object[] pars) => Call(client, NetCmd.SafeCall, true, func, pars);
+        /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void SendIn(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, true, func, pars);
+
+        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => Call(client, NetCmd.SafeCall, true, methodHash, pars);
+
+        public virtual void SendIn(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, true, methodHash, pars);
+
+        /// <summary>
+        /// 向客户端发送消息
         /// </summary>
         /// <param name="client"></param>
         /// <param name="buffer"></param>
         public virtual void SendRT(Player client, byte[] buffer) => Call(client, buffer);
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
         /// <param name="client"></param>
         /// <param name="cmd">网络命令</param>
@@ -1771,27 +1786,70 @@ namespace Net.Server
         public void SendRT(Player client, RPCModel model) => Call(client, model);
 
         #region Call
+
+        #region Call_Func
         /// <summary>
-        /// 发送网络可靠传输数据, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">发送的客户端</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void Call(Player client, string func, params object[] pars)
-        {
-            Call(client, NetCmd.CallRpc, func, pars);
-        }
-
+        public virtual void Call(Player client, string func, params object[] pars) => Call(client, NetCmd.CallRpc, func, pars);
         /// <summary>
-        /// 发送可靠网络传输, 可以发送大型文件数据
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">发送的客户端</param>
         /// <param name="cmd">网络命令</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void Call(Player client, byte cmd, string func, params object[] pars)
+        public virtual void Call(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, false, func, 0, pars);
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void CallIn(Player client, string func, params object[] pars) => CallIn(client, NetCmd.CallRpc, func, pars);
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void CallIn(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, true, func, 0, pars);
+        #endregion
+
+        #region Call_Hash
+        public virtual void Call(Player client, ushort methodHash, params object[] pars) => Call(client, NetCmd.CallRpc, methodHash, pars);
+        public virtual void Call(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, false, string.Empty, methodHash, pars);
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="methodHash">方法哈希值</param>
+        /// <param name="pars">参数</param>
+        public virtual void CallIn(Player client, ushort methodHash, params object[] pars) => CallIn(client, NetCmd.CallRpc, methodHash, pars);
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="cmd">方法哈希值</param>
+        /// <param name="methodHash">方法哈希值</param>
+        /// <param name="pars">参数</param>
+        public virtual void CallIn(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, true, string.Empty, methodHash, pars);
+        #endregion
+
+        /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="serialize">Rpc参数是否在此线程进行序列化?</param>
+        /// <param name="func">方法名称</param>
+        /// <param name="methodHash">方法哈希值</param>
+        /// <param name="pars">参数</param>
+        public virtual void Call(Player client, byte cmd, bool serialize, string func, ushort methodHash, params object[] pars)
         {
             if (!client.Connected)
                 return;
@@ -1800,40 +1858,20 @@ namespace Net.Server
                 OnDataQueueOverflow(client);
                 return;
             }
-            client.RpcModels.Enqueue(new RPCModel(cmd, func, pars, true, true));
-        }
-
-        public virtual void Call(Player client, ushort methodHash, params object[] pars)
-        {
-            Call(client, NetCmd.CallRpc, methodHash, pars);
-        }
-
-        public virtual void Call(Player client, byte cmd, ushort methodHash, params object[] pars)
-        {
-            if (!client.Connected)
-                return;
-            if (client.RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow(client);
-                return;
-            }
-            client.RpcModels.Enqueue(new RPCModel(cmd, string.Empty, pars, true, true, methodHash));
+            var model = new RPCModel(cmd, func, pars, true, !serialize, methodHash);
+            if (serialize) model.buffer = OnSerializeRpc(model);
+            client.RpcModels.Enqueue(model);
         }
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
         /// <param name="client"></param>
         /// <param name="buffer"></param>
-        public virtual void Call(Player client, byte[] buffer)
-        {
-            Call(client, NetCmd.OtherCmd, buffer);
-        }
+        public virtual void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, buffer);
 
         /// <summary>
-        /// 发送可靠网络传输, 可发送大数据流
-        /// 调用此方法通常情况下是一定把数据发送成功为止, 
+        /// 向客户端发送消息
         /// </summary>
         /// <param name="client"></param>
         /// <param name="cmd">网络命令</param>
@@ -1865,22 +1903,7 @@ namespace Net.Server
         /// <param name="buffer">要包装的数据,你自己来定</param>
         /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize)
-        {
-            if (!client.Connected)
-                return;
-            if (client.RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow(client);
-                return;
-            }
-            if (buffer.Length / MTU > LimitQueueCount)
-            {
-                Debug.LogError($"[{client}]数据太大，请分块发送!");
-                return;
-            }
-            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
-        }
+        public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
 
         public void Call(Player client, RPCModel model)
         {
@@ -1949,8 +1972,7 @@ namespace Net.Server
         /// <param name="pars">本地客户端rpc参数</param>
         public virtual void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
         {
-            var buffer = OnSerializeRpc(new RPCModel(1, func, pars));
-            Multicast(clients, new RPCModel(cmd, buffer, true, false));
+            Multicast(clients, new RPCModel(cmd, func, pars));
         }
 
         public virtual void Multicast(IList<Player> clients, ushort methodHash, params object[] pars)
@@ -1965,13 +1987,15 @@ namespace Net.Server
 
         public virtual void Multicast(IList<Player> clients, RPCModel model)
         {
-            if (model.buffer != null)
+            if (model.buffer == null)
             {
-                if (model.buffer.Length / MTU > LimitQueueCount)
-                {
-                    Debug.LogError("Multocast数据太大，请分块发送!");
-                    return;
-                }
+                model.serialize = false;
+                model.buffer = OnSerializeRpc(model);
+            }
+            if (model.buffer.Length / MTU > LimitQueueCount)
+            {
+                Debug.LogError("Multocast数据太大，请分块发送!");
+                return;
             }
             for (int i = 0; i < clients.Count; i++)
             {

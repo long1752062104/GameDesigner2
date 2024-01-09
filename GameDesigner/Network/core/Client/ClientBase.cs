@@ -1853,70 +1853,32 @@ namespace Net.Client
         /// 发送自定义网络数据
         /// </summary>
         /// <param name="buffer">数据缓冲区</param>
-        public virtual void Send(byte[] buffer)
-        {
-            Send(NetCmd.OtherCmd, buffer);
-        }
+        public virtual void Send(byte[] buffer) => Send(NetCmd.OtherCmd, buffer);
 
         /// <summary>
         /// 发送自定义网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer">发送字节数组缓冲区</param>
-        public virtual void Send(byte cmd, byte[] buffer)
-        {
-            SendRT(cmd, buffer);
-        }
+        public virtual void Send(byte cmd, byte[] buffer) => SendRT(cmd, buffer);
 
         /// <summary>
-        /// 远程调用函数, 调用服务器的方法名为func的函数
+        /// 发送网络数据
         /// </summary>
-        /// <param name="func">RPCFun函数</param>
-        /// <param name="pars">RPCFun参数</param>
-        public virtual void Send(string func, params object[] pars)
-        {
-            Send(NetCmd.CallRpc, func, pars);
-        }
+        /// <param name="func">方法</param>
+        /// <param name="pars">参数</param>
+        public virtual void Send(string func, params object[] pars) => Send(NetCmd.CallRpc, func, pars);
 
         /// <summary>
-        /// 远程调用函数, 调用服务器的方法名为func的函数
+        /// 发送网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
-        /// <param name="func">RPCFun函数</param>
-        /// <param name="pars">RPCFun参数</param>
-        public virtual void Send(byte cmd, string func, params object[] pars)
-        {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            RpcModels.Enqueue(new RPCModel(cmd, func, pars));
-        }
+        /// <param name="func">方法</param>
+        /// <param name="pars">参数</param>
+        public virtual void Send(byte cmd, string func, params object[] pars) => SendRT(cmd, func, pars);
 
-        public virtual void Send(ushort methodHash, params object[] pars)
-        {
-            Send(NetCmd.CallRpc, methodHash, pars);
-        }
-
-        public virtual void Send(byte cmd, ushort methodHash, params object[] pars)
-        {
-            Send(new RPCModel(cmd, methodHash, pars));
-        }
-
-        public void Send(RPCModel model)
-        {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            RpcModels.Enqueue(model);
-        }
+        public virtual void Send(ushort methodHash, params object[] pars) => Send(NetCmd.CallRpc, methodHash, pars);
+        public virtual void Send(byte cmd, ushort methodHash, params object[] pars) => SendRT(cmd, methodHash, pars);
 
         #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
         /// <summary>
@@ -2228,49 +2190,67 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据
         /// </summary>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void SendRT(string func, params object[] pars)
-        {
-            SendRT(NetCmd.CallRpc, func, pars);
-        }
+        public virtual void SendRT(string func, params object[] pars) => SendRT(NetCmd.CallRpc, func, pars);
 
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void SendRT(byte cmd, string func, params object[] pars)
-        {
-            SendRT(new RPCModel(cmd, func, pars, true, true));
-        }
+        public virtual void SendRT(byte cmd, string func, params object[] pars) => Call(cmd, false, func, 0, pars);
 
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void SendIn(string func, params object[] pars) => SendIn(NetCmd.CallRpc, func, pars);
+
+        /// <summary>
+        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="func">函数名</param>
+        /// <param name="pars">参数</param>
+        public virtual void SendIn(byte cmd, string func, params object[] pars) => Call(cmd, true, func, 0, pars);
+
+        /// <summary>
+        /// 发送网络数据
         /// </summary>
         /// <param name="methodHash"></param>
         /// <param name="pars"></param>
-        public virtual void SendRT(ushort methodHash, params object[] pars)
-        {
-            SendRT(NetCmd.CallRpc, methodHash, pars);
-        }
+        public virtual void SendRT(ushort methodHash, params object[] pars) => SendRT(NetCmd.CallRpc, methodHash, pars);
 
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="methodHash"></param>
         /// <param name="pars"></param>
-        public virtual void SendRT(byte cmd, ushort methodHash, params object[] pars)
-        {
-            SendRT(new RPCModel(cmd, methodHash, pars));
-        }
+        public virtual void SendRT(byte cmd, ushort methodHash, params object[] pars) => Call(cmd, false, string.Empty, methodHash, pars);
 
         /// <summary>
-        /// 发送可靠的网络数据,需要了解model的各个参数
+        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="methodHash"></param>
+        /// <param name="pars"></param>
+        public virtual void SendIn(ushort methodHash, params object[] pars) => SendIn(NetCmd.CallRpc, methodHash, pars);
+
+        /// <summary>
+        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="methodHash"></param>
+        /// <param name="pars"></param>
+        public virtual void SendIn(byte cmd, ushort methodHash, params object[] pars) => Call(cmd, true, string.Empty, methodHash, pars);
+
+        /// <summary>
+        /// 发送网络数据,需要了解model的各个参数
         /// </summary>
         /// <param name="model"></param>
         public virtual void SendRT(RPCModel model)
@@ -2285,8 +2265,22 @@ namespace Net.Client
             RpcModels.Enqueue(model);
         }
 
+        public virtual void Call(byte cmd, bool serialize, string func, ushort methodHash, params object[] pars)
+        {
+            if (!Connected)
+                return;
+            if (RpcModels.Count >= LimitQueueCount)
+            {
+                OnDataQueueOverflow?.Invoke();
+                return;
+            }
+            var model = new RPCModel(cmd, func, pars, true, !serialize, methodHash);
+            if (serialize) model.buffer = OnSerializeRPC(model);
+            RpcModels.Enqueue(model);
+        }
+
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据
         /// </summary>
         /// <param name="buffer"></param>
         public virtual void SendRT(byte[] buffer)
@@ -2295,7 +2289,7 @@ namespace Net.Client
         }
 
         /// <summary>
-        /// 发送可靠的网络数据
+        /// 发送网络数据
         /// </summary>
         /// <param name="cmd">网络命令</param>
         /// <param name="buffer"></param>
