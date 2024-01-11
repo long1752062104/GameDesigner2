@@ -27,6 +27,11 @@ public class ConfigSetting : EditorWindow
             var configPath = PathHelper.Combine(Net.Config.Config.ConfigPath, "/");
             Process.Start("explorer.exe", configPath);
         }
+        if (GUILayout.Button("打开持久化文件夹"))
+        {
+            var configPath = PathHelper.Combine(Net.Config.Config.BasePath, "/");
+            Process.Start("explorer.exe", configPath);
+        }
         if (GUILayout.Button("打开配置文件"))
         {
             var configPath = Net.Config.Config.ConfigPath + "/network.config";

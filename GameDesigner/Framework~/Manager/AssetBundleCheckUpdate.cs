@@ -19,6 +19,8 @@ namespace Framework
         public string metadataList = "Assets/Arts/Hotfix/MetadataList.bytes";
         public string hotfixDll = "Assets/Arts/Hotfix/Main.dll.bytes";
         public bool checkFileMD5;
+        [Tooltip("使用首包下载, 在CDN服务器上会有个所有资源的压缩文件, 当游戏是第一次下载时, 会下载这个压缩文件, 而不是一个个AB文件下载")]
+        public bool useFirstPackage = true;
 
         public virtual void Start()
         {
@@ -88,17 +90,56 @@ namespace Framework
                 return;
             versionUrl = Global.I.AssetBundlePath + "../version.json";
             var localAssetBundleDict = await VersionCheck(versionUrl);
-            localAssetBundleDict ??= new Dictionary<string, AssetBundleInfo>();
+            if (localAssetBundleDict == null)
+            {
+                if (useFirstPackage)
+                {
+                    var complete = await FirstPackageDownload();
+                    if (!complete)
+                        return;
+                    goto J;
+                }
+                localAssetBundleDict = new Dictionary<string, AssetBundleInfo>();
+            }
             var result = await CheckAssetBundle(serverAssetBundleDict, localAssetBundleDict);
             if (!result)
                 return;
-            var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(serverAssetBundleDict.Values.ToList());
+            J: var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(serverAssetBundleDict.Values.ToList());
             var jsonBytes = Encoding.UTF8.GetBytes(json);
             if (Global.I.compressionJson)
                 jsonBytes = UnZipHelper.Compress(jsonBytes);
             File.WriteAllBytes(versionUrl, jsonBytes);
             await UniTask.Delay(1000);
             LoadAssetBundle();
+        }
+
+        protected virtual async UniTask<bool> FirstPackageDownload()
+        {
+            var item = await GetFileLength($"{url}AssetBundles/{Global.I.platform}/{Global.I.version}.zip");
+            if (!item.Item1)
+            {
+                Global.UI.Message.ShowUI("资源请求", "资源包请求失败!");
+                return false;
+            }
+            var msgResult = await DownloadRequestTips(item.Item2);
+            if (!msgResult)
+                return false;
+            var serverAssetBundleUrl = $"{url}AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
+            var localAssetBundleUrl = $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
+            item = await DownloadFile(serverAssetBundleUrl, localAssetBundleUrl, $"资源包{Global.I.version}", item.Item2);
+            if (!item.Item1)
+            {
+                Global.UI.Message.ShowUI("资源请求", "资源包请求失败!");
+                return false;
+            }
+            Global.UI.Loading.ShowUI("正在解压资源包...", 0f);
+            await UnZipHelper.DecompressFile(localAssetBundleUrl, $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/", null,
+                (name, progress) => Global.UI.Loading.ShowUI($"正在解压资源包:{name}", progress));
+            Global.UI.Loading.ShowUI("解压完成", 1f);
+            await UniTask.Delay(100);
+            File.Delete(localAssetBundleUrl);
+            Global.UI.Loading.HideUI();
+            return true;
         }
 
         private async UniTask<bool> CheckAssetBundle(Dictionary<string, AssetBundleInfo> serverAssetBundleDict, Dictionary<string, AssetBundleInfo> localAssetBundleDict)
@@ -133,22 +174,7 @@ namespace Framework
             Global.UI.Loading.HideUI();
             if (totalSize > 0)
             {
-                var msgClose = false;
-                var msgResult = false;
-                Global.UI.Message.ShowUI("资源请求", $"有资源需要更新:{ByteHelper.ToString(totalSize)}", result =>
-                {
-                    msgClose = true;
-                    msgResult = result;
-                    if (!result)
-                    {
-#if UNITY_EDITOR
-                        UnityEditor.EditorApplication.isPlaying = false;
-#endif
-                        Application.Quit();
-                    }
-                });
-                while (!msgClose)
-                    await UniTask.Yield();
+                var msgResult = await DownloadRequestTips(totalSize);
                 if (!msgResult)
                     return false;
             }
@@ -156,31 +182,81 @@ namespace Framework
             {
                 var serverAssetBundleUrl = $"{url}AssetBundles/{Global.I.platform}/{Global.I.version}/{assetBundleInfo.name}";
                 var localAssetBundleUrl = $"{Global.I.AssetBundlePath}/{assetBundleInfo.name}";
-                var request = UnityWebRequest.Head(serverAssetBundleUrl);
-                await request.SendWebRequest();
-                if (!string.IsNullOrEmpty(request.error))
-                {
-                    Debug.LogError($"{serverAssetBundleUrl} 获取资源失败:" + request.error);
+                var item = await DownloadFile(serverAssetBundleUrl, localAssetBundleUrl, assetBundleInfo.name,
+                    (progressText, downloadedBytes) => Global.UI.Loading.ShowUI(progressText, (float)((currSize + downloadedBytes) / (double)totalSize)),
+                    (progressText) => Global.UI.Loading.ShowUI(progressText, (float)(currSize / (double)totalSize)));
+                if (!item.Item1)
                     return false;
-                }
-                ulong totalLength = ulong.Parse(request.GetResponseHeader("Content-Length"));
-                request.Dispose();
-                request = new UnityWebRequest(serverAssetBundleUrl, "GET", new DownloadHandlerFile(localAssetBundleUrl), null);
-                _ = request.SendWebRequest();
-                string progressText;
-                string name = assetBundleInfo.name;
-                while (!request.isDone)
-                {
-                    progressText = $"{name}下载进度:{ByteHelper.ToString(request.downloadedBytes)}/{ByteHelper.ToString(totalLength)}";
-                    Global.UI.Loading.ShowUI(progressText, (float)(currSize / (double)totalSize));
-                    await UniTask.Yield();
-                }
-                progressText = $"{name}下载完成!";
-                currSize += request.downloadedBytes;
-                Global.UI.Loading.ShowUI(progressText, (float)(currSize / (double)totalSize));
-                request.Dispose();
+                currSize += item.Item2;
             }
             return true;
+        }
+
+        protected virtual async UniTask<bool> DownloadRequestTips(ulong totalLength)
+        {
+            var msgClose = false;
+            var msgResult = false;
+            Global.UI.Message.ShowUI("资源请求", $"有资源需要更新:{ByteHelper.ToString(totalLength)}", result =>
+            {
+                msgClose = true;
+                msgResult = result;
+                if (!result)
+                {
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                    Application.Quit();
+                }
+            });
+            while (!msgClose)
+                await UniTask.Yield();
+            return msgResult;
+        }
+
+        protected virtual async UniTask<ValueTuple<bool, ulong>> DownloadFile(string url, string filePath, string name, Action<string, ulong> downloadUpdate = null, Action<string> downloadCompleted = null)
+        {
+            var item = await GetFileLength(url);
+            if (!item.Item1)
+                return (false, 0UL);
+            var totalLength = item.Item2;
+            return await DownloadFile(url, filePath, name, totalLength, downloadUpdate, downloadCompleted);
+        }
+
+        protected virtual async UniTask<ValueTuple<bool, ulong>> DownloadFile(string url, string filePath, string name, ulong totalLength, Action<string, ulong> downloadUpdate = null, Action<string> downloadCompleted = null)
+        {
+            var request = new UnityWebRequest(url, "GET", new DownloadHandlerFile(filePath), null);
+            _ = request.SendWebRequest();
+            string progressText;
+            while (!request.isDone)
+            {
+                progressText = $"{name}下载进度:{ByteHelper.ToString(request.downloadedBytes)}/{ByteHelper.ToString(totalLength)}";
+                if (downloadUpdate == null)
+                    Global.UI.Loading.ShowUI(progressText, (float)(request.downloadedBytes / (double)totalLength));
+                else
+                    downloadUpdate(progressText, request.downloadedBytes);
+                await UniTask.Yield();
+            }
+            progressText = $"{name}下载完成!";
+            if (downloadCompleted == null)
+                Global.UI.Loading.ShowUI(progressText, 1f);
+            else
+                downloadCompleted(progressText);
+            request.Dispose();
+            return (true, totalLength);
+        }
+
+        protected virtual async UniTask<ValueTuple<bool, ulong>> GetFileLength(string url)
+        {
+            var request = UnityWebRequest.Head(url);
+            await request.SendWebRequest();
+            if (!string.IsNullOrEmpty(request.error))
+            {
+                Debug.LogError($"{url} 获取资源失败:" + request.error);
+                return (false, 0UL);
+            }
+            var totalLength = ulong.Parse(request.GetResponseHeader("Content-Length"));
+            request.Dispose();
+            return (true, totalLength);
         }
 
         /// <summary>

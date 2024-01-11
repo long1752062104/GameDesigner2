@@ -1,8 +1,12 @@
-﻿namespace Net.Helper
-{
-    using global::System.IO;
-    using global::System.IO.Compression;
+﻿using System;
+using System.Text;
+using System.IO;
+using System.IO.Compression;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
+namespace Net.Helper
+{
     /// <summary>
     /// 压缩数据传输
     /// </summary>
@@ -64,5 +68,115 @@
             }
         }
         #endregion
+
+        /// <summary>
+        /// 压缩文件夹
+        /// </summary>
+        /// <param name="sourceDirectoryName">要压缩的文件夹路径</param>
+        /// <param name="destinationArchiveFileName">压缩文件路径)</param>
+        /// <param name="compressionLevel">压缩层</param>
+        /// <param name="includeBaseDirectory">压缩包含当前目录</param>
+        /// <param name="entryNameEncoding">压缩编码</param>
+        public static void CompressFiles(string sourceDirectoryName, string destinationArchiveFileName, CompressionLevel compressionLevel = CompressionLevel.Fastest, bool includeBaseDirectory = false, Encoding entryNameEncoding = null)
+        {
+            sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
+            destinationArchiveFileName = Path.GetFullPath(destinationArchiveFileName);
+            var fileStream = File.Open(destinationArchiveFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, leaveOpen: false, entryNameEncoding))
+            {
+                bool flag = true;
+                var directoryInfo = new DirectoryInfo(sourceDirectoryName);
+                string fullName = directoryInfo.FullName;
+                if (includeBaseDirectory && directoryInfo.Parent != null)
+                    fullName = directoryInfo.Parent.FullName;
+                foreach (FileSystemInfo item in directoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                {
+                    int length = item.FullName.Length - fullName.Length;
+                    string text;
+                    text = item.FullName.Substring(fullName.Length, length);
+                    text = text.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    if (item is FileInfo)
+                    {
+                        using Stream stream = File.Open(item.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        ZipArchiveEntry zipArchiveEntry = zipArchive.CreateEntry(text, compressionLevel);
+                        DateTime dateTime = File.GetLastWriteTime(item.FullName);
+                        if (dateTime.Year < 1980 || dateTime.Year > 2107)
+                            dateTime = new DateTime(1980, 1, 1, 0, 0, 0);
+                        zipArchiveEntry.LastWriteTime = dateTime;
+                        using (Stream destination2 = zipArchiveEntry.Open())
+                        {
+                            stream.CopyTo(destination2);
+                        }
+                        continue;
+                    }
+                    if (item is DirectoryInfo directoryInfo2)
+                    {
+                        using (var enumerator = directoryInfo2.EnumerateFileSystemInfos("*", SearchOption.AllDirectories).GetEnumerator())
+                        {
+                            if (enumerator.MoveNext())
+                                zipArchive.CreateEntry(text + Path.AltDirectorySeparatorChar);
+                        }
+                    }
+                }
+                if (includeBaseDirectory && flag)
+                    zipArchive.CreateEntry(directoryInfo.Name + Path.AltDirectorySeparatorChar);
+            }
+        }
+
+        /// <summary>
+        /// 解压文件夹
+        /// </summary>
+        /// <param name="sourceArchiveFileName">压缩文件路径</param>
+        /// <param name="destinationDirectoryName">要解压到的文件夹路径</param>
+        /// <param name="entryNameEncoding">解压编码</param>
+        /// <exception cref="IOException"></exception>
+        public static void DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding = null)
+        {
+            _ = DecompressFile(sourceArchiveFileName, destinationDirectoryName, entryNameEncoding, null, false);
+        }
+
+        /// <summary>
+        /// 解压文件夹
+        /// </summary>
+        /// <param name="sourceArchiveFileName">压缩文件路径</param>
+        /// <param name="destinationDirectoryName">要解压到的文件夹路径</param>
+        /// <param name="entryNameEncoding">解压编码</param>
+        /// <param name="progress">解压进度</param>
+        /// <param name="isAsync">是否异步调用</param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        public static async UniTask DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding = null, Action<string, float> progress = null, bool isAsync = true)
+        {
+            var fileStream = File.Open(sourceArchiveFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using (ZipArchive source = new ZipArchive(fileStream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding))
+            {
+                var directoryInfo = Directory.CreateDirectory(destinationDirectoryName);
+                string text = directoryInfo.FullName;
+                var count = source.Entries.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    var entry = source.Entries[i];
+                    progress?.Invoke(entry.Name, i / (float)count);
+                    if (isAsync) await UniTask.Yield();
+                    string fullPath = Path.GetFullPath(text + entry.FullName);
+                    if (Path.GetFileName(fullPath).Length == 0)
+                    {
+                        if (entry.Length != 0L)
+                            throw new IOException("把数据当作文件夹识别了!");
+                        Directory.CreateDirectory(fullPath);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                        using (Stream destination = File.Open(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        {
+                            using Stream stream = entry.Open();
+                            stream.CopyTo(destination);
+                        }
+                        File.SetLastWriteTime(fullPath, entry.LastWriteTime.DateTime);
+                    }
+                }
+            }
+        }
     }
 }

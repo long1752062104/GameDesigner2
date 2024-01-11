@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.Text;
+using Net.Helper;
 #if HYBRIDCLR
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
@@ -73,6 +74,7 @@ namespace Framework
         public string outputPath = "AssetBundles/";
         public bool clearFolders = true;
         public bool copyToStreamingAssets;
+        public bool clearManifestFile = true;
         [Tooltip("Uncompressed: 不压缩 StandardCompression:正常压缩 ChunkBasedCompression: 使用基于语块的LZ4压缩")]
         public CompressOptions compression = CompressOptions.ChunkBasedCompression;
         [Tooltip("打包AssetBundle时不包含类型信息，这会使文件变小并稍微快一些加载时间。")]
@@ -94,6 +96,8 @@ namespace Framework
         [Tooltip("AssetBundle文件如果超过理想大小, 则进行分包")]
         public long singlePackageSize = 1024 * 1024 * 20; //单包最大20m
         public bool compressionJson;
+        [Tooltip("使用首包压缩文件, 当项目有上千个AB文件时, 玩家第一次下载游戏, 只需要下载这个压缩文件下来,然后解压即可. 如果不使用首包, 则需要一个个AB文件下载")]
+        public bool useFirstPackage = true;
         public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
@@ -154,7 +158,7 @@ namespace Framework
     public class AssetBundleBuilderEditor : Editor
     {
         private AssetBundleBuilder assetBundleBuilder;
-        private readonly Dictionary<FilterOptions, string[]> filterOptionDict = new()
+        private readonly Dictionary<FilterOptions, string[]> filterOptionDict = new Dictionary<FilterOptions, string[]>()
         {
             { FilterOptions.AnimationClip, new string[]{ ".anim" } },
             { FilterOptions.AudioClip, new string[]{ ".ogg", ".wav", ".mp3" } },
@@ -200,19 +204,20 @@ namespace Framework
             }
             if (GUILayout.Button("BuildAssetBundle"))
             {
+                var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
                 if (assetBundleBuilder.clearFolders)
                 {
-                    if (Directory.Exists(assetBundleBuilder.outputPath))
-                        Directory.Delete(assetBundleBuilder.outputPath, true);
+                    if (Directory.Exists(outputPath))
+                        Directory.Delete(outputPath, true);
                     if (assetBundleBuilder.copyToStreamingAssets)
                     {
-                        var m_streamingPath = Application.streamingAssetsPath + "/AssetBundles/";
+                        var m_streamingPath = $"{Application.streamingAssetsPath}/AssetBundles/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
                         if (Directory.Exists(m_streamingPath))
                             Directory.Delete(m_streamingPath, true);
                     }
                 }
-                if (!Directory.Exists(assetBundleBuilder.outputPath))
-                    Directory.CreateDirectory(assetBundleBuilder.outputPath);
+                if (!Directory.Exists(outputPath))
+                    Directory.CreateDirectory(outputPath);
                 var opt = BuildAssetBundleOptions.None;
                 if (assetBundleBuilder.compression == CompressOptions.Uncompressed)
                     opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
@@ -247,7 +252,6 @@ namespace Framework
                 }
                 EditorUtility.ClearProgressBar();
                 Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
-                var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
                 if (!Directory.Exists(outputPath))
                     Directory.CreateDirectory(outputPath);
                 var assetInfoListPath = outputPath + "assetInfoList.json";
@@ -256,7 +260,7 @@ namespace Framework
                 {
                     var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
                     if (assetBundleBuilder.compressionJson)
-                        assetInfoListBytes = Net.Helper.UnZipHelper.Decompress(assetInfoListBytes);
+                        assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes);
                     var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
                     assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
                 }
@@ -282,7 +286,7 @@ namespace Framework
                 {
                     var manifestBytes = File.ReadAllBytes(manifestPath);
                     if (assetBundleBuilder.compressionJson)
-                        manifestBytes = Net.Helper.UnZipHelper.Decompress(manifestBytes);
+                        manifestBytes = UnZipHelper.Decompress(manifestBytes);
                     var manifestJson = Encoding.UTF8.GetString(manifestBytes);
                     assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
                 }
@@ -295,32 +299,45 @@ namespace Framework
                 var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
                 byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
                 if (assetBundleBuilder.compressionJson)
-                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
+                    jsonBytes = UnZipHelper.Compress(jsonBytes);
                 File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
                 json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
                 jsonBytes = Encoding.UTF8.GetBytes(json);
                 if (assetBundleBuilder.compressionJson)
-                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
+                    jsonBytes = UnZipHelper.Compress(jsonBytes);
                 File.WriteAllBytes(outputPath + "assetInfoList.json", jsonBytes);
                 var assetBundleInfos = new List<AssetBundleInfo>();
-                files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta") && !s.EndsWith(".manifest")).ToArray();
+                files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
                 foreach (var file in files)
                 {
+                    var fileName = Path.GetFileName(file);
+                    if (file.EndsWith(".manifest") | fileName == assetBundleBuilder.version)
+                    {
+                        if (assetBundleBuilder.clearManifestFile)
+                            File.Delete(file);
+                        continue;
+                    }
                     var bytes = File.ReadAllBytes(file);
                     if (assetBundleBuilder.encrypt)
                     {
-                        Net.Helper.EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
+                        EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
                         File.WriteAllBytes(file, bytes);
                         Debug.Log($"加密文件:{file}完成!");
                     }
-                    var md5 = Net.Helper.EncryptHelper.GetMD5(bytes);
-                    assetBundleInfos.Add(new AssetBundleInfo(Path.GetFileName(file), md5, bytes.Length));
+                    var md5 = EncryptHelper.GetMD5(bytes);
+                    assetBundleInfos.Add(new AssetBundleInfo(fileName, md5, bytes.Length));
+                }
+                if (assetBundleBuilder.useFirstPackage)
+                {
+                    EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包...", 0f);
+                    UnZipHelper.CompressFiles(outputPath, outputPath + $"../{assetBundleBuilder.version}.zip", System.IO.Compression.CompressionLevel.Optimal, true);
+                    EditorUtility.ClearProgressBar();
                 }
                 json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);
                 jsonBytes = Encoding.UTF8.GetBytes(json);
                 if (assetBundleBuilder.compressionJson)
-                    jsonBytes = Net.Helper.UnZipHelper.Compress(jsonBytes);
-                File.WriteAllBytes(outputPath + "../" + "version.json", jsonBytes);
+                    jsonBytes = UnZipHelper.Compress(jsonBytes);
+                File.WriteAllBytes(outputPath + "../version.json", jsonBytes);
                 if (assetBundleBuilder.copyToStreamingAssets)
                 {
                     var m_streamingPath = Application.streamingAssetsPath + "/AssetBundles/";
@@ -336,7 +353,7 @@ namespace Framework
         {
             string assetBundleName;
             if (type == CollectType.AllDirectoriesSplitHashName | type == CollectType.TopDirectoryOnlyHashName | type == CollectType.AllDirectoriesHashName)
-                assetBundleName = Net.Helper.EncryptHelper.GetMD5(assetPath);
+                assetBundleName = EncryptHelper.GetMD5(assetPath);
             else
                 assetBundleName = assetPath.Replace("\\", "_").Replace("/", "_").Replace(".", "_").Replace(" ", "").Replace("-", "_").ToLower();
             if (!string.IsNullOrEmpty(assetBundleBuilder.packageFormat))
@@ -363,7 +380,7 @@ namespace Framework
                 foreach (var filterObject in package.filters)
                 {
                     var assetPath = AssetDatabase.GetAssetPath(filterObject);
-                    if (Net.Helper.StringHelper.StartsWith(s, assetPath))
+                    if (StringHelper.StartsWith(s, assetPath))
                         return false;
                 }
                 foreach (FilterOptions flag in Enum.GetValues(typeof(FilterOptions)))
@@ -411,7 +428,7 @@ namespace Framework
                 {
                     var lastModified = File.GetLastWriteTime(assetNames[i]);
                     var lastModified1 = File.GetLastWriteTime(assetNames[i] + ".meta");
-                    var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+                    var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
                     assetInfoList.Add(assetNames[i], new AssetInfo()
                     {
                         name = Path.GetFileName(assetNames[i]),
@@ -447,7 +464,7 @@ namespace Framework
             buildList.Add(sceneAssetBundleName, assetBundleBuild);
             var lastModified = File.GetLastWriteTime(assetPath);
             var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
-            var md5 = Net.Helper.EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+            var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
             assetInfoList.Add(assetPath, new AssetInfo()
             {
                 name = Path.GetFileName(assetPath),
@@ -484,24 +501,18 @@ namespace Framework
 
         private void DirectoryCopy(string sourceDirName, string destDirName)
         {
-            // If the destination directory doesn't exist, create it.
             if (!Directory.Exists(destDirName))
-            {
                 Directory.CreateDirectory(destDirName);
-            }
-
             foreach (string folderPath in Directory.GetDirectories(sourceDirName, "*", SearchOption.AllDirectories))
             {
                 if (!Directory.Exists(folderPath.Replace(sourceDirName, destDirName)))
                     Directory.CreateDirectory(folderPath.Replace(sourceDirName, destDirName));
             }
-
             foreach (string filePath in Directory.GetFiles(sourceDirName, "*.*", SearchOption.AllDirectories))
             {
                 var fileDirName = Path.GetDirectoryName(filePath).Replace("\\", "/");
                 var fileName = Path.GetFileName(filePath);
-                string newFilePath = Path.Combine(fileDirName.Replace(sourceDirName, destDirName), fileName);
-
+                var newFilePath = Path.Combine(fileDirName.Replace(sourceDirName, destDirName), fileName);
                 File.Copy(filePath, newFilePath, true);
             }
         }
