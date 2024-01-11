@@ -215,6 +215,12 @@ namespace Framework
                 var err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, mode);
                 Debug.Log($"LoadMetadataForAOTAssembly:{dllPath}. mode:{mode} ret:{err}");
             }
+#if UNITY_EDITOR
+            //检查热更新是不是在项目里面被加载了， 如果已经加载就不进行Load了
+            Global.HotfixAssembly = AssemblyHelper.GetRunAssembly(Path.GetFileNameWithoutExtension(hotfixDll).Replace(".dll", ""));
+            if (Global.HotfixAssembly != null)
+                return;
+#endif
             byte[] rawBytes = null;
             byte[] pdbBytes = null;
             var dllAsset = Global.Resources.LoadAsset<TextAsset>(hotfixDll);
