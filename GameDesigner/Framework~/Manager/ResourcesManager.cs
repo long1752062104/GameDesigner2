@@ -367,6 +367,8 @@ namespace Framework
                 return null;
             }
             var obj = Instantiate(assetObj, position, rotation, parent);
+            if (typeof(T) == typeof(GameObject) | typeof(T) == typeof(Object)) //如果不是组件就直接返回
+                return obj as T;
             if (obj.TryGetComponent(typeof(T), out var component))
                 return component as T;
             return obj as T;
@@ -381,6 +383,8 @@ namespace Framework
                 return null;
             }
             var obj = Instantiate(assetObj, position, rotation, parent);
+            if (typeof(T) == typeof(GameObject) | typeof(T) == typeof(Object)) //如果获取的是游戏物体或者基类则直接返回
+                return obj as T;
             if (obj.TryGetComponent(typeof(T), out var component))
                 return component as T;
             return obj as T;
