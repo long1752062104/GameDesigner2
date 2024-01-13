@@ -1,4 +1,4 @@
-﻿namespace Net.Serialize
+namespace Net.Serialize
 {
     using Net.Event;
     using global::System;
@@ -19,7 +19,11 @@
         /// <returns></returns>
         public static byte[] Serialize(RPCModel model, byte[] flag = null, bool recordType = false)
         {
-            var segment = BufferPool.Take();
+            return Serialize(BufferPool.Take(), model, flag, recordType);
+        }
+
+        public static byte[] Serialize(ISegment segment, RPCModel model, byte[] flag = null, bool recordType = false)
+        {
             byte head = 0;
             bool hasFunc = !string.IsNullOrEmpty(model.func);
             bool hasMask = model.methodHash != 0;
@@ -29,7 +33,7 @@
             segment.WriteByte(head);
             if (hasFunc)
                 segment.Write(model.func);
-            if (hasMask) 
+            if (hasMask)
                 segment.Write(model.methodHash);
             foreach (object obj in model.pars)
             {
@@ -66,7 +70,7 @@
         public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false)
         {
             FuncData fdata = default;
-            try 
+            try
             {
                 var segment = BufferPool.NewSegment(buffer, index, count, false);
                 byte head = segment.ReadByte();

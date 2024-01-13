@@ -1,4 +1,4 @@
-﻿/*版权所有（C）GDNet框架
+/*版权所有（C）GDNet框架
 *
 *该软件按“原样”提供，不提供任何形式的明示或暗示担保，
 *无论是由于软件，使用或其他方式产生的，侵权或其他形式的任何索赔，损害或其他责任，作者或版权所有者概不负责。
@@ -1423,10 +1423,20 @@ namespace Net.Server
                 var len = stream.Position + rPCModel.buffer.Length + frame;
                 if (len >= stream.Length)//udp不可靠判断 和 数据超过BufferPool.Size
                 {
-                    var buffer = PackData(stream);
-                    SendByteData(client, buffer);
-                    ResetDataHead(stream);
-                    index = 0;
+                    if (rPCModel.buffer.Length + frame < stream.Length) //如果一个包的数据量大于缓冲区的最大长度, 就会创建比这个包要大的缓冲区
+                    {
+                        var buffer = PackData(stream);
+                        SendByteData(client, buffer);
+                        ResetDataHead(stream);
+                        index = 0;
+                    }
+                    else
+                    {
+                        var buffer = stream.ToArray(true);
+                        stream = BufferPool.Take(len);
+                        stream.Write(buffer, false);
+                        rPCModel.bigData = true;
+                    }
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
@@ -1744,7 +1754,7 @@ namespace Net.Server
         /// <param name="client">发送的客户端</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void SendIn(Player client, string func, params object[] pars) => Call(client, NetCmd.SafeCall, true, func, pars);
+        public virtual void SendIn(Player client, string func, params object[] pars) => CallIn(client, NetCmd.SafeCall, func, pars);
         /// <summary>
         /// 向客户端发送消息
         /// </summary>
@@ -1752,11 +1762,11 @@ namespace Net.Server
         /// <param name="cmd">网络命令</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void SendIn(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, true, func, pars);
+        public virtual void SendIn(Player client, byte cmd, string func, params object[] pars) => CallIn(client, cmd, func, pars);
 
-        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => Call(client, NetCmd.SafeCall, true, methodHash, pars);
+        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => CallIn(client, NetCmd.SafeCall, methodHash, pars);
 
-        public virtual void SendIn(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, true, methodHash, pars);
+        public virtual void SendIn(Player client, byte cmd, ushort methodHash, params object[] pars) => CallIn(client, cmd, methodHash, pars);
 
         /// <summary>
         /// 向客户端发送消息
