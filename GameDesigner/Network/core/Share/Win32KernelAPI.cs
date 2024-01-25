@@ -78,6 +78,13 @@
         /// <returns></returns>
         [DllImport("Kernel32.dll")]
         public static extern bool Beep(int frequency, int duration);
+
+        /// <summary>
+        /// 获取系统运行时间
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("kernel32.dll")]
+        public static extern long GetTickCount64();
     }
 
     public struct TimeValue

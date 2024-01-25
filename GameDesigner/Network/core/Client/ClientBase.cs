@@ -1136,10 +1136,20 @@ namespace Net.Client
                 var len = stream.Position + rPCModel.buffer.Length + frame;
                 if (len >= stream.Length)//数据超过BufferPool.Size
                 {
-                    var buffer = PackData(stream);
-                    SendByteData(buffer);
-                    ResetDataHead(stream);
-                    index = 0;
+                    if (rPCModel.buffer.Length + frame < stream.Length) //如果一个包的数据量大于缓冲区的最大长度, 就会创建比这个包要大的缓冲区
+                    {
+                        var buffer = PackData(stream);
+                        SendByteData(buffer);
+                        ResetDataHead(stream);
+                        index = 0;
+                    }
+                    else
+                    {
+                        var buffer = stream.ToArray(true);
+                        stream = BufferPool.Take(len);
+                        stream.Write(buffer, false);
+                        rPCModel.bigData = true;
+                    }
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);

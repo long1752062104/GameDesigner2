@@ -306,7 +306,7 @@ namespace Net.Event
             }
             catch (Exception ex)
             {
-                NDebug.LogError(ex);
+                LogError(ex);
             }
             finally
             {
@@ -319,6 +319,16 @@ namespace Net.Event
         static NDebug()
         {
             ThreadManager.Invoke("OutputLog", OutputLog, true);
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+        }
+
+        private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                LogError($"异常信息:{exception.Message}\r\n错误名称:{exception.Source}\r\n调用堆栈:\r\n{exception.StackTrace}");
+                OutputLog();
+            }
         }
 
         private static bool OutputLog()

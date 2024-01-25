@@ -288,7 +288,7 @@ namespace Net.System
             return -1;
         }
 
-        private void Initialize(int capacity)
+        protected void Initialize(int capacity)
         {
             int prime = HashHelpers.GetPrime(capacity);
             buckets = new int[prime];

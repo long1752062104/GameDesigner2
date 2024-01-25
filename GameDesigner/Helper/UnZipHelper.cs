@@ -145,7 +145,7 @@ namespace Net.Helper
         /// <param name="isAsync">是否异步调用</param>
         /// <returns></returns>
         /// <exception cref="IOException"></exception>
-        public static async UniTask DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding = null, Action<string, float> progress = null, bool isAsync = true)
+        public static async UniTask DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding, Action<string, float> progress = null, bool isAsync = true)
         {
             var fileStream = File.Open(sourceArchiveFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
             using (ZipArchive source = new ZipArchive(fileStream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding))
@@ -168,7 +168,7 @@ namespace Net.Helper
                     else
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
-                        using (Stream destination = File.Open(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        using (Stream destination = File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
                         {
                             using Stream stream = entry.Open();
                             stream.CopyTo(destination);

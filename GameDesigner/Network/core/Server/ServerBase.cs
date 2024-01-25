@@ -1685,7 +1685,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="client">发送数据到的客户端</param>
         /// <param name="buffer">数据缓冲区</param>
-        public virtual void Send(Player client, byte[] buffer) => SendRT(client, buffer);
+        public virtual void Send(Player client, byte[] buffer) => Send(client, NetCmd.CallRpc, buffer);
 
         /// <summary>
         /// 发送自定义网络数据
@@ -1699,21 +1699,34 @@ namespace Net.Server
         /// 发送网络数据
         /// </summary>
         /// <param name="client">发送数据到的客户端</param>
-        /// <param name="func">RPCFun函数</param>
-        /// <param name="pars">RPCFun参数</param>
-        public virtual void Send(Player client, string func, params object[] pars) => SendRT(client, func, pars);
+        /// <param name="func">函数</param>
+        /// <param name="pars">参数</param>
+        public virtual void Send(Player client, string func, params object[] pars) => Send(client, NetCmd.CallRpc, func, pars);
 
         /// <summary>
         /// 发送网络数据
         /// </summary>
         /// <param name="client">发送到的客户端</param>
         /// <param name="cmd">网络命令</param>
-        /// <param name="func">RPCFun函数</param>
-        /// <param name="pars">RPCFun参数</param>
+        /// <param name="func">函数</param>
+        /// <param name="pars">参数</param>
         public virtual void Send(Player client, byte cmd, string func, params object[] pars) => SendRT(client, cmd, func, pars);
 
-        public virtual void Send(Player client, ushort methodHash, params object[] pars) => SendRT(client, methodHash, pars);
+        /// <summary>
+        /// 发送网络数据
+        /// </summary>
+        /// <param name="client">发送到的客户端</param>
+        /// <param name="methodHash">方法哈希码</param>
+        /// <param name="pars">参数</param>
+        public virtual void Send(Player client, ushort methodHash, params object[] pars) => Send(client, NetCmd.CallRpc, methodHash, pars);
 
+        /// <summary>
+        /// 发送网络数据
+        /// </summary>
+        /// <param name="client">发送到的客户端</param>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="methodHash">方法哈希码</param>
+        /// <param name="pars">参数</param>
         public virtual void Send(Player client, byte cmd, ushort methodHash, params object[] pars) => SendRT(client, cmd, methodHash, pars);
 
         /// <summary>
@@ -1726,6 +1739,11 @@ namespace Net.Server
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
         public void Send(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => SendRT(client, cmd, buffer, kernel, serialize);
 
+        /// <summary>
+        /// 发送自己组织的数据模型
+        /// </summary>
+        /// <param name="client">发送到的客户端</param>
+        /// <param name="model">数据模型</param>
         public void Send(Player client, RPCModel model) => SendRT(client, model);
 
         /// <summary>
@@ -1744,19 +1762,32 @@ namespace Net.Server
         /// <param name="pars">参数</param>
         public virtual void SendRT(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, func, pars);
 
+        /// <summary>
+        /// 发送网络数据
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="methodHash">方法哈希码</param>
+        /// <param name="pars">参数</param>
         public virtual void SendRT(Player client, ushort methodHash, params object[] pars) => Call(client, methodHash, pars);
 
+        /// <summary>
+        /// 发送网络数据
+        /// </summary>
+        /// <param name="client">发送的客户端</param>
+        /// <param name="cmd">网络命令</param>
+        /// <param name="methodHash">方法哈希码</param>
+        /// <param name="pars">参数</param>
         public virtual void SendRT(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, methodHash, pars);
 
         /// <summary>
-        /// 向客户端发送消息
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
         /// </summary>
         /// <param name="client">发送的客户端</param>
         /// <param name="func">函数名</param>
         /// <param name="pars">参数</param>
-        public virtual void SendIn(Player client, string func, params object[] pars) => CallIn(client, NetCmd.SafeCall, func, pars);
+        public virtual void SendIn(Player client, string func, params object[] pars) => SendIn(client, NetCmd.SafeCall, func, pars);
         /// <summary>
-        /// 向客户端发送消息
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
         /// </summary>
         /// <param name="client">发送的客户端</param>
         /// <param name="cmd">网络命令</param>
@@ -1764,8 +1795,21 @@ namespace Net.Server
         /// <param name="pars">参数</param>
         public virtual void SendIn(Player client, byte cmd, string func, params object[] pars) => CallIn(client, cmd, func, pars);
 
-        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => CallIn(client, NetCmd.SafeCall, methodHash, pars);
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="methodHash"></param>
+        /// <param name="pars"></param>
+        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => SendIn(client, NetCmd.SafeCall, methodHash, pars);
 
+        /// <summary>
+        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="cmd"></param>
+        /// <param name="methodHash"></param>
+        /// <param name="pars"></param>
         public virtual void SendIn(Player client, byte cmd, ushort methodHash, params object[] pars) => CallIn(client, cmd, methodHash, pars);
 
         /// <summary>
@@ -1773,7 +1817,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="client"></param>
         /// <param name="buffer"></param>
-        public virtual void SendRT(Player client, byte[] buffer) => Call(client, buffer);
+        public virtual void SendRT(Player client, byte[] buffer) => SendRT(client, NetCmd.OtherCmd, buffer);
 
         /// <summary>
         /// 向客户端发送消息
