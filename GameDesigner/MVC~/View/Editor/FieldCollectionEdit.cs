@@ -35,6 +35,8 @@ namespace MVC.View
 
         void OnGUI()
         {
+            var rect = new Rect(position.width - 20, 0, 20, 20);
+            FieldCollectionEntity.IsLocked = EditorGUI.Toggle(rect, FieldCollectionEntity.IsLocked, "IN LockButton");
             FieldCollectionEntity.OnDragGuiWindow();
             FieldCollectionEntity.OnDragGUI();
         }
@@ -48,12 +50,14 @@ namespace MVC.View
         private void OnEnable()
         {
             self = target as FieldCollection;
-            FieldCollectionEntity.OnEnable(self);
+            if (!FieldCollectionEntity.IsLocked)
+                FieldCollectionEntity.OnEnable(self);
         }
 
         private void OnDisable()
         {
-            FieldCollectionEntity.OnDisable();
+            if (!FieldCollectionEntity.IsLocked)
+                FieldCollectionEntity.OnDisable();
         }
 
         public override void OnInspectorGUI()
@@ -86,6 +90,7 @@ namespace MVC.View
         private static Vector2 scrollPosition;
         private static string searchAssemblies;
         private static ReorderableList fieldList;
+        internal static bool IsLocked;
 
         public class JsonSave
         {

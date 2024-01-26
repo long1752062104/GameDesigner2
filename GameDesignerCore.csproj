@@ -12,12 +12,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
-    <DefineConstants>$(DefineConstants);SERVICE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SERVICE;CORE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Optimize>False</Optimize>
-    <DefineConstants>$(DefineConstants);SERVICE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SERVICE;CORE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
