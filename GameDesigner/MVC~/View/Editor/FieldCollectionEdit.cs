@@ -97,7 +97,6 @@ namespace MVC.View
             public string nameSpace;
             public List<string> savePath = new List<string>();
             public List<string> savePathExt = new List<string>();
-            public string csprojFile;
             public string searchAssemblies = "UnityEngine.CoreModule|Assembly-CSharp|Assembly-CSharp-firstpass";
             internal string nameSpace1;
             public bool changeField;
@@ -109,8 +108,8 @@ namespace MVC.View
                 new InheritData(false, "UnityEngine.MonoBehaviour"),
                 new InheritData(true, "Net.Component.SingleCase")
             };
-            internal string SavePath(int savePathIndex) => savePath.Count > 0 ? savePath[savePathIndex] : string.Empty;
-            internal string SavePathExt(int savePathExtIndex) => savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty;
+            internal string SavePath(int savePathIndex) => (savePath.Count > 0 ? savePath[savePathIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决
+            internal string SavePathExt(int savePathExtIndex) => (savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决
             internal InheritData InheritType(int index) => inheritTypes[index];
             private string[] inheritTypesStr = new string[0];
             internal string[] InheritTypesStr
@@ -429,16 +428,6 @@ namespace MVC.View
                     data.savePathExt.Add(path);
                     collect.savePathExtInx = data.savePathExt.Count - 1;
                 }
-                SaveData();
-            }
-            var rect3 = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(rect3, "csproj文件:", data.csprojFile);
-            if (GUI.Button(new Rect(rect3.x + rect3.width - 60, rect3.y, 60, rect3.height), "选择"))
-            {
-                var path = EditorUtility.OpenFilePanel("选择文件", "", "csproj");
-                if (string.IsNullOrEmpty(path))
-                    return;
-                data.csprojFile = PathHelper.GetRelativePath(Application.dataPath, path, '\\', '/');
                 SaveData();
             }
             EditorGUILayout.BeginHorizontal();
