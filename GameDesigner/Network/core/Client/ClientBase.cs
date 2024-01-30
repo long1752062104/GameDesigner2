@@ -2336,7 +2336,7 @@ namespace Net.Client
 
         protected void SetHeartInterval(int interval)
         {
-            LoopEvent.ResetTimeInterval(heartHandlerID, (ulong)interval);
+            LoopEvent.ResetTimeInterval(heartHandlerID, (ulong)interval, true);
         }
 
         /// <summary>

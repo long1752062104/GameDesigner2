@@ -493,12 +493,14 @@ namespace Net.Event
         /// </summary>
         /// <param name="eventID"></param>
         /// <param name="interval"></param>
-        public void ResetTimeInterval(int eventID, ulong interval)
+        /// <param name="restartTiming">是否废弃以前的计时, 从当前重新开始新的计时</param>
+        public void ResetTimeInterval(int eventID, ulong interval, bool restartTiming = false)
         {
             var evt = GetEvent(eventID);
             if (evt != null)
             {
-                evt.time = time + interval;
+                if (restartTiming)
+                    evt.time = time + interval;
                 evt.timeMax = interval;
             }
         }
@@ -520,7 +522,7 @@ namespace Net.Event
         }
     }
 
-    public class TimerTick 
+    public class TimerTick
     {
         private uint frame;
         private uint startTick;
