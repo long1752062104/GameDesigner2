@@ -8,6 +8,7 @@ using UnityEditor;
 using System.Linq;
 using Net.Helper;
 using System.Text;
+using Binding;
 
 public class Fast2BuildTools2 : EditorWindow
 {
@@ -241,7 +242,7 @@ public class Fast2BuildTools2 : EditorWindow
         }
         data.SerField = EditorGUILayout.Toggle("序列化字段:", data.SerField);
         data.SerProperty = EditorGUILayout.Toggle("序列化属性:", data.SerProperty);
-        data.IsCompress = EditorGUILayout.Toggle("使用字节压缩:", data.IsCompress);
+        data.SerializeMode = (SerializeMode)EditorGUILayout.EnumPopup("序列化模式:", data.SerializeMode);
         data.SortingOrder = EditorGUILayout.IntField("绑定序号:", data.SortingOrder);
         GUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("保存路径:", data.SavePath);
@@ -271,10 +272,12 @@ public class Fast2BuildTools2 : EditorWindow
                 }
                 StringBuilder code;
                 orderId++;
-                if (data.IsCompress)
+                if (data.SerializeMode == SerializeMode.Compress)
                     code = Fast2BuildMethod.BuildNew(type, ref orderId, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
-                else
+                else if (data.SerializeMode == SerializeMode.NoCompress)
                     code = Fast2BuildMethod.BuildNewFast(type, ref orderId, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
+                else
+                    code = Fast2BuildMethod.BuildMemoryCopy(type, ref orderId, data.SerField, data.SerProperty, type1.fields.ConvertAll((item) => !item.serialize ? item.name : ""), data.SavePath, types);
                 orderId++;
                 code.AppendLine(Fast2BuildMethod.BuildArray(type, ref orderId).ToString());
                 orderId++;
@@ -474,7 +477,7 @@ public class Fast2BuildTools2 : EditorWindow
         private string searchAssemblies = "UnityEngine.CoreModule|Assembly-CSharp|Assembly-CSharp-firstpass";
         private bool serField = true;
         private bool serProperty = true;
-        private bool isCompress = true;
+        private SerializeMode serializeMode = SerializeMode.Compress;
         private int sortingOrder = 1;
         private bool init;
 
@@ -533,14 +536,14 @@ public class Fast2BuildTools2 : EditorWindow
                 serProperty = value;
             }
         }
-        public bool IsCompress
+        public SerializeMode SerializeMode
         {
-            get => isCompress;
+            get => serializeMode;
             set
             {
-                if (isCompress != value & init)
+                if (serializeMode != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");
-                isCompress = value;
+                serializeMode = value;
             }
         }
 
