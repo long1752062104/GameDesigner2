@@ -199,6 +199,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<Net.Share.Operation>.Serialize = this;
+        }
     }
 }
 
@@ -238,7 +243,12 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+			SerializeCache<Net.Share.Operation[]>.Serialize = this;
+        }
+    }
 }
 
 namespace Binding
@@ -277,5 +287,10 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<Net.Share.Operation>>.Serialize = this;
+        }
+    }
 }

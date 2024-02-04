@@ -61,12 +61,17 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<UnityEngine.Vector2Int>.Serialize = this;
+        }
     }
 }
 
 namespace Binding
 {
-	public readonly struct UnityEngineVector2IntArrayBind : ISerialize<UnityEngine.Vector2Int[]>, ISerialize
+    public readonly struct UnityEngineVector2IntArrayBind : ISerialize<UnityEngine.Vector2Int[]>, ISerialize
 	{
         public ushort HashCode { get { return 107; } }
 
@@ -100,7 +105,12 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+			SerializeCache<UnityEngine.Vector2Int[]>.Serialize = this;
+        }
+    }
 }
 
 namespace Binding
@@ -139,5 +149,10 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<UnityEngine.Vector2Int>>.Serialize = this;
+        }
+    }
 }

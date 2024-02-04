@@ -227,6 +227,11 @@ namespace Binding
     public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
         public ushort HashCode { get { return {orderId}; } }
+            
+        public void Bind()
+		{
+			SerializeCache<{TYPE}>.Serialize = this;
+		}
 
         public void Write({TYPE} value, ISegment stream)
         {
@@ -492,7 +497,12 @@ namespace Binding
     public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
         public ushort HashCode { get { return {orderId}; } }
-
+        
+        public void Bind()
+		{
+			SerializeCache<{TYPE}>.Serialize = this;
+		}
+        
         public unsafe void Write({TYPE} value, ISegment stream)
         {
             fixed (byte* ptr = &stream.Buffer[stream.Position]) 
@@ -758,6 +768,11 @@ namespace Binding
     public readonly struct {TYPENAME}Bind : ISerialize<{TYPE}>, ISerialize
     {
         public ushort HashCode { get { return {orderId}; } }
+
+        public void Bind()
+		{
+			SerializeCache<{TYPE}>.Serialize = this;
+		}
 
         public unsafe void Write({TYPE} value, ISegment stream)
         {
@@ -1120,6 +1135,11 @@ namespace Binding
 	{
         public ushort HashCode { get { return {orderId}; } }
 
+        public void Bind()
+		{
+			SerializeCache<{TYPE}[]>.Serialize = this;
+		}
+
 		public void Write({TYPE}[] value, ISegment stream)
 		{
 			int count = value.Length;
@@ -1174,6 +1194,11 @@ namespace Binding
 	public readonly struct {TYPENAME}Bind : ISerialize<List<TYPE>>, ISerialize
 	{
         public ushort HashCode { get { return {orderId}; } }
+
+        public void Bind()
+		{
+			SerializeCache<List<TYPE>>.Serialize = this;
+		}
 
 		public void Write(List<TYPE> value, ISegment stream)
 		{
@@ -1238,6 +1263,11 @@ namespace Binding
 	{
         public ushort HashCode { get { return {orderId}; } }
 
+        public void Bind()
+		{
+			SerializeCache<List<TYPE>>.Serialize = this;
+		}
+
 		public void Write(List<TYPE> value, ISegment stream)
 		{
 			int count = value.Count;
@@ -1300,6 +1330,11 @@ using System.Collections.Generic;
 public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{Dictionary}<{TKey}, {TValue}>>, ISerialize
 {
     public ushort HashCode { get { return {orderId}; } }
+
+    public void Bind()
+	{
+		SerializeCache<{Dictionary}<{TKey}, {TValue}>>.Serialize = this;
+	}
 
     public void Write({Dictionary}<{TKey}, {TValue}> value, ISegment stream)
     {

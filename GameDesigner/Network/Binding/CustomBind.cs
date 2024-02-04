@@ -26,6 +26,11 @@ namespace Binding
         {
             return stream.ReadByte();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Byte>.Serialize = this;
+        }
     }
     public readonly struct SystemSByteBind : ISerialize<System.SByte>, ISerialize
     {
@@ -47,6 +52,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadSByte();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.SByte>.Serialize = this;
         }
     }
     public readonly struct SystemBooleanBind : ISerialize<System.Boolean>, ISerialize
@@ -70,6 +80,11 @@ namespace Binding
         {
             return stream.ReadBoolean();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Boolean>.Serialize = this;
+        }
     }
     public readonly struct SystemInt16Bind : ISerialize<System.Int16>, ISerialize
     {
@@ -91,6 +106,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadInt16();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int16>.Serialize = this;
         }
     }
     public readonly struct SystemUInt16Bind : ISerialize<System.UInt16>, ISerialize
@@ -114,6 +134,11 @@ namespace Binding
         {
             return stream.ReadUInt16();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt16>.Serialize = this;
+        }
     }
     public readonly struct SystemCharBind : ISerialize<System.Char>, ISerialize
     {
@@ -135,6 +160,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadChar();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Char>.Serialize = this;
         }
     }
     public readonly struct SystemInt32Bind : ISerialize<System.Int32>, ISerialize
@@ -158,6 +188,11 @@ namespace Binding
         {
             return stream.ReadInt32();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int32>.Serialize = this;
+        }
     }
     public readonly struct SystemUInt32Bind : ISerialize<System.UInt32>, ISerialize
     {
@@ -179,6 +214,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadUInt32();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt32>.Serialize = this;
         }
     }
     public readonly struct SystemSingleBind : ISerialize<System.Single>, ISerialize
@@ -202,6 +242,11 @@ namespace Binding
         {
             return stream.ReadSingle();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Single>.Serialize = this;
+        }
     }
     public readonly struct SystemInt64Bind : ISerialize<System.Int64>, ISerialize
     {
@@ -223,6 +268,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadInt64();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int64>.Serialize = this;
         }
     }
     public readonly struct SystemUInt64Bind : ISerialize<System.UInt64>, ISerialize
@@ -246,6 +296,11 @@ namespace Binding
         {
             return stream.ReadUInt64();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt64>.Serialize = this;
+        }
     }
     public readonly struct SystemDoubleBind : ISerialize<System.Double>, ISerialize
     {
@@ -267,6 +322,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadDouble();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Double>.Serialize = this;
         }
     }
     public readonly struct SystemStringBind : ISerialize<System.String>, ISerialize
@@ -290,6 +350,11 @@ namespace Binding
         {
             return stream.ReadString();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.String>.Serialize = this;
+        }
     }
     public readonly struct SystemDecimalBind : ISerialize<System.Decimal>, ISerialize
     {
@@ -311,6 +376,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadDecimal();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Decimal>.Serialize = this;
         }
     }
     public readonly struct SystemDateTimeBind : ISerialize<System.DateTime>, ISerialize
@@ -334,6 +404,11 @@ namespace Binding
         {
             return stream.ReadDateTime();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.DateTime>.Serialize = this;
+        }
     }
     public readonly struct SystemTimeSpanBind : ISerialize<System.TimeSpan>, ISerialize
     {
@@ -355,6 +430,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadTimeSpan();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.TimeSpan>.Serialize = this;
         }
     }
 #if CORE
@@ -379,6 +459,11 @@ namespace Binding
         {
             return stream.ReadTimeOnly();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.TimeOnly>.Serialize = this;
+        }
     }
 #endif
     public readonly struct SystemDateTimeOffsetBind : ISerialize<System.DateTimeOffset>, ISerialize
@@ -402,6 +487,11 @@ namespace Binding
         {
             return stream.ReadDateTimeOffset();
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.DateTimeOffset>.Serialize = this;
+        }
     }
     public readonly struct SystemDBNullBind : ISerialize<System.DBNull>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
@@ -421,6 +511,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return null;
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.DBNull>.Serialize = this;
         }
     }
     public readonly struct SystemEnumBind<T> : ISerialize<T>, ISerialize where T : System.Enum
@@ -443,6 +538,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return stream.ReadEnum<T>();
+        }
+
+        public void Bind()
+        {
+            SerializeCache<T>.Serialize = this;
         }
     }
     #endregion
@@ -470,6 +570,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Byte[]>.Serialize = this;
+        }
     }
     public readonly struct SystemSByteArrayBind : ISerialize<System.SByte[]>, ISerialize
     {
@@ -492,6 +597,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.SByte[]>.Serialize = this;
         }
     }
     public readonly struct SystemBooleanArrayBind : ISerialize<System.Boolean[]>, ISerialize
@@ -516,6 +626,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Boolean[]>.Serialize = this;
+        }
     }
     public readonly struct SystemInt16ArrayBind : ISerialize<System.Int16[]>, ISerialize
     {
@@ -538,6 +653,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int16[]>.Serialize = this;
         }
     }
     public readonly struct SystemUInt16ArrayBind : ISerialize<System.UInt16[]>, ISerialize
@@ -562,6 +682,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt16[]>.Serialize = this;
+        }
     }
     public readonly struct SystemCharArrayBind : ISerialize<System.Char[]>, ISerialize
     {
@@ -584,6 +709,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Char[]>.Serialize = this;
         }
     }
     public readonly struct SystemInt32ArrayBind : ISerialize<System.Int32[]>, ISerialize
@@ -608,6 +738,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int32[]>.Serialize = this;
+        }
     }
     public readonly struct SystemUInt32ArrayBind : ISerialize<System.UInt32[]>, ISerialize
     {
@@ -630,6 +765,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt32[]>.Serialize = this;
         }
     }
     public readonly struct SystemSingleArrayBind : ISerialize<System.Single[]>, ISerialize
@@ -654,6 +794,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Single[]>.Serialize = this;
+        }
     }
     public readonly struct SystemInt64ArrayBind : ISerialize<System.Int64[]>, ISerialize
     {
@@ -676,6 +821,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Int64[]>.Serialize = this;
         }
     }
     public readonly struct SystemUInt64ArrayBind : ISerialize<System.UInt64[]>, ISerialize
@@ -700,6 +850,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.UInt64[]>.Serialize = this;
+        }
     }
     public readonly struct SystemDoubleArrayBind : ISerialize<System.Double[]>, ISerialize
     {
@@ -722,6 +877,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Double[]>.Serialize = this;
         }
     }
     public readonly struct SystemStringArrayBind : ISerialize<System.String[]>, ISerialize
@@ -746,6 +906,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.String[]>.Serialize = this;
+        }
     }
     public readonly struct SystemDecimalArrayBind : ISerialize<System.Decimal[]>, ISerialize
     {
@@ -768,6 +933,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Decimal[]>.Serialize = this;
         }
     }
     public readonly struct SystemDateTimeArrayBind : ISerialize<System.DateTime[]>, ISerialize
@@ -792,6 +962,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.DateTime[]>.Serialize = this;
+        }
     }
     public readonly struct SystemTimeSpanArrayBind : ISerialize<System.TimeSpan[]>, ISerialize
     {
@@ -814,6 +989,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.TimeSpan[]>.Serialize = this;
         }
     }
 #if CORE
@@ -839,6 +1019,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.TimeOnly[]>.Serialize = this;
+        }
     }
 #endif
     public readonly struct SystemDateTimeOffsetArrayBind : ISerialize<System.DateTimeOffset[]>, ISerialize
@@ -863,6 +1048,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.DateTimeOffset[]>.Serialize = this;
+        }
     }
     public readonly struct SystemDBNullArrayBind : ISerialize<System.DBNull[]>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
@@ -882,6 +1072,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return null;
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.DBNull[]>.Serialize = this;
         }
     }
     public readonly struct SystemEnumArrayBind<T> : ISerialize<T[]>, ISerialize where T : System.Enum
@@ -915,6 +1110,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<T[]>.Serialize = this;
+        }
     }
     #endregion
 
@@ -941,6 +1141,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Byte>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemSByteBind : ISerialize<System.Collections.Generic.List<System.SByte>>, ISerialize
     {
@@ -963,6 +1168,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.SByte>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemBooleanBind : ISerialize<System.Collections.Generic.List<System.Boolean>>, ISerialize
@@ -987,6 +1197,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Boolean>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemInt16Bind : ISerialize<System.Collections.Generic.List<System.Int16>>, ISerialize
     {
@@ -1009,6 +1224,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Int16>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemUInt16Bind : ISerialize<System.Collections.Generic.List<System.UInt16>>, ISerialize
@@ -1033,6 +1253,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.UInt16>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemCharBind : ISerialize<System.Collections.Generic.List<System.Char>>, ISerialize
     {
@@ -1055,6 +1280,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Char>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemInt32Bind : ISerialize<System.Collections.Generic.List<System.Int32>>, ISerialize
@@ -1079,6 +1309,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Int32>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemUInt32Bind : ISerialize<System.Collections.Generic.List<System.UInt32>>, ISerialize
     {
@@ -1101,6 +1336,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.UInt32>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemSingleBind : ISerialize<System.Collections.Generic.List<System.Single>>, ISerialize
@@ -1125,6 +1365,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Single>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemInt64Bind : ISerialize<System.Collections.Generic.List<System.Int64>>, ISerialize
     {
@@ -1147,6 +1392,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Int64>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemUInt64Bind : ISerialize<System.Collections.Generic.List<System.UInt64>>, ISerialize
@@ -1171,6 +1421,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.UInt64>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemDoubleBind : ISerialize<System.Collections.Generic.List<System.Double>>, ISerialize
     {
@@ -1193,6 +1448,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Double>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemStringBind : ISerialize<System.Collections.Generic.List<System.String>>, ISerialize
@@ -1217,6 +1477,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.String>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemDecimalBind : ISerialize<System.Collections.Generic.List<System.Decimal>>, ISerialize
     {
@@ -1239,6 +1504,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.Decimal>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemDateTimeBind : ISerialize<System.Collections.Generic.List<System.DateTime>>, ISerialize
@@ -1263,6 +1533,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.DateTime>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemTimeSpanBind : ISerialize<System.Collections.Generic.List<System.TimeSpan>>, ISerialize
     {
@@ -1285,6 +1560,11 @@ namespace Binding
         public object ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.TimeSpan>>.Serialize = this;
         }
     }
 #if CORE
@@ -1310,6 +1590,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.TimeOnly>>.Serialize = this;
+        }
     }
 #endif
     public readonly struct SystemCollectionsGenericListSystemDateTimeOffsetBind : ISerialize<System.Collections.Generic.List<System.DateTimeOffset>>, ISerialize
@@ -1334,6 +1619,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.DateTimeOffset>>.Serialize = this;
+        }
     }
     public readonly struct SystemCollectionsGenericListSystemDBNullBind : ISerialize<System.Collections.Generic.List<System.DBNull>>, ISerialize //这个类用作Null参数, 不需要写入和返回null即可
     {
@@ -1353,6 +1643,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return null;
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<System.DBNull>>.Serialize = this;
         }
     }
     public readonly struct SystemCollectionsGenericListSystemEnumBind<T> : ISerialize<System.Collections.Generic.List<T>>, ISerialize where T : System.Enum
@@ -1385,6 +1680,11 @@ namespace Binding
         object ISerialize.ReadValue(ISegment stream)
         {
             return Read(stream);
+        }
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<T>>.Serialize = this;
         }
     }
     #endregion

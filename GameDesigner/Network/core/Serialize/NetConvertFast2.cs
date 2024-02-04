@@ -7,6 +7,7 @@
     using Net.Share;
     using Net.Event;
     using Net.Helper;
+    using global::System.IO;
 
     /// <summary>
     /// 快速序列化2接口--动态匹配
@@ -17,6 +18,10 @@
         /// 双端一致性的哈希协议码 --解决子项目和父项目融合问题
         /// </summary>
         ushort HashCode { get; }
+        /// <summary>
+        /// 绑定静态序列化缓存
+        /// </summary>
+        void Bind();
         /// <summary>
         /// 序列化写入
         /// </summary>
@@ -61,6 +66,18 @@
         /// 收集的绑定类型列表
         /// </summary>
         Dictionary<Type, Type> BindTypes { get; }
+    }
+
+    /// <summary>
+    /// 序列化缓存
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public static class SerializeCache<T>
+    {
+        /// <summary>
+        /// 序列化绑定实例
+        /// </summary>
+        public static ISerialize<T> Serialize;
     }
 
     /// <summary>
@@ -200,7 +217,8 @@
             if (!BindTypes.TryGetValue(type, out Type bindType))
                 throw new Exception($"类型{type}尚未实现绑定类型,请使用工具生成绑定类型!");
             var serialize = Activator.CreateInstance(bindType) as ISerialize;
-            var hashType = serialize.HashCode;//(ushort)Types.Count;
+            serialize.Bind();
+            var hashType = serialize.HashCode;
             HashToTypeDict.Add(hashType, type);
             TypeToHashDict.Add(type, hashType);
             TypeToSerializeDict.Add(type, serialize);
@@ -228,7 +246,8 @@
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
             var serialize = Activator.CreateInstance(bindType) as ISerialize;
-            var hashType = serialize.HashCode;// (ushort)Types.Count;
+            serialize.Bind();
+            var hashType = serialize.HashCode;
             HashToTypeDict.Add(hashType, type);
             TypeToHashDict.Add(type, hashType);
             TypeToSerializeDict.Add(type, serialize);
@@ -249,7 +268,8 @@
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
             var serialize = Activator.CreateInstance(bindType) as ISerialize;
-            var hashType = serialize.HashCode;//(ushort)Types.Count;
+            serialize.Bind();
+            var hashType = serialize.HashCode;
             HashToTypeDict.Add(hashType, type);
             TypeToHashDict.Add(type, hashType);
             TypeToSerializeDict.Add(type, serialize);
@@ -272,7 +292,8 @@
                 bindType = AssemblyHelper.GetTypeNotOptimized(typeName);
             }
             var serialize = Activator.CreateInstance(bindType) as ISerialize;
-            var hashType = serialize.HashCode; //(ushort)Types.Count;
+            serialize.Bind();
+            var hashType = serialize.HashCode;
             HashToTypeDict.Add(hashType, type);
             TypeToHashDict.Add(type, hashType);
             TypeToSerializeDict.Add(type, serialize);
@@ -317,25 +338,8 @@
         public static ISegment SerializeObject<T>(T value)
         {
             var stream = BufferPool.Take();
-            try
-            {
-                var type = value.GetType();
-                if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
-                {
-                    ((ISerialize<T>)bind).Write(value, stream);
-                }
-                else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
-            }
-            catch (Exception ex)
-            {
-                stream.Position = 0;
-                NDebug.LogError("序列化:" + value + "出错 详细信息:" + ex);
-            }
-            finally
-            {
-                stream.Count = stream.Position;
-                stream.SetPosition(0);
-            }
+            SerializeObject(value, stream);
+            stream.Flush();
             return stream;
         }
 
@@ -343,12 +347,10 @@
         {
             try
             {
-                var type = value.GetType();
-                if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
-                {
-                    ((ISerialize<T>)bind).WriteValue(value, stream);
-                }
-                else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
+                var serialize = SerializeCache<T>.Serialize;
+                if (serialize == null)
+                    throw new Exception($"请注册或绑定:{typeof(T)}类型后才能序列化!");
+                serialize.Write(value, stream);
             }
             catch (Exception ex)
             {
@@ -364,9 +366,7 @@
             {
                 var type = value.GetType();
                 if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
-                {
                     bind.WriteValue(value, stream);
-                }
                 else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
             }
             catch (Exception ex)
@@ -384,14 +384,12 @@
 
         public static T DeserializeObject<T>(ISegment segment, bool isPush = true)
         {
-            var type = typeof(T);
-            if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
-            {
-                T value = ((ISerialize<T>)bind).Read(segment);
-                if (isPush) BufferPool.Push(segment);
-                return value;
-            }
-            else throw new Exception($"请注册或绑定:{type}类型后才能反序列化!");
+            var serialize = SerializeCache<T>.Serialize;
+            if (serialize == null)
+                throw new Exception($"请注册或绑定:{typeof(T)}类型后才能序列化!");
+            T value = serialize.Read(segment);
+            if (isPush) BufferPool.Push(segment);
+            return value;
         }
 
         public static object DeserializeObject(Type type, ISegment segment, bool isPush = true)

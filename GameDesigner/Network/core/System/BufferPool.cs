@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Net.Common;
+using System;
 using System.Drawing;
 using System.Reflection;
+using System.Threading;
 
 namespace Net.System
 {
@@ -36,6 +38,7 @@ namespace Net.System
         /// 使用的缓存块类型
         /// </summary>
         public static SegmentType SegmentType = SegmentType.Segment;
+        private static FastLocking Locking = new FastLocking();
 
         private static readonly GStack<ISegment>[] STACKS = new GStack<ISegment>[37];
         private static readonly int[] TABLE = new int[] {
@@ -43,8 +46,6 @@ namespace Net.System
             1572864,2097152,3145728,4194304,6291456,8388608,12582912,16777216,25165824,33554432,50331648,67108864,
             100663296,134217728,201326592,268435456,402653184,536870912,805306368,1073741824
         };
-
-        private static readonly object SyncRoot = new object();
 
         static BufferPool()
         {
@@ -55,24 +56,25 @@ namespace Net.System
 
         private static bool ReferenceCountCheck()
         {
+            Locking.Enter();
             try
             {
-                lock (SyncRoot)
+                for (int i = 0; i < STACKS.Length; i++)
                 {
-                    for (int i = 0; i < STACKS.Length; i++)
+                    foreach (var stack in STACKS[i])
                     {
-                        foreach (var stack in STACKS[i])
-                        {
-                            if (stack == null)
-                                continue;
-                            if (stack.ReferenceCount == 0)
-                                stack.Close();
-                            stack.ReferenceCount = 0;
-                        }
+                        if (stack == null)
+                            continue;
+                        if (stack.ReferenceCount == 0)
+                            stack.Close();
+                        stack.ReferenceCount = 0;
                     }
                 }
             }
-            catch { }
+            finally
+            {
+                Locking.Exit();
+            }
             return true;
         }
 
@@ -92,38 +94,35 @@ namespace Net.System
         /// <returns></returns>
         public static ISegment Take(int size)
         {
-#if !SerializeTest
-            lock (SyncRoot)
-#endif
+            Locking.Enter();
+            int tableInx = 0;
+            var table = TABLE;
+            var count = table.Length;
+            for (int i = 0; i < count; i++)
             {
-                int tableInx = 0;
-                var table = TABLE;
-                var count = table.Length;
-                for (int i = 0; i < count; i++)
+                if (size <= table[i])
                 {
-                    if (size <= table[i])
-                    {
-                        size = table[i];
-                        tableInx = i;
-                        goto J;
-                    }
+                    size = table[i];
+                    tableInx = i;
+                    goto J;
                 }
-            J: var stack = STACKS[tableInx];
-                ISegment segment;
-            J1: if (stack.Count > 0)
-                {
-                    segment = stack.Pop();
-                    if (!segment.IsRecovery | !segment.IsDespose)
-                        goto J1;
-                    goto J2;
-                }
-                var buffer = new byte[size];
-                segment = NewSegment(buffer, 0, size, true);
-            J2: segment.IsDespose = false;
-                segment.ReferenceCount++;
-                segment.Init();
-                return segment;
             }
+        J: var stack = STACKS[tableInx];
+            ISegment segment;
+        J1: if (stack.Count > 0)
+            {
+                segment = stack.Pop();
+                if (!segment.IsRecovery | !segment.IsDespose)
+                    goto J1;
+                goto J2;
+            }
+            var buffer = new byte[size];
+            segment = NewSegment(buffer, 0, size, true);
+        J2: segment.IsDespose = false;
+            segment.ReferenceCount++;
+            segment.Init();
+            Locking.Exit();
+            return segment;
         }
 
         /// <summary>
@@ -132,25 +131,22 @@ namespace Net.System
         /// <param name="segment"></param>
         public static void Push(ISegment segment)
         {
-#if !SerializeTest
-            lock (SyncRoot)
-#endif
+            Locking.Enter();
+            if (!segment.IsRecovery)
+                goto J;
+            if (segment.IsDespose)
+                goto J;
+            segment.IsDespose = true;
+            var table = TABLE;
+            for (int i = 0; i < table.Length; i++)
             {
-                if (!segment.IsRecovery)
-                    return;
-                if (segment.IsDespose)
-                    return;
-                segment.IsDespose = true;
-                var table = TABLE;
-                for (int i = 0; i < table.Length; i++)
+                if (segment.Length == table[i])
                 {
-                    if (segment.Length == table[i])
-                    {
-                        STACKS[i].Push(segment);
-                        return;
-                    }
+                    STACKS[i].Push(segment);
+                    goto J;
                 }
             }
+        J: Locking.Exit();
         }
 
         /// <summary>
@@ -180,6 +176,7 @@ namespace Net.System
     public static class ObjectPool<T> where T : new()
     {
         private static readonly GStack<T> STACK = new GStack<T>();
+        private static readonly FastLocking LOCK = new FastLocking();
 
         public static void Init(int poolSize)
         {
@@ -191,40 +188,42 @@ namespace Net.System
 
         public static T Take()
         {
-            lock (STACK)
+            LOCK.Enter();
+            if (STACK.TryPop(out T obj))
             {
-                if (STACK.TryPop(out T obj))
-                    return obj;
-                return new T();
+                LOCK.Exit();
+                return obj;
             }
+            LOCK.Exit();
+            return new T();
         }
 
         public static T Take(Action<T> onNew)
         {
-            lock (STACK)
+            LOCK.Enter();
+            if (STACK.TryPop(out T obj))
             {
-                if (STACK.TryPop(out T obj))
-                    return obj;
-                obj = new T();
-                onNew?.Invoke(obj);
+                LOCK.Exit();
                 return obj;
             }
+            obj = new T();
+            onNew?.Invoke(obj);
+            LOCK.Exit();
+            return obj;
         }
 
         public static void Push(T obj)
         {
-            lock (STACK)
-            {
-                STACK.Push(obj);
-            }
+            LOCK.Enter();
+            STACK.Push(obj);
+            LOCK.Exit();
         }
 
         public static void Clear()
         {
-            lock (STACK)
-            {
-                STACK.Clear();
-            }
+            LOCK.Enter();
+            STACK.Clear();
+            LOCK.Exit();
         }
     }
 
@@ -239,7 +238,7 @@ namespace Net.System
             524288,786432,1048576,1572864,2097152,3145728,4194304,6291456,8388608,12582912,16777216,25165824,
             33554432,50331648,67108864,100663296,134217728,201326592,268435456,402653184,536870912,805306368,1073741824
         };
-        private static readonly object SyncRoot = new object();
+        private static readonly FastLocking Locking = new FastLocking();
 
         static ArrayPool()
         {
@@ -255,30 +254,27 @@ namespace Net.System
         /// <returns></returns>
         public static T Take(int size)
         {
-#if !SerializeTest
-            lock (SyncRoot)
-#endif
+            Locking.Enter();
+            int tableInx = 0;
+            var table = TABLE;
+            var count = table.Length;
+            for (int i = 0; i < count; i++)
             {
-                int tableInx = 0;
-                var table = TABLE;
-                var count = table.Length;
-                for (int i = 0; i < count; i++)
+                if (size <= table[i])
                 {
-                    if (size <= table[i])
-                    {
-                        size = table[i];
-                        tableInx = i;
-                        goto J;
-                    }
+                    size = table[i];
+                    tableInx = i;
+                    goto J;
                 }
-            J: var stack = STACKS[tableInx];
-                T array;
-                if (stack.Count > 0)
-                    array = stack.Pop();
-                else
-                    array = (T)Activator.CreateInstance(typeof(T), size);
-                return array;
             }
+        J: var stack = STACKS[tableInx];
+            T array;
+            if (stack.Count > 0)
+                array = stack.Pop();
+            else
+                array = (T)Activator.CreateInstance(typeof(T), size);
+            Locking.Exit();
+            return array;
         }
 
         /// <summary>
@@ -287,20 +283,17 @@ namespace Net.System
         /// <param name="array"></param>
         public static void Push(T array)
         {
-#if !SerializeTest
-            lock (SyncRoot)
-#endif
+            Locking.Enter();
+            var table = TABLE;
+            for (int i = 0; i < table.Length; i++)
             {
-                var table = TABLE;
-                for (int i = 0; i < table.Length; i++)
+                if ((array as Array).Length == table[i])
                 {
-                    if ((array as Array).Length == table[i])
-                    {
-                        STACKS[i].Push(array);
-                        return;
-                    }
+                    STACKS[i].Push(array);
+                    break;
                 }
             }
+            Locking.Exit();
         }
     }
 }

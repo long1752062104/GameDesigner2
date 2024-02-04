@@ -79,12 +79,17 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<UnityEngine.Vector4>.Serialize = this;
+        }
     }
 }
 
 namespace Binding
 {
-	public readonly struct UnityEngineVector4ArrayBind : ISerialize<UnityEngine.Vector4[]>, ISerialize
+    public readonly struct UnityEngineVector4ArrayBind : ISerialize<UnityEngine.Vector4[]>, ISerialize
 	{
         public ushort HashCode { get { return 122; } }
 
@@ -118,12 +123,17 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+			SerializeCache<UnityEngine.Vector4[]>.Serialize = this;
+        }
+    }
 }
 
 namespace Binding
 {
-	public readonly struct SystemCollectionsGenericListUnityEngineVector4Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Vector4>>, ISerialize
+    public readonly struct SystemCollectionsGenericListUnityEngineVector4Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Vector4>>, ISerialize
 	{
         public ushort HashCode { get { return 123; } }
 
@@ -157,5 +167,10 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<UnityEngine.Vector4>>.Serialize = this;
+        }
+    }
 }

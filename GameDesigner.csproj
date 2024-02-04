@@ -104,6 +104,7 @@
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
     <Compile Include="GameDesigner\Common\Command.cs" />
     <Compile Include="GameDesigner\Common\NTransform.cs" />
+    <Compile Include="GameDesigner\Common\FastLocking.cs" />
     <Compile Include="GameDesigner\Common\Singleton.cs" />
     <Compile Include="GameDesigner\Common\TransformEntity.cs" />
     <Compile Include="GameDesigner\ECS~\GameComponent.cs" />

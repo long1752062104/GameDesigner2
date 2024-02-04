@@ -61,6 +61,11 @@ namespace Binding
         {
             return Read(stream);
         }
+
+        public void Bind()
+        {
+            SerializeCache<Net.Vector2>.Serialize = this;
+        }
     }
 }
 
@@ -100,7 +105,12 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+			SerializeCache<Net.Vector2[]>.Serialize = this;
+        }
+    }
 }
 
 namespace Binding
@@ -139,5 +149,10 @@ namespace Binding
 		{
 			return Read(stream);
 		}
-	}
+
+        public void Bind()
+        {
+            SerializeCache<System.Collections.Generic.List<Net.Vector2>>.Serialize = this;
+        }
+    }
 }
