@@ -16,7 +16,7 @@ namespace Net.Serialize
             {
                 void* ptr1 = Unsafe.AsPointer(ref value[0]);
                 int len = value.Length;
-                Unsafe.WriteUnaligned(ptr + offset, len);
+                Unsafe.WriteUnaligned(ptr + offset, (ushort)len);
                 offset += 2;
                 int count = len * Unsafe.SizeOf<T>();
                 Unsafe.CopyBlock(ptr + offset, ptr1, (uint)count);
@@ -24,7 +24,7 @@ namespace Net.Serialize
             }
             else
             {
-                Unsafe.WriteUnaligned(ptr + offset, 0);
+                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
                 offset += 2;
             }
         }
@@ -35,7 +35,7 @@ namespace Net.Serialize
             if (value != null)
             {
                 int len = value.Length;
-                Unsafe.WriteUnaligned(ptr + offset, len);
+                Unsafe.WriteUnaligned(ptr + offset, (ushort)len);
                 offset += 2;
                 for (int i = 0; i < len; i++)
                 {
@@ -44,7 +44,7 @@ namespace Net.Serialize
             }
             else
             {
-                Unsafe.WriteUnaligned(ptr + offset, 0);
+                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
                 offset += 2;
             }
         }
@@ -163,7 +163,7 @@ namespace Net.Serialize
             }
             else
             {
-                Unsafe.WriteUnaligned(ptr + offset, 0);
+                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
                 offset += 2;
             }
         }
