@@ -192,15 +192,381 @@ Fast2BuildMethod.DynamicBuild(BindingEntry.GetBindTypes());//动态编译指定�
 ```
 详细信息请打开案例: GameDesigner\Example\SerializeTest\Scenes\example3.unity 查看
 
-## 序列化片断Segment2
-序列化片断2类中压缩率和proto3一样, 体积很小, 在性能测试方面, 循环1000万次可见segment2要比proto3快了4秒, 前提是要开启gdnet库项目的优化编码. 
+## 全网最快的序列化
+<br>极速序列化3版本,我可以说是全网最快序列化,没有人反对吧?</br>
+<br>问:为什么快?</br>
+<br>答:极速序列化3版本使用内存地址复制方式,直接拷贝整块对象内存, 无需一个一个字段读写</br>
+<br>问:如果类或结构有string或者自定义类或其他类呢? 什么处理?</br>
+<br>答:当类里面没有基础类(byte,int,long...)字段会额外占用8字节的内存指针地址, 然后另外记录string的数据或其他自定义类数据</br>
+<br>问:如果类里面只有基础类(byte,int,long...)字段的话是非常快的, 如果类有自定义类字段和基础类字段, 是不是占用比其他序列化要多一些,如:fastbuff,MemoryPack</br>
+<br>答:是的,如果类有自定义类型字段则需要额外占用8个字节的数据, 你可以压缩后再进行其他操作</br>
 
-Segment2的序列化压缩采用了位记录, 比如ushort值, 只需要用一个byte的8位中的两位来记录, 也就是一个byte可以记录ushort的4个值, int值需要占用3个二进制位 即 2 ^ 3 = 8个数才能记录int的4个byte字节值, long值需要占用4个二进制位, 即 2 ^ 4 = 16个才能记录8个byte是否存在值, 为什么不用 2 ^ 3 = 8记录? 因为 2 ^ 3 = 8 - 1 最大值是7, 没到8, 所以需要用4个二进制位
+<br>经过内存访问, 我们可以得知, 结构类只需要一级指针, 而类则需要二级指针</br>
 
-如果要开启Segment2的序列化,则需要在初始化方法设置为序列化版本2
 ```
-BufferPool.Version = SegmentVersion.Version2;
+var address = Unsafe.AsPointer(ref value); //结构类只需要一级指针
 ```
+
+```
+var address = Unsafe.AsPointer(ref value); //类是引用地址, 一级指针得到引用地址
+address = (void*)(Unsafe.ReadUnaligned<long>(address) + 8); //二级指针才得到数据地址
+```
+上面的代码可以得到实例对象的数据地址, 然后我们就可以通过Unsafe.CopyBlockUnaligned进行内存复制
+
+```
+fixed (byte* ptr = &stream.Buffer[stream.Position]) 
+{
+    int offset = 154; //这里会计算整个类的所有字段的大小
+    Unsafe.CopyBlockUnaligned(ptr, address, (uint)offset); //直接全部拷贝
+}
+```
+以下是测试代码, 我们进行各种字段测试
+
+```
+[MemoryPackable]
+public partial class Test
+{
+    public byte f1;
+    public sbyte f2;
+    public bool f3;
+    public short f4;
+    public ushort f5;
+    public char f6;
+    public int f7;
+    public uint f8;
+    public float f9;
+    public long f10;
+    public ulong f11;
+    public double f12;
+    public DateTime f13;
+    public decimal f14;
+    public string f15;
+
+    public byte xf1;
+    public sbyte xf2;
+    public bool xf3;
+    public short xf4;
+    public ushort xf5;
+    public char xf6;
+    public int xf7;
+    public uint xf8;
+    public float xf9;
+    public long xf10;
+    public ulong xf11;
+    public double xf12;
+    public DateTime xf13;
+    public decimal xf14;
+    public string xf15;
+
+    //public byte[] fa1;
+    //public sbyte[] fa2;
+    //public bool[] fa3;
+    //public short[] fa4;
+    //public ushort[] fa5;
+    //public char[] fa6;
+    //public int[] fa7;
+    //public uint[] fa8;
+    //public float[] fa9;
+    //public long[] fa10;
+    //public ulong[] fa11;
+    //public double[] fa12;
+    //public DateTime[] fa13;
+    //public decimal[] fa14;
+    //public string[] fa15;
+
+    //public Test test;
+    //public Test[] testArray;
+    //public List<Test> testList;
+    //public FastList<Test> testList1;
+
+    //public List<byte> fl1;
+    //public List<sbyte> fl2;
+    //public List<bool> fl3;
+    //public List<short> fl4;
+    //public List<ushort> fl5;
+    //public List<char> fl6;
+    //public List<int> fl7;
+    //public List<uint> fl8;
+    //public List<float> fl9;
+    //public List<long> fl10;
+    //public List<ulong> fl11;
+    //public List<double> fl12;
+    //public List<DateTime> fl13;
+    //public List<decimal> fl14;
+    //public List<string> fl15;
+
+    //public FastList<byte> ffl1;
+    //public FastList<sbyte> ffl2;
+    //public FastList<bool> ffl3;
+    //public FastList<short> ffl4;
+    //public FastList<ushort> ffl5;
+    //public FastList<char> ffl6;
+    //public FastList<int> ffl7;
+    //public FastList<uint> ffl8;
+    //public FastList<float> ffl9;
+    //public FastList<long> ffl10;
+    //public FastList<ulong> ffl11;
+    //public FastList<double> ffl12;
+    //public FastList<DateTime> ffl13;
+    //public FastList<decimal> ffl14;
+    //public FastList<string> ffl15;
+
+    //public Dictionary<int, byte> fd1;
+    //public Dictionary<int, sbyte> fd2;
+    //public Dictionary<int, bool> fd3;
+    //public Dictionary<int, short> fd4;
+    //public Dictionary<int, ushort> fd5;
+    //public Dictionary<int, char> fd6;
+    //public Dictionary<int, int> fd7;
+    //public Dictionary<int, uint> fd8;
+    //public Dictionary<int, float> fd9;
+    //public Dictionary<int, long> fd10;
+    //public Dictionary<int, ulong> fd11;
+    //public Dictionary<int, double> fd12;
+    //public Dictionary<int, DateTime> fd13;
+    //public Dictionary<int, decimal> fd14;
+    //public Dictionary<int, string> fd15;
+
+    //public Dictionary<int, byte[]> fda1;
+    //public Dictionary<int, sbyte[]> fda2;
+    //public Dictionary<int, bool[]> fda3;
+    //public Dictionary<int, short[]> fda4;
+    //public Dictionary<int, ushort[]> fda5;
+    //public Dictionary<int, char[]> fda6;
+    //public Dictionary<int, int[]> fda7;
+    //public Dictionary<int, uint[]> fda8;
+    //public Dictionary<int, float[]> fda9;
+    //public Dictionary<int, long[]> fda10;
+    //public Dictionary<int, ulong[]> fda11;
+    //public Dictionary<int, double[]> fda12;
+    //public Dictionary<int, DateTime[]> fda13;
+    //public Dictionary<int, decimal[]> fda14;
+    //public Dictionary<int, string[]> fda15;
+
+    //public Dictionary<int, List<byte>> fdl1;
+    //public Dictionary<int, List<sbyte>> fdl2;
+    //public Dictionary<int, List<bool>> fdl3;
+    //public Dictionary<int, List<short>> fdl4;
+    //public Dictionary<int, List<ushort>> fdl5;
+    //public Dictionary<int, List<char>> fdl6;
+    //public Dictionary<int, List<int>> fdl7;
+    //public Dictionary<int, List<uint>> fdl8;
+    //public Dictionary<int, List<float>> fdl9;
+    //public Dictionary<int, List<long>> fdl10;
+    //public Dictionary<int, List<ulong>> fdl11;
+    //public Dictionary<int, List<double>> fdl12;
+    //public Dictionary<int, List<DateTime>> fdl13;
+    //public Dictionary<int, List<decimal>> fdl14;
+    //public Dictionary<int, List<string>> fdl15;
+}
+```
+以下是测试序列化代码, 测试前需要设置Release模式或者勾上优化编码选项
+
+```
+using Binding;
+using MemoryPack;
+using Net.Event;
+using Net.Serialize;
+using Net.System;
+using System.Diagnostics;
+
+class Program
+{
+    unsafe static void Main()
+    {
+        NDebug.BindConsoleLog();
+        if (!Directory.Exists(@"..\..\..\Binding\"))
+        {
+            Directory.CreateDirectory(@"..\..\..\Binding\");
+            Fast2BuildMethod.BuildAll(@"..\..\..\Binding\", SerializeMode.MemoryCopy, 1, typeof(Test)); //生成绑定类型文件
+            return;
+        }
+
+        var test = new Test()
+        {
+            f1 = 123,
+            f2 = 123,
+            f3 = true,
+            f4 = 125,//4567,
+            f5 = 6842,
+            f6 = 'k',
+            f7 = 4567891,
+            f8 = 456478971,
+            f9 = 1234.4564f,
+            f10 = 47489745665,
+            f11 = 4564654123123,
+            f12 = 123.456456,
+            f13 = DateTime.Now,
+            f14 = 456123.45676465m,
+            f15 = "John-你好啊",
+
+            xf1 = 123,
+            xf2 = 123,
+            xf3 = true,
+            xf4 = 4567,
+            xf5 = 6842,
+            xf6 = 'k',
+            xf7 = 4567891,
+            xf8 = 456478971,
+            xf9 = 1234.4564f,
+            xf10 = 47489745665,
+            xf11 = 4564654123123,
+            xf12 = 123.456456,
+            xf13 = DateTime.Now,
+            xf14 = 456123.45676465m,
+            xf15 = "Johnxxxxxxxxxzzzwwq",
+
+            //fa1 = new byte[] { 1, 2, 3 },
+            //fa10 = new long[] { 1, 2, 3 },
+            //fa15 = new string[] { "John", "John", "John", },
+
+            //fl1 = new List<byte> { 1, 2, 3 },
+            //fl10 = new List<long> { 1, 2, 3 },
+            //fl15 = new List<string> { "John", "John", "John", },
+
+            //fl1 = new List<byte> { 1, 2, 4 },
+            /*fd1 = new Dictionary<int, byte> { { 1, 5 }, { 2, 3 }, { 5, 8 } },
+
+            test = new Test()
+            {
+                f1 = 123,
+                f2 = 123,
+                f3 = true,
+                f4 = 4567,
+                f5 = 6842,
+                f6 = 'k',
+                f7 = 4567891,
+                f8 = 456478971,
+                f9 = 1234.4564f,
+                f10 = 47489745665,
+                f11 = 4564654123123,
+                f12 = 123.456456,
+                f13 = DateTime.Now,
+                f14 = 456123.45676465m,
+                f15 = "John",
+            },
+            testArray = new Test[]
+            {
+                new Test()
+                {
+                    f1 = 123,
+                    f2 = 123,
+                    f3 = true,
+                    f4 = 4567,
+                    f5 = 6842,
+                    f6 = 'k',
+                    f7 = 4567891,
+                    f8 = 456478971,
+                    f9 = 1234.4564f,
+                    f10 = 47489745665,
+                    f11 = 4564654123123,
+                    f12 = 123.456456,
+                    f13 = DateTime.Now,
+                    f14 = 456123.45676465m,
+                    f15 = "John",
+                },
+                new Test()
+                {
+                    f1 = 123,
+                    f2 = 123,
+                    f3 = true,
+                    f4 = 4567,
+                    f5 = 6842,
+                    f6 = 'k',
+                    f7 = 4567891,
+                    f8 = 456478971,
+                    f9 = 1234.4564f,
+                    f10 = 47489745665,
+                    f11 = 4564654123123,
+                    f12 = 123.456456,
+                    f13 = DateTime.Now,
+                    f14 = 456123.45676465m,
+                    f15 = "John",
+                }
+            },
+            testList = new List<Test>()
+            {
+                new Test()
+                {
+                    f1 = 123,
+                    f2 = 123,
+                    f3 = true,
+                    f4 = 4567,
+                    f5 = 6842,
+                    f6 = 'k',
+                    f7 = 4567891,
+                    f8 = 456478971,
+                    f9 = 1234.4564f,
+                    f10 = 47489745665,
+                    f11 = 4564654123123,
+                    f12 = 123.456456,
+                    f13 = DateTime.Now,
+                    f14 = 456123.45676465m,
+                    f15 = "John",
+                },
+                new Test()
+                {
+                    f1 = 123,
+                    f2 = 123,
+                    f3 = true,
+                    f4 = 4567,
+                    f5 = 6842,
+                    f6 = 'k',
+                    f7 = 4567891,
+                    f8 = 456478971,
+                    f9 = 1234.4564f,
+                    f10 = 47489745665,
+                    f11 = 4564654123123,
+                    f12 = 123.456456,
+                    f13 = DateTime.Now,
+                    f14 = 456123.45676465m,
+                    f15 = "John",
+                }
+            },*/
+        };
+
+        Task.Run(() =>
+        {
+            while (true)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                for (int i = 0; i < 10000000; i++)
+                {
+                    var bin = MemoryPackSerializer.Serialize(test);
+                    var val = MemoryPackSerializer.Deserialize<Test>(bin);
+                }
+                stopwatch.Stop();
+                Console.WriteLine("MemoryPack 1000万次:" + stopwatch.Elapsed);
+            }
+        });
+
+        Task.Run(() =>
+        {
+            BufferPool.SegmentType = SegmentType.Segment;
+            while (true)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                //var bin = BufferPool.Take();
+                for (int i = 0; i < 10000000; i++)
+                {
+                    //bin.Flush();
+                    var bin = NetConvertFast2.SerializeObject(test);
+                    //NetConvertFast2.SerializeObject(test, bin);
+                    //bin.Flush();
+                    var val = NetConvertFast2.DeserializeObject<Test>(bin);
+                    //var val = NetConvertFast2.DeserializeObject<Test>(bin, false);
+                }
+                stopwatch.Stop();
+                Console.WriteLine("NetConvertBinary 1000万次:" + stopwatch.Elapsed);
+            }
+        });
+
+        Console.ReadLine();
+    }
+}
+```
+这是测试结果:
+<img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/serializeTest.png" width = "993" height = "519" alt="图片名称" align=center />
 
 ## ECS模块
 ECS模块类似unity的gameObject->component模式, 在ecs中gameObject=entity, component=component, system类执行, ecs跟gameObject模式基本流程是一样的, 只是ecs中的组件可以复用, 而gameObject的component则不能复用, 在创建上万个对象时, gameObject就得重新new出来对象和组件, 而ecs调用Destroy时是把entity或component压入对象池, 等待下一次复用.实际上对象没有被释放,所以性能高于gameObject的原因
@@ -246,11 +612,8 @@ mvc模块:模型,控制,视图分离, mvc模块适应于帧同步游戏, model�
 热更新FieldCollection组件使用:当在热更新项目中, 字段无需使用Find各种查找, 使用FieldCollection组件即可自动帮你处理完成字段收集引用, 一键生成即可写你的功能代码
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/hotfixFC.png" width = "1179" height = "685" alt="图片名称" align=center />
 
-## ILRuntime热更新
-网络协议传输类型必须在主工程定义! 那什么热更网络协议类型? 热更新网络协议类型必须新下载主工程apk替换旧的apk, 重新安装新的apk, 由于主工程的apk大小不是很大, 所有的资源都在ab文件里面! 所以是可以这样更新的
-注意: 协议定义在热更新项目中将无法反序列化! 必须定义在主工程!
-
-热更新案例文档:[案例2热更新](https://docs.qq.com/doc/DS3FXbERiUXZnWHVx)
+## HybridCRL热更新
+在客户端框架支持全部热更新, 使用非常简单, 已经无法形容了
 
 ## [SyncVar]字段或属性同步特性
 
