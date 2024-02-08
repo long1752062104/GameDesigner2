@@ -31,6 +31,8 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
     {
         if (serializedObject == null)
             return;
+        if (serializedObject.targetObject == null)
+            serializedObject = new SerializedObject(ConfigObject);
         EditorGUI.BeginChangeCheck();
         serializedObject.Update();
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height));
