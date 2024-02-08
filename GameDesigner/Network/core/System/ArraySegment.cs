@@ -96,7 +96,7 @@ namespace Net.System
             return segment.Buffer;
         }
 
-        public  void Init()
+        public void Init()
         {
             Offset = 0;
             Count = 0;
@@ -136,7 +136,7 @@ namespace Net.System
         {
             Flush(resetPos);
             var array = new byte[Count];
-            global::System.Buffer.BlockCopy(Buffer, Offset, array, 0, Count);
+            Unsafe.CopyBlockUnaligned(ref array[0], ref Buffer[Offset], (uint)Count);
             if (recovery) BufferPool.Push(this);
             return array;
         }
@@ -145,7 +145,7 @@ namespace Net.System
         {
             fixed (void* ptr1 = &Buffer[Position])
             {
-                global::System.Buffer.MemoryCopy(ptr, ptr1, count, count);
+                Unsafe.CopyBlockUnaligned(ptr1, ptr, (uint)count);
                 Position += count;
             }
         }
@@ -286,7 +286,7 @@ namespace Net.System
         public byte[] Read(int count)
         {
             var array = new byte[count];
-            global::System.Buffer.BlockCopy(Buffer, Position, array, 0, count);
+            Unsafe.CopyBlockUnaligned(ref array[0], ref Buffer[Position], (uint)count);
             Position += count;
             return array;
         }
@@ -570,7 +570,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe void Write(ushort value)
+        public unsafe void Write(ushort value)
         {
             if (value < 128)
             {
@@ -608,7 +608,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe void Write(uint value)
+        public unsafe void Write(uint value)
         {
             if (value < 128U)
             {
@@ -647,7 +647,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe void Write(ulong value)
+        public unsafe void Write(ulong value)
         {
             if (value < 128UL)
             {
@@ -719,7 +719,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe void Write(string value)
+        public unsafe void Write(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -750,14 +750,14 @@ namespace Net.System
             var count = value.Length;
             if (recordLength)
                 Write(count);
-            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
+            Unsafe.CopyBlockUnaligned(ref Buffer[Position], ref value[0], (uint)count);
             Position += count;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(byte[] value, int index, int count)
         {
-            global::System.Buffer.BlockCopy(value, index, Buffer, Position, count);
+            Unsafe.CopyBlockUnaligned(ref Buffer[Position], ref value[index], (uint)count);
             Position += count;
         }
 
@@ -767,12 +767,14 @@ namespace Net.System
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(sbyte[] value, bool recordLength = true)
+        public unsafe void Write(sbyte[] value, bool recordLength = true)
         {
             var count = value.Length;
             if (recordLength)
                 Write(count);
-            global::System.Buffer.BlockCopy(value, 0, Buffer, Position, count);
+            var dest_ptr = Unsafe.AsPointer(ref Buffer[Position]);
+            var source_ptr = Unsafe.AsPointer(ref value[0]);
+            Unsafe.CopyBlockUnaligned(dest_ptr, source_ptr, (uint)count);
             Position += value.Length;
         }
 
@@ -1191,7 +1193,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe ushort ReadUInt16()
+        public unsafe ushort ReadUInt16()
         {
             return (ushort)ReadUInt32();
         }
@@ -1219,7 +1221,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe uint ReadUInt32()
+        public unsafe uint ReadUInt32()
         {
             fixed (byte* ptr = &Buffer[Position])
             {
@@ -1270,7 +1272,7 @@ namespace Net.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  unsafe ulong ReadUInt64()
+        public unsafe ulong ReadUInt64()
         {
             fixed (byte* ptr = &Buffer[Position])
             {
@@ -1325,7 +1327,7 @@ namespace Net.System
             decimal value = default;
             void* ptr = &value;
             fixed (void* ptr1 = &Buffer[Position])
-                global::System.Buffer.MemoryCopy(ptr1, ptr, 16, 16);
+                Unsafe.CopyBlockUnaligned(ptr, ptr1, 16U);
             Position += 16;
             return value;
         }
@@ -1880,7 +1882,7 @@ namespace Net.System
         }
         #endregion
 
-        public  void Flush(bool resetPos = true)
+        public void Flush(bool resetPos = true)
         {
             if (Position > Count)
                 Count = Position;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Net.Share
 {
@@ -32,7 +33,7 @@ namespace Net.Share
                 if (count == 0)
                     return new byte[0];//byte[]不能为空,否则出错
                 var array = new byte[count];
-                global::System.Buffer.BlockCopy(buffer, index, array, 0, count);
+                Unsafe.CopyBlockUnaligned(ref array[0], ref buffer[index], (uint)count);
                 return array;
             }
             set

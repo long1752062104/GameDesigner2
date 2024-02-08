@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -183,7 +184,7 @@ namespace Net.Plugins
                     {
                         dp.revderHashCount++;
                         dp.revderHash[serialNo] = 1;
-                        Buffer.BlockCopy(segment, segment.Position, dp.revderBuffer.Buffer, (int)(serialNo * MTU), segment.Count - segment.Position);
+                        Unsafe.CopyBlockUnaligned(ref dp.revderBuffer.Buffer[serialNo * MTU], ref segment.Buffer[segment.Position], (uint)(segment.Count - segment.Position));
                         if (dp.revderHashCount >= dp.revderFrameEnd)
                             dp.finish = true;
                     }

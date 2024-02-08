@@ -1,23 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	
    <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<PlatformTarget>AnyCPU</PlatformTarget>
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
     <DefineConstants>$(DefineConstants);SERVICE;CORE</DefineConstants>
+    <IsAotCompatible>True</IsAotCompatible>
+    <IsTrimmable>False</IsTrimmable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Optimize>False</Optimize>
+    <Optimize>True</Optimize>
     <DefineConstants>$(DefineConstants);SERVICE;CORE</DefineConstants>
+    <IsAotCompatible>True</IsAotCompatible>
+    <IsTrimmable>False</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -69,6 +74,11 @@
     <None Remove="GameDesigner\Network.meta" />
     <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\DataCache.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\FastHashSet.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\ISegment.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\SafeDictionary.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\SystemManager.cs.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />
     <None Remove="GameDesigner\Serialize.meta" />

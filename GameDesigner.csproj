@@ -133,6 +133,7 @@
     <Compile Include="GameDesigner\Network\core\Share\ThreadArgs.cs" />
     <Compile Include="GameDesigner\Network\core\System\DataCache.cs" />
     <Compile Include="GameDesigner\Network\core\System\FastHashSet.cs" />
+    <Compile Include="GameDesigner\Network\core\System\FixedSegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\ISegment.cs" />
     <Compile Include="GameDesigner\Network\core\System\SafeDictionary.cs" />
     <Compile Include="GameDesigner\Network\core\System\SystemManager.cs" />

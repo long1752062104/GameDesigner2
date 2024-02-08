@@ -941,7 +941,8 @@ namespace Binding
                         var codeSB = BuildGenericAll(members[i].Type, ref orderId);
                         var className = AssemblyHelper.GetCodeTypeName(members[i].Type.ToString());
                         className = className.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "");
-                        if (members[i].Type != typeof(List<>).MakeGenericType(members[i].ItemType))
+                        var gType = typeof(List<>).MakeGenericType(members[i].ItemType);
+                        if (members[i].Type != gType)
                         {
                             if (!string.IsNullOrEmpty(savePath))
                                 File.WriteAllText(savePath + $"//{className}Bind.cs", codeSB.ToString());

@@ -19,6 +19,10 @@ namespace Net.System
         /// 使用内存片(结构内存段)
         /// </summary>
         ArraySegment,
+        /// <summary>
+        /// 固定片段, 不进行压缩基础类型, 如int直接占用4字节, long直接占用8字节...
+        /// </summary>
+        FixedSegment,
     }
 
     /// <summary>
@@ -164,6 +168,9 @@ namespace Net.System
             {
                 case SegmentType.ArraySegment:
                     segment = new ArraySegment(buffer, index, count, isRecovery);
+                    break;
+                case SegmentType.FixedSegment:
+                    segment = new FixedSegment(buffer, index, count, isRecovery);
                     break;
                 default:
                     segment = new Segment(buffer, index, count, isRecovery);

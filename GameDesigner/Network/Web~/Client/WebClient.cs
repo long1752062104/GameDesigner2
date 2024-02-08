@@ -11,6 +11,8 @@ using Newtonsoft_X.Json;
 using Cysharp.Threading.Tasks;
 using Net.Helper;
 using System.Security.Authentication;
+using System.Runtime.CompilerServices;
+
 #if !UNITY_EDITOR && UNITY_WEBGL
 using UnityWebSocket;
 #else
@@ -128,7 +130,7 @@ namespace Net.Client
                         receiveCount += data.Length;
                         receiveAmount++;
                         var buffer = BufferPool.Take(data.Length);
-                        Buffer.BlockCopy(data, 0, buffer.Buffer, 0, data.Length);
+                        Unsafe.CopyBlockUnaligned(ref buffer.Buffer[0], ref data[0], (uint)data.Length);
                         buffer.Count = data.Length;
                         ResolveBuffer(ref buffer, false);
                         BufferPool.Push(buffer);
@@ -195,7 +197,7 @@ namespace Net.Client
                 byte[] jsonStrBytes = Encoding.UTF8.GetBytes(jsonStr);
                 byte[] bytes = new byte[jsonStrBytes.Length + 1];
                 bytes[0] = 32; //32=utf8的" "空字符
-                Buffer.BlockCopy(jsonStrBytes, 0, bytes, 1, jsonStrBytes.Length);
+                Unsafe.CopyBlockUnaligned(ref bytes[1], ref jsonStrBytes[0], (uint)jsonStrBytes.Length);
                 return bytes;
             }
             return NetConvert.Serialize(model, new byte[] { 10 });//10=utf8的\n字符

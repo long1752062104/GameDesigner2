@@ -4,11 +4,21 @@ using System.Linq;
 using System.Collections.Generic;
 #endif
 using System.Runtime.CompilerServices;
+#if SERIALIZE_SIZE32
+using SIZE = System.Int32;
+#else
+using SIZE = System.UInt16;
+#endif
 
 namespace Net.Serialize
 {
     public class NetConvertHelper
     {
+#if SERIALIZE_SIZE32
+        private const ushort LENGTH = 4;
+#else
+        private const ushort LENGTH = 2;
+#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteArray<T>(byte* ptr, ref int offset, T[] value) where T : struct
         {
@@ -16,16 +26,16 @@ namespace Net.Serialize
             {
                 void* ptr1 = Unsafe.AsPointer(ref value[0]);
                 int len = value.Length;
-                Unsafe.WriteUnaligned(ptr + offset, (ushort)len);
-                offset += 2;
+                Unsafe.WriteUnaligned(ptr + offset, (SIZE)len);
+                offset += LENGTH;
                 int count = len * Unsafe.SizeOf<T>();
-                Unsafe.CopyBlock(ptr + offset, ptr1, (uint)count);
+                Unsafe.CopyBlockUnaligned(ptr + offset, ptr1, (uint)count);
                 offset += count;
             }
             else
             {
-                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
-                offset += 2;
+                Unsafe.WriteUnaligned<SIZE>(ptr + offset, 0);
+                offset += LENGTH;
             }
         }
 
@@ -35,43 +45,67 @@ namespace Net.Serialize
             if (value != null)
             {
                 int len = value.Length;
-                Unsafe.WriteUnaligned(ptr + offset, (ushort)len);
-                offset += 2;
+                Unsafe.WriteUnaligned(ptr + offset, (SIZE)len);
+                offset += LENGTH;
                 for (int i = 0; i < len; i++)
-                {
                     Write(ptr, ref offset, value[i]);
-                }
             }
             else
             {
-                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
-                offset += 2;
+                Unsafe.WriteUnaligned<SIZE>(ptr + offset, 0);
+                offset += LENGTH;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteCollection<T>(byte* ptr, ref int offset, ICollection<T> value) where T : struct
         {
-            WriteArray(ptr, ref offset, value?.ToArray());
+            if (value != null)
+            {
+                int len = value.Count;
+                Unsafe.WriteUnaligned(ptr + offset, (SIZE)len);
+                offset += LENGTH;
+                var enumerator = value.GetEnumerator();
+                while (enumerator.MoveNext())
+                    Write(ptr, ref offset, enumerator.Current);
+            }
+            else
+            {
+                Unsafe.WriteUnaligned<SIZE>(ptr + offset, 0);
+                offset += LENGTH;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteCollection(byte* ptr, ref int offset, ICollection<string> value)
         {
-            WriteArray(ptr, ref offset, value?.ToArray());
+            if (value != null)
+            {
+                int len = value.Count;
+                Unsafe.WriteUnaligned(ptr + offset, (SIZE)len);
+                offset += LENGTH;
+                var enumerator = value.GetEnumerator();
+                while (enumerator.MoveNext())
+                    Write(ptr, ref offset, enumerator.Current);
+            }
+            else
+            {
+                Unsafe.WriteUnaligned<SIZE>(ptr + offset, 0);
+                offset += LENGTH;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T[] ReadArray<T>(byte* ptr, ref int offset) where T : struct
         {
-            var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
-            offset += 2;
+            var arrayLen = Unsafe.ReadUnaligned<SIZE>(ptr + offset);
+            offset += LENGTH;
             if (arrayLen > 0)
             {
                 var value = new T[arrayLen];
                 void* ptr1 = Unsafe.AsPointer(ref value[0]);
                 int count = arrayLen * Unsafe.SizeOf<T>();
-                Unsafe.CopyBlock(ptr1, ptr + offset, (uint)count);
+                Unsafe.CopyBlockUnaligned(ptr1, ptr + offset, (uint)count);
                 offset += count;
                 return value;
             }
@@ -81,20 +115,18 @@ namespace Net.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T ReadCollection<T, T1>(byte* ptr, ref int offset) where T : ICollection<T1>, new() where T1 : struct
         {
-            var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
-            offset += 2;
+            var arrayLen = Unsafe.ReadUnaligned<SIZE>(ptr + offset);
+            offset += LENGTH;
             if (arrayLen > 0)
             {
                 var value = new T();
                 var newValue = new T1[arrayLen];
                 void* ptr1 = Unsafe.AsPointer(ref newValue[0]);
                 int count = arrayLen * Unsafe.SizeOf<T1>();
-                Unsafe.CopyBlock(ptr1, ptr + offset, (uint)count);
+                Unsafe.CopyBlockUnaligned(ptr1, ptr + offset, (uint)count);
                 offset += count;
                 for (int i = 0; i < arrayLen; i++)
-                {
                     value.Add(newValue[i]);
-                }
                 return value;
             }
             return default;
@@ -108,24 +140,20 @@ namespace Net.Serialize
                 return default;
             var value = new T();
             for (int i = 0; i < newValue.Length; i++)
-            {
                 value.Add(newValue[i]);
-            }
             return value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string[] ReadArray(byte* ptr, ref int offset)
         {
-            var arrayLen = Unsafe.ReadUnaligned<ushort>(ptr + offset);
-            offset += 2;
+            var arrayLen = Unsafe.ReadUnaligned<SIZE>(ptr + offset);
+            offset += LENGTH;
             if (arrayLen > 0)
             {
                 var value = new string[arrayLen];
                 for (int i = 0; i < arrayLen; i++)
-                {
                     value[i] = Read(ptr, ref offset);
-                }
                 return value;
             }
             return default;
@@ -145,17 +173,17 @@ namespace Net.Serialize
             {
 #if CORE
                 var charSpan = value.AsSpan();
-                var byteSpan = new Span<byte>(ptr + offset + 2, value.Length * 3);
+                var byteSpan = new Span<byte>(ptr + offset + LENGTH, value.Length * 3);
                 var count = Encoding.UTF8.GetBytes(charSpan, byteSpan);
-                Unsafe.WriteUnaligned(ptr + offset, (ushort)count);
-                offset += 2 + count;
+                Unsafe.WriteUnaligned(ptr + offset, (SIZE)count);
+                offset += LENGTH + count;
 #else
                 int count = value.Length;
                 fixed (char* ptr1 = value)
                 {
                     int byteCount = Encoding.UTF8.GetByteCount(ptr1, count);
-                    Unsafe.WriteUnaligned(ptr + offset, (ushort)byteCount);
-                    offset += 2;
+                    Unsafe.WriteUnaligned(ptr + offset, (SIZE)byteCount);
+                    offset += LENGTH;
                     Encoding.UTF8.GetBytes(ptr1, count, ptr + offset, byteCount);
                     offset += byteCount;
                 }
@@ -163,8 +191,8 @@ namespace Net.Serialize
             }
             else
             {
-                Unsafe.WriteUnaligned<ushort>(ptr + offset, 0);
-                offset += 2;
+                Unsafe.WriteUnaligned<SIZE>(ptr + offset, 0);
+                offset += LENGTH;
             }
         }
 
@@ -179,8 +207,8 @@ namespace Net.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string Read(byte* ptr, ref int offset)
         {
-            var count = Unsafe.ReadUnaligned<ushort>(ptr + offset);
-            offset += 2;
+            var count = Unsafe.ReadUnaligned<SIZE>(ptr + offset);
+            offset += LENGTH;
             if (count > 0)
             {
 #if CORE

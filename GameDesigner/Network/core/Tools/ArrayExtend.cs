@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
 using UnityEngine.UI;
@@ -409,7 +410,7 @@ public static class ArrayExtend
     public static byte[] ToArray(this byte[] self, int index, int count)
     {
         var buffer = new byte[count];
-        Buffer.BlockCopy(self, index, buffer, 0, count);
+        Unsafe.CopyBlockUnaligned(ref buffer[0], ref self[index], (uint)count);
         return buffer;
     }
 
