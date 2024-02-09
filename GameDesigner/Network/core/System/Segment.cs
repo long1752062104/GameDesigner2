@@ -765,6 +765,8 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Write(byte[] value, int index, int count)
         {
+            if (index >= value.Length)
+                return;
             Unsafe.CopyBlockUnaligned(ref Buffer[Position], ref value[index], (uint)count);
             Position += count;
         }
