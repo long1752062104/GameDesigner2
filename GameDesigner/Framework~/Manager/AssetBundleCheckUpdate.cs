@@ -44,6 +44,12 @@ namespace Framework
             UnityWebRequest request = null;
             try
             {
+                if (!url.StartsWith("http"))
+                {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                    url = "file://" + url;
+#endif
+                }
                 request = UnityWebRequest.Get(url);
                 await request.SendWebRequest();
                 if (!string.IsNullOrEmpty(request.error))
@@ -89,7 +95,11 @@ namespace Framework
             if (serverAssetBundleDict == null)
                 return;
             versionUrl = Global.I.AssetBundlePath + "../version.json";
-            var localAssetBundleDict = await VersionCheck(versionUrl);
+            versionUrl = Path.GetFullPath(versionUrl).Replace("\\", "/");
+            var localAssetBundleDict = await VersionCheck(versionUrl, error => 
+            {
+                Debug.LogError("读取本地路径错误:" + error);
+            });
             if (localAssetBundleDict == null)
             {
                 if (useFirstPackage)
