@@ -294,7 +294,7 @@ namespace Net.Event
             try
             {
                 var now = DateTime.Now;
-                var path = PathHelper.Combine(Config.Config.ConfigPath, $"/Log/{now.Year}/{now.Month.ToString("00")}/");
+                var path = PathHelper.Combine(Config.Config.BasePath, $"/Log/{now.Year}/{now.Month.ToString("00")}/");
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
                 path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
@@ -532,9 +532,9 @@ namespace Net.Event
         /// <param name="log"></param>
         public static void BindDebug(IDebug debug)
         {
-            if (NDebug.Debug != null)
+            if (Debug != null)
                 RemoveDebug();
-            NDebug.Debug = debug;
+            Debug = debug;
             Output += debug.Output;
         }
 

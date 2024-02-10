@@ -2,8 +2,9 @@
 using System.Text;
 using System.IO;
 using System.IO.Compression;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Net.Event;
+using System.Linq;
 
 namespace Net.Helper
 {
@@ -73,15 +74,32 @@ namespace Net.Helper
         /// 压缩文件夹
         /// </summary>
         /// <param name="sourceDirectoryName">要压缩的文件夹路径</param>
-        /// <param name="destinationArchiveFileName">压缩文件路径)</param>
+        /// <param name="destinationArchiveFileName">压缩文件路径</param>
         /// <param name="compressionLevel">压缩层</param>
         /// <param name="includeBaseDirectory">压缩包含当前目录</param>
         /// <param name="entryNameEncoding">压缩编码</param>
         public static void CompressFiles(string sourceDirectoryName, string destinationArchiveFileName, CompressionLevel compressionLevel = CompressionLevel.Fastest, bool includeBaseDirectory = false, Encoding entryNameEncoding = null)
         {
+            _ = CompressFiles(sourceDirectoryName, destinationArchiveFileName, compressionLevel, includeBaseDirectory, entryNameEncoding, null, false);
+        }
+
+        /// <summary>
+        /// 压缩文件夹
+        /// </summary>
+        /// <param name="sourceDirectoryName">要压缩的文件夹路径</param>
+        /// <param name="destinationArchiveFileName">压缩文件路径</param>
+        /// <param name="compressionLevel">压缩层</param>
+        /// <param name="includeBaseDirectory">压缩包含当前目录</param>
+        /// <param name="entryNameEncoding">压缩编码</param>
+        public static async UniTask CompressFiles(string sourceDirectoryName, string destinationArchiveFileName, CompressionLevel compressionLevel, bool includeBaseDirectory, Encoding entryNameEncoding, Action<string, float> progress = null, bool isAsync = true)
+        {
             sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
             destinationArchiveFileName = Path.GetFullPath(destinationArchiveFileName);
-            var fileStream = File.Open(destinationArchiveFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            FileStream fileStream;
+            if (File.Exists(destinationArchiveFileName))
+                fileStream = File.Open(destinationArchiveFileName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            else
+                fileStream = File.Open(destinationArchiveFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, leaveOpen: false, entryNameEncoding))
             {
                 bool flag = true;
@@ -89,24 +107,29 @@ namespace Net.Helper
                 string fullName = directoryInfo.FullName;
                 if (includeBaseDirectory && directoryInfo.Parent != null)
                     fullName = directoryInfo.Parent.FullName;
-                foreach (FileSystemInfo item in directoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories).ToArray();
+                var count = fileSystemInfos.Length;
+                for (int i = 0; i < count; i++)
                 {
+                    var item = fileSystemInfos[i];
                     int length = item.FullName.Length - fullName.Length;
                     string text;
                     text = item.FullName.Substring(fullName.Length, length);
-                    text = text.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    text = text.Replace('\\', '/');
                     if (item is FileInfo)
                     {
                         using Stream stream = File.Open(item.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        ZipArchiveEntry zipArchiveEntry = zipArchive.CreateEntry(text, compressionLevel);
-                        DateTime dateTime = File.GetLastWriteTime(item.FullName);
+                        var entry = zipArchive.CreateEntry(text, compressionLevel);
+                        var dateTime = File.GetLastWriteTime(item.FullName);
                         if (dateTime.Year < 1980 || dateTime.Year > 2107)
                             dateTime = new DateTime(1980, 1, 1, 0, 0, 0);
-                        zipArchiveEntry.LastWriteTime = dateTime;
-                        using (Stream destination2 = zipArchiveEntry.Open())
+                        entry.LastWriteTime = dateTime;
+                        using (Stream destination2 = entry.Open())
                         {
                             stream.CopyTo(destination2);
                         }
+                        progress?.Invoke(entry.Name, i / (float)count);
+                        if (isAsync) await UniTask.Yield();
                         continue;
                     }
                     if (item is DirectoryInfo directoryInfo2)
@@ -114,12 +137,12 @@ namespace Net.Helper
                         using (var enumerator = directoryInfo2.EnumerateFileSystemInfos("*", SearchOption.AllDirectories).GetEnumerator())
                         {
                             if (enumerator.MoveNext())
-                                zipArchive.CreateEntry(text + Path.AltDirectorySeparatorChar);
+                                zipArchive.CreateEntry(text + '/');
                         }
                     }
                 }
                 if (includeBaseDirectory && flag)
-                    zipArchive.CreateEntry(directoryInfo.Name + Path.AltDirectorySeparatorChar);
+                    zipArchive.CreateEntry(directoryInfo.Name + '/');
             }
         }
 
@@ -145,38 +168,47 @@ namespace Net.Helper
         /// <param name="isAsync">是否异步调用</param>
         /// <returns></returns>
         /// <exception cref="IOException"></exception>
-        public static async UniTask DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding, Action<string, float> progress = null, bool isAsync = true)
+        public static async UniTask<bool> DecompressFile(string sourceArchiveFileName, string destinationDirectoryName, Encoding entryNameEncoding, Action<string, float> progress = null, bool isAsync = true)
         {
-            var fileStream = File.Open(sourceArchiveFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using (ZipArchive source = new ZipArchive(fileStream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding))
+            try
             {
-                var directoryInfo = Directory.CreateDirectory(destinationDirectoryName);
-                string text = directoryInfo.FullName;
-                var count = source.Entries.Count;
-                for (int i = 0; i < count; i++)
+                var fileStream = File.Open(sourceArchiveFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using (ZipArchive source = new ZipArchive(fileStream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding))
                 {
-                    var entry = source.Entries[i];
-                    progress?.Invoke(entry.Name, i / (float)count);
-                    if (isAsync) await UniTask.Yield();
-                    string fullPath = Path.GetFullPath(text + entry.FullName);
-                    if (Path.GetFileName(fullPath).Length == 0)
+                    var directoryInfo = Directory.CreateDirectory(destinationDirectoryName);
+                    string text = directoryInfo.FullName;
+                    var count = source.Entries.Count;
+                    for (int i = 0; i < count; i++)
                     {
-                        if (entry.Length != 0L)
-                            throw new IOException("把数据当作文件夹识别了!");
-                        Directory.CreateDirectory(fullPath);
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
-                        using (Stream destination = File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                        var entry = source.Entries[i];
+                        progress?.Invoke(entry.Name, i / (float)count);
+                        if (isAsync) await UniTask.Yield();
+                        string fullPath = Path.GetFullPath(text + entry.FullName);
+                        if (Path.GetFileName(fullPath).Length == 0)
                         {
-                            using Stream stream = entry.Open();
-                            stream.CopyTo(destination);
+                            if (entry.Length != 0L)
+                                throw new IOException("把数据当作文件夹识别了!");
+                            Directory.CreateDirectory(fullPath);
                         }
-                        File.SetLastWriteTime(fullPath, entry.LastWriteTime.DateTime);
+                        else
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                            using (Stream destination = File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                            {
+                                using Stream stream = entry.Open();
+                                stream.CopyTo(destination);
+                            }
+                            File.SetLastWriteTime(fullPath, entry.LastWriteTime.DateTime);
+                        }
                     }
+                    return true;
                 }
             }
+            catch (Exception ex)
+            {
+                NDebug.LogError(ex);
+            }
+            return false;
         }
     }
 }

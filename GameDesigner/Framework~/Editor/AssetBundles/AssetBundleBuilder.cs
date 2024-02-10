@@ -204,149 +204,155 @@ namespace Framework
             }
             if (GUILayout.Button("BuildAssetBundle"))
             {
-                var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
-                if (assetBundleBuilder.clearFolders)
-                {
-                    if (Directory.Exists(outputPath))
-                        Directory.Delete(outputPath, true);
-                    if (assetBundleBuilder.copyToStreamingAssets)
-                    {
-                        var m_streamingPath = $"{Application.streamingAssetsPath}/AssetBundles/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
-                        if (Directory.Exists(m_streamingPath))
-                            Directory.Delete(m_streamingPath, true);
-                    }
-                }
-                if (!Directory.Exists(outputPath))
-                    Directory.CreateDirectory(outputPath);
-                var opt = BuildAssetBundleOptions.None;
-                if (assetBundleBuilder.compression == CompressOptions.Uncompressed)
-                    opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
-                else if (assetBundleBuilder.compression == CompressOptions.ChunkBasedCompression)
-                    opt |= BuildAssetBundleOptions.ChunkBasedCompression;
-                if (assetBundleBuilder.ExcludeTypeInformation)
-                    opt |= BuildAssetBundleOptions.DisableWriteTypeTree;
-                if (assetBundleBuilder.ForceRebuild)
-                    opt |= BuildAssetBundleOptions.ForceRebuildAssetBundle;
-                if (assetBundleBuilder.IgnoreTypeTreeChanges)
-                    opt |= BuildAssetBundleOptions.IgnoreTypeTreeChanges;
-                if (assetBundleBuilder.AppendHash)
-                    opt |= BuildAssetBundleOptions.AppendHashToAssetBundleName;
-                if (assetBundleBuilder.StrictMode)
-                    opt |= BuildAssetBundleOptions.StrictMode;
-                if (assetBundleBuilder.DryRunBuild)
-                    opt |= BuildAssetBundleOptions.DryRunBuild;
-                var buildList = new Dictionary<string, AssetBundleBuild>();
-                var assetInfoList = new Dictionary<string, AssetInfo>();
-                string[] files;
-                for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
-                {
-                    var package = assetBundleBuilder.Packages[i];
-                    if (!package.enable)
-                        continue;
-                    var assetPath = AssetDatabase.GetAssetPath(package.path);
-                    var isFolder = AssetDatabase.IsValidFolder(assetPath);
-                    if (isFolder)
-                        AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
-                    else
-                        AddSinglePackage(buildList, assetInfoList, assetPath, package);
-                }
-                EditorUtility.ClearProgressBar();
-                Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
-                if (!Directory.Exists(outputPath))
-                    Directory.CreateDirectory(outputPath);
-                var assetInfoListPath = outputPath + "assetInfoList.json";
-                var assetInfoListSource = new Dictionary<string, AssetInfo>();
-                if (File.Exists(assetInfoListPath))
-                {
-                    var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
-                    if (assetBundleBuilder.compressionJson)
-                        assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes);
-                    var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
-                    assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
-                }
-                var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
-                foreach (var assetInfo in assetInfoList)
-                {
-                    if (assetInfoListSource.TryGetValue(assetInfo.Key, out var assetInfo1))
-                        if (assetInfo.Value.md5 == assetInfo1.md5)
-                            continue;
-                    if (buildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
-                        assetBundleBuildList[assetInfo.Value.assetBundleName] = assetBundleBuild;
-                }
-                Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
-                if (assetBundleBuildList.Count == 0)
-                {
-                    Debug.Log("没有增量更新包!");
-                    return;
-                }
-                var assetBundleManifest = BuildPipeline.BuildAssetBundles(outputPath, assetBundleBuildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
-                var manifestPath = outputPath + "assetBundleManifest.json";
-                var assetManifest = new AssetManifest();
-                if (File.Exists(manifestPath))
-                {
-                    var manifestBytes = File.ReadAllBytes(manifestPath);
-                    if (assetBundleBuilder.compressionJson)
-                        manifestBytes = UnZipHelper.Decompress(manifestBytes);
-                    var manifestJson = Encoding.UTF8.GetString(manifestBytes);
-                    assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
-                }
-                if (assetBundleManifest != null)
-                {
-                    var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
-                    foreach (var allAssetBundle in allAssetBundles)
-                        assetManifest.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
-                }
-                var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
-                byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
-                if (assetBundleBuilder.compressionJson)
-                    jsonBytes = UnZipHelper.Compress(jsonBytes);
-                File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
-                json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
-                jsonBytes = Encoding.UTF8.GetBytes(json);
-                if (assetBundleBuilder.compressionJson)
-                    jsonBytes = UnZipHelper.Compress(jsonBytes);
-                File.WriteAllBytes(outputPath + "assetInfoList.json", jsonBytes);
-                var assetBundleInfos = new List<AssetBundleInfo>();
-                files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
-                foreach (var file in files)
-                {
-                    var fileName = Path.GetFileName(file);
-                    if (file.EndsWith(".manifest") | fileName == assetBundleBuilder.version)
-                    {
-                        if (assetBundleBuilder.clearManifestFile)
-                            File.Delete(file);
-                        continue;
-                    }
-                    var bytes = File.ReadAllBytes(file);
-                    if (assetBundleBuilder.encrypt)
-                    {
-                        EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
-                        File.WriteAllBytes(file, bytes);
-                        Debug.Log($"加密文件:{file}完成!");
-                    }
-                    var md5 = EncryptHelper.GetMD5(bytes);
-                    assetBundleInfos.Add(new AssetBundleInfo(fileName, md5, bytes.Length));
-                }
-                if (assetBundleBuilder.useFirstPackage)
-                {
-                    EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包...", 0f);
-                    UnZipHelper.CompressFiles(outputPath, outputPath + $"../{assetBundleBuilder.version}.zip", System.IO.Compression.CompressionLevel.Optimal, true);
-                    EditorUtility.ClearProgressBar();
-                }
-                json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);
-                jsonBytes = Encoding.UTF8.GetBytes(json);
-                if (assetBundleBuilder.compressionJson)
-                    jsonBytes = UnZipHelper.Compress(jsonBytes);
-                File.WriteAllBytes(outputPath + "../version.json", jsonBytes);
+                BuildAssetBundle();
+            }
+        }
+
+        private async void BuildAssetBundle()
+        {
+            var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
+            if (assetBundleBuilder.clearFolders)
+            {
+                if (Directory.Exists(outputPath))
+                    Directory.Delete(outputPath, true);
                 if (assetBundleBuilder.copyToStreamingAssets)
                 {
-                    var m_streamingPath = Application.streamingAssetsPath + "/AssetBundles/";
-                    DirectoryCopy(assetBundleBuilder.outputPath, m_streamingPath);
+                    var m_streamingPath = $"{Application.streamingAssetsPath}/AssetBundles/{assetBundleBuilder.buildTarget}/{assetBundleBuilder.version}/";
+                    if (Directory.Exists(m_streamingPath))
+                        Directory.Delete(m_streamingPath, true);
                 }
-                CheckAutoIncrement();
-                AssetDatabase.Refresh();
-                Debug.Log("构建资源完成!");
             }
+            if (!Directory.Exists(outputPath))
+                Directory.CreateDirectory(outputPath);
+            var opt = BuildAssetBundleOptions.None;
+            if (assetBundleBuilder.compression == CompressOptions.Uncompressed)
+                opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
+            else if (assetBundleBuilder.compression == CompressOptions.ChunkBasedCompression)
+                opt |= BuildAssetBundleOptions.ChunkBasedCompression;
+            if (assetBundleBuilder.ExcludeTypeInformation)
+                opt |= BuildAssetBundleOptions.DisableWriteTypeTree;
+            if (assetBundleBuilder.ForceRebuild)
+                opt |= BuildAssetBundleOptions.ForceRebuildAssetBundle;
+            if (assetBundleBuilder.IgnoreTypeTreeChanges)
+                opt |= BuildAssetBundleOptions.IgnoreTypeTreeChanges;
+            if (assetBundleBuilder.AppendHash)
+                opt |= BuildAssetBundleOptions.AppendHashToAssetBundleName;
+            if (assetBundleBuilder.StrictMode)
+                opt |= BuildAssetBundleOptions.StrictMode;
+            if (assetBundleBuilder.DryRunBuild)
+                opt |= BuildAssetBundleOptions.DryRunBuild;
+            var buildList = new Dictionary<string, AssetBundleBuild>();
+            var assetInfoList = new Dictionary<string, AssetInfo>();
+            string[] files;
+            for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
+            {
+                var package = assetBundleBuilder.Packages[i];
+                if (!package.enable)
+                    continue;
+                var assetPath = AssetDatabase.GetAssetPath(package.path);
+                var isFolder = AssetDatabase.IsValidFolder(assetPath);
+                if (isFolder)
+                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
+                else
+                    AddSinglePackage(buildList, assetInfoList, assetPath, package);
+            }
+            EditorUtility.ClearProgressBar();
+            Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
+            if (!Directory.Exists(outputPath))
+                Directory.CreateDirectory(outputPath);
+            var assetInfoListPath = outputPath + "assetInfoList.json";
+            var assetInfoListSource = new Dictionary<string, AssetInfo>();
+            if (File.Exists(assetInfoListPath))
+            {
+                var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
+                if (assetBundleBuilder.compressionJson)
+                    assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes);
+                var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
+                assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
+            }
+            var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
+            foreach (var assetInfo in assetInfoList)
+            {
+                if (assetInfoListSource.TryGetValue(assetInfo.Key, out var assetInfo1))
+                    if (assetInfo.Value.md5 == assetInfo1.md5)
+                        continue;
+                if (buildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
+                    assetBundleBuildList[assetInfo.Value.assetBundleName] = assetBundleBuild;
+            }
+            Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
+            if (assetBundleBuildList.Count == 0)
+            {
+                Debug.Log("没有增量更新包!");
+                return;
+            }
+            var assetBundleManifest = BuildPipeline.BuildAssetBundles(outputPath, assetBundleBuildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
+            var manifestPath = outputPath + "assetBundleManifest.json";
+            var assetManifest = new AssetManifest();
+            if (File.Exists(manifestPath))
+            {
+                var manifestBytes = File.ReadAllBytes(manifestPath);
+                if (assetBundleBuilder.compressionJson)
+                    manifestBytes = UnZipHelper.Decompress(manifestBytes);
+                var manifestJson = Encoding.UTF8.GetString(manifestBytes);
+                assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
+            }
+            if (assetBundleManifest != null)
+            {
+                var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
+                foreach (var allAssetBundle in allAssetBundles)
+                    assetManifest.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
+            }
+            var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+            if (assetBundleBuilder.compressionJson)
+                jsonBytes = UnZipHelper.Compress(jsonBytes);
+            File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
+            json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
+            jsonBytes = Encoding.UTF8.GetBytes(json);
+            if (assetBundleBuilder.compressionJson)
+                jsonBytes = UnZipHelper.Compress(jsonBytes);
+            File.WriteAllBytes(outputPath + "assetInfoList.json", jsonBytes);
+            var assetBundleInfos = new List<AssetBundleInfo>();
+            files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                if (file.EndsWith(".manifest") | fileName == assetBundleBuilder.version)
+                {
+                    if (assetBundleBuilder.clearManifestFile)
+                        File.Delete(file);
+                    continue;
+                }
+                var bytes = File.ReadAllBytes(file);
+                if (assetBundleBuilder.encrypt)
+                {
+                    EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
+                    File.WriteAllBytes(file, bytes);
+                    Debug.Log($"加密文件:{file}完成!");
+                }
+                var md5 = EncryptHelper.GetMD5(bytes);
+                assetBundleInfos.Add(new AssetBundleInfo(fileName, md5, bytes.Length));
+            }
+            if (assetBundleBuilder.useFirstPackage)
+            {
+                EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包...", 0f);
+                await UnZipHelper.CompressFiles(outputPath, outputPath + $"../{assetBundleBuilder.version}.zip", System.IO.Compression.CompressionLevel.Optimal, true, null,
+                    (name, progress) => EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包:{name}", progress));
+                EditorUtility.ClearProgressBar();
+            }
+            json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);
+            jsonBytes = Encoding.UTF8.GetBytes(json);
+            if (assetBundleBuilder.compressionJson)
+                jsonBytes = UnZipHelper.Compress(jsonBytes);
+            File.WriteAllBytes(outputPath + "../version.json", jsonBytes);
+            if (assetBundleBuilder.copyToStreamingAssets)
+            {
+                var m_streamingPath = Application.streamingAssetsPath + "/AssetBundles/";
+                DirectoryCopy(assetBundleBuilder.outputPath, m_streamingPath);
+            }
+            CheckAutoIncrement();
+            AssetDatabase.Refresh();
+            Debug.Log("构建资源完成!");
         }
 
         private string GetAssetBundleName(string assetPath, CollectType type)

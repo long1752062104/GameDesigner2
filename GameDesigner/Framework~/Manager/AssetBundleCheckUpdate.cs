@@ -96,10 +96,7 @@ namespace Framework
                 return;
             versionUrl = Global.I.AssetBundlePath + "../version.json";
             versionUrl = Path.GetFullPath(versionUrl).Replace("\\", "/");
-            var localAssetBundleDict = await VersionCheck(versionUrl, error => 
-            {
-                Debug.LogError("读取本地路径错误:" + error);
-            });
+            var localAssetBundleDict = await VersionCheck(versionUrl);
             if (localAssetBundleDict == null)
             {
                 if (useFirstPackage)
@@ -125,7 +122,11 @@ namespace Framework
 
         protected virtual async UniTask<bool> FirstPackageDownload()
         {
-            var item = await GetFileLength($"{url}AssetBundles/{Global.I.platform}/{Global.I.version}.zip");
+            var serverAssetBundleUrl = $"{url}AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
+            var localAssetBundleUrl = $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
+            if (File.Exists(localAssetBundleUrl))
+                goto J;
+            var item = await GetFileLength(serverAssetBundleUrl);
             if (!item.Item1)
             {
                 Global.UI.Message.ShowUI("资源请求", "资源包请求失败!");
@@ -134,17 +135,21 @@ namespace Framework
             var msgResult = await DownloadRequestTips(item.Item2);
             if (!msgResult)
                 return false;
-            var serverAssetBundleUrl = $"{url}AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
-            var localAssetBundleUrl = $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
             item = await DownloadFile(serverAssetBundleUrl, localAssetBundleUrl, $"资源包{Global.I.version}", item.Item2);
             if (!item.Item1)
             {
                 Global.UI.Message.ShowUI("资源请求", "资源包请求失败!");
                 return false;
             }
-            Global.UI.Loading.ShowUI("正在解压资源包...", 0f);
-            await UnZipHelper.DecompressFile(localAssetBundleUrl, $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/", null,
+        J: Global.UI.Loading.ShowUI("正在解压资源包...", 0f);
+            var result = await UnZipHelper.DecompressFile(localAssetBundleUrl, $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/", null,
                 (name, progress) => Global.UI.Loading.ShowUI($"正在解压资源包:{name}", progress));
+            if (!result)
+            {
+                Global.UI.Loading.ShowUI("解压初始包失败!", 1f);
+                File.Delete(localAssetBundleUrl);
+                return false;
+            }
             Global.UI.Loading.ShowUI("解压完成", 1f);
             await UniTask.Delay(100);
             File.Delete(localAssetBundleUrl);

@@ -320,6 +320,29 @@ namespace Framework
             onLoadComplete?.Invoke();
         }
 
+        public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single, Action<float> progress = null, Action onLoadComplete = null)
+        {
+            if ((byte)Global.I.Mode <= 1)
+            {
+                assetPath = Path.GetFileNameWithoutExtension(assetPath);
+                goto J;
+            }
+            var assetBundle = await GetAssetBundleAsync(assetPath);
+            if (assetBundle == null)
+                return;
+            J: var asyncOper = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(assetPath, mode);
+            asyncOper.allowSceneActivation = false;
+            while (asyncOper.progress < 0.9f)
+            {
+                progress?.Invoke(asyncOper.progress);
+                await UniTask.Yield();
+            }
+            progress?.Invoke(1f);
+            await UniTask.Delay(1000);
+            asyncOper.allowSceneActivation = true;
+            onLoadComplete?.Invoke();
+        }
+
         protected virtual void DirectDependencies(string assetBundleName)
         {
             var dependencies = assetBundleManifest.GetDirectDependencies(assetBundleName);
