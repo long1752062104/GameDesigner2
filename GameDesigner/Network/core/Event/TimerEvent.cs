@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 #if !UNITY_WEBGL
 using System.Threading.Tasks;
+using static Net.Event.TimerEvent;
 #endif
 
 namespace Net.Event
@@ -12,13 +13,15 @@ namespace Net.Event
     /// </summary>
     public class TimerEvent
     {
-        public abstract class EventAction
+        public abstract class EventAction : IDisposable
         {
             public Event Event;
             public bool IsAsync;
             public bool IsCompleted;
+
             public abstract void Invoke();
             public abstract void WorkExecute(object args);
+            public abstract void Dispose();
         }
 
         public class EventAction1 : EventAction
@@ -53,6 +56,11 @@ namespace Net.Event
                     Event.time += Event.timeMax;
                 IsCompleted = true;
             }
+
+            public override void Dispose()
+            {
+                action = null;
+            }
         }
 
         public class EventAction2 : EventAction
@@ -86,6 +94,11 @@ namespace Net.Event
                 else
                     Event.time += Event.timeMax;
                 IsCompleted = true;
+            }
+
+            public override void Dispose()
+            {
+                action = null;
             }
         }
 
@@ -129,6 +142,11 @@ namespace Net.Event
                     IsCompleted = true;
                 }
             }
+
+            public override void Dispose()
+            {
+                action = null;
+            }
         }
 
         public class EventAction4 : EventAction
@@ -171,16 +189,21 @@ namespace Net.Event
                     IsCompleted = true;
                 }
             }
+
+            public override void Dispose()
+            {
+                action = null;
+            }
         }
 
         public class Event
         {
             public string name;
-            public ulong time;
+            public long time;
             public EventAction action;
             public object obj;
             public int invokeNum;
-            internal ulong timeMax;
+            internal long timeMax;
             internal int eventId;
             internal bool isRemove;
             public void SetIntervalTime(uint value)
@@ -194,10 +217,12 @@ namespace Net.Event
         }
         public FastListSafe<Event> events = new FastListSafe<Event>();
         private int eId = 1000;
-        private ulong time;
+        private long time;
         private uint frame;
         private uint startTick;
         private uint nextTick;
+
+        public long CurrentTime => time;
 
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
@@ -211,7 +236,7 @@ namespace Net.Event
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
-                time = (ulong)(this.time + (time * 1000)),
+                time = (long)(this.time + (time * 1000)),
                 eventId = eventID,
             };
             eventObj.action = new EventAction1()
@@ -238,7 +263,7 @@ namespace Net.Event
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
-                time = (ulong)(this.time + (time * 1000)),
+                time = (long)(this.time + (time * 1000)),
                 obj = obj,
                 eventId = eventID,
             };
@@ -267,10 +292,10 @@ namespace Net.Event
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
-                time = (ulong)(this.time + (time * 1000)),
+                time = (long)(this.time + (time * 1000)),
                 obj = obj,
                 invokeNum = invokeNum,
-                timeMax = (ulong)(time * 1000),
+                timeMax = (long)(time * 1000),
                 eventId = eventID
             };
             eventObj.action = new EventAction2()
@@ -293,7 +318,7 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<bool> ptr, bool isAsync = false)
         {
-            return AddEvent("", time, ptr, isAsync);
+            return AddEvent(string.Empty, time, ptr, isAsync);
         }
 
         /// <summary>
@@ -310,9 +335,9 @@ namespace Net.Event
             var eventObj = new Event()
             {
                 name = name,
-                time = (ulong)(this.time + (time * 1000)),
+                time = (long)(this.time + (time * 1000)),
                 eventId = eventID,
-                timeMax = (ulong)(time * 1000),
+                timeMax = (long)(time * 1000),
             };
             eventObj.action = new EventAction3()
             {
@@ -339,9 +364,9 @@ namespace Net.Event
             var eventObj = new Event()
             {
                 name = name,
-                time = this.time + (ulong)time,
+                time = this.time + (long)time,
                 eventId = eventID,
-                timeMax = (ulong)time,
+                timeMax = (long)time,
             };
             eventObj.action = new EventAction3()
             {
@@ -367,10 +392,10 @@ namespace Net.Event
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
-                time = (ulong)(this.time + (time * 1000)),
+                time = (long)(this.time + (time * 1000)),
                 obj = obj,
                 invokeNum = 1,
-                timeMax = (ulong)(time * 1000),
+                timeMax = (long)(time * 1000),
                 eventId = eventID,
             };
             eventObj.action = new EventAction4()
@@ -440,6 +465,7 @@ namespace Net.Event
                         continue;
                     if (_event.isRemove)
                     {
+                        _event.action.Dispose();
                         events.RemoveAt(i);
                         count = events.Count;
                         if (i >= 0) i--;
@@ -494,7 +520,7 @@ namespace Net.Event
         /// <param name="eventID"></param>
         /// <param name="interval"></param>
         /// <param name="restartTiming">是否废弃以前的计时, 从当前重新开始新的计时</param>
-        public void ResetTimeInterval(int eventID, ulong interval, bool restartTiming = false)
+        public void ResetTimeInterval(int eventID, long interval, bool restartTiming = false)
         {
             var evt = GetEvent(eventID);
             if (evt != null)

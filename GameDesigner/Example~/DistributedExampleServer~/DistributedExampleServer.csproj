@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\GameDesigner\GameDesignerCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\DistributedExample\Scripts\Data\EventCommand.cs">
+      <Link>Data\EventCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\AudioDataConfig.cs">
+      <Link>Data\Config\AudioDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\EnemyDataConfig.cs">
+      <Link>Data\Config\EnemyDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\RoleDataConfig.cs">
+      <Link>Data\Config\RoleDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\SceneDataConfig.cs">
+      <Link>Data\Config\SceneDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\SettingDataConfig.cs">
+      <Link>Data\Config\SettingDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Config\UIDataConfig.cs">
+      <Link>Data\Config\UIDataConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\Proto\ProtoType.cs">
+      <Link>Data\Proto\ProtoType.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\DB\DistributedDB.cs">
+      <Link>Data\DB\DistributedDB.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\DB\DistributedDBEvent.cs">
+      <Link>Data\DB\DistributedDBEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\DB\DistributedHashProto.cs">
+      <Link>Data\DB\DistributedHashProto.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\DB\DistributedUniqueIdType.cs">
+      <Link>Data\DB\DistributedUniqueIdType.cs</Link>
+    </Compile>
+    <Compile Include="..\DistributedExample\Scripts\Data\DB\UserData.cs">
+      <Link>Data\DB\UserData.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="8.0.31" />
+    <PackageReference Include="UniTask" Version="2.5.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\" />
+  </ItemGroup>
+</Project>

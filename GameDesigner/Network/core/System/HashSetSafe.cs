@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Net.System 
+namespace Net.System
 {
-    public class HashSetSafe<T> : FastHashSet<T> 
+    public class HashSetSafe<T> : HashSetEx<T>
     {
         private readonly object SyncRoot = new object();
+
+        public HashSetSafe() : base(1) { }
 
         public override bool Add(T item)
         {
             lock (SyncRoot) return base.Add(item);
         }
-
+        
         public override bool Remove(T item)
         {
             lock (SyncRoot) return base.Remove(item);

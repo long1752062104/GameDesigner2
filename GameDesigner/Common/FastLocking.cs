@@ -9,6 +9,9 @@ namespace Net.Common
     {
         private int isLocked;
 
+        /// <summary>
+        /// 进入锁
+        /// </summary>
         public void Enter()
         {
             var spin = new SpinWait();
@@ -16,16 +19,26 @@ namespace Net.Common
                 spin.SpinOnce();
         }
 
+        /// <summary>
+        /// 尝试获取锁
+        /// </summary>
+        /// <returns></returns>
         public bool TryEnter()
         {
             return Interlocked.Exchange(ref isLocked, 1) != 0;
         }
 
+        /// <summary>
+        /// 退出锁
+        /// </summary>
         public void Exit()
         {
             Interlocked.Exchange(ref isLocked, 0);
         }
 
+        /// <summary>
+        /// 释放锁
+        /// </summary>
         public void Release() => Exit();
     }
 }

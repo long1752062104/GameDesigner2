@@ -46,7 +46,7 @@ namespace Net.Component
                     _client.host = ip;
                     _client.port = port;
                     _client.LogRpc = debugRpc;
-                    _client.IsMultiThread = !singleThread;
+                    _client.UpdateMode = singleThread ? NetworkUpdateMode.SingleThread : NetworkUpdateMode.Thread;
                     _client.ReconnectCount = reconnectCount;
                     _client.ReconnectInterval = reconnectInterval;
                     _client.SetHeartTime(heartLimit, heartInterval);
@@ -100,7 +100,7 @@ namespace Net.Component
             {
                 if (result)
                 {
-                    _client.Send(new byte[1]);//发送一个字节:调用服务器的OnUnClientRequest方法, 如果不需要账号登录, 则会直接允许进入服务器
+                    _client.Call(new byte[1]);//发送一个字节:调用服务器的OnUnClientRequest方法, 如果不需要账号登录, 则会直接允许进入服务器
                 }
             });
         }
@@ -169,44 +169,74 @@ namespace Net.Component
         }
 
         #region 发送接口实现
-        public void Send(byte[] buffer)
+        public void Call(int protocol, params object[] pars)
         {
-            ((ISendHandle)_client).Send(buffer);
+            ((ISendHandle)client).Call(protocol, pars);
         }
 
-        public void Send(byte cmd, byte[] buffer)
+        public void Call(byte cmd, int protocol, params object[] pars)
         {
-            ((ISendHandle)_client).Send(cmd, buffer);
+            ((ISendHandle)client).Call(cmd, protocol, pars);
         }
 
-        public void Send(string func, params object[] pars)
+        public void Call(byte[] buffer)
         {
-            ((ISendHandle)_client).Send(func, pars);
+            ((ISendHandle)client).Call(buffer);
         }
 
-        public void Send(byte cmd, string func, params object[] pars)
+        public void Call(byte cmd, byte[] buffer)
         {
-            ((ISendHandle)_client).Send(cmd, func, pars);
+            ((ISendHandle)client).Call(cmd, buffer);
         }
 
-        public void SendRT(string func, params object[] pars)
+        public void Call(string func, params object[] pars)
         {
-            ((ISendHandle)_client).SendRT(func, pars);
+            ((ISendHandle)client).Call(func, pars);
         }
 
-        public void SendRT(byte cmd, string func, params object[] pars)
+        public void Call(byte cmd, string func, params object[] pars)
         {
-            ((ISendHandle)_client).SendRT(cmd, func, pars);
+            ((ISendHandle)client).Call(cmd, func, pars);
         }
 
-        public void SendRT(byte[] buffer)
+        public void Call(byte cmd, int protocol, byte[] buffer, params object[] pars)
         {
-            ((ISendHandle)_client).SendRT(buffer);
+            ((ISendHandle)client).Call(cmd, protocol, buffer, pars);
         }
 
-        public void SendRT(byte cmd, byte[] buffer)
+        public void Call(RPCModel model)
         {
-            ((ISendHandle)_client).SendRT(cmd, buffer);
+            ((ISendHandle)client).Call(model);
+        }
+
+        public UniTask<RPCModelTask> Request(int protocol, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(protocol, pars);
+        }
+
+        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, pars);
+        }
+
+        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, intercept, pars);
+        }
+
+        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, pars);
+        }
+
+        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, pars);
+        }
+
+        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        {
+            return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, serialize, buffer, pars);
         }
         #endregion
     }

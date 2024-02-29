@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class ExternalReferenceTools : EditorWindow
@@ -22,6 +23,8 @@ public class ExternalReferenceTools : EditorWindow
         set { config = value; }
     }
     private Vector2 scrollPosition, scrollPosition1;
+    private ReorderableListHandler csprojPathList;
+    private ReorderableListHandler dataPathList;
 
     [MenuItem("GameDesigner/Network/ExternalReference")]
     static void ShowWindow()
@@ -29,15 +32,59 @@ public class ExternalReferenceTools : EditorWindow
         var window = GetWindow<ExternalReferenceTools>("多个项目外部引用工具");
         window.Show();
     }
-
     private void OnEnable()
     {
         LoadData();
+        csprojPathList = new ReorderableListHandler(Config.ProjPaths);
+        dataPathList = new ReorderableListHandler(Config.DataPaths);
     }
 
     private void OnDisable()
     {
         SaveData();
+    }
+
+    public class ReorderableListHandler
+    {
+        public List<CsprojData> paths = new List<CsprojData>();
+        private readonly ReorderableList pathList;
+
+        public ReorderableListHandler(List<CsprojData> paths)
+        {
+            this.paths = paths;
+            pathList = new ReorderableList(paths, typeof(CsprojData), true, false, false, false)
+            {
+                elementHeightCallback = OnElementHeightCallback,
+                drawElementCallback = OnDrawElementCallback
+            };
+        }
+
+        public void DoLayoutList()
+        {
+            pathList.DoLayoutList();
+        }
+
+        private float OnElementHeightCallback(int index)
+        {
+            return 40f;
+        }
+
+        private void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            var data = paths[index];
+            EditorGUI.BeginChangeCheck();
+            data.path = EditorGUI.TextField(new Rect(rect) { width = rect.width - 30f, height = 20f }, "C#项目文件:", data.path, GUI.skin.label);
+            data.extraPath = EditorGUI.TextField(new Rect(rect) { width = rect.width - 30f, height = 20f, y = rect.y + 20f }, "根路径:", data.extraPath);
+            if (GUI.Button(new Rect(rect) { width = 25, height = 30f, x = rect.width - 3f, y = rect.y + 5f, }, "x"))
+            {
+                paths.RemoveAt(index);
+                SaveData();
+            }
+            if (EditorGUI.EndChangeCheck())
+            {
+                SaveData();
+            }
+        }
     }
 
     private void OnGUI()
@@ -51,68 +98,45 @@ public class ExternalReferenceTools : EditorWindow
             if (!string.IsNullOrEmpty(csprojPath))
             {
                 //相对于Assets路径
-                Config.csprojPaths.Add(PathHelper.GetRelativePath(Application.dataPath, csprojPath));
+                var path = PathHelper.GetRelativePath(Application.dataPath, csprojPath);
+                if (!Config.ProjPaths.Contains(new CsprojData(path)))
+                    Config.ProjPaths.Add(new CsprojData(path));
             }
             SaveData();
         }
         GUILayout.EndHorizontal();
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 2));
-        foreach (var path in Config.csprojPaths)
-        {
-            var rect = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(new Rect(rect.position, rect.size - new Vector2(50, 0)), path);
-            if (GUI.Button(new Rect(rect.position + new Vector2(position.width - 50, 0), new Vector2(20, rect.height)), "x"))
-            {
-                Config.csprojPaths.Remove(path);
-                SaveData();
-                return;
-            }
-        }
+        csprojPathList.DoLayoutList();
         GUILayout.EndScrollView();
         GUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("引用文件夹列表:");
         if (GUILayout.Button("添加引用路径", GUILayout.Width(100)))
         {
-            var path = EditorUtility.OpenFolderPanel("引用路径", "", "");
-            if (!string.IsNullOrEmpty(path))
+            var dataPath = EditorUtility.OpenFolderPanel("引用路径", "", "");
+            if (!string.IsNullOrEmpty(dataPath))
             {
-                if (!Config.paths.Contains(path))
-                {
-                    //相对于Assets路径
-                    Config.paths.Add(PathHelper.GetRelativePath(Application.dataPath, path));
-                }
+                //相对于Assets路径
+                var path = PathHelper.GetRelativePath(Application.dataPath, dataPath);
+                if (!Config.DataPaths.Contains(new CsprojData(path)))
+                    Config.DataPaths.Add(new CsprojData(path));
             }
             SaveData();
         }
         GUILayout.EndHorizontal();
         scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
-        foreach (var path in Config.paths)
-        {
-            var rect = EditorGUILayout.GetControlRect();
-            EditorGUI.LabelField(new Rect(rect.position, rect.size - new Vector2(50, 0)), path);
-            if (GUI.Button(new Rect(rect.position + new Vector2(position.width - 50, 0), new Vector2(20, rect.height)), "x"))
-            {
-                Config.paths.Remove(path);
-                SaveData();
-                return;
-            }
-        }
+        dataPathList.DoLayoutList();
         GUILayout.EndScrollView();
         Config.searchPattern = EditorGUILayout.DelayedTextField("引用文件格式:", Config.searchPattern);
         if (GUILayout.Button("执行!", GUILayout.Height(30)))
         {
-            foreach (var csprojPath in Config.csprojPaths)
+            foreach (var csprojPath in Config.ProjPaths)
             {
                 var xml = new XmlDocument();
-                xml.Load(csprojPath);
-                ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.paths);
-                xml.Save(csprojPath);
+                xml.Load(csprojPath.path);
+                ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+                xml.Save(csprojPath.path);
             }
             Debug.Log("更新完成!");
-        }
-        if (GUILayout.Button("编译dll!", GUILayout.Height(30)))
-        {
-
         }
         if (EditorGUI.EndChangeCheck())
             SaveData();
@@ -120,20 +144,20 @@ public class ExternalReferenceTools : EditorWindow
 
     public static string ChangeCSProject(string genCsProjectPath, string content)
     {
-        foreach (var csprojPath in Config.csprojPaths)
+        foreach (var csprojPath in Config.ProjPaths)
         {
-            var name = Path.GetFileName(csprojPath);
+            var name = Path.GetFileName(csprojPath.path);
             var name1 = Path.GetFileName(genCsProjectPath);
             if (name != name1)
                 continue;
             var xml = new XmlDocument();
             xml.LoadXml(content);
-            return ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.paths);
+            return ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
         }
         return content;
     }
 
-    private static string ChangeCSProject(XmlDocument xml, string csprojPath, string searchPattern, List<string> paths)
+    private static string ChangeCSProject(XmlDocument xml, CsprojData csprojPath, string searchPattern, List<CsprojData> paths)
     {
         XmlNodeList node_list;
         var documentElement = xml.DocumentElement;
@@ -147,14 +171,14 @@ public class ExternalReferenceTools : EditorWindow
         else node_list = xml.SelectNodes("/Project/ItemGroup");
         foreach (var path in paths)
         {
-            var path1 = Path.GetFullPath(path);
+            var path1 = Path.GetFullPath(path.path);
             var dir = new DirectoryInfo(path1);
             var dirName = dir.Parent.FullName + Path.DirectorySeparatorChar;
             var files = Directory.GetFiles(path1, "*.*", SearchOption.AllDirectories);
             var patterns = searchPattern.Replace("*", "").Split('|');
             var fileList = new List<string>();
             //相对于服务器路径
-            var csPath = Path.GetFullPath(csprojPath);
+            var csPath = Path.GetFullPath(csprojPath.path);
             path1 = PathHelper.GetRelativePath(csPath, path1, true);
             //只包含三级目录的相对路径
             dirName = PathHelper.GetRelativePath(csPath, dirName, true);
@@ -173,10 +197,13 @@ public class ExternalReferenceTools : EditorWindow
                 }
             }
             files = fileList.ToArray();
-            var exist = CheckNodeContains(xml, node_list, namespaceURI, dirName, path1, files);
+            var extraPath = $"{csprojPath.extraPath}{Path.DirectorySeparatorChar}{path.extraPath}{Path.DirectorySeparatorChar}";
+            while (extraPath.StartsWith(Path.DirectorySeparatorChar))
+                extraPath = extraPath.TrimStart(Path.DirectorySeparatorChar);
+            var exist = CheckNodeContains(xml, node_list, namespaceURI, dirName, path1, files, extraPath);
             if (!exist)
             {
-                var node = CreateItemGroup(xml, namespaceURI, dirName, files);
+                var node = CreateItemGroup(xml, namespaceURI, dirName, files, extraPath);
                 documentElement.AppendChild(node);
             }
         }
@@ -198,7 +225,7 @@ public class ExternalReferenceTools : EditorWindow
         }
     }
 
-    private static bool CheckNodeContains(XmlDocument xml, XmlNodeList node_list, string namespaceURI, string dirName, string path1, string[] files)
+    private static bool CheckNodeContains(XmlDocument xml, XmlNodeList node_list, string namespaceURI, string dirName, string path1, string[] files, string extraPath)
     {
         bool exist = false;
         for (int i = 0; i < node_list.Count; i++)
@@ -239,7 +266,7 @@ public class ExternalReferenceTools : EditorWindow
                     }
                 }
                 if (!isExist)
-                    CreateItemElement(xml, node, file, namespaceURI, dirName);
+                    CreateItemElement(xml, node, file, namespaceURI, dirName, extraPath);
             }
             foreach (XmlNode child_node in node_child) //检查移除的文件
             {
@@ -257,15 +284,15 @@ public class ExternalReferenceTools : EditorWindow
         return exist;
     }
 
-    private static XmlNode CreateItemGroup(XmlDocument xml, string namespaceURI, string dirName, string[] files)
+    private static XmlNode CreateItemGroup(XmlDocument xml, string namespaceURI, string dirName, string[] files, string extraPath)
     {
         var node = xml.CreateElement("ItemGroup", namespaceURI);
         foreach (var file in files)
-            CreateItemElement(xml, node, file, namespaceURI, dirName);
+            CreateItemElement(xml, node, file, namespaceURI, dirName, extraPath);
         return node;
     }
 
-    private static void CreateItemElement(XmlDocument xml, XmlNode node, string file, string namespaceURI, string dirName)
+    private static void CreateItemElement(XmlDocument xml, XmlNode node, string file, string namespaceURI, string dirName, string extraPath)
     {
         if (file.EndsWith(".cs"))
         {
@@ -275,7 +302,7 @@ public class ExternalReferenceTools : EditorWindow
             if (file != innerText) //相同的目录就不需要link了
             {
                 var e1 = xml.CreateElement("Link", namespaceURI);
-                e1.InnerText = innerText;
+                e1.InnerText = extraPath + innerText;
                 e.AppendChild(e1);
             }
             node.AppendChild(e);
@@ -288,28 +315,49 @@ public class ExternalReferenceTools : EditorWindow
             if (file != innerText) //相同的目录就不需要link了
             {
                 var e1 = xml.CreateElement("Link", namespaceURI);
-                e1.InnerText = innerText;
+                e1.InnerText = extraPath + innerText;
                 e.AppendChild(e1);
             }
             node.AppendChild(e);
         }
     }
 
-    void LoadData()
+    static void LoadData()
     {
         Config = PersistHelper.Deserialize<ExternalReferencesConfig>("external References.json");
     }
 
-    void SaveData()
+    static void SaveData()
     {
         PersistHelper.Serialize(Config, "external References.json");
     }
 
     public class ExternalReferencesConfig
     {
-        public List<string> csprojPaths = new List<string>();
-        public List<string> paths = new List<string>();
+        public List<CsprojData> ProjPaths = new List<CsprojData>();
+        public List<CsprojData> DataPaths = new List<CsprojData>();
         public string searchPattern = "*.cs|*.txt|*.ini|*.conf|*.xls|*.xlsx|*.json";
+    }
+
+    [Serializable]
+    public class CsprojData
+    {
+        public string path;
+        public string extraPath;
+
+        public CsprojData() { }
+        public CsprojData(string path)
+        {
+            this.path = path;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (obj is CsprojData data)
+                return data.path == path;
+            return false;
+        }
     }
 }
 #endif

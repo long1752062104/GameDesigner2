@@ -87,8 +87,8 @@
     {
         private static readonly MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
         private static readonly MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
-        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>(true);
-        private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>(true);
+        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>();
+        private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>();
 
         static NetConvertFast2()
         {
@@ -430,17 +430,10 @@
         public static byte[] SerializeModel(RPCModel model)
         {
             var stream = BufferPool.Take();
-            byte[] buffer1 = new byte[0];
+            byte[] buffer1;
             try
             {
-                byte head = 0;
-                bool hasFunc = !string.IsNullOrEmpty(model.func);
-                bool hasMask = model.methodHash != 0;
-                SetBit(ref head, 1, hasFunc);
-                SetBit(ref head, 2, hasMask);
-                stream.WriteByte(head);
-                if (hasFunc) stream.Write(model.func);
-                if (hasMask) stream.Write(model.methodHash);
+                stream.Write(model.protocol);
                 foreach (var obj in model.pars)
                 {
                     Type type;
@@ -460,7 +453,8 @@
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"序列化func:[{model.func}]hash:[{model.methodHash}]出错 详细信息:" + ex);
+                buffer1 = new byte[0];
+                NDebug.LogError($"序列化[{model}]出错 详细信息:" + ex);
             }
             return buffer1;
         }
@@ -470,11 +464,7 @@
             FuncData obj = default;
             try
             {
-                byte head = segment.ReadByte();
-                bool hasFunc = GetBit(head, 1);
-                bool hasMask = GetBit(head, 2);
-                if (hasFunc) obj.name = segment.ReadString();
-                if (hasMask) obj.hash = segment.ReadUInt16();
+                obj.protocol = segment.ReadInt32();
                 var list = new List<object>();
                 int count = segment.Offset + segment.Count;
                 while (segment.Position < count)
@@ -501,7 +491,7 @@
             catch (Exception ex)
             {
                 obj.error = true;
-                NDebug.LogError($"解析func:[{obj.name}]hash:[{obj.hash}]出错 详细信息:" + ex);
+                NDebug.LogError($"解析[{obj}]出错 详细信息:" + ex);
             }
             return obj;
         }

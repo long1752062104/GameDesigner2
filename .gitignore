@@ -3,5 +3,6 @@
 bin/Debug/
 bin/Release/
 obj/
+GameDesigner/Example~/DistributedExampleServer~/bin/
 *.stream
 *.pool

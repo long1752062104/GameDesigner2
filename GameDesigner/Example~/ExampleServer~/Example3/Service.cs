@@ -32,11 +32,11 @@ namespace LockStep.Server
             NDebug.Log($"创建房间:{scene != null}");
             if (scene == null)
             {
-                SendRT(client, "CreateRoomCallback", "创建失败, 房间已经存在!");
+                Call(client, "CreateRoomCallback", "创建失败, 房间已经存在!");
                 return;
             }
             scene.sceneCapacity = 1;
-            SendRT(client, "CreateRoomCallback", "创建成功!");
+            Call(client, "CreateRoomCallback", "创建成功!");
         }
 
         [Rpc(NetCmd.SafeCall)]
@@ -46,11 +46,11 @@ namespace LockStep.Server
             NDebug.Log($"加入房间:{scene != null}");
             if (scene == null)
             {
-                SendRT(client, "JoinRoomCallback", "加入失败, 房间不存在!");
+                Call(client, "JoinRoomCallback", "加入失败, 房间不存在!");
                 return;
             }
             scene.AddPlayer(client);
-            SendRT(client, "JoinRoomCallback", "加入成功!");
+            Call(client, "JoinRoomCallback", "加入成功!");
         }
 
         [Rpc(NetCmd.SafeCall)]
@@ -58,9 +58,9 @@ namespace LockStep.Server
         {
             if (client.Scene.Count == 1)
                 RemoveScene(client.SceneName, false);
-            else 
+            else
                 ExitScene(client, false);
-            SendRT(client, "ExitRoomCallback", "退出房间!");
+            Call(client, "ExitRoomCallback", "退出房间!");
             NDebug.Log($"退出房间!");
         }
 
@@ -119,7 +119,7 @@ namespace LockStep.Server
             scene.Remove(client);
             if (scene.Count == 0)
                 RemoveScene(scene.Name, false);
-            SendRT(client, "ExitBattle", client.UserID);
+            Call(client, "ExitBattle", pars: client.UserID);
             NDebug.Log("退出战斗");
         }
     }

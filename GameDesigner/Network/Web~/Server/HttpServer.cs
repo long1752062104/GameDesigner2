@@ -153,7 +153,7 @@ namespace Net.Server
             try
             {
                 var model = JsonConvert.DeserializeObject<MessageModel>(message);
-                var model1 = new RPCModel(model.cmd, model.func, model.GetPars())
+                var model1 = new RPCModel(model.cmd, model.func.GetHashCode(), model.GetPars())
                 {
                     buffer = buffer,
                     count = buffer.Length

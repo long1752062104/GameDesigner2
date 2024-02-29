@@ -46,18 +46,9 @@ namespace Net.System
         private KeyCollection keys;
         private ValueCollection values;
         private object _syncRoot;
-        /// <summary>
-        /// 当复杂对象时,hash值可能会冲突, 但是两个对象是不相等的, 所以你有必要时需要设置为true
-        /// </summary>
-        public bool CheckEquals;
 
         public MyDictionary() : this(1)
         {
-        }
-
-        public MyDictionary(bool checkEquals) : this(1)
-        {
-            this.CheckEquals = checkEquals;
         }
 
         public MyDictionary(int capacity)
@@ -264,12 +255,12 @@ namespace Net.System
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(this, 2);
+            return new Enumerator(this);
         }
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
-            return new Enumerator(this, 2);
+            return new Enumerator(this);
         }
 
         private int FindEntry(TKey key)
@@ -279,9 +270,8 @@ namespace Net.System
             {
                 if (entries[i].hashCode == num)
                 {
-                    if (CheckEquals)
-                        if (!Equals(key, entries[i].key))
-                            continue;
+                    if (!Equals(key, entries[i].key))
+                        continue;
                     return i;
                 }
             }
@@ -310,9 +300,8 @@ namespace Net.System
             {
                 if (entries[i].hashCode == hashCode)
                 {
-                    if (CheckEquals)
-                        if (!Equals(key, entries[i].key))
-                            continue;
+                    if (!Equals(key, entries[i].key))
+                        continue;
                     if (hasKeyThrow)
                         throw new Exception($"已经有{key}键存在!, 添加失败!");
                     oldValue = entries[i].value;
@@ -396,9 +385,8 @@ namespace Net.System
             {
                 if (entries[i].hashCode == num)
                 {
-                    if (CheckEquals)
-                        if (!Equals(key, entries[i].key))
-                            continue;
+                    if (!Equals(key, entries[i].key))
+                        continue;
                     if (num3 < 0)
                         buckets[num2] = entries[i].next;
                     else
@@ -513,7 +501,7 @@ namespace Net.System
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new Enumerator(this, 2);
+            return new Enumerator(this);
         }
 
         bool ICollection.IsSynchronized
@@ -639,7 +627,7 @@ namespace Net.System
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            return new Enumerator(this, 1);
+            return new Enumerator(this);
         }
 
         void IDictionary.Remove(object key)
@@ -664,16 +652,14 @@ namespace Net.System
             private readonly MyDictionary<TKey, TValue> dictionary;
             private int index;
             private KeyValuePair<TKey, TValue> current;
-            private readonly int getEnumeratorRetType;
             internal const int DictEntry = 1;
             internal const int KeyValuePair = 2;
 
-            internal Enumerator(MyDictionary<TKey, TValue> dictionary, int getEnumeratorRetType)
+            internal Enumerator(MyDictionary<TKey, TValue> dictionary)
             {
-                this.dictionary = dictionary;
                 index = 0;
-                this.getEnumeratorRetType = getEnumeratorRetType;
                 current = default;
+                this.dictionary = dictionary;
             }
 
             public bool MoveNext()
@@ -707,12 +693,7 @@ namespace Net.System
 
             object IEnumerator.Current
             {
-                get
-                {
-                    if (getEnumeratorRetType == 1)
-                        return new DictionaryEntry(current.Key, current.Value);
-                    return new KeyValuePair<TKey, TValue>(current.Key, current.Value);
-                }
+                get => current;
             }
 
             void IEnumerator.Reset()

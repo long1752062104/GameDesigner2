@@ -14,11 +14,7 @@ namespace Net.Share
         /// <summary>
         /// 函数名称
         /// </summary>
-        public string name;
-        /// <summary>
-        /// 方法哈希
-        /// </summary>
-        public ushort hash;
+        public int protocol;
         /// <summary>
         /// 参数数组
         /// </summary>
@@ -34,11 +30,10 @@ namespace Net.Share
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        public FuncData(string func, object[] pars)
+        public FuncData(int protocol, object[] pars)
         {
             error = false;
-            name = func;
-            hash = 0;
+            this.protocol = protocol;
             this.pars = pars;
             parsIndex = 0;
         }
@@ -106,7 +101,7 @@ namespace Net.Share
 
         public override string ToString()
         {
-            return $"{name}:{pars}";
+            return $"{protocol}:{pars}";
         }
     }
 }

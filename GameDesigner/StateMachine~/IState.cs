@@ -42,10 +42,24 @@ namespace GameDesigner
         /// <returns></returns>
         public T AddComponent<T>(T component) where T : BehaviourBase
         {
-            component.stateMachine = stateMachine;
-            component.ID = ID;
             component.name = component.GetType().ToString();
+            component.ID = ID;
+            component.stateMachine = stateMachine;
+            ArrayExtend.Add(ref behaviours, component);
             return component;
+        }
+
+        public void AddComponent(params BehaviourBase[] behaviours)
+        {
+            if (behaviours == null)
+                return;
+            foreach (var component in behaviours)
+            {
+                component.name = component.GetType().ToString();
+                component.ID = ID;
+                component.stateMachine = stateMachine;
+                ArrayExtend.Add(ref this.behaviours, component);
+            }
         }
 
         /// <summary>

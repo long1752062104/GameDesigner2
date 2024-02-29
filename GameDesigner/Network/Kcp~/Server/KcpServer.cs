@@ -42,8 +42,10 @@
         protected override void CreateServerSocket(ushort port)
         {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            var ip = new IPEndPoint(IPAddress.Any, port);
-            Server.Bind(ip);
+            Server.SendBufferSize = SendBufferSize;
+            Server.ReceiveBufferSize = ReceiveBufferSize;
+            var address = new IPEndPoint(IPAddress.Any, port);
+            Server.Bind(address);
 #if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
             uint IOC_VENDOR = 0x18000000;

@@ -31,18 +31,12 @@
         /// (场景转发)服务器负责转发给在同一房间或场景内的玩家
         /// </summary>
         public const byte Scene = 4;
-        /// <summary>
-        /// (场景转发,可靠指令)服务器负责转发给在同一房间或场景内的玩家
-        /// </summary>
-        public const byte SceneRT = 5;
+
         /// <summary>
         /// (公告指令)服务器负责转发给所有在线的玩家
         /// </summary>
         public const byte Notice = 6;
-        /// <summary>
-        /// (公告指令,可靠传输)服务器负责转发给所有在线的玩家
-        /// </summary>
-        public const byte NoticeRT = 7;
+
         /// <summary>
         /// 发送心跳包命令, 内部命令
         /// </summary>
@@ -105,10 +99,7 @@
         /// 断开网络连接, 内部指令
         /// </summary>
         public const byte Disconnect = 22;
-        /// <summary>
-        /// 自身转发, 可靠传输
-        /// </summary>
-        public const byte LocalRT = 23;
+
         /// <summary>
         /// ping测试网络延迟量
         /// </summary>

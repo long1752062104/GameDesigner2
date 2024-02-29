@@ -30,6 +30,7 @@
     <Compile Remove="GameDesigner\Component~\**" />
     <Compile Remove="GameDesigner\Example~\**" />
     <Compile Remove="GameDesigner\Framework~\**" />
+    <Compile Remove="GameDesigner\GameCore~\**" />
     <Compile Remove="GameDesigner\Import\**" />
     <Compile Remove="GameDesigner\MVC~\**" />
     <Compile Remove="GameDesigner\ParrelSync~\**" />
@@ -42,6 +43,7 @@
     <EmbeddedResource Remove="GameDesigner\Component~\**" />
     <EmbeddedResource Remove="GameDesigner\Example~\**" />
     <EmbeddedResource Remove="GameDesigner\Framework~\**" />
+    <EmbeddedResource Remove="GameDesigner\GameCore~\**" />
     <EmbeddedResource Remove="GameDesigner\Import\**" />
     <EmbeddedResource Remove="GameDesigner\MVC~\**" />
     <EmbeddedResource Remove="GameDesigner\ParrelSync~\**" />
@@ -54,6 +56,7 @@
     <None Remove="GameDesigner\Component~\**" />
     <None Remove="GameDesigner\Example~\**" />
     <None Remove="GameDesigner\Framework~\**" />
+    <None Remove="GameDesigner\GameCore~\**" />
     <None Remove="GameDesigner\Import\**" />
     <None Remove="GameDesigner\MVC~\**" />
     <None Remove="GameDesigner\ParrelSync~\**" />
@@ -67,18 +70,29 @@
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="app.config" />
+    <None Remove="GameDesigner\Common.meta" />
     <None Remove="GameDesigner\GameDesigner.asmdef" />
     <None Remove="GameDesigner\GameDesigner.asmdef.meta" />
     <None Remove="GameDesigner\Helper.meta" />
     <None Remove="GameDesigner\Import.meta" />
+    <None Remove="GameDesigner\ImportCmd.exe" />
+    <None Remove="GameDesigner\ImportCmd.exe.meta" />
+    <None Remove="GameDesigner\link.xml" />
+    <None Remove="GameDesigner\link.xml.meta" />
     <None Remove="GameDesigner\Network.meta" />
+    <None Remove="GameDesigner\Network\Adapter\PackageAdapter.cs.meta" />
     <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Config\TableConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\DataCache.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\FastHashSet.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\FixedSegment.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\ISegment.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\SafeDictionary.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\SystemManager.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Tools\ObjectConverter.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Tools\TypeExtend.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Unity\UnityThreadContext.cs.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />
     <None Remove="GameDesigner\Serialize.meta" />
@@ -3252,7 +3266,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="7.0.0" />
-    <PackageReference Include="UniTask" Version="2.3.3" />
+    <PackageReference Include="UniTask" Version="2.5.3" />
   </ItemGroup>
 
   <ItemGroup>

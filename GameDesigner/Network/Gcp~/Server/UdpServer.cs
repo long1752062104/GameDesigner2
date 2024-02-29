@@ -20,8 +20,10 @@
         protected override void CreateServerSocket(ushort port)
         {
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
-            Server.Bind(ip);
+            Server.SendBufferSize = SendBufferSize;
+            Server.ReceiveBufferSize = ReceiveBufferSize;
+            var address = new IPEndPoint(IPAddress.Any, port);
+            Server.Bind(address);
 #if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
             uint IOC_IN = 0x80000000;
             uint IOC_VENDOR = 0x18000000;
@@ -39,7 +41,7 @@
             client.Gcp.FlowControl = FlowControl;
             client.Gcp.RemotePoint = client.RemotePoint;
             client.Gcp.OnSender += (bytes) => {
-                Send(client, NetCmd.ReliableTransport, bytes);
+                Call(client, NetCmd.ReliableTransport, bytes);
             };
         }
     }

@@ -15,7 +15,7 @@
         /// <summary>
         /// 远程方法的哈希值
         /// </summary>
-        public ushort hash;
+        public int hash;
         /// <summary>
         /// 远程方法名
         /// </summary>

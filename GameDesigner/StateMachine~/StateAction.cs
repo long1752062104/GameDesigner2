@@ -25,13 +25,34 @@ namespace GameDesigner
         /// </summary>
 		public float animTimeMax = 100f;
         private bool isStop;
-
         /// <summary>
         /// 动作是否完成?, 当动画播放结束后为True, 否则为false
         /// </summary>
         public bool IsComplete => animTime >= animTimeMax - 1;
 
-        internal void Enter(float animSpeed)
+        public StateAction() { }
+
+        public StateAction(State state, string clipName, params ActionBehaviour[] behaviours)
+        {
+            ID = state.ID;
+            stateMachine = state.stateMachine;
+            SetAnimClip(clipName);
+            if (behaviours != null)
+            {
+                this.behaviours = behaviours;
+                for (int i = 0; i < behaviours.Length; i++)
+                {
+                    behaviours[i].name = behaviours[i].GetType().ToString();
+                    behaviours[i].stateMachine = stateMachine;
+                    behaviours[i].Active = true;
+                    behaviours[i].OnInit();
+                }
+            }
+            else this.behaviours = new ActionBehaviour[0];
+            ArrayExtend.Add(ref state.actions, this);
+        }
+
+        internal void Enter(State state, float animSpeed)
         {
             isStop = false;
             for (int i = 0; i < behaviours.Length; i++)
@@ -44,12 +65,33 @@ namespace GameDesigner
             {
                 case AnimationMode.Animation:
                     stateMachine.animation[clipName].speed = animSpeed;
-                    stateMachine.animation.Play(clipName);
-                    stateMachine.animation[clipName].time = 0f;
+                    if (state.isCrossFade)
+                    {
+                        var animState = stateMachine.animation[clipName];
+                        if (animState.time >= animState.length)
+                        {
+                            stateMachine.animation.Play(clipName);
+                            stateMachine.animation[clipName].time = 0f;
+                        }
+                        else stateMachine.animation.CrossFade(clipName, state.duration);
+                    }
+                    else 
+                    {
+                        stateMachine.animation.Play(clipName);
+                        stateMachine.animation[clipName].time = 0f;
+                    }
                     break;
                 case AnimationMode.Animator:
                     stateMachine.animator.speed = animSpeed;
-                    stateMachine.animator.Play(clipName, 0, 0f);
+                    if (state.isCrossFade)
+                    {
+                        var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
+                        if (stateInfo.normalizedTime >= 1f)
+                            stateMachine.animator.Play(clipName, 0, 0f);
+                        else
+                            stateMachine.animator.CrossFade(clipName, state.duration);
+                    }
+                    else stateMachine.animator.Play(clipName, 0, 0f);
                     break;
 #if SHADER_ANIMATED
                 case AnimationMode.MeshAnimator:
@@ -142,6 +184,19 @@ namespace GameDesigner
                             behaviour.OnStop(this);
                     }
                     state.OnActionStop();
+                }
+            }
+        }
+
+        public void SetAnimClip(string clipName)
+        {
+            this.clipName = clipName;
+            for (int i = 0; i < stateMachine.clipNames.Count; i++)
+            {
+                if (clipName == stateMachine.clipNames[i])
+                {
+                    clipIndex = i;
+                    break;
                 }
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Net.Helper
 {
@@ -44,6 +45,22 @@ namespace Net.Helper
         {
             int daysUntilNext = ((int)day - (int)startDate.DayOfWeek + 7) % 7;
             return startDate.AddDays(daysUntilNext);
+        }
+
+        /// <summary>
+        /// 获取当前系统启动后经过的毫秒数
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long GetTickCount64()
+        {
+#if CORE
+            var timeout = Environment.TickCount64;
+#else
+            var timeout = Share.Win32KernelAPI.GetTickCount64();
+#endif
+            return timeout;
+
         }
     }
 }

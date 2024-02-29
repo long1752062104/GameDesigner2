@@ -111,7 +111,7 @@ public class ImportSettingWindow : EditorWindow
         { "Gcp", 0 },{ "Udx", 1 },{ "Kcp", 2 },{ "Web", 3 },{ "StateMachine", 4 },
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
-        { "AOI", 9 },{ "Recast", 10 },{ "Framework", 11 },
+        { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
         { "Entities", 12 },{ "ParrelSync", 13 },
     };
 
@@ -179,9 +179,9 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "Recast";
         DrawGUI(path, "Recast", "Recast~", "Recast", null, pathRoot);
 
-        EditorGUILayout.HelpBox("Framework模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
-        path = pathRoot + "Framework";
-        DrawGUI(path, "Framework", "Framework~", "Framework", null, pathRoot);
+        EditorGUILayout.HelpBox("GameCore模块 客户端框架, 包含热更新，Excel读表，Global全局管理，其他管理", MessageType.Info);
+        path = pathRoot + "GameCore";
+        DrawGUI(path, "GameCore", "GameCore~", "GameCore", null, pathRoot);
 
         EditorGUILayout.HelpBox("Entities模块 可用于独立环境运行, 代替ECS模块", MessageType.Info);
         path = pathRoot + "Entities";
@@ -211,7 +211,7 @@ public class ImportSettingWindow : EditorWindow
             Import("MMORPG", "MMORPG~", "MMORPG", pathRoot);
             Import("AOI", "AOI~", "AOI", pathRoot);
             Import("Recast", "Recast~", "Recast", pathRoot);
-            Import("Framework", "Framework~", "Framework", pathRoot);
+            Import("GameCore", "GameCore~", "GameCore", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
@@ -245,7 +245,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("MMORPG", "MMORPG~", "MMORPG", pathRoot);
             ReImport("AOI", "AOI~", "AOI", pathRoot);
             ReImport("Recast", "Recast~", "Recast", pathRoot);
-            ReImport("Framework", "Framework~", "Framework", pathRoot);
+            ReImport("GameCore", "GameCore~", "GameCore", pathRoot);
             ReImport("Entities", "Entities~", "Entities", pathRoot);
         }
         if (data.develop == 1)
@@ -264,7 +264,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("MMORPG~", "MMORPG", pathRoot);
                 ReverseImport("AOI~", "AOI", pathRoot);
                 ReverseImport("Recast~", "Recast", pathRoot);
-                ReverseImport("Framework~", "Framework", pathRoot);
+                ReverseImport("GameCore~", "GameCore", pathRoot);
                 ReverseImport("Entities~", "Entities", pathRoot);
             }
         }

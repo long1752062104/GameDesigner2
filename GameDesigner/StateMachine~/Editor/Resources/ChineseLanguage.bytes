@@ -13,6 +13,8 @@ Action sequence|动作顺序
 Action none|动作控制
 Animation speed|动画速度
 Animation cycle?|动画循环？
+isCrossFade|动画过渡
+duration|过渡时间
 Exit status at end of action|动作结束退出状态
 get into the state|进入状态
 Action tree|动作树

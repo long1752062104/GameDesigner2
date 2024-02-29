@@ -43,13 +43,9 @@ namespace Net.Share
             }
         }
         /// <summary>
-        /// 远程函数名
+        /// 协议值, 合并之前版本的func字段和methodHash字段
         /// </summary>
-        public string func;
-        /// <summary>
-        /// 远程方法哈希值
-        /// </summary>
-        public ushort methodHash;
+        public int protocol;
         /// <summary>
         /// 远程参数
         /// </summary>
@@ -59,9 +55,9 @@ namespace Net.Share
         /// </summary>
         public bool serialize;
         /// <summary>
-        /// 标记此数据为大数据
+        /// 请求和响应的Token, 当几千几万个客户端同时发起相同的请求时, 可以根据Token区分响应, 得到真正的响应值
         /// </summary>
-        public bool bigData;
+        public int token;
         /// <summary>
         /// 参数To或As调用一次+1
         /// </summary>
@@ -71,11 +67,6 @@ namespace Net.Share
         /// </summary>
         private bool isFill;
 
-        /// <summary>
-        /// 构造
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="buffer"></param>
         public RPCModel(byte cmd, byte[] buffer) : this()
         {
             this.cmd = cmd;
@@ -83,36 +74,15 @@ namespace Net.Share
             count = buffer.Length;
         }
 
-        /// <summary>
-        /// 构造Send
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="pars"></param>
-        public RPCModel(byte cmd, string func, object[] pars) : this()
+        public RPCModel(byte cmd, int protocol, object[] pars) : this()
         {
             kernel = true;
             serialize = true;
             this.cmd = cmd;
-            this.func = func;
+            this.protocol = protocol;
             this.pars = pars;
         }
 
-        public RPCModel(byte cmd, ushort methodHash, object[] pars) : this()
-        {
-            kernel = true;
-            serialize = true;
-            this.cmd = cmd;
-            this.methodHash = methodHash;
-            this.pars = pars;
-        }
-
-        /// <summary>
-        /// 构造Send
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="buffer"></param>
-        /// <param name="kernel"></param>
         public RPCModel(byte cmd, byte[] buffer, bool kernel) : this()
         {
             this.cmd = cmd;
@@ -130,57 +100,23 @@ namespace Net.Share
             this.kernel = kernel;
         }
 
-        /// <summary>
-        /// 构造SendRT可靠传输
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="buffer"></param>
-        /// <param name="kernel"></param>
-        /// <param name="serialize"></param>
-        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize) : this()
+        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, int protocol = 0) : this()
         {
             this.cmd = cmd;
             this.buffer = buffer;
             this.kernel = kernel;
             this.serialize = serialize;
+            this.protocol = protocol;
             count = buffer.Length;
         }
 
-        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, ushort methodHash) : this()
+        public RPCModel(byte cmd, int protocol, object[] pars, bool kernel, bool serialize) : this()
         {
             this.cmd = cmd;
-            this.buffer = buffer;
-            this.kernel = kernel;
-            this.serialize = serialize;
-            count = buffer.Length;
-            this.methodHash = methodHash;
-        }
-
-        /// <summary>
-        /// 构造SendRT可靠传输
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="pars"></param>
-        /// <param name="kernel"></param>
-        /// <param name="serialize"></param>
-        public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize) : this()
-        {
-            this.cmd = cmd;
-            this.func = func;
+            this.protocol = protocol;
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
-        }
-
-        public RPCModel(byte cmd, string func, object[] pars, bool kernel, bool serialize, ushort methodHash) : this()
-        {
-            this.cmd = cmd;
-            this.func = func;
-            this.pars = pars;
-            this.kernel = kernel;
-            this.serialize = serialize;
-            this.methodHash = methodHash;
         }
 
         /// <summary>
@@ -247,7 +183,7 @@ namespace Net.Share
                     break;
                 }
             }
-            return $"指令:{cmdStr} 内核:{kernel} 方法:{func} 哈希方法:{methodHash} 数据:{(buffer != null ? buffer.Length : 0)}";
+            return $"指令:{cmdStr} 内核:{kernel} 协议:{protocol} 数据:{(buffer != null ? buffer.Length : 0)}";
         }
 
         public void Flush()
@@ -274,10 +210,8 @@ namespace Net.Share
             hash = hash * 23 + cmd.GetHashCode();
             hash = hash * 23 + index.GetHashCode();
             hash = hash * 23 + count.GetHashCode();
-            hash = hash * 23 + (func != null ? func.GetHashCode() : 0);
-            hash = hash * 23 + methodHash.GetHashCode();
+            hash = hash * 23 + protocol.GetHashCode();
             hash = hash * 23 + serialize.GetHashCode();
-            hash = hash * 23 + bigData.GetHashCode();
             return hash;
         }
 
@@ -293,13 +227,9 @@ namespace Net.Share
                     return false;
                 if (model.count != count)
                     return false;
-                if (model.func != func)
-                    return false;
-                if (model.methodHash != methodHash)
+                if (model.protocol != protocol)
                     return false;
                 if (model.serialize != serialize)
-                    return false;
-                if (model.bigData != bigData)
                     return false;
                 return true;
             }

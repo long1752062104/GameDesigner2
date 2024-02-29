@@ -52,7 +52,7 @@
         /// <summary>
         /// 获取场景容纳人数
         /// </summary>
-        public int Capacity 
+        public int Capacity
         {
             get { return sceneCapacity; }
             set { sceneCapacity = value; }
@@ -169,14 +169,14 @@
         /// <param name="collection"></param>
         public virtual void AddPlayers(IEnumerable<Player> collection)
         {
-            lock (this) 
+            lock (this)
             {
                 foreach (var client in collection)
                     AddPlayerInternal(client);
             }
         }
 
-        public void UpdateLock(IServerSendHandle<Player> handle, byte cmd) 
+        public void UpdateLock(IServerSendHandle<Player> handle, byte cmd)
         {
             lock (this) //解决多线程问题
             {
@@ -208,7 +208,7 @@
         /// <param name="handle"></param>
         /// <param name="cmd"></param>
         /// <param name="operations"></param>
-        public void SendOperitions(IServerSendHandle<Player> handle, byte cmd, FastList<Operation> operations) 
+        public void SendOperitions(IServerSendHandle<Player> handle, byte cmd, FastList<Operation> operations)
         {
             int count = operations.Count;
             while (count > Split)
@@ -282,7 +282,7 @@
                 operations = opts
             };
             var buffer = onSerializeOpt(operList);
-            handle.SendRT(client, cmd, buffer, false, false);
+            handle.Call(client, cmd, buffer, false, false);
         }
 
         /// <summary>
@@ -316,7 +316,7 @@
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public virtual void AddOperation(byte cmd, string func, params object[] pars)
         {
-            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func, pars)));
+            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func.GetHashCode(), pars)));
             AddOperation(opt);
         }
 
@@ -339,7 +339,7 @@
         /// <param name="opt"></param>
         public virtual void AddOperation(Operation opt)
         {
-            lock (this) 
+            lock (this)
             {
                 operations.Add(opt);
             }
@@ -351,7 +351,7 @@
         /// <param name="opts"></param>
         public virtual void AddOperations(List<Operation> opts)
         {
-            lock (this) 
+            lock (this)
             {
                 operations.AddRange(opts);
             }
@@ -403,7 +403,7 @@
         /// </summary>
         public void RemoveAll()
         {
-            lock (this) 
+            lock (this)
             {
                 foreach (var player in Players)
                     Remove(player);
@@ -425,7 +425,7 @@
         /// </summary>
         public void RemoveOperations()
         {
-            lock (this) 
+            lock (this)
             {
                 operations.Clear();
             }
@@ -440,7 +440,7 @@
     /// <summary>
     /// 默认网络场景，当不需要场景时直接继承
     /// </summary>
-    public class DefaultScene : NetScene<NetPlayer> 
+    public class DefaultScene : NetScene<NetPlayer>
     {
     }
 }

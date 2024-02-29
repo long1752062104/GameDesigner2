@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading;
+﻿
+using Cysharp.Threading.Tasks;
 
 namespace Net.Share
 {
@@ -9,60 +9,24 @@ namespace Net.Share
     /// </summary>
     public interface ISendHandle
     {
-        /// <summary>
-        /// 发送自定义网络数据
-        /// </summary>
-        /// <param name="buffer">数据缓冲区</param>
-        void Send(byte[] buffer);
+        #region 远程过程调用
+        void Call(int protocol, params object[] pars);
+        void Call(byte cmd, int protocol, params object[] pars);
+        void Call(byte[] buffer);
+        void Call(byte cmd, byte[] buffer);
+        void Call(string func, params object[] pars);
+        void Call(byte cmd, string func, params object[] pars);
+        void Call(byte cmd, int protocol, byte[] buffer, params object[] pars);
+        void Call(RPCModel model);
+        #endregion
 
-        /// <summary>
-        /// 发送自定义网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer">发送字节数组缓冲区</param>
-        void Send(byte cmd, byte[] buffer);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="func">方法</param>
-        /// <param name="pars">参数</param>
-        void Send(string func, params object[] pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">方法</param>
-        /// <param name="pars">参数</param>
-        void Send(byte cmd, string func, params object[] pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        void SendRT(string func, params object[] pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        void SendRT(byte cmd, string func, params object[] pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="buffer"></param>
-        void SendRT(byte[] buffer);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer"></param>
-        void SendRT(byte cmd, byte[] buffer);
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
+        UniTask<RPCModelTask> Request(int protocol, params object[] pars);
+        UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, params object[] pars);
+        UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, bool intercept, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars);
+        #endregion
     }
 }

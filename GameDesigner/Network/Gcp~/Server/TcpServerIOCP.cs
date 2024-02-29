@@ -25,7 +25,7 @@
         protected override void AcceptHander(Player client, params object[] args)
         {
             client.ReceiveArgs = new SocketAsyncEventArgs();
-            var userToken = new UserToken<Player>() { client = client, segment = BufferPool.Take() };
+            var userToken = new UserToken<Player>() { client = client, segment = BufferPool.Take(ReceiveBufferSize) };
             client.ReceiveArgs.UserToken = userToken;
             client.ReceiveArgs.RemoteEndPoint = client.Client.RemoteEndPoint;
             client.ReceiveArgs.SetBuffer(userToken.segment.Buffer, 0, userToken.segment.Length);

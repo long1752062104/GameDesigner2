@@ -662,7 +662,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   protocol: 4
-  ip: 192.168.1.7
+  ip: 127.0.0.1
   port: 9543
   localTest: 0
   debugRpc: 1
@@ -707,6 +707,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logMode: 1
+  writeLogMode: 0
 --- !u!1 &1458482645
 GameObject:
   m_ObjectHideFlags: 0

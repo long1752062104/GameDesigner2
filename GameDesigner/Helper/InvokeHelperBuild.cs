@@ -701,7 +701,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                     var paramas = method.Parameters;
                     string parStr = "";
                     string bodyStr = "";
-                    string sendStr = $"client.SendRT(\"{method.Name}\"";
+                    string sendStr = $"client.Call(\"{method.Name}\"";
                     bool safeCmd = false;
                     bool isServer = false;
                     bool isClient = false;
@@ -731,7 +731,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                             {
                                 if (!item.Value.Equals((ushort)0))
                                 {
-                                    sendStr = $"client.SendRT({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
+                                    sendStr = $"client.Call({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
                                 }
                             }
                         }
@@ -751,14 +751,14 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                             {
                                 if (!item.Value.Equals((ushort)0))
                                 {
-                                    sendStr = $"client.SendRT({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
+                                    sendStr = $"client.Call({(isClient ? "NetCmd.EntityRpc, " : "")} (ushort){item.Value}";
                                 }
                             }
                         }
                     }
                     else if (isClient)
                     {
-                        sendStr = $"client.SendRT(NetCmd.EntityRpc, \"{method.Name}\"";
+                        sendStr = $"client.Call(NetCmd.EntityRpc, \"{method.Name}\"";
                     }
                     foreach (var parama in paramas)
                     {
@@ -853,7 +853,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                     var paramas = method.Parameters;
                     string parStr = "";
                     string bodyStr = "";
-                    string sendStr = $"{serverType}.Instance.SendRT(client, \"{method.Name}\"";
+                    string sendStr = $"{serverType}.Instance.Call(client, \"{method.Name}\"";
                     if (dict.TryGetValue(method.Name.String, out var methods))
                     {
                         var has = true;

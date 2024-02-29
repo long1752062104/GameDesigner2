@@ -298,6 +298,9 @@ namespace GameDesigner
                 });
                 EditorGUILayout.PropertyField(animSpeedProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation speed"], "animSpeed"), true);
                 EditorGUILayout.PropertyField(animLoopProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Animation cycle?"], "animLoop"), true);
+                state.isCrossFade = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.Language["isCrossFade"], "isCrossFade"), state.isCrossFade);
+                if (state.isCrossFade)
+                    state.duration = EditorGUILayout.FloatField(new GUIContent(BlueprintGUILayout.Instance.Language["duration"], "duration"), state.duration);
                 state.isExitState = EditorGUILayout.Toggle(new GUIContent(BlueprintGUILayout.Instance.Language["Exit status at end of action"], "isExitState"), state.isExitState);
                 if (state.isExitState)
                     state.DstStateID = EditorGUILayout.Popup(BlueprintGUILayout.Instance.Language["get into the state"], state.DstStateID, Array.ConvertAll(state.transitions.ToArray(), new Converter<Transition, string>(delegate (Transition t) { return t.currState.name + " -> " + t.nextState.name + "   ID:" + t.nextState.ID; })));

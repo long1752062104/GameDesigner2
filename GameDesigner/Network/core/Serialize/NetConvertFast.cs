@@ -154,16 +154,7 @@
         public static byte[] Serialize(RPCModel model, bool recordType = false)
         {
             var segment = BufferPool.Take();
-            byte head = 0;
-            bool hasFunc = !string.IsNullOrEmpty(model.func);
-            bool hasMask = model.methodHash != 0;
-            SetBit(ref head, 1, hasFunc);
-            SetBit(ref head, 2, hasMask);
-            segment.WriteByte(head);
-            if (hasFunc)
-                segment.Write(model.func);
-            if (hasMask)
-                segment.Write(model.methodHash);
+            segment.Write(model.protocol);
             foreach (object obj in model.pars)
             {
                 Type type;
@@ -201,13 +192,7 @@
             try
             {
                 var segment = BufferPool.NewSegment(buffer, index, count, false);
-                byte head = segment.ReadByte();
-                bool hasFunc = GetBit(head, 1);
-                bool hasMask = GetBit(head, 2);
-                if (hasFunc)
-                    fdata.name = segment.ReadString();
-                if (hasMask)
-                    fdata.hash = segment.ReadUInt16();
+                fdata.protocol = segment.ReadInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

@@ -11,7 +11,7 @@ namespace GameDesigner
             get
             {
 #if UNITY_EDITOR
-                if (!UnityEditor.EditorApplication.isPlaying)
+                if (!ThreadManager.IsRuning)
                     return instance;
 #endif
                 if (instance == null)

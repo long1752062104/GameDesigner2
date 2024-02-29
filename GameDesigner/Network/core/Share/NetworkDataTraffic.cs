@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Net.Helper;
+using System;
 
 namespace Net.Share
 {
@@ -74,9 +75,17 @@ namespace Net.Share
                 text += $"FPS{FPSArray[i].Id}:{FPSArray[i].FPS} ";
             return text;
         }
+
+        public override string ToString()
+        {
+            return $"流出:{sendNumber}次/{ByteHelper.ToString(sendCount)} " +
+                $"流入:{receiveNumber}次/{ByteHelper.ToString(receiveCount)} " +
+                $"FPS:{FPS} 解析:{resolveNumber}次 " +
+                $"总流入:{ByteHelper.ToString(inflowTotal)} 总流出:{ByteHelper.ToString(outflowTotal)} {FPSToString()}";
+        }
     }
 
-    public struct FPSEntity 
+    public struct FPSEntity
     {
         public int Id;
         public int FPS;

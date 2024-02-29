@@ -36,7 +36,7 @@ namespace Net.Event
     /// </summary>
     public class ConsoleDebug : IDebug
     {
-        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>(true);
+        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
         public int count = 1000;
         private int cursorTop;
         private bool collapse;
@@ -100,7 +100,7 @@ namespace Net.Event
     /// </summary>
     public class FormDebug : IDebug
     {
-        private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>(true);
+        private MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
         public int count = 1000;
         public ListBox listBox;
         /// <summary>
@@ -310,7 +310,7 @@ namespace Net.Event
             }
             finally
             {
-                ThreadManager.Event.ResetTimeInterval(writeFileModeID, (ulong)GetResetTime());
+                ThreadManager.Event.ResetTimeInterval(writeFileModeID, GetResetTime());
             }
             return true;
         }

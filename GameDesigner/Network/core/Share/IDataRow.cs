@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Text;
 
-namespace Net.Share 
+namespace Net.Share
 {
     /// <summary>
     /// 数据行接口
@@ -22,22 +21,22 @@ namespace Net.Share
         /// sql的插入语句处理
         /// </summary>
         /// <param name="sb"></param>
-        /// <param name="parms"></param>
-        /// <param name="parmsLen"></param>
         void AddedSql(StringBuilder sb);
         /// <summary>
         /// sql的修改语句处理
         /// </summary>
         /// <param name="sb"></param>
-        /// <param name="parms"></param>
-        /// <param name="parmsLen"></param>
         void ModifiedSql(StringBuilder sb);
         /// <summary>
         /// sql的删除语句处理
         /// </summary>
         /// <param name="sb"></param>
         void DeletedSql(StringBuilder sb);
-
+        /// <summary>
+        /// 获取字段值
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         object this[string name] { get; set; }
     }
 }

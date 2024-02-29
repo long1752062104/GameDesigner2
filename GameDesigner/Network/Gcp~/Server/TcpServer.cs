@@ -29,10 +29,12 @@
 
         protected override void CreateServerSocket(ushort port)
         {
-            var ip = new IPEndPoint(IPAddress.Any, port);
+            var address = new IPEndPoint(IPAddress.Any, port);
             Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Server.SendBufferSize = SendBufferSize;
+            Server.ReceiveBufferSize = ReceiveBufferSize;
             Server.NoDelay = true;
-            Server.Bind(ip);
+            Server.Bind(address);
             Server.Listen(LineUp);
         }
 
@@ -77,7 +79,7 @@
                 }
                 if (client.Poll(0, SelectMode.SelectRead))
                 {
-                    using (var segment = BufferPool.Take())
+                    using (var segment = BufferPool.Take(ReceiveBufferSize))
                     {
                         segment.Count = client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out var error);
                         if (segment.Count == 0 | error != SocketError.Success) //当等待10秒超时
@@ -114,7 +116,7 @@
                 return;
             if (client.Client.Poll(0, SelectMode.SelectRead))
             {
-                var segment = BufferPool.Take();
+                var segment = BufferPool.Take(ReceiveBufferSize);
                 segment.Count = client.Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
@@ -233,7 +235,7 @@
             client.heart++;
             if (client.heart <= HeartLimit)//确认心跳包
                 return;
-            SendRT(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
+            Call(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
         }
     }
 

@@ -121,7 +121,7 @@ namespace Net.Client
                         receiveCount += e.Data.Length * 2;
                         receiveAmount++;
                         MessageModel model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
-                        RPCModel model1 = new RPCModel(model.cmd, model.func, model.GetPars());
+                        RPCModel model1 = new RPCModel(model.cmd, model.func.GetHashCode(), model.GetPars());
                         CommandHandler(model1, null);
                     }
                     else if (e.IsBinary)
@@ -172,7 +172,7 @@ namespace Net.Client
                 if (++heart <= HeartLimit)
                     return true;
                 if (Connected)
-                    Send(NetCmd.SendHeartbeat, new byte[0]);
+                    Call(NetCmd.SendHeartbeat, new byte[0]);
                 else//尝试连接执行
                     InternalReconnection();
             }
@@ -217,77 +217,12 @@ namespace Net.Client
 
         public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
-            var isDispose = openClient;
-            Connected = false;
-            openClient = false;
-            NetworkState = NetworkState.ConnectClosed;
-            InvokeInMainThread(OnCloseConnectHandle);
-            AbortedThread();
+            base.Close(await, millisecondsTimeout);
             if (WSClient != null)
             {
                 WSClient.CloseAsync();
                 WSClient = null;
             }
-            StackStream?.Close();
-            StackStream = null;
-            stack = 0;
-            UID = 0;
-            PreUserId = 0;
-            CurrReconnect = 0;
-            if (Instance == this) Instance = null;
-            if (Gcp != null) Gcp.Dispose();
-            if (isDispose) NDebug.Log("客户端已关闭！");
-        }
-
-        /// <summary>
-        /// udp压力测试
-        /// </summary>
-        /// <param name="ip">服务器ip</param>
-        /// <param name="port">服务器端口</param>
-        /// <param name="clientLen">测试客户端数量</param>
-        /// <param name="dataLen">每个客户端数据大小</param>
-        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen)
-        {
-            var cts = new CancellationTokenSource();
-            Task.Run(() =>
-            {
-                var clients = new List<WebSocket>();
-                for (int i = 0; i < clientLen; i++)
-                {
-                    var socket = new WebSocket($"ws://{ip}:{port}/");
-                    socket.ConnectAsync();
-                    clients.Add(socket);
-                }
-                var buffer = new byte[dataLen];
-                using (var stream = new MemoryStream(512))
-                {
-                    int crcIndex = 0;
-                    byte crcCode = 0x2d;
-                    stream.Write(new byte[4], 0, 4);
-                    stream.WriteByte((byte)crcIndex);
-                    stream.WriteByte(crcCode);
-                    var rPCModel = new RPCModel(NetCmd.CallRpc, buffer);
-                    stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
-                    stream.WriteByte(rPCModel.cmd);
-                    stream.Write(BitConverter.GetBytes(rPCModel.buffer.Length), 0, 4);
-                    stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-
-                    stream.Position = 0;
-                    int len = (int)stream.Length - 6;
-                    stream.Write(BitConverter.GetBytes(len), 0, 4);
-                    stream.Position = len + 6;
-                    buffer = stream.ToArray();
-                }
-                while (!cts.IsCancellationRequested)
-                {
-                    Thread.Sleep(31);
-                    for (int i = 0; i < clients.Count; i++)
-                        clients[i].SendAsync(buffer);
-                }
-                for (int i = 0; i < clients.Count; i++)
-                    clients[i].CloseAsync();
-            }, cts.Token);
-            return cts;
         }
     }
 }

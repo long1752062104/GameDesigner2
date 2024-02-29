@@ -67,7 +67,7 @@
             return base.Connect(host, port, localPort, result);
         }
 
-        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        protected async override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             try
             {
@@ -87,49 +87,51 @@
                     var user = GCHandle.ToIntPtr(handle);
                     UdxLib.USetUserData(ClientPtr, user.ToInt64());
                 }
-#if SERVICE
-                return UniTask.Run(() =>
-#else
-                return UniTask.RunOnThreadPool(() =>
-#endif
+                await UniTask.SwitchToThreadPool();
+                await UniTaskNetExtensions.Wait(5000, (state) => Connected, null);
+                if (Connected)
+                    StartupThread();
+                else
+                    throw new Exception("连接服务器失败!");
+                var tick = DateTimeHelper.GetTickCount64();
+                await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
-                    try
+                    if (DateTimeHelper.GetTickCount64() >= tick)
                     {
-                        var timeout = DateTime.Now.AddSeconds(5);
-                        while (!Connected & DateTime.Now < timeout) { Thread.Sleep(1); }
-                        if (Connected)
-                            StartupThread();
-                        timeout = DateTime.Now.AddSeconds(3);
-                        while (Connected & UID == 0 & DateTime.Now < timeout)
-                        {
-                            Send(NetCmd.Identify);
-                            Thread.Sleep(200);
-                            if (!openClient)
-                                throw new Exception("客户端调用Close!");
-                        }
-                        if (UID == 0)
-                            throw new Exception("uid赋值失败!");
-                        result(Connected);
-                        return Connected;
+                        tick = DateTimeHelper.GetTickCount64() + 1000;
+                        var segment = BufferPool.Take(SendBufferSize);
+                        segment.Write(PreUserId);
+                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
                     }
-                    catch (Exception ex)
-                    {
-                        ReleaseUdx();
-                        NDebug.LogError("连接失败原因:" + ex.ToString());
-                        Connected = false;
-                        Client?.Close();
-                        Client = null;
-                        result(false);
-                        return false;
-                    }
-                });
+                    return UID != 0;
+                }, null);
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
+                try
+                {
+                    if (UID == 0 && openClient)
+                        throw new Exception("连接握手失败!");
+                    if (UID == 0 && !openClient)
+                        throw new Exception("客户端调用Close!");
+                    result(Connected);
+                    return Connected;
+                }
+                catch (Exception ex)
+                {
+                    ReleaseUdx();
+                    NDebug.LogError("连接失败原因:" + ex.ToString());
+                    Connected = false;
+                    Client?.Close();
+                    Client = null;
+                    result(false);
+                    return false;
+                }
             }
             catch (Exception ex)
             {
                 ReleaseUdx();
                 NDebug.Log("连接错误: " + ex.ToString());
                 result(false);
-                return UniTask.FromResult(false);
+                return await UniTask.FromResult(false);
             }
         }
 
@@ -189,7 +191,7 @@
                 if (++heart <= HeartLimit)
                     return true;
                 if (Connected & heart < HeartLimit + 5)
-                    Send(NetCmd.SendHeartbeat, new byte[0]);
+                    Call(NetCmd.SendHeartbeat, new byte[0]);
                 else if (!Connected)//尝试连接执行
                     InternalReconnection();
             }
@@ -213,23 +215,8 @@
 
         public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
-            var isDispose = openClient;
-            Connected = false;
-            openClient = false;
-            NetworkState = NetworkState.ConnectClosed;
-            InvokeInMainThread(OnCloseConnectHandle);
-            if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
-            AbortedThread();
-            StackStream?.Close();
-            StackStream = null;
-            stack = 0;
-            UID = 0;
-            PreUserId = 0;
-            CurrReconnect = 0;
-            if (Instance == this) Instance = null;
-            if (Gcp != null) Gcp.Dispose();
+            base.Close(await, millisecondsTimeout);
             ReleaseUdx();
-            if (isDispose) NDebug.Log("客户端已关闭！");
         }
 
         protected void ReleaseUdx()
@@ -245,150 +232,6 @@
                 UdxLib.UDestroyFUObj(udxObj);
                 udxObj = IntPtr.Zero;
             }
-        }
-
-        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<UdxClientTest> onInit = null, Action<List<UdxClientTest>> fpsAct = null, IAdapter adapter = null)
-        {
-            if (!UdxLib.INIT)
-            {
-                UdxLib.INIT = true;
-#if SERVICE
-                var path = AppDomain.CurrentDomain.BaseDirectory;
-                if (!File.Exists(PathHelper.Combine(path, "udxapi.dll")))
-                    throw new FileNotFoundException($"udxapi.dll没有在程序根目录中! 请从GameDesigner文件夹下找到 udxapi.dll复制到{path}目录下.");
-#endif
-                UdxLib.UInit(8);
-                UdxLib.UEnableLog(false);
-            }
-            var cts = new CancellationTokenSource();
-            Task.Run(() =>
-            {
-                var clients = new List<UdxClientTest>();
-                for (int i = 0; i < clientLen; i++)
-                {
-                    var client = new UdxClientTest();
-                    onInit?.Invoke(client);
-                    if (adapter != null)
-                        client.AddAdapter(adapter);
-                    try
-                    {
-                        client.Connect(ip, port);
-                    }
-                    catch (Exception ex)
-                    {
-                        NDebug.LogError(ex);
-                        return;
-                    }
-                    clients.Add(client);
-                }
-                var buffer = new byte[dataLen];
-                Task.Run(() =>
-                {
-                    for (int i = 0; i < clients.Count; i++)
-                    {
-                        var client = clients[i];
-                        client.OnPingCallback += (d) =>
-                        {
-                            client.delay = d;
-                        };
-                    }
-                    while (!cts.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1000);
-                        fpsAct?.Invoke(clients);
-                        for (int i = 0; i < clients.Count; i++)
-                        {
-                            clients[i].Ping();
-                        }
-                    }
-                });
-                int threadNum = (clientLen / 1000) + 1;
-                for (int i = 0; i < threadNum; i++)
-                {
-                    int index = i * 1000;
-                    int end = index + 1000;
-                    if (index >= clientLen)
-                        break;
-                    Task.Run(() =>
-                    {
-                        if (end > clientLen)
-                            end = clientLen;
-                        var tick = Environment.TickCount + millisecondsTimeout;
-                        while (!cts.IsCancellationRequested)
-                        {
-                            bool canSend = false;
-                            if (Environment.TickCount >= tick)
-                            {
-                                tick = Environment.TickCount + millisecondsTimeout;
-                                canSend = true;
-                            }
-                            for (int ii = index; ii < end; ii++)
-                            {
-                                try
-                                {
-                                    var client = clients[ii];
-                                    if (canSend)
-                                    {
-                                        //client.SendRT(NetCmd.Local, buffer);
-                                        client.AddOperation(new Operation(66, buffer));
-                                    }
-                                    client.NetworkTick();
-                                }
-                                catch (Exception ex)
-                                {
-                                    NDebug.LogError(ex);
-                                }
-                            }
-                        }
-                    });
-                }
-                while (!cts.IsCancellationRequested)
-                    Thread.Sleep(30);
-                Thread.Sleep(100);
-                for (int i = 0; i < clients.Count; i++)
-                    clients[i].Close(false);
-            }, cts.Token);
-            return cts;
-        }
-    }
-
-    public class UdxClientTest : UdxClient
-    {
-        public int revdSize { get { return receiveCount; } }
-        public int sendSize { get { return sendCount; } }
-        public int sendNum { get { return sendAmount; } }
-        public int revdNum { get { return receiveAmount; } }
-        public int resolveNum { get { return resolveAmount; } }
-        public uint delay { get; set; }
-
-        public UdxClientTest()
-        {
-        }
-        //protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
-        //{
-        //    ReleaseUdx();
-        //    udxObj = UdxLib.UCreateFUObj();
-        //    UdxLib.UBind(udxObj, null, 0);
-        //    udxPrc = new UDXPRC(ProcessReceive);
-        //    UdxLib.USetFUCB(udxObj, udxPrc);
-        //    GC.KeepAlive(udxPrc);
-        //    if (host == "127.0.0.1" | host == "localhost")
-        //        host = NetPort.GetIP();
-        //    ClientPtr = UdxLib.UConnect(udxObj, host, port, 0, false, 0);
-        //    if (ClientPtr != IntPtr.Zero)
-        //    {
-        //        UdxLib.UDump(ClientPtr);
-        //        var handle = GCHandle.Alloc(this);
-        //        var user = GCHandle.ToIntPtr(handle);
-        //        UdxLib.USetUserData(ClientPtr, user.ToInt64());
-        //    }
-        //    return UniTask.FromResult(true);
-        //}
-        protected override void StartupThread() { }
-
-        public override string ToString()
-        {
-            return $"uid:{UID} conv:{Connected}";
         }
     }
 }

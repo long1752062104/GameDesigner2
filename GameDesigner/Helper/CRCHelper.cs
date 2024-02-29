@@ -1,4 +1,14 @@
-﻿namespace Net.Helper
+﻿using Net.System;
+using System.Drawing;
+using System.Net;
+using System.Runtime.CompilerServices;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text;
+using System.Security.Cryptography;
+using System;
+using K4os.Hash.xxHash;
+
+namespace Net.Helper
 {
     public static class CRCHelper
     {
@@ -63,6 +73,21 @@
                 crc = (byte)(crc ^ CRCCode[crc ^ value] ^ mask);
             }
             return crc;
+        }
+
+        /// <summary>
+        /// 计算字符串哈希, 保证一致性
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public unsafe static int CRC32(this string value)
+        {
+            var bytes = Encoding.UTF8.GetBytes(value);
+            fixed (byte* ptr = bytes)
+            {
+                var hashCode = XXH32.XXH32_hash(ptr, bytes.Length, 0U);
+                return (int)hashCode;
+            }
         }
     }
 }

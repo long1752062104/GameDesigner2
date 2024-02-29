@@ -180,6 +180,213 @@
             当body物体退出感兴趣区域
             </summary>
         </member>
+        <member name="T:Net.Distributed.ItemConfig">
+            <summary>
+            负载均衡配置项
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.ItemConfig.Name">
+            <summary>
+            服务器节点名称
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.ItemConfig.Host">
+            <summary>
+            服务器主机IP
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.ItemConfig.Port">
+            <summary>
+            服务器端口
+            </summary>
+        </member>
+        <member name="T:Net.Distributed.LoadBalanceConfig">
+            <summary>
+            负载均衡配置
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.LoadBalanceConfig.Count">
+            <summary>
+            虚拟节点数量, 也是真实节点的客户端连接数量
+            </summary>
+        </member>
+        <member name="T:Net.Distributed.VirtualNode`1">
+            <summary>
+            一致性哈希虚拟节点
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.VirtualNode`1.VirtualNodeName">
+            <summary>
+            虚拟节点名称
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.VirtualNode`1.PhysicalNodeName">
+            <summary>
+            物理节点名称, 即数据库服务器的真实节点
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.VirtualNode`1.StartHash">
+            <summary>
+            哈希开始范围
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.VirtualNode`1.EndHash">
+            <summary>
+            哈希结束范围
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.VirtualNode`1.Token">
+            <summary>
+            对象参数
+            </summary>
+        </member>
+        <member name="M:Net.Distributed.VirtualNode`1.#ctor(System.String,System.String)">
+            <summary>
+            虚拟节点
+            </summary>
+            <param name="virtualNode"></param>
+            <param name="physicalNodeName"></param>
+        </member>
+        <member name="T:Net.Distributed.ConsistentHashing`1">
+            <summary>
+            一致性哈希, 节点的顺序是0-uint.maxValue, 当只有一个节点时哈希值从0-uint.maxValue, 当有两个节点时,节点1的哈希计算是从节点1的hash值开始到节点2的hash值结束, 
+            节点2计算从节点2的hash值开始到尾部(uint.maxValue)和节点1的开始hash值为止, 以此类推
+            |__________node_a____________->__________________node_b_______________->_________________|uint.maxValue|_________->________node_a____|
+            </summary>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.#ctor(System.Int32)">
+            <summary>
+            一致性哈希构造
+            </summary>
+            <param name="virtualNodeReplicas">虚拟节点因子</param>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.AddNode(System.String,`0)">
+            <summary>
+            添加节点
+            </summary>
+            <param name="node"></param>
+            <param name="token"></param>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.AddNodeGet(System.String)">
+            <summary>
+            添加节点并获得虚拟节点列表
+            </summary>
+            <param name="node"></param>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.RemoveNode(System.String)">
+            <summary>
+            移除节点
+            </summary>
+            <param name="node"></param>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.GetNode(System.String)">
+            <summary>
+            根据键获取对应的数据库节点
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.GetAffectedNodes(System.String)">
+            <summary>
+            获取受影响的节点列表
+            </summary>
+            <param name="nodeName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Distributed.ConsistentHashing`1.RecalculateNode">
+            <summary>
+            计算节点的范围
+            </summary>
+        </member>
+        <member name="T:Net.Distributed.LoadBalance`1">
+            <summary>
+            负载均衡类
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Net.Distributed.LoadBalance`1.Config">
+            <summary>
+            客户端配置属性
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.LoadBalance`1.LBConfig">
+            <summary>
+            负载均衡配置属性
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.LoadBalance`1.MaxThread">
+            <summary>
+            并发线程数量, 发送线程和接收处理线程数量
+            </summary>
+        </member>
+        <member name="M:Net.Distributed.LoadBalance`1.Init">
+            <summary>
+            初始化负载均衡
+            </summary>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:Net.Distributed.LoadBalance`1.RemoteConfig``1(System.String,System.Int32,Net.Config.ClientConfig,System.Int32,System.Object[])">
+            <summary>
+            获取远程配置数据, 获取配置服务器的数据
+            </summary>
+            <param name="host"></param>
+            <param name="port"></param>
+            <param name="config"></param>
+            <param name="protocol"></param>
+            <param name="args"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:Net.Distributed.LoadBalance`1.GetHash(System.String)">
+            <summary>
+            获取一致性哈希的虚拟节点
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Distributed.LoadBalance`1.GetRoundRobin">
+            <summary>
+            获取轮询的虚拟节点
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Net.Distributed.UniqueIdGenerator">
+            <summary>
+            唯一ID生成器
+            </summary>
+        </member>
+        <member name="M:Net.Distributed.UniqueIdGenerator.SetMachineIdBits(System.Int32)">
+            <summary>
+            设置机器ID占用比特位
+            </summary>
+            <param name="machineIdBits"></param>
+        </member>
+        <member name="M:Net.Distributed.UniqueIdGenerator.SetMachineId(System.Int32)">
+            <summary>
+            设置机器ID
+            </summary>
+            <param name="machineId"></param>
+        </member>
+        <member name="M:Net.Distributed.UniqueIdGenerator.SetSequenceId(System.Int64)">
+            <summary>
+            设置当前序号
+            </summary>
+            <param name="sequence"></param>
+        </member>
+        <member name="M:Net.Distributed.UniqueIdGenerator.NewUniqueId">
+            <summary>
+            获取新的唯一ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Distributed.UniqueIdGenerator.GetBinaryBits(System.Int64)">
+            <summary>
+            获取二进制比特位字符串
+            </summary>
+            <param name="uniqueId"></param>
+            <returns></returns>
+        </member>
         <member name="T:Net.Component.Command">
             <summary>
             网络操作指令 (系统命令使用0-100, 基础网络组件使用100-150) 请从150开始自定义命令
@@ -288,6 +495,32 @@
             竞技模式 1:个人 2:团队
             </summary>
         </member>
+        <member name="T:Net.Common.FastLocking">
+            <summary>
+            快速锁 (共享锁), 比lock性能要好很多
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Enter">
+            <summary>
+            进入锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.TryEnter">
+            <summary>
+            尝试获取锁
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Common.FastLocking.Exit">
+            <summary>
+            退出锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Release">
+            <summary>
+            释放锁
+            </summary>
+        </member>
         <member name="T:Net.Common.Singleton`1">
             <summary>
             通用类单例
@@ -364,12 +597,47 @@
             开发调式阶段证书数据
             </summary>
         </member>
+        <member name="M:Net.Helper.DateTimeHelper.GetNextTime(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            获取当前时间到某天的总毫秒数
+            </summary>
+            <param name="day"></param>
+            <param name="hour"></param>
+            <param name="minute"></param>
+            <param name="second"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.DateTimeHelper.GetNextWeekday(System.DayOfWeek,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            获取当前时间到下一个工作日的总毫秒数
+            </summary>
+            <param name="day"></param>
+            <param name="hour"></param>
+            <param name="minute"></param>
+            <param name="second"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.DateTimeHelper.GetTickCount64">
+            <summary>
+            获取当前系统启动后经过的毫秒数
+            </summary>
+            <returns></returns>
+        </member>
         <member name="F:Net.Helper.JobQueueHelper.WorkerQueue">
             <summary>
             同步线程上下文任务队列
             </summary>
         </member>
         <member name="M:Net.Helper.PathHelper.GetRelativePath(System.String,System.String,System.Boolean)">
+            <summary>
+            获取相对路径
+            </summary>
+            <param name="root"></param>
+            <param name="fullPath"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:Net.Helper.PathHelper.GetRelativePath(System.String,System.String,System.Char,System.Char)">
             <summary>
             获取相对路径
             </summary>
@@ -489,6 +757,13 @@
             CRC校验代码表, 用户可自行改变CRC校验码, 直接改源代码, 客户端和服务器检验码必须一致, 否则识别失败
             </summary>
         </member>
+        <member name="M:Net.Helper.CRCHelper.CRC32(System.String)">
+            <summary>
+            计算字符串哈希, 保证一致性
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
         <member name="T:Net.Helper.EncryptHelper">
             <summary>
             加密解密帮助类
@@ -559,6 +834,77 @@
             <summary>
             远程过程调用(RPC)帮助类
             </summary>
+        </member>
+        <member name="T:Net.Helper.UnZipHelper">
+            <summary>
+            压缩数据传输
+            </summary>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.Compress(System.Byte[])">
+            <summary>
+            返回压缩后的字节数组
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.Decompress(System.Byte[])">
+            <summary>
+            返回解压后的字节数组
+            </summary>
+            <param name="data">原始字节数组</param>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.Decompress(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            返回解压后的字节数组
+            </summary>
+            <param name="data">原始字节数组</param>
+            <param name="index"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.CompressFiles(System.String,System.String,System.IO.Compression.CompressionLevel,System.Boolean,System.Text.Encoding)">
+            <summary>
+            压缩文件夹
+            </summary>
+            <param name="sourceDirectoryName">要压缩的文件夹路径</param>
+            <param name="destinationArchiveFileName">压缩文件路径</param>
+            <param name="compressionLevel">压缩层</param>
+            <param name="includeBaseDirectory">压缩包含当前目录</param>
+            <param name="entryNameEncoding">压缩编码</param>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.CompressFiles(System.String,System.String,System.IO.Compression.CompressionLevel,System.Boolean,System.Text.Encoding,System.Action{System.String,System.Single},System.Boolean)">
+            <summary>
+            压缩文件夹
+            </summary>
+            <param name="sourceDirectoryName">要压缩的文件夹路径</param>
+            <param name="destinationArchiveFileName">压缩文件路径</param>
+            <param name="compressionLevel">压缩层</param>
+            <param name="includeBaseDirectory">压缩包含当前目录</param>
+            <param name="entryNameEncoding">压缩编码</param>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.DecompressFile(System.String,System.String,System.Text.Encoding)">
+            <summary>
+            解压文件夹
+            </summary>
+            <param name="sourceArchiveFileName">压缩文件路径</param>
+            <param name="destinationDirectoryName">要解压到的文件夹路径</param>
+            <param name="entryNameEncoding">解压编码</param>
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="M:Net.Helper.UnZipHelper.DecompressFile(System.String,System.String,System.Text.Encoding,System.Action{System.String,System.Single},System.Boolean)">
+            <summary>
+            解压文件夹
+            </summary>
+            <param name="sourceArchiveFileName">压缩文件路径</param>
+            <param name="destinationDirectoryName">要解压到的文件夹路径</param>
+            <param name="entryNameEncoding">解压编码</param>
+            <param name="progress">解压进度</param>
+            <param name="isAsync">是否异步调用</param>
+            <returns></returns>
+            <exception cref="T:System.IO.IOException"></exception>
         </member>
         <member name="M:Net.Helper.ByteHelper.ToString(System.Double)">
             <summary>
@@ -634,6 +980,1223 @@
             <summary>
             极速序列化3适配器
             </summary>
+        </member>
+        <member name="T:Net.Client.ClientPool`1">
+            <summary>
+            客户端对象池
+            </summary>
+            <typeparam name="Client"></typeparam>
+        </member>
+        <member name="P:Net.Client.ClientPool`1.MaxThread">
+            <summary>
+            并发线程数量, 发送线程和接收处理线程数量
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientPool`1.Host">
+            <summary>
+            服务器主机IP
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientPool`1.Port">
+            <summary>
+            服务器端口
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientPool`1.Init(System.String)">
+            <summary>
+            初始化客户端对象池
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:Net.Client.ClientPool`1.Init(System.Int32,Net.Config.ClientConfig)">
+            <summary>
+            初始化客户端对象池
+            </summary>
+            <param name="clientCount">客户端连接池数量</param>
+            <param name="config">客户端配置</param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:Net.Client.ClientPool`1.Start">
+            <summary>
+            开始任务
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientPool`1.Create(Net.Config.ClientConfig)">
+            <summary>
+            创建客户端并放入任务池中
+            </summary>
+            <param name="config">客户端配置</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientPool`1.Destroy(`0)">
+            <summary>
+            销毁客户端, 移除任务
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="T:Net.Client.ClientBase">
+            <summary>
+            网络客户端核心基类 2019.3.3
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Client">
+            <summary>
+            客户端套接字
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.host">
+            <summary>
+            IP地址
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.port">
+            <summary>
+            端口号
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.RpcModels">
+            <summary>
+            发送缓存器
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcCollectDic">
+            <summary>
+            远程调用方法收集
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.threadDic">
+            <summary>
+            线程字典
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.NetworkState">
+            <summary>
+            网络连接状态
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Connected">
+            <summary>
+            服务器与客户端是否是连接状态
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Instance">
+            <summary>
+            网络客户端实例
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.UseUnityThread">
+            <summary>
+            是否使用unity主线程进行每一帧更新？  
+            True：使用unity的Update等方法进行更新，unity的组建可以在Rpc函数内进行调用。
+            False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出现错误问题!
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.sendCount">
+            <summary>
+            每秒发送数据长度
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.sendAmount">
+            <summary>
+            每秒发送数据次数
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.resolveAmount">
+            <summary>
+            每秒解析rpc函数次数
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.receiveAmount">
+            <summary>
+            每秒接收网络数据次数
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.receiveCount">
+            <summary>
+            每秒接收网络数据大小
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.FPS">
+            <summary>
+            网络FPS
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.outflowTotal">
+            <summary>
+            从启动到现在总流出的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.inflowTotal">
+            <summary>
+            从启动到现在总流入的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.heart">
+            <summary>
+            心跳次数
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.openClient">
+            <summary>
+            当前客户端是否打开(运行)
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.IsOpenClient">
+            <summary>
+            客户端是否处于打开状态
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.LogRpc">
+            <summary>
+            输出调用网络函数
+            </summary>
+        </member>
+        <member name="E:Net.Client.ClientBase.Log">
+            <summary>
+            输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行输出
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnConnectedHandle">
+            <summary>
+            当连接服务器成功事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnConnectFailedHandle">
+            <summary>
+            当连接失败事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnTryToConnectHandle">
+            <summary>
+            当尝试连接服务器事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.TryToConnectFailedHandle">
+            <summary>
+            当尝试连接失败
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnConnectLostHandle">
+            <summary>
+            当连接中断 (异常) 事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnDisconnectHandle">
+            <summary>
+            当断开连接事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnReceiveDataHandle">
+            <summary>
+            当接收到自定义的cmd指令时调用事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnReconnectHandle">
+            <summary>
+            当断线重连成功触发事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnCloseConnectHandle">
+            <summary>
+            当关闭连接事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnNetworkDataTraffic">
+            <summary>
+            当统计网络流量时触发
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnOperationSync">
+            <summary>
+            当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRevdRTProgress">
+            <summary>
+            当服务器发送的大数据时, 可监听此事件显示进度值
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnCallProgress">
+            <summary>
+            当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnAddRpcHandle">
+            <summary>
+            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRemoveRpc">
+            <summary>
+            当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRPCExecute">
+            <summary>
+            当执行调用远程过程方法时触发
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSerializeRPC">
+            <summary>
+            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnDeserializeRPC">
+            <summary>
+            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSerializeOPT">
+            <summary>
+            当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnDeserializeOPT">
+            <summary>
+            当内部解析帧操作列表时调用  !!!!!只允许一个委托
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRpcTaskRegister">
+            <summary>
+            当可等待的rpc方法被注册, 用于Rpc适配器上
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnPingCallback">
+            <summary>
+            ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSendErrorHandle">
+            <summary>
+            当socket发送失败调用. 参数1:发送的字节数组  ->可通过SendByteData方法重新发送
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnP2PCallback">
+            <summary>
+            当从服务器获取的客户端地址点对点
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSwitchPortHandle">
+            <summary>
+            当网关服务器指定这个客户端连接到一个游戏服务器时调用,回调有游戏服务器的ip和端口
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnDownloadFileHandle">
+            <summary>
+            当开始下载文件时调用, 参数1(string):服务器发送的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnReceiveFileHandle">
+            <summary>
+            当服务器发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRevdFileProgress">
+            <summary>
+            当接收到发送的文件进度
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSendFileProgress">
+            <summary>
+            当发送的文件进度
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnRegisterNetworkIdentity">
+            <summary>
+            当注册网络物体唯一标识
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnWhenQueuing">
+            <summary>
+            当排队等待中
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnQueueCancellation">
+            <summary>
+            当排队解除调用
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnServerFull">
+            <summary>
+            当服务器爆满，服务器积极拒绝客户端请求
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnUpdateVersion">
+            <summary>
+            当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnSyncPropertyHandle">
+            <summary>
+            当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.OnDataQueueOverflow">
+            <summary>
+            当数据超出<see cref="P:Net.Client.ClientBase.LimitQueueCount"/>限制后触发的事件
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.frame">
+            <summary>
+            4个字节记录数据长度 + 1CRC校验
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.HeartInterval">
+            <summary>
+            心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
+            如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.HeartLimit">
+            <summary>
+            <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
+            <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Identify">
+            <summary>
+            客户端唯一标识, 当登录游戏后, 服务器下发下来的唯一标识, 这个标识就是你的玩家名称, 是<see cref="P:Net.Server.NetPlayer.PlayerID"/>值
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.UID">
+            <summary>
+            用户唯一标识, 对应服务器的<see cref="P:Net.Server.NetPlayer.UserID"/>
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.PreUserId">
+            <summary>
+            上次的用户id, 断线重连时用到
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.WorkerQueue">
+            <summary>
+            同步线程上下文任务队列
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.PackageSize">
+            <summary>
+            接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.stack">
+            <summary>
+            TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.StackStream">
+            <summary>
+            TCP叠包临时缓存流
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.operations">
+            <summary>
+            待发送的操作列表
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.MTU">
+            <summary>
+            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节, 这里默认为50000, 如果数据超过50000,则是该框架进行分片. 传输层则需要分片为50000/1472=34个数据片</para>
+            <para>------ 局域网可以设置为50000, 公网需要设置为1300 或 1400, 如果设置为1400还是发送失败, 则需要设置为1300或以下进行测试 ------</para>
+            <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
+            <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
+            <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
+            <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="!:Server.ServerBase&lt;Player, Scene&gt;.MTU"/>
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.RTO">
+            <summary>
+            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.MTPS">
+            <summary>
+            (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.FlowControl">
+            <summary>
+            流量控制模式，只有Gcp协议可用
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.localPort">
+            <summary>
+            客户端端口
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.PackageLength">
+            <summary>
+            组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.LimitQueueCount">
+            <summary>
+            限制发送队列长度
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.AutoReconnecting">
+            <summary>
+            自动断线重新连接, 默认是true
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.CurrReconnect">
+            <summary>
+            当前尝试重连次数
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.ReconnectCount">
+            <summary>
+            断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.ReconnectInterval">
+            <summary>
+            断线重连间隔, 默认间隔2秒
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.SendInterval">
+            <summary>
+            每次发送数据间隔，每秒大概执行1000次
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.UpdateMode">
+            <summary>
+            网络更新方式
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.SerializeAdapter">
+            <summary>
+            序列化适配器
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.Version">
+            <summary>
+            版本号
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.PackageAdapter">
+            <summary>
+            数据包适配器
+            </summary>
+        </member>
+        <member name="F:Net.Client.ClientBase.LoopEvent">
+            <summary>
+            网络循环事件处理
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.SendBufferSize">
+            <summary>
+            设置Socket的发送缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="P:Net.Client.ClientBase.ReceiveBufferSize">
+            <summary>
+            设置Socket的接收缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.#ctor">
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.#ctor(System.Boolean)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="useUnityThread">
+            是否使用unity主线程进行每一帧更新？  
+            True：使用unity的Update等方法进行更新，unity的组建可以在Rpc函数内进行调用。
+            False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出错!
+            </param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object)">
+            <summary>
+            添加网络Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加网络Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.RemoveRpc(System.Object)">
+            <summary>
+            移除客户端的Rpc方法
+            </summary>
+            <param name="target">将此对象的所有带有Rpc特性的方法移除</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.BindRpc(System.Object)">
+            <summary>
+            绑定Rpc函数
+            </summary>
+            <param name="target">注册的对象实例</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.BindNetworkHandle(Net.Share.INetworkHandle)">
+            <summary>
+            绑定网络状态处理接口
+            </summary>
+            <param name="network"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.RemoveNetworkHandle(Net.Share.INetworkHandle)">
+            <summary>
+            移除网络状态处理接口
+            </summary>
+            <param name="network"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.DispatchRpc(System.String,System.Object[])">
+            <summary>
+            派发给所有被收集的Rpc方法
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.DispatchRpc(System.Int32,System.Object[])">
+            <summary>
+            派发给所有被收集的Rpc方法
+            </summary>
+            <param name="hash"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.PushRpcData(Net.Share.RPCModel)">
+            <summary>
+            压入远程过程调用方法(RPC)， 将在NetworkEventUpdate线程调用
+            </summary>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.StartThread(System.String,System.Threading.ThreadStart)">
+            <summary>
+            开启线程
+            </summary>
+            <param name="threadKey">线程名称</param>
+            <param name="start">线程函数</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AbortedThread">
+            <summary>
+            结束所有线程
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.NetworkUpdate">
+            <summary>
+            网络数据更新
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnInvokeRpc(Net.Share.IRPCData)">
+            <summary>
+            当调用Rpc函数时调用, 如果想提高性能, 可重写此方法自行判断需要调用哪个方法
+            </summary>
+            <param name="rpc">远程过程函数对象</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Connect">
+            <summary>
+            连接服务器
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.Connect(System.Action{System.Boolean})">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="result">连接结果</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32)">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="host">IP地址</param>
+            <param name="port">端口号</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32,System.Action{System.Boolean})">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="host">IP地址</param>
+            <param name="port">端口号</param>
+            <param name="result">连接结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="host">IP地址</param>
+            <param name="port">端口号</param>
+            <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
+            <param name="result">连接结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.ConnectResult(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="host">连接的服务器主机IP地址</param>
+            <param name="port">连接的服务器主机端口号</param>
+            <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
+            <param name="result">连接结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Broadcast(System.Action{System.Boolean,System.String})">
+            <summary>
+            局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
+            </summary>
+            <param name="result">连接结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Broadcast(System.Int32,System.Action{System.Boolean,System.String})">
+            <summary>
+            局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
+            </summary>
+            <param name="port">广播到服务器的端口号</param>
+            <param name="result">连接结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.StartupThread">
+            <summary>
+            连接成功处理
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnConnected(System.Boolean,System.Action{System.Boolean})">
+            <summary>
+            连接结果处理
+            </summary>
+            <param name="isConnect"></param>
+            <param name="action">结果</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Disconnect(System.Boolean)">
+            <summary>
+            断开连接
+            </summary>
+            <param name="reuseSocket">断开连接后还能重新使用？</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.NetworkFlowHandler">
+            <summary>
+            调式输出网络流量信息
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnOptPacket(System.Int32)">
+            <summary>
+            当游戏操作行为封包数据时调用
+            </summary>
+            <param name="count"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendDirect">
+            <summary>
+            立刻发送, 不需要等待帧时间 (当你要强制把客户端下线时,你还希望客户端先发送完数据后,再强制客户端退出游戏用到)
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendOperations">
+            <summary>
+            打包操作同步马上要发送了
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.ResetDataHead(Net.System.ISegment)">
+            <summary>
+            重置头部数据大小, 在小数据达到<see cref="P:Net.Client.ClientBase.PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendDataHandler(Net.System.QueueSafe{Net.Share.RPCModel})">
+            <summary>
+            发送处理
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnSerializeRpcInternal(Net.Share.RPCModel)">
+            <summary>
+            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.NetworkProcessing">
+            <summary>
+            网络处理线程
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.SingleNetworkProcessing">
+            <summary>
+            单线程网络处理
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.NetworkException(System.Exception)">
+            <summary>
+            网络异常处理
+            </summary>
+            <param name="ex"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.ResolveBuffer(Net.System.ISegment@,System.Boolean)">
+            <summary>
+            解析网络数据包
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperation(System.String,System.Object[])">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperation(System.UInt16,System.Object[])">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.String,System.Object[])">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="cmd"></param>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.UInt16,System.Object[])">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="cmd"></param>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="opt"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddOperations(System.Collections.Generic.ICollection{Net.Share.Operation})">
+            <summary>
+            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
+            而Send则是直接发送
+            </summary>
+            <param name="opts"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.HeartHandler">
+            <summary>
+            后台线程发送心跳包
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.PingServer(System.String)">
+            <summary>
+            测试服务器网络情况
+            </summary>
+            <param name="ip"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.InternalReconnection">
+            <summary>
+            内部断线重新连接
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.Reconnection">
+            <summary>
+            断线重新连接
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.Close(System.Boolean,System.Int32)">
+            <summary>
+            关闭连接,释放线程以及所占资源
+            </summary>
+            <param name="isWait">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
+            <param name="millisecondsTimeout">等待毫秒数</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SetHeartTime(System.Byte,System.Int32)">
+            <summary>
+            设置心跳时间
+            </summary>
+            <param name="timeoutLimit">心跳检测次数, 默认检测5次</param>
+            <param name="interval">心跳时间间隔, 每interval毫秒会检测一次</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.Ping">
+            <summary>
+            ping测试网络延迟, 通过<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件回调
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.Ping(System.Action{System.UInt32})">
+            <summary>
+            ping测试网络延迟, 此方法帮你监听<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
+            </summary>
+            <param name="callback"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddAdapter(Net.Share.IAdapter)">
+            <summary>
+            添加适配器
+            </summary>
+            <param name="adapter"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddAdapter(Net.Share.AdapterType,Net.Share.IAdapter)">
+            <summary>
+            添加适配器
+            </summary>
+            <param name="type"></param>
+            <param name="adapter"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.AddStateHandler(Net.Share.NetworkState,System.Action)">
+            <summary>
+            添加网络状态事件处理
+            </summary>
+            <param name="listen">要监听的网络状态</param>
+            <param name="action">监听网络状态的回调方法</param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SyncVarHandler">
+            <summary>
+            字段,属性同步处理线程
+            </summary>
+        </member>
+        <member name="M:Net.Client.ClientBase.SendFile(System.String)">
+            <summary>
+            发送文件, 服务器可以通过重写<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFile"/>方法来接收 或 使用事件<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFileHandle"/>来监听并处理
+            </summary>
+            <param name="filePath"></param>
+            <param name="bufferSize">每次发送数据大小</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.CheckCall">
+            <summary>
+            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
+            </summary>
+            <returns>是否可发送数据</returns>
+        </member>
+        <member name="M:Net.Client.ClientBase.OnSetConfigInfo(System.Object[])">
+            <summary>
+            当设置配置信息
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:Net.Client.ClientBase.SetConfig(Net.Config.ClientConfig)">
+            <summary>
+            设置配置
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="T:Net.Client.TcpClient">
+            <summary>
+            TCP客户端类型 
+            第三版本 2020.9.14
+            </summary>
+        </member>
+        <member name="M:Net.Client.TcpClient.#ctor">
+            <summary>
+            构造可靠传输客户端
+            </summary>
+        </member>
+        <member name="M:Net.Client.TcpClient.#ctor(System.Boolean)">
+            <summary>
+            构造不可靠传输客户端
+            </summary>
+            <param name="useUnityThread">使用unity多线程?</param>
+        </member>
+        <member name="M:Net.Client.TcpClient.ConnectResult(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Client.TcpClient.Close(System.Boolean,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Net.Client.UdpClient">
+            <summary>
+            Udp网络客户端
+            在安卓端必须设置可以后台运行, 如果不设置,当你按下home键后,app的所有线程将会被暂停,这会影响网络心跳检测线程,导致网络中断
+            解决方法 : 在android项目AndroidManifest.xml文件中的activity中添加如下内容：
+            android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" 
+            详情请看此博文:https://www.cnblogs.com/nanwei/p/9125316.html
+            或这个博文: http://www.voidcn.com/article/p-yakpcmce-bpk.html
+            </summary>
+        </member>
+        <member name="M:Net.Client.UdpClient.#ctor">
+            <summary>
+            构造udp可靠客户端
+            </summary>
+        </member>
+        <member name="M:Net.Client.UdpClient.#ctor(System.Boolean)">
+            <summary>
+            构造udp可靠客户端
+            </summary>
+            <param name="useUnityThread">使用unity多线程?</param>
+        </member>
+        <member name="M:Net.Client.UdpClient.GetP2P(System.Int32)">
+            <summary>
+            获取p2p IP和端口, 通过client.OnP2PCallback事件回调
+            </summary>
+            <param name="uid"></param>
+        </member>
+        <member name="T:Net.Client.GcpClient">
+            <summary>
+            Gcp协议
+            </summary>
+        </member>
+        <member name="T:Net.Client.KcpClient">
+            <summary>
+            kcp客户端
+            </summary>
+        </member>
+        <member name="T:Net.Client.UdxClient">
+            <summary>
+            udx客户端类型 -> 只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
+            第三版本 2020.9.14
+            </summary>
+        </member>
+        <member name="M:Net.Client.UdxClient.#ctor">
+            <summary>
+            构造可靠传输客户端
+            </summary>
+        </member>
+        <member name="M:Net.Client.UdxClient.#ctor(System.Boolean)">
+            <summary>
+            构造可靠传输客户端
+            </summary>
+            <param name="useUnityThread">使用unity多线程?</param>
+        </member>
+        <member name="T:Net.Client.WebClient">
+            <summary>
+            web客户端类型
+            第三版本 2020.9.14
+            </summary>
+        </member>
+        <member name="P:Net.Client.WebClient.Scheme">
+            <summary>
+            websocket连接策略, 有wss和ws
+            </summary>
+        </member>
+        <member name="P:Net.Client.WebClient.SslProtocols">
+            <summary>
+            Ssl类型
+            </summary>
+        </member>
+        <member name="P:Net.Client.WebClient.Certificate">
+            <summary>
+            证书
+            </summary>
+        </member>
+        <member name="M:Net.Client.WebClient.#ctor">
+            <summary>
+            构造websocket客户端
+            </summary>
+        </member>
+        <member name="M:Net.Client.WebClient.#ctor(System.Boolean)">
+            <summary>
+            构造websocket客户端
+            </summary>
+            <param name="useUnityThread">使用unity多线程?</param>
+        </member>
+        <member name="T:Net.Config.ClientConfig">
+            <summary>
+            客户端配置
+            </summary>
+        </member>
+        <member name="T:Net.Config.ConfigBase">
+            <summary>
+            网络配置基类
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.HeartInterval">
+            <summary>
+            心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
+            如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.HeartLimit">
+            <summary>
+            <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
+            <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.PackageSize">
+            <summary>
+            接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.MTU">
+            <summary>
+            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节, 这里默认为50000, 如果数据超过50000,则是该框架进行分片. 传输层则需要分片为50000/1472=34个数据片</para>
+            <para>------ 局域网可以设置为50000, 公网需要设置为1300 或 1400, 如果设置为1400还是发送失败, 则需要设置为1300或以下进行测试 ------</para>
+            <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
+            <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
+            <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
+            <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="!:Server.ServerBase&lt;Player, Scene&gt;.MTU"/>
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.RTO">
+            <summary>
+            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.MTPS">
+            <summary>
+            (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.FlowControl">
+            <summary>
+            流量控制模式，只有Gcp协议可用
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.PackageLength">
+            <summary>
+            组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.LimitQueueCount">
+            <summary>
+            限制发送队列长度
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.AutoReconnecting">
+            <summary>
+            自动断线重新连接, 默认是true
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.ReconnectCount">
+            <summary>
+            断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.ReconnectInterval">
+            <summary>
+            断线重连间隔, 默认间隔2秒
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.SendInterval">
+            <summary>
+            每次发送数据间隔，每秒大概执行1000次
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.SendBufferSize">
+            <summary>
+            设置Socket的发送缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="P:Net.Config.ConfigBase.ReceiveBufferSize">
+            <summary>
+            设置Socket的接收缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="T:Net.Config.App">
+            <summary>
+            gdnet应用程序入口
+            </summary>
+        </member>
+        <member name="M:Net.Config.App.Setup">
+            <summary>
+            初始化GDNet环境
+            </summary>
+        </member>
+        <member name="M:Net.Config.App.Init">
+            <summary>
+            初始化GDNet环境
+            </summary>
+        </member>
+        <member name="M:Net.Config.App.Collect">
+            <summary>
+            收集运行时初始化方法
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.UseMemoryStream">
+            <summary>
+            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
+            使用内存流缓存速度会比较快, 但运行内存占用比较大
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.BaseCapacity">
+            <summary>
+            内存接收缓冲区基础容量 默认1024
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.BasePath">
+            <summary>
+            项目的持久路径, 网络需要处理文件时的目录
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.ConfigPath">
+            <summary>
+            配置文件的目录
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.DataPath">
+            <summary>
+            获取项目路径
+            </summary>
+        </member>
+        <member name="P:Net.Config.Config.MainThreadTick">
+            <summary>
+            在主线程处理所有网络功能? 否则会在多线程进行
+            </summary>
+        </member>
+        <member name="T:Net.Config.TableConfig">
+            <summary>
+            表配置类, 可双端使用
+            </summary>
+        </member>
+        <member name="M:Net.Config.TableConfig.LoadTableFile(System.String)">
+            <summary>
+            加载表文件
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="M:Net.Config.TableConfig.LoadTable(System.String)">
+            <summary>
+            加载表数据
+            </summary>
+            <param name="jsonStr"></param>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetTable(System.String)">
+            <summary>
+            获取某个表
+            </summary>
+            <param name="sheetName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetDataConfig``1(System.String)">
+            <summary>
+            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
+            </summary>
+            <typeparam name="T">要获取的类型</typeparam>
+            <param name="filterExpression">过滤表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Config.TableConfig.GetDataConfigs``1(System.String)">
+            <summary>
+            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
+            </summary>
+            <typeparam name="T">要获取的类型</typeparam>
+            <param name="filterExpression">过滤表达式</param>
+            <returns></returns>
         </member>
         <member name="T:Net.Serialize.NetConvert">
             <summary>
@@ -813,7 +2376,8 @@
             序列化
             </summary>
             <param name="obj"></param>
-            <param name="recordType"></param>
+            <param name="recordType">是否记录类型</param>
+            <param name="ignore"></param>
             <returns></returns>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.SerializeObject(System.Object,System.Boolean,System.Boolean)">
@@ -931,6 +2495,11 @@
             双端一致性的哈希协议码 --解决子项目和父项目融合问题
             </summary>
         </member>
+        <member name="M:Net.Serialize.ISerialize.Bind">
+            <summary>
+            绑定静态序列化缓存
+            </summary>
+        </member>
         <member name="M:Net.Serialize.ISerialize.WriteValue(System.Object,Net.System.ISegment)">
             <summary>
             序列化写入
@@ -975,6 +2544,17 @@
         <member name="P:Net.Serialize.IBindingType.BindTypes">
             <summary>
             收集的绑定类型列表
+            </summary>
+        </member>
+        <member name="T:Net.Serialize.SerializeCache`1">
+            <summary>
+            序列化缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="F:Net.Serialize.SerializeCache`1.Serialize">
+            <summary>
+            序列化绑定实例
             </summary>
         </member>
         <member name="T:Net.Serialize.NetConvertFast2">
@@ -1051,6 +2631,21 @@
             网络同步字段或属性类  --相对[SyncVar]性能要好一些
             </summary>
             <typeparam name="T"></typeparam>
+        </member>
+        <member name="F:Net.Share.NetworkUpdateMode.Thread">
+            <summary>
+            独立线程执行
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetworkUpdateMode.SingleThread">
+            <summary>
+            统一单线程执行 -非unity主线程
+            </summary>
+        </member>
+        <member name="F:Net.Share.NetworkUpdateMode.CustomExecution">
+            <summary>
+            自定义执行方式
+            </summary>
         </member>
         <member name="T:Net.Share.NetPort">
             <summary>
@@ -1214,14 +2809,9 @@
             函数数据
             </summary>
         </member>
-        <member name="F:Net.Share.FuncData.name">
+        <member name="F:Net.Share.FuncData.protocol">
             <summary>
             函数名称
-            </summary>
-        </member>
-        <member name="F:Net.Share.FuncData.hash">
-            <summary>
-            方法哈希
             </summary>
         </member>
         <member name="F:Net.Share.FuncData.pars">
@@ -1234,7 +2824,7 @@
             序列化是否错误?
             </summary>
         </member>
-        <member name="M:Net.Share.FuncData.#ctor(System.String,System.Object[])">
+        <member name="M:Net.Share.FuncData.#ctor(System.Int32,System.Object[])">
             <summary>
             构造函数
             </summary>
@@ -1350,22 +2940,25 @@
             sql的插入语句处理
             </summary>
             <param name="sb"></param>
-            <param name="parms"></param>
-            <param name="parmsLen"></param>
         </member>
         <member name="M:Net.Share.IDataRow.ModifiedSql(System.Text.StringBuilder)">
             <summary>
             sql的修改语句处理
             </summary>
             <param name="sb"></param>
-            <param name="parms"></param>
-            <param name="parmsLen"></param>
         </member>
         <member name="M:Net.Share.IDataRow.DeletedSql(System.Text.StringBuilder)">
             <summary>
             sql的删除语句处理
             </summary>
             <param name="sb"></param>
+        </member>
+        <member name="P:Net.Share.IDataRow.Item(System.String)">
+            <summary>
+            获取字段值
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
         </member>
         <member name="T:Net.Share.IDebugHandle">
             <summary>
@@ -1616,14 +3209,9 @@
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
-        <member name="P:Net.Share.IRpcHandler.RpcDic">
+        <member name="P:Net.Share.IRpcHandler.RpcCollectDic">
             <summary>
-            远程方法优化字典
-            </summary>
-        </member>
-        <member name="P:Net.Share.IRpcHandler.RpcHashDic">
-            <summary>
-            远程方法哈希字典
+            远程调用方法收集
             </summary>
         </member>
         <member name="P:Net.Share.IRpcHandler.MemberInfos">
@@ -1657,66 +3245,6 @@
             发送处理程序接口 
             2019.9.23
             </summary>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Send(System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Send(System.Byte,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">发送字节数组缓冲区</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Send(System.String,System.Object[])">
-            <summary>
-            发送远程过程调用函数数据
-            </summary>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.Send(System.Byte,System.String,System.Object[])">
-            <summary>
-            发送带有网络命令的远程过程调用数据
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.String,System.Object[])">
-            <summary>
-            发送网络可靠传输数据, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止
-            </summary>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.Byte,System.String,System.Object[])">
-            <summary>
-            发送可靠网络传输, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.Byte[])">
-            <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Share.ISendHandle.SendRT(System.Byte,System.Byte[])">
-            <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="buffer"></param>
         </member>
         <member name="T:Net.Share.IServerEventHandle`1">
             <summary>
@@ -1806,94 +3334,6 @@
             服务器发送处理接口
             </summary>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Send(`0,System.Byte[])">
-            <summary>
-            发送网络数据 UDP发送方式
-            </summary>
-            <param name="client">发送数据到的客户端</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Send(`0,System.Byte,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="client">发送到客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Send(`0,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送数据到的客户端</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Send(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送到的客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Send(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            发送灵活数据包
-            </summary>
-            <param name="client">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.SendRT(`0,System.String,System.Object[])">
-            <summary>
-            发送网络可靠传输数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.SendRT(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送可靠网络传输
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.SendRT(`0,System.Byte[])">
-            <summary>
-            发送可靠网络传输
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.SendRT(`0,System.Byte,System.Byte[])">
-            <summary>
-            发送可靠网络传输
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Share.IServerSendHandle`1.SendRT(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            发送灵活数据包
-            </summary>
-            <param name="client">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
         <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte[])">
             <summary>
             网络多播, 发送自定义数据到clients集合的客户端
@@ -1909,7 +3349,7 @@
             <param name="cmd"></param>
             <param name="buffer">自定义字节数组</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.String,System.Object[])">
+        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Int32,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
@@ -1917,7 +3357,7 @@
             <param name="func">本地客户端rpc函数</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.String,System.Object[])">
+        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Int32,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
@@ -2078,19 +3518,9 @@
             (场景转发)服务器负责转发给在同一房间或场景内的玩家
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.SceneRT">
-            <summary>
-            (场景转发,可靠指令)服务器负责转发给在同一房间或场景内的玩家
-            </summary>
-        </member>
         <member name="F:Net.Share.NetCmd.Notice">
             <summary>
             (公告指令)服务器负责转发给所有在线的玩家
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.NoticeRT">
-            <summary>
-            (公告指令,可靠传输)服务器负责转发给所有在线的玩家
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.SendHeartbeat">
@@ -2166,11 +3596,6 @@
         <member name="F:Net.Share.NetCmd.Disconnect">
             <summary>
             断开网络连接, 内部指令
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetCmd.LocalRT">
-            <summary>
-            自身转发, 可靠传输
             </summary>
         </member>
         <member name="F:Net.Share.NetCmd.Ping">
@@ -2819,7 +4244,7 @@
             尝试重传
             </summary>
         </member>
-        <member name="T:Net.Share.SendRTProgress">
+        <member name="T:Net.Share.CallProgress">
             <summary>
             可靠文件发送进度委托
             </summary>
@@ -2907,6 +4332,11 @@
             远程方法的哈希值
             </summary>
         </member>
+        <member name="F:Net.Share.RPC.func">
+            <summary>
+            远程方法名
+            </summary>
+        </member>
         <member name="F:Net.Share.RPC.il2cpp">
             <summary>
             <code>如果在unity编译为il2cpp后端脚本并使用CallSiteRpcAdapter快速调用rpc适配器，则需要先声明类型出来，因为编译后，类型将无法在创建出来</code>
@@ -2981,14 +4411,9 @@
             数据缓存器(正确的数据段)
             </summary>
         </member>
-        <member name="F:Net.Share.RPCModel.func">
+        <member name="F:Net.Share.RPCModel.protocol">
             <summary>
-            远程函数名
-            </summary>
-        </member>
-        <member name="F:Net.Share.RPCModel.methodHash">
-            <summary>
-            远程方法哈希值
+            协议值, 合并之前版本的func字段和methodHash字段
             </summary>
         </member>
         <member name="F:Net.Share.RPCModel.pars">
@@ -3001,9 +4426,9 @@
             数据是否经过内部序列化?
             </summary>
         </member>
-        <member name="F:Net.Share.RPCModel.bigData">
+        <member name="F:Net.Share.RPCModel.token">
             <summary>
-            标记此数据为大数据
+            请求和响应的Token, 当几千几万个客户端同时发起相同的请求时, 可以根据Token区分响应, 得到真正的响应值
             </summary>
         </member>
         <member name="F:Net.Share.RPCModel.parsIndex">
@@ -3015,48 +4440,6 @@
             <summary>
             当数据已经填充, 获取Buffer可直接返回真正数据
             </summary>
-        </member>
-        <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[])">
-            <summary>
-            构造
-            </summary>
-            <param name="cmd"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.String,System.Object[])">
-            <summary>
-            构造Send
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[],System.Boolean)">
-            <summary>
-            构造Send
-            </summary>
-            <param name="cmd"></param>
-            <param name="buffer"></param>
-            <param name="kernel"></param>
-        </member>
-        <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            构造SendRT可靠传输
-            </summary>
-            <param name="cmd"></param>
-            <param name="buffer"></param>
-            <param name="kernel"></param>
-            <param name="serialize"></param>
-        </member>
-        <member name="M:Net.Share.RPCModel.#ctor(System.Byte,System.String,System.Object[],System.Boolean,System.Boolean)">
-            <summary>
-            构造SendRT可靠传输
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-            <param name="kernel"></param>
-            <param name="serialize"></param>
         </member>
         <member name="M:Net.Share.RPCModel.To``1">
             <summary>
@@ -3225,27 +4608,6 @@
             超速模式, 无法形容的极限速度模式, 流量翻100倍
             </summary>
         </member>
-        <member name="T:Net.Share.UnZipHelper">
-            <summary>
-            压缩数据传输
-            </summary>
-        </member>
-        <member name="M:Net.Share.UnZipHelper.Compress(System.Byte[])">
-            <summary>
-            返回压缩后的字节数组
-            </summary>
-            <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Share.UnZipHelper.Decompress(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            返回解压后的字节数组
-            </summary>
-            <param name="data">原始字节数组</param>
-            <param name="index"></param>
-            <param name="count"></param>
-            <returns></returns>
-        </member>
         <member name="T:Net.Share.Win32KernelAPI">
             <summary>
             提供win32内核api类
@@ -3284,6 +4646,13 @@
             <param name="duration">声音的持续时间，以毫秒为单位。</param>
             <returns></returns>
         </member>
+        <member name="M:Net.Share.Win32KernelAPI.GetTickCount64">
+            <summary>
+            获取系统运行时间
+            </summary>
+            <returns></returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Net.System.BitHelper" -->
         <member name="M:Net.System.BitHelper.#ctor(System.Int32*,System.Int32)">
             <summary>
             Instantiates a BitHelper with a heap alloc'd array of ints
@@ -3318,6 +4687,510 @@
             </summary>
             <param name="n"></param>
             <returns></returns>
+        </member>
+        <member name="T:Net.System.DataCacheBase">
+            <summary>
+            数据缓存基类
+            </summary>
+        </member>
+        <member name="P:Net.System.DataCacheBase.IsQuery">
+            <summary>
+            是否查询过了, 比如123的账号, 查询一次mysql没有查询到, 第二次就不需要进行查询了, 再次查询只会占用IO, 这里可以设置查询间隔, 比如123查询不到, 就给个60秒的过期时间, 这样可以解决IO问题
+            </summary>
+        </member>
+        <member name="P:Net.System.DataCacheBase.ExpirationTime">
+            <summary>
+            缓存过期时间 (毫秒单位), 默认是-1, 也就是无过期时间, 这是考虑到当new一个缓存对象时, 这时候多线程检查时直接把这个对象当成过期时间处理导致问题
+            </summary>
+        </member>
+        <member name="F:Net.System.DataCacheBase.Locking">
+            <summary>
+            数据有必要时锁
+            </summary>
+        </member>
+        <member name="T:Net.System.DataCache`1">
+            <summary>
+            数据缓存类
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Net.System.DataCache`1.Data">
+            <summary>
+            缓存数据对象
+            </summary>
+        </member>
+        <member name="M:Net.System.DataCache`1.QueryOrGet(System.Func{`0},System.Action{`0})">
+            <summary>
+            查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
+            </summary>
+            <param name="queryFunc">第一次执行查询</param>
+            <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.DataCache`1.QueryOrGetAsync(System.Func{Cysharp.Threading.Tasks.UniTask{`0}},System.Action{`0})">
+            <summary>
+            查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
+            </summary>
+            <param name="queryFunc">第一次执行查询</param>
+            <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.System.DataCacheDictionary`2">
+            <summary>
+            数据缓存字典
+            </summary>
+            <typeparam name="TKey"></typeparam>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="T:Net.System.DataCacheManager">
+            <summary>
+            数据缓存管理器类
+            </summary>
+        </member>
+        <member name="M:Net.System.DataCacheManager.Executed">
+            <summary>
+            检查缓存字段过期对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.FixedSegment.#ctor(System.Byte[])">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.FixedSegment.#ctor(System.Byte[],System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:Net.System.FixedSegment.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            构造内存分片
+            </summary>
+            <param name="buffer"></param>
+            <param name="index"></param>
+            <param name="count"></param>
+        </member>
+        <member name="T:Net.System.HashSetExEqualityComparer`1">
+            <summary>
+            Equality comparer for hashsets of hashsets
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.System.HashSetExDebugView`1">
+            <summary>
+            Debug view for HashSetEx
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Net.System.HashSetEx`1" -->
+        <member name="M:Net.System.HashSetEx`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Implementation Notes:
+            Since resizes are relatively expensive (require rehashing), this attempts to minimize 
+            the need to resize by setting the initial capacity based on size of collection. 
+            </summary>
+            <param name="collection"></param>
+            <param name="comparer"></param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:Net.System.HashSetEx`1.System#Collections#Generic#ICollection{T}#Add(`0)" -->
+        <member name="M:Net.System.HashSetEx`1.Clear">
+            <summary>
+            Remove all items from this set. This clears the elements but not the underlying 
+            buckets and slots array. Follow this call by TrimExcess to release these.
+            </summary>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.Contains(`0)">
+            <summary>
+            Checks if this hashset contains the item
+            </summary>
+            <param name="item">item to check for containment</param>
+            <returns>true if item contained; false if not</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.CopyTo(`0[],System.Int32)">
+            <summary>
+            Copy items in this hashset to array, starting at arrayIndex
+            </summary>
+            <param name="array">array to add items to</param>
+            <param name="arrayIndex">index to start at</param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.Remove(`0)">
+            <summary>
+            Remove item from this hashset
+            </summary>
+            <param name="item">item to remove</param>
+            <returns>true if removed; false if not (i.e. if the item wasn't in the HashSetEx)</returns>
+        </member>
+        <member name="P:Net.System.HashSetEx`1.Count">
+            <summary>
+            Number of elements in this hashset
+            </summary>
+        </member>
+        <member name="P:Net.System.HashSetEx`1.System#Collections#Generic#ICollection{T}#IsReadOnly">
+            <summary>
+            Whether this is readonly
+            </summary>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.Add(`0)">
+            <summary>
+            Add item to this HashSetEx. Returns bool indicating whether item was added (won't be 
+            added if already present)
+            </summary>
+            <param name="item"></param>
+            <returns>true if added, false if already present</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.TryGetValue(`0,`0@)">
+            <summary>
+            Searches the set for a given value and returns the equal value it finds, if any.
+            </summary>
+            <param name="equalValue">The value to search for.</param>
+            <param name="actualValue">The value from the set that the search found, or the default value of <typeparamref name="T"/> when the search yielded no match.</param>
+            <returns>A value indicating whether the search was successful.</returns>
+            <remarks>
+            This can be useful when you want to reuse a previously stored reference instead of 
+            a newly constructed one (so that more sharing of references can occur) or to look up
+            a value that has more complete data than the value you currently have, although their
+            comparer functions indicate they are equal.
+            </remarks>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Take the union of this HashSetEx with other. Modifies this set.
+            
+            Implementation note: GetSuggestedCapacity (to increase capacity in advance avoiding 
+            multiple resizes ended up not being useful in practice; quickly gets to the 
+            point where it's a wasteful check.
+            </summary>
+            <param name="other">enumerable with items to add</param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Takes the intersection of this set with other. Modifies this set.
+            
+            Implementation Notes: 
+            We get better perf if other is a hashset using same equality comparer, because we 
+            get constant contains check in other. Resulting cost is O(n1) to iterate over this.
+            
+            If we can't go above route, iterate over the other and mark intersection by checking
+            contains in this. Then loop over and delete any unmarked elements. Total cost is n2+n1. 
+            
+            Attempts to return early based on counts alone, using the property that the 
+            intersection of anything with the empty set is the empty set.
+            </summary>
+            <param name="other">enumerable with items to add </param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Remove items in other from this set. Modifies this set.
+            </summary>
+            <param name="other">enumerable with items to remove</param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Takes symmetric difference (XOR) with other and this set. Modifies this set.
+            </summary>
+            <param name="other">enumerable with items to XOR</param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this is a subset of other.
+            
+            Implementation Notes:
+            The following properties are used up-front to avoid element-wise checks:
+            1. If this is the empty set, then it's a subset of anything, including the empty set
+            2. If other has unique elements according to this equality comparer, and this has more
+            elements than other, then it can't be a subset.
+            
+            Furthermore, if other is a hashset using the same equality comparer, we can use a 
+            faster element-wise check.
+            </summary>
+            <param name="other"></param>
+            <returns>true if this is a subset of other; false if not</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this is a proper subset of other (i.e. strictly contained in)
+            
+            Implementation Notes:
+            The following properties are used up-front to avoid element-wise checks:
+            1. If this is the empty set, then it's a proper subset of a set that contains at least
+            one element, but it's not a proper subset of the empty set.
+            2. If other has unique elements according to this equality comparer, and this has >=
+            the number of elements in other, then this can't be a proper subset.
+            
+            Furthermore, if other is a hashset using the same equality comparer, we can use a 
+            faster element-wise check.
+            </summary>
+            <param name="other"></param>
+            <returns>true if this is a proper subset of other; false if not</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this is a superset of other
+            
+            Implementation Notes:
+            The following properties are used up-front to avoid element-wise checks:
+            1. If other has no elements (it's the empty set), then this is a superset, even if this
+            is also the empty set.
+            2. If other has unique elements according to this equality comparer, and this has less 
+            than the number of elements in other, then this can't be a superset
+            
+            </summary>
+            <param name="other"></param>
+            <returns>true if this is a superset of other; false if not</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this is a proper superset of other (i.e. other strictly contained in this)
+            
+            Implementation Notes: 
+            This is slightly more complicated than above because we have to keep track if there
+            was at least one element not contained in other.
+            
+            The following properties are used up-front to avoid element-wise checks:
+            1. If this is the empty set, then it can't be a proper superset of any set, even if 
+            other is the empty set.
+            2. If other is an empty set and this contains at least 1 element, then this is a proper
+            superset.
+            3. If other has unique elements according to this equality comparer, and other's count
+            is greater than or equal to this count, then this can't be a proper superset
+            
+            Furthermore, if other has unique elements according to this equality comparer, we can
+            use a faster element-wise check.
+            </summary>
+            <param name="other"></param>
+            <returns>true if this is a proper superset of other; false if not</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this set overlaps other (i.e. they share at least one item)
+            </summary>
+            <param name="other"></param>
+            <returns>true if these have at least one common element; false if disjoint</returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this and other contain the same elements. This is set equality: 
+            duplicates and order are ignored
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.RemoveWhere(System.Predicate{`0})">
+            <summary>
+            Remove elements that match specified predicate. Returns the number of elements removed
+            </summary>
+            <param name="match"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Net.System.HashSetEx`1.Comparer">
+            <summary>
+            Gets the IEqualityComparer that is used to determine equality of keys for 
+            the HashSetEx.
+            </summary>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.TrimExcess">
+            <summary>
+            Sets the capacity of this list to the size of the list (rounded up to nearest prime),
+            unless count is 0, in which case we release references.
+            
+            This method can be used to minimize a list's memory overhead once it is known that no
+            new elements will be added to the list. To completely clear a list and release all 
+            memory referenced by the list, execute the following statements:
+            
+            list.Clear();
+            list.TrimExcess(); 
+            </summary>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.CreateSetComparer">
+            <summary>
+            Used for deep equality of HashSetEx testing
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.Initialize(System.Int32)">
+            <summary>
+            Initializes buckets and slots arrays. Uses suggested capacity by finding next prime
+            greater than or equal to capacity.
+            </summary>
+            <param name="capacity"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IncreaseCapacity">
+            <summary>
+            Expand to new capacity. New capacity is next prime greater than or equal to suggested 
+            size. This is called when the underlying array is filled. This performs no 
+            defragmentation, allowing faster execution; note that this is reasonable since 
+            AddIfNotPresent attempts to insert new elements in re-opened spots.
+            </summary>
+            <param name="sizeSuggestion"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.SetCapacity(System.Int32,System.Boolean)">
+            <summary>
+            Set the underlying buckets array to size newSize and rehash.  Note that newSize
+            *must* be a prime.  It is very likely that you want to call IncreaseCapacity()
+            instead of this method.
+            </summary>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.AddIfNotPresent(`0)">
+            <summary>
+            Adds value to HashSetEx if not contained already
+            Returns true if added and false if already present
+            </summary>
+            <param name="value">value to find</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.ContainsAllElements(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Checks if this contains of other's elements. Iterates over other's elements and 
+            returns false as soon as it finds an element in other that's not in this.
+            Used by SupersetOf, ProperSupersetOf, and SetEquals.
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IsSubsetOfHashSetExWithSameEC(Net.System.HashSetEx{`0})">
+             <summary>
+             Implementation Notes:
+             If other is a hashset and is using same equality comparer, then checking subset is 
+             faster. Simply check that each element in this is in other.
+             
+             Note: if other doesn't use same equality comparer, then Contains check is invalid,
+             which is why callers must take are of this.
+             
+             If callers are concerned about whether this is a proper subset, they take care of that.
+            
+             </summary>
+             <param name="other"></param>
+             <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IntersectWithHashSetExWithSameEC(Net.System.HashSetEx{`0})">
+            <summary>
+            If other is a hashset that uses same equality comparer, intersect is much faster 
+            because we can use other's Contains
+            </summary>
+            <param name="other"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.IntersectWithEnumerable(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Iterate over other. If contained in this, mark an element in bit array corresponding to
+            its position in m_slots. If anything is unmarked (in bit array), remove it.
+            
+            This attempts to allocate on the stack, if below StackAllocThreshold.
+            </summary>
+            <param name="other"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.InternalIndexOf(`0)">
+            <summary>
+            Used internally by set operations which have to rely on bit array marking. This is like
+            Contains but returns index in slots array. 
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.SymmetricExceptWithUniqueHashSetEx(Net.System.HashSetEx{`0})">
+            <summary>
+            if other is a set, we can assume it doesn't have duplicate elements, so use this
+            technique: if can't remove, then it wasn't present in this set, so add.
+            
+            As with other methods, callers take care of ensuring that other is a hashset using the
+            same equality comparer.
+            </summary>
+            <param name="other"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.SymmetricExceptWithEnumerable(System.Collections.Generic.IEnumerable{`0})">
+             <summary>
+             Implementation notes:
+             
+             Used for symmetric except when other isn't a HashSetEx. This is more tedious because 
+             other may contain duplicates. HashSetEx technique could fail in these situations:
+             1. Other has a duplicate that's not in this: HashSetEx technique would add then 
+             remove it.
+             2. Other has a duplicate that's in this: HashSetEx technique would remove then add it
+             back.
+             In general, its presence would be toggled each time it appears in other. 
+             
+             This technique uses bit marking to indicate whether to add/remove the item. If already
+             present in collection, it will get marked for deletion. If added from other, it will
+             get marked as something not to remove.
+            
+             </summary>
+             <param name="other"></param>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.AddOrGetLocation(`0,System.Int32@)">
+            <summary>
+            Add if not already in hashset. Returns an out param indicating index where added. This 
+            is used by SymmetricExcept because it needs to know the following things:
+            - whether the item was already present in the collection or added from other
+            - where it's located (if already present, it will get marked for removal, otherwise
+            marked for keeping)
+            </summary>
+            <param name="value"></param>
+            <param name="location"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.CheckUniqueAndUnfoundElements(System.Collections.Generic.IEnumerable{`0},System.Boolean)">
+            <summary>
+            Determines counts that can be used to determine equality, subset, and superset. This
+            is only used when other is an IEnumerable and not a HashSetEx. If other is a HashSetEx
+            these properties can be checked faster without use of marking because we can assume 
+            other has no duplicates.
+            
+            The following count checks are performed by callers:
+            1. Equals: checks if unfoundCount = 0 and uniqueFoundCount = m_count; i.e. everything 
+            in other is in this and everything in this is in other
+            2. Subset: checks if unfoundCount >= 0 and uniqueFoundCount = m_count; i.e. other may
+            have elements not in this and everything in this is in other
+            3. Proper subset: checks if unfoundCount > 0 and uniqueFoundCount = m_count; i.e
+            other must have at least one element not in this and everything in this is in other
+            4. Proper superset: checks if unfound count = 0 and uniqueFoundCount strictly less
+            than m_count; i.e. everything in other was in this and this had at least one element
+            not contained in other.
+            
+            An earlier implementation used delegates to perform these checks rather than returning
+            an ElementCount struct; however this was changed due to the perf overhead of delegates.
+            </summary>
+            <param name="other"></param>
+            <param name="returnIfUnfound">Allows us to finish faster for equals and proper superset
+            because unfoundCount must be 0.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.ToArray">
+            <summary>
+            Copies this to an array. Used for DebugView
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.HashSetExEquals(Net.System.HashSetEx{`0},Net.System.HashSetEx{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Internal method used for HashSetExEqualityComparer. Compares set1 and set2 according 
+            to specified comparer.
+            
+            Because items are hashed according to a specific equality comparer, we have to resort
+            to n^2 search if they're using different equality comparers.
+            </summary>
+            <param name="set1"></param>
+            <param name="set2"></param>
+            <param name="comparer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.AreEqualityComparersEqual(Net.System.HashSetEx{`0},Net.System.HashSetEx{`0})">
+            <summary>
+            Checks if equality comparers are equal. This is used for algorithms that can
+            speed up if it knows the other item has unique elements. I.e. if they're using 
+            different equality comparers, then uniqueness assumption between sets break.
+            </summary>
+            <param name="set1"></param>
+            <param name="set2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.HashSetEx`1.InternalGetHashCode(`0)">
+            <summary>
+            Workaround Comparers that throw ArgumentNullException for GetHashCode(null).
+            </summary>
+            <param name="item"></param>
+            <returns>hash code</returns>
         </member>
         <member name="T:Net.System.ISegment">
             <summary>
@@ -3383,6 +5256,56 @@
             </summary>
             <typeparam name="TKey"></typeparam>
             <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="T:Net.System.ThreadPipeline`1">
+            <summary>
+            线程管线(流水线)
+            </summary>
+            <typeparam name="Worker"></typeparam>
+        </member>
+        <member name="P:Net.System.ThreadPipeline`1.MaxThread">
+            <summary>
+            并发线程数量, 发送线程和接收处理线程数量
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadPipeline`1.IsWorking">
+            <summary>
+            是否工作中?
+            </summary>
+        </member>
+        <member name="P:Net.System.ThreadPipeline`1.Groups">
+            <summary>
+            线程组, 优化多线程资源竞争问题
+            </summary>
+        </member>
+        <member name="F:Net.System.ThreadPipeline`1.OnProcess">
+            <summary>
+            当线程群处理
+            </summary>
+        </member>
+        <member name="M:Net.System.ThreadPipeline`1.SelectGroup">
+            <summary>
+            选择线程群
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.System.ThreadPipeline`1.AddWorker(`0)">
+            <summary>
+            添加工人
+            </summary>
+            <param name="worker"></param>
+        </member>
+        <member name="M:Net.System.ThreadPipeline`1.RemoveWorker(`0)">
+            <summary>
+            移除工人
+            </summary>
+            <param name="worker"></param>
+        </member>
+        <member name="M:Net.System.ThreadPipeline`1.Processing(System.Object)">
+            <summary>
+            业务处理线程组
+            </summary>
+            <param name="state"></param>
         </member>
         <member name="T:Net.System.ArraySegment">
             <summary>
@@ -3490,6 +5413,11 @@
         <member name="F:Net.System.SegmentType.ArraySegment">
             <summary>
             使用内存片(结构内存段)
+            </summary>
+        </member>
+        <member name="F:Net.System.SegmentType.FixedSegment">
+            <summary>
+            固定片段, 不进行压缩基础类型, 如int直接占用4字节, long直接占用8字节...
             </summary>
         </member>
         <member name="T:Net.System.BufferPool">
@@ -4276,1392 +6204,6 @@
             巡逻路径点组件
             </summary>
         </member>
-        <member name="T:Net.Client.ClientBase">
-            <summary>
-            网络客户端核心基类 2019.3.3
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Client">
-            <summary>
-            客户端套接字
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.host">
-            <summary>
-            IP地址
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.port">
-            <summary>
-            端口号
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.RpcModels">
-            <summary>
-            发送缓存器
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.RpcDic">
-            <summary>
-            远程方法优化字典
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.RpcHashDic">
-            <summary>
-            远程方法哈希字典
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.MemberInfos">
-            <summary>
-            已经收集过的类信息
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.RpcTargetHash">
-            <summary>
-            当前收集rpc的对象信息
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.SyncVarDic">
-            <summary>
-            字段同步信息
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.RpcWorkQueue">
-            <summary>
-            Rpc任务队列
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.threadDic">
-            <summary>
-            线程字典
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.NetworkState">
-            <summary>
-            网络连接状态
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Connected">
-            <summary>
-            服务器与客户端是否是连接状态
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Instance">
-            <summary>
-            网络客户端实例
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.UseUnityThread">
-            <summary>
-            是否使用unity主线程进行每一帧更新？  
-            True：使用unity的Update等方法进行更新，unity的组建可以在Rpc函数内进行调用。
-            False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出现错误问题!
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.sendCount">
-            <summary>
-            每秒发送数据长度
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.sendAmount">
-            <summary>
-            每秒发送数据次数
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.resolveAmount">
-            <summary>
-            每秒解析rpc函数次数
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.receiveAmount">
-            <summary>
-            每秒接收网络数据次数
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.receiveCount">
-            <summary>
-            每秒接收网络数据大小
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.FPS">
-            <summary>
-            网络FPS
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.outflowTotal">
-            <summary>
-            从启动到现在总流出的数据流量
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.inflowTotal">
-            <summary>
-            从启动到现在总流入的数据流量
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.heart">
-            <summary>
-            心跳次数
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.openClient">
-            <summary>
-            当前客户端是否打开(运行)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.IsOpenClient">
-            <summary>
-            客户端是否处于打开状态
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.LogRpc">
-            <summary>
-            输出调用网络函数
-            </summary>
-        </member>
-        <member name="E:Net.Client.ClientBase.Log">
-            <summary>
-            输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行输出
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnConnectedHandle">
-            <summary>
-            当连接服务器成功事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnConnectFailedHandle">
-            <summary>
-            当连接失败事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnTryToConnectHandle">
-            <summary>
-            当尝试连接服务器事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.TryToConnectFailedHandle">
-            <summary>
-            当尝试连接失败
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnConnectLostHandle">
-            <summary>
-            当连接中断 (异常) 事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnDisconnectHandle">
-            <summary>
-            当断开连接事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnReceiveDataHandle">
-            <summary>
-            当接收到自定义的cmd指令时调用事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnReconnectHandle">
-            <summary>
-            当断线重连成功触发事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnCloseConnectHandle">
-            <summary>
-            当关闭连接事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnNetworkDataTraffic">
-            <summary>
-            当统计网络流量时触发
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnOperationSync">
-            <summary>
-            当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRevdRTProgress">
-            <summary>
-            当服务器发送的大数据时, 可监听此事件显示进度值
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSendRTProgress">
-            <summary>
-            当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnAddRpcHandle">
-            <summary>
-            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRemoveRpc">
-            <summary>
-            当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRPCExecute">
-            <summary>
-            当执行调用远程过程方法时触发
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSerializeRPC">
-            <summary>
-            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnDeserializeRPC">
-            <summary>
-            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSerializeOPT">
-            <summary>
-            当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnDeserializeOPT">
-            <summary>
-            当内部解析帧操作列表时调用  !!!!!只允许一个委托
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRpcTaskRegister">
-            <summary>
-            当可等待的rpc方法被注册, 用于Rpc适配器上
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnPingCallback">
-            <summary>
-            ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSendErrorHandle">
-            <summary>
-            当socket发送失败调用. 参数1:发送的字节数组  ->可通过SendByteData方法重新发送
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnP2PCallback">
-            <summary>
-            当从服务器获取的客户端地址点对点
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSwitchPortHandle">
-            <summary>
-            当网关服务器指定这个客户端连接到一个游戏服务器时调用,回调有游戏服务器的ip和端口
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnDownloadFileHandle">
-            <summary>
-            当开始下载文件时调用, 参数1(string):服务器发送的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnReceiveFileHandle">
-            <summary>
-            当服务器发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRevdFileProgress">
-            <summary>
-            当接收到发送的文件进度
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSendFileProgress">
-            <summary>
-            当发送的文件进度
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnRegisterNetworkIdentity">
-            <summary>
-            当注册网络物体唯一标识
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnWhenQueuing">
-            <summary>
-            当排队等待中
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnQueueCancellation">
-            <summary>
-            当排队解除调用
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnServerFull">
-            <summary>
-            当服务器爆满，服务器积极拒绝客户端请求
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnUpdateVersion">
-            <summary>
-            当更新版本(参数:服务器的版本号)-- 当服务器版本和客户端版本不一致时, 会调用此事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnSyncPropertyHandle">
-            <summary>
-            当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.OnDataQueueOverflow">
-            <summary>
-            当数据超出<see cref="P:Net.Client.ClientBase.LimitQueueCount"/>限制后触发的事件
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.frame">
-            <summary>
-            4个字节记录数据长度 + 1CRC校验
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.HeartInterval">
-            <summary>
-            心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
-            如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.HeartLimit">
-            <summary>
-            <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
-            <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Identify">
-            <summary>
-            客户端唯一标识, 当登录游戏后, 服务器下发下来的唯一标识, 这个标识就是你的玩家名称, 是<see cref="P:Net.Server.NetPlayer.PlayerID"/>值
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.UID">
-            <summary>
-            用户唯一标识, 对应服务器的<see cref="P:Net.Server.NetPlayer.UserID"/>
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.PreUserId">
-            <summary>
-            上次的用户id, 断线重连时用到
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.WorkerQueue">
-            <summary>
-            同步线程上下文任务队列
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.PackageSize">
-            <summary>
-            接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.stack">
-            <summary>
-            TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.StackStream">
-            <summary>
-            TCP叠包临时缓存流
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.operations">
-            <summary>
-            待发送的操作列表
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.MTU">
-            <summary>
-            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节, 这里默认为50000, 如果数据超过50000,则是该框架进行分片. 传输层则需要分片为50000/1472=34个数据片</para>
-            <para>------ 局域网可以设置为50000, 公网需要设置为1300 或 1400, 如果设置为1400还是发送失败, 则需要设置为1300或以下进行测试 ------</para>
-            <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
-            <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
-            <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
-            <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="!:Server.ServerBase&lt;Player, Scene&gt;.MTU"/>
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.RTO">
-            <summary>
-            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.MTPS">
-            <summary>
-            (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.FlowControl">
-            <summary>
-            流量控制模式，只有Gcp协议可用
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.localPort">
-            <summary>
-            客户端端口
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.PackageLength">
-            <summary>
-            组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.LimitQueueCount">
-            <summary>
-            限制发送队列长度
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.AutoReconnecting">
-            <summary>
-            自动断线重新连接, 默认是true
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.CurrReconnect">
-            <summary>
-            当前尝试重连次数
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.ReconnectCount">
-            <summary>
-            断线重连次数, 默认会重新连接10次，如果连接10次都失败，则会关闭客户端并释放占用的资源
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.ReconnectInterval">
-            <summary>
-            断线重连间隔, 默认间隔2秒
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.SendInterval">
-            <summary>
-            每次发送数据间隔，每秒大概执行1000次
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.IsMultiThread">
-            <summary>
-            是否使用多线程来接收网络数据? 默认是多线程
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.SerializeAdapter">
-            <summary>
-            序列化适配器
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.Version">
-            <summary>
-            版本号
-            </summary>
-        </member>
-        <member name="P:Net.Client.ClientBase.PackageAdapter">
-            <summary>
-            数据包适配器
-            </summary>
-        </member>
-        <member name="F:Net.Client.ClientBase.LoopEvent">
-            <summary>
-            网络循环事件处理
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.#ctor">
-            <summary>
-            构造函数
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.#ctor(System.Boolean)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="useUnityThread">
-            是否使用unity主线程进行每一帧更新？  
-            True：使用unity的Update等方法进行更新，unity的组建可以在Rpc函数内进行调用。
-            False：使用多线程进行网络更新，使用多线程更新后unity的组件将不能在rpc函数内进行赋值设置等操作，否则会出错!
-            </param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
-            <summary>
-            添加Rpc
-            </summary>
-            <param name="target">注册的对象实例</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object)">
-            <summary>
-            添加网络Rpc
-            </summary>
-            <param name="target">注册的对象实例</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
-            <summary>
-            添加网络Rpc
-            </summary>
-            <param name="target">注册的对象实例</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.RemoveRpc(System.Object)">
-            <summary>
-            移除客户端的Rpc方法
-            </summary>
-            <param name="target">将此对象的所有带有Rpc特性的方法移除</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.BindRpc(System.Object)">
-            <summary>
-            绑定Rpc函数
-            </summary>
-            <param name="target">注册的对象实例</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.BindNetworkHandle(Net.Share.INetworkHandle)">
-            <summary>
-            绑定网络状态处理接口
-            </summary>
-            <param name="network"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.RemoveNetworkHandle(Net.Share.INetworkHandle)">
-            <summary>
-            移除网络状态处理接口
-            </summary>
-            <param name="network"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.DispatchRpc(System.String,System.Object[])">
-            <summary>
-            派发给所有被收集的Rpc方法
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.DispatchRpc(System.UInt16,System.Object[])">
-            <summary>
-            派发给所有被收集的Rpc方法
-            </summary>
-            <param name="hash"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.PushRpcData(Net.Share.RPCModel)">
-            <summary>
-            压入远程过程调用方法(RPC)， 将在NetworkEventUpdate线程调用
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.StartThread(System.String,System.Threading.ThreadStart)">
-            <summary>
-            开启线程
-            </summary>
-            <param name="threadKey">线程名称</param>
-            <param name="start">线程函数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AbortedThread">
-            <summary>
-            结束所有线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.NetworkUpdate">
-            <summary>
-            网络数据更新
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnInvokeRpc(Net.Share.IRPCData)">
-            <summary>
-            当调用Rpc函数时调用, 如果想提高性能, 可重写此方法自行判断需要调用哪个方法
-            </summary>
-            <param name="rpc">远程过程函数对象</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Connect">
-            <summary>
-            连接服务器
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.Connect(System.Action{System.Boolean})">
-            <summary>
-            连接服务器
-            </summary>
-            <param name="result">连接结果</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32)">
-            <summary>
-            连接服务器
-            </summary>
-            <param name="host">IP地址</param>
-            <param name="port">端口号</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32,System.Action{System.Boolean})">
-            <summary>
-            连接服务器
-            </summary>
-            <param name="host">IP地址</param>
-            <param name="port">端口号</param>
-            <param name="result">连接结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Connect(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
-            <summary>
-            连接服务器
-            </summary>
-            <param name="host">IP地址</param>
-            <param name="port">端口号</param>
-            <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
-            <param name="result">连接结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.ConnectResult(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
-            <summary>
-            连接服务器
-            </summary>
-            <param name="host">连接的服务器主机IP地址</param>
-            <param name="port">连接的服务器主机端口号</param>
-            <param name="localPort">设置自身端口号,如果不设置自身端口则值为-1</param>
-            <param name="result">连接结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Broadcast(System.Action{System.Boolean,System.String})">
-            <summary>
-            局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
-            </summary>
-            <param name="result">连接结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Broadcast(System.Int32,System.Action{System.Boolean,System.String})">
-            <summary>
-            局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
-            </summary>
-            <param name="port">广播到服务器的端口号</param>
-            <param name="result">连接结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.StartupThread">
-            <summary>
-            连接成功处理
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnConnected(System.Boolean,System.Action{System.Boolean})">
-            <summary>
-            连接结果处理
-            </summary>
-            <param name="result">结果</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Disconnect(System.Boolean)">
-            <summary>
-            断开连接
-            </summary>
-            <param name="reuseSocket">断开连接后还能重新使用？</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.NetworkFlowHandler">
-            <summary>
-            调式输出网络流量信息
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnOptPacket(System.Int32)">
-            <summary>
-            当游戏操作行为封包数据时调用
-            </summary>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendDirect">
-            <summary>
-            立刻发送, 不需要等待帧时间 (当你要强制把客户端下线时,你还希望客户端先发送完数据后,再强制客户端退出游戏用到)
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendOperations">
-            <summary>
-            打包操作同步马上要发送了
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.ResetDataHead(Net.System.ISegment)">
-            <summary>
-            重置头部数据大小, 在小数据达到<see cref="P:Net.Client.ClientBase.PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
-            </summary>
-            <param name="stream"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendDataHandler(Net.System.QueueSafe{Net.Share.RPCModel})">
-            <summary>
-            发送处理
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnSerializeRpcInternal(Net.Share.RPCModel)">
-            <summary>
-            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
-            </summary>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
-            </summary>
-            <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.NetworkProcessing">
-            <summary>
-            网络处理线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.SingleNetworkProcessing">
-            <summary>
-            单线程网络处理
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.NetworkException(System.Exception)">
-            <summary>
-            网络异常处理
-            </summary>
-            <param name="ex"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.ResolveBuffer(Net.System.ISegment@,System.Boolean)">
-            <summary>
-            解析网络数据包
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.String,System.Object[])">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.UInt16,System.Object[])">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.String,System.Object[])">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.UInt16,System.Object[])">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="opt"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddOperations(System.Collections.Generic.ICollection{Net.Share.Operation})">
-            <summary>
-            添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
-            而Send则是直接发送
-            </summary>
-            <param name="opts"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.HeartHandler">
-            <summary>
-            后台线程发送心跳包
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.PingServer(System.String)">
-            <summary>
-            测试服务器网络情况
-            </summary>
-            <param name="ip"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.InternalReconnection">
-            <summary>
-            内部断线重新连接
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.Reconnection">
-            <summary>
-            断线重新连接
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.Close(System.Boolean,System.Int32)">
-            <summary>
-            关闭连接,释放线程以及所占资源
-            </summary>
-            <param name="isWait">true:等待内部1秒结束所有线程再关闭? false:直接关闭</param>
-            <param name="millisecondsTimeout">等待毫秒数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Send(System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Send(System.Byte,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">发送字节数组缓冲区</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Send(System.String,System.Object[])">
-            <summary>
-            远程调用函数, 调用服务器的方法名为func的函数
-            </summary>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Send(System.Byte,System.String,System.Object[])">
-            <summary>
-            远程调用函数, 调用服务器的方法名为func的函数
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.String,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="cmd"></param>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.String,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="cmd"></param>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.UInt16,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="cmd"></param>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.UInt16,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-            </summary>
-            <param name="cmd"></param>
-            <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.String,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.String,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.String,System.String,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.String,System.String,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.String,System.String,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.UInt16,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.UInt16,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.UInt16,System.UInt16,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.UInt16,System.UInt16,System.Int32,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.Call(System.Byte,System.UInt16,System.UInt16,System.Int32,System.Boolean,System.Object[])">
-            <summary>
-            远程同步调用
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="callbackFunc">服务器返回后调用的函数名</param>
-            <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-            <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-            <param name="pars"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.String,System.Object[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.String,System.Object[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.UInt16,System.Object[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="methodHash"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.UInt16,System.Object[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="cmd"></param>
-            <param name="methodHash"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(Net.Share.RPCModel)">
-            <summary>
-            发送可靠的网络数据,需要了解model的各个参数
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendRT(System.Byte,System.Byte[])">
-            <summary>
-            发送可靠的网络数据
-            </summary>
-            <param name="cmd">网络命令</param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SetHeartTime(System.Byte,System.Int32)">
-            <summary>
-            设置心跳时间
-            </summary>
-            <param name="timeoutLimit">心跳检测次数, 默认检测5次</param>
-            <param name="interval">心跳时间间隔, 每interval毫秒会检测一次</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.Ping">
-            <summary>
-            ping测试网络延迟, 通过<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件回调
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.Ping(System.Action{System.UInt32})">
-            <summary>
-            ping测试网络延迟, 此方法帮你监听<see cref="P:Net.Client.ClientBase.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
-            </summary>
-            <param name="callback"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddAdapter(Net.Share.IAdapter)">
-            <summary>
-            添加适配器
-            </summary>
-            <param name="adapter"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddAdapter(Net.Share.AdapterType,Net.Share.IAdapter)">
-            <summary>
-            添加适配器
-            </summary>
-            <param name="type"></param>
-            <param name="adapter"></param>
-        </member>
-        <member name="M:Net.Client.ClientBase.AddStateHandler(Net.Share.NetworkState,System.Action)">
-            <summary>
-            添加网络状态事件处理
-            </summary>
-            <param name="listen">要监听的网络状态</param>
-            <param name="action">监听网络状态的回调方法</param>
-        </member>
-        <member name="M:Net.Client.ClientBase.SyncVarHandler">
-            <summary>
-            字段,属性同步处理线程
-            </summary>
-        </member>
-        <member name="M:Net.Client.ClientBase.SendFile(System.String)">
-            <summary>
-            发送文件, 服务器可以通过重写<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFile"/>方法来接收 或 使用事件<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFileHandle"/>来监听并处理
-            </summary>
-            <param name="filePath"></param>
-            <param name="bufferSize">每次发送数据大小</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.CheckSend">
-            <summary>
-            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-            </summary>
-            <returns>是否可发送数据</returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.CheckSendRT">
-            <summary>
-            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-            </summary>
-            <returns>是否可发送数据</returns>
-        </member>
-        <member name="M:Net.Client.ClientBase.OnSetConfigInfo(System.Object[])">
-            <summary>
-            当设置配置信息
-            </summary>
-            <param name="args"></param>
-        </member>
-        <member name="T:Net.Client.TcpClient">
-            <summary>
-            TCP客户端类型 
-            第三版本 2020.9.14
-            </summary>
-        </member>
-        <member name="M:Net.Client.TcpClient.#ctor">
-            <summary>
-            构造可靠传输客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.TcpClient.#ctor(System.Boolean)">
-            <summary>
-            构造不可靠传输客户端
-            </summary>
-            <param name="useUnityThread">使用unity多线程?</param>
-        </member>
-        <member name="M:Net.Client.TcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.TcpClientTest},System.Action{System.Collections.Generic.List{Net.Client.TcpClientTest}},Net.Share.IAdapter)">
-            <summary>
-            tcp压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
-        <member name="T:Net.Client.UdpClient">
-            <summary>
-            Udp网络客户端
-            在安卓端必须设置可以后台运行, 如果不设置,当你按下home键后,app的所有线程将会被暂停,这会影响网络心跳检测线程,导致网络中断
-            解决方法 : 在android项目AndroidManifest.xml文件中的activity中添加如下内容：
-            android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" 
-            详情请看此博文:https://www.cnblogs.com/nanwei/p/9125316.html
-            或这个博文: http://www.voidcn.com/article/p-yakpcmce-bpk.html
-            </summary>
-        </member>
-        <member name="M:Net.Client.UdpClient.#ctor">
-            <summary>
-            构造udp可靠客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.UdpClient.#ctor(System.Boolean)">
-            <summary>
-            构造udp可靠客户端
-            </summary>
-            <param name="useUnityThread">使用unity多线程?</param>
-        </member>
-        <member name="M:Net.Client.UdpClient.GetP2P(System.Int32)">
-            <summary>
-            获取p2p IP和端口, 通过client.OnP2PCallback事件回调
-            </summary>
-            <param name="uid"></param>
-        </member>
-        <member name="M:Net.Client.UdpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.UdpClientTest},System.Action{System.Collections.Generic.List{Net.Client.UdpClientTest}},Net.Share.IAdapter)">
-            <summary>
-            udp压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
-        <member name="T:Net.Client.GcpClient">
-            <summary>
-            Gcp协议
-            </summary>
-        </member>
-        <member name="M:Net.Client.UdpClientTest.Update">
-            <summary>
-            单线程更新，需要开发者自动调用更新
-            </summary>
-        </member>
-        <member name="T:Net.Client.KcpClient">
-            <summary>
-            kcp客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.KcpClient.Testing(System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Action{Net.Client.KcpClientTest},System.Action{System.Collections.Generic.List{Net.Client.KcpClientTest}},Net.Share.IAdapter)">
-            <summary>
-            udp压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
-        <member name="M:Net.Client.KcpClientTest.Update">
-            <summary>
-            单线程更新，需要开发者自动调用更新
-            </summary>
-        </member>
-        <member name="T:Net.Client.UdxClient">
-            <summary>
-            udx客户端类型 -> 只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
-            第三版本 2020.9.14
-            </summary>
-        </member>
-        <member name="M:Net.Client.UdxClient.#ctor">
-            <summary>
-            构造可靠传输客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.UdxClient.#ctor(System.Boolean)">
-            <summary>
-            构造可靠传输客户端
-            </summary>
-            <param name="useUnityThread">使用unity多线程?</param>
-        </member>
-        <member name="T:Net.Client.WebClient">
-            <summary>
-            web客户端类型
-            第三版本 2020.9.14
-            </summary>
-        </member>
-        <member name="P:Net.Client.WebClient.Scheme">
-            <summary>
-            websocket连接策略, 有wss和ws
-            </summary>
-        </member>
-        <member name="P:Net.Client.WebClient.SslProtocols">
-            <summary>
-            Ssl类型
-            </summary>
-        </member>
-        <member name="P:Net.Client.WebClient.Certificate">
-            <summary>
-            证书
-            </summary>
-        </member>
-        <member name="M:Net.Client.WebClient.#ctor">
-            <summary>
-            构造websocket客户端
-            </summary>
-        </member>
-        <member name="M:Net.Client.WebClient.#ctor(System.Boolean)">
-            <summary>
-            构造websocket客户端
-            </summary>
-            <param name="useUnityThread">使用unity多线程?</param>
-        </member>
-        <member name="M:Net.Client.WebClient.Testing(System.String,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            udp压力测试
-            </summary>
-            <param name="ip">服务器ip</param>
-            <param name="port">服务器端口</param>
-            <param name="clientLen">测试客户端数量</param>
-            <param name="dataLen">每个客户端数据大小</param>
-        </member>
-        <member name="T:Net.Config.App">
-            <summary>
-            gdnet应用程序入口
-            </summary>
-        </member>
-        <member name="M:Net.Config.App.Setup">
-            <summary>
-            初始化GDNet环境
-            </summary>
-        </member>
-        <member name="M:Net.Config.App.Init">
-            <summary>
-            初始化GDNet环境
-            </summary>
-        </member>
-        <member name="M:Net.Config.App.Collect">
-            <summary>
-            收集运行时初始化方法
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.UseMemoryStream">
-            <summary>
-            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
-            使用内存流缓存速度会比较快, 但运行内存占用比较大
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.BaseCapacity">
-            <summary>
-            内存接收缓冲区基础容量 默认1024
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.BasePath">
-            <summary>
-            项目的持久路径, 网络需要处理文件时的目录
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.ConfigPath">
-            <summary>
-            配置文件的目录
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.DataPath">
-            <summary>
-            获取项目路径
-            </summary>
-        </member>
-        <member name="P:Net.Config.Config.MainThreadTick">
-            <summary>
-            在主线程处理所有网络功能? 否则会在多线程进行
-            </summary>
-        </member>
-        <member name="T:Net.Config.TableConfig">
-            <summary>
-            表配置类, 可双端使用
-            </summary>
-        </member>
-        <member name="M:Net.Config.TableConfig.LoadTableFile(System.String)">
-            <summary>
-            加载表文件
-            </summary>
-            <param name="path"></param>
-        </member>
-        <member name="M:Net.Config.TableConfig.LoadTable(System.String)">
-            <summary>
-            加载表数据
-            </summary>
-            <param name="jsonStr"></param>
-        </member>
-        <member name="M:Net.Config.TableConfig.GetTable(System.String)">
-            <summary>
-            获取某个表
-            </summary>
-            <param name="sheetName"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Config.TableConfig.GetDataConfig``1(System.String)">
-            <summary>
-            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
-            </summary>
-            <typeparam name="T">要获取的类型</typeparam>
-            <param name="filterExpression">过滤表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Config.TableConfig.GetDataConfigs``1(System.String)">
-            <summary>
-            获取excel表格数据，filterExpression参数例子: "Name = 'UI_Message'"
-            </summary>
-            <typeparam name="T">要获取的类型</typeparam>
-            <param name="filterExpression">过滤表达式</param>
-            <returns></returns>
-        </member>
         <member name="T:Net.Event.EventSystem">
             <summary>
             事件处理静态类, 此类可以用于计时调用事件
@@ -5835,7 +6377,13 @@
             </summary>
             <param name="message"></param>
         </member>
-        <member name="M:Net.Event.NDebug.BindConsoleLog(System.Boolean)">
+        <member name="M:Net.Event.NDebug.WriteLog(System.Object)">
+            <summary>
+            写入日志文件
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:Net.Event.NDebug.BindConsoleLog(System.Boolean,System.Int32)">
             <summary>
             绑定控制台输出
             </summary>
@@ -5952,12 +6500,13 @@
             </summary>
             <param name="eventId"></param>
         </member>
-        <member name="M:Net.Event.TimerEvent.ResetTimeInterval(System.Int32,System.UInt64)">
+        <member name="M:Net.Event.TimerEvent.ResetTimeInterval(System.Int32,System.Int64,System.Boolean)">
             <summary>
             重置计时器事件间隔
             </summary>
             <param name="eventID"></param>
             <param name="interval"></param>
+            <param name="restartTiming">是否废弃以前的计时, 从当前重新开始新的计时</param>
         </member>
         <member name="M:Net.Event.TimerEvent.ResetEvents">
             <summary>
@@ -6014,14 +6563,9 @@
             玩家所在的场景实体
             </summary>
         </member>
-        <member name="P:Net.Server.NetPlayer.RpcDic">
+        <member name="P:Net.Server.NetPlayer.RpcCollectDic">
             <summary>
-            远程方法优化字典
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.RpcHashDic">
-            <summary>
-            远程方法哈希字典
+            远程调用方法收集
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.MemberInfos">
@@ -6102,6 +6646,11 @@
         <member name="P:Net.Server.NetPlayer.BytesReceived">
             <summary>
             此客户端接收到的字节总量
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Token">
+            <summary>
+            当前客户端请求的Token, 用于客户端响应, 如果在Rpc执行方法使用异步, 则需要记录一下token再异步, 否则token会被冲掉, 导致响应token错误
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.CRCError">
@@ -6548,14 +7097,9 @@
             io完成端口对象
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`1.RpcDic">
+        <member name="P:Net.Server.ServerBase`1.RpcCollectDic">
             <summary>
-            远程方法优化字典
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.RpcHashDic">
-            <summary>
-            远程方法哈希字典
+            远程调用方法收集
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`1.MemberInfos">
@@ -6764,11 +7308,6 @@
             程序根路径, 网络数据缓存读写路径
             </summary>
         </member>
-        <member name="F:Net.Server.ServerBase`1.ThreadGroups">
-            <summary>
-            线程组, 优化多线程资源竞争问题
-            </summary>
-        </member>
         <member name="F:Net.Server.ServerBase`1.QueueUp">
             <summary>
             排队队列
@@ -6807,6 +7346,16 @@
         <member name="P:Net.Server.ServerBase`1.BigDataCacheLength">
             <summary>
             大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.SendBufferSize">
+            <summary>
+            设置Socket的发送缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.ReceiveBufferSize">
+            <summary>
+            设置Socket的接收缓冲区大小, 也叫做窗口大小
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`1.OnStartingHandle">
@@ -6854,7 +7403,7 @@
             当客户端发送的大数据时, 可监听此事件显示进度值
             </summary>
         </member>
-        <member name="P:Net.Server.ServerBase`1.OnSendRTProgressHandle">
+        <member name="P:Net.Server.ServerBase`1.OnCallProgressHandle">
             <summary>
             当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
             </summary>
@@ -7033,7 +7582,7 @@
             <param name="client"></param>
             <param name="progress"></param>
         </member>
-        <member name="M:Net.Server.ServerBase`1.OnSendRTProgress(`0,Net.Share.RTProgress)">
+        <member name="M:Net.Server.ServerBase`1.OnCallProgress(`0,Net.Share.RTProgress)">
             <summary>
             当服务器发送的大数据时, 可监听此事件显示进度值
             </summary>
@@ -7098,11 +7647,11 @@
             开始接收数据
             </summary>
         </member>
-        <member name="M:Net.Server.ServerBase`1.NetworkProcessing(System.Object)">
+        <member name="M:Net.Server.ServerBase`1.NetworkProcessing(Net.Share.ThreadGroup{`0})">
             <summary>
             业务处理线程组
             </summary>
-            <param name="obj"></param>
+            <param name="group"></param>
         </member>
         <member name="M:Net.Server.ServerBase`1.LoginHandler(`0)">
             <summary>
@@ -7158,125 +7707,21 @@
             关闭服务器
             </summary>
         </member>
-        <member name="M:Net.Server.ServerBase`1.Send(`0,System.Byte[])">
+        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.Int32,System.Boolean,System.Int32,System.Object[])">
             <summary>
-            发送网络数据
+            向客户端发送消息
             </summary>
-            <param name="client">发送数据到的客户端</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Send(`0,System.Byte,System.Byte[])">
-            <summary>
-            发送自定义网络数据
-            </summary>
-            <param name="client">发送到客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">数据缓冲区</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Send(`0,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送数据到的客户端</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Send(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送网络数据
-            </summary>
-            <param name="client">发送到的客户端</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">RPCFun函数</param>
-            <param name="pars">RPCFun参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Send(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            发送灵活数据包
-            </summary>
-            <param name="client">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendRT(`0,System.String,System.Object[])">
-            <summary>
-            发送网络可靠传输数据, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendRT(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送可靠网络传输, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendRT(`0,System.Byte[])">
-            <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendRT(`0,System.Byte,System.Byte[])">
-            <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendRT(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            发送灵活数据包
-            </summary>
-            <param name="client">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.String,System.Object[])">
-            <summary>
-            发送网络可靠传输数据, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.String,System.Object[])">
-            <summary>
-            发送可靠网络传输, 可以发送大型文件数据
-            调用此方法通常情况下是一定把数据发送成功为止, 
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="func">函数名</param>
-            <param name="pars">参数</param>
         </member>
         <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte[])">
             <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            向客户端发送消息
             </summary>
             <param name="client"></param>
             <param name="buffer"></param>
         </member>
         <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.Byte[])">
             <summary>
-            发送可靠网络传输, 可发送大数据流
-            调用此方法通常情况下是一定把数据发送成功为止, 
+            向客户端发送消息
             </summary>
             <param name="client"></param>
             <param name="cmd">网络命令</param>
@@ -7291,48 +7736,6 @@
             <param name="buffer">要包装的数据,你自己来定</param>
             <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
             <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[])">
-            <summary>
-            网络多播, 发送自定义数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer">自定义字节数组</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端 (灵活数据包)
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.String,System.Object[])">
-            <summary>
-            网络多播, 发送数据到clients集合的客户端
-            </summary>
-            <param name="clients">客户端集合</param>
-            <param name="cmd">网络命令</param>
-            <param name="func">本地客户端rpc函数</param>
-            <param name="pars">本地客户端rpc参数</param>
         </member>
         <member name="M:Net.Server.ServerBase`1.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
@@ -7445,7 +7848,7 @@
             </summary>
             <returns>是否可发送数据</returns>
         </member>
-        <member name="M:Net.Server.ServerBase`1.CheckSendRT(`0)">
+        <member name="M:Net.Server.ServerBase`1.CheckCall(`0)">
             <summary>
             检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
             </summary>
@@ -7823,6 +8226,11 @@
             Ssl类型
             </summary>
         </member>
+        <member name="P:Net.Server.HttpServer`2.DocumentRootPath">
+            <summary>
+            文档根路径, 指定你的网站文件根路径
+            </summary>
+        </member>
         <member name="T:Net.Server.HttpServer">
             <summary>
             默认http服务器，当不需要处理Player对象和Scene对象时可使用
@@ -7991,15 +8399,272 @@
             热更层借助此组件进行更新, ilr不支持多继承, 接口继承
             </summary>
         </member>
-        <member name="M:Fast2BuildMethod.DynamicBuild(System.Boolean,System.Int32,System.Type[])">
+        <member name="T:K4os.Hash.xxHash.HashAlgorithmAdapter">
+            <summary>
+            Adapter implementing <see cref="T:System.Security.Cryptography.HashAlgorithm"/>
+            </summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.HashAlgorithmAdapter.#ctor(System.Int32,System.Action,System.Action{System.Byte[],System.Int32,System.Int32},System.Func{System.Byte[]})">
+            <summary>
+            Creates new <see cref="T:K4os.Hash.xxHash.HashAlgorithmAdapter"/>. 
+            </summary>
+            <param name="hashSize">Hash size (in bytes)</param>
+            <param name="reset">Reset function.</param>
+            <param name="update">Update function.</param>
+            <param name="digest">Digest function.</param>
+        </member>
+        <member name="P:K4os.Hash.xxHash.HashAlgorithmAdapter.HashSize">
+            <inheritdoc />
+        </member>
+        <member name="P:K4os.Hash.xxHash.HashAlgorithmAdapter.Hash">
+            <inheritdoc />
+        </member>
+        <member name="M:K4os.Hash.xxHash.HashAlgorithmAdapter.HashCore(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:K4os.Hash.xxHash.HashAlgorithmAdapter.HashFinal">
+            <inheritdoc />
+        </member>
+        <member name="M:K4os.Hash.xxHash.HashAlgorithmAdapter.Initialize">
+            <inheritdoc />
+        </member>
+        <member name="T:K4os.Hash.xxHash.XXH">
+            <summary>
+            Base class for both <see cref="T:K4os.Hash.xxHash.XXH32"/> and <see cref="T:K4os.Hash.xxHash.XXH64"/>. Do not use directly.
+            </summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH.#ctor">
+            <summary>Protected constructor to prevent instantiation.</summary>
+        </member>
+        <member name="T:K4os.Hash.xxHash.XXH32">
+            <summary>
+            xxHash 32-bit.
+            </summary>
+        </member>
+        <member name="T:K4os.Hash.xxHash.XXH32.State">
+            <summary>Internal state of the algorithm.</summary>
+        </member>
+        <member name="F:K4os.Hash.xxHash.XXH32.EmptyHash">
+            <summary>Hash of empty buffer.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.Void*,System.Int32)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.Void*,System.Int32,System.UInt32)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+            <param name="seed">Seed.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.ReadOnlySpan{System.Byte})">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.Byte[],System.Int32,System.Int32)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="offset">Starting offset.</param>
+            <param name="length">Length of buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.#ctor">
+            <summary>Creates xxHash instance.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.#ctor(System.UInt32)">
+            <summary>Creates xxHash instance.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Reset">
+            <summary>Resets hash calculation.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Reset(System.UInt32)">
+            <summary>Resets hash calculation.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Void*,System.Int32)">
+            <summary>Updates the hash using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Byte*,System.Int32)">
+            <summary>Updates the hash using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.ReadOnlySpan{System.Byte})">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Byte[],System.Int32,System.Int32)">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="offset">Starting offset.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Digest">
+            <summary>Hash so far.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.DigestBytes">
+            <summary>Hash so far, as byte array.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.AsHashAlgorithm">
+            <summary>Converts this class to <see cref="T:System.Security.Cryptography.HashAlgorithm"/></summary>
+            <returns><see cref="T:System.Security.Cryptography.HashAlgorithm"/></returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Reset(K4os.Hash.xxHash.XXH32.State@,System.UInt32)">
+            <summary>Resets hash calculation.</summary>
+            <param name="state">Hash state.</param>
+            <param name="seed">Hash seed.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(K4os.Hash.xxHash.XXH32.State@,System.Void*,System.Int32)">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="state">Hash state.</param>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Update(K4os.Hash.xxHash.XXH32.State@,System.ReadOnlySpan{System.Byte})">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="state">Hash state.</param>
+            <param name="bytes">Buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH32.Digest(K4os.Hash.xxHash.XXH32.State@)">
+            <summary>Hash so far.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="T:K4os.Hash.xxHash.XXH64">
+            <summary>
+            xxHash 64-bit.
+            </summary>
+        </member>
+        <member name="T:K4os.Hash.xxHash.XXH64.State">
+            <summary>Internal state of the algorithm.</summary>
+        </member>
+        <member name="F:K4os.Hash.xxHash.XXH64.EmptyHash">
+            <summary>Hash of empty buffer.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.Void*,System.Int32)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.Void*,System.Int32,System.UInt64)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+            <param name="seed">Seed.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.ReadOnlySpan{System.Byte})">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.Byte[],System.Int32,System.Int32)">
+            <summary>Hash of provided buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="offset">Starting offset.</param>
+            <param name="length">Length of buffer.</param>
+            <returns>Digest.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.#ctor">
+            <summary>Creates xxHash instance.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.#ctor(System.UInt64)">
+            <summary>Creates xxHash instance.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Reset">
+            <summary>Resets hash calculation.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Reset(System.UInt64)">
+            <summary>Resets hash calculation.</summary>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.Void*,System.Int32)">
+            <summary>Updates the hash using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.Byte*,System.Int32)">
+            <summary>Updates the hash using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.ReadOnlySpan{System.Byte})">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.Byte[],System.Int32,System.Int32)">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="bytes">Buffer.</param>
+            <param name="offset">Starting offset.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Digest">
+            <summary>Hash so far.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.DigestBytes">
+            <summary>Hash so far, as byte array.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.AsHashAlgorithm">
+            <summary>Converts this class to <see cref="T:System.Security.Cryptography.HashAlgorithm"/></summary>
+            <returns><see cref="T:System.Security.Cryptography.HashAlgorithm"/></returns>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Reset(K4os.Hash.xxHash.XXH64.State@,System.UInt64)">
+            <summary>Resets hash calculation.</summary>
+            <param name="state">Hash state.</param>
+            <param name="seed">Hash seed.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(K4os.Hash.xxHash.XXH64.State@,System.Void*,System.Int32)">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="state">Hash state.</param>
+            <param name="bytes">Buffer.</param>
+            <param name="length">Length of buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Update(K4os.Hash.xxHash.XXH64.State@,System.ReadOnlySpan{System.Byte})">
+            <summary>Updates the has using given buffer.</summary>
+            <param name="state">Hash state.</param>
+            <param name="bytes">Buffer.</param>
+        </member>
+        <member name="M:K4os.Hash.xxHash.XXH64.Digest(K4os.Hash.xxHash.XXH64.State@)">
+            <summary>Hash so far.</summary>
+            <returns>Hash so far.</returns>
+        </member>
+        <member name="T:Binding.SerializeMode">
+            <summary>
+            序列化模式
+            </summary>
+        </member>
+        <member name="F:Binding.SerializeMode.Compress">
+            <summary>
+            压缩模式, 如int类型的值是123, 只占用1个字节
+            </summary>
+        </member>
+        <member name="F:Binding.SerializeMode.NoCompress">
+            <summary>
+            不压缩模式, 如int类型的值是123, 也一样占用4个字节
+            </summary>
+        </member>
+        <member name="F:Binding.SerializeMode.MemoryCopy">
+            <summary>
+            内存直接复制模式, 取类的内存地址直接复制所有字段的数据, 使用内存复制模式, 尽量只使用基础类型, 这样速度飞起
+            </summary>
+        </member>
+        <member name="M:Binding.Fast2BuildMethod.DynamicBuild(Binding.SerializeMode,System.Int32,System.Type[])">
             <summary>
             动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
             </summary>
-            <param name="isCompress">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
+            <param name="serializeMode">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
             <param name="types"></param>
             <returns></returns>
         </member>
-        <member name="M:Fast2BuildMethod.BuildAll(System.String,System.Boolean,System.Int32,System.Type[])">
+        <member name="M:Binding.Fast2BuildMethod.BuildAll(System.String,Binding.SerializeMode,System.Int32,System.Type[])">
             <summary>
             生成所有完整的绑定类型
             </summary>

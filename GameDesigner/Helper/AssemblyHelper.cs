@@ -2,6 +2,8 @@ using System.Text;
 using Net.Event;
 using System.Reflection;
 using System.Collections.Generic;
+using Net.System;
+
 #if CORE
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,7 +20,7 @@ namespace Net.Helper
 {
     public class AssemblyHelper
     {
-        private static readonly Dictionary<string, Type> TypeDict = new Dictionary<string, Type>();
+        private static readonly MyDictionary<string, Type> TypeDict = new MyDictionary<string, Type>();
         private static readonly HashSet<string> NotTypes = new HashSet<string>();
 
         /// <summary>
@@ -44,7 +46,7 @@ namespace Net.Helper
             type = Type.GetType(typeName);
             if (type != null)
             {
-                TypeDict.Add(typeName, type);
+                TypeDict.TryAdd(typeName, type);
                 return type;
             }
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();

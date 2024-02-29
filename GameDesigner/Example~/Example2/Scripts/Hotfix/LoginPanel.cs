@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Hotfix
 {
-	//热更新生成的脚本, 请看gitee的mvc模块使用介绍图示
+	//鐑洿鏂扮敓鎴愮殑鑴氭湰, 璇风湅gitee鐨刴vc妯″潡浣跨敤浠嬬粛鍥剧ず
 	public class LoginPanel
 	{
 		public static LoginPanel Instance = new LoginPanel();
@@ -28,10 +28,10 @@ namespace Hotfix
 			login.onClick.AddListener(() => {
 				if (acc.text.Length <= 0 | pwd.text.Length <= 0)
 				{
-					MsgPanel.Show("登录错误!");
+					MsgPanel.Show("鐧诲綍閿欒!");
 					return;
 				}
-				ClientManager.Instance.SendRT("Login", acc.text, pwd.text);
+				ClientManager.Instance.Call("Login", acc.text, pwd.text);
 			});
 			signUp.onClick.AddListener(() => {
 				RegisterPanel.Show();

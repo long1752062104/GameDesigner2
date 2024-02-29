@@ -35,15 +35,15 @@ namespace GameDesigner
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public State[] states;// = new State[0];
+        public State[] states;
         /// <summary>
         /// 选中的状态,可以多选
         /// </summary>
-		public List<int> selectStates;// = new List<int>();
+		public List<int> selectStates;
         /// <summary>
         /// 动画选择模式
         /// </summary>
-        public AnimationMode animMode;// = AnimationMode.Animation;
+        public AnimationMode animMode;
         /// <summary>
         /// 旧版动画组件
         /// </summary>
@@ -62,7 +62,7 @@ namespace GameDesigner
         /// <summary>
         /// 动画剪辑
         /// </summary>
-        public List<string> clipNames;// = new List<string>();
+        public List<string> clipNames;
 
         /// <summary>
         /// 以状态ID取出状态对象
@@ -141,6 +141,34 @@ namespace GameDesigner
             return stateMachine;
         }
 
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public State AddState(string name, params StateBehaviour[] behaviours)
+        {
+            var state = new State(this)
+            {
+                name = name,
+#if UNITY_EDITOR
+                rect = new Rect(10, 10, 150, 30)
+#endif
+            };
+            if (behaviours != null)
+            {
+                state.behaviours = behaviours;
+                for (int i = 0; i < behaviours.Length; i++)
+                {
+                    behaviours[i].name = behaviours[i].GetType().ToString();
+                    behaviours[i].stateMachine = this;
+                    behaviours[i].Active = true;
+                    behaviours[i].OnInit();
+                }
+            }
+            return state;
+        }
+
         public void UpdateStates()
         {
             for (int i = 0; i < states.Length; i++)
@@ -171,6 +199,7 @@ namespace GameDesigner
         {
             if (isInitialize)
                 return;
+            isInitialize = true;
 #if SHADER_ANIMATED
             if (animMode == AnimationMode.MeshAnimator)
             {
@@ -180,16 +209,19 @@ namespace GameDesigner
                 };
             }
 #endif
+            if (states.Length == 0)
+                return;
             foreach (var state in states)
                 state.Init();
             if (defaultState.actionSystem)
                 defaultState.Enter(0);
-            isInitialize = true;
         }
 
         internal void Execute()
         {
             if (!isInitialize)
+                return;
+            if (states.Length == 0)
                 return;
             if (stateId != nextId)
             {
@@ -227,10 +259,18 @@ namespace GameDesigner
         /// <param name="force"></param>
         public void ChangeState(int stateId, int actionId = 0, bool force = false)
         {
-            if (this.stateId == stateId & !force)
-                return;
-            nextId = stateId;
-            nextActionId = actionId;
+            if (force)
+            {
+                states[this.stateId].Exit();
+                states[stateId].Enter(actionId);
+                nextId = this.stateId = stateId;
+                nextActionId = actionId;
+            }
+            else if (nextId != stateId)
+            {
+                nextId = stateId;
+                nextActionId = actionId;
+            }
         }
 
         private void OnDestroy()

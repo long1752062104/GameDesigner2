@@ -49,26 +49,14 @@ namespace GameDesigner
         public const float MaxCanvasSize = 10000f;
         private const float GridMinorSize = 12f;
         private const float GridMajorSize = 120f;
-        public static Vector2 Center
-        {
-            get
-            {
-                return new Vector2(GraphEditor.MaxCanvasSize * 0.5f, GraphEditor.MaxCanvasSize * 0.5f);
-            }
-        }
+        public static Vector2 Center => new Vector2(MaxCanvasSize * 0.5f, MaxCanvasSize * 0.5f);
         [SerializeField]
         protected Vector2 scrollPosition;
         [SerializeField]
         protected Rect canvasSize;
         [SerializeField]
         protected float scale = 1.0f;
-        protected Rect scaledCanvasSize
-        {
-            get
-            {
-                return new Rect(canvasSize.x * (1f / scale), canvasSize.y * (1f / scale), canvasSize.width * (1f / scale), canvasSize.height * (1f / scale));
-            }
-        }
+        protected Rect scaledCanvasSize => new Rect(canvasSize.x * (1f / scale), canvasSize.y * (1f / scale), canvasSize.width * (1f / scale), canvasSize.height * (1f / scale));
 
         [SerializeField]
         private Rect worldViewRect;
@@ -84,16 +72,7 @@ namespace GameDesigner
         protected Vector2 selectionStartPosition;
         protected SelectMode mode = SelectMode.none;
 
-        private GUIStyle _canvasBackground;
-        private GUIStyle canvasBackground
-        {
-            get
-            {
-                if (_canvasBackground == null)
-                    _canvasBackground = "flow background";
-                return _canvasBackground;
-            }
-        }
+        private GUIStyle canvasBackground => "flow background";
 
         private GUIStyle _selectionRect = null;
         protected GUIStyle selectionRect
@@ -101,17 +80,15 @@ namespace GameDesigner
             get
             {
                 if (_selectionRect == null)
-                {
                     _selectionRect = "SelectionRect";
-                }
                 return _selectionRect;
             }
         }
 
         protected virtual void OnEnable()
         {
-            this.scrollView = new Rect(0, 0, MaxCanvasSize, MaxCanvasSize);
-            this.UpdateScrollPosition(GraphEditor.Center);
+            scrollView = new Rect(0, 0, MaxCanvasSize, MaxCanvasSize);
+            UpdateScrollPosition(Center);
         }
 
 
@@ -120,7 +97,7 @@ namespace GameDesigner
             mousePosition = Event.current.mousePosition;
             currentType = Event.current.type;
             currentEvent = Event.current;
-            this.canvasSize = GetCanvasSize();
+            canvasSize = GetCanvasSize();
             if (currentEvent.type == EventType.ScrollWheel)
             {
                 Vector2 offset = (scaledCanvasSize.size - canvasSize.size) * 0.5f;
@@ -154,7 +131,7 @@ namespace GameDesigner
             GUI.EndGroup();
             kEditorWindowTabHeight = (docked ? 19f : 22f);
             Rect rect = screenCoordsArea.ScaleSizeBy(1f / zoomScale, screenCoordsArea.TopLeft());
-            rect.y = rect.y + kEditorWindowTabHeight;
+            rect.y += kEditorWindowTabHeight;
             GUI.BeginGroup(rect);
             prevGuiMatrix = GUI.matrix;
             Matrix4x4 matrix4x4 = Matrix4x4.TRS(rect.TopLeft(), Quaternion.identity, Vector3.one);
@@ -164,7 +141,7 @@ namespace GameDesigner
             vector3.y = single;
             vector3.x = single1;
             Matrix4x4 matrix4x41 = Matrix4x4.Scale(vector3);
-            GUI.matrix = ((matrix4x4 * matrix4x41) * matrix4x4.inverse) * GUI.matrix;
+            GUI.matrix = matrix4x4 * matrix4x41 * matrix4x4.inverse * GUI.matrix;
         }
 
         protected void ZoomableAreaEnd()
@@ -181,7 +158,7 @@ namespace GameDesigner
 
         protected void UpdateScrollPosition(Vector2 position)
         {
-            offset = offset + (scrollPosition - position);
+            offset += scrollPosition - position;
             scrollPosition = position;
             worldViewRect = new Rect(scaledCanvasSize);
             worldViewRect.y += scrollPosition.y;

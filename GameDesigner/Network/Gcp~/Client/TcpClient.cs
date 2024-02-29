@@ -46,49 +46,49 @@
 #endif
         }
 
-        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
+        /// <inheritdoc/>
+        protected async override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
-#if SERVICE
-            return UniTask.Run(() =>
-#else
-            return UniTask.RunOnThreadPool(() =>
-#endif
+            await UniTask.SwitchToThreadPool();
+            try
             {
-                try
+                Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
                 {
-                    Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    this.localPort = localPort;
-                    Client.NoDelay = true;
-                    if (localPort != -1)
-                        Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
-                    Client.Connect(host, port);
-                    var segment = BufferPool.Take();
-                    segment.Write(PreUserId);
-                    Client.Send(segment.ToArray(true));
-                    var tick = Environment.TickCount + 8000;
-                    while (UID == 0)
-                    {
-                        NetworkTick();
-                        if (Environment.TickCount >= tick)
-                            throw new Exception("uid赋值失败!连接超时处理");
-                        if (!openClient)
-                            throw new Exception("客户端调用Close!");
-                    }
-                    StackStream = new MemoryStream(Config.Config.BaseCapacity);
-                    StartupThread();
-                    result(true);
-                    return true;
-                }
-                catch (Exception ex)
+                    SendBufferSize = SendBufferSize,
+                    ReceiveBufferSize = ReceiveBufferSize,
+                    NoDelay = true
+                };
+                this.localPort = localPort;
+                if (localPort != -1)
+                    Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
+                Client.Connect(host, port);
+                var segment = BufferPool.Take(SendBufferSize);
+                segment.Write(PreUserId);
+                Client.Send(segment.ToArray(true));
+                await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
-                    NDebug.LogError("连接错误:" + ex);
-                    Connected = false;
-                    Client?.Close();
-                    Client = null;
-                    result(false);
-                    return false;
-                }
-            });
+                    NetworkTick();
+                    return UID != 0;
+                }, null);
+                if (UID == 0 && openClient)
+                    throw new Exception("连接握手失败!");
+                if (UID == 0 && !openClient)
+                    throw new Exception("客户端调用Close!");
+                StackStream = new MemoryStream(Config.Config.BaseCapacity);
+                StartupThread();
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
+                result(true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                NDebug.LogError("连接错误:" + ex);
+                Connected = false;
+                Client?.Close();
+                Client = null;
+                result(false);
+                return false;
+            }
         }
 
         public override void OnNetworkTick()
@@ -106,7 +106,7 @@
                 if (!Connected)
                     InternalReconnection();
                 else
-                    Send(NetCmd.SendHeartbeat, new byte[0]);
+                    Call(NetCmd.SendHeartbeat, new byte[0]);
             }
             catch
             {
@@ -220,177 +220,10 @@
             }
         }
 
+        /// <inheritdoc/>
         public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
-            SendRT(NetCmd.Disconnect, new byte[0]);
-            SendDirect();
-            Connected = false;
-            openClient = false;
-            NetworkState = NetworkState.ConnectClosed;
-            InvokeInMainThread(OnCloseConnectHandle);
-            if (await) Thread.Sleep(millisecondsTimeout);//给update线程一秒的时间处理关闭事件
-            AbortedThread();
-            Client?.Close();
-            Client = null;
-            StackStream?.Close();
-            StackStream = null;
-            stack = 0;
-            stackIndex = 0;
-            stackCount = 0;
-            UID = 0;
-            PreUserId = 0;
-            CurrReconnect = 0;
-            if (Instance == this) Instance = null;
-            if (Gcp != null) Gcp.Dispose();
-            NDebug.Log("客户端已关闭！");
-        }
-
-        /// <summary>
-        /// tcp压力测试
-        /// </summary>
-        /// <param name="ip">服务器ip</param>
-        /// <param name="port">服务器端口</param>
-        /// <param name="clientLen">测试客户端数量</param>
-        /// <param name="dataLen">每个客户端数据大小</param>
-        public static CancellationTokenSource Testing(string ip, int port, int clientLen, int dataLen, int millisecondsTimeout, Action<TcpClientTest> onInit = null, Action<List<TcpClientTest>> fpsAct = null, IAdapter adapter = null)
-        {
-            var cts = new CancellationTokenSource();
-            Task.Run(() =>
-            {
-                var clients = new List<TcpClientTest>();
-                for (int i = 0; i < clientLen; i++)
-                {
-                    var client = new TcpClientTest();
-                    onInit?.Invoke(client);
-                    if (adapter != null)
-                        client.AddAdapter(adapter);
-                    try
-                    {
-                        client.Connect(ip, port);
-                    }
-                    catch (Exception ex)
-                    {
-                        NDebug.LogError(ex);
-                        return;
-                    }
-                    clients.Add(client);
-                }
-                var buffer = new byte[dataLen];
-                Task.Run(() =>
-                {
-                    for (int i = 0; i < clients.Count; i++)
-                    {
-                        var client = clients[i];
-                        client.OnPingCallback += (d) =>
-                        {
-                            client.delay = d;
-                        };
-                    }
-                    while (!cts.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1000);
-                        fpsAct?.Invoke(clients);
-                        for (int i = 0; i < clients.Count; i++)
-                        {
-                            clients[i].Ping();
-                        }
-                    }
-                });
-                int threadNum = (clientLen / 1000) + 1;
-                for (int i = 0; i < threadNum; i++)
-                {
-                    int index = i * 1000;
-                    int end = index + 1000;
-                    if (index >= clientLen)
-                        break;
-                    Task.Run(() =>
-                    {
-                        if (end > clientLen)
-                            end = clientLen;
-                        var timer = new TimerTick();
-                        while (!cts.IsCancellationRequested)
-                        {
-                            bool canSend = false;
-                            var tick = (uint)Environment.TickCount;
-                            if (timer.CheckTimeout(tick, (uint)millisecondsTimeout, true))
-                            {
-                                canSend = true;
-                            }
-                            for (int ii = index; ii < end; ii++)
-                            {
-                                try
-                                {
-                                    var client = clients[ii];
-                                    if (client.Client == null)
-                                        continue;
-                                    if (!client.Client.Connected)
-                                        continue;
-                                    if (canSend)
-                                    {
-                                        //client.SendRT(NetCmd.Local, buffer);
-                                        client.AddOperation(new Operation(66, buffer));
-                                    }
-                                    client.NetworkTick();
-                                }
-                                catch (Exception ex)
-                                {
-                                    NDebug.LogError(ex);
-                                }
-                            }
-                        }
-                    });
-                }
-                while (!cts.IsCancellationRequested)
-                    Thread.Sleep(30);
-                Thread.Sleep(100);
-                for (int i = 0; i < clients.Count; i++)
-                    clients[i].Close(false);
-            }, cts.Token);
-            return cts;
-        }
-    }
-
-    public class TcpClientTest : TcpClient
-    {
-        public int revdSize { get { return receiveCount; } }
-        public int sendSize { get { return sendCount; } }
-        public int sendNum { get { return sendAmount; } }
-        public int revdNum { get { return receiveAmount; } }
-        public int resolveNum { get { return resolveAmount; } }
-        public uint delay { get; internal set; }
-
-        public TcpClientTest()
-        {
-        }
-        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
-        {
-            Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            this.localPort = localPort;
-            Client.Connect(host, port);
-            Client.Blocking = false;
-            Client.NoDelay = true;
-            var segment = BufferPool.Take();
-            segment.Write(PreUserId);
-            Client.Send(segment.ToArray(true));
-            Connected = true;
-            StackStream = new MemoryStream(Config.Config.BaseCapacity);
-            return UniTask.FromResult(Connected);
-        }
-        protected override void StartupThread() { }
-        protected unsafe override void SendByteData(byte[] buffer)
-        {
-            sendCount += buffer.Length;
-            sendAmount++;
-#if WINDOWS
-            fixed (byte* ptr = buffer)
-                Win32KernelAPI.send(Client.Handle, ptr, buffer.Length, SocketFlags.None);
-#else
-                Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
-#endif
-        }
-        public override string ToString()
-        {
-            return $"uid:{UID} conv:{Connected}";
+            base.Close(await, millisecondsTimeout);
         }
     }
 }

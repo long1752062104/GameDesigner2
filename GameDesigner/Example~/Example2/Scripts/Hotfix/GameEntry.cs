@@ -48,7 +48,7 @@ namespace Hotfix
                 }
                 else
                 {
-                    ClientManager.I.SendRT("LogOut");//退出登录回到登录界面
+                    ClientManager.I.Call("LogOut");//退出登录回到登录界面
                 }
             });
         }

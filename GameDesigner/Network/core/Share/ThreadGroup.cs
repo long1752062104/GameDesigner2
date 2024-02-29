@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Net.Server;
 using Net.System;
 
 namespace Net.Share
@@ -11,11 +10,11 @@ namespace Net.Share
         public Thread Thread;
         public int FPS;
 
-        public virtual void Add(NetPlayer client)
+        public virtual void Add(object client)
         {
         }
 
-        public virtual void Remove(NetPlayer client)
+        public virtual void Remove(object client)
         {
         }
 
@@ -25,23 +24,23 @@ namespace Net.Share
         }
     }
 
-    public class ThreadGroup<Player> : ThreadGroup where Player : NetPlayer
+    public class ThreadGroup<Worker> : ThreadGroup where Worker : class
     {
-        public FastListSafe<Player> Clients = new FastListSafe<Player>();
+        public FastListSafe<Worker> Workers = new FastListSafe<Worker>();
 
-        public override void Add(NetPlayer client)
+        public override void Add(object worker)
         {
-            Clients.Add(client as Player);
+            Workers.Add(worker as Worker);
         }
 
-        public override void Remove(NetPlayer client)
+        public override void Remove(object worker)
         {
-            Clients.Remove(client as Player);
+            Workers.Remove(worker as Worker);
         }
 
         public override string ToString()
         {
-            return $"线程组ID:{Id} 线程ID:{Thread.ManagedThreadId} 玩家数量:{Clients.Count}";
+            return $"线程组ID:{Id} 线程ID:{Thread.ManagedThreadId} 工人数量:{Workers.Count}";
         }
     }
 }

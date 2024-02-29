@@ -45,6 +45,7 @@ namespace Net.Helper
             var fullPath = string.Empty;
             foreach (var path in paths)
                 fullPath += path + Path.DirectorySeparatorChar;
+            fullPath = fullPath.TrimEnd(Path.DirectorySeparatorChar); //解决如果是文件路径, 会导致错误问题
             return PlatformReplace(fullPath);
         }
 

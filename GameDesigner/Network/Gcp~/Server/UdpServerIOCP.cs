@@ -20,7 +20,7 @@ namespace Net.Server
         protected override void StartSocketHandler()
         {
             ServerArgs = new SocketAsyncEventArgs { UserToken = Server };
-            var userToken = new UserToken<Player>() { segment = BufferPool.Take() };
+            var userToken = new UserToken<Player>() { segment = BufferPool.Take(ReceiveBufferSize) };
             ServerArgs.UserToken = userToken;
             ServerArgs.SetBuffer(userToken.segment.Buffer, 0, userToken.segment.Length);
             ServerArgs.RemoteEndPoint = Server.LocalEndPoint;

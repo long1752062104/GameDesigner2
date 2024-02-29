@@ -81,13 +81,13 @@
         protected override bool OnUnClientRequest(Player unClient, RPCModel model)
         {
             //我们解析了客户端数据, 如果得到的是 注册 或 登录 这样的函数才进行处理
-            switch (model.func)
+            switch (model.protocol)
             {
-                case "Register":
-                    Register(unClient, model.pars[0].ToString(), model.pars[1].ToString());
+                case -250891359://"Register".CRC32():
+                    Register(unClient, model.AsString, model.AsString);
                     break;
-                case "Login":
-                    return Login(unClient, model.pars[0].ToString(), model.pars[1].ToString());
+                case -624675968://"Login".CRC32():
+                    return Login(unClient, model.AsString, model.AsString);
             }
             return false;
         }
@@ -99,13 +99,13 @@
         {
             if (Example2DB.I.UserinfoDatas.TryGetValue(acc, out var data))
             {
-                SendRT(unClient, "RegisterCallback", "账号已经存在!");
+                Call(unClient, "RegisterCallback", "账号已经存在!");
                 return;
             }
             long id = GetConfigID(1);//请使用Navicat可视化工具或SQLite可视化工具查看config表
             data = new UserinfoData(id, acc, pwd, 0.0, string.Empty, string.Empty, 100l, 100l);
             Example2DB.I.UserinfoDatas.TryAdd(acc, data);
-            SendRT(unClient, "RegisterCallback", "注册成功！");
+            Call(unClient, "RegisterCallback", "注册成功！");
         }
 
         /// <summary>
@@ -115,7 +115,7 @@
         /// <returns></returns>
         internal long GetConfigID(int id)
         {
-            lock(this)
+            lock (this)
             {
                 return Example2DB.I.Configs[id].Number++;
             }
@@ -130,22 +130,22 @@
         {
             if (!Example2DB.I.UserinfoDatas.TryGetValue(acc, out var data))
             {
-                SendRT(unClient, "LoginCallback", false, "账号或密码错误!");
+                Call(unClient, "LoginCallback", false, "账号或密码错误!");
                 return false;
             }
             if (data.Password != pwd)
             {
-                SendRT(unClient, "LoginCallback", false, "账号或密码错误!");
+                Call(unClient, "LoginCallback", false, "账号或密码错误!");
                 return false;
             }
             if (IsOnline(acc, out Player player))
             {
-                SendRT(player, "BackLogin", "你的账号在其他地方被登录!");//在客户端热更新工程的MsgPanel类找到
+                Call(player, "BackLogin", "你的账号在其他地方被登录!");//在客户端热更新工程的MsgPanel类找到
                 SignOut(player);
             }
             unClient.PlayerID = acc;
             unClient.data = data;
-            SendRT(unClient, "LoginCallback", true, "登录成功!");
+            Call(unClient, "LoginCallback", true, "登录成功!");
             return true;
         }
 
@@ -154,9 +154,9 @@
         /// </summary>
         /// <param name="client"></param>
         [Rpc(NetCmd.SafeCall)]
-        private void LogOut(Player client) 
+        private void LogOut(Player client)
         {
-            SendRT(client, "LogOut");//在客户端热更新工程的MsgPanel类找到
+            Call(client, "LogOut");//在客户端热更新工程的MsgPanel类找到
             SignOut(client);
         }
 

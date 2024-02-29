@@ -47,21 +47,17 @@
         /// </summary>
         public virtual object Scene { get; set; }
         /// <summary>
-        /// 远程方法优化字典
+        /// 远程调用方法收集
         /// </summary>
-        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>(true);
-        /// <summary>
-        /// 远程方法哈希字典
-        /// </summary>
-        public MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; } = new MyDictionary<ushort, RPCMethodBody>();
+        public MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<int, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
-        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>(true);
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>(true);
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
@@ -138,6 +134,10 @@
         /// 此客户端接收到的字节总量
         /// </summary>
         public long BytesReceived { get; set; }
+        /// <summary>
+        /// 当前客户端请求的Token, 用于客户端响应, 如果在Rpc执行方法使用异步, 则需要记录一下token再异步, 否则token会被冲掉, 导致响应token错误
+        /// </summary>
+        public int Token { get; set; }
         /// <summary>
         /// CRC校验错误次数, 如果有错误每秒提示一次
         /// </summary>
@@ -360,10 +360,10 @@
             switch (log)
             {
                 case 0:
-                    NDebug.LogWarning($"{this} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"{this} [protocol:{model.protocol}]的远程方法未被收集!请定义[Rpc(hash = {model.protocol})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
                     break;
                 case 1:
-                    NDebug.LogWarning($"{this} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"{this} [protocol={model.protocol}]服务器响应的Token={model.token}没有进行设置!");
                     break;
                 case 2:
                     NDebug.LogWarning($"{this} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");

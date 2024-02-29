@@ -16,19 +16,19 @@ public class UITest : SingleCase<UITest>
     async void Start()
     {
         cr.onClick.AddListener(()=> {
-            ClientBase.Instance.SendRT("CreateRoom", cri.text);
+            ClientBase.Instance.Call("CreateRoom", cri.text);
         });
         jr.onClick.AddListener(() => {
-            ClientBase.Instance.SendRT("JoinRoom", cri.text);
+            ClientBase.Instance.Call("JoinRoom", cri.text);
         });
         er.onClick.AddListener(() => {
-            ClientBase.Instance.SendRT("ExitRoom");
+            ClientBase.Instance.Call("ExitRoom");
         });
         rb.onClick.AddListener(() => {
-            ClientBase.Instance.SendRT("StartBattle");
+            ClientBase.Instance.Call("StartBattle");
         });
         eb.onClick.AddListener(() => {
-            ClientBase.Instance.SendRT("ExitBattle");
+            ClientBase.Instance.Call("ExitBattle");
         });
         while (ClientBase.Instance == null)
         {

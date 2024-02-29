@@ -1,4 +1,6 @@
-﻿namespace Net.System
+﻿using Net.Common;
+
+namespace Net.System
 {
     /// <summary>
     /// 安全字典, 无GC快速字典

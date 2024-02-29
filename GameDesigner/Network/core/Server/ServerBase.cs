@@ -62,21 +62,17 @@ namespace Net.Server
         /// </summary>
         public SocketAsyncEventArgs ServerArgs { get; protected set; }
         /// <summary>
-        /// 远程方法优化字典
+        /// 远程调用方法收集
         /// </summary>
-        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>(true);
-        /// <summary>
-        /// 远程方法哈希字典
-        /// </summary>
-        public MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; } = new MyDictionary<ushort, RPCMethodBody>();
+        public MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<int, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
-        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>(true);
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>(true);
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
@@ -253,12 +249,13 @@ namespace Net.Server
         /// 程序根路径, 网络数据缓存读写路径
         /// </summary>
         protected string rootPath;
-        protected volatile int threadNum;
+        //protected volatile int threadNum;
         protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
+        protected ThreadPipeline<Player> ThreadPool = new ThreadPipeline<Player>();
         /// <summary>
         /// 线程组, 优化多线程资源竞争问题
         /// </summary>
-        protected List<ThreadGroup<Player>> ThreadGroups = new List<ThreadGroup<Player>>();
+        //protected List<ThreadGroup<Player>> ThreadGroups = new List<ThreadGroup<Player>>();
         /// <summary>
         /// 排队队列
         /// </summary>
@@ -292,6 +289,34 @@ namespace Net.Server
         /// 大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
         /// </summary>
         public int BigDataCacheLength { get; set; } = 1024 * 1024 * 10;
+        private int sendBufferSize = ushort.MaxValue;
+        /// <summary>
+        /// 设置Socket的发送缓冲区大小, 也叫做窗口大小
+        /// </summary>
+        public int SendBufferSize
+        {
+            get => sendBufferSize;
+            set
+            {
+                if (Server != null)
+                    Server.SendBufferSize = value;
+                sendBufferSize = value;
+            }
+        }
+        private int receiveBufferSize = ushort.MaxValue;
+        /// <summary>
+        /// 设置Socket的接收缓冲区大小, 也叫做窗口大小
+        /// </summary>
+        public int ReceiveBufferSize
+        {
+            get => receiveBufferSize;
+            set
+            {
+                if (Server != null)
+                    Server.ReceiveBufferSize = value;
+                receiveBufferSize = value;
+            }
+        }
         #endregion
 
         #region 服务器事件处理
@@ -334,7 +359,7 @@ namespace Net.Server
         /// <summary>
         /// 当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
         /// </summary>
-        public virtual Action<Player, RTProgress> OnSendRTProgressHandle { get; set; }
+        public virtual Action<Player, RTProgress> OnCallProgressHandle { get; set; }
         /// <summary>
         /// 输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行监听
         /// </summary>
@@ -517,7 +542,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="client"></param>
         /// <param name="progress"></param>
-        protected virtual void OnSendRTProgress(Player client, RTProgress progress) { }
+        protected virtual void OnCallProgress(Player client, RTProgress progress) { }
 
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
@@ -549,7 +574,7 @@ namespace Net.Server
         /// <param name="client"></param>
         protected virtual void OnNoticeRelay(Player client, RPCModel model)
         {
-            Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+            Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol) { token = model.token });
         }
         #endregion
 
@@ -612,15 +637,19 @@ namespace Net.Server
 
         protected void SetProcessThreads()
         {
-            for (int i = 0; i < MaxThread; i++)
-            {
-                var group = new ThreadGroup<Player>() { Id = i + 1 };
-                var receive = new Thread(NetworkProcessing) { IsBackground = true, Name = "NetworkProcessing" + i };
-                receive.Start(group);
-                group.Thread = receive;
-                ThreadGroups.Add(group);
-                ServerThreads.Add("NetworkProcessing" + i, receive);
-            }
+            ThreadPool.MaxThread = MaxThread;
+            ThreadPool.OnProcess = NetworkProcessing;
+            ThreadPool.Init("NetworkProcessing_");
+            ThreadPool.Start();
+            //for (int i = 0; i < MaxThread; i++)
+            //{
+            //    var group = new ThreadGroup<Player>() { Id = i + 1 };
+            //    var receive = new Thread(NetworkProcessing) { IsBackground = true, Name = "NetworkProcessing" + i };
+            //    receive.Start(group);
+            //    group.Thread = receive;
+            //    ThreadGroups.Add(group);
+            //    ServerThreads.Add("NetworkProcessing" + i, receive);
+            //}
         }
 
         protected void RegisterEvent()
@@ -633,7 +662,7 @@ namespace Net.Server
             OnRevdBufferHandle += OnReceiveBuffer;
             OnReceiveFileHandle += OnReceiveFile;
             OnRevdRTProgressHandle += OnRevdRTProgress;
-            OnSendRTProgressHandle += OnSendRTProgress;
+            OnCallProgressHandle += OnCallProgress;
             if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
             if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
             if (OnRPCExecute == null) OnRPCExecute = OnRpcExecuteInternal;
@@ -666,9 +695,9 @@ namespace Net.Server
             {
                 outflowTotal += sendCount;
                 inflowTotal += receiveCount;
-                var entities = new FPSEntity[ThreadGroups.Count];
-                for (int i = 0; i < ThreadGroups.Count; i++)
-                    entities[i] = new FPSEntity(ThreadGroups[i].Id, ThreadGroups[i].FPS);
+                var entities = new FPSEntity[ThreadPool.Groups.Count];
+                for (int i = 0; i < ThreadPool.Groups.Count; i++)
+                    entities[i] = new FPSEntity(ThreadPool.Groups[i].Id, ThreadPool.Groups[i].FPS);
                 OnNetworkDataTraffic?.Invoke(new Dataflow()
                 {
                     sendCount = sendCount,
@@ -692,8 +721,8 @@ namespace Net.Server
                 resolveAmount = 0;
                 receiveAmount = 0;
                 receiveCount = 0;
-                for (int i = 0; i < ThreadGroups.Count; i++)
-                    ThreadGroups[i].FPS = 0;
+                for (int i = 0; i < ThreadPool.Groups.Count; i++)
+                    ThreadPool.Groups[i].FPS = 0;
             }
             return IsRunServer;
         }
@@ -720,13 +749,12 @@ namespace Net.Server
         /// <summary>
         /// 业务处理线程组
         /// </summary>
-        /// <param name="obj"></param>
-        protected virtual void NetworkProcessing(object obj)
+        /// <param name="group"></param>
+        protected virtual void NetworkProcessing(ThreadGroup<Player> group)
         {
             var tick = (uint)Environment.TickCount;
             var heartTick = tick + (uint)HeartInterval;
             var checkPerSecondTick = tick + 1000u;
-            var group = obj as ThreadGroup<Player>;
             EndPoint remotePoint = null;
             if (Server != null) //其他协议Server字段不使用
                 remotePoint = Server.LocalEndPoint;
@@ -749,9 +777,9 @@ namespace Net.Server
                         checkPerSecondTick = tick + 1000u;
                         isCheckPerSecond = true;
                     }
-                    for (int i = 0; i < group.Clients.Count; i++)
+                    for (int i = 0; i < group.Workers.Count; i++)
                     {
-                        var client = group.Clients[i];
+                        var client = group.Workers[i];
                         if (client.isDispose)
                             continue;
                         if (!CheckIsConnected(client, tick))
@@ -832,7 +860,7 @@ namespace Net.Server
         {
             if (Server.Poll(0, SelectMode.SelectRead))
             {
-                var buffer = BufferPool.Take();
+                var buffer = BufferPool.Take(ReceiveBufferSize);
                 buffer.Count = Server.ReceiveFrom(buffer.Buffer, 0, buffer.Length, SocketFlags.None, ref remotePoint);
                 receiveCount += buffer.Count;
                 receiveAmount++;
@@ -888,7 +916,7 @@ namespace Net.Server
             OnHasConnectHandle(client);
             if (AllClients.Count >= OnlineLimit + LineUp)
             {
-                SendRT(client, NetCmd.ServerFull, new byte[0]);
+                Call(client, NetCmd.ServerFull, new byte[0]);
                 SendDirect(client);
                 client.Connected = false;
                 client.QueueUpNo = int.MaxValue;
@@ -900,15 +928,16 @@ namespace Net.Server
                 var segment = BufferPool.Take(50);
                 segment.Write(QueueUp.Count);
                 segment.Write(client.QueueUpNo);
-                SendRT(client, NetCmd.QueueUp, segment.ToArray(true));
+                Call(client, NetCmd.QueueUp, segment.ToArray(true));
             }
             return client;
         }
 
         protected virtual void OnThreadQueueSet(Player client)
         {
-            var value = threadNum++;
-            client.Group = ThreadGroups[value % ThreadGroups.Count];
+            //var value = threadNum++;
+            //client.Group = ThreadPool.Groups[value % ThreadPool.Groups.Count];
+            client.Group = ThreadPool.SelectGroup();
         }
 
         protected virtual void AcceptHander(Player client, params object[] args)
@@ -925,7 +954,7 @@ namespace Net.Server
                 adapterType = SerializeAdapter.GetType().ToString();
             segment.Write(adapterType);
             segment.Write(Version);
-            SendRT(client, NetCmd.Identify, segment.ToArray(true));
+            Call(client, NetCmd.Identify, segment.ToArray(true));
         }
 
         protected virtual void DataCRCHandler(Player client, ISegment buffer, bool isTcp)
@@ -950,28 +979,29 @@ namespace Net.Server
         {
             while (buffer.Position < buffer.Count)
             {
-                int kernelV = buffer.ReadByte();
-                bool kernel = kernelV == 68;
+                var kernelV = buffer.ReadByte();
+                var kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
                     Debug.LogError($"[{client}][可忽略]协议出错!");
                     break;
                 }
-                byte cmd1 = buffer.ReadByte();
-                int dataCount = buffer.ReadInt32();
+                var cmd1 = buffer.ReadByte();
+                var token = buffer.ReadInt32();
+                var dataCount = buffer.ReadInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount);
-                if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.SceneRT & cmd1 != NetCmd.Notice & cmd1 != NetCmd.NoticeRT & cmd1 != NetCmd.Local & cmd1 != NetCmd.LocalRT)
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount) { token = token };
+                if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.Notice & cmd1 != NetCmd.Local)
                 {
                     var func = OnDeserializeRpc(buffer.Buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
-                    model.func = func.name;
+                    model.protocol = func.protocol;
                     model.pars = func.pars;
-                    model.methodHash = func.hash;
                 }
+                client.Token = token;
                 DataHandler(client, model, buffer);//解析协议完成
             J: buffer.Position = position;
             }
@@ -1054,7 +1084,7 @@ namespace Net.Server
         {
             if (model.cmd == NetCmd.Connect)
             {
-                Send(client, NetCmd.Connect, new byte[0]);
+                Call(client, NetCmd.Connect, new byte[0]);
                 return true;
             }
             if (model.cmd == NetCmd.Broadcast)
@@ -1088,7 +1118,7 @@ namespace Net.Server
                     CommandHandler(client, model, segment);
                     return;
                 case NetCmd.SendHeartbeat:
-                    Send(client, NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(client, NetCmd.RevdHeartbeat, new byte[0]);
                     return;
                 case NetCmd.RevdHeartbeat:
                     return;
@@ -1122,7 +1152,7 @@ namespace Net.Server
                 var segment1 = BufferPool.Take(8);
                 segment1.Write(QueueUp.Count);
                 segment1.Write(client.QueueUpNo);
-                SendRT(client, NetCmd.QueueUp, segment1.ToArray(true, true));
+                Call(client, NetCmd.QueueUp, segment1.ToArray(true, true));
             }
             return isQueueUp;
         }
@@ -1173,25 +1203,16 @@ namespace Net.Server
                     OnRpcExecute(client, model);
                     break;
                 case NetCmd.Local:
-                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
-                    break;
-                case NetCmd.LocalRT:
-                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol) { token = model.token });
                     break;
                 case NetCmd.Scene:
-                    OnSceneRelay(client, model);
-                    break;
-                case NetCmd.SceneRT:
                     OnSceneRelay(client, model);
                     break;
                 case NetCmd.Notice:
                     OnNoticeRelay(client, model);
                     break;
-                case NetCmd.NoticeRT:
-                    OnNoticeRelay(client, model);
-                    break;
                 case NetCmd.SendHeartbeat:
-                    Send(client, NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(client, NetCmd.RevdHeartbeat, new byte[0]);
                     break;
                 case NetCmd.RevdHeartbeat:
                     client.heart = 0;
@@ -1213,7 +1234,7 @@ namespace Net.Server
                     OnOperationSyncHandle(client, list);
                     break;
                 case NetCmd.Ping:
-                    client.RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false, model.methodHash));
+                    client.RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false, model.protocol));
                     break;
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
@@ -1229,7 +1250,7 @@ namespace Net.Server
                         segment.SetPositionLength(0);
                         segment.Write(endPoint.Address.Address);
                         segment.Write(endPoint.Port);
-                        SendRT(client, NetCmd.P2P, segment.ToArray(false));
+                        Call(client, NetCmd.P2P, segment.ToArray(false));
                         segment.Count = len;
                     }
                     break;
@@ -1347,7 +1368,7 @@ namespace Net.Server
                 segment.SetPositionLength(0);
                 segment.Write(cmd);
                 segment.Write(id);
-                SendRT(client, NetCmd.Download, segment.ToArray(false));
+                Call(client, NetCmd.Download, segment.ToArray(false));
                 segment.Count = len;
                 if (Environment.TickCount >= recvFileTick)
                 {
@@ -1386,11 +1407,11 @@ namespace Net.Server
             OnRevdRTProgressHandle(client, progress);
         }
 
-        protected void InvokeSendRTProgress(Player client, int currValue, int dataCount)
+        protected void InvokeCallProgress(Player client, int currValue, int dataCount)
         {
             float bfb = currValue / (float)dataCount * 100f;
             var progress = new RTProgress(bfb, RTState.Sending);
-            OnSendRTProgressHandle(client, progress);
+            OnCallProgressHandle(client, progress);
         }
 
         /// <summary>
@@ -1435,14 +1456,14 @@ namespace Net.Server
                         var buffer = stream.ToArray(true);
                         stream = BufferPool.Take(len);
                         stream.Write(buffer, false);
-                        rPCModel.bigData = true;
                     }
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
+                stream.Write(rPCModel.token);
                 stream.Write(rPCModel.buffer.Length);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-                if (rPCModel.bigData | ++index >= PackageLength)
+                if (++index >= PackageLength)
                     break;
             }
         }
@@ -1461,7 +1482,7 @@ namespace Net.Server
             var count = rPCModels.Count;//源码中Count执行也不少, 所以优化一下   这里已经取出要处理的长度
             if (count <= 0)
                 return;
-            var stream = BufferPool.Take();
+            var stream = BufferPool.Take(SendBufferSize);
             SetDataHead(stream);
             WriteDataBody(client, ref stream, rPCModels, count);
             var buffer = PackData(stream);
@@ -1510,10 +1531,10 @@ namespace Net.Server
             switch (log)
             {
                 case 0:
-                    Debug.LogWarning($"{client} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    Debug.LogWarning($"{client} [protocol:{model.protocol}]的远程方法未被收集!请定义[Rpc(hash = {model.protocol})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
                     break;
                 case 1:
-                    Debug.LogWarning($"{client} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    Debug.LogWarning($"{client} [protocol={model.protocol}]服务器响应的Token={model.token}没有进行设置!");
                     break;
                 case 2:
                     Debug.LogWarning($"{client} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
@@ -1537,7 +1558,7 @@ namespace Net.Server
                             break;
                         case NetCmd.SafeCallAsync:
                             var workCallback = new RpcWorkParameter(client, method, model.pars);
-                            ThreadPool.UnsafeQueueUserWorkItem(workCallback.RpcWorkCallback, workCallback);
+                            global::System.Threading.ThreadPool.UnsafeQueueUserWorkItem(workCallback.RpcWorkCallback, workCallback);
                             break;
                         default:
                             method.Invoke(model.pars);
@@ -1571,7 +1592,7 @@ namespace Net.Server
                 return;
             if (client.heart < HeartLimit * 2)
             {
-                Send(client, NetCmd.SendHeartbeat, new byte[0]);
+                Call(client, NetCmd.SendHeartbeat, new byte[0]);
                 return;
             }
             RemoveClient(client);
@@ -1614,7 +1635,7 @@ namespace Net.Server
                 if (!client1.Connected)
                     goto J;
                 client1.QueueUpNo = 0;
-                SendRT(client1, NetCmd.QueueCancellation, new byte[0]);
+                Call(client1, NetCmd.QueueCancellation, new byte[0]);
             }
         }
 
@@ -1657,6 +1678,7 @@ namespace Net.Server
             foreach (var item in ServerThreads)
                 item.Value.Interrupt();
             ServerThreads.Clear();
+            ThreadPool.Dispose();
             RcvQueues.Clear();
             OnStartingHandle -= OnStarting;
             OnStartupCompletedHandle -= OnStartupCompleted;
@@ -1666,7 +1688,7 @@ namespace Net.Server
             OnRevdBufferHandle -= OnReceiveBuffer;
             OnReceiveFileHandle -= OnReceiveFile;
             OnRevdRTProgressHandle -= OnRevdRTProgress;
-            OnSendRTProgressHandle -= OnSendRTProgress;
+            OnCallProgressHandle -= OnCallProgress;
             Debug.Log("服务器已关闭！");//先打印在移除事件
             Thread.Sleep(100);
             Debug.LogHandle -= Log;
@@ -1680,55 +1702,42 @@ namespace Net.Server
                 Instance = null;
         }
 
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送数据到的客户端</param>
-        /// <param name="buffer">数据缓冲区</param>
-        public virtual void Send(Player client, byte[] buffer) => Send(client, NetCmd.CallRpc, buffer);
+        public virtual void Call(Player client, int protocol, params object[] pars)
+            => Call(client, NetCmd.CallRpc, protocol, true, false, 0, null, pars);
+        public virtual void Call(Player client, byte cmd, int protocol, params object[] pars)
+            => Call(client, cmd, protocol, true, false, 0, null, pars);
+        public virtual void Call(Player client, int protocol, bool serialize, int token, params object[] pars)
+            => Call(client, NetCmd.CallRpc, protocol, true, serialize, token, null, pars);
+        public virtual void Call(Player client, int protocol, int token, params object[] pars)
+            => Call(client, NetCmd.CallRpc, protocol, true, false, token, null, pars);
+
+        public virtual void Call(Player client, string func, params object[] pars)
+            => Call(client, NetCmd.CallRpc, func.CRC32(), true, false, 0, null, pars);
+        public virtual void Call(Player client, byte cmd, string func, params object[] pars)
+            => Call(client, cmd, func.CRC32(), true, false, 0, null, pars);
+        public virtual void Call(Player client, string func, bool serialize, int token, params object[] pars)
+            => Call(client, NetCmd.CallRpc, func.CRC32(), true, serialize, token, null, pars);
+        public virtual void Call(Player client, string func, int token, params object[] pars)
+            => Call(client, NetCmd.CallRpc, func.CRC32(), true, false, token, null, pars);
 
         /// <summary>
-        /// 发送自定义网络数据
+        /// 向客户端发送消息
         /// </summary>
-        /// <param name="client">发送到客户端</param>
+        public virtual void Call(Player client, byte cmd, int protocol, bool serialize, int token, params object[] pars)
+            => Call(client, cmd, protocol, true, serialize, token, null, pars);
+        /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="buffer"></param>
+        public virtual void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, 0, false, false, 0, buffer);
+        /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="client"></param>
         /// <param name="cmd">网络命令</param>
-        /// <param name="buffer">数据缓冲区</param>
-        public virtual void Send(Player client, byte cmd, byte[] buffer) => SendRT(client, cmd, buffer);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送数据到的客户端</param>
-        /// <param name="func">函数</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(Player client, string func, params object[] pars) => Send(client, NetCmd.CallRpc, func, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送到的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(Player client, byte cmd, string func, params object[] pars) => SendRT(client, cmd, func, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送到的客户端</param>
-        /// <param name="methodHash">方法哈希码</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(Player client, ushort methodHash, params object[] pars) => Send(client, NetCmd.CallRpc, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送到的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="methodHash">方法哈希码</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(Player client, byte cmd, ushort methodHash, params object[] pars) => SendRT(client, cmd, methodHash, pars);
-
+        /// <param name="buffer"></param>
+        public virtual void Call(Player client, byte cmd, byte[] buffer) => Call(client, cmd, 0, false, false, 0, buffer);
         /// <summary>
         /// 发送灵活数据包
         /// </summary>
@@ -1737,227 +1746,27 @@ namespace Net.Server
         /// <param name="buffer">要包装的数据,你自己来定</param>
         /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
         /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        public void Send(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => SendRT(client, cmd, buffer, kernel, serialize);
-
-        /// <summary>
-        /// 发送自己组织的数据模型
-        /// </summary>
-        /// <param name="client">发送到的客户端</param>
-        /// <param name="model">数据模型</param>
-        public void Send(Player client, RPCModel model) => SendRT(client, model);
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(Player client, string func, params object[] pars) => Call(client, func, pars);
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, func, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="methodHash">方法哈希码</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(Player client, ushort methodHash, params object[] pars) => Call(client, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="methodHash">方法哈希码</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, methodHash, pars);
-
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendIn(Player client, string func, params object[] pars) => SendIn(client, NetCmd.SafeCall, func, pars);
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendIn(Player client, byte cmd, string func, params object[] pars) => CallIn(client, cmd, func, pars);
-
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendIn(Player client, ushort methodHash, params object[] pars) => SendIn(client, NetCmd.SafeCall, methodHash, pars);
-
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd"></param>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendIn(Player client, byte cmd, ushort methodHash, params object[] pars) => CallIn(client, cmd, methodHash, pars);
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="buffer"></param>
-        public virtual void SendRT(Player client, byte[] buffer) => SendRT(client, NetCmd.OtherCmd, buffer);
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer"></param>
-        public virtual void SendRT(Player client, byte cmd, byte[] buffer) => Call(client, cmd, buffer);
-
-        /// <summary>
-        /// 发送灵活数据包
-        /// </summary>
-        /// <param name="client">客户端集合</param>
-        /// <param name="cmd"></param>
-        /// <param name="buffer">要包装的数据,你自己来定</param>
-        /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-        /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        public void SendRT(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, cmd, buffer, kernel, serialize);
-
-        public void SendRT(Player client, RPCModel model) => Call(client, model);
-
-        #region Call
-
-        #region Call_Func
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void Call(Player client, string func, params object[] pars) => Call(client, NetCmd.CallRpc, func, pars);
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void Call(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, false, func, 0, pars);
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void CallIn(Player client, string func, params object[] pars) => CallIn(client, NetCmd.CallRpc, func, pars);
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void CallIn(Player client, byte cmd, string func, params object[] pars) => Call(client, cmd, true, func, 0, pars);
-        #endregion
-
-        #region Call_Hash
-        public virtual void Call(Player client, ushort methodHash, params object[] pars) => Call(client, NetCmd.CallRpc, methodHash, pars);
-        public virtual void Call(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, false, string.Empty, methodHash, pars);
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="methodHash">方法哈希值</param>
-        /// <param name="pars">参数</param>
-        public virtual void CallIn(Player client, ushort methodHash, params object[] pars) => CallIn(client, NetCmd.CallRpc, methodHash, pars);
-        /// <summary>
-        /// 向客户端发送消息 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">方法哈希值</param>
-        /// <param name="methodHash">方法哈希值</param>
-        /// <param name="pars">参数</param>
-        public virtual void CallIn(Player client, byte cmd, ushort methodHash, params object[] pars) => Call(client, cmd, true, string.Empty, methodHash, pars);
-        #endregion
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client">发送的客户端</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="serialize">Rpc参数是否在此线程进行序列化?</param>
-        /// <param name="func">方法名称</param>
-        /// <param name="methodHash">方法哈希值</param>
-        /// <param name="pars">参数</param>
-        public virtual void Call(Player client, byte cmd, bool serialize, string func, ushort methodHash, params object[] pars)
+        public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, cmd, 0, kernel, serialize, 0, buffer);
+        public void Call(Player client, byte cmd, int protocol, bool kernel, bool serialize, int token, byte[] buffer, params object[] pars)
         {
-            if (!client.Connected)
-                return;
-            if (client.RpcModels.Count >= LimitQueueCount)
+            if (buffer != null)
             {
-                OnDataQueueOverflow(client);
-                return;
+                var count = buffer.Length;
+                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+                if (count >= size)
+                {
+                    SendFile(client, cmd, new MemoryStream(buffer), string.Empty);
+                    return;
+                }
+                Call(client, new RPCModel(cmd, buffer, kernel, serialize, protocol));
             }
-            var model = new RPCModel(cmd, func, pars, true, !serialize, methodHash);
-            if (serialize) model.buffer = OnSerializeRpc(model);
-            client.RpcModels.Enqueue(model);
+            else
+            {
+                var model = new RPCModel(cmd, protocol, pars, kernel, !serialize) { token = token };
+                if (serialize) model.buffer = OnSerializeRpc(model);
+                Call(client, model);
+            }
         }
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="buffer"></param>
-        public virtual void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, buffer);
-
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer"></param>
-        public virtual void Call(Player client, byte cmd, byte[] buffer)
-        {
-            if (!client.Connected)
-                return;
-            if (client.RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow(client);
-                return;
-            }
-            var count = buffer.Length;
-            var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
-            if (count >= size)
-            {
-                SendFile(client, cmd, new MemoryStream(buffer), string.Empty);
-                return;
-            }
-            client.RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = count > short.MaxValue });
-        }
-
-        /// <summary>
-        /// 发送灵活数据包
-        /// </summary>
-        /// <param name="client">客户端集合</param>
-        /// <param name="cmd"></param>
-        /// <param name="buffer">要包装的数据,你自己来定</param>
-        /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-        /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
 
         public void Call(Player client, RPCModel model)
         {
@@ -1970,75 +1779,21 @@ namespace Net.Server
             }
             client.RpcModels.Enqueue(model);
         }
-        #endregion
 
-        /// <summary>
-        /// 网络多播, 发送自定义数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="buffer">自定义字节数组</param>
         public virtual void Multicast(IList<Player> clients, byte[] buffer)
-        {
-            Multicast(clients, NetCmd.OtherCmd, buffer);
-        }
-
-        /// <summary>
-        /// 网络多播, 发送自定义数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer">自定义字节数组</param>
+            => Multicast(clients, NetCmd.OtherCmd, buffer);
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
-        {
-            Multicast(clients, new RPCModel(cmd, buffer, false, false) { bigData = buffer.Length > short.MaxValue });
-        }
-
-        /// <summary>
-        /// 网络多播, 发送数据到clients集合的客户端 (灵活数据包)
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="cmd"></param>
-        /// <param name="buffer">要包装的数据,你自己来定</param>
-        /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-        /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
+            => Multicast(clients, new RPCModel(cmd, buffer, false, false));
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
-        {
-            Multicast(clients, new RPCModel(cmd, buffer, kernel, serialize) { bigData = buffer.Length > short.MaxValue });
-        }
-
-        /// <summary>
-        /// 网络多播, 发送数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="func">本地客户端rpc函数</param>
-        /// <param name="pars">本地客户端rpc参数</param>
+            => Multicast(clients, new RPCModel(cmd, buffer, kernel, serialize));
+        public virtual void Multicast(IList<Player> clients, int protocol, params object[] pars)
+            => Multicast(clients, NetCmd.CallRpc, protocol, pars);
+        public virtual void Multicast(IList<Player> clients, byte cmd, int protocol, params object[] pars)
+            => Multicast(clients, new RPCModel(cmd, protocol, pars));
         public virtual void Multicast(IList<Player> clients, string func, params object[] pars)
-        {
-            Multicast(clients, NetCmd.CallRpc, func, pars);
-        }
-
-        /// <summary>
-        /// 网络多播, 发送数据到clients集合的客户端
-        /// </summary>
-        /// <param name="clients">客户端集合</param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">本地客户端rpc函数</param>
-        /// <param name="pars">本地客户端rpc参数</param>
+            => Multicast(clients, NetCmd.CallRpc, func, pars);
         public virtual void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
-        {
-            Multicast(clients, new RPCModel(cmd, func, pars));
-        }
-
-        public virtual void Multicast(IList<Player> clients, ushort methodHash, params object[] pars)
-        {
-            Multicast(clients, NetCmd.CallRpc, methodHash, pars);
-        }
-
-        public virtual void Multicast(IList<Player> clients, byte cmd, ushort methodHash, params object[] pars)
-        {
-            Multicast(clients, new RPCModel(cmd, methodHash, pars));
-        }
-
+            => Multicast(clients, new RPCModel(cmd, func.CRC32(), pars));
         public virtual void Multicast(IList<Player> clients, RPCModel model)
         {
             if (model.buffer == null)
@@ -2198,7 +1953,7 @@ namespace Net.Server
         public void Ping(Player client)
         {
             uint tick = (uint)Environment.TickCount;
-            Send(client, NetCmd.Ping, BitConverter.GetBytes(tick));
+            Call(client, NetCmd.Ping, BitConverter.GetBytes(tick));
         }
 
         /// <summary>
@@ -2209,7 +1964,7 @@ namespace Net.Server
         public void Ping(Player client, Action<Player, uint> callback)
         {
             uint tick = (uint)Environment.TickCount;
-            Send(client, NetCmd.Ping, BitConverter.GetBytes(tick));
+            Call(client, NetCmd.Ping, BitConverter.GetBytes(tick));
             OnPingCallback += callback;
         }
 
@@ -2269,7 +2024,7 @@ namespace Net.Server
         {
             var buffer = SyncVarHelper.CheckSyncVar(true, client.SyncVarDic);
             if (buffer != null)
-                SendRT(client, NetCmd.SyncVarP2P, buffer);
+                Call(client, NetCmd.SyncVarP2P, buffer);
         }
 
         /// <summary>
@@ -2326,7 +2081,7 @@ namespace Net.Server
             segment.Write(fileData.Stream.Length);
             segment.Write(fileData.Name);
             segment.Write(buffer);
-            SendRT(client, NetCmd.UploadData, segment.ToArray(true));
+            Call(client, NetCmd.UploadData, segment.ToArray(true));
             if (complete)
             {
                 if (OnSendFileProgress != null & type == 0)
@@ -2355,7 +2110,7 @@ namespace Net.Server
         /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
         /// </summary>
         /// <returns>是否可发送数据</returns>
-        public bool CheckSendRT(Player client)
+        public bool CheckCall(Player client)
         {
             return client.RpcModels.Count < LimitQueueCount;
         }
@@ -2502,10 +2257,10 @@ namespace Net.Server
         {
             if (!(client.Scene is Scene scene))
             {
-                client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+                client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol));
                 return;
             }
-            Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.methodHash));
+            Multicast(scene.Players, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol));
         }
         #endregion
 

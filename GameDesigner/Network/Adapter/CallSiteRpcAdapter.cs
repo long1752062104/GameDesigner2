@@ -202,10 +202,10 @@ namespace Net.Adapter
             switch (log)
             {
                 case 0:
-                    NDebug.LogWarning($"{client} [mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"{client} [protocol={model.protocol}]的远程方法未被收集!请定义[Rpc(hash = {model.protocol})] void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
                     break;
                 case 1:
-                    NDebug.LogWarning($"{client} {model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用server.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"{client} [protocol={model.protocol}]服务器响应的Token={model.token}没有进行设置!");
                     break;
                 case 2:
                     NDebug.LogWarning($"{client} {model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用server.AddRpc方法收集rpc方法!");
@@ -330,10 +330,10 @@ namespace Net.Adapter
             switch (log)
             {
                 case 0:
-                    NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"[protocol:{model.protocol}]的远程方法未被收集!请定义[Rpc(hash = {model.protocol})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
                     break;
                 case 1:
-                    NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"{client} [protocol={model.protocol}]服务器响应的Token={model.token}没有进行设置!");
                     break;
                 case 2:
                     NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
@@ -362,17 +362,9 @@ namespace Net.Adapter
             handle.RemoveRpc(target);
         }
 
-        public RPCMethodBody OnRpcTaskRegister(ushort methodHash, string callbackFunc)
+        public RPCMethodBody OnRpcTaskRegister(int callback)
         {
-            RPCMethodBody model;
-            if (methodHash != 0)
-            {
-                handle.RpcHashDic.TryGetValue(methodHash, out model);
-            }
-            else
-            {
-                handle.RpcDic.TryGetValue(callbackFunc, out model);
-            }
+            handle.RpcCollectDic.TryGetValue(callback, out var model);
             return model;
         }
     }

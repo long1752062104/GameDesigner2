@@ -38,9 +38,9 @@
     public class NetConvertBinary : NetConvertBase
     {
         private static MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
-        private static MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>(true);
-        private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>(true);
-        private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>(true);
+        private static MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
+        private static MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>();
+        private static MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>();
         private static Type nonSerialized = typeof(NonSerialized);
         private static MyDictionary<Type, Member[]> map;
 
@@ -139,7 +139,7 @@
             AddBaseType<List<DateTime[]>>();
             AddBaseType<List<decimal[]>>();
             //基础结构类型初始化
-            map = new MyDictionary<Type, Member[]>(true)
+            map = new MyDictionary<Type, Member[]>()
             {
                 { typeof(byte), new Member[] { new Member() { Type = typeof(byte), IsPrimitive = true, TypeCode = TypeCode.Byte } } },
                 { typeof(sbyte), new Member[] { new Member() { Type = typeof(sbyte), IsPrimitive = true, TypeCode = TypeCode.SByte } } },
@@ -346,14 +346,7 @@
             var stream = BufferPool.Take();
             try
             {
-                byte head = 0;
-                bool hasFunc = !string.IsNullOrEmpty(model.func);
-                bool hasMask = model.methodHash != 0;
-                SetBit(ref head, 1, hasFunc);
-                SetBit(ref head, 2, hasMask);
-                stream.WriteByte(head);
-                if (hasFunc) stream.Write(model.func);
-                if (hasMask) stream.Write(model.methodHash);
+                stream.Write(model.protocol);
                 foreach (var obj in model.pars)
                 {
                     Type type;
@@ -370,7 +363,7 @@
             }
             catch (Exception ex)
             {
-                string str = "函数:" + model.func + " 参数:";
+                string str = "函数:" + model.protocol + " 参数:";
                 foreach (var obj in model.pars)
                     if (obj == null)
                         str += $"[null]";
@@ -385,7 +378,8 @@
         /// 序列化
         /// </summary>
         /// <param name="obj"></param>
-        /// <param name="recordType"></param>
+        /// <param name="recordType">是否记录类型</param>
+        /// <param name="ignore"></param>
         /// <returns></returns>
         public static ISegment Serialize(object obj, bool recordType = false, bool ignore = false)
         {
@@ -970,7 +964,7 @@
             try
             {
                 count += index;
-                obj.name = segment.ReadString();
+                obj.protocol = segment.ReadInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
@@ -985,7 +979,7 @@
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"解析[{obj.name}]出错 详细信息:" + ex);
+                NDebug.LogError($"解析[{obj.protocol}]出错 详细信息:" + ex);
                 obj.error = true;
             }
             return obj;
@@ -997,11 +991,7 @@
             var segment = BufferPool.NewSegment(buffer, index, count, false);
             try
             {
-                byte head = segment.ReadByte();
-                bool hasFunc = GetBit(head, 1);
-                bool hasMask = GetBit(head, 2);
-                if (hasFunc) obj.name = segment.ReadString();
-                if (hasMask) obj.hash = segment.ReadUInt16();
+                obj.protocol = segment.ReadInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
@@ -1021,7 +1011,7 @@
             catch (Exception ex)
             {
                 obj.error = true;
-                NDebug.LogError($"解析[{obj.name}]出错 详细信息:" + ex);
+                NDebug.LogError($"解析[{obj.protocol}]出错 详细信息:" + ex);
             }
             return obj;
         }

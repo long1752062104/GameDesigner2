@@ -44,7 +44,7 @@ namespace Net.Share
         void OnRpcExecute(RPCModel model);
 
         void RemoveRpc(object target);
-        RPCMethodBody OnRpcTaskRegister(ushort methodHash, string callbackFunc);
+        RPCMethodBody OnRpcTaskRegister(int callback);
     }
 
     /// <summary>

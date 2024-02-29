@@ -24,8 +24,7 @@ namespace Binding
 			if(value.operations != null)
 			{
 				NetConvertBase.SetBit(ref bits[0], 2, true);
-				var bind = new NetShareOperationArrayBind();
-				bind.Write(value.operations, stream);
+				SerializeCache<Net.Share.Operation[]>.Serialize.Write(value.operations, stream);
 			}
 
             int pos1 = stream.Position;
@@ -50,9 +49,8 @@ namespace Binding
 
 			if(NetConvertBase.GetBit(bits[0], 2))
 			{
-				var bind = new NetShareOperationArrayBind();
-				value.operations = bind.Read(stream);
-			}
+				value.operations = SerializeCache<Net.Share.Operation[]>.Serialize.Read(stream);
+            }
 
 		}
 

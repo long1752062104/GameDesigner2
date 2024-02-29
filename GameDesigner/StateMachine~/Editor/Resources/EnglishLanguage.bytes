@@ -13,6 +13,8 @@ Action sequence|Action sequence
 Action none|Action none
 Animation speed|Animation speed
 Animation cycle?|Animation cycle?
+isCrossFade|isCrossFade
+duration|Duration
 Exit status at end of action|Exit status at end of action
 get into the state|get into the state
 Action tree|Action tree

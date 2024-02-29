@@ -75,6 +75,14 @@ namespace GameDesigner
         /// </summary>
 		public float animSpeed = 1;
         /// <summary>
+        /// 动画淡入淡出
+        /// </summary>
+        public bool isCrossFade;
+        /// <summary>
+        /// 过渡的持续时间
+        /// </summary>
+        public float duration = 0.25f;
+        /// <summary>
         /// 动画结束是否进入下一个状态
         /// </summary>
         public bool isExitState;
@@ -149,7 +157,7 @@ namespace GameDesigner
                 transition.time = 0;
             }
             if (actionSystem)
-                Action.Enter(animSpeed);
+                Action.Enter(this, animSpeed);
         }
 
         internal void Exit()
@@ -217,6 +225,31 @@ namespace GameDesigner
             }
             for (int i = 0; i < transitions.Length; i++)
                 transitions[i].Update();
+        }
+
+        public StateAction AddAction(string clipName, params ActionBehaviour[] behaviours)
+        {
+            return new StateAction(this, clipName, behaviours);
+        }
+
+        public Transition AddTransition(int stateId, params TransitionBehaviour[] behaviours)
+        {
+            return new Transition(this, stateId, behaviours);
+        }
+
+        /// <summary>
+        /// 设置动作结束后进入下一个状态
+        /// </summary>
+        /// <param name="stateId"></param>
+        public void ActionEndTransfer(int stateId)
+        {
+            isExitState = true;
+            DstStateID = stateId;
+        }
+
+        public StateAction GetAction(int index)
+        {
+            return actions[index];
         }
     }
 }

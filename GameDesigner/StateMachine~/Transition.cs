@@ -56,6 +56,28 @@ namespace GameDesigner
 
         public Transition() { }
 
+        public Transition(State state, int stateId, params TransitionBehaviour[] behaviours)
+        {
+            currStateID = state.ID;
+            nextStateID = stateId;
+            stateMachine = state.stateMachine;
+            if (behaviours != null)
+            {
+                this.behaviours = behaviours;
+                for (int i = 0; i < behaviours.Length; i++)
+                {
+                    behaviours[i].name = behaviours[i].GetType().ToString();
+                    behaviours[i].stateMachine = stateMachine;
+                    behaviours[i].Active = true;
+                    behaviours[i].OnInit();
+                }
+            }
+            else this.behaviours = new BehaviourBase[0];
+            ArrayExtend.Add(ref state.transitions, this);
+            for (int i = 0; i < state.transitions.Length; i++)
+                state.transitions[i].ID = i;
+        }
+
         /// <summary>
         /// 创建连接实例
         /// </summary>

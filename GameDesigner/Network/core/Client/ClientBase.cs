@@ -37,6 +37,8 @@ using Net.Helper;
 using Net.Server;
 using Net.Adapter;
 using System.Security.Authentication;
+using Net.Common;
+using Net.Config;
 
 namespace Net.Client
 {
@@ -62,21 +64,17 @@ namespace Net.Client
         /// </summary>
         protected QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
         /// <summary>
-        /// 远程方法优化字典
+        /// 远程调用方法收集
         /// </summary>
-        public MyDictionary<string, RPCMethodBody> RpcDic { get; set; } = new MyDictionary<string, RPCMethodBody>(true);
-        /// <summary>
-        /// 远程方法哈希字典
-        /// </summary>
-        public MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; } = new MyDictionary<ushort, RPCMethodBody>();
+        public MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<int, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
-        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>(true);
+        public MyDictionary<Type, List<MemberData>> MemberInfos { get; set; } = new MyDictionary<Type, List<MemberData>>();
         /// <summary>
         /// 当前收集rpc的对象信息
         /// </summary>
-        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>(true);
+        public MyDictionary<object, MemberDataList> RpcTargetHash { get; set; } = new MyDictionary<object, MemberDataList>();
         /// <summary>
         /// 字段同步信息
         /// </summary>
@@ -213,7 +211,7 @@ namespace Net.Client
         /// <summary>
         /// 当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
         /// </summary>
-        public virtual Action<RTProgress> OnSendRTProgress { get; set; }
+        public virtual Action<RTProgress> OnCallProgress { get; set; }
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>
@@ -245,7 +243,7 @@ namespace Net.Client
         /// <summary>
         /// 当可等待的rpc方法被注册, 用于Rpc适配器上
         /// </summary>
-        public Func<ushort, string, RPCMethodBody> OnRpcTaskRegister { get; set; }
+        public Func<int, RPCMethodBody> OnRpcTaskRegister { get; set; }
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
@@ -418,9 +416,9 @@ namespace Net.Client
         protected readonly object SyncRoot = new object();
         public IGcp Gcp { get; set; }
         /// <summary>
-        /// 是否使用多线程来接收网络数据? 默认是多线程
+        /// 网络更新方式
         /// </summary>
-        public bool IsMultiThread { get; set; } = true;
+        public NetworkUpdateMode UpdateMode { get; set; } = NetworkUpdateMode.Thread;
         /// <summary>
         /// 序列化适配器
         /// </summary>
@@ -433,11 +431,40 @@ namespace Net.Client
         /// 数据包适配器
         /// </summary>
         public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
-
         /// <summary>
         /// 网络循环事件处理
         /// </summary>
         protected TimerEvent LoopEvent = new TimerEvent();
+        protected int tokenCount = 1;
+        protected FastLocking tokenLock = new FastLocking();
+        private int sendBufferSize = ushort.MaxValue;
+        /// <summary>
+        /// 设置Socket的发送缓冲区大小, 也叫做窗口大小
+        /// </summary>
+        public int SendBufferSize
+        {
+            get => sendBufferSize;
+            set
+            {
+                if (Client != null)
+                    Client.SendBufferSize = value;
+                sendBufferSize = value;
+            }
+        }
+        private int receiveBufferSize = ushort.MaxValue;
+        /// <summary>
+        /// 设置Socket的接收缓冲区大小, 也叫做窗口大小
+        /// </summary>
+        public int ReceiveBufferSize
+        {
+            get => receiveBufferSize;
+            set
+            {
+                if (Client != null)
+                    Client.ReceiveBufferSize = value;
+                receiveBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// 构造函数
@@ -575,7 +602,7 @@ namespace Net.Client
         /// <param name="pars"></param>
         public void DispatchRpc(string func, params object[] pars)
         {
-            PushRpcData(new RPCModel(0, func, pars));
+            PushRpcData(new RPCModel(0, func.CRC32(), pars));
         }
 
         /// <summary>
@@ -583,7 +610,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="hash"></param>
         /// <param name="pars"></param>
-        public void DispatchRpc(ushort hash, params object[] pars)
+        public void DispatchRpc(int hash, params object[] pars)
         {
             PushRpcData(new RPCModel(0, hash, pars));
         }
@@ -599,10 +626,10 @@ namespace Net.Client
             switch (log)
             {
                 case 0:
-                    NDebug.LogWarning($"[mask:{model.methodHash}]的远程方法未被收集!请定义[Rpc(hash = {model.methodHash})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"[protocol:{model.protocol}]的远程方法未被收集!请定义[Rpc(hash = {model.protocol})] void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
                     break;
                 case 1:
-                    NDebug.LogWarning($"{model.func}的远程方法未被收集!请定义[Rpc]void {model.func}方法和参数, 并使用client.AddRpc方法收集rpc方法!");
+                    NDebug.LogWarning($"[protocol={model.protocol}]服务器响应的Token={model.token}没有进行设置!");
                     break;
                 case 2:
                     NDebug.LogWarning($"{model}的远程方法未被收集!请定义[Rpc]void xx方法和参数, 并使用client.AddRpc方法收集rpc方法!");
@@ -695,14 +722,14 @@ namespace Net.Client
 #if UNITY_EDITOR
                         if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
                             sequence = new SequencePoint();
-                        var info = $"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
+                        var info = $"参数不匹配! 请检查服务器Send或Call时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
                         var reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
                         info += reg.Replace(ex.ToString(), ") (at $1) ");
                         var dataPath = PathHelper.PlatformReplace(UnityEngine.Application.dataPath).Replace("Assets", "");
                         info = PathHelper.PlatformReplace(info.Replace(dataPath, ""));
                         NDebug.LogError(info);
 #else
-                        NDebug.LogError($"参数不匹配! 请检查服务器Send或SendRT时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + ex);
+                        NDebug.LogError($"参数不匹配! 请检查服务器Send或Call时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + ex);
 #endif
                     }
                     catch (Exception ex)
@@ -839,7 +866,11 @@ namespace Net.Client
         {
             try
             {
-                Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);//创建套接字
+                Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+                {
+                    SendBufferSize = SendBufferSize,
+                    ReceiveBufferSize = ReceiveBufferSize
+                };
                 this.localPort = localPort;
                 if (localPort != -1)
                     Client.Bind(new IPEndPoint(IPAddress.Any, localPort));
@@ -853,49 +884,43 @@ namespace Net.Client
             }
         }
 
-        protected virtual UniTask<bool> CheckIdentity(Action begin, Action<bool> result)
+        protected async virtual UniTask<bool> CheckIdentity(Action begin, Action<bool> result)
         {
-#if SERVICE
-            return UniTask.Run(() =>
-#else
-            return UniTask.RunOnThreadPool(() =>
-#endif
+            await UniTask.SwitchToThreadPool();
+            try
             {
-                try
+                begin?.Invoke();
+                var tick = DateTimeHelper.GetTickCount64();
+                await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
-                    begin?.Invoke();
-                    var tick = (uint)Environment.TickCount + 8000u;
-                    var tick1 = (uint)Environment.TickCount;
-                    while (UID == 0)
+                    if (DateTimeHelper.GetTickCount64() >= tick)
                     {
-                        if ((uint)Environment.TickCount >= tick)
-                            throw new Exception("uid赋值失败!");
-                        if (!openClient)
-                            throw new Exception("客户端调用Close!");
-                        if ((uint)Environment.TickCount >= tick1)
-                        {
-                            tick1 = (uint)Environment.TickCount + 1000u;
-                            var segment = BufferPool.Take();
-                            segment.Write(PreUserId);
-                            RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
-                        }
-                        NetworkTick();
+                        tick = DateTimeHelper.GetTickCount64() + 1000;
+                        var segment = BufferPool.Take(SendBufferSize);
+                        segment.Write(PreUserId);
+                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
                     }
-                    Connected = true;
-                    StartupThread();
-                    result(true);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    NDebug.LogError("连接失败原因:" + ex.ToString());
-                    Connected = false;
-                    Client?.Close();
-                    Client = null;
-                    result(false);
-                    return false;
-                }
-            });
+                    NetworkTick();
+                    return UID != 0;
+                }, null);
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
+                if (UID == 0 && openClient)
+                    throw new Exception("连接握手失败!");
+                if (UID == 0 && !openClient)
+                    throw new Exception("客户端调用Close!");
+                StartupThread();
+                result(true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                NDebug.LogError("连接失败原因:" + ex.ToString());
+                Connected = false;
+                Client?.Close();
+                Client = null;
+                result(false);
+                return false;
+            }
         }
 
         protected void InvokeInMainThread(Action action)
@@ -978,11 +1003,20 @@ namespace Net.Client
             AbortedThread();//断线重连处理
             Connected = true;
 #if !UNITY_WEBGL
-            if (IsMultiThread)
-                StartThread("NetworkProcessing", NetworkProcessing);
-            else
+            switch (UpdateMode)
+            {
+                case NetworkUpdateMode.Thread:
+                    StartThread("NetworkProcessing", NetworkProcessing);
+                    break;
+                case NetworkUpdateMode.SingleThread:
+                    singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
+                    break;
+                case NetworkUpdateMode.CustomExecution:
+                    break;
+            }
+#else
+            singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
 #endif
-                singleThreadHandlerID = ThreadManager.Invoke("SingleNetworkProcessing", SingleNetworkProcessing);
             networkTickID = LoopEvent.AddEvent("NetworkTick", 0, NetworkTick);
             networkFlowHandlerID = LoopEvent.AddEvent("NetworkFlowHandler", 1f, NetworkFlowHandler);
             heartHandlerID = LoopEvent.AddEvent("HeartHandler", HeartInterval, HeartHandler);
@@ -991,7 +1025,8 @@ namespace Net.Client
         /// <summary>
         /// 连接结果处理
         /// </summary>
-        /// <param name="result">结果</param>
+        /// <param name="isConnect"></param>
+        /// <param name="action">结果</param>
         protected virtual void OnConnected(bool isConnect, Action<bool> action)
         {
             if (isConnect)
@@ -1019,7 +1054,7 @@ namespace Net.Client
         public void Disconnect(bool reuseSocket)
         {
             NetworkState = NetworkState.Disconnect;
-            Send(NetCmd.Disconnect, new byte[0]);
+            Call(NetCmd.Disconnect, new byte[0]);
             SendDirect();
             Connected = false;
             Client.Disconnect(reuseSocket);
@@ -1148,14 +1183,14 @@ namespace Net.Client
                         var buffer = stream.ToArray(true);
                         stream = BufferPool.Take(len);
                         stream.Write(buffer, false);
-                        rPCModel.bigData = true;
                     }
                 }
                 stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
                 stream.WriteByte(rPCModel.cmd);
+                stream.Write(rPCModel.token);
                 stream.Write(rPCModel.buffer.Length);
                 stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-                if (rPCModel.bigData | ++index >= PackageLength)
+                if (++index >= PackageLength)
                     break;
             }
         }
@@ -1177,7 +1212,7 @@ namespace Net.Client
             var count = rPCModels.Count;
             if (count <= 0)
                 return;
-            var stream = BufferPool.Take();
+            var stream = BufferPool.Take(SendBufferSize);
             SetDataHead(stream);
             WriteDataBody(ref stream, rPCModels, count);
             var buffer = PackData(stream);
@@ -1234,15 +1269,15 @@ namespace Net.Client
         /// 单线程网络处理
         /// </summary>
         /// <returns></returns>
-        protected virtual bool SingleNetworkProcessing() => NetworkProcessing(false);
+        public bool SingleNetworkProcessing() => NetworkProcessing(false);
 
-        protected virtual bool NetworkProcessing(bool sleep)
+        protected bool NetworkProcessing(bool sleep)
         {
             try
             {
                 LoopEvent.UpdateEventFixed(1, sleep);
             }
-            catch (ThreadAbortException ex) //线程结束不提示异常
+            catch (ThreadAbortException) //线程结束不提示异常
             {
                 return false; //如果这里不返回false, 则在ilcpp编译后执行Abort无法结束线程, 导致错误
             }
@@ -1276,13 +1311,13 @@ namespace Net.Client
         {
             if (Client.Poll(0, SelectMode.SelectRead))
             {
-                var segment = BufferPool.Take();
+                var segment = BufferPool.Take(ReceiveBufferSize);
                 segment.Count = Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
                 if (segment.Count == 0 | error != SocketError.Success)
                 {
                     BufferPool.Push(segment);
                     if (Connected & openClient) //导致的问题是当调用Client.Close时, 线程并行到这里导致已经关闭客户端, 但是还是提示连接中断
-                        throw new SocketException((int)SocketError.NoData); //这个如果直接执行会触发两处连接中断事件
+                        throw new SocketException((int)error); //这个如果直接执行会触发两处连接中断事件
                     return;
                 }
                 receiveAmount++;
@@ -1356,27 +1391,27 @@ namespace Net.Client
         {
             while (buffer.Position < buffer.Count)
             {
-                int kernelV = buffer.ReadByte();
-                bool kernel = kernelV == 68;
+                var kernelV = buffer.ReadByte();
+                var kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
                     NDebug.LogError($"[{UID}][可忽略]协议出错!");
                     break;
                 }
-                byte cmd1 = buffer.ReadByte();
-                int dataCount = buffer.ReadInt32();
+                var cmd1 = buffer.ReadByte();
+                var token = buffer.ReadInt32();
+                var dataCount = buffer.ReadInt32();
                 if (buffer.Position + dataCount > buffer.Count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount);
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount) { token = token };
                 if (kernel)
                 {
                     var func = OnDeserializeRPC(buffer.Buffer, buffer.Position, dataCount);
                     if (func.error)
                         goto J;
-                    model.func = func.name;
+                    model.protocol = func.protocol;
                     model.pars = func.pars;
-                    model.methodHash = func.hash;
                 }
                 CommandHandler(model, buffer);//解析协议完成
             J: buffer.Position = position;
@@ -1392,7 +1427,7 @@ namespace Net.Client
                     heart = 0;
                     break;
                 case NetCmd.SendHeartbeat:
-                    Send(NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(NetCmd.RevdHeartbeat, new byte[0]);
                     break;
                 case NetCmd.CallRpc:
                     if (model.kernel)
@@ -1406,31 +1441,13 @@ namespace Net.Client
                     else
                         InvokeInMainThread(model);
                     break;
-                case NetCmd.LocalRT:
-                    if (model.kernel)
-                        OnRPCExecute(model);
-                    else
-                        InvokeInMainThread(model);
-                    break;
                 case NetCmd.Scene:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
                         InvokeInMainThread(model);
                     break;
-                case NetCmd.SceneRT:
-                    if (model.kernel)
-                        OnRPCExecute(model);
-                    else
-                        InvokeInMainThread(model);
-                    break;
                 case NetCmd.Notice:
-                    if (model.kernel)
-                        OnRPCExecute(model);
-                    else
-                        InvokeInMainThread(model);
-                    break;
-                case NetCmd.NoticeRT:
                     if (model.kernel)
                         OnRPCExecute(model);
                     else
@@ -1616,7 +1633,7 @@ namespace Net.Client
                 segment.SetPositionLength(0);
                 segment.Write(cmd);
                 segment.Write(id);
-                SendRT(NetCmd.Download, segment.ToArray(false));
+                Call(NetCmd.Download, segment.ToArray(false));
                 segment.Count = len;
                 if (Environment.TickCount >= recvFileTick)
                 {
@@ -1679,7 +1696,7 @@ namespace Net.Client
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(byte cmd, string func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.GetHashCode(), pars)));
             AddOperation(opt);
         }
 
@@ -1693,7 +1710,7 @@ namespace Net.Client
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(byte cmd, ushort func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.GetHashCode(), pars)));
             AddOperation(opt);
         }
 
@@ -1734,7 +1751,7 @@ namespace Net.Client
                 }
                 if (heart < HeartLimit + 5)
                 {
-                    Send(NetCmd.SendHeartbeat, new byte[0]);
+                    Call(NetCmd.SendHeartbeat, new byte[0]);
                 }
                 else//连接中断事件执行
                 {
@@ -1837,7 +1854,7 @@ namespace Net.Client
             var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
             {
-                Send(NetCmd.Disconnect, new byte[0]);
+                Call(NetCmd.Disconnect, new byte[0]);
                 SendDirect();
             }
             Connected = false;
@@ -1851,6 +1868,9 @@ namespace Net.Client
             RpcModels = new QueueSafe<RPCModel>();
             StackStream?.Close();
             StackStream = null;
+            stack = 0;
+            stackIndex = 0;
+            stackCount = 0;
             UID = 0;
             PreUserId = 0;
             CurrReconnect = 0;
@@ -1859,467 +1879,98 @@ namespace Net.Client
             if (isDispose) NDebug.Log("客户端关闭成功!"); //只有打开状态下才会提示
         }
 
-        /// <summary>
-        /// 发送自定义网络数据
-        /// </summary>
-        /// <param name="buffer">数据缓冲区</param>
-        public virtual void Send(byte[] buffer) => Send(NetCmd.OtherCmd, buffer);
+        #region 远程过程调用
+        public void Call(int protocol, params object[] pars) => Call(NetCmd.CallRpc, protocol, null, pars);
+        public void Call(byte cmd, int protocol, params object[] pars) => Call(cmd, protocol, null, pars);
+        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0, buffer);
+        public void Call(byte cmd, byte[] buffer) => Call(cmd, 0, buffer);
+        public void Call(string func, params object[] pars) => Call(NetCmd.CallRpc, func.CRC32(), null, pars);
+        public void Call(byte cmd, string func, params object[] pars) => Call(cmd, func.CRC32(), null, pars);
 
-        /// <summary>
-        /// 发送自定义网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer">发送字节数组缓冲区</param>
-        public virtual void Send(byte cmd, byte[] buffer) => SendRT(cmd, buffer);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="func">方法</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(string func, params object[] pars) => Send(NetCmd.CallRpc, func, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">方法</param>
-        /// <param name="pars">参数</param>
-        public virtual void Send(byte cmd, string func, params object[] pars) => SendRT(cmd, func, pars);
-
-        public virtual void Send(ushort methodHash, params object[] pars) => Send(NetCmd.CallRpc, methodHash, pars);
-        public virtual void Send(byte cmd, ushort methodHash, params object[] pars) => SendRT(cmd, methodHash, pars);
-
-        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string funcAndCb, params object[] pars)
+        public void Call(byte cmd, int protocol, byte[] buffer, params object[] pars)
         {
-            return Call(funcAndCb, funcAndCb, 5000, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string funcAndCb, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(cmd, funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(cmd, funcAndCb, funcAndCb, (ushort)0, 0, timeoutMilliseconds, intercept, null, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort funcAndCb, params object[] pars)
-        {
-            return Call(funcAndCb, funcAndCb, 5000, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort funcAndCb, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(NetCmd.CallRpc, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(cmd, funcAndCb, funcAndCb, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用, 并且服务器处理完成后要回应给客户端, 回应的方法名是<see href="funcAndCb"/>字符串的值
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="funcAndCb">包含服务器的函数名和回调后的名称</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort funcAndCb, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(cmd, string.Empty, string.Empty, funcAndCb, funcAndCb, timeoutMilliseconds, intercept, null, pars);
-        }
-        #endregion
-
-        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法可以不同,可指定其他方法来接收
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string func, string callbackFunc, params object[] pars)
-        {
-            return Call(func, callbackFunc, 5000, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(func, callbackFunc, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(string func, string callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(NetCmd.CallRpc, func, callbackFunc, timeoutMilliseconds, intercept, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(cmd, func, callbackFunc, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(cmd, func, callbackFunc, (ushort)0, 0, timeoutMilliseconds, intercept, null, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, params object[] pars)
-        {
-            return Call(func, callbackFunc, 5000, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(func, callbackFunc, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(ushort func, ushort callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(NetCmd.CallRpc, func, callbackFunc, timeoutMilliseconds, intercept, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int timeoutMilliseconds, params object[] pars)
-        {
-            return Call(cmd, func, callbackFunc, timeoutMilliseconds, true, pars);
-        }
-
-        /// <summary>
-        /// 远程同步调用
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="func"></param>
-        /// <param name="callbackFunc">服务器返回后调用的函数名</param>
-        /// <param name="timeoutMilliseconds">等待超时时间, 毫秒单位, 如果值为0则是默认等待5秒, 如果值为-1则无限等待, 注意!在非必要时不要使用-1, 会一直等待下去</param>
-        /// <param name="intercept">数据是否被拦截? 拦截后将不会调用rpc, 你需要进行处理</param>
-        /// <param name="pars"></param>
-        /// <returns></returns>
-        public UniTask<RPCModelTask> Call(byte cmd, ushort func, ushort callbackFunc, int timeoutMilliseconds, bool intercept, params object[] pars)
-        {
-            return Call(cmd, string.Empty, string.Empty, func, callbackFunc, timeoutMilliseconds, intercept, null, pars);
-        }
-        #endregion
-
-        private async UniTask<RPCModelTask> Call(byte cmd, string func, string callbackFunc, ushort methodHash, ushort callbackFunc1, int timeoutMilliseconds, bool intercept, byte[] buffer, params object[] pars)
-        {
-            var model = new RPCModelTask();
-            RPCMethodBody body;
-            if (OnRpcTaskRegister == null)
+            if (buffer != null)
             {
-                if (callbackFunc1 != 0)
+                var count = buffer.Length;
+                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+                if (count >= size)
                 {
-                    if (!RpcHashDic.TryGetValue(callbackFunc1, out body))
-                        RpcHashDic.Add(callbackFunc1, body = new RPCMethodBody());
+                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
+                    return;
                 }
-                else
-                {
-                    if (!RpcDic.TryGetValue(callbackFunc, out body))
-                        RpcDic.Add(callbackFunc, body = new RPCMethodBody());
-                }
+                Call(new RPCModel(cmd, buffer, false, false, protocol));
             }
-            else body = OnRpcTaskRegister(callbackFunc1, callbackFunc);
-            if (methodHash != 0)
-                SendRT(new RPCModel(cmd, methodHash, pars));
-            else if (buffer != null)
-                SendRT(new RPCModel(cmd, buffer));
+            else Call(new RPCModel(cmd, protocol, pars, true, true));
+        }
+
+        public virtual void Call(RPCModel model)
+        {
+            if (!Connected)
+                return;
+            if (RpcModels.Count >= LimitQueueCount)
+            {
+                OnDataQueueOverflow?.Invoke();
+                return;
+            }
+            RpcModels.Enqueue(model);
+        }
+        #endregion
+
+        #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
+        public UniTask<RPCModelTask> Request(int protocol, params object[] pars)
+            => Request(NetCmd.CallRpc, protocol, 5000, true, false, null, pars);
+        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, params object[] pars)
+            => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, true, false, null, pars);
+        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+            => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, intercept, false, null, pars);
+        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, params object[] pars)
+            => Request(cmd, protocol, timeoutMilliseconds, true, false, null, pars);
+        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+            => Request(cmd, protocol, timeoutMilliseconds, intercept, false, null, pars);
+        #endregion
+
+        public async UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        {
+            var requestTask = new RPCModelTask();
+            RPCMethodBody body;
+            tokenLock.Enter();
+            if (OnRpcTaskRegister != null)
+                body = OnRpcTaskRegister(protocol);
+            else if (!RpcCollectDic.TryGetValue(protocol, out body))
+                RpcCollectDic.Add(protocol, body = new RPCMethodBody()); //并行发起导致问题
+            J: int token = tokenCount++;
+            if (token == 0)
+                goto J;
+            if (buffer != null)
+            {
+                var count = buffer.Length;
+                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+                if (count >= size)
+                {
+                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
+                    return requestTask; //如果byte[]太大, 则不能等待结果
+                }
+                Call(new RPCModel(cmd, buffer, false, serialize, protocol) { token = token });
+            }
             else
-                SendRT(new RPCModel(cmd, func, pars, true, true));
+            {
+                var model = new RPCModel(cmd, protocol, pars, true, !serialize) { token = token };
+                if (serialize) model.buffer = OnSerializeRPC(model);
+                Call(model);
+            }
             if (timeoutMilliseconds == -1)
                 timeoutMilliseconds = int.MaxValue;
             else if (timeoutMilliseconds == 0)
                 timeoutMilliseconds = 5000;
-            var timeout = (uint)Environment.TickCount + (uint)timeoutMilliseconds;
-            model.timeout = timeout;
-            model.intercept = intercept;
-            body.CallWaitQueue.Enqueue(model);
-            while ((uint)Environment.TickCount < timeout)
-            {
-                await UniTask.Yield();
-                if (model.IsCompleted)
-                    goto J;
-            }
-        J: return model;
-        }
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(string func, params object[] pars) => SendRT(NetCmd.CallRpc, func, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendRT(byte cmd, string func, params object[] pars) => Call(cmd, false, func, 0, pars);
-
-        /// <summary>
-        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendIn(string func, params object[] pars) => SendIn(NetCmd.CallRpc, func, pars);
-
-        /// <summary>
-        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="func">函数名</param>
-        /// <param name="pars">参数</param>
-        public virtual void SendIn(byte cmd, string func, params object[] pars) => Call(cmd, true, func, 0, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendRT(ushort methodHash, params object[] pars) => SendRT(NetCmd.CallRpc, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendRT(byte cmd, ushort methodHash, params object[] pars) => Call(cmd, false, string.Empty, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendIn(ushort methodHash, params object[] pars) => SendIn(NetCmd.CallRpc, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据 --此方法会在当前线程进行序列化网络参数,当前参数使用了数组,List或者其他容易发生索引溢出的, 可以使用此方法
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="methodHash"></param>
-        /// <param name="pars"></param>
-        public virtual void SendIn(byte cmd, ushort methodHash, params object[] pars) => Call(cmd, true, string.Empty, methodHash, pars);
-
-        /// <summary>
-        /// 发送网络数据,需要了解model的各个参数
-        /// </summary>
-        /// <param name="model"></param>
-        public virtual void SendRT(RPCModel model)
-        {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            RpcModels.Enqueue(model);
-        }
-
-        public virtual void Call(byte cmd, bool serialize, string func, ushort methodHash, params object[] pars)
-        {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            var model = new RPCModel(cmd, func, pars, true, !serialize, methodHash);
-            if (serialize) model.buffer = OnSerializeRPC(model);
-            RpcModels.Enqueue(model);
-        }
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="buffer"></param>
-        public virtual void SendRT(byte[] buffer)
-        {
-            SendRT(NetCmd.OtherCmd, buffer);
-        }
-
-        /// <summary>
-        /// 发送网络数据
-        /// </summary>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer"></param>
-        public virtual void SendRT(byte cmd, byte[] buffer)
-        {
-            if (!Connected)
-                return;
-            if (RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow?.Invoke();
-                return;
-            }
-            var count = buffer.Length;
-            var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
-            if (count >= size)
-            {
-                SendFile(cmd, new MemoryStream(buffer), string.Empty);
-                return;
-            }
-            RpcModels.Enqueue(new RPCModel(cmd, buffer, false, false) { bigData = count > short.MaxValue });
+            requestTask.intercept = intercept;
+            var addResult = body.RequestDict.TryAdd(token, requestTask);
+            if (!addResult)
+                NDebug.LogError($"请求Token添加失败! token:{token}");
+            tokenLock.Exit();
+            await UniTaskNetExtensions.Wait(timeoutMilliseconds, (state) => ((RPCModelTask)state).IsCompleted, requestTask);
+            if (!requestTask.IsCompleted)
+                body.RequestDict.Remove(token);
+            return requestTask;
         }
 
         /// <summary>
@@ -2336,7 +1987,7 @@ namespace Net.Client
 
         protected void SetHeartInterval(int interval)
         {
-            LoopEvent.ResetTimeInterval(heartHandlerID, (ulong)interval, true);
+            LoopEvent.ResetTimeInterval(heartHandlerID, (long)interval, true);
         }
 
         /// <summary>
@@ -2345,7 +1996,7 @@ namespace Net.Client
         public void Ping()
         {
             uint tick = (uint)Environment.TickCount;
-            Send(NetCmd.Ping, BitConverter.GetBytes(tick));
+            Call(NetCmd.Ping, BitConverter.GetBytes(tick));
         }
 
         /// <summary>
@@ -2355,7 +2006,7 @@ namespace Net.Client
         public void Ping(Action<uint> callback)
         {
             uint tick = (uint)Environment.TickCount;
-            Send(NetCmd.Ping, BitConverter.GetBytes(tick));
+            Call(NetCmd.Ping, BitConverter.GetBytes(tick));
             OnPingCallback += callback;
         }
 
@@ -2454,7 +2105,7 @@ namespace Net.Client
         {
             var buffer = SyncVarHelper.CheckSyncVar(true, SyncVarDic);
             if (buffer != null)
-                SendRT(NetCmd.SyncVarP2P, buffer);
+                Call(NetCmd.SyncVarP2P, buffer);
         }
 
         /// <summary>
@@ -2481,8 +2132,8 @@ namespace Net.Client
             var data = new BigData
             {
                 Id = stream.GetHashCode(),
-                Stream = stream,
                 Name = name,
+                Stream = stream,
                 bufferSize = 50000 / (BigDataDic.Count + 1)
             };
             BigDataDic.Add(data.Id, data);
@@ -2510,7 +2161,7 @@ namespace Net.Client
             segment.Write((int)fileData.Stream.Length);
             segment.Write(fileData.Name);
             segment.Write(buffer);
-            SendRT(NetCmd.UploadData, segment.ToArray(true));
+            Call(NetCmd.UploadData, segment.ToArray(true));
             if (complete)
             {
                 if (OnSendFileProgress != null & type == 0)
@@ -2530,16 +2181,7 @@ namespace Net.Client
         /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
         /// </summary>
         /// <returns>是否可发送数据</returns>
-        public bool CheckSend()
-        {
-            return RpcModels.Count < LimitQueueCount;
-        }
-
-        /// <summary>
-        /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-        /// </summary>
-        /// <returns>是否可发送数据</returns>
-        public bool CheckSendRT()
+        public bool CheckCall()
         {
             return RpcModels.Count < LimitQueueCount;
         }
@@ -2565,6 +2207,31 @@ namespace Net.Client
         /// <param name="args"></param>
         public virtual void OnSetConfigInfo(params object[] args)
         {
+        }
+
+        /// <summary>
+        /// 设置配置
+        /// </summary>
+        /// <param name="config"></param>
+        public void SetConfig(ClientConfig config)
+        {
+            if (config == null)
+                return;
+            HeartInterval = config.HeartInterval;
+            HeartLimit = config.HeartLimit;
+            PackageSize = config.PackageSize;
+            MTU = config.MTU;
+            RTO = config.RTO;
+            MTPS = config.MTPS;
+            FlowControl = config.FlowControl;
+            PackageLength = config.PackageLength;
+            LimitQueueCount = config.LimitQueueCount;
+            AutoReconnecting = config.AutoReconnecting;
+            ReconnectCount = config.ReconnectCount;
+            ReconnectInterval = config.ReconnectInterval;
+            SendInterval = config.SendInterval;
+            SendBufferSize = config.SendBufferSize;
+            ReceiveBufferSize = config.ReceiveBufferSize;
         }
     }
 }

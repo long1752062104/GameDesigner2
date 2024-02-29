@@ -157,10 +157,7 @@ namespace Net.UnityComponent
                     break;
                 case NetCmd.CallRpc:
                     var data = client.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
-                    if (!string.IsNullOrEmpty(data.name))
-                        client.DispatchRpc(data.name, data.pars);
-                    else if (data.hash != 0)
-                        client.DispatchRpc(data.hash, data.pars);
+                    client.DispatchRpc(data.protocol, data.pars);
                     break;
                 default:
                     if (operationHandlerDict.TryGetValue(opt.cmd, out var operList))

@@ -32,7 +32,7 @@
     /// </summary>
     /// <param name="progress">当前进度</param>
     /// <param name="state">当前状态</param>
-    public delegate void SendRTProgress(int progress, RTState state);
+    public delegate void CallProgress(int progress, RTState state);
 
     /// <summary>
     /// 可靠传输进度值

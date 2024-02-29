@@ -2049,6 +2049,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   world:
+    gridBodies:
+      _size: 0
     worldSize:
       m_XMin: -60
       m_YMin: -60

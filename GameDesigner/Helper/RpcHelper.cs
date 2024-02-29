@@ -61,20 +61,13 @@ namespace Net.Helper
                 if (rpc != null)
                 {
                     var item = func(member);
-                    RPCMethodBody body;
+                    if (string.IsNullOrEmpty(rpc.func))
+                        rpc.func = item.method.Name;
+                    if (!handle.RpcCollectDic.TryGetValue(rpc.func.CRC32(), out var body))
+                        handle.RpcCollectDic.Add(rpc.func.CRC32(), body = new RPCMethodBody());
                     if (rpc.hash != 0)
-                    {
-                        if (!handle.RpcHashDic.TryGetValue(rpc.hash, out body))
-                            handle.RpcHashDic.Add(rpc.hash, body = new RPCMethodBody());
-                        body.Add(target, item);
-                    }
-                    string funcName;
-                    if (!string.IsNullOrEmpty(rpc.func))
-                        funcName = rpc.func;
-                    else
-                        funcName = item.method.Name;
-                    if (!handle.RpcDic.TryGetValue(funcName, out body))
-                        handle.RpcDic.Add(funcName, body = new RPCMethodBody());
+                        if (!handle.RpcCollectDic.ContainsKey(rpc.hash))
+                            handle.RpcCollectDic.Add(rpc.hash, body);
                     body.Add(target, item);
                 }
                 var syncVar = member.syncVar;
@@ -99,54 +92,39 @@ namespace Net.Helper
                 {
                     if (item.rpc != null)
                     {
-                        if (handle.RpcHashDic.TryGetValue(item.rpc.hash, out var dict))
-                        {
+                        if (handle.RpcCollectDic.TryGetValue(item.rpc.hash, out var dict))
                             dict.Remove(target);
-                        }
-                        if (handle.RpcDic.TryGetValue(item.member.Name, out dict))
-                        {
+                        if (handle.RpcCollectDic.TryGetValue(item.rpc.func.CRC32(), out dict))
                             dict.Remove(target);
-                        }
                     }
                     if (item.syncVar != null)
-                    {
                         handle.SyncVarDic.Remove(item.syncVar.id);
-                    }
                 }
             }
         }
 
         public static void Invoke(IRpcHandler handle, NetPlayer client, RPCModel model, Action<MyDictionary<object, IRPCMethod>, NetPlayer, RPCModel> action, Action<int, NetPlayer, RPCModel> log)
         {
-            RPCMethodBody body;
-            if (model.methodHash != 0)
+            if (!handle.RpcCollectDic.TryGetValue(model.protocol, out var body))
             {
-                if (!handle.RpcHashDic.TryGetValue(model.methodHash, out body))
-                {
-                    log(0, client, model);
-                    return;
-                }
+                log(0, client, model);
+                return;
             }
-            else
+            if (model.token == 0 && body.RequestDict.Count > 0)
             {
-                if (string.IsNullOrEmpty(model.func))
-                    return;
-                if (!handle.RpcDic.TryGetValue(model.func, out body))
-                {
-                    log(1, client, model);
-                    return;
-                }
+                log(1, client, model);
+                return;
             }
-            var timeout = (uint)Environment.TickCount;
-            while (body.CallWaitQueue.TryDequeue(out RPCModelTask modelTask))
+            if (model.token != 0 && body.RequestDict.Count > 0)
             {
-                if (timeout > modelTask.timeout) //超时的等待队列忽略
-                    continue;
-                modelTask.model = model;
-                modelTask.IsCompleted = true;
-                if (modelTask.intercept)
-                    return;
-                break; //只能执行一次, 不能全部循环执行
+                RPCModelTask modelTask;
+                if (body.RequestDict.TryRemove(model.token, out modelTask))
+                {
+                    modelTask.model = model;
+                    modelTask.IsCompleted = true;
+                    if (modelTask.intercept)
+                        return;
+                }
             }
             if (body.Count <= 0)
             {

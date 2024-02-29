@@ -88,7 +88,7 @@ namespace Net.Component
                 _client.host = ip;
                 _client.port = port;
                 _client.LogRpc = debugRpc;
-                _client.IsMultiThread = !singleThread;
+                _client.UpdateMode = singleThread ? NetworkUpdateMode.SingleThread : NetworkUpdateMode.Thread;
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
                 _client.SetHeartTime(heartLimit, heartInterval);
@@ -116,7 +116,7 @@ namespace Net.Component
             {
                 if (result)
                 {
-                    _client.Send(new byte[1]);//发送一个字节:调用服务器的OnUnClientRequest方法, 如果不需要账号登录, 则会直接允许进入服务器
+                    _client.Call(new byte[1]);//发送一个字节:调用服务器的OnUnClientRequest方法, 如果不需要账号登录, 则会直接允许进入服务器
                 }
             });
         }

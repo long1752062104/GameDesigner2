@@ -6,10 +6,10 @@ namespace Net.Share
 {
     public class RPCMethodBody
     {
-        public QueueSafe<RPCModelTask> CallWaitQueue = new QueueSafe<RPCModelTask>();
-        public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>(true);
+        public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>();
+        public SafeDictionary<int, RPCModelTask> RequestDict = new SafeDictionary<int, RPCModelTask>();
         public int Count => RpcDict.Count;
-
+        
         internal void Add(object key, IRPCMethod value)
         {
             RpcDict.Add(key, value);
@@ -24,13 +24,9 @@ namespace Net.Share
     public interface IRpcHandler
     {
         /// <summary>
-        /// 远程方法优化字典
+        /// 远程调用方法收集
         /// </summary>
-        MyDictionary<string, RPCMethodBody> RpcDic { get; set; }
-        /// <summary>
-        /// 远程方法哈希字典
-        /// </summary>
-        MyDictionary<ushort, RPCMethodBody> RpcHashDic { get; set; }
+        MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; }
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>

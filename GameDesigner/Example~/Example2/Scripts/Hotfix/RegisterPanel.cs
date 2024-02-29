@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Hotfix
 {
-	//热更新生成的脚本, 请看gitee的mvc模块使用介绍图示
+	//鐑洿鏂扮敓鎴愮殑鑴氭湰, 璇风湅gitee鐨刴vc妯″潡浣跨敤浠嬬粛鍥剧ず
 	public class RegisterPanel
 	{
 		public static RegisterPanel Instance = new RegisterPanel();
@@ -34,12 +34,12 @@ namespace Hotfix
 			register.onClick.AddListener(() => {
 				if (acc.text.Length <= 0 | pwd.text.Length <= 0)
 				{
-					MsgPanel.Show("注册错误!");
+					MsgPanel.Show("娉ㄥ唽閿欒!");
 					return;
 				}
-				ClientManager.Instance.SendRT("Register", acc.text, pwd.text);
+				ClientManager.Instance.client.Call("Register", acc.text, pwd.text);
 			});
-			//ClientManager.Instance.client.Add_ILR_RpcHandle(this);//收集ilr的rpc方法
+			//ClientManager.Instance.client.Add_ILR_RpcHandle(this);//鏀堕泦ilr鐨剅pc鏂规硶
 			ClientManager.Instance.client.AddRpc(this);
 		}
 

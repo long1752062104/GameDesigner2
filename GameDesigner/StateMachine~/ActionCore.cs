@@ -66,10 +66,7 @@ namespace GameDesigner
         ActiveLocalPosition,
     }
 
-    /// <summary>
-    /// 内置的技能动作行为组件, 此组件包含播放音效, 处理技能特效
-    /// </summary>
-    public class ActionCore : ActionBehaviour
+    public class ActionCoreBase : ActionBehaviour
     {
         /// <summary>
         /// 动画事件时间
@@ -79,11 +76,83 @@ namespace GameDesigner
         /// 是否已到达事件时间或超过事件时间，到为true，没到为flase
         /// </summary>
 		[HideField]
-        public bool eventEnter = false;
+        public bool eventEnter;
+
+        public override void OnEnter(StateAction action)
+        {
+            eventEnter = false;
+        }
+
+        public override void OnUpdate(StateAction action)
+        {
+            if (action.animTime >= animEventTime & !eventEnter)
+            {
+                eventEnter = true;
+                OnAnimationEvent(action);
+            }
+        }
+
+        /// <summary>
+        /// 当动画事件触发
+        /// </summary>
+        public virtual void OnAnimationEvent(StateAction action) { }
+
+        public override void OnExit(StateAction action)
+        {
+            eventEnter = false;
+        }
+    }
+
+    public class ActionAudio : ActionCoreBase
+    {
+        /// <summary>
+        /// 音效触发模式
+        /// </summary>
+		public AudioMode audioModel = AudioMode.AnimEvent;
+        /// <summary>
+        /// 音效剪辑
+        /// </summary>
+		public List<AudioClip> audioClips = new List<AudioClip>();
+
+        public override void OnEnter(StateAction action)
+        {
+            base.OnEnter(action);
+            if (audioModel == AudioMode.EnterPlay & audioClips.Count > 0)
+            {
+                var audioIndex = Random.Range(0, audioClips.Count);
+                AudioManager.Play(audioClips[audioIndex]);
+            }
+        }
+
+        public override void OnAnimationEvent(StateAction action)
+        {
+            if (audioModel == AudioMode.AnimEvent & audioClips.Count > 0)
+            {
+                var audioIndex = Random.Range(0, audioClips.Count);
+                AudioManager.Play(audioClips[audioIndex]);
+            }
+        }
+
+        public override void OnExit(StateAction action)
+        {
+            base.OnExit(action);
+            if (audioModel == AudioMode.ExitPlay & audioClips.Count > 0)
+            {
+                var audioIndex = Random.Range(0, audioClips.Count);
+                AudioManager.Play(audioClips[audioIndex]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 内置的技能动作行为组件, 此组件包含播放音效, 处理技能特效
+    /// </summary>
+    public class ActionCore : ActionCoreBase
+    {
         /// <summary>
         /// 技能粒子物体
         /// </summary>
-		public GameObject effectSpwan = null;
+		public GameObject effect = null;
         /// <summary>
         /// 粒子物体生成模式
         /// </summary>
@@ -95,11 +164,11 @@ namespace GameDesigner
         /// <summary>
         /// 粒子物体对象池
         /// </summary>
-		public List<GameObject> activeObjs = new List<GameObject>();
+		public List<GameObject> objectPool = new List<GameObject>();
         /// <summary>
         /// 粒子位置设置
         /// </summary>
-		public SpwanMode spwanmode = SpwanMode.localPosition;
+		public SpwanMode spwanMode = SpwanMode.localPosition;
         /// <summary>
         /// 作为粒子挂载的父对象 或 作为粒子生成在此parent对象的位置
         /// </summary>
@@ -107,87 +176,50 @@ namespace GameDesigner
         /// <summary>
         /// 粒子出生位置
         /// </summary>
-		public Vector3 effectPostion = new Vector3(0, 1.5f, 2f);
+		public Vector3 postion = new Vector3(0, 1.5f, 2f);
         /// <summary>
         /// 粒子角度
         /// </summary>
-        public Vector3 effectEulerAngles;
-        /// <summary>
-        /// 是否播放音效
-        /// </summary>
-        public bool isPlayAudio = false;
-        /// <summary>
-        /// 音效触发模式
-        /// </summary>
-		public AudioMode audioModel = AudioMode.AnimEvent;
-        /// <summary>
-        /// 音效剪辑
-        /// </summary>
-		public List<AudioClip> audioClips = new List<AudioClip>();
-        /// <summary>
-        /// 音效索引
-        /// </summary>
-		[HideField]
-        public int audioIndex = 0;
+        public Vector3 rotation;
 
-        public override void OnEnter(StateAction action)
+        public override void OnAnimationEvent(StateAction action)
         {
-            eventEnter = false;
-            if (isPlayAudio & audioModel == AudioMode.EnterPlay & audioClips.Count > 0)
+            if (effect == null)
+                return;
+            if (activeMode == ActiveMode.Instantiate)
+                Object.Destroy(InstantiateSpwan(), spwanTime);
+            else if (activeMode == ActiveMode.ObjectPool)
             {
-                audioIndex = Random.Range(0, audioClips.Count);
-                AudioManager.Play(audioClips[audioIndex]);
+                bool active = false;
+                for (int i = 0; i < objectPool.Count; i++)
+                {
+                    var obj = objectPool[i];
+                    if (obj == null)
+                    {
+                        objectPool.RemoveAt(i);
+                        break;
+                    }
+                    if (!obj.activeSelf)
+                    {
+                        obj.SetActive(true);
+                        obj.transform.SetParent(null);
+                        SetPosition(obj);
+                        active = true;
+                        _ = HideSpwanTime(obj);
+                        break;
+                    }
+                }
+                if (!active)
+                {
+                    var go = InstantiateSpwan();
+                    objectPool.Add(go);
+                    _ = HideSpwanTime(go);
+                }
             }
-        }
-
-        public override void OnUpdate(StateAction action)
-        {
-            if (action.animTime >= animEventTime & !eventEnter)
+            else
             {
-                if (effectSpwan != null)
-                {
-                    if (activeMode == ActiveMode.Instantiate)
-                        Object.Destroy(InstantiateSpwan(stateManager), spwanTime);
-                    else if (activeMode == ActiveMode.ObjectPool)
-                    {
-                        bool active = false;
-                        foreach (GameObject go in activeObjs)
-                        {
-                            if (go == null)
-                            {
-                                activeObjs.Remove(go);
-                                break;
-                            }
-                            if (!go.activeSelf)
-                            {
-                                go.SetActive(true);
-                                go.transform.SetParent(null);
-                                SetPosition(stateManager, go);
-                                active = true;
-                                _ = HideSpwanTime(go);
-                                break;
-                            }
-                        }
-                        if (!active)
-                        {
-                            var go = InstantiateSpwan(stateManager);
-                            activeObjs.Add(go);
-                            _ = HideSpwanTime(go);
-                        }
-                    }
-                    else
-                    {
-                        effectSpwan.SetActive(true);
-                        SetPosition(stateManager, effectSpwan);
-                    }
-                }
-                if (isPlayAudio & audioModel == AudioMode.AnimEvent & audioClips.Count > 0)
-                {
-                    audioIndex = Random.Range(0, audioClips.Count);
-                    AudioManager.Play(audioClips[audioIndex]);
-                }
-                eventEnter = true;
-                OnAnimationEvent(action);
+                effect.SetActive(true);
+                SetPosition(effect);
             }
         }
 
@@ -199,37 +231,32 @@ namespace GameDesigner
         }
 
         /// <summary>
-        /// 当动画事件触发
-        /// </summary>
-        public virtual void OnAnimationEvent(StateAction action) { }
-
-        /// <summary>
         /// 设置技能位置
         /// </summary>
-		private void SetPosition(StateManager stateManager, GameObject go)
+		private void SetPosition(GameObject go)
         {
-            switch (spwanmode)
+            switch (spwanMode)
             {
                 case SpwanMode.localPosition:
-                    go.transform.localPosition = stateManager.transform.TransformPoint(effectPostion);
-                    go.transform.eulerAngles = stateManager.transform.eulerAngles + effectEulerAngles;
+                    go.transform.localPosition = stateManager.transform.TransformPoint(postion);
+                    go.transform.eulerAngles = stateManager.transform.eulerAngles + rotation;
                     break;
                 case SpwanMode.SetParent:
                     parent = parent ? parent : stateManager.transform;
                     go.transform.SetParent(parent);
-                    go.transform.position = parent.TransformPoint(effectPostion);
-                    go.transform.eulerAngles = parent.eulerAngles + effectEulerAngles;
+                    go.transform.position = parent.TransformPoint(postion);
+                    go.transform.eulerAngles = parent.eulerAngles + rotation;
                     break;
                 case SpwanMode.SetInTargetPosition:
                     parent = parent ? parent : stateManager.transform;
                     go.transform.SetParent(parent);
-                    go.transform.position = parent.TransformPoint(effectPostion);
-                    go.transform.eulerAngles = parent.eulerAngles + effectEulerAngles;
+                    go.transform.position = parent.TransformPoint(postion);
+                    go.transform.eulerAngles = parent.eulerAngles + rotation;
                     go.transform.SetParent(null);
                     break;
                 case SpwanMode.ActiveLocalPosition:
-                    go.transform.localPosition = effectPostion;
-                    go.transform.localEulerAngles = effectEulerAngles;
+                    go.transform.localPosition = postion;
+                    go.transform.localEulerAngles = rotation;
                     break;
             }
         }
@@ -237,11 +264,11 @@ namespace GameDesigner
         /// <summary>
         /// 技能实例化
         /// </summary>
-		private GameObject InstantiateSpwan(StateManager stateManager)
+		private GameObject InstantiateSpwan()
         {
-            var go = Object.Instantiate(effectSpwan);
+            var go = Object.Instantiate(effect);
             OnSpwanEffect(go);
-            SetPosition(stateManager, go);
+            SetPosition(go);
             return go;
         }
 
@@ -251,19 +278,9 @@ namespace GameDesigner
         /// <param name="effect"></param>
         public virtual void OnSpwanEffect(GameObject effect) { }
 
-        public override void OnExit(StateAction action)
-        {
-            if (isPlayAudio & audioModel == AudioMode.ExitPlay & audioClips.Count > 0)
-            {
-                audioIndex = Random.Range(0, audioClips.Count);
-                AudioManager.Play(audioClips[audioIndex]);
-            }
-            eventEnter = false;
-        }
-
         public override void OnDestroyComponent()
         {
-            foreach (var obj in activeObjs)
+            foreach (var obj in objectPool)
             {
                 Object.Destroy(obj);
             }
