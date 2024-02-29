@@ -3,7 +3,9 @@
 
 ## GDNet6.0版本说明
 <br> **GDNet6.0版本对GDNet5.0做了一些修改如下:** </br>
+
 <br> 1.对5.0版本的Send, SendRT方法统一改为Call方法, 服务器也统一将Send, SendRT改成Call, 并且服务器的Call新增了Token参数, 用于客户端async await时等待正确的响应</br>
+
 <br>2.对5.0版本的Call则更名为Request, 可await等待结果, 服务器收到请求后需要将player.Token记录, 当返回响应给客户端时需要传入Call的Token参数</br>
 
 ```
