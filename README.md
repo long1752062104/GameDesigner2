@@ -3,7 +3,8 @@
 
 ## GDNet6.0版本说明
 <br>GDNet6.0版本对GDNet5.0做了一些修改如下:</br>
-<br>1.对5.0版本的Send, SendRT方法统一改为Call方法, 服务器也统一将Send, SendRT改成Call, 并且服务器的Call新增了Token参数, 用于客户端async await时等待正确的响应</br>
+
+<br> 1.对5.0版本的Send, SendRT方法统一改为Call方法, 服务器也统一将Send, SendRT改成Call, 并且服务器的Call新增了Token参数, 用于客户端async await时等待正确的响应</br>
 <br>2.对5.0版本的Call则更名为Request, 可await等待结果, 服务器收到请求后需要将player.Token记录, 当返回响应给客户端时需要传入Call的Token参数</br>
 
 ```
@@ -21,9 +22,10 @@ private async UniTaskVoid Login(NetPlayer client, string account, string passwor
 服务器响应的结果可能是Request(Login, "123")收到的是Request(Login, "456")的结果, Request(Login, "456")收到Request(Login, "123")的结果, 也可能是正确的, 6.0版本解决了这个问题, 可以同时发出一个协议n次, await的结果都是正确的
 
 <br>3.新增了分布式案例和分布式的几个核心类</br>
-<br>    1. ConsistentHashing<T> 一致性哈希类, 包含虚拟节点, 哈希环处理</br>
+> <br>    1. ConsistentHashing<T> 一致性哈希类, 包含虚拟节点, 哈希环处理</br>
 <br>    2. LoadBalance<T> 负载均衡类, 包含一致性哈希, 客户端池, 当访问数据库时使用一致性哈希获取虚拟节点去路由到物理节点, 当访问其他服务器节点则可以用轮询方式</br>
 <br>    3. UniqueIdGenerator 分布式唯一ID生成器, 类似雪花ID, 使用的计数不是时间tick来计算ID, 而是使用自定义自增ID, 只要机器ID是唯一, 分布式节点就不会生成相同ID, 机器ID和计数ID占用多少位可以自行设置, 比如机器ID占用16位, 计数ID占用48位</br>
+
 <br>4.将客户端框架Framework更名为GameCore, 并优化了安装步骤</br>
 
 ## 模块图
