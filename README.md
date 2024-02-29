@@ -2,8 +2,7 @@
  (Game Designer Network)专为游戏而设计的网络框架和动作状态机，使用C#开发，支持.NetFramework和Core版本，目前主要用于Unity3D，Form窗体程序和控制台项目开发。扩展性强，支持新协议快速扩展，当前支持tcp，gcp, udx, kcp, web网络协议。简易上手. api注释完整。
 
 ## GDNet6.0版本说明
-<br>GDNet6.0版本对GDNet5.0做了一些修改如下:</br>
-
+<br> **GDNet6.0版本对GDNet5.0做了一些修改如下:** </br>
 <br> 1.对5.0版本的Send, SendRT方法统一改为Call方法, 服务器也统一将Send, SendRT改成Call, 并且服务器的Call新增了Token参数, 用于客户端async await时等待正确的响应</br>
 <br>2.对5.0版本的Call则更名为Request, 可await等待结果, 服务器收到请求后需要将player.Token记录, 当返回响应给客户端时需要传入Call的Token参数</br>
 
