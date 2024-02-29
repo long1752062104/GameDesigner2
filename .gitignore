@@ -1,7 +1,6 @@
 .vs/
 .git/
-bin/Debug/
-bin/Release/
+bin/
 obj/
 GameDesigner/Example~/DistributedExampleServer~/bin/
 *.stream
