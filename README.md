@@ -29,6 +29,8 @@ private async UniTaskVoid Login(NetPlayer client, string account, string passwor
 
 <br>4.将客户端框架Framework更名为GameCore, 并优化了安装步骤</br>
 
+<br>5.状态机案例, 状态机案例中使用了代码方式创建状态, 添加动作和行为, 可用excel配置技能和动态配置技能状态</br>
+
 ## 模块图
 
 <img src="https://gitee.com/leng_yue/GameDesigner/raw/master/docs/gdnet.png" width = "620" height = "700" alt="图片名称" align=center />
