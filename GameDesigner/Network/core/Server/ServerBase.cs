@@ -2166,6 +2166,11 @@ namespace Net.Server
         /// 退出场景处理
         /// </summary>
         protected virtual void ExitSceneHandler(Player client) { }
+
+        public override string ToString()
+        {
+            return $"{Name} {AreaName}";
+        }
     }
 
     /// <summary>

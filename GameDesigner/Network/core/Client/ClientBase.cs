@@ -26,7 +26,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using Net.Event;
@@ -36,7 +35,6 @@ using Net.Serialize;
 using Net.Helper;
 using Net.Server;
 using Net.Adapter;
-using System.Security.Authentication;
 using Net.Common;
 using Net.Config;
 
@@ -276,10 +274,6 @@ namespace Net.Client
         /// 当发送的文件进度
         /// </summary>
         public Action<RTProgress> OnSendFileProgress { get; set; }
-        /// <summary>
-        /// 当注册网络物体唯一标识
-        /// </summary>
-        public Action<int, int> OnRegisterNetworkIdentity { get; set; }
         /// <summary>
         /// 当排队等待中
         /// </summary>
@@ -878,7 +872,7 @@ namespace Net.Client
             }
             catch (Exception ex)
             {
-                NDebug.LogError("连接失败原因:" + ex.ToString());
+                NDebug.LogError("连接错误:" + ex);
                 result(false);
                 return UniTask.FromResult(false);
             }
@@ -1681,7 +1675,7 @@ namespace Net.Client
         /// <param name="func"></param>
         /// <param name="pars"></param>
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
-        public void AddOperation(ushort func, params object[] pars)
+        public void AddOperation(int func, params object[] pars)
         {
             AddOperation(NetCmd.CallRpc, func, pars);
         }
@@ -1696,7 +1690,7 @@ namespace Net.Client
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(byte cmd, string func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.GetHashCode(), pars)));
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.CRC32(), pars)));
             AddOperation(opt);
         }
 
@@ -1708,9 +1702,9 @@ namespace Net.Client
         /// <param name="func"></param>
         /// <param name="pars"></param>
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
-        public void AddOperation(byte cmd, ushort func, params object[] pars)
+        public void AddOperation(byte cmd, int func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.GetHashCode(), pars)));
+            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
             AddOperation(opt);
         }
 
@@ -1719,7 +1713,7 @@ namespace Net.Client
         /// 而Send则是直接发送
         /// </summary>
         /// <param name="opt"></param>
-        public void AddOperation(Operation opt)
+        public void AddOperation(in Operation opt)
         {
             operations.Add(opt);
         }
@@ -1769,12 +1763,12 @@ namespace Net.Client
         /// <returns></returns>
         public static bool PingServer(string ip)
         {
-            Ping ping = new Ping();
-            PingOptions options = new PingOptions { DontFragment = true };
-            string data = "Test";
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            int timeout = 1000;
-            PingReply reply = ping.Send(ip, timeout, buffer, options);
+            var ping = new Ping();
+            var options = new PingOptions { DontFragment = true };
+            var data = "Test";
+            var buffer = Encoding.ASCII.GetBytes(data);
+            var timeout = 1000;
+            var reply = ping.Send(ip, timeout, buffer, options);
             if (reply.Status == IPStatus.Success)
                 return true;
             return false;
@@ -1987,7 +1981,7 @@ namespace Net.Client
 
         protected void SetHeartInterval(int interval)
         {
-            LoopEvent.ResetTimeInterval(heartHandlerID, (long)interval, true);
+            LoopEvent.ResetTimeInterval(heartHandlerID, interval, true);
         }
 
         /// <summary>
@@ -2189,11 +2183,6 @@ namespace Net.Client
         private void OnDataQueueOverflowInternal()
         {
             NDebug.LogError("数据缓存列表超出限制!");
-        }
-
-        public void TestRPCQueue(RPCModel model)
-        {
-            RpcModels.Enqueue(model);
         }
 
         public void Dispose()

@@ -231,6 +231,11 @@ namespace Net.UnityComponent
             var nb = identity.networkBehaviours[opt.index1];
             if (nb == null)
                 return;
+            if (nb.isInitSync)
+            {
+                nb.isInitSync = false;
+                nb.OnInitialSynchronization(opt);
+            }
             nb.OnNetworkOperationHandler(opt);
         }
 
@@ -360,7 +365,7 @@ namespace Net.UnityComponent
         /// 添加场景同步操作
         /// </summary>
         /// <param name="operation"></param>
-        public void AddOperation(Operation operation)
+        public void AddOperation(in Operation operation)
         {
             operations.Add(operation);
         }

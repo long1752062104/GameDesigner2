@@ -23,10 +23,10 @@ namespace Net.Component
         public bool authorize;
         public bool startConnect = true;
         public bool singleThread;
-        public int reconnectCount = 10;
-        public int reconnectInterval = 2000;
-        public byte heartLimit = 5;
         public int heartInterval = 1000;
+        public byte heartLimit = 5;
+        public int reconnectInterval = 2000;
+        public int reconnectCount = 10;
         public WebSetting webSetting = new WebSetting();
         public bool dontDestroyOnLoad = true;
 

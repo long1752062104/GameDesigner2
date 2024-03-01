@@ -222,7 +222,7 @@ namespace BuildComponent
         {
             return self.GetClip(name);
         }
-        public override void OnNetworkOperationHandler(Operation opt)
+        public override void OnNetworkOperationHandler(in Operation opt)
         {
             switch (opt.index2)
             {

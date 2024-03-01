@@ -52,7 +52,7 @@ namespace DistributedExample
                         for (int i = start; i < start + len; i++)
                         {
                             var client = loadBalance.GetRoundRobin().Token;
-                            tasks[i - start] = client.Request<int>((int)protoType, 1000 * 60 * 60, i.ToString(), i.ToString());
+                            tasks[i - start] = client.Request<int>((int)protoType, 1000 * 30, i.ToString(), i.ToString());
                         }
                         var results = await UniTask.WhenAll(tasks);
                         foreach (var item in results)

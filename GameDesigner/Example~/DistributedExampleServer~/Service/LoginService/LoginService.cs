@@ -66,7 +66,7 @@ namespace DistributedExample
             {
 
             }
-            var (code, user) = await dbClient.Request<int, UserData>((int)ProtoType.Login, 1000 * 60 * 60, account, password); //向DB服务器发出请求, 查询数据库账号
+            var (code, user) = await dbClient.Request<int, UserData>((int)ProtoType.Login, 1000 * 30, account, password); //向DB服务器发出请求, 查询数据库账号
             Call(client, (int)ProtoType.Login, token, code, user);
             //LoginHandler(client);
         }
@@ -77,7 +77,7 @@ namespace DistributedExample
             var token = client.Token;
             var node = loadBalance.GetHash(account);
             var dbClient = node.Token;
-            var code = await dbClient.Request<int>((int)ProtoType.Register, 1000 * 60 * 60, account, password);
+            var code = await dbClient.Request<int>((int)ProtoType.Register, 1000 * 30, account, password);
             Call(client, (int)ProtoType.Register, token, code);
         }
     }

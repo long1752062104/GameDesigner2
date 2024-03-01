@@ -205,6 +205,11 @@
             负载均衡配置
             </summary>
         </member>
+        <member name="P:Net.Distributed.LoadBalanceConfig.Items">
+            <summary>
+            服务器节点配置项
+            </summary>
+        </member>
         <member name="P:Net.Distributed.LoadBalanceConfig.Count">
             <summary>
             虚拟节点数量, 也是真实节点的客户端连接数量
@@ -1794,7 +1799,7 @@
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)">
+        <member name="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation@)">
             <summary>
             添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
             而Send则是直接发送
@@ -5283,6 +5288,17 @@
             当线程群处理
             </summary>
         </member>
+        <member name="M:Net.System.ThreadPipeline`1.Init(System.String)">
+            <summary>
+            初始化线程管线
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:Net.System.ThreadPipeline`1.Start">
+            <summary>
+            开始线程管线
+            </summary>
+        </member>
         <member name="M:Net.System.ThreadPipeline`1.SelectGroup">
             <summary>
             选择线程群
@@ -6807,7 +6823,7 @@
         </member>
         <member name="M:Net.Server.NetPlayer.OnOperationSync(Net.Share.OperationList)">
             <summary>
-            当接收到客户端使用<see cref="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)"/>方法发送的请求时调用. 如果重写此方法, 
+            当接收到客户端使用<see cref="!:Net.Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用. 如果重写此方法, 
             <code>返回false, 则服务器对象类会重新把操作列表加入到场景中, 你可以重写服务器的<see cref="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)"/>方法让此方法失效</code>
             <code>返回true, 服务器不再把数据加入到场景列表, 认为你已经在此处把数据处理了</code>
             </summary>
@@ -7021,7 +7037,7 @@
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(Net.Share.Operation)">
+        <member name="M:Net.Server.NetScene`1.AddOperation(Net.Share.Operation@)">
             <summary>
             添加操作帧, 等待帧时间同步发送
             </summary>
@@ -7395,7 +7411,7 @@
         </member>
         <member name="P:Net.Server.ServerBase`1.OnOperationSyncHandle">
             <summary>
-            当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)"/>方法时调用
+            当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法时调用
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase`1.OnRevdRTProgressHandle">
@@ -7570,7 +7586,7 @@
         </member>
         <member name="M:Net.Server.ServerBase`1.OnOperationSync(`0,Net.Share.OperationList)">
             <summary>
-            当接收到客户端使用<see cref="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)"/>方法发送的请求时调用
+            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
             </summary>
             <param name="client">当前客户端</param>
             <param name="list">操作列表</param>
@@ -7929,7 +7945,7 @@
         </member>
         <member name="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)">
             <summary>
-            当接收到客户端使用<see cref="M:Net.Client.ClientBase.AddOperation(Net.Share.Operation)"/>方法发送的请求时调用
+            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
             </summary>
             <param name="client">当前客户端</param>
             <param name="list">操作列表</param>

@@ -1,12 +1,9 @@
 ﻿namespace Net.Client
 {
     using global::System;
-    using global::System.Collections.Generic;
     using global::System.IO;
     using global::System.Net;
     using global::System.Net.Sockets;
-    using global::System.Threading;
-    using global::System.Threading.Tasks;
     using Net.Share;
     using Net.System;
     using Net.Event;

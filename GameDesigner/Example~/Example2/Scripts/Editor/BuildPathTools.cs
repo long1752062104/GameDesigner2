@@ -13,7 +13,7 @@ public class BuildPathTools
         if (dirs.Length == 0)
             throw new System.Exception("找不到目录!");
         var scene = SceneManager.GetActiveScene();
-        var path = dirs[0] + "/bin/Debug/Data/" + scene.name + ".sceneData";
+        var path = dirs[0] + "/bin/Debug/Data/" + scene.name + ".mapData";
         MapData.WriteData(path);
     }
 }

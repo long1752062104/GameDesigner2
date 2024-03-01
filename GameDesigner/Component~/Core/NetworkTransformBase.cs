@@ -143,7 +143,7 @@ namespace Net.UnityComponent
             currMode = syncMode;
         }
 
-        public override void OnNetworkObjectCreate(Operation opt)
+        public override void OnNetworkObjectCreate(in Operation opt)
         {
             if (opt.cmd == Command.Transform)
             {
@@ -159,24 +159,39 @@ namespace Net.UnityComponent
             SyncControlTransform();
         }
 
-        public override void OnNetworkOperationHandler(Operation opt)
+        public override void OnInitialSynchronization(in Operation opt)
+        {
+            SetNetworkSyncState(opt);
+            SetNetworkSyncMode(opt);
+            SyncControlTransform();
+        }
+
+        public override void OnNetworkOperationHandler(in Operation opt)
         {
             if (ClientBase.Instance.UID == opt.uid)
                 return;
+            SetNetworkSyncState(opt);
+            if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
+                SyncControlTransform();
+            else if (currMode == SyncMode.None)
+                SetNetworkSyncMode(opt);
+        }
+
+        protected void SetNetworkSyncState(in Operation opt)
+        {
             sendTime = Time.time + interval;
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;
-            if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
-                SyncControlTransform();
-            else if (currMode == SyncMode.None)
-            {
-                var mode1 = (SyncMode)opt.cmd1;
-                if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
-                    currMode = SyncMode.SynchronizedAll;
-                else
-                    currMode = SyncMode.Synchronized;
-            }
+        }
+
+        protected void SetNetworkSyncMode(in Operation opt)
+        {
+            var mode1 = (SyncMode)opt.cmd1;
+            if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
+                currMode = SyncMode.SynchronizedAll;
+            else
+                currMode = SyncMode.Synchronized;
         }
 
         public void SetNetworkPosition(Net.Vector3 position)

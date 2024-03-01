@@ -21,7 +21,7 @@ namespace Net.UnityComponent
             InitChilds(); //实例化后再赋值位置时再次初始化位置用到
         }
 
-        public override void OnNetworkObjectCreate(Operation opt)
+        public override void OnNetworkObjectCreate(in Operation opt)
         {
             base.OnNetworkObjectCreate(opt);
             InitChilds(); //实例化后就要初始化子物体信息, 否则会出现子物体的大小变成0,0,0的问题
@@ -69,29 +69,28 @@ namespace Net.UnityComponent
             });
         }
 
-        public override void OnNetworkOperationHandler(Operation opt)
+        public override void OnInitialSynchronization(in Operation opt)
+        {
+            SetNetworkSyncState(opt);
+            SetNetworkSyncMode(opt);
+            SyncControlTransform();
+        }
+
+        public override void OnNetworkOperationHandler(in Operation opt)
         {
             if (ClientBase.Instance.UID == opt.uid)
                 return;
-            sendTime = Time.time + interval;
             if (opt.index2 == 0)
             {
-                netPosition = opt.position;
-                netRotation = opt.rotation;
-                netLocalScale = opt.direction;
+                SetNetworkSyncState(opt);
                 if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                     SyncControlTransform();
                 else if (currMode == SyncMode.None)
-                {
-                    var mode1 = (SyncMode)opt.cmd1;
-                    if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
-                        currMode = SyncMode.SynchronizedAll;
-                    else
-                        currMode = SyncMode.Synchronized;
-                }
+                    SetNetworkSyncMode(opt);
             }
             else
             {
+                sendTime = Time.time + interval;
                 var child = childs[opt.index2 - 1];
                 child.netPosition = opt.position;
                 child.netRotation = opt.rotation;

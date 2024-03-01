@@ -60,7 +60,4 @@
     <PackageReference Include="MySql.Data" Version="8.0.31" />
     <PackageReference Include="UniTask" Version="2.5.3" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
 </Project>

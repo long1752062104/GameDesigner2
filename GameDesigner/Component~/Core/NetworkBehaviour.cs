@@ -36,6 +36,7 @@ namespace Net.UnityComponent
         public bool IsLocal => netObj.isLocal;
         private bool isInit;
         private bool isEnabled;
+        internal bool isInitSync = true;
         public virtual void Start()
         {
             Init();
@@ -48,7 +49,7 @@ namespace Net.UnityComponent
             if (netObj == null)
                 netObj = gameObject.AddComponent<NetworkObject>();
         }
-        public void Init(Operation opt = default)
+        public void Init(in Operation opt = default)
         {
             if (isInit)
                 return;
@@ -82,12 +83,17 @@ namespace Net.UnityComponent
         /// 当网络物体被创建后调用, 只有其他客户端发送创建信息给本机后才会被调用
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnNetworkObjectCreate(Operation opt) { }
+        public virtual void OnNetworkObjectCreate(in Operation opt) { }
+        /// <summary>
+        /// 当初始同步，也就是第一次同步调用
+        /// </summary>
+        /// <param name="opt"></param>
+        public virtual void OnInitialSynchronization(in Operation opt) { }
         /// <summary>
         /// 当网络操作到达后应当开发者进行处理
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnNetworkOperationHandler(Operation opt) { }
+        public virtual void OnNetworkOperationHandler(in Operation opt) { }
         /// <summary>
         /// 当属性自动同步检查
         /// </summary>

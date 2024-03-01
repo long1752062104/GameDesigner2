@@ -4,8 +4,6 @@
     using global::System.Collections.Generic;
     using Net.Share;
     using Net.System;
-    using Net.Event;
-    using Net.Serialize;
 
     /// <summary>
     /// 网络场景
@@ -337,7 +335,7 @@
         /// 添加操作帧, 等待帧时间同步发送
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void AddOperation(Operation opt)
+        public virtual void AddOperation(in Operation opt)
         {
             lock (this)
             {
