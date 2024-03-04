@@ -6,23 +6,9 @@
 
 <br> 1.对5.0版本的Send, SendRT方法统一改为Call方法, 服务器也统一将Send, SendRT改成Call</br>
 
-<br> 2.RPCModel.methodHash字段更名为protocol，去掉func字段</br>
+<br> 2.RPCModel.methodHash字段和func字段合并为protocol，去掉func字段和methodHash字段</br>
 
-<br> 3.服务器和客户端对5.0的RPCModel加了in修饰符，避免结构多次复制影响性能</br>
-
-```
-protected override bool OnUnClientRequest(NetPlayer unClient, in RPCModel model)
-{
-    switch ((ProtoType)model.protocol)
-    {
-        //...
-    }
-    return false;
-}
-```
-> 上面代码重写方法OnUnClientRequest的model参数需要加上in修饰符，这样可以提高性能，还有model.methodHash和model.func统一用model.protocol代替
-
-<br> 4.对5.0版本的Call则更名为Request, 可await等待结果, 服务器收到请求后需要将player.Token记录, 当服务器发给客户端则需要Response响应并需要传入Token参数</br>
+<br> 3.对5.0版本的Call则更名为Request, 可await等待结果, 服务器收到请求后需要将player.Token记录, 当服务器发给客户端则需要Response响应并需要传入Token参数</br>
 
 ```
 private async UniTaskVoid Login(NetPlayer client, string account, string password)
@@ -30,9 +16,10 @@ private async UniTaskVoid Login(NetPlayer client, string account, string passwor
     var token = client.Token; //先保存现场，下面代码有await会切换线程，会导致token丢失
     var node = loadBalance.GetHash(account); //获取此账号负载均衡DB服务器节点
     var dbClient = node.Token; //拿到DB服务器的连接
-    var (code, user) = await dbClient.Request<int, UserData>((int)ProtoType.Login, 1000 * 30, account, password); //向DB服务器发出请求, 查询数据库账号
+    var (code, user) = await dbClient.Request<int, UserData>((uint)ProtoType.Login, 1000 * 30, account, password); //向DB服务器发出请求, 查询数据库账号
     Response(client, (int)ProtoType.Login, token, code, user); //响应客户端，客户端用await等等
     //Call(client, (int)ProtoType.Login, code, user); //如果客户端用Call发起，则用Call回应，不需要token
+    //LoginHandler(client);
 }
 ```
 > 上面代码演示了客户端Request发起请求, 并且设置超时时间为30秒, 等待返回两个参数(int,UserData)
@@ -40,14 +27,14 @@ private async UniTaskVoid Login(NetPlayer client, string account, string passwor
 在5.0中会导致await等待的结果可能是正确的或乱序的, 比如Request(Login, "123")和Request(Login, "456")两个请求同时发出并await
 服务器响应的结果可能是Request(Login, "123")收到的是Request(Login, "456")的结果, Request(Login, "456")收到Request(Login, "123")的结果, 也可能是正确的, 6.0版本解决了这个问题, 可以同时发出一个协议n次, await的结果都是正确的
 
-<br> 5.新增了分布式案例和分布式的几个核心类</br>
+<br> 4.新增了分布式案例和分布式的几个核心类</br>
 > <br>    1. ConsistentHashing<T> 一致性哈希类, 包含虚拟节点, 哈希环处理</br>
 <br>    2. LoadBalance<T> 负载均衡类, 包含一致性哈希, 客户端池, 当访问数据库时使用一致性哈希获取虚拟节点去路由到物理节点, 当访问其他服务器节点则可以用轮询方式</br>
 <br>    3. UniqueIdGenerator 分布式唯一ID生成器, 类似雪花ID, 使用的计数不是时间tick来计算ID, 而是使用自定义自增ID, 只要机器ID是唯一, 分布式节点就不会生成相同ID, 机器ID和计数ID占用多少位可以自行设置, 比如机器ID占用16位, 计数ID占用48位</br>
 
-<br> 6.将客户端框架Framework更名为GameCore, 并优化了安装步骤</br>
+<br> 5.将客户端框架Framework更名为GameCore, 并优化了安装步骤</br>
 
-<br> 7.状态机案例, 状态机案例中使用了代码方式创建状态, 添加动作和行为, 可用excel配置技能和动态配置技能状态</br>
+<br> 6.状态机案例, 状态机案例中使用了代码方式创建状态, 添加动作和行为, 可用excel配置技能和动态配置技能状态</br>
 
 ## 模块图
 
