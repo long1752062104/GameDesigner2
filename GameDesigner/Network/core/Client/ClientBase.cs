@@ -897,12 +897,12 @@ namespace Net.Client
                     NetworkTick();
                     return UID != 0;
                 }, null);
-                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
                 if (UID == 0 && openClient)
                     throw new Exception("连接握手失败!");
                 if (UID == 0 && !openClient)
                     throw new Exception("客户端调用Close!");
                 StartupThread();
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程, 在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(true);
                 return true;
             }
@@ -912,6 +912,7 @@ namespace Net.Client
                 Connected = false;
                 Client?.Close();
                 Client = null;
+                await UniTask.Yield(); //在unity会切换到unity主线程去执行，解决unity组件访问错误问题
                 result(false);
                 return false;
             }
@@ -1971,18 +1972,18 @@ namespace Net.Client
 
         #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
         public UniTask<RPCModelTask> Request(uint protocol, params object[] pars)
-            => Request(NetCmd.CallRpc, protocol, 5000, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, params object[] pars)
+            => Request(NetCmd.CallRpc, protocol, 5000U, true, false, null, pars);
+        public UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, params object[] pars)
             => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
             => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, intercept, false, null, pars);
-        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, params object[] pars)
             => Request(cmd, protocol, timeoutMilliseconds, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
             => Request(cmd, protocol, timeoutMilliseconds, intercept, false, null, pars);
         #endregion
 
-        public async UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        public async UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
         {
             var requestTask = new RPCModelTask();
             RPCMethodBody body;
@@ -2016,16 +2017,14 @@ namespace Net.Client
                 }
                 Call(model);
             }
-            if (timeoutMilliseconds == -1)
-                timeoutMilliseconds = int.MaxValue;
-            else if (timeoutMilliseconds == 0)
-                timeoutMilliseconds = 5000;
+            if (timeoutMilliseconds == 0)
+                timeoutMilliseconds = 5000U;
             requestTask.intercept = intercept;
             var addResult = body.RequestDict.TryAdd(token, requestTask);
             if (!addResult)
                 NDebug.LogError($"请求Token添加失败! token:{token}");
             tokenLock.Exit();
-            await UniTaskNetExtensions.Wait(timeoutMilliseconds, (state) => ((RPCModelTask)state).IsCompleted, requestTask);
+            await UniTaskNetExtensions.Wait((int)timeoutMilliseconds, (state) => ((RPCModelTask)state).IsCompleted, requestTask);
             if (!requestTask.IsCompleted)
                 body.RequestDict.Remove(token);
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL

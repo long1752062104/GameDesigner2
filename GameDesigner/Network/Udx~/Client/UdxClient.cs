@@ -69,6 +69,7 @@
 
         protected async override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
+            await UniTask.SwitchToThreadPool();
             try
             {
                 ReleaseUdx();
@@ -87,7 +88,6 @@
                     var user = GCHandle.ToIntPtr(handle);
                     UdxLib.USetUserData(ClientPtr, user.ToInt64());
                 }
-                await UniTask.SwitchToThreadPool();
                 await UniTaskNetExtensions.Wait(5000, (state) => Connected, null);
                 if (Connected)
                     StartupThread();
@@ -105,33 +105,21 @@
                     }
                     return UID != 0;
                 }, null);
-                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
-                try
-                {
-                    if (UID == 0 && openClient)
-                        throw new Exception("连接握手失败!");
-                    if (UID == 0 && !openClient)
-                        throw new Exception("客户端调用Close!");
-                    result(Connected);
-                    return Connected;
-                }
-                catch (Exception ex)
-                {
-                    ReleaseUdx();
-                    NDebug.LogError("连接失败原因:" + ex.ToString());
-                    Connected = false;
-                    Client?.Close();
-                    Client = null;
-                    result(false);
-                    return false;
-                }
+                if (UID == 0 && openClient)
+                    throw new Exception("连接握手失败!");
+                if (UID == 0 && !openClient)
+                    throw new Exception("客户端调用Close!");
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程, 在unity会切换到unity线程去执行，解决unity组件访问错误问题
+                result(Connected);
+                return Connected;
             }
             catch (Exception ex)
             {
                 ReleaseUdx();
                 NDebug.Log("连接错误: " + ex.ToString());
+                await UniTask.Yield(); //在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(false);
-                return await UniTask.FromResult(false);
+                return false;
             }
         }
 

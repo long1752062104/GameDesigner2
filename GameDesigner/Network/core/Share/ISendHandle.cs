@@ -22,11 +22,11 @@ namespace Net.Share
 
         #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
         UniTask<RPCModelTask> Request(uint protocol, params object[] pars);
-        UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, params object[] pars);
-        UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars);
-        UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, params object[] pars);
-        UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars);
-        UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars);
+        UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, params object[] pars);
+        UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars);
+        UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars);
         #endregion
     }
 }

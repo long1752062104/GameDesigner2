@@ -213,27 +213,27 @@ namespace Net.Component
             return ((ISendHandle)client).Request(protocol, pars);
         }
 
-        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, params object[] pars)
         {
             return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, pars);
         }
 
-        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         {
             return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, intercept, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, serialize, buffer, pars);
         }

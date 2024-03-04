@@ -52,7 +52,7 @@ namespace GameDesigner
             ArrayExtend.Add(ref state.actions, this);
         }
 
-        internal void Enter(State state, float animSpeed)
+        internal void Enter(State state)
         {
             isStop = false;
             for (int i = 0; i < behaviours.Length; i++)
@@ -64,7 +64,7 @@ namespace GameDesigner
             switch (stateMachine.animMode)
             {
                 case AnimationMode.Animation:
-                    stateMachine.animation[clipName].speed = animSpeed;
+                    stateMachine.animation[clipName].speed = state.animSpeed;
                     if (state.isCrossFade)
                     {
                         var animState = stateMachine.animation[clipName];
@@ -82,7 +82,7 @@ namespace GameDesigner
                     }
                     break;
                 case AnimationMode.Animator:
-                    stateMachine.animator.speed = animSpeed;
+                    stateMachine.animator.speed = state.animSpeed;
                     if (state.isCrossFade)
                     {
                         var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
@@ -95,7 +95,7 @@ namespace GameDesigner
                     break;
 #if SHADER_ANIMATED
                 case AnimationMode.MeshAnimator:
-                    stateMachine.meshAnimator.speed = animSpeed;
+                    stateMachine.meshAnimator.speed = state.animSpeed;
                     if (stateMachine.meshAnimator.currentAnimation.animationName == clipName)
                         stateMachine.meshAnimator.RestartAnim();
                     else

@@ -73,7 +73,7 @@
                     throw new Exception("客户端调用Close!");
                 StackStream = new MemoryStream(Config.Config.BaseCapacity);
                 StartupThread();
-                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程, 在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(true);
                 return true;
             }
@@ -83,6 +83,7 @@
                 Connected = false;
                 Client?.Close();
                 Client = null;
+                await UniTask.Yield(); //在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(false);
                 return false;
             }

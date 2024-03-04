@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Net.Event;
 
 namespace Net.Config
@@ -126,7 +125,7 @@ namespace Net.Config
             init = true;
             var configPath = ConfigPath + "/network.config";
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-            Unity.UnityThreadContext.Call((configPath) => _ = LoadConfigFile(configPath), configPath);
+            Unity.UnityThreadContext.Call(LoadConfigFile, configPath);
 #else
             if (File.Exists(configPath))
             {
@@ -142,7 +141,7 @@ namespace Net.Config
         }
 
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-        private static async UniTaskVoid LoadConfigFile(string configPath)
+        private static void LoadConfigFile(string configPath)
         {
 #if UNITY_STANDALONE_OSX
             var request = UnityEngine.Networking.UnityWebRequest.Get("file:///" + configPath); //支持mac方式
@@ -151,7 +150,7 @@ namespace Net.Config
 #endif
             var oper = request.SendWebRequest();
             while (!oper.isDone)
-                await UniTask.Yield();
+                global::System.Threading.Thread.Yield(); //这里只能这样了，使用UniTask.Yield会导致ThreadManager的BeforeSceneLoad先执行，导致Unitask初始化晚于这个后出问题
             if (!string.IsNullOrEmpty(request.error))
             {
                 NDebug.LogError($"初始化配置错误:{request.error} {configPath}");

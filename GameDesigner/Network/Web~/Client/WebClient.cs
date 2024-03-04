@@ -153,21 +153,22 @@ namespace Net.Client
                     NetworkTick();
                     return UID != 0;
                 }, null);
-                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
                 if (UID == 0 && openClient)
                     throw new Exception("连接握手失败!");
                 if (UID == 0 && !openClient)
                     throw new Exception("客户端调用Close!");
                 Connected = true;
                 StartupThread();
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程, 在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(true);
-                return await UniTask.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
                 NDebug.Log("连接错误: " + ex.ToString());
+                await UniTask.Yield(); //在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(false);
-                return await UniTask.FromResult(false);
+                return false;
             }
         }
 

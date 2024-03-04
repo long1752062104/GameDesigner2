@@ -157,7 +157,7 @@ namespace GameDesigner
                 transition.time = 0;
             }
             if (actionSystem)
-                Action.Enter(this, animSpeed);
+                Action.Enter(this);
         }
 
         internal void Exit()
