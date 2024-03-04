@@ -81,16 +81,16 @@ namespace DistributedExample
             if (user.Data == null)
             {
                 NDebug.LogError($"哈希错乱! {AreaName} {account}");
-                Call(client, (int)ProtoType.Login, token, -1, null);
+                Response(client, (int)ProtoType.Login, token, -1, null);
                 return;
             }
             if (user.Data.Password != password)
             {
                 NDebug.LogError($"密码错误! {AreaName} {account}");
-                Call(client, (int)ProtoType.Login, token, -2, null);
+                Response(client, (int)ProtoType.Login, token, -2, null);
                 return;
             }
-            Call(client, (int)ProtoType.Login, token, 0, user.Data);
+            Response(client, (int)ProtoType.Login, token, 0, user.Data);
         }
 
         private async UniTaskVoid Register(NetPlayer client, string account, string password)
@@ -123,7 +123,7 @@ namespace DistributedExample
                 code = 0;
             }
             user.Locking.Exit();
-            Call(client, (int)ProtoType.Register, token, code);
+            Response(client, (int)ProtoType.Register, token, code);
         }
     }
 }

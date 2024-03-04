@@ -12,7 +12,7 @@ namespace Net.System
     /// 线程管线(流水线)
     /// </summary>
     /// <typeparam name="Worker"></typeparam>
-    public class ThreadPipeline<Worker> : IDisposable where Worker : class
+    public class ThreadPipeline<Worker> : IDisposable //where Worker : class
     {
         /// <summary>
         /// 并发线程数量, 发送线程和接收处理线程数量

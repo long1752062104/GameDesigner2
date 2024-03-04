@@ -19,10 +19,12 @@ namespace Net.Serialize
         /// <returns></returns>
         public static byte[] Serialize(RPCModel model, byte[] flag = null, bool recordType = false)
         {
-            return Serialize(BufferPool.Take(), model, flag, recordType);
+            var segment = BufferPool.Take();
+            Serialize(segment, model, flag, recordType);
+            return segment.ToArray(true);
         }
 
-        public static byte[] Serialize(ISegment segment, RPCModel model, byte[] flag = null, bool recordType = false)
+        public static void Serialize(ISegment segment, RPCModel model, byte[] flag = null, bool recordType = false)
         {
             if (flag != null) segment.Write(flag, 0, flag.Length);
             segment.Write(model.protocol);
@@ -39,17 +41,6 @@ namespace Net.Serialize
                 segment.Write(type.ToString());
                 NetConvertBinary.SerializeObject(segment, obj, recordType, true);
             }
-            return segment.ToArray(true);
-        }
-
-        /// <summary>
-        /// 新版反序列化
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        public static FuncData Deserialize(byte[] buffer, bool recordType = false)
-        {
-            return Deserialize(buffer, 0, buffer.Length, recordType);
         }
 
         /// <summary>
@@ -58,13 +49,12 @@ namespace Net.Serialize
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="count"></param>
-        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false)
+        public static FuncData Deserialize(ISegment segment, bool recordType = false)
         {
             FuncData fdata = default;
             try
             {
-                var segment = BufferPool.NewSegment(buffer, index, count, false);
-                fdata.protocol = segment.ReadInt32();
+                fdata.protocol = segment.ReadUInt16();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

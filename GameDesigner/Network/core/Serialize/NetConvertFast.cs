@@ -151,9 +151,8 @@
             TypeToHashDict.Add(type, typeHash);
         }
 
-        public static byte[] Serialize(RPCModel model, bool recordType = false)
+        public static void Serialize(ISegment segment, RPCModel model, bool recordType = false)
         {
-            var segment = BufferPool.Take();
             segment.Write(model.protocol);
             foreach (object obj in model.pars)
             {
@@ -168,7 +167,6 @@
                 segment.Write(GetTypeHash(type));
                 NetConvertBinary.WriteObject(segment, type, obj, recordType, true);
             }
-            return segment.ToArray(true);
         }
 
         private static ushort GetTypeHash(Type type)
@@ -186,13 +184,12 @@
             return null;
         }
 
-        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false)
+        public static FuncData Deserialize(ISegment segment, bool recordType = false)
         {
             FuncData fdata = default;
             try
             {
-                var segment = BufferPool.NewSegment(buffer, index, count, false);
-                fdata.protocol = segment.ReadInt32();
+                fdata.protocol = segment.ReadUInt16();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

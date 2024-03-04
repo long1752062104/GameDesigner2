@@ -1,7 +1,6 @@
 ﻿using Net.Serialize;
 using Net.Share;
 using Net.System;
-using System;
 
 namespace Net.Adapter
 {
@@ -10,25 +9,24 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter : ISerializeAdapter
     {
-        public byte[] OnSerializeRpc(RPCModel model)
+        public void OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertBinary.SerializeModel(model);
+            NetConvertBinary.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
+        public FuncData OnDeserializeRpc(ISegment segment)
         {
-            return NetConvertBinary.DeserializeModel(buffer, index, count);
+            return NetConvertBinary.DeserializeModel(segment);
         }
 
-        public byte[] OnSerializeOpt(OperationList list)
+        public byte[] OnSerializeOpt(in OperationList list)
         {
             return NetConvertFast2.SerializeObject(list).ToArray(true);
         }
 
-        public OperationList OnDeserializeOpt(byte[] buffer, int index, int count)
+        public OperationList OnDeserializeOpt(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            return NetConvertFast2.DeserializeObject<OperationList>(segment);
+            return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
     }
 
@@ -37,25 +35,24 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeFastAdapter : ISerializeAdapter
     {
-        public byte[] OnSerializeRpc(RPCModel model)
+        public void OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertFast.Serialize(model);
+            NetConvertFast.Serialize(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
+        public FuncData OnDeserializeRpc(ISegment segment)
         {
-            return NetConvertFast.Deserialize(buffer, index, count);
+            return NetConvertFast.Deserialize(segment);
         }
 
-        public byte[] OnSerializeOpt(OperationList list)
+        public byte[] OnSerializeOpt(in OperationList list)
         {
             return NetConvertFast2.SerializeObject(list).ToArray(true);
         }
 
-        public OperationList OnDeserializeOpt(byte[] buffer, int index, int count)
+        public OperationList OnDeserializeOpt(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            return NetConvertFast2.DeserializeObject<OperationList>(segment);
+            return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
     }
 
@@ -64,25 +61,24 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter2 : ISerializeAdapter
     {
-        public byte[] OnSerializeRpc(RPCModel model)
+        public void OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertBinary.SerializeModel(model);
+            NetConvertBinary.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
+        public FuncData OnDeserializeRpc(ISegment segment)
         {
-            return NetConvertBinary.DeserializeModel(buffer, index, count);
+            return NetConvertBinary.DeserializeModel(segment);
         }
 
-        public byte[] OnSerializeOpt(OperationList list)
+        public byte[] OnSerializeOpt(in OperationList list)
         {
             return NetConvertFast2.SerializeObject(list).ToArray(true);
         }
 
-        public OperationList OnDeserializeOpt(byte[] buffer, int index, int count)
+        public OperationList OnDeserializeOpt(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            return NetConvertFast2.DeserializeObject<OperationList>(segment);
+            return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
     }
 
@@ -91,27 +87,24 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter3 : ISerializeAdapter
     {
-        public byte[] OnSerializeRpc(RPCModel model)
+        public void OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            var buffer = NetConvertFast2.SerializeModel(model);
-            return buffer;
+            NetConvertFast2.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(byte[] buffer, int index, int count)
+        public FuncData OnDeserializeRpc(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            return NetConvertFast2.DeserializeModel(segment);
+            return NetConvertFast2.DeserializeModel(segment, false);
         }
 
-        public byte[] OnSerializeOpt(OperationList list)
+        public byte[] OnSerializeOpt(in OperationList list)
         {
             return NetConvertFast2.SerializeObject(list).ToArray(true);
         }
 
-        public OperationList OnDeserializeOpt(byte[] buffer, int index, int count)
+        public OperationList OnDeserializeOpt(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            return NetConvertFast2.DeserializeObject<OperationList>(segment);
+            return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
     }
 }

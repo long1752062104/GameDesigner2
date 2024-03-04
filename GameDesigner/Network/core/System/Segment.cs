@@ -100,7 +100,7 @@ namespace Net.System
         {
             if (IsRecovery && BufferPool.Log)
                 NDebug.LogError("片段内存泄漏!请检查代码正确Push内存池!");
-            Dispose();
+            //Dispose(); //已经析构了就不需要放入池中了
         }
 
         public virtual void Init()

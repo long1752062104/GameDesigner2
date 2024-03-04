@@ -5,8 +5,9 @@ namespace Net.Share
 {
     /// <summary>
     /// 远程过程调用模型,此类负责网络通讯中数据解析临时缓存的对象
+    /// 经过测试结构体和类差距不大，如果用in修饰符，结构会比较快，但是我们不知道开发者在哪里会使用Asxxx读取参数，如果都全部用in修饰符，则Asxxx会失效，由于只读属性原因，导致parsIndex无法++
     /// </summary>
-    public struct RPCModel
+    public class RPCModel
     {
         /// <summary>
         /// 内核? true:数据经过框架内部序列化 false:数据由开发者自己处理
@@ -45,7 +46,7 @@ namespace Net.Share
         /// <summary>
         /// 协议值, 合并之前版本的func字段和methodHash字段
         /// </summary>
-        public int protocol;
+        public uint protocol;
         /// <summary>
         /// 远程参数
         /// </summary>
@@ -57,15 +58,17 @@ namespace Net.Share
         /// <summary>
         /// 请求和响应的Token, 当几千几万个客户端同时发起相同的请求时, 可以根据Token区分响应, 得到真正的响应值
         /// </summary>
-        public int token;
+        public uint token;
         /// <summary>
         /// 参数To或As调用一次+1
         /// </summary>
-        private int parsIndex;
+        private byte parsIndex;
         /// <summary>
         /// 当数据已经填充, 获取Buffer可直接返回真正数据
         /// </summary>
         private bool isFill;
+
+        public RPCModel() { }
 
         public RPCModel(byte cmd, byte[] buffer) : this()
         {
@@ -74,7 +77,7 @@ namespace Net.Share
             count = buffer.Length;
         }
 
-        public RPCModel(byte cmd, int protocol, object[] pars) : this()
+        public RPCModel(byte cmd, uint protocol, object[] pars) : this()
         {
             kernel = true;
             serialize = true;
@@ -100,7 +103,7 @@ namespace Net.Share
             this.kernel = kernel;
         }
 
-        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, int protocol = 0) : this()
+        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, uint protocol = 0) : this()
         {
             this.cmd = cmd;
             this.buffer = buffer;
@@ -110,7 +113,7 @@ namespace Net.Share
             count = buffer.Length;
         }
 
-        public RPCModel(byte cmd, int protocol, object[] pars, bool kernel, bool serialize) : this()
+        public RPCModel(byte cmd, uint protocol, object[] pars, bool kernel, bool serialize) : this()
         {
             this.cmd = cmd;
             this.protocol = protocol;

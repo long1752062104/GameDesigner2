@@ -50,7 +50,7 @@ namespace DistributedExample
                     dbServerPort++;
                     PersistHelper.Serialize(Configs, "lbConfig.json");
                 }
-                Call(client, (int)ProtoType.RegisterConfig, client.Token, config);
+                Response(client, (int)ProtoType.RegisterConfig, client.Token, config);
             }
         }
 
@@ -60,7 +60,7 @@ namespace DistributedExample
             {
                 if (!Configs.TryGetValue(serverType, out var lbConfig))
                     Configs[serverType] = lbConfig = new LoadBalanceConfig();
-                Call(client, (int)ProtoType.LoadBalanceConfig, client.Token, lbConfig);
+                Response(client, (int)ProtoType.LoadBalanceConfig, client.Token, lbConfig);
             }
         }
     }

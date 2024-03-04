@@ -14,7 +14,7 @@ namespace Net.Share
         /// <summary>
         /// 函数名称
         /// </summary>
-        public int protocol;
+        public uint protocol;
         /// <summary>
         /// 参数数组
         /// </summary>
@@ -30,7 +30,7 @@ namespace Net.Share
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pars"></param>
-        public FuncData(int protocol, object[] pars)
+        public FuncData(uint protocol, object[] pars)
         {
             error = false;
             this.protocol = protocol;

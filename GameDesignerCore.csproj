@@ -71,6 +71,9 @@
     <None Remove=".gitignore" />
     <None Remove="app.config" />
     <None Remove="GameDesigner\Common.meta" />
+    <None Remove="GameDesigner\Extensions\ClientBaseExtensions.cs.meta" />
+    <None Remove="GameDesigner\Extensions\NetPlayerExtensions.cs.meta" />
+    <None Remove="GameDesigner\Extensions\UniTaskNetExtensions.cs.meta" />
     <None Remove="GameDesigner\GameDesigner.asmdef" />
     <None Remove="GameDesigner\GameDesigner.asmdef.meta" />
     <None Remove="GameDesigner\Helper.meta" />

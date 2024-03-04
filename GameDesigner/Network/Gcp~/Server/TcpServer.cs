@@ -29,13 +29,20 @@
 
         protected override void CreateServerSocket(ushort port)
         {
-            var address = new IPEndPoint(IPAddress.Any, port);
-            Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Server.SendBufferSize = SendBufferSize;
-            Server.ReceiveBufferSize = ReceiveBufferSize;
-            Server.NoDelay = true;
-            Server.Bind(address);
-            Server.Listen(LineUp);
+            try {
+
+                var address = new IPEndPoint(IPAddress.Any, port);
+                Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Server.SendBufferSize = SendBufferSize;
+                Server.ReceiveBufferSize = ReceiveBufferSize;
+                Server.NoDelay = true;
+                Server.Bind(address);
+                Server.Listen(LineUp);
+            } catch (Exception) 
+            { 
+            
+            }
+            
         }
 
         protected override void StartSocketHandler()
@@ -169,7 +176,7 @@
             return false;
         }
 
-        protected override byte[] PackData(ISegment stream)
+        protected override void PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);
@@ -181,27 +188,26 @@
             stream.Write(lenBytes, 0, 4);
             stream.WriteByte(crc);
             stream.Position += len;
-            return stream.ToArray();
         }
 
-        protected override void SendByteData(Player client, byte[] buffer)
+        protected override void SendByteData(Player client, ISegment buffer)
         {
             if (!client.Client.Connected)
                 return;
-            if (buffer.Length <= frame)//解决长度==6的问题(没有数据)
+            if (buffer.Count <= frame)//解决长度==6的问题(没有数据)
                 return;
             if (client.Client.Poll(0, SelectMode.SelectWrite))
             {
-                int count1 = client.Client.Send(buffer, 0, buffer.Length, SocketFlags.None, out SocketError error);
+                sendAmount++;
+                sendCount += buffer.Count;
+                int count1 = client.Client.Send(buffer.Buffer, buffer.Offset, buffer.Count, SocketFlags.None, out SocketError error);
                 if (error != SocketError.Success | count1 <= 0)
                 {
                     OnSendErrorHandle?.Invoke(client, buffer);
                     return;
                 }
-                else if (count1 != buffer.Length)
-                    Debug.LogError($"发送了{buffer.Length - count1}个字节失败!");
-                sendAmount++;
-                sendCount += buffer.Length;
+                else if (count1 != buffer.Count)
+                    Debug.LogError($"发送了{buffer.Count - count1}个字节失败!");
             }
             else
             {

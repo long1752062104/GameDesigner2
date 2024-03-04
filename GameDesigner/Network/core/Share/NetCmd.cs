@@ -69,10 +69,6 @@
         /// 同步MySqlBuild生成的类, 当属性被修改后同步给(客户端/服务器)
         /// </summary>
         public const byte SyncPropertyData = 14;
-        /// <summary>
-        /// Gcp可靠传输协议指令. 内部命令
-        /// </summary>
-        public const byte ReliableTransport = 15;
 
         /// <summary>
         /// 当客户端连接主服务器(网关服)时, 主服务器检测分区服务器在线人数如果处于爆满状态, 

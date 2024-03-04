@@ -303,7 +303,7 @@ public static class BindingExtension
     public static Net.Share.OperationList DeserializeObject(this Net.Share.OperationList value, ISegment segment, bool isPush = true)
     {
         var bind = new NetShareOperationListBind();
-        bind.Read(ref value, segment);
+        value = bind.Read(segment);
         if (isPush) BufferPool.Push(segment);
         return value;
     }

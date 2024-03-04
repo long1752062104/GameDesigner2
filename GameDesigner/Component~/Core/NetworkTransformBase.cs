@@ -161,6 +161,8 @@ namespace Net.UnityComponent
 
         public override void OnInitialSynchronization(in Operation opt)
         {
+            if (ClientBase.Instance.UID == opt.uid)
+                return;
             SetNetworkSyncState(opt);
             SetNetworkSyncMode(opt);
             SyncControlTransform();

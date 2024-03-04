@@ -11,7 +11,7 @@
     using Net.System;
     using Net.Helper;
     using static Kcp.KcpLib;
-    
+
     /// <summary>
     /// kcp服务器
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
@@ -70,7 +70,7 @@
             var kcp = ikcp_create(MTU, (IntPtr)1);
             var output = Marshal.GetFunctionPointerForDelegate(client.output);
             ikcp_setoutput(kcp, output);
-            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
+            ikcp_wndsize(kcp, SendBufferSize, ReceiveBufferSize);
             ikcp_nodelay(kcp, 1, 10, 2, 1);
             client.Kcp = kcp;
         }
@@ -91,7 +91,7 @@
                 fixed (byte* p1 = &segment1.Buffer[0])
                 {
                     segment1.Count = ikcp_recv(client.Kcp, p1, len);
-                    DataCRCHandler(client, segment1, false);
+                    ResolveBuffer(client, ref segment1);
                     BufferPool.Push(segment1);
                 }
             }
@@ -102,17 +102,17 @@
             ikcp_update(client.Kcp, tick);
         }
 
-        protected unsafe override void SendByteData(Player client, byte[] buffer)
+        protected unsafe override void SendByteData(Player client, ISegment buffer)
         {
             if (!client.Connected)
                 return;
-            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+            if (buffer.Count == frame)//解决长度==6的问题(没有数据)
                 return;
             sendAmount++;
-            sendCount += buffer.Length;
-            fixed (byte* p = &buffer[0])
+            sendCount += buffer.Count;
+            fixed (byte* p = &buffer.Buffer[0])
             {
-                int count = ikcp_send(client.Kcp, p, buffer.Length);
+                int count = ikcp_send(client.Kcp, p, buffer.Count);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(client, buffer);
             }

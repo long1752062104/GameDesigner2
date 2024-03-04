@@ -341,24 +341,23 @@
             return stream.ToArray(true);
         }
 
-        public static byte[] SerializeModel(RPCModel model, bool recordType = false)
+        public static void SerializeModel(ISegment segment, RPCModel model, bool recordType = false)
         {
-            var stream = BufferPool.Take();
             try
             {
-                stream.Write(model.protocol);
+                segment.Write(model.protocol);
                 foreach (var obj in model.pars)
                 {
                     Type type;
                     if (obj == null)
                     {
                         type = typeof(DBNull);
-                        stream.Write(TypeToIndex(type));
+                        segment.Write(TypeToIndex(type));
                         continue;
                     }
                     type = obj.GetType();
-                    stream.Write(TypeToIndex(type));
-                    WriteObject(stream, type, obj, recordType, false);
+                    segment.Write(TypeToIndex(type));
+                    WriteObject(segment, type, obj, recordType, false);
                 }
             }
             catch (Exception ex)
@@ -371,7 +370,6 @@
                         str += $"[{obj}]";
                 NDebug.LogError("序列化:" + str + "方法出错 详细信息:" + ex);
             }
-            return stream.ToArray(true);
         }
 
         /// <summary>
@@ -957,41 +955,12 @@
             segment.Position = strLen;
         }
 
-        public static FuncData Deserialize(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
+        public static FuncData DeserializeModel(ISegment segment, bool recordType = false, bool ignore = false)
         {
             FuncData obj = default;
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
             try
             {
-                count += index;
-                obj.protocol = segment.ReadInt32();
-                var list = new List<object>();
-                while (segment.Position < segment.Offset + segment.Count)
-                {
-                    var type = IndexToType(segment.ReadUInt16());
-                    if (type == null)
-                        break;
-                    index += 2;
-                    var obj1 = ReadObject(segment, type, recordType, ignore);
-                    list.Add(obj1);
-                }
-                obj.pars = list.ToArray();
-            }
-            catch (Exception ex)
-            {
-                NDebug.LogError($"解析[{obj.protocol}]出错 详细信息:" + ex);
-                obj.error = true;
-            }
-            return obj;
-        }
-
-        public static FuncData DeserializeModel(byte[] buffer, int index, int count, bool recordType = false, bool ignore = false)
-        {
-            FuncData obj = default;
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
-            try
-            {
-                obj.protocol = segment.ReadInt32();
+                obj.protocol = segment.ReadUInt16();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

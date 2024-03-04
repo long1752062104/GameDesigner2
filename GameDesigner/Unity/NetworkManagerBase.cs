@@ -65,9 +65,8 @@ namespace Net.Component
         public bool localTest;//本机测试
 #endif
         public bool debugRpc = true;
-        public bool authorize;
         public bool startConnect = true;
-        public bool singleThread;
+        public NetworkUpdateMode updateMode = NetworkUpdateMode.Thread;
         public int heartInterval = 1000;
         public byte heartLimit = 5;
         public int reconnectInterval = 2000;
@@ -88,7 +87,7 @@ namespace Net.Component
                 _client.host = ip;
                 _client.port = port;
                 _client.LogRpc = debugRpc;
-                _client.UpdateMode = singleThread ? NetworkUpdateMode.SingleThread : NetworkUpdateMode.Thread;
+                _client.UpdateMode = updateMode;
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
                 _client.SetHeartTime(heartLimit, heartInterval);

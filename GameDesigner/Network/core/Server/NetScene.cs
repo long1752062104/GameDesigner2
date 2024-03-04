@@ -2,6 +2,7 @@
 {
     using global::System;
     using global::System.Collections.Generic;
+    using Net.Helper;
     using Net.Share;
     using Net.System;
 
@@ -31,8 +32,8 @@
         /// 备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
         /// </summary>
         protected FastList<Operation> operations = new FastList<Operation>();
-        public Func<OperationList, byte[]> onSerializeOpt;
-        public Func<RPCModel, byte[]> onSerializeRpc;
+        public SerializeOptDelegate onSerializeOpt;
+        public SerializeRpcDelegate onSerializeRpc;
         /// <summary>
         /// 获取场景当前人数
         /// </summary>
@@ -254,11 +255,7 @@
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count, FastList<Player> players, FastList<Operation> operations)
         {
             var opts = operations.GetRemoveRange(0, count);
-            var operList = new OperationList()
-            {
-                frame = frame,
-                operations = opts
-            };
+            var operList = new OperationList(frame, opts);
             var buffer = onSerializeOpt(operList);
             handle.Multicast(players, cmd, buffer, false, false);
         }
@@ -274,11 +271,7 @@
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count, Player client, FastList<Operation> operations)
         {
             var opts = operations.GetRemoveRange(0, count);
-            var operList = new OperationList()
-            {
-                frame = frame,
-                operations = opts
-            };
+            var operList = new OperationList(frame, opts);
             var buffer = onSerializeOpt(operList);
             handle.Call(client, cmd, buffer, false, false);
         }
@@ -314,7 +307,9 @@
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public virtual void AddOperation(byte cmd, string func, params object[] pars)
         {
-            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func.GetHashCode(), pars)));
+            var segment = BufferPool.Take();
+            onSerializeRpc(segment, new RPCModel(0, func.CRCU32(), pars));
+            var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
 
@@ -327,7 +322,9 @@
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public virtual void AddOperation(byte cmd, ushort func, params object[] pars)
         {
-            var opt = new Operation(cmd, onSerializeRpc(new RPCModel(0, func, pars)));
+            var segment = BufferPool.Take();
+            onSerializeRpc(segment, new RPCModel(0, func, pars));
+            var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
 

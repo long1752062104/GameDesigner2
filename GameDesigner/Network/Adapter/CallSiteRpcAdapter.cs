@@ -14,8 +14,8 @@ namespace Net.Adapter
         public byte cmd;
         public MethodInfo method;
         public virtual Type GetActionType { get; }
-        public virtual void SetPtr(Delegate ptr) {}
-        public virtual void Invoke(object target, object[] pars) {}
+        public virtual void SetPtr(Delegate ptr) { }
+        public virtual void Invoke(object target, object[] pars) { }
     }
     public class RPCPTRMethod : RPCPTR
     {
@@ -225,7 +225,7 @@ namespace Net.Adapter
                             InvokeSafeMethod(client, method, model.pars);
                             break;
                         case NetCmd.SingleCall:
-                            ThreadManager.Invoke(() => InvokeSafeMethod(client, method, model.pars));
+                            ThreadManager.Event.AddEvent(0f, (state) => InvokeSafeMethod(client, method, (object[])state), model.pars);
                             break;
                         case NetCmd.SafeCallAsync:
                             var workCallback = new RpcWorkParameter(client, method, model.pars);
@@ -362,7 +362,7 @@ namespace Net.Adapter
             handle.RemoveRpc(target);
         }
 
-        public RPCMethodBody OnRpcTaskRegister(int callback)
+        public RPCMethodBody OnRpcTaskRegister(uint callback)
         {
             handle.RpcCollectDic.TryGetValue(callback, out var model);
             return model;

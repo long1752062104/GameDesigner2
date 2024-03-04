@@ -63,8 +63,8 @@ namespace Net.Helper
                     var item = func(member);
                     if (string.IsNullOrEmpty(rpc.func))
                         rpc.func = item.method.Name;
-                    if (!handle.RpcCollectDic.TryGetValue(rpc.func.CRC32(), out var body))
-                        handle.RpcCollectDic.Add(rpc.func.CRC32(), body = new RPCMethodBody());
+                    if (!handle.RpcCollectDic.TryGetValue(rpc.func.CRCU32(), out var body))
+                        handle.RpcCollectDic.Add(rpc.func.CRCU32(), body = new RPCMethodBody());
                     if (rpc.hash != 0)
                         if (!handle.RpcCollectDic.ContainsKey(rpc.hash))
                             handle.RpcCollectDic.Add(rpc.hash, body);
@@ -94,7 +94,7 @@ namespace Net.Helper
                     {
                         if (handle.RpcCollectDic.TryGetValue(item.rpc.hash, out var dict))
                             dict.Remove(target);
-                        if (handle.RpcCollectDic.TryGetValue(item.rpc.func.CRC32(), out dict))
+                        if (handle.RpcCollectDic.TryGetValue(item.rpc.func.CRCU32(), out dict))
                             dict.Remove(target);
                     }
                     if (item.syncVar != null)
@@ -103,7 +103,10 @@ namespace Net.Helper
             }
         }
 
-        public static void Invoke(IRpcHandler handle, NetPlayer client, RPCModel model, Action<MyDictionary<object, IRPCMethod>, NetPlayer, RPCModel> action, Action<int, NetPlayer, RPCModel> log)
+        public delegate void RpcInvokeDelegate(MyDictionary<object, IRPCMethod> rpcDict, NetPlayer client, RPCModel model);
+        public delegate void RpcLogDelegate(int code, NetPlayer client, RPCModel model);
+
+        public static void Invoke(IRpcHandler handle, NetPlayer client, RPCModel model, RpcInvokeDelegate action, RpcLogDelegate log)
         {
             if (!handle.RpcCollectDic.TryGetValue(model.protocol, out var body))
             {

@@ -64,7 +64,7 @@ namespace Net.Client
         /// <summary>
         /// 远程调用方法收集
         /// </summary>
-        public MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<int, RPCMethodBody>();
+        public MyDictionary<uint, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<uint, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -185,7 +185,7 @@ namespace Net.Client
         /// <summary>
         /// 当接收到自定义的cmd指令时调用事件
         /// </summary>
-        public Action<RPCModel> OnReceiveDataHandle { get; set; }
+        public RPCModelEvent OnReceiveDataHandle { get; set; }
         /// <summary>
         /// 当断线重连成功触发事件
         /// </summary>
@@ -221,27 +221,27 @@ namespace Net.Client
         /// <summary>
         /// 当执行调用远程过程方法时触发
         /// </summary>
-        public Action<RPCModel> OnRPCExecute { get; set; }
+        public RPCModelEvent OnRPCExecute { get; set; }
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议 (只允许一个委托, 例子:OnSerializeRpcHandle = (model)=>{return new byte[0];};)
         /// </summary>
-        public Func<RPCModel, byte[]> OnSerializeRPC { get; set; }
+        public SerializeRpcDelegate OnSerializeRPC { get; set; }
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
         /// </summary>
-        public Func<byte[], int, int, FuncData> OnDeserializeRPC { get; set; }
+        public Func<ISegment, FuncData> OnDeserializeRPC { get; set; }
         /// <summary>
         /// 当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
         /// </summary>
-        public Func<OperationList, byte[]> OnSerializeOPT { get; set; }
+        public SerializeOptDelegate OnSerializeOPT { get; set; }
         /// <summary>
         /// 当内部解析帧操作列表时调用  !!!!!只允许一个委托
         /// </summary>
-        public Func<byte[], int, int, OperationList> OnDeserializeOPT { get; set; }
+        public Func<ISegment, OperationList> OnDeserializeOPT { get; set; }
         /// <summary>
         /// 当可等待的rpc方法被注册, 用于Rpc适配器上
         /// </summary>
-        public Func<int, RPCMethodBody> OnRpcTaskRegister { get; set; }
+        public Func<uint, RPCMethodBody> OnRpcTaskRegister { get; set; }
         /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
@@ -249,7 +249,7 @@ namespace Net.Client
         /// <summary>
         /// 当socket发送失败调用. 参数1:发送的字节数组  ->可通过SendByteData方法重新发送
         /// </summary>
-        public Action<byte[]> OnSendErrorHandle { get; set; }
+        public Action<ISegment> OnSendErrorHandle { get; set; }
         /// <summary>
         /// 当从服务器获取的客户端地址点对点
         /// </summary>
@@ -293,7 +293,7 @@ namespace Net.Client
         /// <summary>
         /// 当属性同步-- 当MysqlBuild生成的类属性在服务器被修改后同步下来会调用此事件
         /// </summary>
-        public Action<RPCModel> OnSyncPropertyHandle { get; set; }
+        public RPCModelEvent OnSyncPropertyHandle { get; set; }
         /// <summary>
         /// 当数据超出<see cref="LimitQueueCount"/>限制后触发的事件
         /// </summary>
@@ -429,7 +429,7 @@ namespace Net.Client
         /// 网络循环事件处理
         /// </summary>
         protected TimerEvent LoopEvent = new TimerEvent();
-        protected int tokenCount = 1;
+        protected uint tokenCount = 1;
         protected FastLocking tokenLock = new FastLocking();
         private int sendBufferSize = ushort.MaxValue;
         /// <summary>
@@ -596,7 +596,7 @@ namespace Net.Client
         /// <param name="pars"></param>
         public void DispatchRpc(string func, params object[] pars)
         {
-            PushRpcData(new RPCModel(0, func.CRC32(), pars));
+            PushRpcData(new RPCModel(0, func.CRCU32(), pars));
         }
 
         /// <summary>
@@ -604,7 +604,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="hash"></param>
         /// <param name="pars"></param>
-        public void DispatchRpc(int hash, params object[] pars)
+        public void DispatchRpc(ushort hash, params object[] pars)
         {
             PushRpcData(new RPCModel(0, hash, pars));
         }
@@ -932,6 +932,11 @@ namespace Net.Client
             WorkerQueue.Call(action, arg1, arg2);
         }
 
+        protected void InvokeInMainThread(RPCModelEvent action, RPCModel model)
+        {
+            WorkerQueue.Call(action, model);
+        }
+
         /// <summary>
         /// 局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
         /// </summary>
@@ -1104,14 +1109,13 @@ namespace Net.Client
             RpcModels.Enqueue(new RPCModel(NetCmd.OperationSync, buffer, false, false));
         }
 
-        protected internal virtual byte[] OnSerializeOptInternal(OperationList list)
+        protected internal virtual byte[] OnSerializeOptInternal(in OperationList list)
         {
             return NetConvertFast2.SerializeObject(list).ToArray(true);
         }
 
-        protected internal virtual OperationList OnDeserializeOptInternal(byte[] buffer, int index, int count)
+        protected internal virtual OperationList OnDeserializeOptInternal(ISegment segment)
         {
-            var segment = BufferPool.NewSegment(buffer, index, count, false);
             return NetConvertFast2.DeserializeObject<OperationList>(segment);
         }
 
@@ -1154,37 +1158,31 @@ namespace Net.Client
             int index = 0;
             for (int i = 0; i < count; i++)
             {
-                if (!rPCModels.TryDequeue(out RPCModel rPCModel))
+                if (!rPCModels.TryDequeue(out RPCModel model))
                     continue;
-                if (rPCModel.kernel & rPCModel.serialize)
+                stream.WriteByte((byte)(model.kernel ? 68 : 74));
+                stream.WriteByte(model.cmd);
+                stream.Write(model.token);
+                var dataSizePos = stream.Position;
+                stream.Position += 4;
+                if (model.kernel & model.serialize)
+                    OnSerializeRPC(stream, model);
+                else if (model.buffer.Length > 0)
                 {
-                    rPCModel.buffer = OnSerializeRPC(rPCModel);
-                    if (rPCModel.buffer.Length == 0)
-                        continue;
-                }
-                var len = stream.Position + rPCModel.buffer.Length + frame;
-                if (len >= stream.Length)//数据超过BufferPool.Size
-                {
-                    if (rPCModel.buffer.Length + frame < stream.Length) //如果一个包的数据量大于缓冲区的最大长度, 就会创建比这个包要大的缓冲区
-                    {
-                        var buffer = PackData(stream);
-                        SendByteData(buffer);
-                        ResetDataHead(stream);
-                        index = 0;
-                    }
-                    else
+                    var len = stream.Position + model.buffer.Length + frame;
+                    if (len >= stream.Length)
                     {
                         var buffer = stream.ToArray(true);
                         stream = BufferPool.Take(len);
                         stream.Write(buffer, false);
                     }
+                    stream.Write(model.buffer, false);
                 }
-                stream.WriteByte((byte)(rPCModel.kernel ? 68 : 74));
-                stream.WriteByte(rPCModel.cmd);
-                stream.Write(rPCModel.token);
-                stream.Write(rPCModel.buffer.Length);
-                stream.Write(rPCModel.buffer, 0, rPCModel.buffer.Length);
-                if (++index >= PackageLength)
+                var currPos = stream.Position;
+                stream.Position = dataSizePos;
+                stream.WriteFixed((uint)(currPos - dataSizePos - 4));
+                stream.Position = currPos;
+                if (++index >= PackageLength | currPos + 10240 >= BufferPool.Size)
                     break;
             }
         }
@@ -1209,12 +1207,12 @@ namespace Net.Client
             var stream = BufferPool.Take(SendBufferSize);
             SetDataHead(stream);
             WriteDataBody(ref stream, rPCModels, count);
-            var buffer = PackData(stream);
-            SendByteData(buffer);
+            PackData(stream);
+            SendByteData(stream);
             BufferPool.Push(stream);
         }
 
-        protected virtual byte[] PackData(ISegment stream)
+        protected virtual void PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);
@@ -1226,15 +1224,14 @@ namespace Net.Client
             stream.Write(lenBytes, 0, 4);
             stream.WriteByte(crc);
             stream.Position += len;
-            return stream.ToArray();
         }
 
-        protected virtual void SendByteData(byte[] buffer)
+        protected virtual void SendByteData(ISegment buffer)
         {
-            if (buffer.Length <= frame)//解决长度==5的问题(没有数据)
+            if (buffer.Count <= frame)//解决长度==5的问题(没有数据)
                 return;
             sendAmount++;
-            sendCount += buffer.Length;
+            sendCount += buffer.Count;
             Gcp.Send(buffer);
         }
 
@@ -1243,13 +1240,13 @@ namespace Net.Client
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected internal virtual byte[] OnSerializeRpcInternal(RPCModel model) { return NetConvert.Serialize(model); }
+        protected internal virtual void OnSerializeRpcInternal(ISegment segment, RPCModel model) => NetConvert.Serialize(segment, model);
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        protected internal virtual FuncData OnDeserializeRpcInternal(byte[] buffer, int index, int count) { return NetConvert.Deserialize(buffer, index, count); }
+        protected internal virtual FuncData OnDeserializeRpcInternal(ISegment segment) { return NetConvert.Deserialize(segment); }
 
         /// <summary>
         /// 网络处理线程
@@ -1367,23 +1364,96 @@ namespace Net.Client
         {
             if (!isTcp)
             {
-                var lenBytes = stream.Read(4);
-                var crcCode = stream.ReadByte();//CRC检验索引
-                var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
-                if (crcCode != retVal)
+                Gcp.Input(stream);
+                while (Gcp.Receive(out ISegment buffer1) > 0)
                 {
-                    NDebug.LogError($"[{UID}]CRC校验失败!");
-                    return;
+                    ResolveBuffer(ref buffer1);
+                    BufferPool.Push(buffer1);
                 }
+                return;
             }
             if (!PackageAdapter.Unpack(stream, frame, UID))
                 return;
             DataHandle(stream);
         }
 
+        protected void ResolveBuffer(ref ISegment buffer)
+        {
+            heart = 0;
+            if (stack > 0)
+            {
+                stack++;
+                StackStream.Seek(stackIndex, SeekOrigin.Begin);
+                int size = buffer.Count - buffer.Position;
+                stackIndex += size;
+                StackStream.Write(buffer.Buffer, buffer.Position, size);
+                if (stackIndex < stackCount)
+                {
+                    InvokeRevdRTProgress(stackIndex, stackCount);
+                    return;
+                }
+                var count = (int)StackStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
+                BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
+                buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
+                StackStream.Seek(0, SeekOrigin.Begin);
+                StackStream.Read(buffer.Buffer, 0, count);
+                buffer.Count = count;
+            }
+            while (buffer.Position < buffer.Count)
+            {
+                if (buffer.Position + frame > buffer.Count)//流数据偶尔小于frame头部字节
+                {
+                    var position = buffer.Position;
+                    var count = buffer.Count - position;
+                    stackIndex = count;
+                    stackCount = 0;
+                    StackStream.Seek(0, SeekOrigin.Begin);
+                    StackStream.Write(buffer.Buffer, position, count);
+                    stack++;
+                    break;
+                }
+                var lenBytes = buffer.Read(4);
+                var crcCode = buffer.ReadByte();//CRC检验索引
+                var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
+                if (crcCode != retVal)
+                {
+                    stack = 0;
+                    NDebug.LogError($"[{UID}]CRC校验失败!");
+                    return;
+                }
+                var size = BitConverter.ToInt32(lenBytes, 0);
+                if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
+                {
+                    stack = 0;
+                    NDebug.LogError($"[{UID}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
+                    return;
+                }
+                if (buffer.Position + size <= buffer.Count)
+                {
+                    stack = 0;
+                    var count = buffer.Count;//此长度可能会有连续的数据(粘包)
+                    buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
+                    ResolveBuffer(ref buffer, true);
+                    buffer.Count = count;//解析完成后再赋值原来的总长
+                }
+                else
+                {
+                    var position = buffer.Position - frame;
+                    var count = buffer.Count - position;
+                    stackIndex = count;
+                    stackCount = size;
+                    StackStream.Seek(0, SeekOrigin.Begin);
+                    StackStream.Write(buffer.Buffer, position, count);
+                    stack++;
+                    break;
+                }
+            }
+        }
+
         protected void DataHandle(ISegment buffer)
         {
-            while (buffer.Position < buffer.Count)
+            var count = buffer.Count; //记录总长度，在解析每个rpc时不需要复制count，不要改，否则会导致反序列化rpc错误问题
+            while (buffer.Position < count)
             {
                 var kernelV = buffer.ReadByte();
                 var kernel = kernelV == 68;
@@ -1393,15 +1463,17 @@ namespace Net.Client
                     break;
                 }
                 var cmd1 = buffer.ReadByte();
-                var token = buffer.ReadInt32();
-                var dataCount = buffer.ReadInt32();
-                if (buffer.Position + dataCount > buffer.Count)
+                var token = buffer.ReadUInt32();
+                var dataCount = (int)buffer.ReadUInt32Fixed();
+                if (buffer.Position + dataCount > count)
                     break;
                 var position = buffer.Position + dataCount;
                 var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount) { token = token };
                 if (kernel)
                 {
-                    var func = OnDeserializeRPC(buffer.Buffer, buffer.Position, dataCount);
+                    buffer.Count = dataCount;
+                    buffer.Offset = buffer.Position;
+                    var func = OnDeserializeRPC(buffer);
                     if (func.error)
                         goto J;
                     model.protocol = func.protocol;
@@ -1453,16 +1525,6 @@ namespace Net.Client
                     else
                         OnReceiveDataHandle?.Invoke(model); //这里是多线程调用,不切换到主线程了
                     break;
-                case NetCmd.ReliableTransport:
-                    Gcp.Input(model.Buffer);
-                    int count1;
-                    ISegment buffer1;
-                    while ((count1 = Gcp.Receive(out buffer1)) > 0)
-                    {
-                        ResolveBuffer(ref buffer1, false);
-                        BufferPool.Push(buffer1);
-                    }
-                    break;
                 case NetCmd.Connect:
                     Connected = true;
                     break;
@@ -1485,7 +1547,7 @@ namespace Net.Client
                     AddAdapter(adapter);
                     break;
                 case NetCmd.OperationSync:
-                    var operList = OnDeserializeOPT(model.buffer, model.index, model.count);
+                    var operList = OnDeserializeOPT(segment);
                     InvokeInMainThread(OnOperationSync, operList);
                     break;
                 case NetCmd.Ping:
@@ -1690,7 +1752,9 @@ namespace Net.Client
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
         public void AddOperation(byte cmd, string func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func.CRC32(), pars)));
+            var segment = BufferPool.Take();
+            OnSerializeRPC(segment, new RPCModel(cmd, func.CRCU32(), pars));
+            var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
 
@@ -1702,9 +1766,11 @@ namespace Net.Client
         /// <param name="func"></param>
         /// <param name="pars"></param>
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
-        public void AddOperation(byte cmd, int func, params object[] pars)
+        public void AddOperation(byte cmd, ushort func, params object[] pars)
         {
-            var opt = new Operation(cmd, OnSerializeRPC(new RPCModel(cmd, func, pars)));
+            var segment = BufferPool.Take();
+            OnSerializeRPC(segment, new RPCModel(cmd, func, pars));
+            var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
 
@@ -1739,18 +1805,11 @@ namespace Net.Client
                 if (++heart <= HeartLimit)
                     return true;
                 if (!Connected)
-                {
                     InternalReconnection();//尝试连接执行
-                    return true;
-                }
-                if (heart < HeartLimit + 5)
-                {
+                else if (heart < HeartLimit + 5)
                     Call(NetCmd.SendHeartbeat, new byte[0]);
-                }
                 else//连接中断事件执行
-                {
                     NetworkException(new SocketException((int)SocketError.Disconnecting));
-                }
             }
             catch { }
             return openClient & CurrReconnect < ReconnectCount;
@@ -1874,14 +1933,14 @@ namespace Net.Client
         }
 
         #region 远程过程调用
-        public void Call(int protocol, params object[] pars) => Call(NetCmd.CallRpc, protocol, null, pars);
-        public void Call(byte cmd, int protocol, params object[] pars) => Call(cmd, protocol, null, pars);
-        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0, buffer);
-        public void Call(byte cmd, byte[] buffer) => Call(cmd, 0, buffer);
-        public void Call(string func, params object[] pars) => Call(NetCmd.CallRpc, func.CRC32(), null, pars);
-        public void Call(byte cmd, string func, params object[] pars) => Call(cmd, func.CRC32(), null, pars);
+        public void Call(uint protocol, params object[] pars) => Call(NetCmd.CallRpc, protocol, null, pars);
+        public void Call(byte cmd, uint protocol, params object[] pars) => Call(cmd, protocol, null, pars);
+        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, (ushort)0, buffer);
+        public void Call(byte cmd, byte[] buffer) => Call(cmd, (ushort)0, buffer);
+        public void Call(string func, params object[] pars) => Call(NetCmd.CallRpc, func.CRCU32(), null, pars);
+        public void Call(byte cmd, string func, params object[] pars) => Call(cmd, func.CRCU32(), null, pars);
 
-        public void Call(byte cmd, int protocol, byte[] buffer, params object[] pars)
+        public void Call(byte cmd, uint protocol, byte[] buffer, params object[] pars)
         {
             if (buffer != null)
             {
@@ -1911,19 +1970,19 @@ namespace Net.Client
         #endregion
 
         #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
-        public UniTask<RPCModelTask> Request(int protocol, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, params object[] pars)
             => Request(NetCmd.CallRpc, protocol, 5000, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, params object[] pars)
             => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
             => Request(NetCmd.CallRpc, protocol, timeoutMilliseconds, intercept, false, null, pars);
-        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, params object[] pars)
             => Request(cmd, protocol, timeoutMilliseconds, true, false, null, pars);
-        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
             => Request(cmd, protocol, timeoutMilliseconds, intercept, false, null, pars);
         #endregion
 
-        public async UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        public async UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
         {
             var requestTask = new RPCModelTask();
             RPCMethodBody body;
@@ -1932,7 +1991,7 @@ namespace Net.Client
                 body = OnRpcTaskRegister(protocol);
             else if (!RpcCollectDic.TryGetValue(protocol, out body))
                 RpcCollectDic.Add(protocol, body = new RPCMethodBody()); //并行发起导致问题
-            J: int token = tokenCount++;
+            J: uint token = tokenCount++;
             if (token == 0)
                 goto J;
             if (buffer != null)
@@ -1949,7 +2008,12 @@ namespace Net.Client
             else
             {
                 var model = new RPCModel(cmd, protocol, pars, true, !serialize) { token = token };
-                if (serialize) model.buffer = OnSerializeRPC(model);
+                if (serialize)
+                {
+                    var segment = BufferPool.Take();
+                    OnSerializeRPC(segment, model);
+                    model.buffer = segment.ToArray(true);
+                }
                 Call(model);
             }
             if (timeoutMilliseconds == -1)
@@ -1964,6 +2028,9 @@ namespace Net.Client
             await UniTaskNetExtensions.Wait(timeoutMilliseconds, (state) => ((RPCModelTask)state).IsCompleted, requestTask);
             if (!requestTask.IsCompleted)
                 body.RequestDict.Remove(token);
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+            await UniTask.SwitchToMainThread();
+#endif
             return requestTask;
         }
 

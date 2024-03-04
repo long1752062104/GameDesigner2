@@ -12,6 +12,8 @@ using Cysharp.Threading.Tasks;
 using Net.Helper;
 using System.Security.Authentication;
 using System.Runtime.CompilerServices;
+using System.Net;
+
 
 #if !UNITY_EDITOR && UNITY_WEBGL
 using UnityWebSocket;
@@ -120,8 +122,8 @@ namespace Net.Client
                     {
                         receiveCount += e.Data.Length * 2;
                         receiveAmount++;
-                        MessageModel model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
-                        RPCModel model1 = new RPCModel(model.cmd, model.func.GetHashCode(), model.GetPars());
+                        var model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
+                        var model1 = new RPCModel(model.cmd, model.func.CRCU32(), model.GetPars());
                         CommandHandler(model1, null);
                     }
                     else if (e.IsBinary)
@@ -132,22 +134,30 @@ namespace Net.Client
                         var buffer = BufferPool.Take(data.Length);
                         Unsafe.CopyBlockUnaligned(ref buffer.Buffer[0], ref data[0], (uint)data.Length);
                         buffer.Count = data.Length;
-                        ResolveBuffer(ref buffer, false);
+                        ResolveBuffer(ref buffer);
                         BufferPool.Push(buffer);
                     }
                 };
-                WSClient.ConnectAsync();
-                var tick = (uint)Environment.TickCount + 8000u;
-                while (UID == 0)
+                //WSClient.ConnectAsync();
+                WSClient.Connect();
+                var tick = DateTimeHelper.GetTickCount64();
+                await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
-                    await UniTask.Yield();
-                    if ((uint)Environment.TickCount >= tick)
-                        throw new Exception("uid赋值失败!");
-                    if (!openClient)
-                        throw new Exception("客户端调用Close!");
-                    if (isConnectFailed)
-                        throw new Exception("连接服务器失败");
-                }
+                    if (DateTimeHelper.GetTickCount64() >= tick)
+                    {
+                        tick = DateTimeHelper.GetTickCount64() + 1000;
+                        var segment = BufferPool.Take(SendBufferSize);
+                        segment.Write(PreUserId);
+                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
+                    }
+                    NetworkTick();
+                    return UID != 0;
+                }, null);
+                await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程
+                if (UID == 0 && openClient)
+                    throw new Exception("连接握手失败!");
+                if (UID == 0 && !openClient)
+                    throw new Exception("客户端调用Close!");
                 Connected = true;
                 StartupThread();
                 result(true);
@@ -180,11 +190,11 @@ namespace Net.Client
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected override void SendByteData(byte[] buffer)
+        protected override void SendByteData(ISegment buffer)
         {
-            sendCount += buffer.Length;
+            sendCount += buffer.Count;
             sendAmount++;
-            WSClient.SendAsync(buffer);
+            WSClient.Send(new MemoryStream(buffer.Buffer, buffer.Offset, buffer.Count, true, true), buffer.Count);
         }
 
 #if COCOS2D_JS

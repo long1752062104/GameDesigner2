@@ -173,7 +173,7 @@
                         Marshal.Copy(pData, buffer.Buffer, 0, len);
                         client.receiveCount += len;
                         client.receiveAmount++;
-                        client.ResolveBuffer(ref buffer, false);
+                        client.ResolveBuffer(ref buffer);
                         BufferPool.Push(buffer);
                         break;
                 }
@@ -199,15 +199,15 @@
             return openClient & CurrReconnect < ReconnectCount;
         }
 
-        protected unsafe override void SendByteData(byte[] buffer)
+        protected unsafe override void SendByteData(ISegment buffer)
         {
             if (ClientPtr == IntPtr.Zero)
                 return;
             sendAmount++;
-            sendCount += buffer.Length;
-            fixed (byte* ptr = buffer)
+            sendCount += buffer.Count;
+            fixed (byte* ptr = buffer.Buffer)
             {
-                int count = UdxLib.USend(ClientPtr, ptr, buffer.Length);
+                int count = UdxLib.USend(ClientPtr, ptr, buffer.Count);
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(buffer);
             }

@@ -11,6 +11,7 @@ using WebSocketSharp.Server;
 using WebSocketSharp;
 using Debug = Net.Event.NDebug;
 using UnityEngine;
+using System.IO;
 
 namespace Net.Server
 {
@@ -153,7 +154,7 @@ namespace Net.Server
             try
             {
                 var model = JsonConvert.DeserializeObject<MessageModel>(message);
-                var model1 = new RPCModel(model.cmd, model.func.GetHashCode(), model.GetPars())
+                var model1 = new RPCModel(model.cmd, model.func.CRCU32(), model.GetPars())
                 {
                     buffer = buffer,
                     count = buffer.Length
@@ -169,13 +170,13 @@ namespace Net.Server
             }
         }
 
-        protected override void SendByteData(Player client, byte[] buffer)
+        protected override void SendByteData(Player client, ISegment buffer)
         {
-            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+            if (buffer.Count == frame)//解决长度==6的问题(没有数据)
                 return;
-            client.WSClient.Send(buffer);
             sendAmount++;
-            sendCount += buffer.Length;
+            sendCount += buffer.Count;
+            client.WSClient.Send(new MemoryStream(buffer.Buffer, buffer.Offset, buffer.Count, true, true), buffer.Count);
         }
 
         public override void Close()

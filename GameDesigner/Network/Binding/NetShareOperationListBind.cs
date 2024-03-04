@@ -35,24 +35,18 @@ namespace Binding
 		
         public Net.Share.OperationList Read(ISegment stream) 
         {
-            var value = new Net.Share.OperationList();
-            Read(ref value, stream);
-            return value;
+            var bits = stream.Read(1);
+
+            uint frame = default;
+            if (NetConvertBase.GetBit(bits[0], 1))
+                frame = stream.ReadUInt32();
+
+            Net.Share.Operation[] operations = default;
+            if (NetConvertBase.GetBit(bits[0], 2))
+                operations = SerializeCache<Net.Share.Operation[]>.Serialize.Read(stream);
+
+            return new Net.Share.OperationList(frame, operations);
         }
-
-		public void Read(ref Net.Share.OperationList value, ISegment stream)
-		{
-			var bits = stream.Read(1);
-
-			if(NetConvertBase.GetBit(bits[0], 1))
-				value.frame = stream.ReadUInt32();
-
-			if(NetConvertBase.GetBit(bits[0], 2))
-			{
-				value.operations = SerializeCache<Net.Share.Operation[]>.Serialize.Read(stream);
-            }
-
-		}
 
         public void WriteValue(object value, ISegment stream)
         {

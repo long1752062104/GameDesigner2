@@ -3,16 +3,16 @@
     /// <summary>
     /// 帧同步列表
     /// </summary>
-    public struct OperationList //结构是在栈创建,是很快, 配合我们的极速序列化适配器后快的飞起
+    public readonly struct OperationList //结构是在栈创建,是很快, 配合我们的极速序列化适配器后快的飞起
     {
         /// <summary>
         /// 帧索引
         /// </summary>
-        public uint frame;
+        public readonly uint frame;
         /// <summary>
         /// 帧操作列表
         /// </summary>
-        public Operation[] operations;
+        public readonly Operation[] operations;
 
         /// <summary>
         /// 构造

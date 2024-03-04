@@ -24,18 +24,18 @@ namespace Net.Share
         }
     }
 
-    public class ThreadGroup<Worker> : ThreadGroup where Worker : class
+    public class ThreadGroup<Worker> : ThreadGroup //where Worker : class
     {
         public FastListSafe<Worker> Workers = new FastListSafe<Worker>();
 
         public override void Add(object worker)
         {
-            Workers.Add(worker as Worker);
+            Workers.Add((Worker)worker);
         }
 
         public override void Remove(object worker)
         {
-            Workers.Remove(worker as Worker);
+            Workers.Remove((Worker)worker);
         }
 
         public override string ToString()

@@ -1,4 +1,5 @@
-﻿using Net.Share;
+﻿using Net.Common;
+using Net.Share;
 using Net.System;
 using System;
 using System.Collections.Generic;
@@ -31,12 +32,12 @@ namespace Net.Plugins
     class DataFrame
     {
         private int hashCode;
-        internal byte[] buffer;
+        internal ISegment buffer;
         internal int tick;
         public DataFrame()
         {
         }
-        public DataFrame(int hashCode, byte[] buffer)
+        public DataFrame(int hashCode, ISegment buffer)
         {
             this.hashCode = hashCode;
             this.buffer = buffer;
@@ -47,7 +48,7 @@ namespace Net.Plugins
         }
     }
 
-    class DataPackage 
+    class DataPackage
     {
         internal ISegment revderBuffer;
         internal int revderFrameEnd;
@@ -64,15 +65,13 @@ namespace Net.Plugins
         private uint pushPackage;
         private uint senderPackage;
         private uint revderPackage;
-        private readonly Queue<byte[]> senderQueue = new Queue<byte[]>();
         private readonly Queue<ISegment> revderQueue = new Queue<ISegment>();
-        public Action<byte[]> OnSender { get; set; }
+        public Action<EndPoint, ISegment> OnSender { get; set; }
         public Action<RTProgress> OnSendProgress { get; set; }
         public Action<RTProgress> OnRevdProgress { get; set; }
         private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
         private readonly MyDictionary<uint, DataPackage> revderDict = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
-        private readonly object SyncRoot = new object();
         private int tick;
         private int flowTick;
         private int currFlow;
@@ -84,12 +83,13 @@ namespace Net.Plugins
         public int MTPS { get; set; } = 1024 * 1024;
         public int ProgressDataLen { get; set; } = ushort.MaxValue;//要求数据大于多少才会调用发送，接收进度值
         public FlowControlMode FlowControl { get; set; } = FlowControlMode.Normal;
+        private readonly FastLocking Locking = new FastLocking();
 
         public void Update()
         {
-            lock (SyncRoot)
+            try
             {
-                CheckNextSend();
+                Locking.Lock();
                 tick = Environment.TickCount;
                 if (tick >= flowTick)
                 {
@@ -104,17 +104,22 @@ namespace Net.Plugins
                 for (uint i = senderPackage; i < length; i++)
                 {
                     if (!FastRetransmit(i))
-                        if(i == senderPackage)
+                        if (i == senderPackage)
                             senderPackage++;
                     if (currFlow >= MTPS | currAck >= ackNumber)
                         break;
                 }
             }
+            finally
+            {
+                Locking.Release();
+            }
         }
         public int Receive(out ISegment segment)
         {
-            lock (SyncRoot)
+            try
             {
+                Locking.Lock();
                 if (revderQueue.Count <= 0)
                 {
                     segment = null;
@@ -123,52 +128,53 @@ namespace Net.Plugins
                 segment = revderQueue.Dequeue();
                 return segment.Count;
             }
-        }
-        public void Send(byte[] buffer)
-        {
-            lock (SyncRoot)
+            finally
             {
-                senderQueue.Enqueue(buffer);
+                Locking.Release();
             }
         }
-        private void CheckNextSend()
+        public void Send(ISegment buffer)
         {
-            if (senderQueue.Count > 0)
+            try
             {
-                var current = senderQueue.Dequeue();
-                var count = current.Length;
+                Locking.Lock();
+                var count = buffer.Count;
                 var frameEnd = (int)Math.Ceiling(count / (float)MTU);
-                using (var segment = BufferPool.Take())
+                var dic = new MyDictionary<int, DataFrame>(frameEnd);
+                senderDict.Add(pushPackage, dic);
+                for (int serialNo = 0; serialNo < frameEnd; serialNo++)
                 {
-                    var dic = new MyDictionary<int, DataFrame>(frameEnd);
-                    senderDict.Add(pushPackage, dic);
-                    for (int serialNo = 0; serialNo < frameEnd; serialNo++)
-                    {
-                        segment.SetPositionLength(0);
-                        segment.WriteByte(Cmd.Frame);
-                        segment.Write(pushPackage);
-                        segment.Write(serialNo);
-                        segment.Write(count);
-                        var offset = serialNo * MTU;
-                        segment.Write(current, offset, offset + MTU >= count ? count - offset : MTU);
-                        var dataFrame = new DataFrame(serialNo, segment.ToArray());
-                        dic.Add(serialNo, dataFrame);
-                    }
-                    pushPackage++;
+                    var offset = serialNo * MTU;
+                    var dataCount = offset + MTU >= count ? count - offset : MTU;
+                    var segment = BufferPool.Take(dataCount + 13);
+                    segment.SetPositionLength(0);
+                    segment.WriteByte(Cmd.Frame);
+                    segment.Write(pushPackage);
+                    segment.Write(serialNo);
+                    segment.Write(count);
+                    segment.Write(buffer.Buffer, offset, dataCount);
+                    segment.Flush();
+                    var dataFrame = new DataFrame(serialNo, segment);
+                    dic.Add(serialNo, dataFrame);
                 }
+                pushPackage++;
+            }
+            finally
+            {
+                Locking.Release();
             }
         }
-        public void Input(byte[] buffer)
+        public void Input(ISegment stream)
         {
-            lock (SyncRoot)
+            try
             {
-                var segment = new Segment(buffer, false);
-                var flags = segment.ReadByte();
+                Locking.Lock();
+                var flags = stream.ReadByte();
                 if (flags == Cmd.Frame)
                 {
-                    var package = segment.ReadUInt32();
-                    var serialNo = segment.ReadInt32();
-                    var dataLen = segment.ReadInt32();
+                    var package = stream.ReadUInt32();
+                    var serialNo = stream.ReadInt32();
+                    var dataLen = stream.ReadInt32();
                     if (package < revderPackage)
                         goto J;
                     if (!revderDict.TryGetValue(package, out var dp))
@@ -184,7 +190,7 @@ namespace Net.Plugins
                     {
                         dp.revderHashCount++;
                         dp.revderHash[serialNo] = 1;
-                        Unsafe.CopyBlockUnaligned(ref dp.revderBuffer.Buffer[serialNo * MTU], ref segment.Buffer[segment.Position], (uint)(segment.Count - segment.Position));
+                        Unsafe.CopyBlockUnaligned(ref dp.revderBuffer.Buffer[serialNo * MTU], ref stream.Buffer[stream.Position], (uint)(stream.Count - stream.Position));
                         if (dp.revderHashCount >= dp.revderFrameEnd)
                             dp.finish = true;
                     }
@@ -208,23 +214,26 @@ namespace Net.Plugins
                         dp1.revderHash = null;
                         dp1.revderHashCount = 0;
                     }
-                J: segment.SetPositionLength(0);
+                J: var segment = BufferPool.Take(13); //要重新取出，不能用stream，会导致外部出现问题
                     segment.WriteByte(Cmd.Ack);
                     segment.Write(package);
                     segment.Write(serialNo);
                     segment.Write(dataLen);
-                    var bytes = segment.ToArray(true);
-                    OnSender(bytes);
+                    segment.Flush();
+                    OnSender(RemotePoint, segment);
                 }
                 else if (flags == Cmd.Ack)
                 {
-                    var package = segment.ReadUInt32();
-                    var serialNo = segment.ReadInt32();
-                    var dataLen = segment.ReadInt32();
+                    var package = stream.ReadUInt32();
+                    var serialNo = stream.ReadInt32();
+                    var dataLen = stream.ReadInt32();
                     if (senderDict.TryGetValue(package, out var dic))
                     {
-                        if (dic.Remove(serialNo))
+                        if (dic.TryRemove(serialNo, out var dataFrame))
+                        {
+                            dataFrame.buffer.Dispose();
                             ackNumber++;
+                        }
                         if (dic.Count <= 0)
                             senderDict.Remove(package);
                         if (tick >= progressTick)
@@ -241,9 +250,13 @@ namespace Net.Plugins
                 }
                 else if (flags == Cmd.DAck)
                 {
-                    var package = segment.ReadUInt32();
+                    var package = stream.ReadUInt32();
                     FastRetransmit(package);
                 }
+            }
+            finally
+            {
+                Locking.Release();
             }
         }
         private bool FastRetransmit(uint package)
@@ -258,7 +271,7 @@ namespace Net.Plugins
                         var count = sender.buffer.Length;
                         currFlow += count;
                         currAck++;
-                        OnSender(sender.buffer);
+                        OnSender(RemotePoint, sender.buffer);
                     }
                 }
                 return true;
@@ -271,16 +284,20 @@ namespace Net.Plugins
         }
         public void Dispose()
         {
-            lock (SyncRoot)
+            try
             {
+                Locking.Lock();
                 pushPackage = 0;
                 senderPackage = 0;
                 revderPackage = 0;
-                senderQueue.Clear();
                 revderQueue.Clear();
                 senderDict.Clear();
                 revderDict.Clear();
                 RemotePoint = null;
+            }
+            finally
+            {
+                Locking.Release();
             }
         }
         public override string ToString()

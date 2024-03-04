@@ -41,7 +41,7 @@
             ReleaseKcp();
         }
 
-        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result) 
+        protected override UniTask<bool> ConnectResult(string host, int port, int localPort, Action<bool> result)
         {
             ReleaseKcp();
             user = Marshal.GetIUnknownForObject(this);
@@ -49,7 +49,7 @@
             output = new outputCallback(Output);
             var outputPtr = Marshal.GetFunctionPointerForDelegate(output);
             ikcp_setoutput(kcp, outputPtr);
-            ikcp_wndsize(kcp, ushort.MaxValue, ushort.MaxValue);
+            ikcp_wndsize(kcp, SendBufferSize, ReceiveBufferSize);
             ikcp_nodelay(kcp, 1, 10, 2, 1);
             return base.ConnectResult(host, port, localPort, result);
         }
@@ -105,7 +105,7 @@
                 fixed (byte* p1 = &segment1.Buffer[0])
                 {
                     segment1.Count = ikcp_recv(kcp, p1, len);
-                    ResolveBuffer(ref segment1, false);
+                    ResolveBuffer(ref segment1);
                     BufferPool.Push(segment1);
                 }
             }
@@ -116,11 +116,11 @@
             ikcp_update(kcp, (uint)Environment.TickCount);
         }
 
-        protected override void SendByteData(byte[] buffer)
+        protected override void SendByteData(ISegment buffer)
         {
-            fixed (byte* p = &buffer[0])
+            fixed (byte* p = &buffer.Buffer[0])
             {
-                int count = ikcp_send(kcp, p, buffer.Length);
+                int count = ikcp_send(kcp, p, buffer.Count);
                 if (count < 0)
                     OnSendErrorHandle?.Invoke(buffer);
             }

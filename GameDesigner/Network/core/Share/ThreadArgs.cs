@@ -74,4 +74,21 @@ namespace Net.Share
             callback?.Invoke(arg1, arg2);
         }
     }
+
+    public readonly struct RPCModelThreadArgs : IThreadArgs
+    {
+        public readonly RPCModelEvent callback;
+        public readonly RPCModel arg1;
+
+        public RPCModelThreadArgs(RPCModelEvent callback, RPCModel arg1)
+        {
+            this.callback = callback;
+            this.arg1 = arg1;
+        }
+
+        public void Invoke()
+        {
+            callback?.Invoke(arg1);
+        }
+    }
 }

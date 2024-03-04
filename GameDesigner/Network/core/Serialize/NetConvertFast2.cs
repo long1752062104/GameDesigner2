@@ -335,7 +335,7 @@
             }
         }
 
-        public static ISegment SerializeObject<T>(T value)
+        public static ISegment SerializeObject<T>(in T value)
         {
             var stream = BufferPool.Take();
             SerializeObject(value, stream);
@@ -343,7 +343,7 @@
             return stream;
         }
 
-        public static void SerializeObject<T>(T value, ISegment stream)
+        public static void SerializeObject<T>(in T value, ISegment stream)
         {
             try
             {
@@ -427,36 +427,38 @@
             throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用序列化生成工具生成{type}绑定类! (如果是基类,请联系作者修复!谢谢)");
         }
 
-        public static byte[] SerializeModel(RPCModel model)
+        public static byte[] SerializeModel(RPCModel model) 
         {
-            var stream = BufferPool.Take();
-            byte[] buffer1;
+            var segment = BufferPool.Take();
+            SerializeModel(segment, model);
+            return segment.ToArray(true);
+        }
+
+        public static void SerializeModel(ISegment segment, RPCModel model)
+        {
             try
             {
-                stream.Write(model.protocol);
+                segment.Write(model.protocol);
                 foreach (var obj in model.pars)
                 {
                     Type type;
                     if (obj == null)
                     {
                         type = typeof(DBNull);
-                        stream.Write(TypeToIndex(type));
+                        segment.Write(TypeToIndex(type));
                         continue;
                     }
                     type = obj.GetType();
-                    stream.Write(TypeToIndex(type));
+                    segment.Write(TypeToIndex(type));
                     if (TypeToSerializeDict.TryGetValue(type, out ISerialize bind))
-                        bind.WriteValue(obj, stream);
+                        bind.WriteValue(obj, segment);
                     else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
                 }
-                buffer1 = stream.ToArray(true);
             }
             catch (Exception ex)
             {
-                buffer1 = new byte[0];
                 NDebug.LogError($"序列化[{model}]出错 详细信息:" + ex);
             }
-            return buffer1;
         }
 
         public static FuncData DeserializeModel(ISegment segment, bool isPush = true)
@@ -464,7 +466,7 @@
             FuncData obj = default;
             try
             {
-                obj.protocol = segment.ReadInt32();
+                obj.protocol = segment.ReadUInt16();
                 var list = new List<object>();
                 int count = segment.Offset + segment.Count;
                 while (segment.Position < count)

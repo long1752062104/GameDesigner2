@@ -26,6 +26,11 @@ namespace Net.Helper
             WorkerQueue.Enqueue(new ThreadArgsGeneric<T, T1>(action, arg1, arg2));
         }
 
+        public void Call(RPCModelEvent action, RPCModel model)
+        {
+            WorkerQueue.Enqueue(new RPCModelThreadArgs(action, model));
+        }
+
         public void Execute()
         {
             int count = WorkerQueue.Count;

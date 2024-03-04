@@ -37,6 +37,11 @@ namespace Net.Common
         }
 
         /// <summary>
+        /// 加锁
+        /// </summary>
+        public void Lock() => Enter();
+
+        /// <summary>
         /// 释放锁
         /// </summary>
         public void Release() => Exit();

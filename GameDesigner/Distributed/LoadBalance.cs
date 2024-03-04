@@ -71,7 +71,7 @@ namespace Net.Distributed
         /// <param name="args"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async UniTask<DATA> RemoteConfig<DATA>(string host, int port, ClientConfig config, int protocol, params object[] args)
+        public async UniTask<DATA> RemoteConfig<DATA>(string host, int port, ClientConfig config, uint protocol, params object[] args)
         {
             var client = new T();
             client.UpdateMode = Share.NetworkUpdateMode.CustomExecution;

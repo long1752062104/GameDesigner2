@@ -56,6 +56,18 @@ namespace Net.Server
         {
         }
 
+        protected override void DataCRCHandler(Player client, ISegment buffer, bool isTcp)
+        {
+            if (!isTcp)
+            {
+                ResolveBuffer(client, ref buffer);
+                return;
+            }
+            if (!PackageAdapter.Unpack(buffer, frame, client.UserID))
+                return;
+            DataHandler(client, buffer);
+        }
+
         protected void ProcessReceive(UDXEVENT_TYPE eventtype, int erro, IntPtr cli, IntPtr pData, int len)
         {
             try
@@ -116,17 +128,17 @@ namespace Net.Server
             return false;
         }
 
-        protected unsafe override void SendByteData(Player client, byte[] buffer)
+        protected unsafe override void SendByteData(Player client, ISegment buffer)
         {
             if (client.Udx == IntPtr.Zero)
                 return;
-            if (buffer.Length == frame)//解决长度==6的问题(没有数据)
+            if (buffer.Count == frame)//解决长度==6的问题(没有数据)
                 return;
             sendAmount++;
-            sendCount += buffer.Length;
-            fixed (byte* ptr = buffer)
+            sendCount += buffer.Count;
+            fixed (byte* ptr = buffer.Buffer)
             {
-                int count = UdxLib.USend(client.Udx, ptr, buffer.Length);
+                int count = UdxLib.USend(client.Udx, ptr, buffer.Count);
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(client, buffer);
             }
@@ -134,11 +146,6 @@ namespace Net.Server
 
         protected override void CheckHeart(Player client, uint tick)
         {
-        }
-
-        public override void RemoveClient(Player client)
-        {
-            base.RemoveClient(client);
         }
 
         public override void Close()

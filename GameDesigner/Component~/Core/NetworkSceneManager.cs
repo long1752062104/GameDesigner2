@@ -156,7 +156,8 @@ namespace Net.UnityComponent
                     SyncVarGetHandler(opt);
                     break;
                 case NetCmd.CallRpc:
-                    var data = client.OnDeserializeRPC(opt.buffer, 0, opt.buffer.Length);
+                    var segment = BufferPool.NewSegment(opt.buffer, 0, opt.buffer.Length, false);
+                    var data = client.OnDeserializeRPC(segment);
                     client.DispatchRpc(data.protocol, data.pars);
                     break;
                 default:

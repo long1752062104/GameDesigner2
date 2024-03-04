@@ -49,7 +49,7 @@
         /// <summary>
         /// 远程调用方法收集
         /// </summary>
-        public MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<int, RPCMethodBody>();
+        public MyDictionary<uint, RPCMethodBody> RpcCollectDic { get; set; } = new MyDictionary<uint, RPCMethodBody>();
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>
@@ -137,7 +137,7 @@
         /// <summary>
         /// 当前客户端请求的Token, 用于客户端响应, 如果在Rpc执行方法使用异步, 则需要记录一下token再异步, 否则token会被冲掉, 导致响应token错误
         /// </summary>
-        public int Token { get; set; }
+        public uint Token { get; set; }
         /// <summary>
         /// CRC校验错误次数, 如果有错误每秒提示一次
         /// </summary>

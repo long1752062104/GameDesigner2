@@ -2,7 +2,7 @@ using Net.System;
 using System;
 using System.Net;
 
-namespace Net.Share 
+namespace Net.Share
 {
     /// <summary>
     /// gcp可靠协议接口
@@ -15,7 +15,7 @@ namespace Net.Share
         FlowControlMode FlowControl { get; set; }
         Action<RTProgress> OnRevdProgress { get; set; }
         Action<RTProgress> OnSendProgress { get; set; }
-        Action<byte[]> OnSender { get; set; }
+        Action<EndPoint, ISegment> OnSender { get; set; }
         EndPoint RemotePoint { get; set; }
 
         /// <summary>
@@ -26,8 +26,8 @@ namespace Net.Share
         /// <summary>
         /// 输入要发送的数据
         /// </summary>
-        /// <param name="buffer"></param>
-        void Input(byte[] buffer);
+        /// <param name="segment"></param>
+        void Input(ISegment segment);
         /// <summary>
         /// 更新发送和结束事件
         /// </summary>
@@ -36,7 +36,7 @@ namespace Net.Share
         /// 真正的接入发送接口
         /// </summary>
         /// <param name="buffer"></param>
-        void Send(byte[] buffer);
+        void Send(ISegment buffer);
         /// <summary>
         /// 检查接收是否有数据
         /// </summary>

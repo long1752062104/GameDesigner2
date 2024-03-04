@@ -1,19 +1,10 @@
 ﻿namespace Net.Client
 {
     using global::System;
-    using global::System.Net;
-    using global::System.Collections.Generic;
-    using global::System.IO;
-    using global::System.Net.Sockets;
-    using global::System.Reflection;
-    using global::System.Threading;
-    using global::System.Threading.Tasks;
     using Net.Share;
-    using Net.System;
-    using Net.Helper;
     using Net.Plugins;
-    using Net.Event;
-    using Cysharp.Threading.Tasks;
+    using Net.System;
+    using global::System.Net.Sockets;
 
     /// <summary>
     /// Udp网络客户端
@@ -35,11 +26,12 @@
         /// <summary>
         /// 构造udp可靠客户端
         /// </summary>
-        public UdpClient() 
+        public UdpClient()
         {
             Gcp = new GcpKernel();
-            Gcp.OnSender += (bytes) => {
-                Call(NetCmd.ReliableTransport, bytes);
+            Gcp.OnSender += (remotePoint, segment) =>
+            {
+                Client?.Send(segment.Buffer, segment.Offset, segment.Count, SocketFlags.None);
             };
         }
 
@@ -65,5 +57,16 @@
     /// <summary>
     /// Gcp协议
     /// </summary>
-    public class GcpClient : UdpClient { }
+    public class GcpClient : UdpClient
+    {
+        /// <summary>
+        /// 构造gdp可靠客户端
+        /// </summary>
+        public GcpClient() : base() { }
+        /// <summary>
+        /// 构造gdp可靠客户端
+        /// </summary>
+        /// <param name="useUnityThread">使用unity多线程?</param>
+        public GcpClient(bool useUnityThread) : base(useUnityThread) { }
+    }
 }

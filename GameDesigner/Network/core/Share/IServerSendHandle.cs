@@ -32,7 +32,7 @@
         /// <param name="clients">客户端集合</param>
         /// <param name="func">本地客户端rpc函数</param>
         /// <param name="pars">本地客户端rpc参数</param>
-        void Multicast(IList<Player> clients, int protocol, params object[] pars);
+        void Multicast(IList<Player> clients, uint protocol, params object[] pars);
 
         /// <summary>
         /// 网络多播, 发送数据到clients集合的客户端
@@ -41,7 +41,7 @@
         /// <param name="cmd">网络命令</param>
         /// <param name="func">本地客户端rpc函数</param>
         /// <param name="pars">本地客户端rpc参数</param>
-        void Multicast(IList<Player> clients, byte cmd, int protocol, params object[] pars);
+        void Multicast(IList<Player> clients, byte cmd, uint protocol, params object[] pars);
 
         /// <summary>
         /// 网络多播, 发送数据到clients集合的客户端 (灵活数据包)

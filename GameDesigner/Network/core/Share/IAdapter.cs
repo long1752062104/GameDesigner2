@@ -5,7 +5,7 @@ using System;
 
 namespace Net.Share
 {
-    public enum AdapterType 
+    public enum AdapterType
     {
         Serialize,
         RPC,
@@ -20,18 +20,21 @@ namespace Net.Share
     {
     }
 
+    public delegate void SerializeRpcDelegate(ISegment segment, RPCModel model);
+    public delegate byte[] SerializeOptDelegate(in OperationList list);
+
     /// <summary>
     /// 序列化适配器
     /// </summary>
     public interface ISerializeAdapter : IAdapter
     {
-        byte[] OnSerializeRpc(RPCModel model);
+        void OnSerializeRpc(ISegment segment, RPCModel model);
 
-        FuncData OnDeserializeRpc(byte[] buffer, int index, int count);
+        FuncData OnDeserializeRpc(ISegment segment);
 
-        byte[] OnSerializeOpt(OperationList list);
+        byte[] OnSerializeOpt(in OperationList list);
 
-        OperationList OnDeserializeOpt(byte[] buffer, int index, int count);
+        OperationList OnDeserializeOpt(ISegment segment);
     }
 
     /// <summary>
@@ -44,7 +47,7 @@ namespace Net.Share
         void OnRpcExecute(RPCModel model);
 
         void RemoveRpc(object target);
-        RPCMethodBody OnRpcTaskRegister(int callback);
+        RPCMethodBody OnRpcTaskRegister(uint callback);
     }
 
     /// <summary>
@@ -63,7 +66,7 @@ namespace Net.Share
     /// <summary>
     /// 网络事件适配器
     /// </summary>
-    public interface INetworkEvtAdapter : INetworkHandle, IAdapter 
+    public interface INetworkEvtAdapter : INetworkHandle, IAdapter
     {
     }
 

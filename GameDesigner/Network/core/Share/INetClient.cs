@@ -30,7 +30,7 @@
         /// <summary>
         /// 当接收到网络数据处理事件
         /// </summary>
-        Action<RPCModel> OnReceiveDataHandle { get; set; }
+        RPCModelEvent OnReceiveDataHandle { get; set; }
         /// <summary>
         /// 当断线重连成功触发事件
         /// </summary>

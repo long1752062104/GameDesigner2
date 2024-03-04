@@ -63,7 +63,7 @@ namespace DistributedExample
             var token = client.Token; //记录请求响应token, 避免await后丢失
             var loginClient = loadBalance.GetRoundRobin().Token; //获取负载均衡轮询客户端对象
             var (code, user) = await loginClient.Request<int, UserData>((int)ProtoType.Login, 1000 * 30, account, password); //网关向登录服务器发出请求
-            Call(client, (int)ProtoType.Login, token, code, user); //发给unity客户端
+            Response(client, (int)ProtoType.Login, token, code, user); //发给unity客户端
             //if (code == 0)
             //    LoginHandler(client);
         }
@@ -74,7 +74,7 @@ namespace DistributedExample
             var token = client.Token;
             var loginClient = loadBalance.GetRoundRobin().Token;
             var code = await loginClient.Request<int>((int)ProtoType.Register, 1000 * 30, account, password);
-            Call(client, (int)ProtoType.Register, token, code);
+            Response(client, (int)ProtoType.Register, token, code);
         }
     }
 }

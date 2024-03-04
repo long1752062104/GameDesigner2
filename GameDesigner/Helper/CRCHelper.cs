@@ -82,11 +82,21 @@ namespace Net.Helper
         /// <returns></returns>
         public unsafe static int CRC32(this string value)
         {
+            return (int)CRCU32(value);
+        }
+
+        /// <summary>
+        /// 计算字符串哈希, 保证一致性
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public unsafe static uint CRCU32(this string value)
+        {
             var bytes = Encoding.UTF8.GetBytes(value);
             fixed (byte* ptr = bytes)
             {
                 var hashCode = XXH32.XXH32_hash(ptr, bytes.Length, 0U);
-                return (int)hashCode;
+                return hashCode;
             }
         }
     }

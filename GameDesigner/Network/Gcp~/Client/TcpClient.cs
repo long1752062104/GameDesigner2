@@ -94,24 +94,7 @@
                 throw new SocketException((int)SocketError.Disconnecting);
         }
 
-        protected override bool HeartHandler()
-        {
-            try
-            {
-                if (++heart <= HeartLimit)
-                    return true;
-                if (!Connected)
-                    InternalReconnection();
-                else
-                    Call(NetCmd.SendHeartbeat, new byte[0]);
-            }
-            catch
-            {
-            }
-            return openClient & CurrReconnect < ReconnectCount;
-        }
-
-        protected override byte[] PackData(ISegment stream)
+        protected override void PackData(ISegment stream)
         {
             stream.Flush(false);
             SetDataHead(stream);
@@ -123,20 +106,19 @@
             stream.Write(lenBytes, 0, 4);
             stream.WriteByte(crc);
             stream.Position += len;
-            return stream.ToArray();
         }
 
-        protected override void SendByteData(byte[] buffer)
+        protected override void SendByteData(ISegment buffer)
         {
-            sendCount += buffer.Length;
+            sendCount += buffer.Count;
             sendAmount++;
             if (Client.Poll(0, SelectMode.SelectWrite))
             {
-                int count = Client.Send(buffer, 0, buffer.Length, SocketFlags.None);
+                int count = Client.Send(buffer.Buffer, buffer.Offset, buffer.Count, SocketFlags.None);
                 if (count <= 0)
                     OnSendErrorHandle?.Invoke(buffer);
-                else if (count != buffer.Length)
-                    NDebug.LogError($"发送了{buffer.Length - count}个字节失败!");
+                else if (count != buffer.Count)
+                    NDebug.LogError($"发送了{buffer.Count - count}个字节失败!");
             }
             else
             {

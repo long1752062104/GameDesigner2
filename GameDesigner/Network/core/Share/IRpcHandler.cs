@@ -7,7 +7,7 @@ namespace Net.Share
     public class RPCMethodBody
     {
         public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>();
-        public SafeDictionary<int, RPCModelTask> RequestDict = new SafeDictionary<int, RPCModelTask>();
+        public SafeDictionary<uint, RPCModelTask> RequestDict = new SafeDictionary<uint, RPCModelTask>();
         public int Count => RpcDict.Count;
         
         internal void Add(object key, IRPCMethod value)
@@ -26,7 +26,7 @@ namespace Net.Share
         /// <summary>
         /// 远程调用方法收集
         /// </summary>
-        MyDictionary<int, RPCMethodBody> RpcCollectDic { get; set; }
+        MyDictionary<uint, RPCMethodBody> RpcCollectDic { get; set; }
         /// <summary>
         /// 已经收集过的类信息
         /// </summary>

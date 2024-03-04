@@ -45,7 +45,7 @@ namespace Net.Helper
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             var file = path + name;
-            var jsonStr = JsonConvert.SerializeObject(obj);
+            var jsonStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
             File.WriteAllText(file, jsonStr);
         }
 
