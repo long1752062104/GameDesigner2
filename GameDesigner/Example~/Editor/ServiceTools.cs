@@ -61,7 +61,18 @@ public class ServiceTools
         if (files.Length == 0)
             return;
         var exe = files[0];
-        Process p = new Process();
+        var p = new Process();
+        p.StartInfo.FileName = exe;
+        p.Start();
+    }
+    [MenuItem("GameDesigner/Example/Distributed Server Source Project")]
+    static void Init5()
+    {
+        var files = Directory.GetFiles(Application.dataPath, "DistributedExampleServer.sln", SearchOption.AllDirectories);
+        if (files.Length == 0)
+            return;
+        var exe = files[0];
+        var p = new Process();
         p.StartInfo.FileName = exe;
         p.Start();
     }

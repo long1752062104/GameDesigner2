@@ -604,7 +604,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="hash"></param>
         /// <param name="pars"></param>
-        public void DispatchRpc(ushort hash, params object[] pars)
+        public void DispatchRpc(uint hash, params object[] pars)
         {
             PushRpcData(new RPCModel(0, hash, pars));
         }

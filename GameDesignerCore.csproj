@@ -71,6 +71,8 @@
     <None Remove=".gitignore" />
     <None Remove="app.config" />
     <None Remove="GameDesigner\Common.meta" />
+    <None Remove="GameDesigner\Distributed.meta" />
+    <None Remove="GameDesigner\Extensions.meta" />
     <None Remove="GameDesigner\Extensions\ClientBaseExtensions.cs.meta" />
     <None Remove="GameDesigner\Extensions\NetPlayerExtensions.cs.meta" />
     <None Remove="GameDesigner\Extensions\UniTaskNetExtensions.cs.meta" />
@@ -80,6 +82,7 @@
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\ImportCmd.exe" />
     <None Remove="GameDesigner\ImportCmd.exe.meta" />
+    <None Remove="GameDesigner\K4os.Hash.xxHash.meta" />
     <None Remove="GameDesigner\link.xml" />
     <None Remove="GameDesigner\link.xml.meta" />
     <None Remove="GameDesigner\Network.meta" />

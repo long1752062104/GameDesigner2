@@ -168,12 +168,12 @@ namespace Net.Component
         }
 
         #region 发送接口实现
-        public void Call(int protocol, params object[] pars)
+        public void Call(uint protocol, params object[] pars)
         {
             ((ISendHandle)client).Call(protocol, pars);
         }
 
-        public void Call(byte cmd, int protocol, params object[] pars)
+        public void Call(byte cmd, uint protocol, params object[] pars)
         {
             ((ISendHandle)client).Call(cmd, protocol, pars);
         }
@@ -198,42 +198,42 @@ namespace Net.Component
             ((ISendHandle)client).Call(cmd, func, pars);
         }
 
-        public void Call(byte cmd, int protocol, byte[] buffer, params object[] pars)
+        public void Call(byte cmd, uint protocol, byte[] buffer, params object[] pars)
         {
             ((ISendHandle)client).Call(cmd, protocol, buffer, pars);
         }
 
-        public void Call(in RPCModel model)
+        public void Call(RPCModel model)
         {
             ((ISendHandle)client).Call(model);
         }
 
-        public UniTask<RPCModelTask> Request(int protocol, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, params object[] pars)
         {
             return ((ISendHandle)client).Request(protocol, pars);
         }
 
-        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, params object[] pars)
         {
             return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, pars);
         }
 
-        public UniTask<RPCModelTask> Request(int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
             return ((ISendHandle)client).Request(protocol, timeoutMilliseconds, intercept, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, pars);
         }
 
-        public UniTask<RPCModelTask> Request(byte cmd, int protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
+        public UniTask<RPCModelTask> Request(byte cmd, uint protocol, int timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
         {
             return ((ISendHandle)client).Request(cmd, protocol, timeoutMilliseconds, intercept, serialize, buffer, pars);
         }

@@ -32,7 +32,7 @@ public class ImportSettingWindow : EditorWindow
             true, //framework
             false, //entities
             false, //parrelSync
-            false, //ext1
+            false, //example
             false, //ext2
             false, //ext3
             false, //ext4
@@ -112,7 +112,7 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 },
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 },
     };
 
     private void OnGUI()
