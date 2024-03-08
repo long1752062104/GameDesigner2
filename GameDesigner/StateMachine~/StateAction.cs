@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace GameDesigner
 {
@@ -75,7 +76,7 @@ namespace GameDesigner
                         }
                         else stateMachine.animation.CrossFade(clipName, state.duration);
                     }
-                    else 
+                    else
                     {
                         stateMachine.animation.Play(clipName);
                         stateMachine.animation[clipName].time = 0f;
@@ -102,6 +103,9 @@ namespace GameDesigner
                         stateMachine.meshAnimator.Play(clipIndex);
                     break;
 #endif
+                case AnimationMode.Time:
+                    animTime = 0f;
+                    break;
             }
         }
 
@@ -147,6 +151,9 @@ namespace GameDesigner
                     isPlaying = state.IsPlaying;
                     break;
 #endif
+                case AnimationMode.Time:
+                    animTime += state.animSpeed * animTimeMax * Time.deltaTime;
+                    break;
             }
             for (int i = 0; i < behaviours.Length; i++)
             {

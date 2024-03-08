@@ -1,7 +1,9 @@
 #if UNITY_EDITOR
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -11,20 +13,23 @@ public class DebugTools : EditorWindow
     [MenuItem("GameDesigner/Network/DebugTools")]
     static void ShowWindow()
     {
-        var window = GetWindow<DebugTools>("Debug¹¤¾ß");
+        var window = GetWindow<DebugTools>("Debugå·¥å…·");
         window.Show();
     }
 
     private void OnGUI()
     {
-        EditorGUILayout.HelpBox(@"´Ë¹¤¾ß¿ÉÒÔ°ïÄãÔÚ¿ØÖÆÌ¨´òÓ¡Ê±, Ö±½ÓÏÔÊ¾Rpcµ÷ÓÃµ½µÄ·½·¨, ¿ÉÒÔË«»÷½øÈëRpc·½·¨Î»ÖÃ, Ê¹ÓÃ´Ë¹¤¾ß»áĞŞ¸Ä
-unity±à¼­Æ÷µÄUnityEditor.CoreModule.dll,ĞŞ¸ÄILÖ¸ÁîÈÃ¿ØÖÆÌ¨ÅĞ¶Ï´òÓ¡ÄÚÈİÒ²ÏÔÊ¾¸ßÁÁ, !!!×¢Òâ:Çë±¸·İÄãµÄUnityEditor.CoreModule.dll,
-ÒÔÃâ×¢ÈëILÖ¸Áî±àÒëºó,unity³ÌĞò¼¯´íÎóµ¼ÖÂunity´ò²»¿ª±ÀÀ£ÎÊÌâ!!!", MessageType.Info);
-        if (GUILayout.Button("×¢Èë±à¼­Æ÷UnityEditor.CoreModule.dll", GUILayout.Height(30)))
+        EditorGUILayout.HelpBox(@"æ­¤å·¥å…·å¯ä»¥å¸®ä½ åœ¨æ§åˆ¶å°æ‰“å°æ—¶, ç›´æ¥æ˜¾ç¤ºRpcè°ƒç”¨åˆ°çš„æ–¹æ³•, å¯ä»¥åŒå‡»è¿›å…¥Rpcæ–¹æ³•ä½ç½®, ä½¿ç”¨æ­¤å·¥å…·ä¼šä¿®æ”¹
+unityç¼–è¾‘å™¨çš„UnityEditor.CoreModule.dll,ä¿®æ”¹ILæŒ‡ä»¤è®©æ§åˆ¶å°åˆ¤æ–­æ‰“å°å†…å®¹ä¹Ÿæ˜¾ç¤ºé«˜äº®, !!!æ³¨æ„:å¦‚æœæ³¨å…¥ILæŒ‡ä»¤ç¼–è¯‘å,unityç¨‹åºé›†é”™è¯¯å¯¼è‡´unityæ‰“ä¸å¼€å´©æºƒé—®é¢˜ï¼Œ
+è¯·æ‰“å¼€Unityå®‰è£…ç›®å½•æ‰¾åˆ°UnityEditor.CoreModule.dll.dllå¤‡ä»½æ–‡ä»¶æ”¹æˆUnityEditor.CoreModule.dllåå³å¯!", MessageType.Info);
+        if (GUILayout.Button("æ³¨å…¥ç¼–è¾‘å™¨UnityEditor.CoreModule.dll", GUILayout.Height(30)))
         {
             var modCtx = ModuleDef.CreateModuleContext();
             var path = typeof(EditorWindow).Assembly.Location;
-            var stream = new MemoryStream(File.ReadAllBytes(path));
+            var dllBytes = File.ReadAllBytes(path);
+            if (!File.Exists(path + ".dll"))
+                File.WriteAllBytes(path + ".dll", dllBytes);
+            var stream = new MemoryStream(dllBytes);
             var module = ModuleDefMD.Load(stream, modCtx);
             foreach (var type in module.Types)
             {
@@ -39,7 +44,16 @@ unity±à¼­Æ÷µÄUnityEditor.CoreModule.dll,ĞŞ¸ÄILÖ¸ÁîÈÃ¿ØÖÆÌ¨ÅĞ¶Ï´òÓ¡ÄÚÈİÒ²ÏÔÊ¾¸ßÁÁ
                                 var instruction = method.Body.Instructions[i];
                                 if (instruction.OpCode.Code == Code.Ldarg_1)
                                 {
-                                    method.Body.Instructions[i] = Instruction.CreateLdcI4(0);
+                                    //æºç éƒ¨åˆ†
+                                    //StringBuilder stringBuilder = new StringBuilder();
+                                    //stringBuilder.Append(stacktraceText.Substring(0, callstackTextStart));
+                                    //string[] array = stacktraceText.Substring(callstackTextStart).Split(new string[]
+                                    //{
+                                    //    "\n"
+                                    //}, 0);
+
+                                    //ä¿®æ”¹æºç çš„callstackTextStartä¸º0
+                                    method.Body.Instructions[i] = OpCodes.Ldc_I4.ToInstruction(0);
                                 }
                             }
                         }
@@ -47,7 +61,23 @@ unity±à¼­Æ÷µÄUnityEditor.CoreModule.dll,ĞŞ¸ÄILÖ¸ÁîÈÃ¿ØÖÆÌ¨ÅĞ¶Ï´òÓ¡ÄÚÈİÒ²ÏÔÊ¾¸ßÁÁ
                 }
             }
             module.Write(path);
-            Debug.Log("×¢ÈëÍê³É!");
+            module.Dispose();
+            Debug.Log("æ³¨å…¥å®Œæˆ!");
+        }
+        if (GUILayout.Button("æ¢å¤æ³¨å…¥", GUILayout.Height(30)))
+        {
+            var path = typeof(EditorWindow).Assembly.Location;
+            if (File.Exists(path + ".dll"))
+            {
+                var dllBytes = File.ReadAllBytes(path + ".dll");
+                File.WriteAllBytes(path, dllBytes);
+            }
+            Debug.Log("æ¢å¤å®Œæˆ!");
+        }
+        if (GUILayout.Button("æ‰“å¼€Unityå®‰è£…è·¯å¾„", GUILayout.Height(30)))
+        {
+            var path = typeof(EditorWindow).Assembly.Location;
+            Process.Start("explorer.exe", Path.GetDirectoryName(path));
         }
     }
 }

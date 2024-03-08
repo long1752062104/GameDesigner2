@@ -1,32 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Net.Event;
 
 namespace Net.Config
 {
     public class Config
     {
         private static bool init;
-        private static bool useMemoryStream = true;
-        /// <summary>
-        /// 使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
-        /// 使用内存流缓存速度会比较快, 但运行内存占用比较大
-        /// </summary>
-        [Obsolete("文件流已废弃, 统一内存流")]
-        public static bool UseMemoryStream
-        {
-            get
-            {
-                Init();
-                return useMemoryStream;
-            }
-            set
-            {
-                useMemoryStream = value;
-                Save();
-            }
-        }
         private static int baseCapacity = 1024;
         /// <summary>
         /// 内存接收缓冲区基础容量 默认1024
@@ -153,7 +133,6 @@ namespace Net.Config
                 global::System.Threading.Thread.Yield(); //这里只能这样了，使用UniTask.Yield会导致ThreadManager的BeforeSceneLoad先执行，导致Unitask初始化晚于这个后出问题
             if (!string.IsNullOrEmpty(request.error))
             {
-                NDebug.LogError($"初始化配置错误:{request.error} {configPath}");
                 Save();
                 return;
             }
@@ -173,10 +152,6 @@ namespace Net.Config
                 var value = texts[1].Split('#')[0].Trim();
                 switch (key)
                 {
-                    case "usememorystream":
-                        if (bool.TryParse(value, out var value1))
-                            useMemoryStream = value1;
-                        break;
                     case "basecapacity":
                         baseCapacity = int.Parse(value);
                         break;
@@ -190,18 +165,18 @@ namespace Net.Config
 
         private static void Save()
         {
+#if UNITY_EDITOR
             var list = new List<string>();
-            var text = $"useMemoryStream={useMemoryStream}#使用运行内存作为缓冲区? 否则使用文件流作为缓冲区";
+            var text = $"baseCapacity={baseCapacity}#当客户端连接时分配的初始缓冲区大小";
             list.Add(text);
-            text = $"baseCapacity={baseCapacity}#当客户端连接时分配的初始缓冲区大小";
-            list.Add(text);
-            text = $"mainThreadTick={mainThreadTick}#在主线程处理所有网络功能? 否则会在多线程进行";
+            text = $"mainThreadTick={mainThreadTick}#在Unity主线程处理网络事件? 否则会在多线程处理网络事件";
             list.Add(text);
             var configPath = ConfigPath + "/network.config";
             var path = Path.GetDirectoryName(configPath);
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             File.WriteAllLines(configPath, list);
+#endif
         }
     }
 }

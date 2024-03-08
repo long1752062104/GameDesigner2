@@ -27,6 +27,8 @@ namespace GameDesigner
         private static List<Type> findBehaviourTypes;
         private static List<Type> findBehaviourTypes1;
         private static List<Type> findBehaviourTypes2;
+        private static bool animPlay;
+        private static StateAction animAction;
 
         void OnEnable()
         {
@@ -330,7 +332,7 @@ namespace GameDesigner
                         if (actionProperty == null)
                             continue;
                         var act = state.actions[x];
-                        Rect foldoutRect = EditorGUILayout.GetControlRect();
+                        var foldoutRect = EditorGUILayout.GetControlRect();
                         act.foldout = EditorGUI.Foldout(foldoutRect, act.foldout, new GUIContent(BlueprintGUILayout.Instance.Language["Action ->"] + x, "actions[" + x + "]"), true);
                         if (foldoutRect.Contains(Event.current.mousePosition) & Event.current.button == 1)
                         {
@@ -439,8 +441,20 @@ namespace GameDesigner
                                     EditorGUI.indentLevel = 3;
                                 }
                             }
-                            Rect r = EditorGUILayout.GetControlRect();
-                            Rect rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
+                            switch (sm.stateMachine.animMode)
+                            {
+                                case AnimationMode.Animation:
+                                    break;
+                                case AnimationMode.Animator:
+                                    AnimatorPlay(sm, act);
+                                    break;
+                                case AnimationMode.Time:
+                                    break;
+                                case AnimationMode.None:
+                                    break;
+                            }
+                            var r = EditorGUILayout.GetControlRect();
+                            var rr = new Rect(new Vector2(r.x + (r.size.x / 4f), r.y), new Vector2(r.size.x / 2f, 20));
                             if (GUI.Button(rr, BlueprintGUILayout.Instance.Language["Add action scripts"]))
                                 addBehaviourState = act;
                             if (addBehaviourState == act)
@@ -501,6 +515,41 @@ namespace GameDesigner
             EditorGUILayout.Space();
             EditorGUILayout.EndVertical();
             StateMachineObject.ApplyModifiedProperties();
+        }
+
+        private static void AnimatorPlay(StateManager sm, StateAction act)
+        {
+            var animator = sm.stateMachine.animator;
+            EditorGUILayout.BeginHorizontal();
+            var rect = EditorGUILayout.GetControlRect();
+            if (GUI.Button(new Rect(rect.x + 45, rect.y, 30, rect.height), EditorGUIUtility.IconContent(animPlay ? "PauseButton" : "PlayButton")))
+            {
+                animPlay = !animPlay;
+                animAction = act;
+            }
+            EditorGUI.BeginChangeCheck();
+            act.animTime = GUI.HorizontalSlider(new Rect(rect.x + 75, rect.y, rect.width - 75, rect.height), act.animTime, 0f, act.animTimeMax);
+            var normalizedTime = act.animTime / act.animTimeMax;
+            EditorGUI.ProgressBar(new Rect(rect.x + 75, rect.y, rect.width - 75, rect.height), normalizedTime, $"动画进度:{act.animTime.ToString("f0")}");
+            if (EditorGUI.EndChangeCheck())
+            {
+                animPlay = false;
+                animAction = act;
+                if (!EditorApplication.isPlaying)
+                {
+                    animator.Play(act.clipName, 0, normalizedTime);
+                    animator.Update(0f);
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            if (animPlay && animAction == act && !EditorApplication.isPlaying)
+            {
+                act.animTime += 20f * Time.deltaTime;
+                if (act.animTime >= act.animTimeMax)
+                    act.animTime = 0f;
+                animator.Play(act.clipName, 0, normalizedTime);
+                animator.Update(0f);
+            }
         }
 
         /// <summary>

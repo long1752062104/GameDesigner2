@@ -23,6 +23,14 @@ namespace GameDesigner
         /// </summary>
         MeshAnimator,
 #endif
+        /// <summary>
+        /// 时间驱动模式
+        /// </summary>
+        Time,
+        /// <summary>
+        /// 空状态模式
+        /// </summary>
+        None,
     }
 
     /// <summary>
