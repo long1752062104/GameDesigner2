@@ -400,7 +400,8 @@
         {
             lock (this)
             {
-                foreach (var player in Players)
+                var playersToRemove = new FastList<Player>(Players);
+                foreach (var player in playersToRemove)
                     Remove(player);
                 Players.Clear();
             }
