@@ -120,8 +120,7 @@ namespace Net.Helper
             }
             if (model.token != 0 && body.RequestDict.Count > 0)
             {
-                RPCModelTask modelTask;
-                if (body.RequestDict.TryRemove(model.token, out modelTask))
+                if (body.RequestDict.TryRemove(model.token, out var modelTask))
                 {
                     modelTask.model = model;
                     modelTask.IsCompleted = true;

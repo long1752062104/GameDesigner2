@@ -35,7 +35,7 @@ namespace DistributedExample
             Console.WriteLine("选择服务器模式:");
             Console.WriteLine("1.单进程");
             Console.WriteLine("2.多进程");
-            Console.WriteLine("3.模拟服务器崩溃重启，你先使用2启动多个进程，然后再关闭几个服务器，再使用以下命令确定单个服务器");
+            Console.WriteLine("3.模拟服务器崩溃重启，你先使用2启动多个进程，然后再关闭几个服务器，再使用以下命令启动单个服务器");
             Console.WriteLine("  输入:ConfigService重启配置服务器");
             Console.WriteLine("  输入:DBService DBGame01 100重启1号DB服务器");
             Console.WriteLine("  输入:DBService DBGame02 200重启2号DB服务器");

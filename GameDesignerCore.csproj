@@ -79,6 +79,15 @@
     <None Remove="GameDesigner\GameDesigner.asmdef" />
     <None Remove="GameDesigner\GameDesigner.asmdef.meta" />
     <None Remove="GameDesigner\Helper.meta" />
+    <None Remove="GameDesigner\Helper\CertificateHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\CRCHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\DateTimeHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\EncryptHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\InvokeHelperBuild.cs.meta" />
+    <None Remove="GameDesigner\Helper\JobQueueHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\PathHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\RpcHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\SyncVarHelper.cs.meta" />
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\ImportCmd.exe" />
     <None Remove="GameDesigner\ImportCmd.exe.meta" />
@@ -2127,8 +2136,8 @@
     <None Remove="GameDesigner\Network\core\Share\RevdRTBuffer.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\RPCData.cs" />
     <None Remove="GameDesigner\Network\core\Share\RPCData.cs.meta" />
-    <None Remove="GameDesigner\Network\core\Share\RPCFun.cs" />
-    <None Remove="GameDesigner\Network\core\Share\RPCFun.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\RPC.cs" />
+    <None Remove="GameDesigner\Network\core\Share\RPC.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\RPCModel.cs" />
     <None Remove="GameDesigner\Network\core\Share\RPCModel.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\RPCModelTask.cs" />

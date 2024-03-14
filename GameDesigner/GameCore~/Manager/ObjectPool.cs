@@ -8,7 +8,7 @@ namespace GameCore
 {
     public class ObjectPool : MonoBehaviour
     {
-        private readonly Dictionary<Type, Queue<Object>> pool = new Dictionary<Type, Queue<Object>>();
+        protected readonly Dictionary<Type, Queue<Object>> pool = new Dictionary<Type, Queue<Object>>();
 
         public T GetObject<T>(string resPath) where T : Object
         {

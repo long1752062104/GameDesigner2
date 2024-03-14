@@ -1685,15 +1685,15 @@ namespace Net.Server
             => Call(client, cmd, protocol, true, false, token, null, pars);
 
         public virtual void Call(Player client, string func, params object[] pars)
-            => Call(client, NetCmd.CallRpc, func.CRC32(), true, false, 0, null, pars);
+            => Call(client, NetCmd.CallRpc, func.CRCU32(), true, false, 0, null, pars);
         public virtual void Call(Player client, byte cmd, string func, params object[] pars)
-            => Call(client, cmd, func.CRC32(), true, false, 0, null, pars);
+            => Call(client, cmd, func.CRCU32(), true, false, 0, null, pars);
         public virtual void Response(Player client, string func, bool serialize, uint token, params object[] pars)
-            => Call(client, NetCmd.CallRpc, func.CRC32(), true, serialize, token, null, pars);
+            => Call(client, NetCmd.CallRpc, func.CRCU32(), true, serialize, token, null, pars);
         public virtual void Response(Player client, string func, uint token, params object[] pars)
-            => Call(client, NetCmd.CallRpc, func.CRC32(), true, false, token, null, pars);
+            => Call(client, NetCmd.CallRpc, func.CRCU32(), true, false, token, null, pars);
         public virtual void Response(Player client, byte cmd, string func, uint token, params object[] pars)
-            => Call(client, cmd, func.CRC32(), true, false, token, null, pars);
+            => Call(client, cmd, func.CRCU32(), true, false, token, null, pars);
 
         /// <summary>
         /// 向客户端发送消息
@@ -1760,14 +1760,19 @@ namespace Net.Server
             client.RpcModels.Enqueue(model);
         }
 
+        /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte[] buffer)
             => Multicast(clients, NetCmd.OtherCmd, buffer);
+        /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
             => Multicast(clients, new RPCModel(cmd, buffer, false, false));
+        /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
             => Multicast(clients, new RPCModel(cmd, buffer, kernel, serialize));
+        /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, uint protocol, params object[] pars)
             => Multicast(clients, NetCmd.CallRpc, protocol, pars);
+        /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, uint protocol, params object[] pars)
             => Multicast(clients, new RPCModel(cmd, protocol, pars));
         public virtual void Multicast(IList<Player> clients, string func, params object[] pars)
@@ -1843,7 +1848,7 @@ namespace Net.Server
         /// <summary>
         /// 移除对象的Rpc注册
         /// </summary>
-        /// <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
+        /// <param name="target">将此对象的所有带有RPC特性的函数移除</param>
         public void RemoveRpc(object target)
         {
             if (OnRemoveRpc == null)

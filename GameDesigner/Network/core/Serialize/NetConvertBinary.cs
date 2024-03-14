@@ -960,7 +960,7 @@
             FuncData obj = default;
             try
             {
-                obj.protocol = segment.ReadUInt16();
+                obj.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

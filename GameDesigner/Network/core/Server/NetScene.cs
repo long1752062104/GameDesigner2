@@ -2,6 +2,7 @@
 {
     using global::System;
     using global::System.Collections.Generic;
+    using Net.Common;
     using Net.Helper;
     using Net.Share;
     using Net.System;
@@ -67,12 +68,13 @@
         /// 操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
         /// </summary>
         public int Split { get; set; } = 500;
-        private int hash;
+        private readonly int hash;
         internal int preFps, currFps;
         /// <summary>
         /// 场景帧数
         /// </summary>
         public int FPS { get => preFps; }
+        private readonly FastLocking Locking = new FastLocking();
 
         /// <summary>
         /// 构造网络场景
@@ -108,9 +110,14 @@
         /// <param name="client"></param>
         public virtual void AddPlayer(Player client)
         {
-            lock (this)
+            Locking.Enter();
+            try
             {
                 AddPlayerInternal(client);
+            }
+            finally
+            {
+                Locking.Exit();
             }
         }
 
@@ -119,8 +126,7 @@
             if (client.SceneHash == hash)
                 return;
             //如果已经在场景里面, 必须要先退出, 否则会发生一个玩家在多个场景的重大问题, 当玩家在多个场景后, 客户端被移除就找不到这个玩家进行移除,就会导致内存泄露问题
-            var preScene = client.Scene as NetScene<Player>;
-            if (preScene != null)
+            if (client.Scene is NetScene<Player> preScene)
                 preScene.Remove(client);
             client.SceneName = Name;
             client.Scene = this;
@@ -151,7 +157,6 @@
         /// <summary>
         /// 当场景被移除
         /// </summary>
-        /// <param name="client"></param>
         public virtual void OnRemove() { }
 
         /// <summary>
@@ -168,18 +173,28 @@
         /// <param name="collection"></param>
         public virtual void AddPlayers(IEnumerable<Player> collection)
         {
-            lock (this)
+            Locking.Enter();
+            try
             {
                 foreach (var client in collection)
                     AddPlayerInternal(client);
+            }
+            finally
+            {
+                Locking.Exit();
             }
         }
 
         public void UpdateLock(IServerSendHandle<Player> handle, byte cmd)
         {
-            lock (this) //解决多线程问题
+            Locking.Enter(); //解决多线程问题
+            try
             {
                 Update(handle, cmd);
+            }
+            finally
+            {
+                Locking.Exit();
             }
         }
 
@@ -223,6 +238,7 @@
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="cmd"></param>
+        /// <param name="client"></param>
         /// <param name="operations"></param>
         public void SendOperitions(IServerSendHandle<Player> handle, byte cmd, Player client, FastList<Operation> operations)
         {
@@ -252,6 +268,8 @@
         /// <param name="handle"></param>
         /// <param name="cmd"></param>
         /// <param name="count"></param>
+        /// <param name="players"></param>
+        /// <param name="operations"></param>
         public virtual void OnPacket(IServerSendHandle<Player> handle, byte cmd, int count, FastList<Player> players, FastList<Operation> operations)
         {
             var opts = operations.GetRemoveRange(0, count);
@@ -320,7 +338,7 @@
         /// <param name="func"></param>
         /// <param name="pars"></param>
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
-        public virtual void AddOperation(byte cmd, ushort func, params object[] pars)
+        public virtual void AddOperation(byte cmd, uint func, params object[] pars)
         {
             var segment = BufferPool.Take();
             onSerializeRpc(segment, new RPCModel(0, func, pars));
@@ -334,10 +352,9 @@
         /// <param name="opt"></param>
         public virtual void AddOperation(in Operation opt)
         {
-            lock (this)
-            {
-                operations.Add(opt);
-            }
+            Locking.Enter();
+            operations.Add(opt);
+            Locking.Exit();
         }
 
         /// <summary>
@@ -346,10 +363,9 @@
         /// <param name="opts"></param>
         public virtual void AddOperations(List<Operation> opts)
         {
-            lock (this)
-            {
-                operations.AddRange(opts);
-            }
+            Locking.Enter();
+            operations.AddRange(opts);
+            Locking.Exit();
         }
 
         /// <summary>
@@ -358,10 +374,9 @@
         /// <param name="opts"></param>
         public virtual void AddOperations(Operation[] opts)
         {
-            lock (this)
-            {
-                operations.AddRange(opts);
-            }
+            Locking.Enter();
+            operations.AddRange(opts);
+            Locking.Exit();
         }
 
         /// <summary>
@@ -379,7 +394,8 @@
         /// <param name="client"></param>
         public void Remove(Player client)
         {
-            lock (this)
+            Locking.Enter();
+            try
             {
                 if (client.SceneHash != hash)
                     return;
@@ -391,6 +407,10 @@
                 client.SceneName = string.Empty;
                 client.SceneHash = -1;
             }
+            finally
+            {
+                Locking.Exit();
+            }
         }
 
         /// <summary>
@@ -398,12 +418,16 @@
         /// </summary>
         public void RemoveAll()
         {
-            lock (this)
+            Locking.Enter();
+            try
             {
-                var playersToRemove = new FastList<Player>(Players);
-                foreach (var player in playersToRemove)
-                    Remove(player);
+                while (Players.Count > 0) //解决移除不全的问题
+                    Remove(Players[0]);
                 Players.Clear();
+            }
+            finally
+            {
+                Locking.Exit();
             }
         }
 
@@ -421,10 +445,9 @@
         /// </summary>
         public void RemoveOperations()
         {
-            lock (this)
-            {
-                operations.Clear();
-            }
+            Locking.Enter();
+            operations.Clear();
+            Locking.Exit();
         }
 
         ~NetScene()

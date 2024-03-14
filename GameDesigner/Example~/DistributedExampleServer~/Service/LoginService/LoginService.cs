@@ -2,7 +2,6 @@
 using Distributed;
 using Net.Client;
 using Net.Distributed;
-using Net.Event;
 using Net.Server;
 using Net.Share;
 

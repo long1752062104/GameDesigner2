@@ -1,6 +1,6 @@
 ﻿using System;
-using Net.Client;
 using Net.Share;
+using Net.Client;
 using Cysharp.Threading.Tasks;
 
 public static class ClientBaseExtensions
@@ -109,4 +109,11 @@ public static class ClientBaseExtensions
             return new ValueTuple<T, T1, T2, T3, T4>(default, default, default, default, default);
         return new ValueTuple<T, T1, T2, T3, T4>((T)task.model.pars[0], (T1)task.model.pars[1], (T2)task.model.pars[2], (T3)task.model.pars[3], (T4)task.model.pars[4]);
     }
+
+    #region 远程过程调用扩展
+    public static void Call(this ClientBase self, Enum protocol, params object[] pars) => self.Call((uint)protocol.GetHashCode(), pars);
+    public static void Call(this ClientBase self, byte cmd, Enum protocol, params object[] pars) => self.Call(cmd, (uint)protocol.GetHashCode(), pars);
+    #endregion
+
+    public static void DispatchRpc(this ClientBase self, Enum protocol, params object[] pars) => self.DispatchRpc((uint)protocol.GetHashCode(), pars);
 }

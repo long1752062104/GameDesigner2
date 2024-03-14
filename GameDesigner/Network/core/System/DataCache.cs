@@ -45,28 +45,36 @@ namespace Net.System
         /// </summary>
         /// <param name="queryFunc">第一次执行查询</param>
         /// <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+        /// <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
         /// <returns></returns>
-        public T QueryOrGet(Func<T> queryFunc, Action<T> followQuery = null)
+        public T QueryOrGet(Func<T> queryFunc, Func<T> onNullQuery = null, Action<T> followQuery = null)
         {
+            Locking.Enter();
             if (Data != null)
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+                Locking.Exit();
                 return Data;
             }
             if (IsQuery)
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                Locking.Exit();
                 return default;
             }
             IsQuery = true;
             Data = queryFunc();
-            if (Data == null)
+            if (Data == null && onNullQuery == null) //此处是空对象不创建
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                Locking.Exit();
                 return default;
             }
+            if (Data == null) //这里是空对象时创建
+                Data = onNullQuery();
             followQuery?.Invoke(Data);
             ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+            Locking.Exit();
             return Data;
         }
 
@@ -75,28 +83,36 @@ namespace Net.System
         /// </summary>
         /// <param name="queryFunc">第一次执行查询</param>
         /// <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+        /// <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
         /// <returns></returns>
-        public async UniTask<T> QueryOrGetAsync(Func<UniTask<T>> queryFunc, Action<T> followQuery = null)
+        public async UniTask<T> QueryOrGetAsync(Func<UniTask<T>> queryFunc, Func<T> onNullQuery = null, Action<T> followQuery = null)
         {
+            Locking.Enter();
             if (Data != null)
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+                Locking.Exit();
                 return Data;
             }
             if (IsQuery)
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                Locking.Exit();
                 return default;
             }
             IsQuery = true;
             Data = await queryFunc();
-            if (Data == null)
+            if (Data == null && onNullQuery == null) //此处是空对象不创建
             {
                 ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                Locking.Exit();
                 return default;
             }
+            if (Data == null) //这里是空对象时创建
+                Data = onNullQuery();
             followQuery?.Invoke(Data);
             ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+            Locking.Exit();
             return Data;
         }
     }
@@ -112,9 +128,10 @@ namespace Net.System
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public class DataCacheDictionary<TKey, TValue> : MyDictionary<TKey, TValue>, IDataCacheDictionary, IDisposable where TValue : DataCacheBase
+    public class DataCacheDictionary<TKey, TValue> : MyDictionary<TKey, TValue>, IDataCacheDictionary, IDisposable where TValue : DataCacheBase, new()
     {
         IEnumerable<DataCacheBase> IDataCacheDictionary.CacheValues { get => Values; }
+        private readonly FastLocking Locking = new FastLocking();
 
         public DataCacheDictionary() : this(1) { }
 
@@ -149,6 +166,26 @@ namespace Net.System
         public void Dispose()
         {
             DataCacheManager.Instance.RemoveCache(this);
+        }
+
+        /// <summary>
+        /// 获取或创建缓存，如果获取key不存在，则会创建缓存key，创建缓存值可以在onCreate委托处理
+        /// </summary>
+        /// <param name="key">查询key</param>
+        /// <param name="onCreate">当查询不存在创建缓存委托</param>
+        /// <returns></returns>
+        public TValue GetOrCreate(TKey key, Func<TValue> onCreate = null)
+        {
+            Locking.Enter();
+            if (!TryGetValue(key, out var value))
+            {
+                if (onCreate == null)
+                    Add(key, value = new TValue());
+                else
+                    Add(key, value = onCreate());
+            }
+            Locking.Exit();
+            return value;
         }
     }
 

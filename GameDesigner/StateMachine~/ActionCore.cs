@@ -76,7 +76,7 @@ namespace GameDesigner
         /// 是否已到达事件时间或超过事件时间，到为true，没到为flase
         /// </summary>
 		[HideField]
-        public bool eventEnter;
+        protected bool eventEnter;
 
         public override void OnEnter(StateAction action)
         {
@@ -160,7 +160,7 @@ namespace GameDesigner
         /// <summary>
         /// 粒子物体销毁或关闭时间
         /// </summary>
-		public float spwanTime = 1f;
+		public float hideTime = 1f;
         /// <summary>
         /// 粒子物体对象池
         /// </summary>
@@ -187,7 +187,7 @@ namespace GameDesigner
             if (effect == null)
                 return;
             if (activeMode == ActiveMode.Instantiate)
-                Object.Destroy(InstantiateSpwan(), spwanTime);
+                Object.Destroy(InstantiateSpwan(), hideTime);
             else if (activeMode == ActiveMode.ObjectPool)
             {
                 bool active = false;
@@ -225,7 +225,7 @@ namespace GameDesigner
 
         private async UniTaskVoid HideSpwanTime(GameObject gameObject)
         {
-            await UniTask.Delay((int)(spwanTime * 1000));
+            await UniTask.Delay((int)(hideTime * 1000));
             if (gameObject != null)
                 gameObject.SetActive(false);
         }

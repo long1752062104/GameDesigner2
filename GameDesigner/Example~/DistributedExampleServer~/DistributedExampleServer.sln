@@ -5,7 +5,7 @@ VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedExampleServer", "DistributedExampleServer.csproj", "{3B2E9C03-13A0-4818-B90F-04828B0820C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDesignerCore", "..\..\..\..\..\..\GameDesigner\GameDesignerCore.csproj", "{FCEF5675-DAF9-47F4-8273-0187F3E83A15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDesignerCore", "..\..\..\GameDesignerCore.csproj", "{FCEF5675-DAF9-47F4-8273-0187F3E83A15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

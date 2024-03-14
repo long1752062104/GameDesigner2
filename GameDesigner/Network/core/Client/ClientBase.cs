@@ -1936,8 +1936,8 @@ namespace Net.Client
         #region 远程过程调用
         public void Call(uint protocol, params object[] pars) => Call(NetCmd.CallRpc, protocol, null, pars);
         public void Call(byte cmd, uint protocol, params object[] pars) => Call(cmd, protocol, null, pars);
-        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, (ushort)0, buffer);
-        public void Call(byte cmd, byte[] buffer) => Call(cmd, (ushort)0, buffer);
+        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0U, buffer);
+        public void Call(byte cmd, byte[] buffer) => Call(cmd, 0U, buffer);
         public void Call(string func, params object[] pars) => Call(NetCmd.CallRpc, func.CRCU32(), null, pars);
         public void Call(byte cmd, string func, params object[] pars) => Call(cmd, func.CRCU32(), null, pars);
 

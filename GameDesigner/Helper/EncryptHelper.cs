@@ -147,5 +147,20 @@ namespace Net.Helper
                 return GetMD5(stream);
             }
         }
+
+        public static string ToSHA256(string input)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var inputBytes = Encoding.UTF8.GetBytes(input);
+                var hashBytes = sha256.ComputeHash(inputBytes);
+                var builder = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    builder.Append(hashBytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
     }
 }

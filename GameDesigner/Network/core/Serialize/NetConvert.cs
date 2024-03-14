@@ -54,7 +54,7 @@ namespace Net.Serialize
             FuncData fdata = default;
             try
             {
-                fdata.protocol = segment.ReadUInt16();
+                fdata.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {

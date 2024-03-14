@@ -27,12 +27,12 @@
         public Type il2cpp;
 
         /// <summary>
-        /// 构造RPCFun函数特性
+        /// 构造RPC函数特性
         /// </summary>
         public RPC() { }
 
         /// <summary>
-        /// 构造RPCFun函数特性
+        /// 构造RPC函数特性
         /// </summary>
         /// <param name="cmd">自定义的网络命令</param>
         public RPC(byte cmd)

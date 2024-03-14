@@ -4,7 +4,6 @@ using Net.Distributed;
 using Net.Share;
 using Cysharp.Threading.Tasks;
 using Net.System;
-using Net.Common;
 using Distributed;
 using Net.Event;
 
@@ -13,7 +12,6 @@ namespace DistributedExample
     public class DBService : TcpServer
     {
         private DataCacheDictionary<string, DataCache<UserData>> CacheDict = new DataCacheDictionary<string, DataCache<UserData>>();
-        private readonly FastLocking locking = new FastLocking();
         public DistributedDB distributedDB;
 
         public async void Init(string name, string machineId)
@@ -39,7 +37,7 @@ namespace DistributedExample
             ThreadManager.Invoke(distributedDB.BatchWorker, true);
             AreaName = name;
             //Console.Title = $"{name} {itemConfig.Port}";
-            OnNetworkDataTraffic += (df) => 
+            OnNetworkDataTraffic += (df) =>
             {
                 Console.Title = $"{name} {itemConfig.Port} {df}";
             };
@@ -66,49 +64,29 @@ namespace DistributedExample
         private async UniTaskVoid Login(NetPlayer client, string account, string password)
         {
             var token = client.Token;
-            locking.Enter();
-            bool firstAdd = false;
-            if (!CacheDict.TryGetValue(account, out var user))
-            {
-                CacheDict.Add(account, user = new DataCache<UserData>());
-                firstAdd = true; //小锁, 速度快
-            }
-            locking.Exit();
-            user.Locking.Enter(); //查询锁, 查询时间比较久
-            if (firstAdd)
-                await user.QueryOrGetAsync(() => distributedDB.QueryAsync<UserData>($"account = '{account}'"));
-            user.Locking.Exit();
-            if (user.Data == null)
+            var userCache = CacheDict.GetOrCreate(account);
+            var data = await userCache.QueryOrGetAsync(() => distributedDB.QueryAsync<UserData>($"account = '{account}'"));
+            if (data == null)
             {
                 NDebug.LogError($"哈希错乱! {AreaName} {account}");
                 Response(client, (int)ProtoType.Login, token, -1, null);
                 return;
             }
-            if (user.Data.Password != password)
+            if (data.Password != password)
             {
                 NDebug.LogError($"密码错误! {AreaName} {account}");
                 Response(client, (int)ProtoType.Login, token, -2, null);
                 return;
             }
-            Response(client, (int)ProtoType.Login, token, 0, user.Data);
+            Response(client, (int)ProtoType.Login, token, 0, data);
         }
 
         private async UniTaskVoid Register(NetPlayer client, string account, string password)
         {
             var token = client.Token;
-            locking.Enter();
+            var userCache = CacheDict.GetOrCreate(account);
             int code = -1;
-            bool firstAdd = false;
-            if (!CacheDict.TryGetValue(account, out var user))
-            {
-                CacheDict.Add(account, user = new DataCache<UserData>());
-                firstAdd = true; //小锁, 速度快
-            }
-            locking.Exit();
-            user.Locking.Enter(); //查询锁, 查询时间比较久
-            if (firstAdd)
-                await user.QueryOrGetAsync(() => distributedDB.QueryAsync<UserData>($"account = '{account}'"));
-            if (user.Data == null)
+            await userCache.QueryOrGetAsync(() => distributedDB.QueryAsync<UserData>($"account = '{account}'"), () =>
             {
                 var data = new UserData
                 {
@@ -119,10 +97,9 @@ namespace DistributedExample
                     Context = distributedDB
                 };
                 data.NewTableRow();
-                user.Data = data;
                 code = 0;
-            }
-            user.Locking.Exit();
+                return data;
+            });
             Response(client, (int)ProtoType.Register, token, code);
         }
     }
