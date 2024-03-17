@@ -8,6 +8,9 @@ namespace Net.Common
     public class FastLocking
     {
         private int isLocked;
+        private Thread currentLock;
+        private int lockCount;
+        public Thread CurrentThread => currentLock;
 
         /// <summary>
         /// 进入锁
@@ -16,7 +19,16 @@ namespace Net.Common
         {
             var spin = new SpinWait();
             while (Interlocked.Exchange(ref isLocked, 1) != 0)
+            {
+                if (Thread.CurrentThread == currentLock) //解决在一个线程内多次套娃锁导致的问题
+                {
+                    lockCount++;
+                    return;
+                }
                 spin.SpinOnce();
+            }
+            currentLock = Thread.CurrentThread;
+            lockCount = 1;
         }
 
         /// <summary>
@@ -25,7 +37,9 @@ namespace Net.Common
         /// <returns></returns>
         public bool TryEnter()
         {
-            return Interlocked.Exchange(ref isLocked, 1) != 0;
+            if (Thread.CurrentThread == currentLock)
+                return true;
+            return isLocked == 0;
         }
 
         /// <summary>
@@ -33,6 +47,9 @@ namespace Net.Common
         /// </summary>
         public void Exit()
         {
+            if (--lockCount > 0) //当线程有套娃锁的时候才有效果
+                return;
+            currentLock = null; //这里必须要设置，如果不设置则会导致多线程同时访问下锁无效问题
             Interlocked.Exchange(ref isLocked, 0);
         }
 

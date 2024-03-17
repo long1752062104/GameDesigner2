@@ -19,7 +19,7 @@
     {
         public override int HeartInterval { get; set; } = 1000 * 60 * 2;//2分钟跳一次
         public override byte HeartLimit { get; set; } = 2;//确认两次
-        
+
         protected override void CreateOtherThread()
         {
             var thread = new Thread(ProcessAcceptConnect) { IsBackground = true, Name = "ProcessAcceptConnect" };
@@ -29,20 +29,22 @@
 
         protected override void CreateServerSocket(ushort port)
         {
-            try {
-
+            try
+            {
                 var address = new IPEndPoint(IPAddress.Any, port);
-                Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                Server.SendBufferSize = SendBufferSize;
-                Server.ReceiveBufferSize = ReceiveBufferSize;
-                Server.NoDelay = true;
+                Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                {
+                    SendBufferSize = SendBufferSize,
+                    ReceiveBufferSize = ReceiveBufferSize,
+                    NoDelay = true
+                };
                 Server.Bind(address);
                 Server.Listen(LineUp);
-            } catch (Exception) 
-            { 
-            
             }
-            
+            catch (Exception ex)
+            {
+                Debug.LogError("监听异常:" + ex);
+            }
         }
 
         protected override void StartSocketHandler()
@@ -111,7 +113,7 @@
                         else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
                         client1.OnReconnecting();
                         OnReconnecting(client1);
-                        J: acceptList.RemoveAt(i);
+                    J: acceptList.RemoveAt(i);
                     }
                 }
             }

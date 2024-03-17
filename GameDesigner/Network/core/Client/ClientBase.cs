@@ -1803,11 +1803,9 @@ namespace Net.Client
         {
             try
             {
-                if (++heart <= HeartLimit)
-                    return true;
                 if (!Connected)
                     InternalReconnection();//尝试连接执行
-                else if (heart < HeartLimit + 5)
+                else if (heart < HeartLimit)
                     Call(NetCmd.SendHeartbeat, new byte[0]);
                 else//连接中断事件执行
                     NetworkException(new SocketException((int)SocketError.Disconnecting));
