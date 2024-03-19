@@ -115,8 +115,10 @@ namespace Distributed
         public void InitTablesId(int connLen = 5, bool useMachineId = false, int machineId = 0, int machineIdBits = 10)
         {
             InitConnection(connLen);
-            var uniqueId = ExecuteScalar<long>(@"SELECT MAX(id) FROM `user`;");
-            uniqueIdMap[DistributedUniqueIdType.User] = new UniqueIdGenerator(useMachineId, machineId, machineIdBits, uniqueId);
+            var userUniqueId = ExecuteScalar<long>(@"SELECT MAX(id) FROM `user`;");
+            if (userUniqueId == default) userUniqueId = (long)1; //解决第一次创建映射对象并且不赋值id导致的小问题
+            uniqueIdMap[DistributedUniqueIdType.User] = new UniqueIdGenerator(useMachineId, machineId, machineIdBits, userUniqueId);
+
         }
 
         /// <summary>
@@ -443,6 +445,9 @@ namespace Distributed
             hash.Add(entity);
         }
 
+        [Obsolete("此方法已经丢弃，请使用BatchWorker方法代替，并且是每帧执行，不是每秒执行了", true)]
+        public bool Executed() { return false; }
+
         public bool BatchWorker() //每帧调用一次, 需要自己调用此方法
         {
             BatchQueryWorkers();
@@ -592,6 +597,8 @@ namespace Distributed
                     count = count > BatchSize ? BatchSize : count;
                     queryCell.Clear();
                     queryQueue.Clear();
+                    var tableName = item.Key.Name;
+                    tableName = tableName.Remove(tableName.Length - 4, 4);
                     for (int i = 0; i < count; i++)
                     {
                         if (item.Value.TryDequeue(out var queryTask))
@@ -600,8 +607,10 @@ namespace Distributed
                             if (commandTexts.Length == 2)
                             {
                                 var cellName = commandTexts[0].Trim();
+                                if (!cellName.StartsWith('`'))
+                                    cellName = $"`{cellName}`";
                                 if (!queryCell.TryGetValue(cellName, out var queryCommandText))
-                                    queryCell.Add(cellName, queryCommandText = new StringBuilder($"SELECT * FROM `user` WHERE `{cellName}` IN("));
+                                    queryCell.Add(cellName, queryCommandText = new StringBuilder($"SELECT * FROM `{tableName}` WHERE {cellName} IN("));
                                 queryCommandText.Append($"{commandTexts[1]},");
                             }
                             else throw new NotImplementedException("还未实现多查询, 请联系作者增加功能!");
@@ -618,11 +627,14 @@ namespace Distributed
                         while (queryQueue.Count > 0)
                         {
                             var queryTask = queryQueue.Dequeue();
-                            var rows = dataTable.Select(queryTask.CommandText);
-                            if (rows.Length > 0)
+                            if (dataTable != null) 
                             {
-                                queryTask.Data = (IDataRow)Activator.CreateInstance(item.Key);
-                                queryTask.Data.Init(rows[0]);
+                                var rows = dataTable.Select(queryTask.CommandText);
+                                if (rows.Length > 0)
+                                {
+                                    queryTask.Data = (IDataRow)Activator.CreateInstance(item.Key);
+                                    queryTask.Data.Init(rows[0]);
+                                }
                             }
                             queryTask.IsDone = true;
                         }

@@ -44,7 +44,12 @@ namespace Distributed
         private DistributedDB context;
         internal DistributedDB Context
         {
-            get => context ??= DistributedDB.I;
+            get
+            {
+                if (context == null) //兼容.NET Framework写法
+                    context = DistributedDB.I; 
+                return context;
+            }
             set => context = value;
         }
     #endif
@@ -286,7 +291,7 @@ namespace Distributed
         public void NewTableRow()
         {
             if (id == default)
-                id = Context.GetUniqueId(DistributedUniqueIdType.User);
+                id = (Int64)Context.GetUniqueId(DistributedUniqueIdType.User);
             RowState = DataRowState.Added;
             Context.Update(this);
         }

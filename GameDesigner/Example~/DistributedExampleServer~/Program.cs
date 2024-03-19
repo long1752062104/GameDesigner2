@@ -43,7 +43,7 @@ namespace DistributedExample
             Console.WriteLine("  输入:LoginService LoginService02重启2号登录服务器");
             Console.WriteLine("  输入:GatewayService GatewayService01重启1号网关服务器");
             Console.WriteLine("  输入:GatewayService GatewayService02重启2号网关服务器");
-            while (true) 
+            while (true)
             {
                 var command = Console.ReadLine();
                 if (command.StartsWith("1") | command.StartsWith("2"))
@@ -62,6 +62,8 @@ namespace DistributedExample
                     StartNewProcess("GatewayService GatewayService02", command == "2");
                     //启动客户端
                     StartNewProcess("Client", command == "2");
+                    if (command == "1")
+                        break;
                 }
                 else if (command.StartsWith("ConfigService") | command.StartsWith("DBService") | command.StartsWith("LoginService") | command.StartsWith("GatewayService"))
                 {

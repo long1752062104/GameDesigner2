@@ -490,9 +490,12 @@ namespace Net.Event
         {
             for (int i = 0; i < events.Count; i++)
             {
-                if (events[i].eventId == eventId)
+                var @event = events[i];
+                if (@event == null)
+                    continue;
+                if (@event.eventId == eventId)
                 {
-                    return events[i];
+                    return @event;
                 }
             }
             return null;
@@ -506,9 +509,12 @@ namespace Net.Event
         {
             for (int i = 0; i < events.Count; i++)
             {
-                if (events[i].eventId == eventId)
+                var @event = events[i];
+                if (@event == null)
+                    continue;
+                if (@event.eventId == eventId)
                 {
-                    events[i].isRemove = true;
+                    @event.isRemove = true;
                     return;
                 }
             }
@@ -538,10 +544,16 @@ namespace Net.Event
         {
             for (int i = 0; i < events.Count; i++)
             {
-                events[i].action.IsCompleted = true;
+                var @event = events[i];
+                if (@event == null)
+                    continue;
+                @event.action.IsCompleted = true;
             }
         }
 
+        /// <summary>
+        /// 清除事件列表
+        /// </summary>
         public void Clear()
         {
             events.Clear();
