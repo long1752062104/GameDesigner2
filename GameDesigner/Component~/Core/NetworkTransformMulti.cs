@@ -43,18 +43,20 @@ namespace Net.UnityComponent
             {
                 SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
-                {
                     childs[i].SyncTransform();
-                }
             }
-            else if (Time.time > sendTime)
+            else if (currControlTime > 0f & (currMode == SyncMode.Control | currMode == SyncMode.SynchronizedAll))
             {
-                Check();
+                currControlTime -= NetworkTime.I.CanSentTime;
+                SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
-                {
-                    childs[i].Check(netObj.Identity, netObj.registerObjectIndex, NetComponentID);
-                }
-                sendTime = Time.time + (1f / rate);
+                    childs[i].SyncTransform();
+            }
+            else
+            {
+                NetworkSyncCheck();
+                for (int i = 0; i < childs.Length; i++)
+                    childs[i].NetworkSyncCheck(netObj.Identity, netObj.registerObjectIndex, NetComponentID);
             }
         }
 
@@ -90,7 +92,7 @@ namespace Net.UnityComponent
             }
             else
             {
-                sendTime = Time.time + interval;
+                currControlTime = controlTime;
                 var child = childs[opt.index2 - 1];
                 child.netPosition = opt.position;
                 child.netRotation = opt.rotation;
@@ -126,7 +128,7 @@ namespace Net.UnityComponent
             netLocalScale = localScale = transform.localScale;
         }
 
-        internal void Check(int identity, int index, int netIndex)
+        internal void NetworkSyncCheck(int identity, int index, int netIndex)
         {
             if (transform.localPosition != position | transform.localRotation != rotation | transform.localScale != localScale)
             {

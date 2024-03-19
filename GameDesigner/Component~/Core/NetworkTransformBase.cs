@@ -14,7 +14,7 @@ namespace Net.UnityComponent
         Local,
         /// <summary>
         /// 完全控制, 所有客户端都可以移动这个物体, 并且其他客户端都会被同步
-        /// 同步条件是哪个先移动这个物体会有<see cref="NetworkTransformBase.interval"/>秒完全控制,
+        /// 同步条件是哪个先移动这个物体会有<see cref="NetworkTransformBase.controlTime"/>秒完全控制,
         /// 其他客户端无法控制,如果先移动的客户端一直移动这个物体,则其他客户端无法移动,只有先移动的客户端停止操作,下个客户端才能同步这个物体
         /// </summary>
         Control,
@@ -45,21 +45,20 @@ namespace Net.UnityComponent
         protected Net.Vector3 position;
         protected Net.Quaternion rotation;
         protected Net.Vector3 localScale;
+        protected Net.Vector3 netPosition;
+        protected Net.Quaternion netRotation;
+        protected Net.Vector3 netLocalScale;
         public SyncMode syncMode = SyncMode.Local;
         public bool syncPosition = true;
         public bool syncRotation = true;
         public bool syncScale = false;
         [HideInInspector] public SyncMode currMode = SyncMode.None;
-        internal float sendTime;
-        public float interval = 0.5f;
-        protected Net.Vector3 netPosition;
-        protected Net.Quaternion netRotation;
-        protected Net.Vector3 netLocalScale;
-        public float rate = 30f;//网络帧率, 一秒30次
+        public float controlTime = 0.5f;
         public float lerpSpeed = 0.3f;
         public bool fixedSync = true;
         public float fixedSendTime = 1f;//固定发送时间
         internal float fixedTime;
+        [HideInInspector] public float currControlTime;
 
         public override void Start()
         {
@@ -78,14 +77,18 @@ namespace Net.UnityComponent
             {
                 SyncTransform();
             }
-            else if (Time.time > sendTime)
+            else if (currControlTime > 0f & (currMode == SyncMode.Control | currMode == SyncMode.SynchronizedAll))
             {
-                Check();
-                sendTime = Time.time + (1f / rate);
+                currControlTime -= NetworkTime.I.CanSentTime;
+                SyncTransform();
+            }
+            else
+            {
+                NetworkSyncCheck();
             }
         }
 
-        public virtual void Check()
+        public virtual void NetworkSyncCheck()
         {
             if (transform.position != position | transform.rotation != rotation | transform.localScale != localScale | (Time.time > fixedTime & fixedSync))
             {
@@ -146,13 +149,7 @@ namespace Net.UnityComponent
         public override void OnNetworkObjectCreate(in Operation opt)
         {
             if (opt.cmd == Command.Transform)
-            {
-                var mode1 = (SyncMode)opt.cmd1;
-                if (mode1 == SyncMode.Control | mode1 == SyncMode.SynchronizedAll)
-                    currMode = SyncMode.SynchronizedAll;
-                else
-                    currMode = SyncMode.Synchronized;
-            }
+                SetNetworkSyncMode(opt);
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;
@@ -181,7 +178,7 @@ namespace Net.UnityComponent
 
         protected void SetNetworkSyncState(in Operation opt)
         {
-            sendTime = Time.time + interval;
+            currControlTime = controlTime;
             netPosition = opt.position;
             netRotation = opt.rotation;
             netLocalScale = opt.direction;

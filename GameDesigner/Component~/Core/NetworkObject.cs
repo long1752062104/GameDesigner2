@@ -74,7 +74,7 @@ namespace Net.UnityComponent
             var sm = NetworkSceneManager.I;
             if (sm == null)
             {
-                Debug.Log("没有找到NetworkSceneManager组件！NetworkIdentity组件无效！");
+                Debug.LogError("没有找到NetworkSceneManager组件！NetworkIdentity组件无效！");
                 Destroy(gameObject);
                 return;
             }
@@ -118,9 +118,9 @@ namespace Net.UnityComponent
         {
             Init();
             var nbs = GetComponentsInChildren<NetworkBehaviour>(true);
-            foreach (var np in nbs)
+            foreach (var nb in nbs)
             {
-                np.Init(opt);
+                nb.Init(opt);
             }
         }
         /// <summary>
