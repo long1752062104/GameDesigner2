@@ -2,71 +2,74 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EventManager : MonoBehaviour
+namespace GameCore
 {
-    private readonly Dictionary<string, List<Action<object[]>>> events = new Dictionary<string, List<Action<object[]>>>();
-
-    /// <summary>
-    /// Ìí¼ÓÊÂ¼ş, ÒÔ·½·¨ÃûÎªÊÂ¼şÃû³Æ
-    /// </summary>
-    /// <param name="eventDelegate"></param>
-    public void AddEvent(Action<object[]> eventDelegate)
+    public class EventManager : MonoBehaviour
     {
-        var eventName = eventDelegate.Method.Name;
-        AddEvent(eventName, eventDelegate);
-    }
+        private readonly Dictionary<string, List<Action<object[]>>> events = new Dictionary<string, List<Action<object[]>>>();
 
-    /// <summary>
-    /// Ìí¼ÓÊÂ¼ş
-    /// </summary>
-    /// <param name="eventName"></param>
-    /// <param name="eventDelegate"></param>
-    public void AddEvent(string eventName, Action<object[]> eventDelegate)
-    {
-        if (!events.TryGetValue(eventName, out var delegates))
-            events.Add(eventName, delegates = new List<Action<object[]>>());
-        delegates.Add(eventDelegate);
-    }
-
-    /// <summary>
-    /// ÅÉ·¢ÊÂ¼ş
-    /// </summary>
-    /// <param name="eventName"></param>
-    /// <param name="pars"></param>
-    public void Dispatch(string eventName, params object[] pars)
-    {
-        if (events.TryGetValue(eventName, out var delegates))
+        /// <summary>
+        /// æ·»åŠ äº‹ä»¶, ä»¥æ–¹æ³•åä¸ºäº‹ä»¶åç§°
+        /// </summary>
+        /// <param name="eventDelegate"></param>
+        public void AddEvent(Action<object[]> eventDelegate)
         {
-            foreach (var item in delegates)
-                item.Invoke(pars);
+            var eventName = eventDelegate.Method.Name;
+            AddEvent(eventName, eventDelegate);
         }
-    }
 
-    /// <summary>
-    /// ÒÆ³ıÊÂ¼ş, ÒÔ·½·¨ÃûÎªÊÂ¼şÃû²éÕÒ²¢ÒÆ³ı
-    /// </summary>
-    /// <param name="eventDelegate"></param>
-    public void Remove(Action<object[]> eventDelegate)
-    {
-        var eventName = eventDelegate.Method.Name;
-        Remove(eventName, eventDelegate);
-    }
-
-    /// <summary>
-    /// ÒÆ³ıÊÂ¼ş
-    /// </summary>
-    /// <param name="eventName"></param>
-    /// <param name="eventDelegate"></param>
-    public void Remove(string eventName, Action<object[]> eventDelegate)
-    {
-        if (events.TryGetValue(eventName, out var delegates))
+        /// <summary>
+        /// æ·»åŠ äº‹ä»¶
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="eventDelegate"></param>
+        public void AddEvent(string eventName, Action<object[]> eventDelegate)
         {
-            foreach (var item in delegates)
+            if (!events.TryGetValue(eventName, out var delegates))
+                events.Add(eventName, delegates = new List<Action<object[]>>());
+            delegates.Add(eventDelegate);
+        }
+
+        /// <summary>
+        /// æ´¾å‘äº‹ä»¶
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="pars"></param>
+        public void Dispatch(string eventName, params object[] pars)
+        {
+            if (events.TryGetValue(eventName, out var delegates))
             {
-                if (item.Equals(eventDelegate)) 
+                foreach (var item in delegates)
+                    item.Invoke(pars);
+            }
+        }
+
+        /// <summary>
+        /// ç§»é™¤äº‹ä»¶, ä»¥æ–¹æ³•åä¸ºäº‹ä»¶åæŸ¥æ‰¾å¹¶ç§»é™¤
+        /// </summary>
+        /// <param name="eventDelegate"></param>
+        public void Remove(Action<object[]> eventDelegate)
+        {
+            var eventName = eventDelegate.Method.Name;
+            Remove(eventName, eventDelegate);
+        }
+
+        /// <summary>
+        /// ç§»é™¤äº‹ä»¶
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="eventDelegate"></param>
+        public void Remove(string eventName, Action<object[]> eventDelegate)
+        {
+            if (events.TryGetValue(eventName, out var delegates))
+            {
+                foreach (var item in delegates)
                 {
-                    delegates.Remove(item);
-                    break;
+                    if (item.Equals(eventDelegate))
+                    {
+                        delegates.Remove(item);
+                        break;
+                    }
                 }
             }
         }

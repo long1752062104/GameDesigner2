@@ -1,5 +1,8 @@
 using UnityEngine;
 
-public class ConfigManager : MonoBehaviour
+namespace GameCore 
 {
+    public class ConfigManager : MonoBehaviour
+    {
+    }
 }
