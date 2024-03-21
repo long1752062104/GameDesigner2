@@ -297,9 +297,20 @@ namespace GameCore
                     var lastModified = File.GetLastWriteTime(assetNames[i]);
                     var lastModified1 = File.GetLastWriteTime(assetNames[i] + ".meta");
                     var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
-                    assetInfoList.Add(assetNames[i], new AssetInfo()
+                    var assetName = assetNames[i];
+                    if (AssetBundleBuilder.Instance.ResNameNotPath)//资源名不包含路径和后缀
                     {
-                        name = Path.GetFileName(assetNames[i]),
+                        assetName = Path.GetFileNameWithoutExtension(assetName);
+                    }
+
+                    if (assetInfoList.ContainsKey(assetName))
+                    {
+                        Debug.LogError($"{assetName}ÖØ¸´");//资源名需要在所有ab中唯一（不能同名）
+                        continue;
+                    }
+                    assetInfoList.Add(assetName, new AssetInfo()
+                    {
+                        name = AssetBundleBuilder.Instance.ResNameNotPath ? Path.GetFileName(assetName) : assetName,
                         assetBundleName = assetBundleName,
                         md5 = md5,
                     });
@@ -333,6 +344,11 @@ namespace GameCore
             var lastModified = File.GetLastWriteTime(assetPath);
             var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
             var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
+           
+            if (AssetBundleBuilder.Instance.ResNameNotPath)//资源名不包含路径和后缀
+            {
+                assetPath = Path.GetFileNameWithoutExtension(assetPath);
+            }
             assetInfoList.Add(assetPath, new AssetInfo()
             {
                 name = Path.GetFileName(assetPath),

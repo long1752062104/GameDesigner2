@@ -97,6 +97,8 @@ namespace GameCore
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
         public string hotfixPath = "Assets/Arts/Hotfix";
+        [Tooltip("资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
+        public bool ResNameNotPath;
         [Header("补充元数据")]
         public List<string> AOTMetaAssemblyNames = new List<string>()
         {
