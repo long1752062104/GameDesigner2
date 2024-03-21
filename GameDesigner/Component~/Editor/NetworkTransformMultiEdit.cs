@@ -35,7 +35,6 @@ public class NetworkTransformMultiEdit : Editor
                 {
                     name = child.name,
                     transform = child,
-                    mode = nt.syncMode,
                     syncPosition = nt.syncPosition,
                     syncRotation = nt.syncRotation,
                     syncScale = nt.syncScale,

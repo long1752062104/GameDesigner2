@@ -43,39 +43,21 @@ namespace Net.UnityComponent
             {
                 SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
-                    childs[i].SyncTransform();
+                    childs[i].SyncTransform(lerpSpeed);
             }
             else if (currControlTime > 0f & (currMode == SyncMode.Control | currMode == SyncMode.SynchronizedAll))
             {
                 currControlTime -= NetworkTime.I.CanSentTime;
                 SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
-                    childs[i].SyncTransform();
+                    childs[i].SyncTransform(lerpSpeed);
             }
             else
             {
                 NetworkSyncCheck();
                 for (int i = 0; i < childs.Length; i++)
-                    childs[i].NetworkSyncCheck(netObj.Identity, netObj.registerObjectIndex, NetComponentID);
+                    childs[i].NetworkSyncCheck(netObj.Identity, currMode, netObj.registerObjectIndex, NetComponentID);
             }
-        }
-
-        public override void StartSyncTransformState()
-        {
-            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
-            {
-                cmd1 = (byte)currMode,
-                index = netObj.registerObjectIndex,
-                index1 = NetComponentID,
-                uid = ClientBase.Instance.UID
-            });
-        }
-
-        public override void OnInitialSynchronization(in Operation opt)
-        {
-            SetNetworkSyncState(opt);
-            SetNetworkSyncMode(opt);
-            SyncControlTransform();
         }
 
         public override void OnNetworkOperationHandler(in Operation opt)
@@ -97,7 +79,7 @@ namespace Net.UnityComponent
                 child.netPosition = opt.position;
                 child.netRotation = opt.rotation;
                 child.netLocalScale = opt.direction;
-                if (child.mode == SyncMode.SynchronizedAll | child.mode == SyncMode.Control)
+                if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                     child.SyncControlTransform();
             }
         }
@@ -111,24 +93,23 @@ namespace Net.UnityComponent
         internal Net.Vector3 position;
         internal Net.Quaternion rotation;
         internal Net.Vector3 localScale;
-        public SyncMode mode = SyncMode.Control;
-        public bool syncPosition = true;
-        public bool syncRotation = true;
-        public bool syncScale = false;
-        public int identity = -1;//自身id
         internal Net.Vector3 netPosition;
         internal Net.Quaternion netRotation;
         internal Net.Vector3 netLocalScale;
+        public bool syncPosition = true;
+        public bool syncRotation = true;
+        public bool syncScale = false;
+        public int childId = -1;//自身id
 
-        internal void Init(int identity)
+        internal void Init(int childId)
         {
-            this.identity = identity;
+            this.childId = childId;
             netPosition = position = transform.localPosition;
             netRotation = rotation = transform.localRotation;
             netLocalScale = localScale = transform.localScale;
         }
 
-        internal void NetworkSyncCheck(int identity, int index, int netIndex)
+        internal void NetworkSyncCheck(int identity, SyncMode mode, int registerObjectIndex, int componentId)
         {
             if (transform.localPosition != position | transform.localRotation != rotation | transform.localScale != localScale)
             {
@@ -139,20 +120,20 @@ namespace Net.UnityComponent
                 {
                     cmd1 = (byte)mode,
                     uid = ClientBase.Instance.UID,
-                    index = index,
-                    index1 = netIndex,
-                    index2 = this.identity
+                    index = registerObjectIndex,
+                    index1 = componentId,
+                    index2 = childId
                 });
             }
         }
 
-        public void SyncTransform()
+        public void SyncTransform(float lerpSpeed)
         {
             if (syncPosition)
-                transform.localPosition = Vector3.Lerp(transform.localPosition, netPosition, 0.3f);
+                transform.localPosition = Vector3.Lerp(transform.localPosition, netPosition, lerpSpeed);
             if (syncRotation)
                 if (netRotation != Net.Quaternion.identity)
-                    transform.localRotation = Quaternion.Lerp(transform.localRotation, netRotation, 0.3f);
+                    transform.localRotation = Quaternion.Lerp(transform.localRotation, netRotation, lerpSpeed);
             if (syncScale)
                 transform.localScale = netLocalScale;
         }

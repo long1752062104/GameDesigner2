@@ -55,7 +55,7 @@ namespace Net
         }
 
         // Token: 0x060048E7 RID: 18663 RVA: 0x0007D758 File Offset: 0x0007B958
-        
+
         public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed)
         {
             float deltaTime = Time.deltaTime;
@@ -63,7 +63,7 @@ namespace Net
         }
 
         // Token: 0x060048E8 RID: 18664 RVA: 0x0007D780 File Offset: 0x0007B980
-        
+
         public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime)
         {
             float deltaTime = Time.deltaTime;
@@ -486,7 +486,7 @@ namespace Net
         // Token: 0x06004914 RID: 18708 RVA: 0x0007E254 File Offset: 0x0007C454
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
-            return SqrMagnitude(lhs - rhs) < 0.03f;//9.9999994E-11f;
+            return SqrMagnitude(lhs - rhs) < 9.9999994E-11f;
         }
 
         // Token: 0x06004915 RID: 18709 RVA: 0x0007E27C File Offset: 0x0007C47C
