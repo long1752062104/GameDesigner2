@@ -1,6 +1,7 @@
 using Net.Component;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GameCore
 {
@@ -42,6 +43,9 @@ namespace GameCore
         public string entryRes = "Assets/Arts/Prefabs/GameEntry.prefab";
         public bool compressionJson;
         public bool dontDestroyOnLoad = true;
+                
+        [Tooltip("资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
+        public bool ResNameNotPath;
         
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
         public string AssetBundlePath
