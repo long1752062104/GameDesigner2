@@ -102,9 +102,10 @@ namespace Net.Helper
                 fileStream = File.Open(destinationArchiveFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, leaveOpen: false, entryNameEncoding))
             {
-                bool flag = true;
                 var directoryInfo = new DirectoryInfo(sourceDirectoryName);
-                string fullName = directoryInfo.FullName;
+                var fullName = directoryInfo.FullName;
+                if (includeBaseDirectory)
+                    zipArchive.CreateEntry(directoryInfo.Name + Path.DirectorySeparatorChar);
                 if (includeBaseDirectory && directoryInfo.Parent != null)
                     fullName = directoryInfo.Parent.FullName;
                 var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories).ToArray();
@@ -116,6 +117,7 @@ namespace Net.Helper
                     string text;
                     text = item.FullName.Substring(fullName.Length, length);
                     text = text.Replace('\\', '/');
+                    text = text.TrimStart('/');
                     if (item is FileInfo)
                     {
                         using Stream stream = File.Open(item.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -132,17 +134,15 @@ namespace Net.Helper
                         if (isAsync) await UniTask.Yield();
                         continue;
                     }
-                    if (item is DirectoryInfo directoryInfo2)
+                    else if (item is DirectoryInfo directoryInfo2)
                     {
                         using (var enumerator = directoryInfo2.EnumerateFileSystemInfos("*", SearchOption.AllDirectories).GetEnumerator())
                         {
                             if (enumerator.MoveNext())
-                                zipArchive.CreateEntry(text + '/');
+                                zipArchive.CreateEntry(text + Path.DirectorySeparatorChar);
                         }
                     }
                 }
-                if (includeBaseDirectory && flag)
-                    zipArchive.CreateEntry(directoryInfo.Name + '/');
             }
         }
 

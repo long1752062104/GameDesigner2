@@ -198,6 +198,8 @@ namespace GameCore
                 EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包...", 0f);
                 await UnZipHelper.CompressFiles(outputPath, outputPath + $"../{assetBundleBuilder.version}.zip", System.IO.Compression.CompressionLevel.Optimal, true, null,
                     (name, progress) => EditorUtility.DisplayProgressBar("AssetBundleCollect", $"正在压缩初始包:{name}", progress));
+                if (assetBundleBuilder.firstPackageCopyToStreamingAssets)
+                    File.Copy(outputPath + $"../{assetBundleBuilder.version}.zip", $"{Application.streamingAssetsPath}/{Global.I.version}.zip", true);
                 EditorUtility.ClearProgressBar();
             }
             json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetBundleInfos, Newtonsoft_X.Json.Formatting.Indented);

@@ -91,6 +91,8 @@ namespace GameCore
         public bool compressionJson;
         [Tooltip("使用首包压缩文件, 当项目有上千个AB文件时, 玩家第一次下载游戏, 只需要下载这个压缩文件下来,然后解压即可. 如果不使用首包, 则需要一个个AB文件下载")]
         public bool useFirstPackage = true;
+        [Tooltip("首包压缩文件复制到流路径，这样可以跟着apk一起打包，就不需要下载首包了")]
+        public bool firstPackageCopyToStreamingAssets = false;
         public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";

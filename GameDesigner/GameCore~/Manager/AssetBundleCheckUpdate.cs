@@ -21,6 +21,8 @@ namespace GameCore
         public bool checkFileMD5;
         [Tooltip("使用首包下载, 在CDN服务器上会有个所有资源的压缩文件, 当游戏是第一次下载时, 会下载这个压缩文件, 而不是一个个AB文件下载")]
         public bool useFirstPackage = true;
+        [Tooltip("首包压缩文件在StreamingAssets路径下，当游戏启动后会在StreamingAssets路径复制到持久化文件夹下，就不需要下载首包文件了")]
+        public bool firstPackageInStreamingAssets = false;
 
         public virtual void Start()
         {
@@ -126,6 +128,16 @@ namespace GameCore
             var localAssetBundleUrl = $"{Application.persistentDataPath}/AssetBundles/{Global.I.platform}/{Global.I.version}.zip";
             if (File.Exists(localAssetBundleUrl))
                 goto J;
+            if (firstPackageInStreamingAssets)
+            {
+                var item1 = await CopyToPersistentDataPath($"{Application.streamingAssetsPath}/{Global.I.version}.zip", localAssetBundleUrl);
+                if (!item1.Item1)
+                {
+                    Global.UI.Message.ShowUI("首包复制", $"复制首包文件出错:{item1.Item2}");
+                    return false;
+                }
+                goto J;
+            }
             var item = await GetFileLength(serverAssetBundleUrl);
             if (!item.Item1)
             {
@@ -155,6 +167,20 @@ namespace GameCore
             File.Delete(localAssetBundleUrl);
             Global.UI.Loading.HideUI();
             return true;
+        }
+
+        private async UniTask<ValueTuple<bool, string>> CopyToPersistentDataPath(string fileUrl, string destPath)
+        {
+            var request = UnityWebRequest.Get(fileUrl);
+            await request.SendWebRequest();
+            if (!string.IsNullOrEmpty(request.error))
+                return (false, request.error);
+            var destDir = Path.GetDirectoryName(destPath);
+            if (!Directory.Exists(destDir))
+                Directory.CreateDirectory(destDir);
+            var data = request.downloadHandler.data;
+            File.WriteAllBytes(destPath, data);
+            return (true, null);
         }
 
         private async UniTask<bool> CheckAssetBundle(Dictionary<string, AssetBundleInfo> serverAssetBundleDict, Dictionary<string, AssetBundleInfo> localAssetBundleDict)
