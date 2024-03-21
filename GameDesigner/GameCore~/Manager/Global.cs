@@ -1,7 +1,6 @@
 using Net.Component;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace GameCore
 {
@@ -40,13 +39,12 @@ namespace GameCore
         public AssetBundleMode Mode = AssetBundleMode.EditorMode;
         public Platform platform;
         public string version = "1.0.0";
-        public string entryRes = "Assets/Arts/Prefabs/GameEntry.prefab";
+        public string entryRes;
         public bool compressionJson;
+        [Tooltip("可寻址资源， 资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
+        public bool addressables;
         public bool dontDestroyOnLoad = true;
-                
-        [Tooltip("资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
-        public bool ResNameNotPath;
-        
+
         public static Camera UICamera { get => Instance.uiCamera; set => Instance.uiCamera = value; }
         public string AssetBundlePath
         {
@@ -91,6 +89,8 @@ namespace GameCore
         /// </summary>
         public virtual void OnInit()
         {
+            if (string.IsNullOrEmpty(entryRes))
+                return;
             Resources.Instantiate<GameObject>(entryRes);
         }
     }

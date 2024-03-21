@@ -76,14 +76,16 @@ namespace GameCore
         private AssetManifest assetBundleManifest;
         public bool encrypt;
         public int password = 154789548;
-        private static Dictionary<string, string> assetNamePathDic;//资源名字与路径的对应关系,仅用于编辑器模式
+#if UNITY_EDITOR
+        private Dictionary<string, string> addressablesDict;//可寻址资源字典,仅用于编辑器模式
+#endif
 
         public virtual void Init()
         {
 #if UNITY_EDITOR
-            SearchFilesInFolders();
+            if (Global.I.addressables)
+                SearchFilesInFolders();
 #endif
-            
             if ((byte)Global.I.Mode <= 1)
                 return;
             var assetBundlePath = Global.I.AssetBundlePath;
@@ -104,53 +106,16 @@ namespace GameCore
             json = LoadAssetFileReadAllText(manifestBundlePath);
             assetBundleManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(json);
         }
-        
-        #if UNITY_EDITOR
+
+#if UNITY_EDITOR
         /// <summary>
         /// 搜索所有ab包目录，获取资源名字与路径的对应关系
         /// </summary>
         private void SearchFilesInFolders()
         {
-            assetNamePathDic = new Dictionary<string, string>();
-            foreach (var package in GameCore.AssetBundleBuilder.Instance.Packages)
-            {
-                SearchFilesInFolderRecursive(package.path.name, assetNamePathDic);
-            }
-        }
-
-        /// <summary>
-        /// 查找文件夹中的所有文件
-        /// </summary>
-        /// <param name="folderPath"></param>
-        /// <returns></returns>
-        private static List<string> GetAllFilesInFolder(string folderPath)
-        {
-            List<string> allFiles = new List<string>();
-
-            // 获取当前文件夹中的所有文件
-            string[] files = Directory.GetFiles(folderPath);
-        
-            foreach (string filePath in files)
-            {
-                // 过滤掉.meta文件
-                if (!filePath.EndsWith(".meta"))
-                {
-                    allFiles.Add(filePath);
-                }
-            }
-
-            // 获取当前文件夹中的所有子文件夹
-            string[] subFolders = Directory.GetDirectories(folderPath);
-        
-            // 递归处理每个子文件夹
-            foreach (string subFolder in subFolders)
-            {
-                // 递归获取子文件夹中的所有文件
-                List<string> subFolderFiles = GetAllFilesInFolder(subFolder);
-                allFiles.AddRange(subFolderFiles);
-            }
-
-            return allFiles;
+            addressablesDict = new Dictionary<string, string>();
+            foreach (var package in AssetBundleBuilder.Instance.Packages)
+                SearchFilesInFolderRecursive(package.path.name, addressablesDict);
         }
 
         /// <summary>
@@ -160,21 +125,40 @@ namespace GameCore
         /// <param name="fileDictionary"></param>
         private void SearchFilesInFolderRecursive(string folderPath, Dictionary<string, string> fileDictionary)
         {
-            List<string> files = GetAllFilesInFolder(Path.Combine(Application.dataPath, folderPath)); // 获取指定文件夹及其子文件夹中的所有文件
-
-            foreach (string filePath in files)
+            var files = GetAllFilesInFolder(Path.Combine(Application.dataPath, folderPath)); // 获取指定文件夹及其子文件夹中的所有文件
+            foreach (var filePath in files)
             {
-                string fileName = Path.GetFileNameWithoutExtension(filePath); // 获取文件名（不含后缀）
-                string assetPath = filePath.Substring(filePath.IndexOf("Assets")); // 获取相对于Assets文件夹的路径（包含后缀）
-
+                var fileName = Path.GetFileNameWithoutExtension(filePath); // 获取文件名（不含后缀）
+                var assetPath = filePath.Substring(filePath.IndexOf("Assets")); // 获取相对于Assets文件夹的路径（包含后缀）
                 if (!fileDictionary.ContainsKey(fileName))
-                {
                     fileDictionary.Add(fileName, assetPath);
-                }
             }
         }
-        #endif
-        
+
+        /// <summary>
+        /// 查找文件夹中的所有文件
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        private List<string> GetAllFilesInFolder(string folderPath)
+        {
+            var allFiles = new List<string>();
+            var files = Directory.GetFiles(folderPath);
+            foreach (string filePath in files)
+            {
+                if (!filePath.EndsWith(".meta")) // 过滤掉.meta文件
+                    allFiles.Add(filePath);
+            }
+            var subFolders = Directory.GetDirectories(folderPath);
+            foreach (string subFolder in subFolders)
+            {
+                var subFolderFiles = GetAllFilesInFolder(subFolder);
+                allFiles.AddRange(subFolderFiles);
+            }
+            return allFiles;
+        }
+#endif
+
         public virtual string LoadAssetFileReadAllText(string assetPath)
         {
             var bytes = LoadAssetFile(assetPath);
@@ -222,11 +206,11 @@ namespace GameCore
         public virtual T LoadAsset<T>(string assetPath) where T : Object
         {
             assetPath = GetAssetPath(assetPath);
-            
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
-                assetNamePathDic.TryGetValue(assetPath, out assetPath);
+                if (Global.I.addressables)
+                    addressablesDict.TryGetValue(assetPath, out assetPath);
                 return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
             }
 #endif
@@ -241,18 +225,19 @@ namespace GameCore
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
-            var assetObject = assetBundle.LoadAsset<T>(assetPath);
-            return assetObject;
+            //这里只能获取Object类型，如果直接获取T会获取失败，比如你获取GameObject里面的Animator组件，你直接LoadAsset<Animator>("xx")会失败!
+            var assetObject = assetBundle.LoadAsset(assetPath, typeof(Object));
+            return GetAsset<T>(assetObject);
         }
 
         public virtual async UniTask<T> LoadAssetAsync<T>(string assetPath) where T : Object
         {
             assetPath = GetAssetPath(assetPath);
-
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
-                assetNamePathDic.TryGetValue(assetPath, out assetPath);
+                if (Global.I.addressables)
+                    addressablesDict.TryGetValue(assetPath, out assetPath);
                 return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
             }
 #endif
@@ -267,8 +252,9 @@ namespace GameCore
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
-            var assetObject = await assetBundle.LoadAssetAsync<T>(assetPath) as T;
-            return assetObject;
+            //这里只能获取Object类型，如果直接获取T会获取失败，比如你获取GameObject里面的Animator组件，你直接LoadAsset<Animator>("xx")会失败!
+            var assetObject = await assetBundle.LoadAssetAsync(assetPath, typeof(Object));
+            return GetAsset<T>(assetObject);
         }
 
         public virtual T[] LoadAssetWithSubAssets<T>(string assetPath) where T : Object
@@ -278,6 +264,10 @@ namespace GameCore
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
+                if (Global.I.addressables)
+                    addressablesDict.TryGetValue(assetPath, out assetPath);
+                if (assetPath == null)
+                    return default;
                 assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
                 goto J;
             }
@@ -304,12 +294,12 @@ namespace GameCore
         public virtual async UniTask<T[]> LoadAssetWithSubAssetsAsync<T>(string assetPath) where T : Object
         {
             assetPath = GetAssetPath(assetPath);
-
             Object[] assetObjects;
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
-                assetNamePathDic.TryGetValue(assetPath, out assetPath);
+                if (Global.I.addressables)
+                    addressablesDict.TryGetValue(assetPath, out assetPath);
                 if (assetPath == null)
                     return default;
                 assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
@@ -340,7 +330,6 @@ namespace GameCore
         protected virtual AssetBundle GetAssetBundle(string assetPath)
         {
             assetPath = GetAssetPath(assetPath);
-            
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
             {
                 Global.Logger.LogError($"加载资源:{assetPath}失败!");
@@ -360,7 +349,6 @@ namespace GameCore
         protected virtual async UniTask<AssetBundle> GetAssetBundleAsync(string assetPath)
         {
             assetPath = GetAssetPath(assetPath);
-
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
             {
                 Global.Logger.LogError($"加载资源:{assetPath}失败!");
@@ -380,7 +368,6 @@ namespace GameCore
         public virtual bool LoadAssetScene(string assetPath, LoadSceneMode mode = LoadSceneMode.Single)
         {
             assetPath = GetAssetPath(assetPath);
-            
             if ((byte)Global.I.Mode <= 1)
             {
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
@@ -396,7 +383,6 @@ namespace GameCore
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, Action onLoadComplete = null, LoadSceneMode mode = LoadSceneMode.Single)
         {
             assetPath = GetAssetPath(assetPath);
-
             if ((byte)Global.I.Mode <= 1)
             {
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
@@ -422,7 +408,6 @@ namespace GameCore
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single, Action<float> progress = null, Action onLoadComplete = null)
         {
             assetPath = GetAssetPath(assetPath);
-
             if ((byte)Global.I.Mode <= 1)
             {
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
@@ -485,7 +470,6 @@ namespace GameCore
         public T Instantiate<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
         {
             assetPath = GetAssetPath(assetPath);
-
             var assetObj = LoadAsset<GameObject>(assetPath);
             if (assetObj == null)
             {
@@ -502,19 +486,13 @@ namespace GameCore
 
         public async UniTask<T> InstantiateAsync<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
         {
-            assetPath = GetAssetPath(assetPath);
-            var assetObj = await LoadAssetAsync<GameObject>(assetPath);
+            var assetObj = await LoadAssetAsync<T>(assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");
                 return null;
             }
-            var obj = Instantiate(assetObj, position, rotation, parent);
-            if (typeof(T) == typeof(GameObject) | typeof(T) == typeof(Object)) //如果获取的是游戏物体或者基类则直接返回
-                return obj as T;
-            if (obj.TryGetComponent(typeof(T), out var component))
-                return component as T;
-            return obj as T;
+            return Instantiate(assetObj, position, rotation, parent);
         }
 
         /// <summary>
@@ -538,11 +516,21 @@ namespace GameCore
         /// <returns></returns>
         private string GetAssetPath(string assetPath)
         {
-            if (Global.I.ResNameNotPath)//仅使用文件名
-            {
+            if (Global.I.addressables)//仅使用文件名
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
-            }
             return assetPath;
+        }
+
+        private T GetAsset<T>(Object assetObject) where T : Object
+        {
+            if (assetObject is GameObject gameObject)
+            {
+                if (typeof(T) == typeof(GameObject) | typeof(T) == typeof(Object)) //如果获取的是游戏物体或者基类则直接返回
+                    return assetObject as T;
+                if (gameObject.TryGetComponent(typeof(T), out var component))
+                    return component as T;
+            }
+            return assetObject as T;
         }
     }
 }

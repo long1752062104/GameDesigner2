@@ -104,6 +104,7 @@ namespace GameCore
             var buildList = new Dictionary<string, AssetBundleBuild>();
             var assetInfoList = new Dictionary<string, AssetInfo>();
             string[] files;
+            int errorCount = 0;
             for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
             {
                 var package = assetBundleBuilder.Packages[i];
@@ -112,11 +113,16 @@ namespace GameCore
                 var assetPath = AssetDatabase.GetAssetPath(package.path);
                 var isFolder = AssetDatabase.IsValidFolder(assetPath);
                 if (isFolder)
-                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count);
+                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
                 else
-                    AddSinglePackage(buildList, assetInfoList, assetPath, package);
+                    AddSinglePackage(buildList, assetInfoList, assetPath, package, ref errorCount);
             }
             EditorUtility.ClearProgressBar();
+            if (errorCount > 0)
+            {
+                Debug.Log("请先解决错误后再打包!");
+                return;
+            }
             Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
             if (!Directory.Exists(outputPath))
                 Directory.CreateDirectory(outputPath);
@@ -229,7 +235,7 @@ namespace GameCore
             return assetBundleName;
         }
 
-        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, float progress)
+        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, float progress, ref int errorCount)
         {
             EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集路径:{assetPath}", progress);
             var type = package.type;
@@ -268,7 +274,7 @@ namespace GameCore
                 files[i] = files[i].Replace('\\', '/');
                 if (files[i].EndsWith(".unity"))
                 {
-                    var sceneAssetBundleName = AddSinglePackage(buildList, assetInfoList, files[i], package);
+                    var sceneAssetBundleName = AddSinglePackage(buildList, assetInfoList, files[i], package, ref errorCount);
                     files.RemoveAt(i);
                     if (i >= 0) i--;
                     EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{sceneAssetBundleName}完成!", progress);
@@ -298,19 +304,17 @@ namespace GameCore
                     var lastModified1 = File.GetLastWriteTime(assetNames[i] + ".meta");
                     var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
                     var assetName = assetNames[i];
-                    if (AssetBundleBuilder.Instance.ResNameNotPath)//资源名不包含路径和后缀
-                    {
+                    if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
                         assetName = Path.GetFileNameWithoutExtension(assetName);
-                    }
-
                     if (assetInfoList.ContainsKey(assetName))
                     {
-                        Debug.LogError($"{assetName}ÖØ¸´");//资源名需要在所有ab中唯一（不能同名）
+                        errorCount++;
+                        Debug.LogError($"资源{assetName}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                         continue;
                     }
                     assetInfoList.Add(assetName, new AssetInfo()
                     {
-                        name = AssetBundleBuilder.Instance.ResNameNotPath ? Path.GetFileName(assetName) : assetName,
+                        name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetName) : assetName,
                         assetBundleName = assetBundleName,
                         md5 = md5,
                     });
@@ -328,11 +332,11 @@ namespace GameCore
             var directories = Directory.GetDirectories(assetPath);
             foreach (var directorie in directories)
             {
-                AssetBundleCollect(buildList, assetInfoList, directorie, package, progress);
+                AssetBundleCollect(buildList, assetInfoList, directorie, package, progress, ref errorCount);
             }
         }
 
-        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package)
+        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, ref int errorCount)
         {
             var sceneAssetBundleName = GetAssetBundleName(assetPath, package.type);
             var assetBundleBuild = new AssetBundleBuild
@@ -344,14 +348,17 @@ namespace GameCore
             var lastModified = File.GetLastWriteTime(assetPath);
             var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
             var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
-           
-            if (AssetBundleBuilder.Instance.ResNameNotPath)//资源名不包含路径和后缀
-            {
+            if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
+            if (assetInfoList.ContainsKey(assetPath))
+            {
+                errorCount++;
+                Debug.LogError($"资源{assetPath}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
+                return string.Empty;
             }
             assetInfoList.Add(assetPath, new AssetInfo()
             {
-                name = Path.GetFileName(assetPath),
+                name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetPath) : assetPath,
                 assetBundleName = sceneAssetBundleName,
                 md5 = md5,
             });

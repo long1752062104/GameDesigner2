@@ -23,6 +23,8 @@ namespace GameCore
         public bool useFirstPackage = true;
         [Tooltip("首包压缩文件在StreamingAssets路径下，当游戏启动后会在StreamingAssets路径复制到持久化文件夹下，就不需要下载首包文件了")]
         public bool firstPackageInStreamingAssets = false;
+        [Tooltip("检查多少个AB包刷新一下Loading界面")]
+        public int checkAssetsRefresh = 1;
 
         public virtual void Start()
         {
@@ -190,12 +192,17 @@ namespace GameCore
             ulong currSize = 0;
             int index = 0;
             int count = serverAssetBundleDict.Count;
+            int checkAssetsCount = 0;
             Global.UI.Loading.ShowUI("正在检查资源中...", 0f);
             foreach (var assetBundleInfo in serverAssetBundleDict.Values)
             {
                 var localAssetBundleUrl = $"{Global.I.AssetBundlePath}/{assetBundleInfo.name}";
                 Global.UI.Loading.ShowUI($"检查资源:{assetBundleInfo.name}", index++ / (float)count);
-                await UniTask.Yield();
+                if (++checkAssetsCount >= checkAssetsRefresh)
+                {
+                    checkAssetsCount = 0;
+                    await UniTask.Yield();
+                }
                 if (localAssetBundleDict.TryGetValue(assetBundleInfo.name, out var assetBundleInfo1))
                 {
                     if (assetBundleInfo1.md5 != assetBundleInfo.md5)
