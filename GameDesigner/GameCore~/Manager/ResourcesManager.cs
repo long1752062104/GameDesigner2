@@ -502,6 +502,10 @@ namespace GameCore
             assetBundles = resources.assetBundles;
             assetInfos = resources.assetInfos;
             assetBundleManifest = resources.assetBundleManifest;
+#if UNITY_EDITOR
+            addressablesDict = resources.addressablesDict;
+            resources.addressablesDict = null;
+#endif
             resources.assetBundles = null;
             resources.assetInfos = null;
             resources.assetBundleManifest = null;
