@@ -254,7 +254,7 @@ namespace BuildComponent
             {Return}self.{FuncName}({Params});
         }
 [Split]
-        public override void OnNetworkOperationHandler(Operation opt)
+        public override void OnNetworkOperationHandler(in Operation opt)
         {
             switch (opt.index2)
             {
