@@ -136,6 +136,7 @@
     <Compile Include="GameDesigner\Entities~\Transform.cs" />
     <Compile Include="GameDesigner\Extensions\ClientBaseExtensions.cs" />
     <Compile Include="GameDesigner\Extensions\NetPlayerExtensions.cs" />
+    <Compile Include="GameDesigner\Extensions\ServerBaseExtensions.cs" />
     <Compile Include="GameDesigner\Extensions\UniTaskNetExtensions.cs" />
     <Compile Include="GameDesigner\Helper\CertificateHelper.cs" />
     <Compile Include="GameDesigner\Helper\DateTimeHelper.cs" />

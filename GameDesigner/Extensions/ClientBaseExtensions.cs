@@ -5,6 +5,19 @@ using Cysharp.Threading.Tasks;
 
 public static class ClientBaseExtensions
 {
+    #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据protocol请求和回应
+    public static UniTask<RPCModelTask> Request(this ClientBase self, Enum protocol, params object[] pars)
+        => self.Request(NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000U, true, false, null, pars);
+    public static UniTask<RPCModelTask> Request(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => self.Request(NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, false, null, pars);
+    public static UniTask<RPCModelTask> Request(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => self.Request(NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, false, null, pars);
+    public static UniTask<RPCModelTask> Request(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => self.Request(cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, false, null, pars);
+    public static UniTask<RPCModelTask> Request(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => self.Request(cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, false, null, pars);
+    #endregion
+
     #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
     public static UniTask<T> Request<T>(this ClientBase self, uint protocol, params object[] pars)
         => Request<T>(self, NetCmd.CallRpc, protocol, 5000U, true, null, pars);
@@ -16,6 +29,17 @@ public static class ClientBaseExtensions
         => Request<T>(self, cmd, protocol, timeoutMilliseconds, true, null, pars);
     public static UniTask<T> Request<T>(this ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T>(self, cmd, protocol, timeoutMilliseconds, intercept, null, pars);
+
+    public static UniTask<T> Request<T>(this ClientBase self, Enum protocol, params object[] pars)
+        => Request<T>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000U, true, null, pars);
+    public static UniTask<T> Request<T>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<T> Request<T>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<T> Request<T>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<T> Request<T>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
     #endregion
 
     #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
@@ -29,6 +53,17 @@ public static class ClientBaseExtensions
         => Request<T, T1>(self, cmd, protocol, timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T, T1>(self, cmd, protocol, timeoutMilliseconds, intercept, null, pars);
+
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, Enum protocol, params object[] pars)
+        => Request<T, T1>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000, true, null, pars);
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
     #endregion
 
     #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
@@ -42,6 +77,17 @@ public static class ClientBaseExtensions
         => Request<T, T1, T2>(self, cmd, protocol, timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T, T1, T2>(self, cmd, protocol, timeoutMilliseconds, intercept, null, pars);
+
+    public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, Enum protocol, params object[] pars)
+        => Request<T, T1, T2>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2>> Request<T, T1, T2>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
     #endregion
 
     #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
@@ -55,6 +101,17 @@ public static class ClientBaseExtensions
         => Request<T, T1, T2, T3>(self, cmd, protocol, timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T, T1, T2, T3>(self, cmd, protocol, timeoutMilliseconds, intercept, null, pars);
+
+    public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, Enum protocol, params object[] pars)
+        => Request<T, T1, T2, T3>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2, T3>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2, T3>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2, T3>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3>> Request<T, T1, T2, T3>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2, T3>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
     #endregion
 
     #region 同步远程调用, 跟Http协议一样, 请求必须有回应 请求和回应方法都是相同的, 都是根据funcAndCb请求和回应
@@ -68,6 +125,17 @@ public static class ClientBaseExtensions
         => Request<T, T1, T2, T3, T4>(self, cmd, protocol, timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T, T1, T2, T3, T4>(self, cmd, protocol, timeoutMilliseconds, intercept, null, pars);
+
+    public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, Enum protocol, params object[] pars)
+        => Request<T, T1, T2, T3, T4>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), 5000, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2, T3, T4>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2, T3, T4>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
+        => Request<T, T1, T2, T3, T4>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
+    public static UniTask<ValueTuple<T, T1, T2, T3, T4>> Request<T, T1, T2, T3, T4>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
+        => Request<T, T1, T2, T3, T4>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
     #endregion
 
     private static async UniTask<T> Request<T>(ClientBase self, byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, byte[] buffer, params object[] pars)

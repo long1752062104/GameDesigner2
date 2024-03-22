@@ -42,7 +42,7 @@ namespace Net.Server
     /// 网络服务器核心基类 2023.11.13
     /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
     /// </summary>
-    public abstract class ServerBase<Player> : IServerHandle<Player> where Player : NetPlayer, new()
+    public abstract partial class ServerBase<Player> : IServerHandle<Player> where Player : NetPlayer, new()
     {
         #region 属性
         /// <summary>
