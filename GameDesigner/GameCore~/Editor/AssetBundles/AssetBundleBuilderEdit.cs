@@ -101,7 +101,7 @@ namespace GameCore
                 opt |= BuildAssetBundleOptions.StrictMode;
             if (assetBundleBuilder.DryRunBuild)
                 opt |= BuildAssetBundleOptions.DryRunBuild;
-            var buildList = new Dictionary<string, AssetBundleBuild>();
+            var abBuildList = new Dictionary<string, AssetBundleBuild>();
             var assetInfoList = new Dictionary<string, AssetInfo>();
             string[] files;
             int errorCount = 0;
@@ -113,9 +113,9 @@ namespace GameCore
                 var assetPath = AssetDatabase.GetAssetPath(package.path);
                 var isFolder = AssetDatabase.IsValidFolder(assetPath);
                 if (isFolder)
-                    AssetBundleCollect(buildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
+                    AssetBundleCollect(abBuildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
                 else
-                    AddSinglePackage(buildList, assetInfoList, assetPath, package, ref errorCount);
+                    AddSinglePackage(abBuildList, assetInfoList, assetPath, package, ref errorCount);
             }
             EditorUtility.ClearProgressBar();
             if (errorCount > 0)
@@ -123,7 +123,7 @@ namespace GameCore
                 Debug.Log("请先解决错误后再打包!");
                 return;
             }
-            Debug.Log($"收集的资源包数量:{buildList.Count} 资源文件数量:{assetInfoList.Count}");
+            Debug.Log($"收集的资源包数量:{abBuildList.Count} 资源文件数量:{assetInfoList.Count}");
             if (!Directory.Exists(outputPath))
                 Directory.CreateDirectory(outputPath);
             var assetInfoListPath = outputPath + "assetInfoList.json";
@@ -142,7 +142,7 @@ namespace GameCore
                 if (assetInfoListSource.TryGetValue(assetInfo.Key, out var assetInfo1))
                     if (assetInfo.Value.md5 == assetInfo1.md5)
                         continue;
-                if (buildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
+                if (abBuildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
                     assetBundleBuildList[assetInfo.Value.assetBundleName] = assetBundleBuild;
             }
             Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");

@@ -225,6 +225,8 @@ namespace GameCore
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
+            if (typeof(T) == typeof(Sprite))
+                return assetBundle.LoadAsset<T>(assetPath);
             //这里只能获取Object类型，如果直接获取T会获取失败，比如你获取GameObject里面的Animator组件，你直接LoadAsset<Animator>("xx")会失败!
             var assetObject = assetBundle.LoadAsset(assetPath, typeof(Object));
             return GetAsset<T>(assetObject);
@@ -252,6 +254,8 @@ namespace GameCore
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
+            if (typeof(T) == typeof(Sprite))
+                return assetBundle.LoadAsset<T>(assetPath);
             //这里只能获取Object类型，如果直接获取T会获取失败，比如你获取GameObject里面的Animator组件，你直接LoadAsset<Animator>("xx")会失败!
             var assetObject = await assetBundle.LoadAssetAsync(assetPath, typeof(Object));
             return GetAsset<T>(assetObject);
@@ -469,19 +473,13 @@ namespace GameCore
 
         public T Instantiate<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
         {
-            assetPath = GetAssetPath(assetPath);
-            var assetObj = LoadAsset<GameObject>(assetPath);
+            var assetObj = LoadAsset<T>(assetPath);
             if (assetObj == null)
             {
                 Global.Logger.LogError($"资源加载失败:{assetPath}");
                 return null;
             }
-            var obj = Instantiate(assetObj, position, rotation, parent);
-            if (typeof(T) == typeof(GameObject) | typeof(T) == typeof(Object)) //如果不是组件就直接返回
-                return obj as T;
-            if (obj.TryGetComponent(typeof(T), out var component))
-                return component as T;
-            return obj as T;
+            return Instantiate(assetObj, position, rotation, parent);
         }
 
         public async UniTask<T> InstantiateAsync<T>(string assetPath, Vector3 position, Quaternion rotation, Transform parent = null) where T : Object
