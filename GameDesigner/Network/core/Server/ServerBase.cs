@@ -39,10 +39,9 @@ namespace Net.Server
     using Debug = Event.NDebug;
 
     /// <summary>
-    /// 网络服务器核心基类 2023.11.13
-    /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+    /// 网络服务器核心基类（非泛型）
     /// </summary>
-    public abstract partial class ServerBase<Player> : IServerHandle<Player> where Player : NetPlayer, new()
+    public abstract class ServerBase
     {
         #region 属性
         /// <summary>
@@ -81,56 +80,7 @@ namespace Net.Server
         /// Rpc任务队列
         /// </summary>
         public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
-        /// <summary>
-        /// 登录的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
-        /// </summary>
-        public ConcurrentDictionary<string, Player> Players { get; private set; } = new ConcurrentDictionary<string, Player>();
-        /// <summary>
-        /// 登录的客户端 与<see cref="Players"/>为互助字典 所添加的键值为<see cref="NetPlayer.UserID"/>
-        /// </summary>
-        public ConcurrentDictionary<int, Player> UIDClients { get; private set; } = new ConcurrentDictionary<int, Player>();
-        /// <summary>
-        /// 所有客户端列表
-        /// </summary>
-        public ConcurrentDictionary<EndPoint, Player> AllClients { get; private set; } = new ConcurrentDictionary<EndPoint, Player>();
-        /// <summary>
-        /// 所有在线的客户端
-        /// </summary>
-        public List<Player> Clients
-        {
-            get
-            {
-                var unclients = new List<Player>();
-                foreach (var client in AllClients.Values)
-                    if (client.Login) unclients.Add(client);
-                return unclients;
-            }
-        }
-        /// <summary>
-        /// 未知客户端连接 或 刚连接服务器还未登录账号的IP
-        /// </summary>
-        public List<Player> UnClients
-        {
-            get
-            {
-                var unclients = new List<Player>();
-                foreach (var client in AllClients.Values)
-                    if (!client.Login) unclients.Add(client);
-                return unclients;
-            }
-        }
-        /// <summary>
-        /// 网络服务器单例
-        /// </summary>
-        public static ServerBase<Player> Instance { get; protected set; }
-        /// <summary>
-        /// 当前玩家在线人数
-        /// </summary>
-        public int OnlinePlayers { get { return Players.Count; } }
-        /// <summary>
-        /// 未知客户端人数, 即在线不登录账号的客户端
-        /// </summary>
-        public int UnClientNumber { get { return AllClients.Count - Players.Count; } }
+
         /// <summary>
         /// 服务器端口
         /// </summary>
@@ -186,7 +136,7 @@ namespace Net.Server
         /// <summary>
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
-        protected virtual byte frame { get; set; } = 5;
+        public virtual byte frame { get; protected set; } = 5;
         /// <summary>
         /// 接收缓冲区最大可接收的数据包大小 (默认是5m)
         /// </summary>
@@ -249,17 +199,7 @@ namespace Net.Server
         /// 程序根路径, 网络数据缓存读写路径
         /// </summary>
         protected string rootPath;
-        //protected volatile int threadNum;
         protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
-        protected ThreadPipeline<Player> ThreadPool = new ThreadPipeline<Player>();
-        /// <summary>
-        /// 线程组, 优化多线程资源竞争问题
-        /// </summary>
-        //protected List<ThreadGroup<Player>> ThreadGroups = new List<ThreadGroup<Player>>();
-        /// <summary>
-        /// 排队队列
-        /// </summary>
-        protected ConcurrentQueue<Player> QueueUp = new ConcurrentQueue<Player>();
         /// <summary>
         /// 同步锁对象
         /// </summary>
@@ -276,7 +216,7 @@ namespace Net.Server
         /// 服务器线程管理
         /// </summary>
         protected internal Dictionary<string, Thread> ServerThreads = new Dictionary<string, Thread>();
-        private int sendFileTick, recvFileTick;
+        protected int recvFileTick;
         /// <summary>
         /// 序列化适配器
         /// </summary>
@@ -328,50 +268,17 @@ namespace Net.Server
         /// 服务器启动成功事件
         /// </summary>
         public Action OnStartupCompletedHandle { get; set; }
-        /// <summary>
-        /// 当前有客户端连接触发事件
-        /// </summary>
-        public Action<Player> OnHasConnectHandle { get; set; }
-        /// <summary>
-        /// 当添加客户端到所有在线的玩家集合中触发的事件
-        /// </summary>
-        public Action<Player> OnAddClientHandle { get; set; }
-        /// <summary>
-        /// 当接收到自定义的网络指令时处理事件
-        /// </summary>
-        public virtual RevdBufferHandle<Player> OnRevdBufferHandle { get; set; }
-        /// <summary>
-        /// 当移除客户端时触发事件
-        /// </summary>
-        public Action<Player> OnRemoveClientHandle { get; set; }
+
         /// <summary>
         /// 当统计网络流量时触发
         /// </summary>
         public NetworkDataTraffic OnNetworkDataTraffic { get; set; }
-        /// <summary>
-        /// 当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="Client.ClientBase.AddOperation(Operation)"/>方法时调用
-        /// </summary>
-        public Action<Player, OperationList> OnOperationSyncHandle { get; set; }
-        /// <summary>
-        /// 当客户端发送的大数据时, 可监听此事件显示进度值
-        /// </summary>
-        public virtual Action<Player, RTProgress> OnRevdRTProgressHandle { get; set; }
-        /// <summary>
-        /// 当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
-        /// </summary>
-        public virtual Action<Player, RTProgress> OnCallProgressHandle { get; set; }
+
         /// <summary>
         /// 输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行监听
         /// </summary>
         public Action<string> Log { get; set; }
-        /// <summary>
-        /// ping服务器回调 参数double为延迟毫秒单位 当<see cref="RTOMode"/>=<see cref="RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
-        /// </summary>
-        public Action<Player, uint> OnPingCallback;
-        /// <summary>
-        /// 当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="SendByteData"/>方法重新发送
-        /// </summary>
-        public Action<Player, ISegment> OnSendErrorHandle;
+
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
         /// </summary>
@@ -380,10 +287,7 @@ namespace Net.Server
         /// 当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
         /// </summary>
         public Action<object> OnRemoveRpc { get; set; }
-        /// <summary>
-        /// 当执行调用远程过程方法时触发
-        /// </summary>
-        public RPCModelEvent<Player> OnRPCExecute { get; set; }
+
         /// <summary>
         /// 当序列化远程过程调用方法
         /// </summary>
@@ -400,6 +304,108 @@ namespace Net.Server
         /// 当反序列化远程过程调用操作
         /// </summary>
         public Func<ISegment, OperationList> OnDeserializeOPT { get; set; }
+        #endregion
+    }
+
+    /// <summary>
+    /// 网络服务器核心基类 2023.11.13
+    /// <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+    /// </summary>
+    public abstract partial class ServerBase<Player> : ServerBase, IServerHandle<Player> where Player : NetPlayer, new()
+    {
+        #region 属性
+        /// <summary>
+        /// 登录的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
+        /// </summary>
+        public ConcurrentDictionary<string, Player> Players { get; private set; } = new ConcurrentDictionary<string, Player>();
+        /// <summary>
+        /// 登录的客户端 与<see cref="Players"/>为互助字典 所添加的键值为<see cref="NetPlayer.UserID"/>
+        /// </summary>
+        public ConcurrentDictionary<int, Player> UIDClients { get; private set; } = new ConcurrentDictionary<int, Player>();
+        /// <summary>
+        /// 所有客户端列表
+        /// </summary>
+        public ConcurrentDictionary<EndPoint, Player> AllClients { get; private set; } = new ConcurrentDictionary<EndPoint, Player>();
+        /// <summary>
+        /// 所有在线的客户端
+        /// </summary>
+        public List<Player> Clients
+        {
+            get
+            {
+                var unclients = new List<Player>();
+                foreach (var client in AllClients.Values)
+                    if (client.Login) unclients.Add(client);
+                return unclients;
+            }
+        }
+        /// <summary>
+        /// 未知客户端连接 或 刚连接服务器还未登录账号的IP
+        /// </summary>
+        public List<Player> UnClients
+        {
+            get
+            {
+                var unclients = new List<Player>();
+                foreach (var client in AllClients.Values)
+                    if (!client.Login) unclients.Add(client);
+                return unclients;
+            }
+        }
+        /// <summary>
+        /// 网络服务器单例
+        /// </summary>
+        public static ServerBase<Player> Instance { get; protected set; }
+
+        protected ThreadPipeline<Player> ThreadPool = new ThreadPipeline<Player>();
+        /// <summary>
+        /// 排队队列
+        /// </summary>
+        protected ConcurrentQueue<Player> QueueUp = new ConcurrentQueue<Player>();
+        #endregion
+
+        #region 服务器事件处理
+
+        /// <summary>
+        /// 当前有客户端连接触发事件
+        /// </summary>
+        public Action<Player> OnHasConnectHandle { get; set; }
+        /// <summary>
+        /// 当添加客户端到所有在线的玩家集合中触发的事件
+        /// </summary>
+        public Action<Player> OnAddClientHandle { get; set; }
+        /// <summary>
+        /// 当接收到自定义的网络指令时处理事件
+        /// </summary>
+        public virtual RevdBufferHandle<Player> OnRevdBufferHandle { get; set; }
+        /// <summary>
+        /// 当移除客户端时触发事件
+        /// </summary>
+        public Action<Player> OnRemoveClientHandle { get; set; }
+
+        /// <summary>
+        /// 当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="Client.ClientBase.AddOperation(Operation)"/>方法时调用
+        /// </summary>
+        public Action<Player, OperationList> OnOperationSyncHandle { get; set; }
+        /// <summary>
+        /// 当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
+        /// </summary>
+        public virtual Action<Player, BigDataProgress> OnCallProgressHandle { get; set; }
+
+        /// <summary>
+        /// ping服务器回调 参数double为延迟毫秒单位 当<see cref="RTOMode"/>=<see cref="RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
+        /// </summary>
+        public Action<Player, uint> OnPingCallback;
+        /// <summary>
+        /// 当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="SendByteData"/>方法重新发送
+        /// </summary>
+        public Action<Player, ISegment> OnSendErrorHandle;
+
+        /// <summary>
+        /// 当执行调用远程过程方法时触发
+        /// </summary>
+        public RPCModelEvent<Player> OnRPCExecute { get; set; }
+
         /// <summary>
         /// 当开始下载文件时调用, 参数1(Player):下载哪个玩家上传的文件 参数2(string):客户端上传的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
         /// </summary>
@@ -411,11 +417,11 @@ namespace Net.Server
         /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
-        public Action<Player, RTProgress> OnRevdFileProgress { get; set; }
+        public Action<Player, BigDataProgress> OnRevdFileProgress { get; set; }
         /// <summary>
         /// 当发送的文件进度
         /// </summary>
-        public Action<Player, RTProgress> OnSendFileProgress { get; set; }
+        public Action<Player, BigDataProgress> OnSendFileProgress { get; set; }
         #endregion
 
         /// <summary>
@@ -531,18 +537,11 @@ namespace Net.Server
         protected virtual void OnOperationSync(Player client, OperationList list) { }
 
         /// <summary>
-        /// 当客户端发送的大数据时, 可监听此事件显示进度值
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="progress"></param>
-        protected virtual void OnRevdRTProgress(Player client, RTProgress progress) { }
-
-        /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
         /// <param name="client"></param>
         /// <param name="progress"></param>
-        protected virtual void OnCallProgress(Player client, RTProgress progress) { }
+        protected virtual void OnCallProgress(Player client, BigDataProgress progress) { }
 
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
@@ -652,7 +651,6 @@ namespace Net.Server
             OnOperationSyncHandle += OnOperationSync;
             OnRevdBufferHandle += OnReceiveBuffer;
             OnReceiveFileHandle += OnReceiveFile;
-            OnRevdRTProgressHandle += OnRevdRTProgress;
             OnCallProgressHandle += OnCallProgress;
             if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
             if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
@@ -899,6 +897,7 @@ namespace Net.Server
             client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
             client.ConnectTime = DateTime.Now;
             client.Connected = true;
+            client.Server = this;
             OnThreadQueueSet(client);
             AcceptHander(client, args);
             SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
@@ -1010,7 +1009,7 @@ namespace Net.Server
                 client.stackStream.Write(buffer.Buffer, buffer.Position, size);
                 if (client.stackIndex < client.stackCount)
                 {
-                    InvokeRevdRTProgress(client, client.stackIndex, client.stackCount);
+                    InvokeCallProgress(client, client.stackIndex, client.stackCount);
                     return;
                 }
                 var count = (int)client.stackStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
@@ -1258,7 +1257,7 @@ namespace Net.Server
         protected virtual void UploadDataHandler(Player client, byte cmd, int id)
         {
             if (client.BigDataDic.TryGetValue(id, out BigData data))
-                SendFile(client, cmd, id, data);
+                client.SendFile(cmd, id, data);
         }
 
         protected virtual void DownloadDataHandler(Player client, ISegment segment)
@@ -1318,7 +1317,7 @@ namespace Net.Server
             if (data.Length >= length)
             {
                 client.BigDataDic.Remove(id);
-                OnRevdFileProgress?.Invoke(client, new RTProgress(name, data.Length / (float)length * 100f, RTState.Complete));
+                OnRevdFileProgress?.Invoke(client, new BigDataProgress(name, data.Length / (float)length * 100f, BigDataState.Complete));
                 data.Stream.Position = 0;
                 if (type == 0)
                 {
@@ -1353,7 +1352,7 @@ namespace Net.Server
                 {
                     recvFileTick = Environment.TickCount + 1000;
                     if (type == 0)
-                        OnRevdFileProgress?.Invoke(client, new RTProgress(name, data.Length / (float)length * 100f, RTState.Download));
+                        OnRevdFileProgress?.Invoke(client, new BigDataProgress(name, data.Length / (float)length * 100f, BigDataState.Download));
                 }
             }
         }
@@ -1378,17 +1377,10 @@ namespace Net.Server
             return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
 
-        protected void InvokeRevdRTProgress(Player client, int currValue, int dataCount)
-        {
-            float bfb = currValue / (float)dataCount * 100f;
-            var progress = new RTProgress(bfb, RTState.Sending);
-            OnRevdRTProgressHandle(client, progress);
-        }
-
         protected void InvokeCallProgress(Player client, int currValue, int dataCount)
         {
             float bfb = currValue / (float)dataCount * 100f;
-            var progress = new RTProgress(bfb, RTState.Sending);
+            var progress = new BigDataProgress(bfb, BigDataState.Sending);
             OnCallProgressHandle(client, progress);
         }
 
@@ -1658,7 +1650,6 @@ namespace Net.Server
             OnOperationSyncHandle -= OnOperationSync;
             OnRevdBufferHandle -= OnReceiveBuffer;
             OnReceiveFileHandle -= OnReceiveFile;
-            OnRevdRTProgressHandle -= OnRevdRTProgress;
             OnCallProgressHandle -= OnCallProgress;
             Debug.Log("服务器已关闭！");//先打印在移除事件
             Thread.Sleep(100);
@@ -1695,70 +1686,15 @@ namespace Net.Server
         public virtual void Response(Player client, byte cmd, string func, uint token, params object[] pars)
             => Call(client, cmd, func.CRCU32(), true, false, token, null, pars);
 
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
         public virtual void Call(Player client, byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
             => Call(client, cmd, protocol, true, serialize, token, null, pars);
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="buffer"></param>
+
         public virtual void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, 0, false, false, 0, buffer);
-        /// <summary>
-        /// 向客户端发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="cmd">网络命令</param>
-        /// <param name="buffer"></param>
         public virtual void Call(Player client, byte cmd, byte[] buffer) => Call(client, cmd, 0, false, false, 0, buffer);
-        /// <summary>
-        /// 发送灵活数据包
-        /// </summary>
-        /// <param name="client">客户端集合</param>
-        /// <param name="cmd"></param>
-        /// <param name="buffer">要包装的数据,你自己来定</param>
-        /// <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-        /// <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
+
         public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, cmd, 0, kernel, serialize, 0, buffer);
         public void Call(Player client, byte cmd, uint protocol, bool kernel, bool serialize, uint token, byte[] buffer, params object[] pars)
-        {
-            if (buffer != null)
-            {
-                var count = buffer.Length;
-                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
-                if (count >= size)
-                {
-                    SendFile(client, cmd, new MemoryStream(buffer), string.Empty);
-                    return;
-                }
-                Call(client, new RPCModel(cmd, buffer, kernel, serialize, protocol));
-            }
-            else
-            {
-                var model = new RPCModel(cmd, protocol, pars, kernel, !serialize) { token = token };
-                if (serialize)
-                {
-                    var segment = BufferPool.Take();
-                    OnSerializeRpc(segment, model);
-                    model.buffer = segment.ToArray(true);
-                }
-                Call(client, model);
-            }
-        }
-
-        public void Call(Player client, RPCModel model)
-        {
-            if (!client.Connected)
-                return;
-            if (client.RpcModels.Count >= LimitQueueCount)
-            {
-                OnDataQueueOverflow(client);
-                return;
-            }
-            client.RpcModels.Enqueue(model);
-        }
+            => client.Call(cmd, protocol, kernel, serialize, token, buffer, pars);
 
         /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte[] buffer)
@@ -2021,86 +1957,13 @@ namespace Net.Server
         /// <param name="filePath"></param>
         /// <param name="bufferSize">每次发送数据大小</param>
         /// <returns></returns>
-        public bool SendFile(Player client, string filePath, int bufferSize = 50000)
-        {
-            var path1 = Path.GetDirectoryName(filePath);
-            if (!Directory.Exists(path1))
-            {
-                Debug.LogError($"[{client}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
-                return false;
-            }
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
-            SendFile(client, NetCmd.UploadData, fileStream, Path.GetFileName(filePath), bufferSize);
-            return true;
-        }
-
-        private void SendFile(Player client, byte cmd, Stream stream, string name, int bufferSize = 50000)
-        {
-            var data = new BigData
-            {
-                Id = stream.GetHashCode(),
-                Stream = stream,
-                Name = name,
-                bufferSize = bufferSize
-            };
-            client.BigDataDic.Add(data.Id, data);
-            SendFile(client, cmd, data.Id, data);
-        }
-
-        private void SendFile(Player client, byte cmd, int id, BigData fileData)
-        {
-            var stream = fileData.Stream;
-            var complete = false;
-            long bufferSize = fileData.bufferSize;
-            if (stream.Position + fileData.bufferSize >= stream.Length)
-            {
-                bufferSize = stream.Length - stream.Position;
-                complete = true;
-            }
-            var buffer = new byte[bufferSize];
-            stream.Read(buffer, 0, buffer.Length);
-            var size = (fileData.Name.Length * 2) + 12;
-            var segment = BufferPool.Take((int)bufferSize + size);
-            var type = (byte)(fileData.Stream is FileStream ? 0 : 1);
-            segment.Write(cmd);
-            segment.Write(type);
-            segment.Write(fileData.Id);
-            segment.Write(fileData.Stream.Length);
-            segment.Write(fileData.Name);
-            segment.Write(buffer);
-            Call(client, NetCmd.UploadData, segment.ToArray(true));
-            if (complete)
-            {
-                if (OnSendFileProgress != null & type == 0)
-                    OnSendFileProgress(client, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Complete));
-                client.BigDataDic.Remove(id);
-                fileData.Stream.Close();
-            }
-            else if (Environment.TickCount >= sendFileTick)
-            {
-                sendFileTick = Environment.TickCount + 1000;
-                if (OnSendFileProgress != null & type == 0)
-                    OnSendFileProgress(client, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Sending));
-            }
-        }
+        public bool SendFile(Player client, string filePath, int bufferSize = 50000) => client.SendFile(filePath, bufferSize);
 
         /// <summary>
         /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
         /// </summary>
         /// <returns>是否可发送数据</returns>
-        public bool CheckSend(Player client)
-        {
-            return client.RpcModels.Count < LimitQueueCount;
-        }
-
-        /// <summary>
-        /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-        /// </summary>
-        /// <returns>是否可发送数据</returns>
-        public bool CheckCall(Player client)
-        {
-            return client.RpcModels.Count < LimitQueueCount;
-        }
+        public bool CheckCall(Player client) => client.CheckCall();
 
         /// <summary>
         /// 设置攻击防护(SYN-ACK攻击)

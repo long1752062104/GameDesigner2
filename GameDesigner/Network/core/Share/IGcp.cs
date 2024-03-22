@@ -13,8 +13,8 @@ namespace Net.Share
         int RTO { get; set; }
         int MTPS { get; set; }
         FlowControlMode FlowControl { get; set; }
-        Action<RTProgress> OnRevdProgress { get; set; }
-        Action<RTProgress> OnSendProgress { get; set; }
+        Action<BigDataProgress> OnRevdProgress { get; set; }
+        Action<BigDataProgress> OnSendProgress { get; set; }
         Action<EndPoint, ISegment> OnSender { get; set; }
         EndPoint RemotePoint { get; set; }
 

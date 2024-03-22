@@ -16,7 +16,7 @@
     /// 网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
     /// <code>注意:不要试图new player出来, new出来后是没有作用的!</code>
     /// </summary>
-    public class NetPlayer : IDisposable, IRpcHandler
+    public partial class NetPlayer : IDisposable, IRpcHandler
     {
         /// <summary>
         /// 玩家名称
@@ -139,6 +139,10 @@
         /// </summary>
         public uint Token { get; set; }
         /// <summary>
+        /// 服务器对象
+        /// </summary>
+        public ServerBase Server { get; set; }
+        /// <summary>
         /// CRC校验错误次数, 如果有错误每秒提示一次
         /// </summary>
         public int CRCError { get; set; }
@@ -158,6 +162,16 @@
         /// 大数据传输缓存最大长度错误次数, 请在<see cref="ServerBase{Player, Scene}.BigDataCacheLength"/>设置最大缓存长度
         /// </summary>
         public int BigDataCacheLengthError { get; set; }
+        /// <summary>
+        /// 当接收到发送的文件进度
+        /// </summary>
+        public Action<BigDataProgress> OnRevdFileProgress { get; set; }
+        /// <summary>
+        /// 当发送的文件进度
+        /// </summary>
+        public Action<BigDataProgress> OnSendFileProgress { get; set; }
+
+        private int sendFileTick;
 
         #region 创建网络客户端(玩家)
         /// <summary>
@@ -207,7 +221,7 @@
                 ReceiveArgs.Dispose();
                 ReceiveArgs = null;
             }
-            if (Client != null) 
+            if (Client != null)
             {
                 Client.Shutdown(SocketShutdown.Both);
                 Client.Close();
@@ -430,12 +444,159 @@
         /// </summary>
         /// <param name="model"></param>
         public virtual void OnSyncPropertyHandler(RPCModel model) { }
-        #endregion
 
         /// <summary>
         /// 此方法需要自己实现, 实现内容如下: <see langword="xxServer.Instance.RemoveClient(this);"/>
         /// </summary>
         public virtual void Close() { }
+        #endregion
+
+        #region 客户端发送请求
+        public virtual void Call(uint protocol, params object[] pars)
+            => Call(NetCmd.CallRpc, protocol, true, false, 0, null, pars);
+        public virtual void Call(byte cmd, uint protocol, params object[] pars)
+            => Call(cmd, protocol, true, false, 0, null, pars);
+        public virtual void Response(uint protocol, bool serialize, uint token, params object[] pars)
+            => Call(NetCmd.CallRpc, protocol, true, serialize, token, null, pars);
+        public virtual void Response(uint protocol, uint token, params object[] pars)
+            => Call(NetCmd.CallRpc, protocol, true, false, token, null, pars);
+        public virtual void Response(byte cmd, uint protocol, uint token, params object[] pars)
+            => Call(cmd, protocol, true, false, token, null, pars);
+
+        public virtual void Call(string func, params object[] pars)
+            => Call(NetCmd.CallRpc, func.CRCU32(), true, false, 0, null, pars);
+        public virtual void Call(byte cmd, string func, params object[] pars)
+            => Call(cmd, func.CRCU32(), true, false, 0, null, pars);
+        public virtual void Response(string func, bool serialize, uint token, params object[] pars)
+            => Call(NetCmd.CallRpc, func.CRCU32(), true, serialize, token, null, pars);
+        public virtual void Response(string func, uint token, params object[] pars)
+            => Call(NetCmd.CallRpc, func.CRCU32(), true, false, token, null, pars);
+        public virtual void Response(byte cmd, string func, uint token, params object[] pars)
+            => Call(cmd, func.CRCU32(), true, false, token, null, pars);
+
+        public virtual void Call(byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
+            => Call(cmd, protocol, true, serialize, token, null, pars);
+
+        public virtual void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0, false, false, 0, buffer);
+        public virtual void Call(byte cmd, byte[] buffer) => Call(cmd, 0, false, false, 0, buffer);
+        public void Call(byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(cmd, 0, kernel, serialize, 0, buffer);
+        public void Call(byte cmd, uint protocol, bool kernel, bool serialize, uint token, byte[] buffer, params object[] pars)
+        {
+            if (buffer != null)
+            {
+                var count = buffer.Length;
+                var size = BufferPool.Size + Server.frame + Server.PackageAdapter.HeadCount;
+                if (count >= size)
+                {
+                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
+                    return;
+                }
+                Call(new RPCModel(cmd, buffer, kernel, serialize, protocol));
+            }
+            else
+            {
+                var model = new RPCModel(cmd, protocol, pars, kernel, !serialize) { token = token };
+                if (serialize)
+                {
+                    var segment = BufferPool.Take();
+                    Server.OnSerializeRPC(segment, model);
+                    model.buffer = segment.ToArray(true);
+                }
+                Call(model);
+            }
+        }
+
+        public void Call(RPCModel model)
+        {
+            if (!Connected)
+                return;
+            if (RpcModels.Count >= Server.LimitQueueCount)
+            {
+                DataQueueOverflowError++;
+                return;
+            }
+            RpcModels.Enqueue(model);
+        }
+        #endregion
+
+        /// <summary>
+        /// 发送文件, 客户端可以使用事件<see cref="Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="filePath"></param>
+        /// <param name="bufferSize">每次发送数据大小</param>
+        /// <returns></returns>
+        public bool SendFile(string filePath, int bufferSize = 50000)
+        {
+            var path1 = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(path1))
+            {
+                NDebug.LogError($"[{this}]文件不存在! 或者文件路径字符串编码错误! 提示:可以使用Notepad++查看, 编码是ANSI,不是UTF8");
+                return false;
+            }
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize);
+            SendFile(NetCmd.UploadData, fileStream, Path.GetFileName(filePath), bufferSize);
+            return true;
+        }
+
+        private void SendFile(byte cmd, Stream stream, string name, int bufferSize = 50000)
+        {
+            var data = new BigData
+            {
+                Id = stream.GetHashCode(),
+                Stream = stream,
+                Name = name,
+                bufferSize = bufferSize
+            };
+            BigDataDic.Add(data.Id, data);
+            SendFile(cmd, data.Id, data);
+        }
+
+        internal void SendFile(byte cmd, int id, BigData fileData)
+        {
+            var stream = fileData.Stream;
+            var complete = false;
+            long bufferSize = fileData.bufferSize;
+            if (stream.Position + fileData.bufferSize >= stream.Length)
+            {
+                bufferSize = stream.Length - stream.Position;
+                complete = true;
+            }
+            var buffer = new byte[bufferSize];
+            stream.Read(buffer, 0, buffer.Length);
+            var size = (fileData.Name.Length * 2) + 12;
+            var segment = BufferPool.Take((int)bufferSize + size);
+            var type = (byte)(fileData.Stream is FileStream ? 0 : 1);
+            segment.Write(cmd);
+            segment.Write(type);
+            segment.Write(fileData.Id);
+            segment.Write(fileData.Stream.Length);
+            segment.Write(fileData.Name);
+            segment.Write(buffer);
+            Call(NetCmd.UploadData, segment.ToArray(true));
+            if (complete)
+            {
+                if (OnSendFileProgress != null & type == 0)
+                    OnSendFileProgress(new BigDataProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, BigDataState.Complete));
+                BigDataDic.Remove(id);
+                fileData.Stream.Close();
+            }
+            else if (Environment.TickCount >= sendFileTick)
+            {
+                sendFileTick = Environment.TickCount + 1000;
+                if (OnSendFileProgress != null & type == 0)
+                    OnSendFileProgress(new BigDataProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, BigDataState.Sending));
+            }
+        }
+
+        /// <summary>
+        /// 检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
+        /// </summary>
+        /// <returns>是否可发送数据</returns>
+        public bool CheckCall()
+        {
+            return RpcModels.Count < Server.LimitQueueCount;
+        }
 
         public override string ToString()
         {

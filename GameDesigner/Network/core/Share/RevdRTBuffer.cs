@@ -3,7 +3,7 @@
     /// <summary>
     /// 可靠传输状态
     /// </summary>
-    public enum RTState
+    public enum BigDataState
     {
         /// <summary>
         /// 发送中
@@ -32,12 +32,12 @@
     /// </summary>
     /// <param name="progress">当前进度</param>
     /// <param name="state">当前状态</param>
-    public delegate void CallProgress(int progress, RTState state);
+    public delegate void CallProgress(int progress, BigDataState state);
 
     /// <summary>
     /// 可靠传输进度值
     /// </summary>
-    public struct RTProgress
+    public struct BigDataProgress
     {
         /// <summary>
         /// 进度名称
@@ -50,20 +50,20 @@
         /// <summary>
         /// 当前状态
         /// </summary>
-        public RTState state;
+        public BigDataState state;
 
         /// <summary>
         /// 构造
         /// </summary>
         /// <param name="progress"></param>
         /// <param name="state"></param>
-        public RTProgress(float progress, RTState state) : this()
+        public BigDataProgress(float progress, BigDataState state) : this()
         {
             this.progress = progress;
             this.state = state;
         }
 
-        public RTProgress(string name, float progress, RTState state) : this(progress, state)
+        public BigDataProgress(string name, float progress, BigDataState state) : this(progress, state)
         {
             this.name = name;
         }

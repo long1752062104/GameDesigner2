@@ -67,8 +67,8 @@ namespace Net.Plugins
         private uint revderPackage;
         private readonly Queue<ISegment> revderQueue = new Queue<ISegment>();
         public Action<EndPoint, ISegment> OnSender { get; set; }
-        public Action<RTProgress> OnSendProgress { get; set; }
-        public Action<RTProgress> OnRevdProgress { get; set; }
+        public Action<BigDataProgress> OnSendProgress { get; set; }
+        public Action<BigDataProgress> OnRevdProgress { get; set; }
         private readonly MyDictionary<uint, MyDictionary<int, DataFrame>> senderDict = new MyDictionary<uint, MyDictionary<int, DataFrame>>();
         private readonly MyDictionary<uint, DataPackage> revderDict = new MyDictionary<uint, DataPackage>();
         public EndPoint RemotePoint { get; set; }
@@ -202,7 +202,7 @@ namespace Net.Plugins
                             if (dp.revderFrameEnd * MTU >= ProgressDataLen)
                             {
                                 var progress = (dp.revderHashCount / (float)dp.revderFrameEnd) * 100f;
-                                OnRevdProgress?.Invoke(new RTProgress(progress, (RTState)(progress >= 100f ? 3 : 1)));
+                                OnRevdProgress?.Invoke(new BigDataProgress(progress, (BigDataState)(progress >= 100f ? 3 : 1)));
                             }
                         }
                         if (!dp1.finish)
@@ -242,7 +242,7 @@ namespace Net.Plugins
                             if (dataLen >= ProgressDataLen)
                             {
                                 var progress = ((dic.Count * MTU) / (float)dataLen) * 100f;
-                                OnSendProgress?.Invoke(new RTProgress(progress, (RTState)(progress >= 100f ? 3 : 1)));
+                                OnSendProgress?.Invoke(new BigDataProgress(progress, (BigDataState)(progress >= 100f ? 3 : 1)));
                             }
                         }
                     }

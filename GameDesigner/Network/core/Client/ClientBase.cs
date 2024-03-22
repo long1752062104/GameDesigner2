@@ -205,11 +205,11 @@ namespace Net.Client
         /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
-        public virtual Action<RTProgress> OnRevdRTProgress { get; set; }
+        public virtual Action<BigDataProgress> OnRevdRTProgress { get; set; }
         /// <summary>
         /// 当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
         /// </summary>
-        public virtual Action<RTProgress> OnCallProgress { get; set; }
+        public virtual Action<BigDataProgress> OnCallProgress { get; set; }
         /// <summary>
         /// 当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果客户端的rpc列表中已经有了这个对象，还可以添加进去？
         /// </summary>
@@ -269,11 +269,11 @@ namespace Net.Client
         /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
-        public Action<RTProgress> OnRevdFileProgress { get; set; }
+        public Action<BigDataProgress> OnRevdFileProgress { get; set; }
         /// <summary>
         /// 当发送的文件进度
         /// </summary>
-        public Action<RTProgress> OnSendFileProgress { get; set; }
+        public Action<BigDataProgress> OnSendFileProgress { get; set; }
         /// <summary>
         /// 当排队等待中
         /// </summary>
@@ -1666,7 +1666,7 @@ namespace Net.Client
                 {
                     if (type == 0)
                     {
-                        OnRevdFileProgress?.Invoke(new RTProgress(name, data.Length / (float)length * 100f, RTState.Complete));
+                        OnRevdFileProgress?.Invoke(new BigDataProgress(name, data.Length / (float)length * 100f, BigDataState.Complete));
                         var isDelete = true;
                         if (OnReceiveFileHandle != null)
                             isDelete = OnReceiveFileHandle(data);
@@ -1695,7 +1695,7 @@ namespace Net.Client
                 if (Environment.TickCount >= recvFileTick)
                 {
                     recvFileTick = Environment.TickCount + 1000;
-                    InvokeInMainThread(OnRevdFileProgress, new RTProgress(name, data.Length / (float)length * 100f, RTState.Download));
+                    InvokeInMainThread(OnRevdFileProgress, new BigDataProgress(name, data.Length / (float)length * 100f, BigDataState.Download));
                 }
             }
         }
@@ -1715,7 +1715,7 @@ namespace Net.Client
         protected void InvokeRevdRTProgress(int currValue, int dataCount)
         {
             float bfb = currValue / (float)dataCount * 100f;
-            var progress = new RTProgress(bfb, RTState.Sending);
+            var progress = new BigDataProgress(bfb, BigDataState.Sending);
             InvokeInMainThread(OnRevdRTProgress, progress);
         }
 
@@ -2223,7 +2223,7 @@ namespace Net.Client
             if (complete)
             {
                 if (OnSendFileProgress != null & type == 0)
-                    InvokeInMainThread(OnSendFileProgress, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Complete));
+                    InvokeInMainThread(OnSendFileProgress, new BigDataProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, BigDataState.Complete));
                 BigDataDic.Remove(id);
                 fileData.Stream.Close();
             }
@@ -2231,7 +2231,7 @@ namespace Net.Client
             {
                 sendFileTick = Environment.TickCount + 1000;
                 if (OnSendFileProgress != null & type == 0)
-                    InvokeInMainThread(OnSendFileProgress, new RTProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, RTState.Sending));
+                    InvokeInMainThread(OnSendFileProgress, new BigDataProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, BigDataState.Sending));
             }
         }
 
