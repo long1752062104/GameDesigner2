@@ -513,7 +513,7 @@ namespace Net.Server
         /// 当服务器判定客户端为断线或连接异常时，移除客户端时调用
         /// </summary>
         /// <param name="client">要移除的客户端</param>
-        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client}]断开{(client.Redundant ? "冗余" : "")}连接!"); }
+        protected virtual void OnRemoveClient(Player client) { Debug.Log($"[{client}]断开连接!"); }
 
         /// <summary>
         /// 当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
@@ -1551,9 +1551,9 @@ namespace Net.Server
         protected virtual void CheckHeart(Player client, uint tick)
         {
             client.heart++;
-            if (client.heart <= HeartLimit)//有5次确认心跳包
+            if (client.heart < HeartLimit / 2)//前面一半心跳可以不需要发送，比如有连续的数据，就不需要发送心跳
                 return;
-            if (client.heart < HeartLimit * 2)
+            if (client.heart < HeartLimit)
             {
                 Call(client, NetCmd.SendHeartbeat, new byte[0]);
                 return;

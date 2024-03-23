@@ -3,6 +3,7 @@
     using global::System;
     using global::System.Net;
     using global::System.Net.Sockets;
+    using Net.Event;
     using Net.Share;
     using Net.System;
 
@@ -15,17 +16,24 @@
     {
         protected override void CreateServerSocket(ushort port)
         {
-            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            Server.SendBufferSize = SendBufferSize;
-            Server.ReceiveBufferSize = ReceiveBufferSize;
+            Server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+            {
+                SendBufferSize = SendBufferSize,
+                ReceiveBufferSize = ReceiveBufferSize
+            };
             var address = new IPEndPoint(IPAddress.Any, port);
             Server.Bind(address);
-#if !UNITY_ANDROID && WINDOWS//在安卓启动服务器时忽略此错误
-            uint IOC_IN = 0x80000000;
-            uint IOC_VENDOR = 0x18000000;
-            uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
-            Server.IOControl((int)SIO_UDP_CONNRESET, new byte[] { global::System.Convert.ToByte(false) }, null);//udp远程关闭现有连接方案
-#endif
+            try //在安卓启动服务器时忽略此错误, 或者其他平台错误
+            {
+                uint IOC_IN = 0x80000000;
+                uint IOC_VENDOR = 0x18000000;
+                uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
+                Server.IOControl((int)SIO_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);//udp远程关闭现有连接方案
+            }
+            catch (Exception ex)
+            {
+                NDebug.LogWarning(ex);
+            }
         }
 
         protected override void AcceptHander(Player client, params object[] args)

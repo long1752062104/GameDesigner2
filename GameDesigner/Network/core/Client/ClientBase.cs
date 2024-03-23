@@ -1051,13 +1051,14 @@ namespace Net.Client
         /// 断开连接
         /// </summary>
         /// <param name="reuseSocket">断开连接后还能重新使用？</param>
-        public void Disconnect(bool reuseSocket)
+        public virtual void Disconnect(bool reuseSocket)
         {
             NetworkState = NetworkState.Disconnect;
             Call(NetCmd.Disconnect, new byte[0]);
             SendDirect();
             Connected = false;
-            Client.Disconnect(reuseSocket);
+            if (Client.ProtocolType == ProtocolType.Tcp)
+                Client.Disconnect(reuseSocket);
             InvokeInMainThread(OnDisconnectHandle);
         }
 
@@ -1905,10 +1906,7 @@ namespace Net.Client
         {
             var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
-            {
-                Call(NetCmd.Disconnect, new byte[0]);
-                SendDirect();
-            }
+                Disconnect(false);
             Connected = false;
             openClient = false;
             NetworkState = NetworkState.ConnectClosed;

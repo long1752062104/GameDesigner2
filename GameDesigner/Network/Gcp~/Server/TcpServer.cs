@@ -231,20 +231,6 @@
                 client.DataSizeError = 0;
             }
         }
-
-        protected override void CheckHeart(Player client, uint tick)
-        {
-            if (client.heart > HeartLimit * 5)
-            {
-                client.Redundant = true;
-                RemoveClient(client);
-                return;
-            }
-            client.heart++;
-            if (client.heart <= HeartLimit)//确认心跳包
-                return;
-            Call(client, NetCmd.SendHeartbeat, new byte[0]);//保活连接状态
-        }
     }
 
     /// <summary>

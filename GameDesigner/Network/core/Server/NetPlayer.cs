@@ -110,10 +110,6 @@
         internal MyDictionary<int, BigData> BigDataDic = new MyDictionary<int, BigData>();
         private byte[] addressBuffer;
         /// <summary>
-        /// 确定是否是冗余连接
-        /// </summary>
-        public bool Redundant { get; set; }
-        /// <summary>
         /// 当前排队座号
         /// </summary>
         public int QueueUpNo { get; internal set; }

@@ -199,11 +199,5 @@
                 }
             }
         }
-
-        /// <inheritdoc/>
-        public override void Close(bool await = true, int millisecondsTimeout = 100)
-        {
-            base.Close(await, millisecondsTimeout);
-        }
     }
 }

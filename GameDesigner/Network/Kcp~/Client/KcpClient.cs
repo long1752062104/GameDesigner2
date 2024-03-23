@@ -128,9 +128,15 @@
 
         public override void Close(bool await = true, int millisecondsTimeout = 100)
         {
-            base.Close(await);
+            base.Close(await, millisecondsTimeout);
             addressBuffer = null;
             ReleaseKcp();
+        }
+
+        public override void Disconnect(bool reuseSocket)
+        {
+            base.Disconnect(reuseSocket);
+            ikcp_update(kcp, (uint)Environment.TickCount + 1000);
         }
 
         private void ReleaseKcp()
