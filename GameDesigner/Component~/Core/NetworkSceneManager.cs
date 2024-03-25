@@ -37,7 +37,7 @@ namespace Net.UnityComponent
         public List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
         protected ClientBase client; //当多场景时, 退出战斗场景, 回主场景时, 先进入主场景再卸载战斗场景, 而ClientBase.Instance被赋值到其他多连接客户端对象上就会出现OnDestry时没有正确移除OnOperationSync事件
         protected Queue<Action> waitNetworkIdentityQueue = new Queue<Action>();
-        protected MyDictionary<byte, HashSet<Action<Operation>>> operationHandlerDict = new MyDictionary<byte, HashSet<Action<Operation>>>();
+        protected MyDictionary<byte, HashSet<OnOperationEvent>> operationHandlerDict = new MyDictionary<byte, HashSet<OnOperationEvent>>();
         protected FastList<Operation> operations = new FastList<Operation>();
 
         public virtual void Start()
@@ -66,9 +66,10 @@ namespace Net.UnityComponent
             }
             OnConnected();
             client = ClientBase.Instance;
-            client.OnOperationSync += OperationSync;
+            client.OnOperationSync += OperationSyncHandler;
             while (waitNetworkIdentityQueue.Count > 0)
                 waitNetworkIdentityQueue.Dequeue()?.Invoke();
+            AddOperation(new Operation(Command.OnPlayerEnter, client.UID));
         }
 
         public virtual void OnConnected()
@@ -128,13 +129,13 @@ namespace Net.UnityComponent
             }
         }
 
-        private void OperationSync(OperationList list)
+        private void OperationSyncHandler(in OperationList list)
         {
             foreach (var opt in list.operations)
                 OnNetworkOperSync(opt);
         }
 
-        private void OnNetworkOperSync(Operation opt)
+        private void OnNetworkOperSync(in Operation opt)
         {
             switch (opt.cmd)
             {
@@ -146,6 +147,9 @@ namespace Net.UnityComponent
                     break;
                 case Command.Destroy:
                     OnNetworkObjectDestroy(opt);
+                    break;
+                case Command.OnPlayerEnter:
+                    OnPlayerEnter(opt);
                     break;
                 case Command.OnPlayerExit:
                     OnPlayerExit(opt);
@@ -178,10 +182,10 @@ namespace Net.UnityComponent
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="operCall"></param>
-        public void RegisterOperationCommand(byte cmd, Action<Operation> operCall)
+        public void RegisterOperationCommand(byte cmd, OnOperationEvent operCall)
         {
             if (!operationHandlerDict.TryGetValue(cmd, out var operList))
-                operationHandlerDict.Add(cmd, operList = new HashSet<Action<Operation>>());
+                operationHandlerDict.Add(cmd, operList = new HashSet<OnOperationEvent>());
             operList.Add(operCall);
         }
 
@@ -190,10 +194,10 @@ namespace Net.UnityComponent
         /// </summary>
         /// <param name="cmd"></param>
         /// <param name="operCall"></param>
-        public void RemoveOperationCommand(byte cmd, Action<Operation> operCall)
+        public void RemoveOperationCommand(byte cmd, OnOperationEvent operCall)
         {
             if (!operationHandlerDict.TryGetValue(cmd, out var operList))
-                operationHandlerDict.Add(cmd, operList = new HashSet<Action<Operation>>());
+                operationHandlerDict.Add(cmd, operList = new HashSet<OnOperationEvent>());
             operList.Remove(operCall);
         }
 
@@ -202,7 +206,7 @@ namespace Net.UnityComponent
         /// </summary>
         /// <param name="opt"></param>
         /// <returns></returns>
-        public virtual NetworkObject OnCheckIdentity(Operation opt)
+        public virtual NetworkObject OnCheckIdentity(in Operation opt)
         {
             if (!identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
@@ -223,7 +227,7 @@ namespace Net.UnityComponent
         /// 当BuildComponent指令或Transform指令同步时调用
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnBuildOrTransformSync(Operation opt)
+        public virtual void OnBuildOrTransformSync(in Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -241,7 +245,7 @@ namespace Net.UnityComponent
             nb.OnNetworkOperationHandler(opt);
         }
 
-        public virtual void OnSyncVarHandler(Operation opt)
+        public virtual void OnSyncVarHandler(in Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -251,7 +255,7 @@ namespace Net.UnityComponent
             identity.SyncVarHandler(opt);
         }
 
-        public virtual void SyncVarGetHandler(Operation opt)
+        public virtual void SyncVarGetHandler(in Operation opt)
         {
             var identity = OnCheckIdentity(opt);
             if (identity == null)
@@ -267,7 +271,7 @@ namespace Net.UnityComponent
         /// 当其他网络物体被删除(入口1)
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnNetworkObjectDestroy(Operation opt)
+        public virtual void OnNetworkObjectDestroy(in Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
             {
@@ -275,7 +279,19 @@ namespace Net.UnityComponent
             }
         }
 
-        public virtual void OnPlayerExit(Operation opt)
+        public virtual void OnPlayerEnter(in Operation opt)
+        {
+            foreach (var item in identitys.Values)
+            {
+                if (!item.IsLocal)
+                    continue;
+                for (int i = 0; i < item.networkBehaviours.Count; i++)
+                    if (item.networkBehaviours[i] is NetworkTransformBase networkTransform)
+                        networkTransform.ForcedSynchronous();
+            }
+        }
+
+        public virtual void OnPlayerExit(in Operation opt)
         {
             if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
                 OnPlayerDestroy(identity, true);
@@ -310,7 +326,7 @@ namespace Net.UnityComponent
         /// </summary>
         /// <param name="opt"></param>
         /// <param name="identity"></param>
-        public virtual void OnNetworkObjectCreate(Operation opt, NetworkObject identity)
+        public virtual void OnNetworkObjectCreate(in Operation opt, NetworkObject identity)
         {
         }
 
@@ -335,7 +351,7 @@ namespace Net.UnityComponent
         /// 当其他操作指令调用
         /// </summary>
         /// <param name="opt"></param>
-        public virtual void OnOtherOperator(Operation opt)
+        public virtual void OnOtherOperator(in Operation opt)
         {
         }
 
@@ -360,7 +376,7 @@ namespace Net.UnityComponent
             NetworkObject.UnInit();//每次离开战斗场景都要清除初始化identity
             if (client == null)
                 return;
-            client.OnOperationSync -= OperationSync;
+            client.OnOperationSync -= OperationSyncHandler;
         }
 
         /// <summary>

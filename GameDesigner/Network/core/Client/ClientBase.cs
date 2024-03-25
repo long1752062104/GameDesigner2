@@ -201,7 +201,7 @@ namespace Net.Client
         /// <summary>
         /// 当使用服务器的NetScene.AddOperation方法时调用， 场景内的所有演员行为同步
         /// </summary>
-        public Action<OperationList> OnOperationSync { get; set; }
+        public OnOperationSyncEvent OnOperationSync { get; set; }
         /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
@@ -938,6 +938,11 @@ namespace Net.Client
             WorkerQueue.Call(action, model);
         }
 
+        protected void InvokeInMainThread(OnOperationSyncEvent action, in OperationList operList)
+        {
+            WorkerQueue.Call(action, operList);
+        }
+
         /// <summary>
         /// 局域网广播寻找服务器主机, 如果找到则通过 result 参数调用, 如果成功获取到主机, 那么result的第一个参数为true, 并且result的第二个参数为服务器IP
         /// </summary>
@@ -1051,13 +1056,14 @@ namespace Net.Client
         /// 断开连接
         /// </summary>
         /// <param name="reuseSocket">断开连接后还能重新使用？</param>
-        public virtual void Disconnect(bool reuseSocket)
+        /// <param name="invokeSocketDisconnect"></param>
+        public virtual void Disconnect(bool reuseSocket, bool invokeSocketDisconnect = true)
         {
             NetworkState = NetworkState.Disconnect;
             Call(NetCmd.Disconnect, new byte[0]);
             SendDirect();
             Connected = false;
-            if (Client.ProtocolType == ProtocolType.Tcp)
+            if (Client.ProtocolType == ProtocolType.Tcp && invokeSocketDisconnect)
                 Client.Disconnect(reuseSocket);
             InvokeInMainThread(OnDisconnectHandle);
         }
@@ -1906,7 +1912,7 @@ namespace Net.Client
         {
             var isDispose = openClient;
             if (Connected & openClient & NetworkState == NetworkState.Connected)
-                Disconnect(false);
+                Disconnect(false, false);
             Connected = false;
             openClient = false;
             NetworkState = NetworkState.ConnectClosed;

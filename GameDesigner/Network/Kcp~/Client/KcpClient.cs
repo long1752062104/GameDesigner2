@@ -133,9 +133,9 @@
             ReleaseKcp();
         }
 
-        public override void Disconnect(bool reuseSocket)
+        public override void Disconnect(bool reuseSocket, bool invokeSocketDisconnect = true)
         {
-            base.Disconnect(reuseSocket);
+            base.Disconnect(reuseSocket, false);
             ikcp_update(kcp, (uint)Environment.TickCount + 1000);
         }
 

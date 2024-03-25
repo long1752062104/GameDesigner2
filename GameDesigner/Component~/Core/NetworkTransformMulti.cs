@@ -30,9 +30,14 @@ namespace Net.UnityComponent
         private void InitChilds()
         {
             for (int i = 0; i < childs.Length; i++)
-            {
                 childs[i].Init(i + 1);
-            }
+        }
+
+        public override void ForcedSynchronous()
+        {
+            base.ForcedSynchronous();
+            for (int i = 0; i < childs.Length; i++)
+                childs[i].SyncTransformState(netObj.Identity, currMode, netObj.registerObjectIndex, NetComponentID);
         }
 
         public override void NetworkUpdate()
@@ -112,19 +117,22 @@ namespace Net.UnityComponent
         internal void NetworkSyncCheck(int identity, SyncMode mode, int registerObjectIndex, int componentId)
         {
             if (transform.localPosition != position | transform.localRotation != rotation | transform.localScale != localScale)
+                SyncTransformState(identity, mode, registerObjectIndex, componentId);
+        }
+
+        public void SyncTransformState(int identity, SyncMode mode, int registerObjectIndex, int componentId)
+        {
+            position = transform.localPosition; //必须在这里处理，在上面处理会有点问题
+            rotation = transform.localRotation;
+            localScale = transform.localScale;
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
-                position = transform.localPosition;
-                rotation = transform.localRotation;
-                localScale = transform.localScale;
-                NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
-                {
-                    cmd1 = (byte)mode,
-                    uid = ClientBase.Instance.UID,
-                    index = registerObjectIndex,
-                    index1 = componentId,
-                    index2 = childId
-                });
-            }
+                cmd1 = (byte)mode,
+                uid = ClientBase.Instance.UID,
+                index = registerObjectIndex,
+                index1 = componentId,
+                index2 = childId
+            });
         }
 
         public void SyncTransform(float lerpSpeed)

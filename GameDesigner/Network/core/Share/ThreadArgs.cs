@@ -91,4 +91,21 @@ namespace Net.Share
             callback?.Invoke(arg1);
         }
     }
+
+    public readonly struct OperationSyncThreadArgs : IThreadArgs
+    {
+        public readonly OnOperationSyncEvent callback;
+        public readonly OperationList arg1;
+
+        public OperationSyncThreadArgs(OnOperationSyncEvent callback, in OperationList arg1)
+        {
+            this.callback = callback;
+            this.arg1 = arg1;
+        }
+
+        public void Invoke()
+        {
+            callback?.Invoke(arg1);
+        }
+    }
 }

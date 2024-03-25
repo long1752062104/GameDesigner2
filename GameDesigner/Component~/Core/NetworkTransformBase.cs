@@ -55,7 +55,7 @@ namespace Net.UnityComponent
         [HideInInspector] public SyncMode currMode = SyncMode.None;
         public float controlTime = 0.5f;
         public float lerpSpeed = 0.3f;
-        public bool fixedSync = true;
+        public bool fixedSync = false;
         public float fixedSendTime = 1f;//固定发送时间
         internal float fixedTime;
         [HideInInspector] public float currControlTime;
@@ -91,17 +91,15 @@ namespace Net.UnityComponent
         public virtual void NetworkSyncCheck()
         {
             if (transform.position != position | transform.rotation != rotation | transform.localScale != localScale | (Time.time > fixedTime & fixedSync))
-            {
-                position = transform.position;
-                rotation = transform.rotation;
-                localScale = transform.localScale;
-                fixedTime = Time.time + fixedSendTime;
-                StartSyncTransformState();
-            }
+                SyncTransformState();
         }
 
-        public virtual void StartSyncTransformState()
+        public virtual void SyncTransformState()
         {
+            position = transform.position; //必须在这里处理，在上面处理会有点问题
+            rotation = transform.rotation;
+            localScale = transform.localScale;
+            fixedTime = Time.time + fixedSendTime;
             NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
             {
                 cmd1 = (byte)currMode,
@@ -109,6 +107,11 @@ namespace Net.UnityComponent
                 index1 = NetComponentID,
                 uid = ClientBase.Instance.UID
             });
+        }
+
+        public virtual void ForcedSynchronous()
+        {
+            SyncTransformState();
         }
 
         public virtual void SyncTransform()

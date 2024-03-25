@@ -58,6 +58,10 @@
         /// </summary>
         public const byte Destroy = 110;
         /// <summary>
+        /// 当玩家进入场景后通知
+        /// </summary>
+        public const byte OnPlayerEnter = 113;
+        /// <summary>
         /// 当客户端退出游戏, 通知其他客户端删除此客户端所生成的NetworkIdentity物体
         /// </summary>
         public const byte OnPlayerExit = 114;

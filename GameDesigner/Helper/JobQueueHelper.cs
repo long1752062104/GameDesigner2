@@ -31,6 +31,11 @@ namespace Net.Helper
             WorkerQueue.Enqueue(new RPCModelThreadArgs(action, model));
         }
 
+        public void Call(OnOperationSyncEvent action, in OperationList operList)
+        {
+            WorkerQueue.Enqueue(new OperationSyncThreadArgs(action, operList));
+        }
+
         public void Execute()
         {
             int count = WorkerQueue.Count;
