@@ -517,9 +517,9 @@ namespace Binding
             SerializeCache<System.DBNull>.Serialize = this;
         }
     }
-    public readonly struct SystemEnumBind<T> : ISerialize<T>, ISerialize where T : System.Enum
+    public class SystemEnumBind<T> : ISerialize<T>, ISerialize where T : System.Enum
     {
-        public ushort HashCode { get { return 20; } }
+        public ushort HashCode { get; private set; }
         public void Write(T value, ISegment stream)
         {
             stream.Write(value);
@@ -541,6 +541,7 @@ namespace Binding
 
         public void Bind()
         {
+            HashCode = EnumHashCodeBind.BaseHashCode++;
             SerializeCache<T>.Serialize = this;
         }
     }
@@ -1078,9 +1079,9 @@ namespace Binding
             SerializeCache<System.DBNull[]>.Serialize = this;
         }
     }
-    public readonly struct SystemEnumArrayBind<T> : ISerialize<T[]>, ISerialize where T : System.Enum
+    public class SystemEnumArrayBind<T> : ISerialize<T[]>, ISerialize where T : System.Enum
     {
-        public ushort HashCode { get { return 40; } }
+        public ushort HashCode { get; private set; }
         public void Write(T[] value, ISegment stream)
         {
             stream.Write(value.Length);
@@ -1112,6 +1113,7 @@ namespace Binding
 
         public void Bind()
         {
+            HashCode = EnumHashCodeBind.ArrayHashCode++;
             SerializeCache<T[]>.Serialize = this;
         }
     }
@@ -1649,9 +1651,10 @@ namespace Binding
             SerializeCache<System.Collections.Generic.List<System.DBNull>>.Serialize = this;
         }
     }
-    public readonly struct SystemCollectionsGenericListSystemEnumBind<T> : ISerialize<System.Collections.Generic.List<T>>, ISerialize where T : System.Enum
+    public class SystemCollectionsGenericListSystemEnumBind<T> : ISerialize<System.Collections.Generic.List<T>>, ISerialize where T : System.Enum
     {
-        public ushort HashCode { get { return 60; } }
+
+        public ushort HashCode { get; private set; }
         public void Write(System.Collections.Generic.List<T> value, ISegment stream)
         {
             stream.Write(value.Count);
@@ -1683,8 +1686,16 @@ namespace Binding
 
         public void Bind()
         {
+            HashCode = EnumHashCodeBind.GenericHashCode++;
             SerializeCache<System.Collections.Generic.List<T>>.Serialize = this;
         }
     }
     #endregion
+
+    static class EnumHashCodeBind
+    {
+        public static ushort BaseHashCode = 200; //基元类型到框架核心类使用1-156，枚举从200-300，可以定义100个枚举类型
+        public static ushort ArrayHashCode = 300; //基元类型到框架核心类使用1-156，枚举从300-400，可以定义100个枚举类型
+        public static ushort GenericHashCode = 400; //基元类型到框架核心类使用1-156，枚举从400-500，可以定义100个枚举类型
+    }
 }
