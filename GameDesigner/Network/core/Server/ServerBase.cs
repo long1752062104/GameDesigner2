@@ -526,7 +526,8 @@ namespace Net.Server
         /// 当接收到客户端发送的文件
         /// </summary>
         /// <param name="client">当前客户端</param>
-        /// <param name="fileData"></param>
+        /// <param name="fileData">文件数据</param>
+        /// <returns>true:框架内部释放文件流和删除临时文件(默认) false:使用者处理</returns>
         protected virtual bool OnReceiveFile(Player client, BigData fileData) { return true; }
 
         /// <summary>

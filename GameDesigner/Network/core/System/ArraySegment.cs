@@ -528,7 +528,8 @@ namespace Net.System
 
         public void SetPositionLength(int length)
         {
-            Position = length;
+            Position = Offset + length; //解决如果有偏移，ToArray后错乱问题
+            //Position = length;
             Count = length;
         }
 
@@ -1884,8 +1885,9 @@ namespace Net.System
 
         public void Flush(bool resetPos = true)
         {
-            if (Position > Count)
-                Count = Position;
+            var count = Position - Offset; //当存在偏移后要处理，否则错乱
+            if (count > Count)
+                Count = count;
             if (resetPos)
                 Position = Offset;
         }

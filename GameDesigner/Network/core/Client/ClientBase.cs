@@ -1605,10 +1605,10 @@ namespace Net.Client
             }
         }
 
-        public virtual void UploadDataHandler(byte cmd, int id)
+        public virtual void UploadDataHandler(byte cmd, int fileId)
         {
-            if (BigDataDic.TryGetValue(id, out BigData data))
-                SendFile(cmd, id, data);
+            if (BigDataDic.TryGetValue(fileId, out BigData data))
+                SendFile(cmd, fileId, data);
         }
 
         public virtual void DownloadDataHandler(ISegment segment)
@@ -2174,7 +2174,6 @@ namespace Net.Client
         /// 发送文件, 服务器可以通过重写<see cref="Server.ServerBase{Player, Scene}.OnReceiveFile"/>方法来接收 或 使用事件<see cref="Server.ServerBase{Player, Scene}.OnReceiveFileHandle"/>来监听并处理
         /// </summary>
         /// <param name="filePath"></param>
-        /// <param name="bufferSize">每次发送数据大小</param>
         /// <returns></returns>
         public bool SendFile(string filePath)
         {
@@ -2202,7 +2201,7 @@ namespace Net.Client
             SendFile(cmd, data.Id, data);
         }
 
-        private void SendFile(byte cmd, int id, BigData fileData)
+        private void SendFile(byte cmd, int fileId, BigData fileData)
         {
             var stream = fileData.Stream;
             var complete = false;
@@ -2228,7 +2227,7 @@ namespace Net.Client
             {
                 if (OnSendFileProgress != null & type == 0)
                     InvokeInMainThread(OnSendFileProgress, new BigDataProgress(fileData.Name, stream.Position / (float)stream.Length * 100f, BigDataState.Complete));
-                BigDataDic.Remove(id);
+                BigDataDic.Remove(fileId);
                 fileData.Stream.Close();
             }
             else if (Environment.TickCount >= sendFileTick)

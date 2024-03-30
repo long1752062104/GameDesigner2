@@ -76,18 +76,21 @@
         /// <summary>
         /// 深复制
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="target"></param>
         /// <returns></returns>
         public static object DeepCopy(Type type, object target)
         {
             var obj = Activator.CreateInstance(type);
-            var loops = new List<object>();
-            loops.Add(target);
+            var loops = new List<object>
+            {
+                target
+            };
             DeepCopy(ref target, ref obj, loops, new List<Type>() { typeof(UnityEngine.Object) });
             return obj;
         }
 
-        private static void DeepCopy(ref object source, ref object value, List<object> loops, List<Type> types) 
+        private static void DeepCopy(ref object source, ref object value, List<object> loops, List<Type> types)
         {
             var t = value.GetType();
             var fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
@@ -131,7 +134,7 @@
                     {
                         Array.Copy(list, list1, list.Length);
                     }
-                    else 
+                    else
                     {
                         for (int i = 0; i < list.Length; i++)
                         {
@@ -190,7 +193,7 @@
                     }
                     field.SetValue(value, list1);
                 }
-                else if(!field.IsNotSerialized)
+                else if (!field.IsNotSerialized)
                 {
                     var value1 = field.GetValue(source);
                     var value2 = field.GetValue(value);
@@ -201,10 +204,21 @@
                     }
                     else
                     {
-                        if (value1 == null | value2 == null | loops.Contains(value2))
+                        if (value1 == null)
+                            continue;
+                        if (value2 == null)
+                        {
+                            var type = value1.GetType();
+                            var ctr = type.GetConstructor(new Type[0]);
+                            if (ctr == null)
+                                continue;
+                            value2 = ctr.Invoke(null);
+                        }
+                        if (loops.Contains(value2))
                             continue;
                         loops.Add(value2);
                         DeepCopy(ref value1, ref value2, loops, types);
+                        field.SetValue(value, value2);
                     }
                 }
             }

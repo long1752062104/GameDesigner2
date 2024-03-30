@@ -138,6 +138,7 @@ namespace Net.System
         /// 复制分片数据
         /// </summary>
         /// <param name="recovery">复制数据后立即回收此分片?</param>
+        /// <param name="resetPos"></param>
         /// <returns></returns>
         public byte[] ToArray(bool recovery = false, bool resetPos = false)
         {
@@ -536,7 +537,8 @@ namespace Net.System
 
         public void SetPositionLength(int length)
         {
-            Position = length;
+            Position = Offset + length; //解决如果有偏移，ToArray后错乱问题
+            //Position = length;
             Count = length;
         }
 
@@ -1894,8 +1896,9 @@ namespace Net.System
 
         public virtual void Flush(bool resetPos = true)
         {
-            if (Position > Count)
-                Count = Position;
+            var count = Position - Offset; //当存在偏移后要处理，否则错乱
+            if (count > Count)
+                Count = count;
             if (resetPos)
                 Position = Offset;
         }
