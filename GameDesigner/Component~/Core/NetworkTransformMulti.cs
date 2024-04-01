@@ -35,6 +35,7 @@ namespace Net.UnityComponent
 
         public override void ForcedSynchronous()
         {
+            InitChilds(); //要先初始化，否则子id是-1导致错误
             base.ForcedSynchronous();
             for (int i = 0; i < childs.Length; i++)
                 childs[i].SyncTransformState(netObj.Identity, currMode, netObj.registerObjectIndex, NetComponentID);

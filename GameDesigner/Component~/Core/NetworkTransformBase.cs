@@ -147,6 +147,7 @@ namespace Net.UnityComponent
         public override void OnNetworkObjectInit(int identity)
         {
             currMode = syncMode;
+            ForcedSynchronous(); //发起一次同步，让对方显示物体
         }
 
         public override void OnNetworkObjectCreate(in Operation opt)
