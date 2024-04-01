@@ -313,34 +313,6 @@
             }
         }
 
-        public static byte[] Serialize(string func, params object[] pars)
-        {
-            var stream = BufferPool.Take();
-            try
-            {
-                stream.Write(func);
-                foreach (var obj in pars)
-                {
-                    if (obj == null)
-                        continue;
-                    var type = obj.GetType();
-                    stream.Write(TypeToIndex(type));
-                    WriteObject(stream, type, obj, false, false);
-                }
-            }
-            catch (Exception ex)
-            {
-                string str = "函数:" + func + " 参数:";
-                foreach (var obj in pars)
-                    if (obj == null)
-                        str += $"[null]";
-                    else
-                        str += $"[{obj}]";
-                NDebug.LogError("序列化:" + str + "方法出错 详细信息:" + ex);
-            }
-            return stream.ToArray(true);
-        }
-
         public static void SerializeModel(ISegment segment, RPCModel model, bool recordType = false)
         {
             try

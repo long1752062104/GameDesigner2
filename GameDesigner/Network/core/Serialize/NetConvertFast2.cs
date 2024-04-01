@@ -69,6 +69,17 @@
     }
 
     /// <summary>
+    /// 绑定入口类型，Unity编辑器工具使用
+    /// </summary>
+    public interface IBindingEntryType
+    {
+        /// <summary>
+        /// 要绑定的类型列表
+        /// </summary>
+        List<Type> BindTypes { get; }
+    }
+
+    /// <summary>
     /// 序列化缓存
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -362,6 +373,13 @@
         public static ISegment SerializeObject(object value)
         {
             var stream = BufferPool.Take();
+            SerializeObject(value, stream);
+            stream.Count = stream.Position;
+            return stream;
+        }
+
+        public static void SerializeObject(object value, ISegment stream)
+        {
             try
             {
                 var type = value.GetType();
@@ -374,12 +392,6 @@
                 stream.Position = 0;
                 NDebug.LogError("序列化:" + value + "出错 详细信息:" + ex);
             }
-            finally
-            {
-                stream.Count = stream.Position;
-                stream.SetPosition(0);
-            }
-            return stream;
         }
 
         public static T DeserializeObject<T>(ISegment segment, bool isPush = true)
@@ -427,7 +439,7 @@
             throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用序列化生成工具生成{type}绑定类! (如果是基类,请联系作者修复!谢谢)");
         }
 
-        public static byte[] SerializeModel(RPCModel model) 
+        public static byte[] SerializeModel(RPCModel model)
         {
             var segment = BufferPool.Take();
             SerializeModel(segment, model);

@@ -61,7 +61,7 @@ public class BuildComponentTools : EditorWindow
                         & ptype != typeof(Net.Vector4) & ptype != typeof(Net.Rect) & ptype != typeof(Net.Quaternion)
                         & ptype != typeof(Net.Color) & ptype != typeof(Net.Color32) & ptype != typeof(Object) & !ptype.IsSubclassOf(typeof(Object)))
                         continue;
-                    fields1.Add(new FieldData() { name = item.Name });
+                    fields1.Add(new FieldData() { name = item.Name, declaringType = item.DeclaringType != type ? $" -> ({item.DeclaringType})" : "" });
                 }
                 for (int i = 0; i < methods.Length; i++)
                 {
@@ -88,7 +88,7 @@ public class BuildComponentTools : EditorWindow
                     }
                     if (not)
                         continue;
-                    fields1.Add(new FieldData() { name = met.ToString() });
+                    fields1.Add(new FieldData() { name = met.ToString(), declaringType = met.DeclaringType != type ? $" -> ({met.DeclaringType})" : "" });
                 }
                 foldout = new FoldoutData() { name = type.Name, fields = fields1, foldout = true };
             }
@@ -110,21 +110,22 @@ public class BuildComponentTools : EditorWindow
                     foldout.fields[i].select = GUI.Toolbar(rect1, foldout.fields[i].select, new string[] { "同步调用", "本地调用", "忽略" });
                     rect1.x += 200;
                     rect1.width = width - 200;
-                    GUIStyle titleStyle2 = new GUIStyle();
+                    var textColor = "";
+                    var labelStyle = new GUIStyle();
+                    labelStyle.normal.textColor = Color.white;
                     switch (foldout.fields[i].select)
                     {
                         case 0:
-                            titleStyle2.normal.textColor = Color.white;
+                            textColor = "white";
                             break;
                         case 1:
-                            titleStyle2.normal.textColor = Color.green;
+                            textColor = "#00FF00"; // "green";
                             break;
                         case 2:
-                            titleStyle2.normal.textColor = Color.red;
+                            textColor = "#FF0000"; // "red";
                             break;
                     }
-                    GUI.Label(rect1, foldout.fields[i].name, titleStyle2);
-
+                    GUI.Label(rect1, $"<color={textColor}>{foldout.fields[i].name}</color> <color=#FFD100>{foldout.fields[i].declaringType}</color>", labelStyle);
                 }
                 EditorGUI.indentLevel = 0;
             }
@@ -229,7 +230,7 @@ namespace BuildComponent
                     return;
                 {FieldName} = value;
                 self.{TypeFieldName} = value;
-                AddOperation({FieldIndex}, value);
+                AddOperation({FieldIndex}, {IsEnum}value);
             }
         }
 [Split]
@@ -263,7 +264,9 @@ namespace BuildComponent
                     {
 						if (opt.uid == ClientBase.Instance.UID)
 							return;
-						var {TypeFieldName} = DeserializeObject<{FieldType1}>(new Segment(opt.buffer, false));
+                        var segment = new Segment(opt.buffer, false);
+                        var data = DeserializeModel(segment);
+						var {TypeFieldName} = ({FieldType1})data.Obj;
 						{FieldName} = {TypeFieldName};
 						self.{TypeFieldName} = {TypeFieldName};
 					}
@@ -299,7 +302,8 @@ namespace BuildComponent
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
                 index2 = invokeId,
-                buffer = buffer
+                buffer = buffer,
+                uid = ClientBase.Instance.UID
             });
         }
     }
@@ -351,6 +355,7 @@ namespace BuildComponent
             blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
             blockCode = blockCode.Replace("{FieldName}", $"fields[{parNum}]");
             blockCode = blockCode.Replace("{FieldIndex}", $"{parNum}");
+            blockCode = blockCode.Replace("{IsEnum}", item.PropertyType.IsEnum ? "(int)" : "");
             blockCode = blockCode.Remove(blockCode.Length - 2, 2);
             sb2.Append(blockCode);
 

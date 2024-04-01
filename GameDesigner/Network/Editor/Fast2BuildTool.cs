@@ -9,13 +9,14 @@ using System.Linq;
 using Net.Helper;
 using System.Text;
 using Binding;
+using Net.Serialize;
 
 public class Fast2BuildTools2 : EditorWindow
 {
     private string search = "", search1 = "";
-    private string searchBind = "", searchBind1 = "";
+    private int searchType;
     private DateTime searchTime;
-    private TypeData[] types;
+    private List<TypeData> Types;
     private Vector2 scrollPosition;
     private Vector2 scrollPosition1;
 
@@ -33,15 +34,14 @@ public class Fast2BuildTools2 : EditorWindow
     {
         LoadData();
         var assemblyNames = data.SearchAssemblies.Split('|');
-        var types1 = new List<TypeData>();
+        Types = new List<TypeData>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assemblie in assemblies)
         {
             var name = assemblie.GetName().Name;
             if (assemblyNames.Contains(name))
-                types1.AddRange(AddTypes(assemblie));
+                Types.AddRange(AddTypes(assemblie));
         }
-        types = types1.ToArray();
     }
 
     private List<TypeData> AddTypes(Assembly assembly)
@@ -50,7 +50,7 @@ public class Fast2BuildTools2 : EditorWindow
         var types2 = assembly.GetTypes().Where(t => !t.IsAbstract & !t.IsInterface & !t.IsGenericType & !t.IsGenericTypeDefinition).ToArray();
         foreach (var type in types2)
         {
-            var str = type.FullName;
+            var str = type.ToString();
             types1.Add(new TypeData() { name = str, type = type });
         }
         return types1;
@@ -60,20 +60,77 @@ public class Fast2BuildTools2 : EditorWindow
     {
         EditorGUI.BeginChangeCheck();
         EditorGUILayout.BeginHorizontal();
-        search = EditorGUILayout.TextField("搜索绑定类型", search, GUI.skin.FindStyle("SearchTextField"));
-        if (GUILayout.Button("搜索", GUILayout.Width(50f)))
+        search = EditorGUILayout.TextField("搜索类型", search, GUI.skin.FindStyle("SearchTextField"));
+        if (GUILayout.Button("搜索类型", GUILayout.Width(60f)))
+        {
             search1 = string.Empty;
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.BeginHorizontal();
-        searchBind = EditorGUILayout.TextField("搜索已绑定类型", searchBind, GUI.skin.FindStyle("SearchTextField"));
-        if (GUILayout.Button("搜索", GUILayout.Width(50f)))
-            searchBind1 = string.Empty;
+            searchType = 0;
+        }
+        if (GUILayout.Button("搜索已绑", GUILayout.Width(60f)))
+        {
+            search1 = string.Empty;
+            searchType = 1;
+        }
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
         data.SearchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.SearchAssemblies);
         if (GUILayout.Button("刷新", GUILayout.Width(50f)))
             OnEnable();
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        data.IncludePath = EditorGUILayout.TextField("引用文件夹路径", data.IncludePath);
+        data.IncludeAll = GUILayout.Toggle(data.IncludeAll, "全部", GUILayout.Width(45));
+        Texture2D folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
+        if (GUILayout.Button(folderIcon, GUILayout.Width(30), GUILayout.Height(20)))
+            data.IncludePath = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
+        if (GUILayout.Button("刷新", GUILayout.Width(50f)))
+        {
+            if (!string.IsNullOrEmpty(data.IncludePath))
+            {
+                SearchOption searchOption;
+                if (data.IncludeAll)
+                    searchOption = SearchOption.AllDirectories;
+                else
+                    searchOption = SearchOption.TopDirectoryOnly;
+                var files = Directory.GetFiles(data.IncludePath, "*.cs", searchOption);
+                AddSerTypeInDirectory(files);
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        data.BindingEntryType = EditorGUILayout.TextField("绑定入口类型", data.BindingEntryType);
+        if (GUILayout.Button("刷新", GUILayout.Width(50f)))
+        {
+            if (string.IsNullOrEmpty(data.BindingEntryType))
+                goto J;
+            var bindingType = AssemblyHelper.GetTypeNotOptimized(data.BindingEntryType);
+            if (bindingType == null)
+            {
+                Debug.LogError($"{data.BindingEntryType}类型不存在!");
+                goto J;
+            }
+            var bindingEntryType = bindingType.GetInterface("Net.Serialize.IBindingEntryType");
+            if (bindingEntryType == null)
+            {
+                Debug.LogError($"{data.BindingEntryType}绑定类型必须继承Net.Serialize.IBindingEntryType接口!");
+                goto J;
+            }
+            var bindingEntry = (IBindingEntryType)Activator.CreateInstance(bindingType);
+            foreach (var type in bindingEntry.BindTypes)
+            {
+                foreach (var type1 in Types)
+                {
+                    if (type1.name != type.ToString())
+                        continue;
+                    AddSerType(type1);
+                    break;
+                }
+            }
+        }
+    J: EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("全部展开"))
             foreach (var type1 in data.typeNames)
@@ -92,7 +149,7 @@ public class Fast2BuildTools2 : EditorWindow
             var count = 0;
             foreach (var typeName in data.typeNames)
             {
-                foreach (var type1 in types)
+                foreach (var type1 in Types)
                 {
                     var names = type1.name.Split('.');
                     var name = names[names.Length - 1];
@@ -116,18 +173,6 @@ public class Fast2BuildTools2 : EditorWindow
         if (GUILayout.Button("完全显示"))
         {
             data.ShowType = 0;
-        }
-        if (GUILayout.Button("引用文件夹"))
-        {
-            var path = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
-            var files = Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly);
-            AddSerTypeInDirectory(files);
-        }
-        if (GUILayout.Button("引用文件夹(全部)"))
-        {
-            var path = EditorUtility.OpenFolderPanel("选择文件夹路径", "", "");
-            var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
-            AddSerTypeInDirectory(files);
         }
         EditorGUILayout.EndHorizontal();
         scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(search.Length > 0 ? position.height / 2 : position.height));
@@ -159,11 +204,11 @@ public class Fast2BuildTools2 : EditorWindow
             {
                 data.typeNames.Remove(type1);
                 SaveData();
-                return;
+                break;
             }
             if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
             {
-                GenericMenu menu = new GenericMenu();
+                var menu = new GenericMenu();
                 menu.AddItem(new GUIContent("全部勾上"), false, () =>
                 {
                     type1.fields.ForEach(item => item.serialize = true);
@@ -190,55 +235,53 @@ public class Fast2BuildTools2 : EditorWindow
         {
             search1 = search;
             searchTime = DateTime.Now.AddMilliseconds(20);
+            if (search.Length == 0)
+                selectType = "";
         }
         if (DateTime.Now > searchTime & search.Length > 0)
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 2));
-            foreach (var type1 in types)
+            if (searchType == 0)
             {
-                if (!type1.name.ToLower().Contains(search.ToLower()))
-                    continue;
-                if (GUILayout.Button(type1.name))
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 2));
+                foreach (var type1 in Types)
                 {
-                    AddSerType(type1);
-                    return;
-                }
-            }
-            GUILayout.EndScrollView();
-        }
-        if (searchBind != searchBind1)
-        {
-            searchBind1 = searchBind;
-            searchTime = DateTime.Now.AddMilliseconds(20);
-            if (searchBind.Length == 0)
-                selectType = "";
-        }
-        if (DateTime.Now > searchTime & searchBind.Length > 0)
-        {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 6));
-            foreach (var type1 in data.typeNames)
-            {
-                if (!type1.name.ToLower().Contains(searchBind.ToLower()))
-                    continue;
-                if (GUILayout.Button(type1.name))
-                {
-                    var scrollPosition2 = new Vector2();
-                    for (int i = 0; i < data.typeNames.Count; i++)
+                    if (!type1.name.ToLower().Contains(search.ToLower()))
+                        continue;
+                    if (GUILayout.Button(type1.name))
                     {
-                        if (data.typeNames[i].name == type1.name)
-                        {
-                            scrollPosition1 = scrollPosition2;
-                            selectType = type1.name;
-                            break;
-                        }
-                        scrollPosition2.y += 20f;//20是foldout标签
-                        if (data.typeNames[i].foldout)
-                            scrollPosition2.y += data.typeNames[i].fields.Count * 20f;
+                        AddSerType(type1);
+                        return;
                     }
-                    break;
                 }
+                GUILayout.EndScrollView();
             }
-            GUILayout.EndScrollView();
+            else
+            {
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.MaxHeight(position.height / 6));
+                foreach (var type1 in data.typeNames)
+                {
+                    if (!type1.name.ToLower().Contains(search.ToLower()))
+                        continue;
+                    if (GUILayout.Button(type1.name))
+                    {
+                        var scrollPosition2 = new Vector2();
+                        for (int i = 0; i < data.typeNames.Count; i++)
+                        {
+                            if (data.typeNames[i].name == type1.name)
+                            {
+                                scrollPosition1 = scrollPosition2;
+                                selectType = type1.name;
+                                break;
+                            }
+                            scrollPosition2.y += 20f;//20是foldout标签
+                            if (data.typeNames[i].foldout)
+                                scrollPosition2.y += data.typeNames[i].fields.Count * 20f;
+                        }
+                        break;
+                    }
+                }
+                GUILayout.EndScrollView();
+            }
         }
         data.SerField = EditorGUILayout.Toggle("序列化字段:", data.SerField);
         data.SerProperty = EditorGUILayout.Toggle("序列化属性:", data.SerProperty);
@@ -332,7 +375,7 @@ public class Fast2BuildTools2 : EditorWindow
                         typeFull = typeName;
                     else
                         typeFull = $"{nameSpace}.{typeName}";
-                    foreach (var type1 in types)
+                    foreach (var type1 in Types)
                     {
                         if (type1.name != typeFull)
                             continue;
@@ -345,7 +388,7 @@ public class Fast2BuildTools2 : EditorWindow
             if (typeName.Length > 0)
             {
                 var typeFull = $"{nameSpace}.{typeName}";
-                foreach (var type1 in types)
+                foreach (var type1 in Types)
                 {
                     if (type1.name != typeFull)
                         continue;
@@ -396,7 +439,7 @@ public class Fast2BuildTools2 : EditorWindow
     private void UpdateField(FoldoutData fd)
     {
         Type type = null;
-        foreach (var type2 in types)
+        foreach (var type2 in Types)
         {
             if (fd.name == type2.name)
             {
@@ -459,6 +502,7 @@ public class Fast2BuildTools2 : EditorWindow
     public class FieldData
     {
         public string name;
+        public string declaringType;
         public bool serialize;
         public int select;
     }
@@ -479,6 +523,9 @@ public class Fast2BuildTools2 : EditorWindow
         private bool serProperty = true;
         private SerializeMode serializeMode = SerializeMode.Compress;
         private int sortingOrder = 1;
+        private string includePath;
+        private bool includeAll;
+        private string bindingEntryType;
         private bool init;
 
         public void Init()
@@ -555,6 +602,39 @@ public class Fast2BuildTools2 : EditorWindow
                 if (sortingOrder != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");
                 sortingOrder = value;
+            }
+        }
+
+        public string IncludePath
+        {
+            get => includePath;
+            set
+            {
+                if (includePath != value & init)
+                    PersistHelper.Serialize(this, "fastProtoBuild.json");
+                includePath = value;
+            }
+        }
+
+        public bool IncludeAll
+        {
+            get => includeAll;
+            set
+            {
+                if (includeAll != value & init)
+                    PersistHelper.Serialize(this, "fastProtoBuild.json");
+                includeAll = value;
+            }
+        }
+
+        public string BindingEntryType
+        {
+            get => bindingEntryType;
+            set
+            {
+                if (bindingEntryType != value & init)
+                    PersistHelper.Serialize(this, "fastProtoBuild.json");
+                bindingEntryType = value;
             }
         }
     }

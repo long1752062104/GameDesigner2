@@ -57,7 +57,7 @@ namespace BuildComponent
                     return;
                 fields[2] = value;
                 self.updateMode = value;
-                AddOperation(2, value);
+                AddOperation(2, (int)value);
             }
         }
         public System.Single speed
@@ -87,7 +87,7 @@ namespace BuildComponent
                     return;
                 fields[4] = value;
                 self.cullingMode = value;
-                AddOperation(4, value);
+                AddOperation(4, (int)value);
             }
         }
         public override void OnPropertyAutoCheck()
@@ -573,7 +573,9 @@ namespace BuildComponent
                     {
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
-                        var applyRootMotion = DeserializeObject<System.Boolean>(new Segment(opt.buffer, false));
+                        var segment = new Segment(opt.buffer, false);
+                        var data = DeserializeModel(segment);
+                        var applyRootMotion = (System.Boolean)data.Obj;
                         fields[1] = applyRootMotion;
                         self.applyRootMotion = applyRootMotion;
                     }
@@ -582,7 +584,9 @@ namespace BuildComponent
                     {
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
-                        var updateMode = DeserializeObject<UnityEngine.AnimatorUpdateMode>(new Segment(opt.buffer, false));
+                        var segment = new Segment(opt.buffer, false);
+                        var data = DeserializeModel(segment);
+                        var updateMode = (UnityEngine.AnimatorUpdateMode)data.Obj;
                         fields[2] = updateMode;
                         self.updateMode = updateMode;
                     }
@@ -591,7 +595,9 @@ namespace BuildComponent
                     {
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
-                        var speed = DeserializeObject<System.Single>(new Segment(opt.buffer, false));
+                        var segment = new Segment(opt.buffer, false);
+                        var data = DeserializeModel(segment);
+                        var speed = (System.Single)data.Obj;
                         fields[3] = speed;
                         self.speed = speed;
                     }
@@ -600,7 +606,9 @@ namespace BuildComponent
                     {
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
-                        var cullingMode = DeserializeObject<UnityEngine.AnimatorCullingMode>(new Segment(opt.buffer, false));
+                        var segment = new Segment(opt.buffer, false);
+                        var data = DeserializeModel(segment);
+                        var cullingMode = (UnityEngine.AnimatorCullingMode)data.Obj;
                         fields[4] = cullingMode;
                         self.cullingMode = cullingMode;
                     }
@@ -1091,7 +1099,8 @@ namespace BuildComponent
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,
                 index2 = invokeId,
-                buffer = buffer
+                buffer = buffer,
+                uid = ClientBase.Instance.UID
             });
         }
     }
