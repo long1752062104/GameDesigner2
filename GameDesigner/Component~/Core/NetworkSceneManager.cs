@@ -140,7 +140,7 @@ namespace Net.UnityComponent
                 case Command.Transform:
                     OnBuildOrTransformSync(opt);
                     break;
-                case Command.BuildComponent:
+                case Command.NetworkComponent:
                     OnBuildOrTransformSync(opt);
                     break;
                 case Command.Destroy:

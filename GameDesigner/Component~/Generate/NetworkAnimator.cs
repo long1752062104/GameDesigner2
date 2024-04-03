@@ -1102,7 +1102,7 @@ namespace BuildComponent
             if (args == null)
                 args = new object[0];
             var buffer = SerializeModel(new RPCModel() { pars = args });
-            NetworkSceneManager.Instance.AddOperation(new Operation(Command.BuildComponent, netObj.Identity)
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.NetworkComponent, netObj.Identity)
             {
                 index = netObj.registerObjectIndex,
                 index1 = NetComponentID,

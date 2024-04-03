@@ -66,8 +66,8 @@
         /// </summary>
         public const byte OnPlayerExit = 114;
         /// <summary>
-        /// 网络组件生成工具同步指令
+        /// 网络行为组件命令，当你继承NetworkBehaviour组件实现你的网络组件时需要使用这个命令进行同步
         /// </summary>
-        public const byte BuildComponent = 115;
+        public const byte NetworkComponent = 115;
     }
 }

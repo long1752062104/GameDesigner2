@@ -12,6 +12,14 @@ namespace Net.UnityComponent
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         public NetworkObject netObj;
+        /// <summary>
+        /// 网络物体标识
+        /// </summary>
+        public int Identity => netObj.Identity;
+        /// <summary>
+        /// 网络物体注册索引
+        /// </summary>
+        public int RegisterObjectIndex => netObj.registerObjectIndex;
         [Tooltip("网络组件的ID,当FPS游戏时,自己身上只有一双手和枪,而其他客户端要显示完整模型时,用到另外的预制体,就会出现组件获取不一致问题,所以这里提供了网络组件ID,即可解决此问题")]
         [SerializeField] private int netComponentID = -1;
         /// <summary>
@@ -123,6 +131,16 @@ namespace Net.UnityComponent
         public virtual void NetworkUpdate()
         {
         }
+
+        /// <summary>
+        /// 添加场景同步操作, <see href="以下3个字段必须遵守规则进行设置"/>
+        /// <code><see cref="Operation.cmd"/> 命令必须是Command.NetworkComponent</code>
+        /// <code><see cref="Operation.identity"/> 作为网络物体标识</code>
+        /// <code><see cref="Operation.index"/> 作为要实例化registerObjects的物体索引</code>
+        /// <code><see cref="Operation.index1"/> 用作NetComponentID区分第几个网络组件同步</code> 
+        /// </summary>
+        /// <param name="operation"></param>
+        public void AddOperation(in Operation operation) => NetworkSceneManager.Instance.AddOperation(operation);
     }
 }
 #endif
