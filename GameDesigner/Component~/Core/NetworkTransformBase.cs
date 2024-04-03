@@ -147,7 +147,10 @@ namespace Net.UnityComponent
         public override void OnNetworkObjectInit(int identity)
         {
             currMode = syncMode;
-            ForcedSynchronous(); //发起一次同步，让对方显示物体
+            if (syncMode != SyncMode.Control && syncMode != SyncMode.SynchronizedAll) //如果是公共网络物体则不能初始化的时候通知，因为可能前面有玩家了，如果发起同步会导致前面的玩家被拉回原来位置
+                ForcedSynchronous(); //发起一次同步，让对方显示物体
+            else
+                currControlTime = controlTime; //如果是公共网络物体则开始时先处于被控制状态，这样就不会发送同步数据
         }
 
         public override void OnNetworkObjectCreate(in Operation opt)

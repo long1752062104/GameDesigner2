@@ -105,8 +105,6 @@ namespace Net.UnityComponent
                     if (identity.IsDispose)
                         continue;
                     identity.NetworkUpdate();
-                    identity.CheckSyncVar();
-                    identity.PropertyAutoCheckHandler();
                 }
                 if (client != null)
                 {
@@ -281,6 +279,8 @@ namespace Net.UnityComponent
 
         public virtual void OnPlayerEnter(in Operation opt)
         {
+            if (opt.identity == client.UID) //这个命令如果是本机发起，则不进行处理，这里控制如果是公共网络物体时会出现拉回原位问题
+                return;
             foreach (var item in identitys.Values)
             {
                 if (!item.IsLocal)

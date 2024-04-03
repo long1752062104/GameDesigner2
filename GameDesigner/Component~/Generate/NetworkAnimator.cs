@@ -522,16 +522,20 @@ namespace BuildComponent
         }
         public void Play(System.String stateName, System.Int32 layer, bool always = false)
         {
-            if (Equals(stateName, fields[160]) & Equals(layer, fields[161]) & !always) return;
-            fields[160] = stateName;
-            fields[161] = layer;
-            AddOperation(159, stateName, layer);
+            //if (Equals(stateName, fields[160]) & Equals(layer, fields[161]) & !always) return;
+            //fields[160] = stateName;
+            //fields[161] = layer;
+            var stateInfo = self.GetCurrentAnimatorStateInfo(layer);
+            if (!stateInfo.IsName(stateName))
+                AddOperation(159, stateName, layer);
         }
         public void Play(System.String stateName, bool always = false)
         {
-            if (Equals(stateName, fields[163]) & !always) return;
-            fields[163] = stateName;
-            AddOperation(162, stateName);
+            //if (Equals(stateName, fields[163]) & !always) return;
+            //fields[163] = stateName;
+            var stateInfo = self.GetCurrentAnimatorStateInfo(0);
+            if (!stateInfo.IsName(stateName))
+                AddOperation(162, stateName);
         }
         public void Play(System.String stateName, System.Int32 layer, System.Single normalizedTime, bool always = false)
         {
@@ -543,16 +547,20 @@ namespace BuildComponent
         }
         public void Play(System.Int32 stateNameHash, System.Int32 layer, bool always = false)
         {
-            if (Equals(stateNameHash, fields[169]) & Equals(layer, fields[170]) & !always) return;
-            fields[169] = stateNameHash;
-            fields[170] = layer;
-            AddOperation(168, stateNameHash, layer);
+            //if (Equals(stateNameHash, fields[169]) & Equals(layer, fields[170]) & !always) return;
+            //fields[169] = stateNameHash;
+            //fields[170] = layer;
+            var stateInfo = self.GetCurrentAnimatorStateInfo(layer);
+            if (!(stateInfo.shortNameHash == stateNameHash))
+                AddOperation(168, stateNameHash, layer);
         }
         public void Play(System.Int32 stateNameHash, bool always = false)
         {
-            if (Equals(stateNameHash, fields[172]) & !always) return;
-            fields[172] = stateNameHash;
-            AddOperation(171, stateNameHash);
+            //if (Equals(stateNameHash, fields[172]) & !always) return;
+            //fields[172] = stateNameHash;
+            var stateInfo = self.GetCurrentAnimatorStateInfo(0);
+            if (!(stateInfo.shortNameHash == stateNameHash))
+                AddOperation(171, stateNameHash);
         }
         public UnityEngine.Transform GetBoneTransform(UnityEngine.HumanBodyBones humanBoneId)
         {

@@ -55,6 +55,7 @@ namespace Net.UnityComponent
                 return;
             isInit = true;
             netObj = GetComponentInParent<NetworkObject>();
+            netObj.Init(); //必须先初始化网络物体，否则会出现Identity = -1的问题
             if (NetComponentID == -1)
             {
                 NetComponentID = netObj.networkBehaviours.Count;

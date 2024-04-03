@@ -54,7 +54,7 @@ namespace Net.UnityComponent
             Init();
         }
 
-        public void ReInit() 
+        public void ReInit()
         {
             isInit = false;
             Init();
@@ -114,7 +114,7 @@ namespace Net.UnityComponent
             }
         }
 
-        public void InitAll(Operation opt = default)
+        public void InitAll(in Operation opt = default)
         {
             Init();
             var nbs = GetComponentsInChildren<NetworkBehaviour>(true);
@@ -155,7 +155,7 @@ namespace Net.UnityComponent
                 SyncVarSend(buffer);
         }
 
-        private void SyncVarSend(byte[] buffer) 
+        private void SyncVarSend(byte[] buffer)
         {
             NetworkSceneManager.Instance.AddOperation(new Operation(NetCmd.SyncVarNetObj, m_identity)
             {
@@ -177,7 +177,7 @@ namespace Net.UnityComponent
             SyncVarHelper.RemoveSyncVar(syncVarInfos, target);
         }
 
-        internal void PropertyAutoCheckHandler() 
+        internal void PropertyAutoCheckHandler()
         {
             for (int i = 0; i < networkBehaviours.Count; i++)
             {
@@ -234,7 +234,7 @@ namespace Net.UnityComponent
         /// 初始化网络唯一标识
         /// </summary>
         /// <param name="capacity">一个客户端可以用的唯一标识容量</param>
-        public static void Init(int capacity = 5000) 
+        public static void Init(int capacity = 5000)
         {
             //要实时可初始化，要不然每次切换场景都无法初始化id，或者切换账号后uid变了，就得不到真正的identity值了
             Capacity = capacity;
@@ -275,8 +275,14 @@ namespace Net.UnityComponent
                 var networkBehaviour = networkBehaviours[i];
                 if (networkBehaviour == null)
                     continue;
+                if (!networkBehaviour.CheckEnabled())
+                    continue;
                 networkBehaviour.NetworkUpdate();
+                if (!IsLocal)
+                    continue;
+                networkBehaviour.OnPropertyAutoCheck();
             }
+            if (IsLocal) CheckSyncVar();
         }
 
 #if UNITY_EDITOR
