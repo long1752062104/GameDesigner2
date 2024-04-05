@@ -195,9 +195,14 @@ namespace Net.System
     public class DataCacheManager : Singleton<DataCacheManager>
     {
         public FastList<IDataCacheDictionary> cacheDictionaries = new FastList<IDataCacheDictionary>();
-        public int CacheTimeout = 1000 * 60 * 60 * 12; //缓存12个小时
-        public int NullQueryTimeout { get; set; } = 1000 * 60; //空查询60秒恢复
-
+        /// <summary>
+        /// 缓存12个小时
+        /// </summary>
+        public int CacheTimeout = 1000 * 60 * 60 * 12;
+        /// <summary>
+        /// 空查询60秒恢复
+        /// </summary>
+        public int NullQueryTimeout { get; set; } = 1000 * 60;
         private readonly object _lock = new object();
 
         public void AddCache(IDataCacheDictionary cacheDictionary)

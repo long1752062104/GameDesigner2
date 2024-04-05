@@ -2,6 +2,7 @@
 using Distributed;
 using Net.Distributed;
 using Net.Event;
+using Net.System;
 using System.Diagnostics;
 
 namespace DistributedExample
@@ -12,6 +13,7 @@ namespace DistributedExample
         {
             NDebug.BindConsoleLog(false);
             Fast2BuildMethod.DynamicBuild(SerializeMode.Compress, 1, typeof(ItemConfig), typeof(LoadBalanceConfig), typeof(UserData));
+            ThreadManager.Invoke("DataCacheManagerLoop", 1f, DataCacheManager.Instance.Executed, true);
             if (args.Length == 0)
             {
                 Start();

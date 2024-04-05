@@ -12,7 +12,7 @@ namespace Example2
         public MonsterView[] monsters;
         internal MyDictionary<int, MonsterView> monsterDics = new MyDictionary<int, MonsterView>();
 
-        public override void OnNetworkObjectCreate(Operation opt, NetworkObject identity)
+        public override void OnNetworkObjectCreate(in Operation opt, NetworkObject identity)
         {
             var p = identity.GetComponent<Player>();
             if (p != null)
@@ -47,7 +47,7 @@ namespace Example2
             return monster;
         }
 
-        public override void OnOtherOperator(Operation opt)
+        public override void OnOtherOperator(in Operation opt)
         {
             switch (opt.cmd)
             {

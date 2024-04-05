@@ -36,7 +36,7 @@ namespace Example1
             delay = ms;
         }
 
-        private void OnOperationSync(OperationList list)
+        private void OnOperationSync(in OperationList list)
         {
             frame = list.frame;
         }

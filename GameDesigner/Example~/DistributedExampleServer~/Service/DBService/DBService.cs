@@ -90,7 +90,7 @@ namespace DistributedExample
             {
                 var data = new UserData
                 {
-                    Id = distributedDB.GetUniqueId(DistributedUniqueIdType.User),
+                    //Id = distributedDB.GetUniqueId(DistributedUniqueIdType.User),
                     Account = account,
                     Password = password,
                     Level = 1,

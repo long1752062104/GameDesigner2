@@ -69,10 +69,10 @@ namespace Net.Distributed
             long uniqueId = 0;
             if (useMachineId)
             {
-                uniqueId |= (sequence++ & ((1L << sequenceBits) - 1)) << (64 - sequenceBits);
+                uniqueId |= (++sequence & ((1L << sequenceBits) - 1)) << (64 - sequenceBits);
                 uniqueId |= (machineId & ((1L << maxBits) - 1)) << 1;
             }
-            else uniqueId = sequence++;
+            else uniqueId = ++sequence;
             locking.Exit();
             return uniqueId;
         }

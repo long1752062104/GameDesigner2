@@ -116,8 +116,7 @@ namespace Distributed
         {
             InitConnection(connLen);
             var userUniqueId = ExecuteScalar<long>(@"SELECT MAX(id) FROM `user`;");
-            if (userUniqueId == default) userUniqueId = (long)1; //解决第一次创建映射对象并且不赋值id导致的小问题
-            uniqueIdMap[DistributedUniqueIdType.User] = new UniqueIdGenerator(useMachineId, machineId, machineIdBits, userUniqueId);
+            uniqueIdMap[DistributedUniqueIdType.User] = new UniqueIdGenerator(useMachineId, machineId, machineIdBits, (long)userUniqueId);
 
         }
 
@@ -607,7 +606,7 @@ namespace Distributed
                             if (commandTexts.Length == 2)
                             {
                                 var cellName = commandTexts[0].Trim();
-                                if (!cellName.StartsWith('`'))
+                                if (!cellName.StartsWith("`")) //兼容.Net Framework写法
                                     cellName = $"`{cellName}`";
                                 if (!queryCell.TryGetValue(cellName, out var queryCommandText))
                                     queryCell.Add(cellName, queryCommandText = new StringBuilder($"SELECT * FROM `{tableName}` WHERE {cellName} IN("));

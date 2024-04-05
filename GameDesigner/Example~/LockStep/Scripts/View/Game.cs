@@ -71,7 +71,7 @@ namespace LockStep.Client
             };
         }
 
-        private void OnOperationSync(OperationList list)
+        private void OnOperationSync(in OperationList list)
         {
             if (frame != list.frame)
             {
