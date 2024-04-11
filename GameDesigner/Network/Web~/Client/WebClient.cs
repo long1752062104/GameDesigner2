@@ -1,19 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using Net.Event;
 using Net.Share;
 using Net.System;
+using Net.Helper;
 using Newtonsoft_X.Json;
 using Cysharp.Threading.Tasks;
-using Net.Helper;
 using System.Security.Authentication;
 using System.Runtime.CompilerServices;
-using System.Net;
-
+using System.Security.Cryptography.X509Certificates;
 
 #if !UNITY_EDITOR && UNITY_WEBGL
 using UnityWebSocket;
@@ -89,9 +84,10 @@ namespace Net.Client
         {
             try
             {
-                var isConnectFailed = false;
+#if UNITY_EDITOR || !UNITY_WEBGL
                 if (host == "127.0.0.1" | host == "localhost")
                     host = NetPort.GetIP();
+#endif
                 WSClient = new WebSocket($"{Scheme}://{host}:{port}/");
 #if UNITY_EDITOR || !UNITY_WEBGL
                 if (Scheme == "wss")
@@ -114,7 +110,6 @@ namespace Net.Client
                     InvokeInMainThread(OnConnectLostHandle);
                     RpcModels = new QueueSafe<RPCModel>();
                     NDebug.Log("websocket关闭！");
-                    isConnectFailed = true;
                 };
                 WSClient.OnMessage += (sender, e) =>
                 {
@@ -138,8 +133,7 @@ namespace Net.Client
                         BufferPool.Push(buffer);
                     }
                 };
-                //WSClient.ConnectAsync();
-                WSClient.Connect();
+                WSClient.ConnectAsync(); //这里必须是Async才能再WebGL对接相同的API
                 var tick = DateTimeHelper.GetTickCount64();
                 await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
@@ -195,7 +189,11 @@ namespace Net.Client
         {
             sendCount += buffer.Count;
             sendAmount++;
+#if UNITY_EDITOR || !UNITY_WEBGL
             WSClient.Send(new MemoryStream(buffer.Buffer, buffer.Offset, buffer.Count, true, true), buffer.Count);
+#else
+            WSClient.SendAsync(buffer.ToArray());
+#endif
         }
 
 #if COCOS2D_JS

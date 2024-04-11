@@ -1063,7 +1063,7 @@ namespace Net.Client
             Call(NetCmd.Disconnect, new byte[0]);
             SendDirect();
             Connected = false;
-            if (Client.ProtocolType == ProtocolType.Tcp && invokeSocketDisconnect)
+            if (Client != null && Client.ProtocolType == ProtocolType.Tcp && invokeSocketDisconnect)
                 Client.Disconnect(reuseSocket);
             InvokeInMainThread(OnDisconnectHandle);
         }

@@ -253,8 +253,10 @@ namespace Net.Event
         /// 绑定的输入输出对象
         /// </summary>
         public static IDebug Debug { get; set; }
+#if !UNITY_WEBGL
         private static FileStream fileStream;
         private static int writeFileModeID;
+#endif
         private static WriteLogMode writeFileMode;
         /// <summary>
         /// 写入日志到文件模式
@@ -265,6 +267,7 @@ namespace Net.Event
             set
             {
                 writeFileMode = value;
+#if !UNITY_WEBGL
                 if (value != WriteLogMode.None & fileStream == null)
                 {
                     CreateLogFile();
@@ -276,9 +279,11 @@ namespace Net.Event
                     fileStream = null;
                     ThreadManager.Event.RemoveEvent(writeFileModeID);
                 }
+#endif
             }
         }
 
+#if !UNITY_WEBGL
         private static int GetResetTime() //获取毫秒数
         {
             var now = DateTime.Now;
@@ -314,6 +319,7 @@ namespace Net.Event
             }
             return true;
         }
+#endif
 
 #if SERVICE || (UNITY_SERVER && !UNITY_EDITOR)
         static NDebug()
@@ -461,11 +467,13 @@ namespace Net.Event
         /// <param name="message"></param>
         public static void WriteLog(object message)
         {
+#if !UNITY_WEBGL
             if (fileStream == null)
                 return;
             var bytes = Encoding.UTF8.GetBytes(message.ToString());
             fileStream.Write(bytes, 0, bytes.Length);
             fileStream.Flush();
+#endif
         }
 
         public static void BindLogAll(Action<string> log)

@@ -56,6 +56,8 @@ namespace Net.Helper
         {
 #if CORE
             var timeout = Environment.TickCount64;
+#elif UNITY_WEBGL
+            var timeout = Environment.TickCount;
 #else
             var timeout = Share.Win32KernelAPI.GetTickCount64();
 #endif
