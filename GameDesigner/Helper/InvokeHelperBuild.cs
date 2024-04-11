@@ -99,51 +99,18 @@ namespace Net.Helper
         {
             if (File.Exists(path))
             {
-                try
+                var text = File.ReadAllText(path);
+                text = text.Split(new string[] { "*/" }, 0)[0];
+                text = text.Replace("/**", "");
+                var assembly = AssemblyHelper.DynamicBuild("GDNetHelper.dll", new Dictionary<string, string>() { { "SyncVarHandlerGenerate.cs", text } });
+                if (assembly != null)
                 {
-                    var text = File.ReadAllText(path);
-                    text = text.Split(new string[] { "*/" }, 0)[0];
-                    text = text.Replace("/**", "");
-                    var provider = new CSharpCodeProvider();
-                    var parameters = new CompilerParameters();
-                    var dict = new Dictionary<string, string>();
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                    foreach (var assemblie in assemblies)
+                    var type = assembly.GetType("SyncVarHandlerGenerate");
+                    if (type != null)
                     {
-                        if (assemblie.IsDynamic)
-                            continue;
-                        dict.Add(assemblie.GetName().FullName, assemblie.Location);
+                        var obj = Activator.CreateInstance(type) as ISyncVarHandler;
+                        obj?.Init();
                     }
-                    var referencedAssemblies = mainAssembly.GetReferencedAssemblies();
-                    foreach (var item in referencedAssemblies)
-                        if (dict.TryGetValue(item.FullName, out var path2))
-                            parameters.ReferencedAssemblies.Add(path2);
-                    parameters.ReferencedAssemblies.Add(mainAssembly.Location);
-                    parameters.GenerateInMemory = false;
-                    parameters.GenerateExecutable = false;
-                    parameters.OutputAssembly = "SyncVarHandler.dll";//编译后的dll库输出的名称，会在bin/Debug下生成Test.dll库
-                    parameters.IncludeDebugInformation = true;
-                    var results = provider.CompileAssemblyFromSource(parameters, text);
-                    if (results.Errors.HasErrors)
-                    {
-                        var sb = new StringBuilder();
-                        foreach (CompilerError error in results.Errors)
-                            sb.AppendLine(string.Format("Error({0}): {1}", error.Line, error.ErrorText));
-                        log(sb.ToString());
-                    }
-                    else
-                    {
-                        var type = results.CompiledAssembly.GetType("SyncVarHandlerGenerate");
-                        if (type != null)
-                        {
-                            var obj = Activator.CreateInstance(type) as ISyncVarHandler;
-                            obj?.Init();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log(ex);
                 }
             }
         }

@@ -278,7 +278,7 @@ namespace Net.Helper
             return objs;
         }
 
-        public static Assembly DynamicBuild(Dictionary<string, string> codes)
+        public static Assembly DynamicBuild(string dllName, Dictionary<string, string> codes, params string[] filterNames)
         {
             var includeDllPaths = new HashSet<string>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -287,21 +287,30 @@ namespace Net.Helper
                 if (assemblie.IsDynamic)
                     continue;
                 var path = assemblie.Location;
+                if (string.IsNullOrEmpty(path))
+                    continue;
                 var name = Path.GetFileName(path);
-                //if (name.Contains("Editor"))
-                //    continue;
                 if (name.Contains("mscorlib"))
+                    continue;
+                bool isContains = false;
+                foreach (var filter in filterNames)
+                {
+                    if (name.Contains(filter))
+                    {
+                        isContains = true;
+                        break;
+                    }
+                }
+                if (isContains)
                     continue;
                 if (!File.Exists(path))
                     continue;
-                //if (path.Contains("PackageCache"))
-                //    continue;
                 includeDllPaths.Add(path);
             }
-            return DynamicBuild(codes, includeDllPaths);
+            return DynamicBuild(dllName, codes, includeDllPaths);
         }
 
-        public static Assembly DynamicBuild(Dictionary<string, string> codes, HashSet<string> includeDllPaths)
+        public static Assembly DynamicBuild(string dllName, Dictionary<string, string> codes, HashSet<string> includeDllPaths)
         {
             Assembly assembly = null;
 #if !CORE
@@ -310,6 +319,7 @@ namespace Net.Helper
             param.ReferencedAssemblies.AddRange(includeDllPaths.ToArray());
             param.GenerateExecutable = false;
             param.GenerateInMemory = true;
+            param.OutputAssembly = dllName;
             param.CompilerOptions = "/optimize+ /platform:x64 /target:library /unsafe /langversion:default";
             var codeFiles = new List<string>();
             foreach (var code in codes)
@@ -353,7 +363,6 @@ namespace Net.Helper
                 }
             }
 #endif
-            NDebug.Log("动态编译完成!");
             return assembly;
         }
 
