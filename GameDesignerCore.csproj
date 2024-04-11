@@ -81,6 +81,7 @@
     <None Remove="GameDesigner\Extensions.meta" />
     <None Remove="GameDesigner\Extensions\ClientBaseExtensions.cs.meta" />
     <None Remove="GameDesigner\Extensions\NetPlayerExtensions.cs.meta" />
+    <None Remove="GameDesigner\Extensions\ServerBaseExtensions.cs.meta" />
     <None Remove="GameDesigner\Extensions\UniTaskNetExtensions.cs.meta" />
     <None Remove="GameDesigner\GameDesigner.asmdef" />
     <None Remove="GameDesigner\GameDesigner.asmdef.meta" />

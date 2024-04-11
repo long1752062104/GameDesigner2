@@ -11,7 +11,7 @@ namespace Net.Distributed
         private long machineId = 0; // 假设机器标识为 123
         private int maxBits = 10; // 最大值为 1024，因此需要 10 位表示
         private int sequenceBits = 54; // 64 - 10
-        private long sequence = 1;
+        private long sequence = 0;
         private bool useMachineId = true;
         private readonly FastLocking locking = new FastLocking();
 

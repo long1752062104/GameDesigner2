@@ -54,7 +54,7 @@ namespace Net.Component
     }
 
     [Serializable]
-    public class ClientGourp
+    public class ClientUnit
     {
         public string name;
         public ClientBase _client;
@@ -106,7 +106,7 @@ namespace Net.Component
                 _client.host = ips[RandomHelper.Range(0, ips.Length)].ToString();
             else
 #endif
-            _client.host = ip;
+                _client.host = ip;
 #if UNITY_EDITOR
             if (localTest) _client.host = "127.0.0.1";
 #endif
@@ -133,7 +133,7 @@ namespace Net.Component
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public List<ClientGourp> clients = new List<ClientGourp>();
+        public List<ClientUnit> clients = new List<ClientUnit>();
 
         public ClientBase this[int index]
         {
@@ -244,11 +244,11 @@ namespace Net.Component
             else clients[clientIndex].Client.RemoveRpc(target);
         }
 
-        public void Close(bool v1, int v2)
+        public void Close(bool isWait = true, int millisecondsTimeout = 100)
         {
             foreach (var item in clients)
             {
-                item.Client.Close(v1, v2);
+                item.Client.Close(isWait, millisecondsTimeout);
             }
         }
 

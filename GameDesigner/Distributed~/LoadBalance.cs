@@ -47,8 +47,7 @@ namespace Net.Distributed
                 var nodes = consistentHashing.AddNodeGet(config.Name);
                 for (int j = 0; j < nodes.Count; j++)
                 {
-                    var client = clientPool.Create();
-                    client.SetConfig(Config);
+                    var client = clientPool.Create(Config);
                     client.host = config.Host;
                     client.port = config.Port;
                     var connected = await client.Connect();
