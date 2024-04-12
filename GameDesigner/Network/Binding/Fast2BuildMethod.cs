@@ -91,25 +91,7 @@ namespace Binding
             }
             codes.Add("Binding.BindingType.cs", BuildBindingType(bindTypes));
             codes.Add("BindingExtension.cs", BuildBindingExtension(bindTypes));
-            var includeDllPaths = new HashSet<string>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assemblie in assemblies)
-            {
-                if (assemblie.IsDynamic)
-                    continue;
-                var path = assemblie.Location;
-                var name = Path.GetFileName(path);
-                if (name.Contains("Editor"))
-                    continue;
-                if (name.Contains("mscorlib"))
-                    continue;
-                if (!File.Exists(path))
-                    continue;
-                if (path.Contains("PackageCache"))
-                    continue;
-                includeDllPaths.Add(path);
-            }
-            var assembly = AssemblyHelper.DynamicBuild(codes, includeDllPaths);
+            var assembly = AssemblyHelper.DynamicBuild("SerializeBinding.dll", codes, "Editor", "PackageCache");
             if (assembly != null)
                 Net.Serialize.NetConvertFast2.Init();
             return true;

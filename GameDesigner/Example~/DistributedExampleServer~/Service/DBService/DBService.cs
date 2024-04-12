@@ -69,16 +69,16 @@ namespace DistributedExample
             if (data == null)
             {
                 NDebug.LogError($"哈希错乱! {AreaName} {account}");
-                Response(client, (int)ProtoType.Login, token, -1, null);
+                Response(client, ProtoType.Login, token, -1, null);
                 return;
             }
             if (data.Password != password)
             {
                 NDebug.LogError($"密码错误! {AreaName} {account}");
-                Response(client, (int)ProtoType.Login, token, -2, null);
+                Response(client, ProtoType.Login, token, -2, null);
                 return;
             }
-            Response(client, (int)ProtoType.Login, token, 0, data);
+            Response(client, ProtoType.Login, token, 0, data);
         }
 
         private async UniTaskVoid Register(NetPlayer client, string account, string password)
@@ -100,7 +100,7 @@ namespace DistributedExample
                 code = 0;
                 return data;
             });
-            Response(client, (int)ProtoType.Register, token, code);
+            Response(client, ProtoType.Register, token, code);
         }
     }
 }

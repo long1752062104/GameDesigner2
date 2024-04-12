@@ -1,6 +1,7 @@
 ﻿namespace Example2
 {
     using Net.Event;
+    using Net.Helper;
     using Net.MMORPG;
     using Net.Server;
     using Net.Share;
@@ -81,13 +82,13 @@
         protected override bool OnUnClientRequest(Player unClient, RPCModel model)
         {
             //我们解析了客户端数据, 如果得到的是 注册 或 登录 这样的函数才进行处理
-            switch (model.protocol)
+            if (model.protocol == "Register".CRCU32())
             {
-                case -250891359://"Register".CRC32():
-                    Register(unClient, model.AsString, model.AsString);
-                    break;
-                case -624675968://"Login".CRC32():
-                    return Login(unClient, model.AsString, model.AsString);
+                Register(unClient, model.AsString, model.AsString);
+            }
+            else if (model.protocol == "Login".CRCU32())
+            {
+                return Login(unClient, model.AsString, model.AsString);
             }
             return false;
         }

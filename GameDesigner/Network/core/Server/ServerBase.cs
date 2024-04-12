@@ -353,6 +353,14 @@ namespace Net.Server
             }
         }
         /// <summary>
+        /// 获取登录游戏的玩家在线人数
+        /// </summary>
+        public int OnlinePlayers => Players.Count;
+        /// <summary>
+        /// 获取未登录的玩家在线人数
+        /// </summary>
+        public int OnlineUnPlayers => AllClients.Count - Players.Count;
+        /// <summary>
         /// 网络服务器单例
         /// </summary>
         public static ServerBase<Player> Instance { get; protected set; }

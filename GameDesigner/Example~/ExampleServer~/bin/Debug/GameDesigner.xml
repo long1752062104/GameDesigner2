@@ -331,7 +331,7 @@
             <returns></returns>
             <exception cref="T:System.Exception"></exception>
         </member>
-        <member name="M:Net.Distributed.LoadBalance`1.RemoteConfig``1(System.String,System.Int32,Net.Config.ClientConfig,System.Int32,System.Object[])">
+        <member name="M:Net.Distributed.LoadBalance`1.RemoteConfig``1(System.String,System.Int32,Net.Config.ClientConfig,System.UInt32,System.Object[])">
             <summary>
             获取远程配置数据, 获取配置服务器的数据
             </summary>
@@ -460,44 +460,19 @@
             NetworkIdentity组件被销毁指令
             </summary>
         </member>
+        <member name="F:Net.Component.Command.OnPlayerEnter">
+            <summary>
+            当玩家进入场景后通知
+            </summary>
+        </member>
         <member name="F:Net.Component.Command.OnPlayerExit">
             <summary>
             当客户端退出游戏, 通知其他客户端删除此客户端所生成的NetworkIdentity物体
             </summary>
         </member>
-        <member name="F:Net.Component.Command.BuildComponent">
+        <member name="F:Net.Component.Command.NetworkComponent">
             <summary>
-            网络组件生成工具同步指令
-            </summary>
-        </member>
-        <member name="T:Net.Component.RoomData">
-            <summary>
-            房间数据信息
-            </summary>
-        </member>
-        <member name="F:Net.Component.RoomData.name">
-            <summary>
-            房间名称
-            </summary>
-        </member>
-        <member name="F:Net.Component.RoomData.num">
-            <summary>
-            房间可以组队人数
-            </summary>
-        </member>
-        <member name="F:Net.Component.RoomData.currNum">
-            <summary>
-            当前加入房间人数
-            </summary>
-        </member>
-        <member name="F:Net.Component.RoomData.state">
-            <summary>
-            房间的状态
-            </summary>
-        </member>
-        <member name="F:Net.Component.RoomData.mode">
-            <summary>
-            竞技模式 1:个人 2:团队
+            网络行为组件命令，当你继承NetworkBehaviour组件实现你的网络组件时需要使用这个命令进行同步
             </summary>
         </member>
         <member name="T:Net.Common.FastLocking">
@@ -519,6 +494,11 @@
         <member name="M:Net.Common.FastLocking.Exit">
             <summary>
             退出锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Lock">
+            <summary>
+            加锁
             </summary>
         </member>
         <member name="M:Net.Common.FastLocking.Release">
@@ -596,6 +576,1764 @@
             <param name="name">当属性被发现修改时提示名称</param>
             <param name="available">使用模糊属性?</param>
             <param name="onValueChanged">当属性被修改事件</param>
+        </member>
+        <member name="T:Net.Server.NetPlayer">
+            <summary>
+            网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
+            <code>注意:不要试图new player出来, new出来后是没有作用的!</code>
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Name">
+            <summary>
+            玩家名称
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Client">
+            <summary>
+            Tcp套接字
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.ReceiveArgs">
+            <summary>
+            io完成端口接收对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RemotePoint">
+            <summary>
+            存储客户端终端
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.SceneName">
+            <summary>
+            此玩家所在的场景名称
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.PlayerID">
+            <summary>
+            客户端玩家的标识
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Scene">
+            <summary>
+            玩家所在的场景实体
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcCollectDic">
+            <summary>
+            远程调用方法收集
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.heart">
+            <summary>
+            跳动的心
+            </summary>
+        </member>
+        <member name="F:Net.Server.NetPlayer.stack">
+            <summary>
+            TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
+            </summary>
+        </member>
+        <member name="F:Net.Server.NetPlayer.stackStream">
+            <summary>
+            TCP叠包临时缓存流
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.UserID">
+            <summary>
+            用户唯一身份标识
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Group">
+            <summary>
+            当前玩家所在的线程组对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Connected">
+            <summary>
+            是否处于连接
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.QueueUpNo">
+            <summary>
+            当前排队座号
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.IsQueueUp">
+            <summary>
+            是否属于排队状态
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.ConnectTime">
+            <summary>
+            客户端连接时间
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.ReconnectTimeout">
+            <summary>
+            断线重连等待时间
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.BytesReceived">
+            <summary>
+            此客户端接收到的字节总量
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Token">
+            <summary>
+            当前客户端请求的Token, 用于客户端响应, 如果在Rpc执行方法使用异步, 则需要记录一下token再异步, 否则token会被冲掉, 导致响应token错误
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Server">
+            <summary>
+            服务器对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.CRCError">
+            <summary>
+            CRC校验错误次数, 如果有错误每秒提示一次
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.WindowFullError">
+            <summary>
+            发送窗口已满提示次数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.DataSizeError">
+            <summary>
+            数据大小错误, 数据被拦截修改或者其他问题导致错误
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.DataQueueOverflowError">
+            <summary>
+            数据队列溢出错误, 当要发送的数据队列堆积到<see cref="!:ServerBase&lt;Player, Scene&gt;.LimitQueueCount"/> 后提示错误
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.BigDataCacheLengthError">
+            <summary>
+            大数据传输缓存最大长度错误次数, 请在<see cref="!:ServerBase&lt;Player, Scene&gt;.BigDataCacheLength"/>设置最大缓存长度
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.OnRevdFileProgress">
+            <summary>
+            当接收到发送的文件进度
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.OnSendFileProgress">
+            <summary>
+            当发送的文件进度
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.#ctor">
+            <summary>
+            构造网络客户端
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.#ctor(System.Net.Sockets.Socket)">
+            <summary>
+            构造网络客户端，Tcp
+            </summary>
+            <param name="client">客户端套接字</param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.#ctor(System.Net.EndPoint)">
+            <summary>
+            构造网络客户端
+            </summary>
+            <param name="remotePoint"></param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.Finalize">
+            <summary>
+            析构网络客户端
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.Dispose">
+            <summary>
+            释放
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.AddRpc(System.Boolean)">
+            <summary>
+            添加远程过程调用函数,从对象进行收集
+            </summary>
+            <param name="append">可以重复添加rpc?</param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean)">
+            <summary>
+            添加远程过程调用函数,从对象进行收集
+            </summary>
+            <param name="target"></param>
+            <param name="append">可以重复添加rpc?</param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.RemoveRpc(System.Object)">
+            <summary>
+            移除网络远程过程调用函数
+            </summary>
+            <param name="target">移除的rpc对象</param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnUnClientRequest(Net.Share.RPCModel)">
+            <summary>
+            当未知客户端发送数据请求，返回<see langword="false"/>，不做任何事，返回<see langword="true"/>，添加到<see cref="!:ServerBase&lt;Player, Scene&gt;.Players"/>中
+            客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
+            在这里可以用来判断客户端登录和注册等等进站许可
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnWSUnClientRequest(Net.Share.MessageModel)">
+            <summary>
+            当web服务器未知客户端发送数据请求，返回<see langword="false"/>，不做任何事，返回<see langword="true"/>，添加到<see cref="!:ServerBase&lt;Player, Scene&gt;.Players"/>中
+            客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
+            在这里可以用来判断客户端登录和注册等等进站许可
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnRevdBufferHandle(Net.Share.RPCModel)">
+            <summary>
+            当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
+            </summary>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnWSRevdBuffer(Net.Share.MessageModel)">
+            <summary>
+            当接收到webSocket客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
+            </summary>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnConnectLost">
+            <summary>
+            当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnReconnecting">
+            <summary>
+            当断线重连成功触发
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnRemoveClient">
+            <summary>
+            当服务器判定客户端为断线或连接异常时，移除客户端时调用
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnRpcExecute(Net.Share.RPCModel)">
+            <summary>
+            当执行Rpc(远程过程调用函数)时, 提高性能可重写此方法进行指定要调用的函数
+            </summary>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnStart">
+            <summary>
+            当玩家登录成功初始化调用
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnUpdate">
+            <summary>
+            当玩家更新操作
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnEnter">
+            <summary>
+            当玩家进入场景 ->场景对象在Scene属性
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnExit">
+            <summary>
+            当玩家退出场景 ->场景对象在Scene属性
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnSignOut">
+            <summary>
+            当玩家退出登录时调用
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnRemove">
+            <summary>
+            当场景被移除 ->场景对象在Scene属性
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnOperationSync(Net.Share.OperationList)">
+            <summary>
+            当接收到客户端使用<see cref="!:Net.Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用. 如果重写此方法, 
+            <code>返回false, 则服务器对象类会重新把操作列表加入到场景中, 你可以重写服务器的<see cref="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)"/>方法让此方法失效</code>
+            <code>返回true, 服务器不再把数据加入到场景列表, 认为你已经在此处把数据处理了</code>
+            </summary>
+            <param name="list"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetPlayer.OnSyncPropertyHandler(Net.Share.RPCModel)">
+            <summary>
+            当属性同步-- 当MysqlBuild生成的类属性在客户端被修改后同步上来会调用此方法
+            </summary>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.NetPlayer.Close">
+            <summary>
+            此方法需要自己实现, 实现内容如下: <see langword="xxServer.Instance.RemoveClient(this);"/>
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetPlayer.SendFile(System.String,System.Int32)">
+            <summary>
+            发送文件, 客户端可以使用事件<see cref="P:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
+            </summary>
+            <param name="client"></param>
+            <param name="filePath"></param>
+            <param name="bufferSize">每次发送数据大小</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetPlayer.CheckCall">
+            <summary>
+            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
+            </summary>
+            <returns>是否可发送数据</returns>
+        </member>
+        <member name="T:Net.Server.ServerBase`1">
+            <summary>
+            网络服务器核心基类 2023.11.13
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.Players">
+            <summary>
+            登录的客户端 与<see cref="P:Net.Server.ServerBase`1.UIDClients"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.PlayerID"/>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.UIDClients">
+            <summary>
+            登录的客户端 与<see cref="P:Net.Server.ServerBase`1.Players"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.UserID"/>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.AllClients">
+            <summary>
+            所有客户端列表
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.Clients">
+            <summary>
+            所有在线的客户端
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.UnClients">
+            <summary>
+            未知客户端连接 或 刚连接服务器还未登录账号的IP
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnlinePlayers">
+            <summary>
+            获取登录游戏的玩家在线人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnlineUnPlayers">
+            <summary>
+            获取未登录的玩家在线人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.Instance">
+            <summary>
+            网络服务器单例
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`1.QueueUp">
+            <summary>
+            排队队列
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnHasConnectHandle">
+            <summary>
+            当前有客户端连接触发事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnAddClientHandle">
+            <summary>
+            当添加客户端到所有在线的玩家集合中触发的事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnRevdBufferHandle">
+            <summary>
+            当接收到自定义的网络指令时处理事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnRemoveClientHandle">
+            <summary>
+            当移除客户端时触发事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnOperationSyncHandle">
+            <summary>
+            当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法时调用
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnCallProgressHandle">
+            <summary>
+            当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`1.OnPingCallback">
+            <summary>
+            ping服务器回调 参数double为延迟毫秒单位 当<see cref="!:RTOMode"/>=<see cref="!:RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase`1.OnSendErrorHandle">
+            <summary>
+            当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="M:Net.Server.ServerBase`1.SendByteData(`0,Net.System.ISegment)"/>方法重新发送
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnRPCExecute">
+            <summary>
+            当执行调用远程过程方法时触发
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnDownloadFileHandle">
+            <summary>
+            当开始下载文件时调用, 参数1(Player):下载哪个玩家上传的文件 参数2(string):客户端上传的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnReceiveFileHandle">
+            <summary>
+            当客户端发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnRevdFileProgress">
+            <summary>
+            当接收到发送的文件进度
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.OnSendFileProgress">
+            <summary>
+            当发送的文件进度
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.#ctor">
+            <summary>
+            构造网络服务器函数
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.Item(System.Net.EndPoint)">
+            <summary>
+            玩家索引
+            </summary>
+            <param name="remotePoint"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Net.Server.ServerBase`1.Item(System.Int32)">
+            <summary>
+            uid索引
+            </summary>
+            <param name="uid"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.GetClients">
+            <summary>
+            获得所有在线的客户端对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnUnClientRequest(`0,Net.Share.RPCModel)">
+            <summary>
+            当未知客户端发送数据请求，返回<see langword="false"/>，不允许<see langword="unClient"/>进入服务器!，如果返回的是<see langword="true"/>，则允许<see langword="unClient"/>客户端进入服务器
+            同时会将<see langword="unClient"/>添加到<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>在线字典中.
+            <code>客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互</code>
+            在这里可以用来判断客户端登录和注册等等进站许可 (默认是允许进入服务器)
+            </summary>
+            <param name="unClient">尚未登录的客户端对象</param>
+            <param name="model">数据模型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnStarting">
+            <summary>
+            当开始启动服务器
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnStartupCompleted">
+            <summary>
+            当服务器启动完毕
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnAddPlayerToScene(`0)">
+            <summary>
+            当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnHasConnect(`0)">
+            <summary>
+            当有客户端连接
+            </summary>
+            <param name="client">客户端套接字</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnConnectLost(`0)">
+            <summary>
+            当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnReconnecting(`0)">
+            <summary>
+            当断线重连成功触发
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnRemoveClient(`0)">
+            <summary>
+            当服务器判定客户端为断线或连接异常时，移除客户端时调用
+            </summary>
+            <param name="client">要移除的客户端</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnReceiveBuffer(`0,Net.Share.RPCModel)">
+            <summary>
+            当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
+            </summary>
+            <param name="client">当前客户端</param>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnReceiveFile(`0,Net.Share.BigData)">
+            <summary>
+            当接收到客户端发送的文件
+            </summary>
+            <param name="client">当前客户端</param>
+            <param name="fileData">文件数据</param>
+            <returns>true:框架内部释放文件流和删除临时文件(默认) false:使用者处理</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnOperationSync(`0,Net.Share.OperationList)">
+            <summary>
+            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
+            </summary>
+            <param name="client">当前客户端</param>
+            <param name="list">操作列表</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnCallProgress(`0,Net.Share.BigDataProgress)">
+            <summary>
+            当服务器发送的大数据时, 可监听此事件显示进度值
+            </summary>
+            <param name="client"></param>
+            <param name="progress"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnSerializeRpc(Net.System.ISegment,Net.Share.RPCModel)">
+            <summary>
+            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnDeserializeRpc(Net.System.ISegment)">
+            <summary>
+            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
+            </summary>
+            <param name="segment"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnSceneRelay(`0,Net.Share.RPCModel)">
+            <summary>
+            当客户端使用场景转发命令会调用此方法
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnNoticeRelay(`0,Net.Share.RPCModel)">
+            <summary>
+            当客户端使用公告转发命令会调用此方法
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Run(System.UInt16)">
+            <summary>
+            运行服务器
+            </summary>
+            <param name="port">服务器端口号</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Start(System.UInt16)">
+            <summary>
+            启动服务器
+            </summary>
+            <param name="port">端口</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.InitUserID">
+            <summary>
+            初始化玩家唯一标识栈
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SceneUpdateHandle">
+            <summary>
+            网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.DataTrafficHandler">
+            <summary>
+            流量统计线程
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.StartSocketHandler">
+            <summary>
+            开始接收数据
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.NetworkProcessing(Net.Share.ThreadGroup{`0})">
+            <summary>
+            业务处理线程组
+            </summary>
+            <param name="group"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.LoginHandler(`0)">
+            <summary>
+            主动登录服务器, 类似OnUnClientRequest重写方法的返回值为true
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SendDirect(`0)">
+            <summary>
+            立刻发送, 不需要等待内核时间 (当你要强制把客户端下线时,你还希望客户端先发送完数据后,再强制客户端退出游戏用到)
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.ResetDataHead(Net.System.ISegment)">
+            <summary>
+            重置头部数据大小, 在小数据达到<see cref="!:PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnRpcExecute(`0,Net.Share.RPCModel)">
+            <summary>
+            当执行Rpc(远程过程调用函数)时调用, 如果想提升服务器Rpc调用性能(默认反射调用), 可以重写此方法, 指定要调用的方法
+            </summary>
+            <param name="client">客户端</param>
+            <param name="model">数据模型</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.CheckHeart(`0,System.UInt32)">
+            <summary>
+            检查心跳
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.DeletePlayer(`0)">
+            <summary>
+            从所有在线玩家字典中删除(移除)玩家实体
+            </summary>
+            <param name="player"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.RemovePlayer(`0)">
+            <summary>
+            从所有在线玩家字典中移除玩家实体
+            </summary>
+            <param name="player"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.RemoveClient(`0)">
+            <summary>
+            从客户端字典中移除客户端
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Close">
+            <summary>
+            关闭服务器
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[],System.Boolean,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.UInt32,System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.UInt32,System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.AddRpcHandle(System.Object)">
+            <summary>
+            添加网络Rpc(注册远程方法)
+            </summary>
+            <param name="target">注册的对象实例</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加网络Rpc(注册远程方法)
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.RemoveRpc(System.Object)">
+            <summary>
+            移除对象的Rpc注册
+            </summary>
+            <param name="target">将此对象的所有带有RPC特性的函数移除</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.IsOnline(System.String)">
+            <summary>
+            playerID玩家是否在线?
+            </summary>
+            <param name="playerID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.IsOnline(System.String,`0@)">
+            <summary>
+            playerID玩家是否在线? 并且如果在线则out 在线玩家的对象
+            </summary>
+            <param name="playerID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OfflineHandle(`0)">
+            <summary>
+            强制下线处理, 将client客户端从在线字段<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>和<see cref="P:Net.Server.ServerBase`1.AllClients"/>字段中移除
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SignOut(`0)">
+            <summary>
+            退出登录, 将client客户端从在线字段<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>字段中移除
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnSignOut(`0)">
+            <summary>
+            当客户端退出登录, 如果两个账号同时登录或者在心跳时间还没到检测时另外一个玩家也登录了相同的账号, 则会强制退出上一个账号的登录
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SetHeartTime(System.Byte,System.Int32)">
+            <summary>
+            设置心跳时间
+            </summary>
+            <param name="timeoutLimit">心跳检测次数, 默认检测5次</param>
+            <param name="interval">心跳时间间隔, 每interval毫秒会检测一次</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Ping(`0)">
+            <summary>
+            ping测试网络延迟, 通过<see cref="F:Net.Server.ServerBase`1.OnPingCallback"/>事件回调
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.Ping(`0,System.Action{`0,System.UInt32})">
+            <summary>
+            ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Server.ServerBase`1.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
+            </summary>
+            <param name="client"></param>
+            <param name="callback"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.AddAdapter(Net.Share.IAdapter)">
+            <summary>
+            添加适配器
+            </summary>
+            <param name="adapter"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.AddAdapter(Net.Share.AdapterType,Net.Share.IAdapter)">
+            <summary>
+            添加适配器
+            </summary>
+            <param name="type"></param>
+            <param name="adapter"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SyncVarHandler(`0)">
+            <summary>
+            字段,属性同步线程
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SendFile(`0,System.String,System.Int32)">
+            <summary>
+            发送文件, 客户端可以使用事件<see cref="P:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
+            </summary>
+            <param name="client"></param>
+            <param name="filePath"></param>
+            <param name="bufferSize">每次发送数据大小</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.CheckCall(`0)">
+            <summary>
+            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
+            </summary>
+            <returns>是否可发送数据</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.SetAttackProtect(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            设置攻击防护(SYN-ACK攻击)
+            </summary>
+            <param name="synAttackProtect">0:不开启 1:系统通过减少重传次数和延迟未连接时路由缓冲项(route cache entry)防范SYN攻击 2:(Microsoft推荐使用此值)</param>
+            <param name="tcpMaxConnectResponseRetransmissions">确定 TCP 重新传输未应答的 SYN-ACK（连接请求确认）的次数</param>
+            <param name="tcpMaxHalfOpen">服务器可以保持多少个连接处于半开（SYN-RCVD）状态</param>
+            <param name="tcpMaxHalfOpenRetried">确定服务器可以在半打开 (SYN-RCVD) 状态下保持多少连接, 此条目的值应小于TCPMaxHalfOpen条目的值</param>
+            <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.CheckOnLinePlayers">
+            <summary>
+            检查在线人数，当服务器长时间运行，显示的在线人数不对时，默认是十分钟检查一次
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.OnDataQueueOverflow(`0)">
+            <summary>
+            当数据堆积超过<see cref="!:LimitQueueCount"/>后触发的提示
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`1.ExitSceneHandler(`0)">
+            <summary>
+            退出场景处理
+            </summary>
+        </member>
+        <member name="T:Net.Server.NetScene`1">
+            <summary>
+            网络场景
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Name">
+            <summary>
+            场景名称
+            </summary>
+        </member>
+        <member name="F:Net.Server.NetScene`1.sceneCapacity">
+            <summary>
+            场景容纳人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Players">
+            <summary>
+            当前网络场景的玩家, 此字段不要使用Add, Remove进行调用
+            </summary>
+        </member>
+        <member name="F:Net.Server.NetScene`1.frame">
+            <summary>
+            当前帧
+            </summary>
+        </member>
+        <member name="F:Net.Server.NetScene`1.operations">
+            <summary>
+            备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.SceneNumber">
+            <summary>
+            获取场景当前人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Count">
+            <summary>
+            获取场景当前人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Capacity">
+            <summary>
+            获取场景容纳人数
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.IsFull">
+            <summary>
+            场景(房间)人数是否已满？
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.Split">
+            <summary>
+            操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetScene`1.FPS">
+            <summary>
+            场景帧数
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.#ctor">
+            <summary>
+            构造网络场景
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.#ctor(System.Int32)">
+            <summary>
+            添加网络主场景并增加主场景最大容纳人数
+            </summary>
+            <param name="number">主场景最大容纳人数</param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.#ctor(`0,System.Int32)">
+            <summary>
+            添加网络场景并增加当前场景人数
+            </summary>
+            <param name="client">网络玩家</param>
+            <param name="number">创建场景容纳人数</param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddPlayer(`0)">
+            <summary>
+            添加玩家
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnEnter(`0)">
+            <summary>
+            当进入场景的玩家
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnBeginExit(`0)">
+            <summary>
+            当开始退出场景，当调用此方法时client还在Clients属性里面
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnExit(`0)">
+            <summary>
+            当退出场景的玩家, 当调用此方法后client已经被移出Clients属性
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnRemove">
+            <summary>
+            当场景被移除
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnOperationSync(`0,Net.Share.OperationList)">
+            <summary>
+            当接收到客户端使用Client.AddOperation方法发送的请求时调用
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddPlayers(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            添加玩家
+            </summary>
+            <param name="collection"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.Update(Net.Share.IServerSendHandle{`0},System.Byte)">
+            <summary>
+            网络帧同步, 状态同步更新, 帧时间根据服务器主类的SyncSceneTime属性来调整速率
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.SendOperitions(Net.Share.IServerSendHandle{`0},System.Byte,Net.System.FastList{Net.Share.Operation})">
+            <summary>
+            发送操作, 如果超过Split属性则会进行拆分发送
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="operations"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.SendOperitions(Net.Share.IServerSendHandle{`0},System.Byte,`0,Net.System.FastList{Net.Share.Operation})">
+            <summary>
+            发送操作, 如果超过Split属性则会进行拆分发送
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="client"></param>
+            <param name="operations"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32)">
+            <summary>
+            当封包数据时调用
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="count"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,Net.System.FastList{`0},Net.System.FastList{Net.Share.Operation})">
+            <summary>
+            当封包数据时调用
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="count"></param>
+            <param name="players"></param>
+            <param name="operations"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,`0,Net.System.FastList{Net.Share.Operation})">
+            <summary>
+            当封包数据时调用
+            </summary>
+            <param name="handle"></param>
+            <param name="cmd"></param>
+            <param name="count"></param>
+            <param name="client"></param>
+            <param name="operations"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperation(System.String,System.Object[])">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperation(System.UInt16,System.Object[])">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperation(System.Byte,System.String,System.Object[])">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="cmd"></param>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperation(System.Byte,System.UInt32,System.Object[])">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="cmd"></param>
+            <param name="func"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperation(Net.Share.Operation@)">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="opt"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperations(System.Collections.Generic.List{Net.Share.Operation})">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="opts"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.AddOperations(Net.Share.Operation[])">
+            <summary>
+            添加操作帧, 等待帧时间同步发送
+            </summary>
+            <param name="opts"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.ToString">
+            <summary>
+            场景对象转字符串
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.NetScene`1.Remove(`0)">
+            <summary>
+            移除玩家
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.NetScene`1.RemoveAll">
+            <summary>
+            移除所有玩家
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.RemoveScene">
+            <summary>
+            执行移除场景
+            </summary>
+        </member>
+        <member name="M:Net.Server.NetScene`1.RemoveOperations">
+            <summary>
+            移除场景所有玩家操作
+            </summary>
+        </member>
+        <member name="T:Net.Server.DefaultScene">
+            <summary>
+            默认网络场景，当不需要场景时直接继承
+            </summary>
+        </member>
+        <member name="T:Net.Server.ServerBase">
+            <summary>
+            网络服务器核心基类（非泛型）
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.Name">
+            <summary>
+            (分布式)服务器名称
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.AreaName">
+            <summary>
+            分布式(集群)服务器区域名称
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.Server">
+            <summary>
+            服务器套接字
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.ServerArgs">
+            <summary>
+            io完成端口对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.RpcCollectDic">
+            <summary>
+            远程调用方法收集
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.MemberInfos">
+            <summary>
+            已经收集过的类信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.RpcTargetHash">
+            <summary>
+            当前收集rpc的对象信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.SyncVarDic">
+            <summary>
+            字段同步信息
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.RpcWorkQueue">
+            <summary>
+            Rpc任务队列
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.Port">
+            <summary>
+            服务器端口
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.IsRunServer">
+            <summary>
+            服务器是否处于运行状态, 如果服务器套接字已经被释放则返回False, 否则返回True. 当调用Close方法后将改变状态
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.SyncSceneTime">
+            <summary>
+            网络场景同步时间(帧同步间隔), 默认每33毫秒同步一次, 一秒同步30次, 可自己设置
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.LineUp">
+            <summary>
+            获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队5000人
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnlineLimit">
+            <summary>
+            允许玩家在线人数最大值（玩家在线上限）默认2000人同时在线
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.MainSceneName">
+            <summary>
+            服务器主场景名称
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.sendCount">
+            <summary>
+            网络统计发送数据长度/秒
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.sendAmount">
+            <summary>
+            网络统计发送次数/秒
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.resolveAmount">
+            <summary>
+            网络统计解析次数/秒
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.receiveAmount">
+            <summary>
+            网络统计接收次数/秒
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.receiveCount">
+            <summary>
+            网络统计接收长度/秒
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.outflowTotal">
+            <summary>
+            从启动到现在总流出的数据流量
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.inflowTotal">
+            <summary>
+            从启动到现在总流入的数据流量
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.frame">
+            <summary>
+            4个字节记录数据长度 + 1CRC校验
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.PackageSize">
+            <summary>
+            接收缓冲区最大可接收的数据包大小 (默认是5m)
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.HeartInterval">
+            <summary>
+            心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
+            如果设置的值越小, 确认的速度也会越快. 但发送的数据也会增加. [开发调式时尽量把心跳值设置高点]
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.HeartLimit">
+            <summary>
+            <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
+            <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.BeginUserID">
+            <summary>
+            由于随机数失灵导致死循环, 所以用计数来标记用户标识 (从10000开始标记)
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.CurrUserID">
+            <summary>
+            当前玩家唯一标识计数
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.UserIDStack">
+            <summary>
+            玩家唯一标识栈
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.MTU">
+            <summary>
+            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节</para>
+            <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
+            <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
+            <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
+            <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="P:Net.Client.ClientBase.MTU"/>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.RTO">
+            <summary>
+            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.MTPS">
+            <summary>
+            (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.FlowControl">
+            <summary>
+            流量控制模式，只有Gcp协议可用
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.MaxThread">
+            <summary>
+            并发线程数量, 发送线程和接收处理线程数量
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.PackageLength">
+            <summary>
+            组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.LimitQueueCount">
+            <summary>
+            限制发送队列长度
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.rootPath">
+            <summary>
+            程序根路径, 网络数据缓存读写路径
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.SyncRoot">
+            <summary>
+            同步锁对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.ReconnectionTimeout">
+            <summary>
+            断线重连等待时间内, 默认10秒内进行重连成功, 否则断线处理
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.PackageAdapter">
+            <summary>
+            数据包适配器
+            </summary>
+        </member>
+        <member name="F:Net.Server.ServerBase.ServerThreads">
+            <summary>
+            服务器线程管理
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.SerializeAdapter">
+            <summary>
+            序列化适配器
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.Version">
+            <summary>
+            版本号
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.BigDataCacheLength">
+            <summary>
+            大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.SendBufferSize">
+            <summary>
+            设置Socket的发送缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.ReceiveBufferSize">
+            <summary>
+            设置Socket的接收缓冲区大小, 也叫做窗口大小
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnStartingHandle">
+            <summary>
+            开始运行服务器事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnStartupCompletedHandle">
+            <summary>
+            服务器启动成功事件
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnNetworkDataTraffic">
+            <summary>
+            当统计网络流量时触发
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.Log">
+            <summary>
+            输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行监听
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnAddRpcHandle">
+            <summary>
+            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnRemoveRpc">
+            <summary>
+            当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnSerializeRPC">
+            <summary>
+            当序列化远程过程调用方法
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnDeserializeRPC">
+            <summary>
+            当反序列化远程过程调用方法
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnSerializeOPT">
+            <summary>
+            当序列化远程过程调用操作
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase.OnDeserializeOPT">
+            <summary>
+            当反序列化远程过程调用操作
+            </summary>
+        </member>
+        <member name="T:Net.Server.ServerBase`2">
+            <summary>
+            网络服务器核心基类 2019.11.22
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Scenes">
+            <summary>
+            服务器场景，key是场景名或房间名，关卡名。 value是(场景或房间，关卡等)对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Instance">
+            <summary>
+            网络服务器单例
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.#ctor">
+            <summary>
+            构造网络服务器函数
+            </summary>
+        </member>
+        <member name="P:Net.Server.ServerBase`2.Item(System.String)">
+            <summary>
+            场景索引
+            </summary>
+            <param name="sceneID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.GetScenes">
+            <summary>
+            获得所有服务器场景
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnAddDefaultScene">
+            <summary>
+            当添加默认网络场景，服务器初始化后会默认创建一个主场景，供所有玩家刚登陆成功分配的临时场景，默认初始化场景人数为1000人
+            </summary>
+            <returns>返回值string：网络玩家所在的场景名称 , 返回值NetScene：网络玩家的场景对象</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnAddPlayerToScene(`0)">
+            <summary>
+            当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)">
+            <summary>
+            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
+            </summary>
+            <param name="client">当前客户端</param>
+            <param name="list">操作列表</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.OnSceneRelay(`0,Net.Share.RPCModel)">
+            <summary>
+            当客户端使用场景转发命令会调用此方法
+            </summary>
+            <param name="client"></param>
+            <param name="model"></param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SceneUpdateHandle">
+            <summary>
+            网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
+            </summary>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String)">
+            <summary>
+            创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+            </summary>
+            <param name="player">创建网络场景的玩家实体</param>
+            <param name="name">要创建的场景号或场景名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,`1)">
+            <summary>
+            创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+            </summary>
+            <param name="player">创建网络场景的玩家实体</param>
+            <param name="scene">创建场景的实体</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String,`1)">
+            <summary>
+            创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
+            </summary>
+            <param name="player">创建网络场景的玩家实体</param>
+            <param name="name">要创建的场景号或场景名称</param>
+            <param name="scene">创建场景的实体</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(System.String)">
+            <summary>
+            创建一个场景, 成功则返回场景对象, 创建失败则返回null
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(System.String,`1)">
+            <summary>
+            创建一个场景, 成功则返回场景对象, 创建失败则返回null
+            </summary>
+            <param name="name"></param>
+            <param name="scene"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.CreateScene(`1)">
+            <summary>
+            创建一个场景, 成功则返回场景对象, 创建失败则返回null
+            </summary>
+            <param name="name"></param>
+            <param name="scene"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.JoinScene(`0,System.String)">
+            <summary>
+            退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
+            </summary>
+            <param name="player">要进入sceneID场景的玩家实体</param>
+            <param name="name">场景ID，要切换到的场景号或场景名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.EnterScene(`0,System.String)">
+            <summary>
+            进入场景 - 成功进入返回true，进入失败返回false
+            </summary>
+            <param name="player">要进入sceneID场景的玩家实体</param>
+            <param name="name">场景ID，要切换到的场景号或场景名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="name">场景名称</param>
+            <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String,`1@)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="name">场景名称</param>
+            <param name="oldScene">上次所在的场景</param>
+            <returns>进入的场景,如果查询的场景不存在则为null</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="enterScene">要进入的场景</param>
+            <returns>进入的场景</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1,`1@)">
+            <summary>
+            切换场景
+            </summary>
+            <param name="player">要操作的玩家</param>
+            <param name="enterScene">要进入的场景</param>
+            <param name="oldScene">上次所在的场景</param>
+            <returns>进入的场景</returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.ExitScene(`0,System.Boolean,System.Action{`1})">
+            <summary>
+            退出场景 exitCurrentSceneCall回调时已经不包含player对象
+            </summary>
+            <param name="player"></param>
+            <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
+            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.RemoveScene(System.String,System.Boolean,System.Action{`1})">
+            <summary>
+            移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
+            </summary>
+            <param name="name">要移除的场景id</param>
+            <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
+            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.RemoveScenePlayer(`0,System.Boolean,System.Action{`1})">
+            <summary>
+            将玩家从当前所在的场景移除掉， 移除之后此客户端将会进入默认主场景 call回调时已经不包含player对象
+            </summary>
+            <param name="player">要执行的玩家实体</param>
+            <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
+            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Server.ServerBase`2.IsHasScene(System.String)">
+            <summary>
+            场景是否存在?
+            </summary>
+            <param name="sceneID"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Net.Server.TcpServer`2">
+            <summary>
+            TCP服务器类型
+            第三版本 2020.9.14
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServer">
+            <summary>
+            默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServerIocp`2">
+            <summary>
+            tcp 输入输出完成端口服务器
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="T:Net.Server.TcpServerIocp">
+            <summary>
+            默认tcpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdpServer`2">
+            <summary>
+            Udp网络服务器
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdpServer">
+            <summary>
+            默认udp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.GcpServer`2">
+            <summary>
+            Gcp网络服务器
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="T:Net.Server.GcpServer">
+            <summary>
+            默认gcp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdpServerIocp`2">
+            <summary>
+            udp 输入输出完成端口服务器
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+            <typeparam name="Player"></typeparam>
+            <typeparam name="Scene"></typeparam>
+        </member>
+        <member name="T:Net.Server.UdpServerIocp">
+            <summary>
+            默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.KcpPlayer">
+            <summary>
+            kcp客户端对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.KcpPlayer.Kcp">
+            <summary>
+            kcp对象
+            </summary>
+        </member>
+        <member name="T:Net.Server.KcpServer`2">
+            <summary>
+            kcp服务器
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+            <typeparam name="Player"></typeparam>
+            <typeparam name="Scene"></typeparam>
+        </member>
+        <member name="T:Net.Server.KcpServer">
+            <summary>
+            默认kcp服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdxPlayer">
+            <summary>
+            udx客户端对象
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdxServer`2">
+            <summary>
+            udx服务器类型  只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
+            第三版本 2020.9.14
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="F:Net.Server.UdxServer`2.Server">
+            <summary>
+            udx服务器对象
+            </summary>
+        </member>
+        <member name="T:Net.Server.UdxServer">
+            <summary>
+            默认udx服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.HttpPlayer">
+            <summary>
+            http客户端对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpPlayer.WSClient">
+            <summary>
+            webSocket套接字
+            </summary>
+        </member>
+        <member name="T:Net.Server.HttpServer`2">
+            <summary>
+            http网络服务器 2020.8.25 七夕
+            通过JavaScript脚本, httml网页进行连接. 和 WebClient连接
+            客户端发送的数据请求请看Net.Share.MessageModel类定义
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpServer`2.Server">
+            <summary>
+            http服务器套接字
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpServer`2.Scheme">
+            <summary>
+            http连接策略, 有https和http
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpServer`2.Certificate">
+            <summary>
+            证书
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpServer`2.SslProtocols">
+            <summary>
+            Ssl类型
+            </summary>
+        </member>
+        <member name="P:Net.Server.HttpServer`2.DocumentRootPath">
+            <summary>
+            文档根路径, 指定你的网站文件根路径
+            </summary>
+        </member>
+        <member name="T:Net.Server.HttpServer">
+            <summary>
+            默认http服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
+        </member>
+        <member name="T:Net.Server.WebPlayer">
+            <summary>
+            web客户端对象
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebPlayer.WSClient">
+            <summary>
+            webSocket套接字
+            </summary>
+        </member>
+        <member name="T:Net.Server.WebServer`2">
+            <summary>
+            web网络服务器 2020.8.25 七夕
+            通过JavaScript脚本, httml网页进行连接. 和 WebClient连接
+            客户端发送的数据请求请看Net.Share.MessageModel类定义
+            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
+            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebServer`2.Server">
+            <summary>
+            webSocket服务器套接字
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebServer`2.Scheme">
+            <summary>
+            websocket连接策略, 有wss和ws
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebServer`2.Certificate">
+            <summary>
+            证书
+            </summary>
+        </member>
+        <member name="P:Net.Server.WebServer`2.SslProtocols">
+            <summary>
+            Ssl类型
+            </summary>
+        </member>
+        <member name="T:Net.Server.WebServer">
+            <summary>
+            默认web服务器，当不需要处理Player对象和Scene对象时可使用
+            </summary>
         </member>
         <member name="F:Net.Helper.CertificateHelper.CertificateData">
             <summary>
@@ -763,6 +2501,13 @@
             </summary>
         </member>
         <member name="M:Net.Helper.CRCHelper.CRC32(System.String)">
+            <summary>
+            计算字符串哈希, 保证一致性
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Helper.CRCHelper.CRCU32(System.String)">
             <summary>
             计算字符串哈希, 保证一致性
             </summary>
@@ -1327,11 +3072,6 @@
             当发送的文件进度
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.OnRegisterNetworkIdentity">
-            <summary>
-            当注册网络物体唯一标识
-            </summary>
-        </member>
         <member name="P:Net.Client.ClientBase.OnWhenQueuing">
             <summary>
             当排队等待中
@@ -1585,7 +3325,7 @@
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.DispatchRpc(System.Int32,System.Object[])">
+        <member name="M:Net.Client.ClientBase.DispatchRpc(System.UInt32,System.Object[])">
             <summary>
             派发给所有被收集的Rpc方法
             </summary>
@@ -1691,11 +3431,12 @@
             <param name="isConnect"></param>
             <param name="action">结果</param>
         </member>
-        <member name="M:Net.Client.ClientBase.Disconnect(System.Boolean)">
+        <member name="M:Net.Client.ClientBase.Disconnect(System.Boolean,System.Boolean)">
             <summary>
             断开连接
             </summary>
             <param name="reuseSocket">断开连接后还能重新使用？</param>
+            <param name="invokeSocketDisconnect"></param>
         </member>
         <member name="M:Net.Client.ClientBase.NetworkFlowHandler">
             <summary>
@@ -1729,14 +3470,14 @@
             发送处理
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.OnSerializeRpcInternal(Net.Share.RPCModel)">
+        <member name="M:Net.Client.ClientBase.OnSerializeRpcInternal(Net.System.ISegment,Net.Share.RPCModel)">
             <summary>
             当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(System.Byte[],System.Int32,System.Int32)">
+        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(Net.System.ISegment)">
             <summary>
             当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
             </summary>
@@ -1773,7 +3514,7 @@
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.UInt16,System.Object[])">
+        <member name="M:Net.Client.ClientBase.AddOperation(System.Int32,System.Object[])">
             <summary>
             添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
             而Send则是直接发送
@@ -1890,7 +3631,6 @@
             发送文件, 服务器可以通过重写<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFile"/>方法来接收 或 使用事件<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFileHandle"/>来监听并处理
             </summary>
             <param name="filePath"></param>
-            <param name="bufferSize">每次发送数据大小</param>
             <returns></returns>
         </member>
         <member name="M:Net.Client.ClientBase.CheckCall">
@@ -1931,9 +3671,6 @@
         <member name="M:Net.Client.TcpClient.ConnectResult(System.String,System.Int32,System.Int32,System.Action{System.Boolean})">
             <inheritdoc/>
         </member>
-        <member name="M:Net.Client.TcpClient.Close(System.Boolean,System.Int32)">
-            <inheritdoc/>
-        </member>
         <member name="T:Net.Client.UdpClient">
             <summary>
             Udp网络客户端
@@ -1965,6 +3702,17 @@
             <summary>
             Gcp协议
             </summary>
+        </member>
+        <member name="M:Net.Client.GcpClient.#ctor">
+            <summary>
+            构造gdp可靠客户端
+            </summary>
+        </member>
+        <member name="M:Net.Client.GcpClient.#ctor(System.Boolean)">
+            <summary>
+            构造gdp可靠客户端
+            </summary>
+            <param name="useUnityThread">使用unity多线程?</param>
         </member>
         <member name="T:Net.Client.KcpClient">
             <summary>
@@ -2132,12 +3880,6 @@
             收集运行时初始化方法
             </summary>
         </member>
-        <member name="P:Net.Config.Config.UseMemoryStream">
-            <summary>
-            使用内存流进行缓存? 默认是文件流缓存, 速度会比较慢, 运行内存占用比较小!
-            使用内存流缓存速度会比较快, 但运行内存占用比较大
-            </summary>
-        </member>
         <member name="P:Net.Config.Config.BaseCapacity">
             <summary>
             内存接收缓冲区基础容量 默认1024
@@ -2215,14 +3957,7 @@
             <param name="model">函数名</param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[],System.Boolean)">
-            <summary>
-            新版反序列化
-            </summary>
-            <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Serialize.NetConvert.Deserialize(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvert.Deserialize(Net.System.ISegment,System.Boolean)">
             <summary>
             新版反序列化
             </summary>
@@ -2551,6 +4286,16 @@
             收集的绑定类型列表
             </summary>
         </member>
+        <member name="T:Net.Serialize.IBindingEntryType">
+            <summary>
+            绑定入口类型，Unity编辑器工具使用
+            </summary>
+        </member>
+        <member name="P:Net.Serialize.IBindingEntryType.BindTypes">
+            <summary>
+            要绑定的类型列表
+            </summary>
+        </member>
         <member name="T:Net.Serialize.SerializeCache`1">
             <summary>
             序列化缓存
@@ -2829,7 +4574,7 @@
             序列化是否错误?
             </summary>
         </member>
-        <member name="M:Net.Share.FuncData.#ctor(System.Int32,System.Object[])">
+        <member name="M:Net.Share.FuncData.#ctor(System.UInt32,System.Object[])">
             <summary>
             构造函数
             </summary>
@@ -2993,18 +4738,18 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Net.Share.IGcp.Input(System.Byte[])">
+        <member name="M:Net.Share.IGcp.Input(Net.System.ISegment)">
             <summary>
             输入要发送的数据
             </summary>
-            <param name="buffer"></param>
+            <param name="segment"></param>
         </member>
         <member name="M:Net.Share.IGcp.Update">
             <summary>
             更新发送和结束事件
             </summary>
         </member>
-        <member name="M:Net.Share.IGcp.Send(System.Byte[])">
+        <member name="M:Net.Share.IGcp.Send(Net.System.ISegment)">
             <summary>
             真正的接入发送接口
             </summary>
@@ -3354,21 +5099,21 @@
             <param name="cmd"></param>
             <param name="buffer">自定义字节数组</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Int32,System.Object[])">
+        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.UInt32,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="func">本地客户端rpc函数</param>
+            <param name="protocol">协议号</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
-        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Int32,System.Object[])">
+        <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.UInt32,System.Object[])">
             <summary>
             网络多播, 发送数据到clients集合的客户端
             </summary>
             <param name="clients">客户端集合</param>
             <param name="cmd">网络命令</param>
-            <param name="func">本地客户端rpc函数</param>
+            <param name="protocol">协议号</param>
             <param name="pars">本地客户端rpc参数</param>
         </member>
         <member name="M:Net.Share.IServerSendHandle`1.Multicast(System.Collections.Generic.IList{`0},System.Byte,System.Byte[],System.Boolean,System.Boolean)">
@@ -3376,7 +5121,6 @@
             网络多播, 发送数据到clients集合的客户端 (灵活数据包)
             </summary>
             <param name="clients">客户端集合</param>
-            <param name="reliable">这个包是可靠的吗?</param>
             <param name="cmd">网络指令</param>
             <param name="buffer">要包装的数据,你自己来定</param>
             <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert反序列化?</param>
@@ -3567,11 +5311,6 @@
             同步MySqlBuild生成的类, 当属性被修改后同步给(客户端/服务器)
             </summary>
         </member>
-        <member name="F:Net.Share.NetCmd.ReliableTransport">
-            <summary>
-            Gcp可靠传输协议指令. 内部命令
-            </summary>
-        </member>
         <member name="F:Net.Share.NetCmd.SwitchPort">
             <summary>
             当客户端连接主服务器(网关服)时, 主服务器检测分区服务器在线人数如果处于爆满状态, 
@@ -3728,61 +5467,6 @@
         <member name="M:Net.Share.RPCMethod.#ctor(System.Object,System.Reflection.MethodInfo,System.Byte)">
             <summary>
             远程过程调用方法
-            </summary>
-        </member>
-        <member name="T:Net.Share.NetState">
-            <summary>
-            网络状态
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.Idle">
-            <summary>
-            待机状态
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.WaitTeam">
-            <summary>
-            等待其他玩家加入状态
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.Team">
-            <summary>
-            组队状态
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.InCombat">
-            <summary>
-            作战中，或在游戏中
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.Disconnected">
-            <summary>
-            玩家掉线
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.AwayStatus">
-            <summary>
-            离开状态
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.InGameHall">
-            <summary>
-            在游戏厅内，或在场景内
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetState.OutGameHall">
-            <summary>
-            在游戏厅外，或在场景外
-            </summary>
-        </member>
-        <member name="T:Net.Share.NetSystem">
-            <summary>
-            网络系统设置类型
-            </summary>
-        </member>
-        <member name="F:Net.Share.NetSystem.CreateScene">
-            <summary>
-            允许玩家创建场景
             </summary>
         </member>
         <member name="T:Net.Share.NetworkDataTraffic">
@@ -4219,32 +5903,32 @@
             缓存区
             </summary>
         </member>
-        <member name="T:Net.Share.RTState">
+        <member name="T:Net.Share.BigDataState">
             <summary>
             可靠传输状态
             </summary>
         </member>
-        <member name="F:Net.Share.RTState.Sending">
+        <member name="F:Net.Share.BigDataState.Sending">
             <summary>
             发送中
             </summary>
         </member>
-        <member name="F:Net.Share.RTState.Download">
+        <member name="F:Net.Share.BigDataState.Download">
             <summary>
             下载中
             </summary>
         </member>
-        <member name="F:Net.Share.RTState.FailSend">
+        <member name="F:Net.Share.BigDataState.FailSend">
             <summary>
             发送失败
             </summary>
         </member>
-        <member name="F:Net.Share.RTState.Complete">
+        <member name="F:Net.Share.BigDataState.Complete">
             <summary>
             完成
             </summary>
         </member>
-        <member name="F:Net.Share.RTState.Retransmission">
+        <member name="F:Net.Share.BigDataState.Retransmission">
             <summary>
             尝试重传
             </summary>
@@ -4256,27 +5940,27 @@
             <param name="progress">当前进度</param>
             <param name="state">当前状态</param>
         </member>
-        <member name="T:Net.Share.RTProgress">
+        <member name="T:Net.Share.BigDataProgress">
             <summary>
             可靠传输进度值
             </summary>
         </member>
-        <member name="F:Net.Share.RTProgress.name">
+        <member name="F:Net.Share.BigDataProgress.name">
             <summary>
             进度名称
             </summary>
         </member>
-        <member name="F:Net.Share.RTProgress.progress">
+        <member name="F:Net.Share.BigDataProgress.progress">
             <summary>
             进度值
             </summary>
         </member>
-        <member name="F:Net.Share.RTProgress.state">
+        <member name="F:Net.Share.BigDataProgress.state">
             <summary>
             当前状态
             </summary>
         </member>
-        <member name="M:Net.Share.RTProgress.#ctor(System.Single,Net.Share.RTState)">
+        <member name="M:Net.Share.BigDataProgress.#ctor(System.Single,Net.Share.BigDataState)">
             <summary>
             构造
             </summary>
@@ -4350,12 +6034,12 @@
         </member>
         <member name="M:Net.Share.RPC.#ctor">
             <summary>
-            构造RPCFun函数特性
+            构造RPC函数特性
             </summary>
         </member>
         <member name="M:Net.Share.RPC.#ctor(System.Byte)">
             <summary>
-            构造RPCFun函数特性
+            构造RPC函数特性
             </summary>
             <param name="cmd">自定义的网络命令</param>
         </member>
@@ -4394,6 +6078,7 @@
         <member name="T:Net.Share.RPCModel">
             <summary>
             远程过程调用模型,此类负责网络通讯中数据解析临时缓存的对象
+            经过测试结构体和类差距不大，如果用in修饰符，结构会比较快，但是我们不知道开发者在哪里会使用Asxxx读取参数，如果都全部用in修饰符，则Asxxx会失效，由于只读属性原因，导致parsIndex无法++
             </summary>
         </member>
         <member name="F:Net.Share.RPCModel.kernel">
@@ -4583,36 +6268,6 @@
             构造字段,属性同步特性
             </summary>
         </member>
-        <member name="T:Net.Share.TransportMode">
-            <summary>
-            传输模式设置
-            </summary>
-        </member>
-        <member name="F:Net.Share.TransportMode.Normal">
-            <summary>
-            正常模式, 保证可靠数据接近正常得到应答, 降低多次重传的情况
-            </summary>
-        </member>
-        <member name="F:Net.Share.TransportMode.Quick">
-            <summary>
-            快速模式, 速度飞起来, 用流量来换取快速应答
-            </summary>
-        </member>
-        <member name="F:Net.Share.TransportMode.DoubleSpeed">
-            <summary>
-            双倍加速模式, 重传和应答会以2倍速以上响应
-            </summary>
-        </member>
-        <member name="F:Net.Share.TransportMode.VeryFast">
-            <summary>
-            极快模式, 双倍速度重传与应答
-            </summary>
-        </member>
-        <member name="F:Net.Share.TransportMode.Speeding">
-            <summary>
-            超速模式, 无法形容的极限速度模式, 流量翻100倍
-            </summary>
-        </member>
         <member name="T:Net.Share.Win32KernelAPI">
             <summary>
             提供win32内核api类
@@ -4724,20 +6379,22 @@
             缓存数据对象
             </summary>
         </member>
-        <member name="M:Net.System.DataCache`1.QueryOrGet(System.Func{`0},System.Action{`0})">
+        <member name="M:Net.System.DataCache`1.QueryOrGet(System.Func{`0},System.Func{`0},System.Action{`0})">
             <summary>
             查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
             </summary>
             <param name="queryFunc">第一次执行查询</param>
             <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+            <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
             <returns></returns>
         </member>
-        <member name="M:Net.System.DataCache`1.QueryOrGetAsync(System.Func{Cysharp.Threading.Tasks.UniTask{`0}},System.Action{`0})">
+        <member name="M:Net.System.DataCache`1.QueryOrGetAsync(System.Func{Cysharp.Threading.Tasks.UniTask{`0}},System.Func{`0},System.Action{`0})">
             <summary>
             查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
             </summary>
             <param name="queryFunc">第一次执行查询</param>
             <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
+            <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
             <returns></returns>
         </member>
         <member name="T:Net.System.DataCacheDictionary`2">
@@ -4747,9 +6404,27 @@
             <typeparam name="TKey"></typeparam>
             <typeparam name="TValue"></typeparam>
         </member>
+        <member name="M:Net.System.DataCacheDictionary`2.GetOrCreate(`0,System.Func{`1})">
+            <summary>
+            获取或创建缓存，如果获取key不存在，则会创建缓存key，创建缓存值可以在onCreate委托处理
+            </summary>
+            <param name="key">查询key</param>
+            <param name="onCreate">当查询不存在创建缓存委托</param>
+            <returns></returns>
+        </member>
         <member name="T:Net.System.DataCacheManager">
             <summary>
             数据缓存管理器类
+            </summary>
+        </member>
+        <member name="F:Net.System.DataCacheManager.CacheTimeout">
+            <summary>
+            缓存12个小时
+            </summary>
+        </member>
+        <member name="P:Net.System.DataCacheManager.NullQueryTimeout">
+            <summary>
+            空查询60秒恢复
             </summary>
         </member>
         <member name="M:Net.System.DataCacheManager.Executed">
@@ -5991,6 +7666,7 @@
             复制分片数据
             </summary>
             <param name="recovery">复制数据后立即回收此分片?</param>
+            <param name="resetPos"></param>
             <returns></returns>
         </member>
         <member name="M:Net.System.Segment.Write(System.Byte[],System.Boolean)">
@@ -6094,6 +7770,7 @@
             <summary>
             深复制
             </summary>
+            <param name="type"></param>
             <param name="target"></param>
             <returns></returns>
         </member>
@@ -6529,6 +8206,11 @@
             重置事件
             </summary>
         </member>
+        <member name="M:Net.Event.TimerEvent.Clear">
+            <summary>
+            清除事件列表
+            </summary>
+        </member>
         <member name="M:Net.Event.TimerTick.CheckTimeout(System.UInt32,System.UInt32,System.Boolean)">
             <summary>
             检测时间是否到达
@@ -6537,1764 +8219,6 @@
             <param name="interval">间隔最大是1000</param>
             <param name="sleep"></param>
             <returns></returns>
-        </member>
-        <member name="T:Net.Server.NetPlayer">
-            <summary>
-            网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
-            <code>注意:不要试图new player出来, new出来后是没有作用的!</code>
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Name">
-            <summary>
-            玩家名称
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Client">
-            <summary>
-            Tcp套接字
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.ReceiveArgs">
-            <summary>
-            io完成端口接收对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.RemotePoint">
-            <summary>
-            存储客户端终端
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.SceneName">
-            <summary>
-            此玩家所在的场景名称
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.PlayerID">
-            <summary>
-            客户端玩家的标识
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Scene">
-            <summary>
-            玩家所在的场景实体
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.RpcCollectDic">
-            <summary>
-            远程调用方法收集
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.MemberInfos">
-            <summary>
-            已经收集过的类信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.RpcTargetHash">
-            <summary>
-            当前收集rpc的对象信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.SyncVarDic">
-            <summary>
-            字段同步信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.RpcWorkQueue">
-            <summary>
-            Rpc任务队列
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.heart">
-            <summary>
-            跳动的心
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetPlayer.stack">
-            <summary>
-            TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetPlayer.stackStream">
-            <summary>
-            TCP叠包临时缓存流
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.UserID">
-            <summary>
-            用户唯一身份标识
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Group">
-            <summary>
-            当前玩家所在的线程组对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Connected">
-            <summary>
-            是否处于连接
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Redundant">
-            <summary>
-            确定是否是冗余连接
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.QueueUpNo">
-            <summary>
-            当前排队座号
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.IsQueueUp">
-            <summary>
-            是否属于排队状态
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.ConnectTime">
-            <summary>
-            客户端连接时间
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.ReconnectTimeout">
-            <summary>
-            断线重连等待时间
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.BytesReceived">
-            <summary>
-            此客户端接收到的字节总量
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.Token">
-            <summary>
-            当前客户端请求的Token, 用于客户端响应, 如果在Rpc执行方法使用异步, 则需要记录一下token再异步, 否则token会被冲掉, 导致响应token错误
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.CRCError">
-            <summary>
-            CRC校验错误次数, 如果有错误每秒提示一次
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.WindowFullError">
-            <summary>
-            发送窗口已满提示次数
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.DataSizeError">
-            <summary>
-            数据大小错误, 数据被拦截修改或者其他问题导致错误
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.DataQueueOverflowError">
-            <summary>
-            数据队列溢出错误, 当要发送的数据队列堆积到<see cref="!:ServerBase&lt;Player, Scene&gt;.LimitQueueCount"/> 后提示错误
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetPlayer.BigDataCacheLengthError">
-            <summary>
-            大数据传输缓存最大长度错误次数, 请在<see cref="!:ServerBase&lt;Player, Scene&gt;.BigDataCacheLength"/>设置最大缓存长度
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.#ctor">
-            <summary>
-            构造网络客户端
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.#ctor(System.Net.Sockets.Socket)">
-            <summary>
-            构造网络客户端，Tcp
-            </summary>
-            <param name="client">客户端套接字</param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.#ctor(System.Net.EndPoint)">
-            <summary>
-            构造网络客户端
-            </summary>
-            <param name="remotePoint"></param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.Finalize">
-            <summary>
-            析构网络客户端
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.Dispose">
-            <summary>
-            释放
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.AddRpc(System.Boolean)">
-            <summary>
-            添加远程过程调用函数,从对象进行收集
-            </summary>
-            <param name="append">可以重复添加rpc?</param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean)">
-            <summary>
-            添加远程过程调用函数,从对象进行收集
-            </summary>
-            <param name="target"></param>
-            <param name="append">可以重复添加rpc?</param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.RemoveRpc(System.Object)">
-            <summary>
-            移除网络远程过程调用函数
-            </summary>
-            <param name="target">移除的rpc对象</param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnUnClientRequest(Net.Share.RPCModel)">
-            <summary>
-            当未知客户端发送数据请求，返回<see langword="false"/>，不做任何事，返回<see langword="true"/>，添加到<see cref="!:ServerBase&lt;Player, Scene&gt;.Players"/>中
-            客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
-            在这里可以用来判断客户端登录和注册等等进站许可
-            </summary>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnWSUnClientRequest(Net.Share.MessageModel)">
-            <summary>
-            当web服务器未知客户端发送数据请求，返回<see langword="false"/>，不做任何事，返回<see langword="true"/>，添加到<see cref="!:ServerBase&lt;Player, Scene&gt;.Players"/>中
-            客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互
-            在这里可以用来判断客户端登录和注册等等进站许可
-            </summary>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnRevdBufferHandle(Net.Share.RPCModel)">
-            <summary>
-            当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnWSRevdBuffer(Net.Share.MessageModel)">
-            <summary>
-            当接收到webSocket客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnConnectLost">
-            <summary>
-            当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnReconnecting">
-            <summary>
-            当断线重连成功触发
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnRemoveClient">
-            <summary>
-            当服务器判定客户端为断线或连接异常时，移除客户端时调用
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnRpcExecute(Net.Share.RPCModel)">
-            <summary>
-            当执行Rpc(远程过程调用函数)时, 提高性能可重写此方法进行指定要调用的函数
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnStart">
-            <summary>
-            当玩家登录成功初始化调用
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnUpdate">
-            <summary>
-            当玩家更新操作
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnEnter">
-            <summary>
-            当玩家进入场景 ->场景对象在Scene属性
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnExit">
-            <summary>
-            当玩家退出场景 ->场景对象在Scene属性
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnSignOut">
-            <summary>
-            当玩家退出登录时调用
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnRemove">
-            <summary>
-            当场景被移除 ->场景对象在Scene属性
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnOperationSync(Net.Share.OperationList)">
-            <summary>
-            当接收到客户端使用<see cref="!:Net.Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用. 如果重写此方法, 
-            <code>返回false, 则服务器对象类会重新把操作列表加入到场景中, 你可以重写服务器的<see cref="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)"/>方法让此方法失效</code>
-            <code>返回true, 服务器不再把数据加入到场景列表, 认为你已经在此处把数据处理了</code>
-            </summary>
-            <param name="list"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetPlayer.OnSyncPropertyHandler(Net.Share.RPCModel)">
-            <summary>
-            当属性同步-- 当MysqlBuild生成的类属性在客户端被修改后同步上来会调用此方法
-            </summary>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.NetPlayer.Close">
-            <summary>
-            此方法需要自己实现, 实现内容如下: <see langword="xxServer.Instance.RemoveClient(this);"/>
-            </summary>
-        </member>
-        <member name="T:Net.Server.NetScene`1">
-            <summary>
-            网络场景
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.Name">
-            <summary>
-            场景名称
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetScene`1.sceneCapacity">
-            <summary>
-            场景容纳人数
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.Players">
-            <summary>
-            当前网络场景的玩家, 此字段不要使用Add, Remove进行调用
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetScene`1.frame">
-            <summary>
-            当前帧
-            </summary>
-        </member>
-        <member name="F:Net.Server.NetScene`1.operations">
-            <summary>
-            备用操作, 当玩家被移除后速度比update更新要快而没有地方收集操作指令, 所以在玩家即将被移除时, 可以访问这个变量进行添加操作同步数据
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.SceneNumber">
-            <summary>
-            获取场景当前人数
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.Count">
-            <summary>
-            获取场景当前人数
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.Capacity">
-            <summary>
-            获取场景容纳人数
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.IsFull">
-            <summary>
-            场景(房间)人数是否已满？
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.Split">
-            <summary>
-            操作列表分段值, 当operations.Count的长度大于Split值时, 就会裁剪为多段数据发送 默认为500长度分段
-            </summary>
-        </member>
-        <member name="P:Net.Server.NetScene`1.FPS">
-            <summary>
-            场景帧数
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.#ctor">
-            <summary>
-            构造网络场景
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.#ctor(System.Int32)">
-            <summary>
-            添加网络主场景并增加主场景最大容纳人数
-            </summary>
-            <param name="number">主场景最大容纳人数</param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.#ctor(`0,System.Int32)">
-            <summary>
-            添加网络场景并增加当前场景人数
-            </summary>
-            <param name="client">网络玩家</param>
-            <param name="number">创建场景容纳人数</param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddPlayer(`0)">
-            <summary>
-            添加玩家
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnEnter(`0)">
-            <summary>
-            当进入场景的玩家
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnBeginExit(`0)">
-            <summary>
-            当开始退出场景，当调用此方法时client还在Clients属性里面
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnExit(`0)">
-            <summary>
-            当退出场景的玩家, 当调用此方法后client已经被移出Clients属性
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnRemove">
-            <summary>
-            当场景被移除
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnOperationSync(`0,Net.Share.OperationList)">
-            <summary>
-            当接收到客户端使用Client.AddOperation方法发送的请求时调用
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddPlayers(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            添加玩家
-            </summary>
-            <param name="collection"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.Update(Net.Share.IServerSendHandle{`0},System.Byte)">
-            <summary>
-            网络帧同步, 状态同步更新, 帧时间根据服务器主类的SyncSceneTime属性来调整速率
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.SendOperitions(Net.Share.IServerSendHandle{`0},System.Byte,Net.System.FastList{Net.Share.Operation})">
-            <summary>
-            发送操作, 如果超过Split属性则会进行拆分发送
-            </summary>
-            <param name="handle"></param>
-            <param name="cmd"></param>
-            <param name="operations"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.SendOperitions(Net.Share.IServerSendHandle{`0},System.Byte,`0,Net.System.FastList{Net.Share.Operation})">
-            <summary>
-            发送操作, 如果超过Split属性则会进行拆分发送
-            </summary>
-            <param name="handle"></param>
-            <param name="cmd"></param>
-            <param name="operations"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32)">
-            <summary>
-            当封包数据时调用
-            </summary>
-            <param name="handle"></param>
-            <param name="cmd"></param>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,Net.System.FastList{`0},Net.System.FastList{Net.Share.Operation})">
-            <summary>
-            当封包数据时调用
-            </summary>
-            <param name="handle"></param>
-            <param name="cmd"></param>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.OnPacket(Net.Share.IServerSendHandle{`0},System.Byte,System.Int32,`0,Net.System.FastList{Net.Share.Operation})">
-            <summary>
-            当封包数据时调用
-            </summary>
-            <param name="handle"></param>
-            <param name="cmd"></param>
-            <param name="count"></param>
-            <param name="client"></param>
-            <param name="operations"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(System.String,System.Object[])">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(System.UInt16,System.Object[])">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(System.Byte,System.String,System.Object[])">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(System.Byte,System.UInt16,System.Object[])">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="cmd"></param>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperation(Net.Share.Operation@)">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="opt"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperations(System.Collections.Generic.List{Net.Share.Operation})">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="opts"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.AddOperations(Net.Share.Operation[])">
-            <summary>
-            添加操作帧, 等待帧时间同步发送
-            </summary>
-            <param name="opts"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.ToString">
-            <summary>
-            场景对象转字符串
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.NetScene`1.Remove(`0)">
-            <summary>
-            移除玩家
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.NetScene`1.RemoveAll">
-            <summary>
-            移除所有玩家
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.RemoveScene">
-            <summary>
-            执行移除场景
-            </summary>
-        </member>
-        <member name="M:Net.Server.NetScene`1.RemoveOperations">
-            <summary>
-            移除场景所有玩家操作
-            </summary>
-        </member>
-        <member name="T:Net.Server.DefaultScene">
-            <summary>
-            默认网络场景，当不需要场景时直接继承
-            </summary>
-        </member>
-        <member name="T:Net.Server.ServerBase`1">
-            <summary>
-            网络服务器核心基类 2023.11.13
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Name">
-            <summary>
-            (分布式)服务器名称
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.AreaName">
-            <summary>
-            分布式(集群)服务器区域名称
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Server">
-            <summary>
-            服务器套接字
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.ServerArgs">
-            <summary>
-            io完成端口对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.RpcCollectDic">
-            <summary>
-            远程调用方法收集
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.MemberInfos">
-            <summary>
-            已经收集过的类信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.RpcTargetHash">
-            <summary>
-            当前收集rpc的对象信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.SyncVarDic">
-            <summary>
-            字段同步信息
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.RpcWorkQueue">
-            <summary>
-            Rpc任务队列
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Players">
-            <summary>
-            登录的客户端 与<see cref="P:Net.Server.ServerBase`1.UIDClients"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.PlayerID"/>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.UIDClients">
-            <summary>
-            登录的客户端 与<see cref="P:Net.Server.ServerBase`1.Players"/>为互助字典 所添加的键值为<see cref="P:Net.Server.NetPlayer.UserID"/>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.AllClients">
-            <summary>
-            所有客户端列表
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Clients">
-            <summary>
-            所有在线的客户端
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.UnClients">
-            <summary>
-            未知客户端连接 或 刚连接服务器还未登录账号的IP
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Instance">
-            <summary>
-            网络服务器单例
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnlinePlayers">
-            <summary>
-            当前玩家在线人数
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.UnClientNumber">
-            <summary>
-            未知客户端人数, 即在线不登录账号的客户端
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Port">
-            <summary>
-            服务器端口
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.IsRunServer">
-            <summary>
-            服务器是否处于运行状态, 如果服务器套接字已经被释放则返回False, 否则返回True. 当调用Close方法后将改变状态
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.SyncSceneTime">
-            <summary>
-            网络场景同步时间(帧同步间隔), 默认每33毫秒同步一次, 一秒同步30次, 可自己设置
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.LineUp">
-            <summary>
-            获取或设置最大可排队人数， 如果未知客户端人数超出LineUp值将不处理超出排队的未知客户端数据请求 ， 默认排队5000人
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnlineLimit">
-            <summary>
-            允许玩家在线人数最大值（玩家在线上限）默认2000人同时在线
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.MainSceneName">
-            <summary>
-            服务器主场景名称
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.sendCount">
-            <summary>
-            网络统计发送数据长度/秒
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.sendAmount">
-            <summary>
-            网络统计发送次数/秒
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.resolveAmount">
-            <summary>
-            网络统计解析次数/秒
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.receiveAmount">
-            <summary>
-            网络统计接收次数/秒
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.receiveCount">
-            <summary>
-            网络统计接收长度/秒
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.outflowTotal">
-            <summary>
-            从启动到现在总流出的数据流量
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.inflowTotal">
-            <summary>
-            从启动到现在总流入的数据流量
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.frame">
-            <summary>
-            4个字节记录数据长度 + 1CRC校验
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.PackageSize">
-            <summary>
-            接收缓冲区最大可接收的数据包大小 (默认是5m)
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.HeartInterval">
-            <summary>
-            心跳时间间隔, 默认每2秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时10秒, 
-            如果设置的值越小, 确认的速度也会越快. 但发送的数据也会增加. [开发调式时尽量把心跳值设置高点]
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.HeartLimit">
-            <summary>
-            <para>心跳检测次数, 默认为5次检测, 如果5次发送心跳给客户端或服务器, 没有收到回应的心跳包, 则进入断开连接处理</para>
-            <para>当一直有数据往来时是不会发送心跳数据的, 只有当没有数据往来了, 才会进入发送心跳数据</para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.BeginUserID">
-            <summary>
-            由于随机数失灵导致死循环, 所以用计数来标记用户标识 (从10000开始标记)
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.CurrUserID">
-            <summary>
-            当前玩家唯一标识计数
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.UserIDStack">
-            <summary>
-            玩家唯一标识栈
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.MTU">
-            <summary>
-            <para>（Maxium Transmission Unit）最大传输单元, 最大传输单元为1500字节</para>
-            <para>1.链路层：以太网的数据帧的长度为(64+18)~(1500+18)字节，其中18是数据帧的帧头和帧尾，所以数据帧的内容最大为1500字节（不包括帧头和帧尾），即MUT为1500字节</para>
-            <para>2.网络层：IP包的首部要占用20字节，所以这里的MTU＝1500－20＝1480字节</para>
-            <para>3.传输层：UDP包的首部要占有8字节，所以这里的MTU＝1480－8＝1472字节</para>
-            <see langword="注意:服务器和客户端的MTU属性的值必须保持一致性,否则分包的数据将解析错误!"/> <see cref="P:Net.Client.ClientBase.MTU"/>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.RTO">
-            <summary>
-            （Retransmission TimeOut）重传超时时间。 默认为1秒重传一次
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.MTPS">
-            <summary>
-            (Maximum traffic per second) 每秒允许传输最大流量, 默认最大每秒可以传输1m大小
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.FlowControl">
-            <summary>
-            流量控制模式，只有Gcp协议可用
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.MaxThread">
-            <summary>
-            并发线程数量, 发送线程和接收处理线程数量
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.PackageLength">
-            <summary>
-            组包数量，如果是一些小数据包，最多可以组合多少个？ 默认是组合1000个后发送
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.LimitQueueCount">
-            <summary>
-            限制发送队列长度
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.rootPath">
-            <summary>
-            程序根路径, 网络数据缓存读写路径
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.QueueUp">
-            <summary>
-            排队队列
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.SyncRoot">
-            <summary>
-            同步锁对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.ReconnectionTimeout">
-            <summary>
-            断线重连等待时间内, 默认10秒内进行重连成功, 否则断线处理
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.PackageAdapter">
-            <summary>
-            数据包适配器
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.ServerThreads">
-            <summary>
-            服务器线程管理
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.SerializeAdapter">
-            <summary>
-            序列化适配器
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Version">
-            <summary>
-            版本号
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.BigDataCacheLength">
-            <summary>
-            大数据传输缓存最大值, 如果超出则被忽略 (默认最大可缓存10m数据)
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.SendBufferSize">
-            <summary>
-            设置Socket的发送缓冲区大小, 也叫做窗口大小
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.ReceiveBufferSize">
-            <summary>
-            设置Socket的接收缓冲区大小, 也叫做窗口大小
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnStartingHandle">
-            <summary>
-            开始运行服务器事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnStartupCompletedHandle">
-            <summary>
-            服务器启动成功事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnHasConnectHandle">
-            <summary>
-            当前有客户端连接触发事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnAddClientHandle">
-            <summary>
-            当添加客户端到所有在线的玩家集合中触发的事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRevdBufferHandle">
-            <summary>
-            当接收到自定义的网络指令时处理事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRemoveClientHandle">
-            <summary>
-            当移除客户端时触发事件
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnNetworkDataTraffic">
-            <summary>
-            当统计网络流量时触发
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnOperationSyncHandle">
-            <summary>
-            当客户端在时间帧发送的操作数据， 当使用客户端的<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法时调用
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRevdRTProgressHandle">
-            <summary>
-            当客户端发送的大数据时, 可监听此事件显示进度值
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnCallProgressHandle">
-            <summary>
-            当服务器发送可靠数据时, 可监听此事件显示进度值 (NetworkServer,TcpServer类无效)
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Log">
-            <summary>
-            输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行监听
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.OnPingCallback">
-            <summary>
-            ping服务器回调 参数double为延迟毫秒单位 当<see cref="!:RTOMode"/>=<see cref="!:RTOMode.Variable"/>可变重传时, 内核将会每秒自动ping一次
-            </summary>
-        </member>
-        <member name="F:Net.Server.ServerBase`1.OnSendErrorHandle">
-            <summary>
-            当socket发送失败调用.参数1:玩家对象, 参数2:发送的字节数组, 参数3:发送标志(可靠和不可靠)  ->可通过<see cref="M:Net.Server.ServerBase`1.SendByteData(`0,System.Byte[])"/>方法重新发送
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnAddRpcHandle">
-            <summary>
-            当添加远程过程调用方法时调用， 参数1：要收集rpc特性的对象，参数2:是否异步收集rpc方法和同步字段与属性？ 参数3：如果服务器的rpc中已经有了这个对象，还可以添加进去？
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRemoveRpc">
-            <summary>
-            当移除远程过程调用对象， 参数1：移除此对象的所有rpc方法
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRPCExecute">
-            <summary>
-            当执行调用远程过程方法时触发
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnSerializeRPC">
-            <summary>
-            当序列化远程过程调用方法
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnDeserializeRPC">
-            <summary>
-            当反序列化远程过程调用方法
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnSerializeOPT">
-            <summary>
-            当序列化远程过程调用操作
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnDeserializeOPT">
-            <summary>
-            当反序列化远程过程调用操作
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnDownloadFileHandle">
-            <summary>
-            当开始下载文件时调用, 参数1(Player):下载哪个玩家上传的文件 参数2(string):客户端上传的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnReceiveFileHandle">
-            <summary>
-            当客户端发送的文件完成, 接收到文件后调用, 返回true:框架内部释放文件流和删除临时文件(默认) false:使用者处理
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnRevdFileProgress">
-            <summary>
-            当接收到发送的文件进度
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.OnSendFileProgress">
-            <summary>
-            当发送的文件进度
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.#ctor">
-            <summary>
-            构造网络服务器函数
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Item(System.Net.EndPoint)">
-            <summary>
-            玩家索引
-            </summary>
-            <param name="remotePoint"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Net.Server.ServerBase`1.Item(System.Int32)">
-            <summary>
-            uid索引
-            </summary>
-            <param name="uid"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.GetClients">
-            <summary>
-            获得所有在线的客户端对象
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnUnClientRequest(`0,Net.Share.RPCModel)">
-            <summary>
-            当未知客户端发送数据请求，返回<see langword="false"/>，不允许<see langword="unClient"/>进入服务器!，如果返回的是<see langword="true"/>，则允许<see langword="unClient"/>客户端进入服务器
-            同时会将<see langword="unClient"/>添加到<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>在线字典中.
-            <code>客户端玩家的入口点，在这里可以控制客户端是否可以进入服务器与其他客户端进行网络交互</code>
-            在这里可以用来判断客户端登录和注册等等进站许可 (默认是允许进入服务器)
-            </summary>
-            <param name="unClient">尚未登录的客户端对象</param>
-            <param name="model">数据模型</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnStarting">
-            <summary>
-            当开始启动服务器
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnStartupCompleted">
-            <summary>
-            当服务器启动完毕
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnAddPlayerToScene(`0)">
-            <summary>
-            当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnHasConnect(`0)">
-            <summary>
-            当有客户端连接
-            </summary>
-            <param name="client">客户端套接字</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnConnectLost(`0)">
-            <summary>
-            当客户端连接中断, 此时还会等待客户端重连, 如果10秒后没有重连上来就会真的断开
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnReconnecting(`0)">
-            <summary>
-            当断线重连成功触发
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnRemoveClient(`0)">
-            <summary>
-            当服务器判定客户端为断线或连接异常时，移除客户端时调用
-            </summary>
-            <param name="client">要移除的客户端</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnReceiveBuffer(`0,Net.Share.RPCModel)">
-            <summary>
-            当接收到客户端自定义数据请求,在这里可以使用你自己的网络命令，系列化方式等进行解析网络数据。（你可以在这里使用ProtoBuf或Json来解析网络数据）
-            </summary>
-            <param name="client">当前客户端</param>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnReceiveFile(`0,Net.Share.BigData)">
-            <summary>
-            当接收到客户端发送的文件
-            </summary>
-            <param name="client">当前客户端</param>
-            <param name="fileData"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnOperationSync(`0,Net.Share.OperationList)">
-            <summary>
-            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
-            </summary>
-            <param name="client">当前客户端</param>
-            <param name="list">操作列表</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnRevdRTProgress(`0,Net.Share.RTProgress)">
-            <summary>
-            当客户端发送的大数据时, 可监听此事件显示进度值
-            </summary>
-            <param name="client"></param>
-            <param name="progress"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnCallProgress(`0,Net.Share.RTProgress)">
-            <summary>
-            当服务器发送的大数据时, 可监听此事件显示进度值
-            </summary>
-            <param name="client"></param>
-            <param name="progress"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnSerializeRpc(Net.Share.RPCModel)">
-            <summary>
-            当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
-            </summary>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnDeserializeRpc(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
-            </summary>
-            <param name="buffer"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnSceneRelay(`0,Net.Share.RPCModel)">
-            <summary>
-            当客户端使用场景转发命令会调用此方法
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnNoticeRelay(`0,Net.Share.RPCModel)">
-            <summary>
-            当客户端使用公告转发命令会调用此方法
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Run(System.UInt16)">
-            <summary>
-            运行服务器
-            </summary>
-            <param name="port">服务器端口号</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Start(System.UInt16)">
-            <summary>
-            启动服务器
-            </summary>
-            <param name="port">端口</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.InitUserID">
-            <summary>
-            初始化玩家唯一标识栈
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SceneUpdateHandle">
-            <summary>
-            网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.DataTrafficHandler">
-            <summary>
-            流量统计线程
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.StartSocketHandler">
-            <summary>
-            开始接收数据
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.NetworkProcessing(Net.Share.ThreadGroup{`0})">
-            <summary>
-            业务处理线程组
-            </summary>
-            <param name="group"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.LoginHandler(`0)">
-            <summary>
-            主动登录服务器, 类似OnUnClientRequest重写方法的返回值为true
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendDirect(`0)">
-            <summary>
-            立刻发送, 不需要等待内核时间 (当你要强制把客户端下线时,你还希望客户端先发送完数据后,再强制客户端退出游戏用到)
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.ResetDataHead(Net.System.ISegment)">
-            <summary>
-            重置头部数据大小, 在小数据达到<see cref="P:Net.Server.ServerBase`1.PackageLength"/>以上时会将这部分的数据先发送, 发送后还有连带的数据, 需要重置头部数据,装入大货车
-            </summary>
-            <param name="stream"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnRpcExecute(`0,Net.Share.RPCModel)">
-            <summary>
-            当执行Rpc(远程过程调用函数)时调用, 如果想提升服务器Rpc调用性能(默认反射调用), 可以重写此方法, 指定要调用的方法
-            </summary>
-            <param name="client">客户端</param>
-            <param name="model">数据模型</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.CheckHeart(`0,System.UInt32)">
-            <summary>
-            检查心跳
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.DeletePlayer(`0)">
-            <summary>
-            从所有在线玩家字典中删除(移除)玩家实体
-            </summary>
-            <param name="player"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.RemovePlayer(`0)">
-            <summary>
-            从所有在线玩家字典中移除玩家实体
-            </summary>
-            <param name="player"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.RemoveClient(`0)">
-            <summary>
-            从客户端字典中移除客户端
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Close">
-            <summary>
-            关闭服务器
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.Int32,System.Boolean,System.Int32,System.Object[])">
-            <summary>
-            向客户端发送消息
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte[])">
-            <summary>
-            向客户端发送消息
-            </summary>
-            <param name="client"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.Byte[])">
-            <summary>
-            向客户端发送消息
-            </summary>
-            <param name="client"></param>
-            <param name="cmd">网络命令</param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Call(`0,System.Byte,System.Byte[],System.Boolean,System.Boolean)">
-            <summary>
-            发送灵活数据包
-            </summary>
-            <param name="client">客户端集合</param>
-            <param name="cmd"></param>
-            <param name="buffer">要包装的数据,你自己来定</param>
-            <param name="kernel">内核? 你包装的数据在客户端是否被内核NetConvert序列化?</param>
-            <param name="serialize">序列化? 你包装的数据是否在服务器即将发送时NetConvert序列化?</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
-            <summary>
-            添加Rpc
-            </summary>
-            <param name="target">注册的对象实例</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.AddRpcHandle(System.Object)">
-            <summary>
-            添加网络Rpc(注册远程方法)
-            </summary>
-            <param name="target">注册的对象实例</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.AddRpcHandle(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
-            <summary>
-            添加网络Rpc(注册远程方法)
-            </summary>
-            <param name="target">注册的对象实例</param>
-            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.RemoveRpc(System.Object)">
-            <summary>
-            移除对象的Rpc注册
-            </summary>
-            <param name="target">将此对象的所有带有RPCFun特性的函数移除</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.IsOnline(System.String)">
-            <summary>
-            playerID玩家是否在线?
-            </summary>
-            <param name="playerID"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.IsOnline(System.String,`0@)">
-            <summary>
-            playerID玩家是否在线? 并且如果在线则out 在线玩家的对象
-            </summary>
-            <param name="playerID"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OfflineHandle(`0)">
-            <summary>
-            强制下线处理, 将client客户端从在线字段<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>和<see cref="P:Net.Server.ServerBase`1.AllClients"/>字段中移除
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SignOut(`0)">
-            <summary>
-            退出登录, 将client客户端从在线字段<see cref="P:Net.Server.ServerBase`1.Players"/>和<see cref="P:Net.Server.ServerBase`1.UIDClients"/>字段中移除
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnSignOut(`0)">
-            <summary>
-            当客户端退出登录, 如果两个账号同时登录或者在心跳时间还没到检测时另外一个玩家也登录了相同的账号, 则会强制退出上一个账号的登录
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SetHeartTime(System.Byte,System.Int32)">
-            <summary>
-            设置心跳时间
-            </summary>
-            <param name="timeoutLimit">心跳检测次数, 默认检测5次</param>
-            <param name="interval">心跳时间间隔, 每interval毫秒会检测一次</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Ping(`0)">
-            <summary>
-            ping测试网络延迟, 通过<see cref="F:Net.Server.ServerBase`1.OnPingCallback"/>事件回调
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.Ping(`0,System.Action{`0,System.UInt32})">
-            <summary>
-            ping测试网络延迟, 此方法帮你监听<see cref="F:Net.Server.ServerBase`1.OnPingCallback"/>事件, 如果不使用的时候必须保证能移除委托, 建议不要用框名函数, 那样会无法移除委托
-            </summary>
-            <param name="client"></param>
-            <param name="callback"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.AddAdapter(Net.Share.IAdapter)">
-            <summary>
-            添加适配器
-            </summary>
-            <param name="adapter"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.AddAdapter(Net.Share.AdapterType,Net.Share.IAdapter)">
-            <summary>
-            添加适配器
-            </summary>
-            <param name="type"></param>
-            <param name="adapter"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SyncVarHandler(`0)">
-            <summary>
-            字段,属性同步线程
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SendFile(`0,System.String,System.Int32)">
-            <summary>
-            发送文件, 客户端可以使用事件<see cref="P:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
-            </summary>
-            <param name="client"></param>
-            <param name="filePath"></param>
-            <param name="bufferSize">每次发送数据大小</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.CheckSend(`0)">
-            <summary>
-            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-            </summary>
-            <returns>是否可发送数据</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.CheckCall(`0)">
-            <summary>
-            检查send方法的发送队列是否已到达极限, 到达极限则不允许新的数据放入发送队列, 需要等待队列消耗后才能放入新的发送数据
-            </summary>
-            <returns>是否可发送数据</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.SetAttackProtect(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            设置攻击防护(SYN-ACK攻击)
-            </summary>
-            <param name="synAttackProtect">0:不开启 1:系统通过减少重传次数和延迟未连接时路由缓冲项(route cache entry)防范SYN攻击 2:(Microsoft推荐使用此值)</param>
-            <param name="tcpMaxConnectResponseRetransmissions">确定 TCP 重新传输未应答的 SYN-ACK（连接请求确认）的次数</param>
-            <param name="tcpMaxHalfOpen">服务器可以保持多少个连接处于半开（SYN-RCVD）状态</param>
-            <param name="tcpMaxHalfOpenRetried">确定服务器可以在半打开 (SYN-RCVD) 状态下保持多少连接, 此条目的值应小于TCPMaxHalfOpen条目的值</param>
-            <param name="tcpMaxPortsExhausted">指定触发 SYN 洪水攻击保护所必须超过的 TCP 连接请求数的阈值。</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.CheckOnLinePlayers">
-            <summary>
-            检查在线人数，当服务器长时间运行，显示的在线人数不对时，默认是十分钟检查一次
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.OnDataQueueOverflow(`0)">
-            <summary>
-            当数据堆积超过<see cref="P:Net.Server.ServerBase`1.LimitQueueCount"/>后触发的提示
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`1.ExitSceneHandler(`0)">
-            <summary>
-            退出场景处理
-            </summary>
-        </member>
-        <member name="T:Net.Server.ServerBase`2">
-            <summary>
-            网络服务器核心基类 2019.11.22
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.Scenes">
-            <summary>
-            服务器场景，key是场景名或房间名，关卡名。 value是(场景或房间，关卡等)对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.Instance">
-            <summary>
-            网络服务器单例
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.#ctor">
-            <summary>
-            构造网络服务器函数
-            </summary>
-        </member>
-        <member name="P:Net.Server.ServerBase`2.Item(System.String)">
-            <summary>
-            场景索引
-            </summary>
-            <param name="sceneID"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.GetScenes">
-            <summary>
-            获得所有服务器场景
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnAddDefaultScene">
-            <summary>
-            当添加默认网络场景，服务器初始化后会默认创建一个主场景，供所有玩家刚登陆成功分配的临时场景，默认初始化场景人数为1000人
-            </summary>
-            <returns>返回值string：网络玩家所在的场景名称 , 返回值NetScene：网络玩家的场景对象</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnAddPlayerToScene(`0)">
-            <summary>
-            当添加玩家到默认场景， 如果不想添加刚登录游戏成功的玩家进入主场景，可重写此方法让其失效
-            </summary>
-            <param name="client"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnOperationSync(`0,Net.Share.OperationList)">
-            <summary>
-            当接收到客户端使用<see cref="!:Client.ClientBase.AddOperation(Operation)"/>方法发送的请求时调用
-            </summary>
-            <param name="client">当前客户端</param>
-            <param name="list">操作列表</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.OnSceneRelay(`0,Net.Share.RPCModel)">
-            <summary>
-            当客户端使用场景转发命令会调用此方法
-            </summary>
-            <param name="client"></param>
-            <param name="model"></param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.SceneUpdateHandle">
-            <summary>
-            网络场景推动玩家同步更新处理线程, 如果想自己处理场景同步, 可重写此方法让同步失效
-            </summary>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String)">
-            <summary>
-            创建网络场景, 退出当前场景,进入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-            </summary>
-            <param name="player">创建网络场景的玩家实体</param>
-            <param name="name">要创建的场景号或场景名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,`1)">
-            <summary>
-            创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-            </summary>
-            <param name="player">创建网络场景的玩家实体</param>
-            <param name="scene">创建场景的实体</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`0,System.String,`1)">
-            <summary>
-            创建网络场景, 退出当前场景并加入所创建的场景 - 创建场景成功返回场景对象， 创建失败返回null
-            </summary>
-            <param name="player">创建网络场景的玩家实体</param>
-            <param name="name">要创建的场景号或场景名称</param>
-            <param name="scene">创建场景的实体</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(System.String)">
-            <summary>
-            创建一个场景, 成功则返回场景对象, 创建失败则返回null
-            </summary>
-            <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(System.String,`1)">
-            <summary>
-            创建一个场景, 成功则返回场景对象, 创建失败则返回null
-            </summary>
-            <param name="name"></param>
-            <param name="scene"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.CreateScene(`1)">
-            <summary>
-            创建一个场景, 成功则返回场景对象, 创建失败则返回null
-            </summary>
-            <param name="name"></param>
-            <param name="scene"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.JoinScene(`0,System.String)">
-            <summary>
-            退出当前场景,加入指定的场景 - 成功进入返回场景对象，进入失败返回null
-            </summary>
-            <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="name">场景ID，要切换到的场景号或场景名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.EnterScene(`0,System.String)">
-            <summary>
-            进入场景 - 成功进入返回true，进入失败返回false
-            </summary>
-            <param name="player">要进入sceneID场景的玩家实体</param>
-            <param name="name">场景ID，要切换到的场景号或场景名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String)">
-            <summary>
-            切换场景
-            </summary>
-            <param name="player">要操作的玩家</param>
-            <param name="name">场景名称</param>
-            <returns>进入的场景,如果查询的场景不存在则为null</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,System.String,`1@)">
-            <summary>
-            切换场景
-            </summary>
-            <param name="player">要操作的玩家</param>
-            <param name="name">场景名称</param>
-            <param name="oldScene">上次所在的场景</param>
-            <returns>进入的场景,如果查询的场景不存在则为null</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1)">
-            <summary>
-            切换场景
-            </summary>
-            <param name="player">要操作的玩家</param>
-            <param name="enterScene">要进入的场景</param>
-            <returns>进入的场景</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.SwitchScene(`0,`1,`1@)">
-            <summary>
-            切换场景
-            </summary>
-            <param name="player">要操作的玩家</param>
-            <param name="enterScene">要进入的场景</param>
-            <param name="oldScene">上次所在的场景</param>
-            <returns>进入的场景</returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.ExitScene(`0,System.Boolean,System.Action{`1})">
-            <summary>
-            退出场景 exitCurrentSceneCall回调时已经不包含player对象
-            </summary>
-            <param name="player"></param>
-            <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.RemoveScene(System.String,System.Boolean,System.Action{`1})">
-            <summary>
-            移除服务器场景. 从服务器总场景字典中移除指定的场景: 当你移除指定场景后,如果场景内有其他玩家在内, 则把其他玩家添加到主场景内
-            </summary>
-            <param name="name">要移除的场景id</param>
-            <param name="addToMainScene">允许即将移除的场景内的玩家添加到主场景?</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.RemoveScenePlayer(`0,System.Boolean,System.Action{`1})">
-            <summary>
-            将玩家从当前所在的场景移除掉， 移除之后此客户端将会进入默认主场景 call回调时已经不包含player对象
-            </summary>
-            <param name="player">要执行的玩家实体</param>
-            <param name="isEntMain">退出当前场景是否进入主场景: 默认进入主场景</param>
-            <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Server.ServerBase`2.IsHasScene(System.String)">
-            <summary>
-            场景是否存在?
-            </summary>
-            <param name="sceneID"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Net.Server.TcpServer`2">
-            <summary>
-            TCP服务器类型
-            第三版本 2020.9.14
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="T:Net.Server.TcpServer">
-            <summary>
-            默认tcp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.TcpServerIocp`2">
-            <summary>
-            tcp 输入输出完成端口服务器
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="T:Net.Server.TcpServerIocp">
-            <summary>
-            默认tcpiocp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdpServer`2">
-            <summary>
-            Udp网络服务器
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdpServer">
-            <summary>
-            默认udp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.GcpServer`2">
-            <summary>
-            Gcp网络服务器
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="T:Net.Server.GcpServer">
-            <summary>
-            默认gcp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdpServerIocp`2">
-            <summary>
-            udp 输入输出完成端口服务器
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-            <typeparam name="Player"></typeparam>
-            <typeparam name="Scene"></typeparam>
-        </member>
-        <member name="T:Net.Server.UdpServerIocp">
-            <summary>
-            默认udpiocp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.KcpPlayer">
-            <summary>
-            kcp客户端对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.KcpPlayer.Kcp">
-            <summary>
-            kcp对象
-            </summary>
-        </member>
-        <member name="T:Net.Server.KcpServer`2">
-            <summary>
-            kcp服务器
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-            <typeparam name="Player"></typeparam>
-            <typeparam name="Scene"></typeparam>
-        </member>
-        <member name="T:Net.Server.KcpServer">
-            <summary>
-            默认kcp服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdxPlayer">
-            <summary>
-            udx客户端对象
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdxServer`2">
-            <summary>
-            udx服务器类型  只能300人以下连接, 如果想要300个客户端以上, 请进入udx网址:www.goodudx.com 联系作者下载专业版FastUdxApi.dll, 然后更换下框架内的FastUdxApi.dll即可
-            第三版本 2020.9.14
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="F:Net.Server.UdxServer`2.Server">
-            <summary>
-            udx服务器对象
-            </summary>
-        </member>
-        <member name="T:Net.Server.UdxServer">
-            <summary>
-            默认udx服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.HttpPlayer">
-            <summary>
-            http客户端对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpPlayer.WSClient">
-            <summary>
-            webSocket套接字
-            </summary>
-        </member>
-        <member name="T:Net.Server.HttpServer`2">
-            <summary>
-            http网络服务器 2020.8.25 七夕
-            通过JavaScript脚本, httml网页进行连接. 和 WebClient连接
-            客户端发送的数据请求请看Net.Share.MessageModel类定义
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpServer`2.Server">
-            <summary>
-            http服务器套接字
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpServer`2.Scheme">
-            <summary>
-            http连接策略, 有https和http
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpServer`2.Certificate">
-            <summary>
-            证书
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpServer`2.SslProtocols">
-            <summary>
-            Ssl类型
-            </summary>
-        </member>
-        <member name="P:Net.Server.HttpServer`2.DocumentRootPath">
-            <summary>
-            文档根路径, 指定你的网站文件根路径
-            </summary>
-        </member>
-        <member name="T:Net.Server.HttpServer">
-            <summary>
-            默认http服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
-        </member>
-        <member name="T:Net.Server.WebPlayer">
-            <summary>
-            web客户端对象
-            </summary>
-        </member>
-        <member name="P:Net.Server.WebPlayer.WSClient">
-            <summary>
-            webSocket套接字
-            </summary>
-        </member>
-        <member name="T:Net.Server.WebServer`2">
-            <summary>
-            web网络服务器 2020.8.25 七夕
-            通过JavaScript脚本, httml网页进行连接. 和 WebClient连接
-            客户端发送的数据请求请看Net.Share.MessageModel类定义
-            <para>Player:当有客户端连接服务器就会创建一个Player对象出来, Player对象和XXXClient是对等端, 每当有数据处理都会通知Player对象. </para>
-            <para>Scene:你可以定义自己的场景类型, 比如帧同步场景处理, mmorpg场景什么处理, 可以重写Scene的Update等等方法实现每个场景的更新和处理. </para>
-            </summary>
-        </member>
-        <member name="P:Net.Server.WebServer`2.Server">
-            <summary>
-            webSocket服务器套接字
-            </summary>
-        </member>
-        <member name="P:Net.Server.WebServer`2.Scheme">
-            <summary>
-            websocket连接策略, 有wss和ws
-            </summary>
-        </member>
-        <member name="P:Net.Server.WebServer`2.Certificate">
-            <summary>
-            证书
-            </summary>
-        </member>
-        <member name="P:Net.Server.WebServer`2.SslProtocols">
-            <summary>
-            Ssl类型
-            </summary>
-        </member>
-        <member name="T:Net.Server.WebServer">
-            <summary>
-            默认web服务器，当不需要处理Player对象和Scene对象时可使用
-            </summary>
         </member>
         <member name="F:Net.Plugins.Cmd.Frame">
             <summary>
@@ -8476,18 +8400,6 @@
             <param name="seed">Seed.</param>
             <returns>Digest.</returns>
         </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.ReadOnlySpan{System.Byte})">
-            <summary>Hash of provided buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <returns>Digest.</returns>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.DigestOf(System.Byte[],System.Int32,System.Int32)">
-            <summary>Hash of provided buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="offset">Starting offset.</param>
-            <param name="length">Length of buffer.</param>
-            <returns>Digest.</returns>
-        </member>
         <member name="M:K4os.Hash.xxHash.XXH32.#ctor">
             <summary>Creates xxHash instance.</summary>
         </member>
@@ -8500,26 +8412,6 @@
         <member name="M:K4os.Hash.xxHash.XXH32.Reset(System.UInt32)">
             <summary>Resets hash calculation.</summary>
         </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Void*,System.Int32)">
-            <summary>Updates the hash using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="length">Length of buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Byte*,System.Int32)">
-            <summary>Updates the hash using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="length">Length of buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.ReadOnlySpan{System.Byte})">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.Update(System.Byte[],System.Int32,System.Int32)">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="offset">Starting offset.</param>
-            <param name="length">Length of buffer.</param>
-        </member>
         <member name="M:K4os.Hash.xxHash.XXH32.Digest">
             <summary>Hash so far.</summary>
             <returns>Hash so far.</returns>
@@ -8527,10 +8419,6 @@
         <member name="M:K4os.Hash.xxHash.XXH32.DigestBytes">
             <summary>Hash so far, as byte array.</summary>
             <returns>Hash so far.</returns>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.AsHashAlgorithm">
-            <summary>Converts this class to <see cref="T:System.Security.Cryptography.HashAlgorithm"/></summary>
-            <returns><see cref="T:System.Security.Cryptography.HashAlgorithm"/></returns>
         </member>
         <member name="M:K4os.Hash.xxHash.XXH32.Reset(K4os.Hash.xxHash.XXH32.State@,System.UInt32)">
             <summary>Resets hash calculation.</summary>
@@ -8542,11 +8430,6 @@
             <param name="state">Hash state.</param>
             <param name="bytes">Buffer.</param>
             <param name="length">Length of buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH32.Update(K4os.Hash.xxHash.XXH32.State@,System.ReadOnlySpan{System.Byte})">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="state">Hash state.</param>
-            <param name="bytes">Buffer.</param>
         </member>
         <member name="M:K4os.Hash.xxHash.XXH32.Digest(K4os.Hash.xxHash.XXH32.State@)">
             <summary>Hash so far.</summary>
@@ -8576,18 +8459,6 @@
             <param name="seed">Seed.</param>
             <returns>Digest.</returns>
         </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.ReadOnlySpan{System.Byte})">
-            <summary>Hash of provided buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <returns>Digest.</returns>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.DigestOf(System.Byte[],System.Int32,System.Int32)">
-            <summary>Hash of provided buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="offset">Starting offset.</param>
-            <param name="length">Length of buffer.</param>
-            <returns>Digest.</returns>
-        </member>
         <member name="M:K4os.Hash.xxHash.XXH64.#ctor">
             <summary>Creates xxHash instance.</summary>
         </member>
@@ -8610,16 +8481,6 @@
             <param name="bytes">Buffer.</param>
             <param name="length">Length of buffer.</param>
         </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.ReadOnlySpan{System.Byte})">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.Update(System.Byte[],System.Int32,System.Int32)">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="bytes">Buffer.</param>
-            <param name="offset">Starting offset.</param>
-            <param name="length">Length of buffer.</param>
-        </member>
         <member name="M:K4os.Hash.xxHash.XXH64.Digest">
             <summary>Hash so far.</summary>
             <returns>Hash so far.</returns>
@@ -8627,10 +8488,6 @@
         <member name="M:K4os.Hash.xxHash.XXH64.DigestBytes">
             <summary>Hash so far, as byte array.</summary>
             <returns>Hash so far.</returns>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.AsHashAlgorithm">
-            <summary>Converts this class to <see cref="T:System.Security.Cryptography.HashAlgorithm"/></summary>
-            <returns><see cref="T:System.Security.Cryptography.HashAlgorithm"/></returns>
         </member>
         <member name="M:K4os.Hash.xxHash.XXH64.Reset(K4os.Hash.xxHash.XXH64.State@,System.UInt64)">
             <summary>Resets hash calculation.</summary>
@@ -8642,11 +8499,6 @@
             <param name="state">Hash state.</param>
             <param name="bytes">Buffer.</param>
             <param name="length">Length of buffer.</param>
-        </member>
-        <member name="M:K4os.Hash.xxHash.XXH64.Update(K4os.Hash.xxHash.XXH64.State@,System.ReadOnlySpan{System.Byte})">
-            <summary>Updates the has using given buffer.</summary>
-            <param name="state">Hash state.</param>
-            <param name="bytes">Buffer.</param>
         </member>
         <member name="M:K4os.Hash.xxHash.XXH64.Digest(K4os.Hash.xxHash.XXH64.State@)">
             <summary>Hash so far.</summary>

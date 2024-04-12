@@ -16,11 +16,14 @@ namespace Net.Component
 #else
             BindLog();
 #endif
+#if !UNITY_WEBGL
             NDebug.WriteFileMode = writeLogMode;
             if (writeLogMode != WriteLogMode.None)
                 Application.logMessageReceivedThreaded += LogMessageReceivedHandler;
+#endif
         }
 
+#if !UNITY_WEBGL
         protected virtual void LogMessageReceivedHandler(string condition, string stackTrace, UnityEngine.LogType type)
         {
             if (writeLogMode == WriteLogMode.None)
@@ -45,6 +48,7 @@ namespace Net.Component
                     break;
             }
         }
+#endif
 
         private void BindLog()
         {
@@ -94,8 +98,10 @@ namespace Net.Component
                     NDebug.RemoveLogAll(null, Debug.LogError, Debug.LogError);
                     break;
             }
+#if !UNITY_WEBGL
             if (writeLogMode != WriteLogMode.None)
                 Application.logMessageReceivedThreaded -= LogMessageReceivedHandler;
+#endif
         }
     }
 }

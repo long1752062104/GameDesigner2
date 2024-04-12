@@ -1290,7 +1290,7 @@ namespace Net.System
             {
                 ulong result = 0u;
                 int count = 0;
-                for (int i = 0; i < 9; i++) //最高值可达到9字节
+                for (int i = 0; i < 10; i++) //最高值可达到10个字节， 负数时可测试
                 {
                     var value = ptr[i];
                     result |= (value & 127ul) << (i * 7);

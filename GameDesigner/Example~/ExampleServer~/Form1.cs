@@ -49,7 +49,7 @@ namespace ExampleServer
                 $"流入:{df.receiveNumber}次/{ByteHelper.ToString(df.receiveCount)} " +
                 $"FPS:{df.FPS} 解析:{df.resolveNumber}次 " +
                 $"总流入:{ByteHelper.ToString(df.inflowTotal)} 总流出:{ByteHelper.ToString(df.outflowTotal)} " + 
-                $"登录:{server.OnlinePlayers} 未登录:{server.UnClientNumber}";
+                $"登录:{server.OnlinePlayers} 未登录:{server.OnlineUnPlayers}";
             };
             server.AddAdapter(new Net.Adapter.SerializeAdapter2());
             server.AddAdapter(new Net.Adapter.CallSiteRpcAdapter<Client>(server));
@@ -88,7 +88,6 @@ namespace ExampleServer
                 dataGridView1.Columns.Add("Login", "是否登录");
                 dataGridView1.Columns.Add("isDispose", "是否释放");
                 dataGridView1.Columns.Add("Connected", "是否连接");
-                dataGridView1.Columns.Add("Redundant", "冗余连接");
                 dataGridView1.Columns.Add("QueueUpNo", "玩家排队");
                 dataGridView1.Columns.Add("ConnectTime", "连接时间");
                 dataGridView1.Columns.Add("BytesReceived", "接收总量");
@@ -96,8 +95,8 @@ namespace ExampleServer
                 {
                     dataGridView1.Rows.Add(client.PlayerID, client.Name, client.RemotePoint.ToString(),
                         client.SceneName, client.UserID.ToString(), client.Login.ToString(), client.isDispose.ToString(),
-                        client.Connected.ToString(), client.Redundant.ToString(),
-                        client.QueueUpNo.ToString(), client.ConnectTime.ToString("f"), ByteHelper.ToString(client.BytesReceived));
+                        client.Connected.ToString(), client.QueueUpNo.ToString(), 
+                        client.ConnectTime.ToString("f"), ByteHelper.ToString(client.BytesReceived));
                 }
             }
         }

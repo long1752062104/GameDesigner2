@@ -364,8 +364,9 @@ namespace Net.Adapter
 
         public RPCMethodBody OnRpcTaskRegister(uint callback)
         {
-            handle.RpcCollectDic.TryGetValue(callback, out var model);
-            return model;
+            if (!handle.RpcCollectDic.TryGetValue(callback, out var body))
+                handle.RpcCollectDic.Add(callback, body = new RPCMethodBody());
+            return body;
         }
     }
 }
