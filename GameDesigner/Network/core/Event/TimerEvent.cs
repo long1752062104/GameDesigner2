@@ -203,8 +203,8 @@ namespace Net.Event
             public EventAction action;
             public object obj;
             public int invokeNum;
-            internal long timeMax;
-            internal int eventId;
+            public long timeMax;
+            public int eventId;
             internal bool isRemove;
             public void SetIntervalTime(uint value)
             {
