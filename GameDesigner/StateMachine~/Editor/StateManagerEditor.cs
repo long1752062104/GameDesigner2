@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Playables;
 using Object = UnityEngine.Object;
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
@@ -61,6 +62,8 @@ namespace GameDesigner
                         }
                     }
                 }
+                if (stateMachine.director == null)
+                    stateMachine.director = stateManager.GetComponentInChildren<PlayableDirector>();
 #if SHADER_ANIMATED
                 if (stateMachine.meshAnimator == null)
                     stateMachine.meshAnimator = stateManager.GetComponentInChildren<ShaderMeshAnimator>();
@@ -244,6 +247,18 @@ namespace GameDesigner
             }
         }
 
+        private static SerializedProperty _directorProperty;
+        private static SerializedProperty directorProperty
+        {
+            get
+            {
+                if (_directorProperty == null)
+                    _directorProperty = StateMachineObject.FindProperty("director");
+                return _directorProperty;
+            }
+        }
+
+
         private static void ResetPropertys()
         {
             _stateMachineObject = null;
@@ -256,6 +271,7 @@ namespace GameDesigner
             _animationProperty = null;
             _animatorProperty = null;
             _meshAnimatorProperty = null;
+            _directorProperty = null;
         }
 
         private static State CurrentState;
@@ -285,6 +301,10 @@ namespace GameDesigner
                         EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Old animation"], "animation"));
                         break;
                     case AnimationMode.Animator:
+                        EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["New animation"], "animator"));
+                        break;
+                    case AnimationMode.Timeline:
+                        EditorGUILayout.PropertyField(directorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["director animation"], "director"));
                         EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["New animation"], "animator"));
                         break;
 #if SHADER_ANIMATED
@@ -365,12 +385,11 @@ namespace GameDesigner
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            try
-                            {
-                                act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(state.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
+                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(state.stateMachine.clipNames.ToArray(), input => new GUIContent(input)));
+                            if (state.stateMachine.clipNames.Count > 0 && act.clipIndex < state.stateMachine.clipNames.Count)
                                 act.clipName = state.stateMachine.clipNames[act.clipIndex];
-                            }
-                            catch { }
+                            if (sm.stateMachine.animMode == AnimationMode.Timeline)
+                                EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("clipAsset"), new GUIContent(BlueprintGUILayout.Instance.Language["Playable Asset"], "clipAsset"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));
                             for (int i = 0; i < act.behaviours.Length; ++i)

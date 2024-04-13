@@ -7,6 +7,7 @@ Action system|Action system
 Animation mode|Animation mode
 Old animation|Old animation
 New animation|New animation
+director animation|director animation
 Action execution mode|Action execution mode
 Action randomised|Action randomised
 Action sequence|Action sequence
@@ -35,6 +36,7 @@ Quit playback|Quit playback
 Sound object|Sound object
 Animation time|Animation time
 Animation length|Animation length
+Playable Asset|Playable Asset
 mesh Animated|mesh Animated
 Skill object|Skill object
 Skill generation|Skill generation

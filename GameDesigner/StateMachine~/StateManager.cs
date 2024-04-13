@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Playables;
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
 #endif
@@ -56,6 +57,10 @@ namespace GameDesigner
                     sm.animator = GetComponentInChildren<Animator>();
                 else if (!sm.animator.gameObject.scene.isLoaded)
                     sm.animator = GetComponentInChildren<Animator>();
+                if (sm.director == null)
+                    sm.director = GetComponentInChildren<PlayableDirector>();
+                else if (!sm.director.gameObject.scene.isLoaded)
+                    sm.director = GetComponentInChildren<PlayableDirector>();
 #if SHADER_ANIMATED
                 if (sm.meshAnimator == null)
                     sm.meshAnimator = GetComponentInChildren<ShaderMeshAnimator>();

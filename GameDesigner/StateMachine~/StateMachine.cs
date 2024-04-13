@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 #if SHADER_ANIMATED
 using FSG.MeshAnimator.ShaderAnimated;
 #endif
@@ -52,7 +53,10 @@ namespace GameDesigner
         /// 新版动画组件
         /// </summary>
         public Animator animator;
-
+        /// <summary>
+        /// 可播放导演动画
+        /// </summary>
+        public PlayableDirector director;
 #if SHADER_ANIMATED
         /// <summary>
         /// shader动画组件

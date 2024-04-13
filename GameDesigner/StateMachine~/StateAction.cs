@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Playables;
 
 namespace GameDesigner
 {
@@ -17,6 +18,10 @@ namespace GameDesigner
         /// 动画剪辑索引
         /// </summary>
 		public int clipIndex;
+        /// <summary>
+        /// 可播放动画资源
+        /// </summary>
+        public PlayableAsset clipAsset;
         /// <summary>
         /// 当前动画时间
         /// </summary>
@@ -94,6 +99,29 @@ namespace GameDesigner
                     }
                     else stateMachine.animator.Play(clipName, 0, 0f);
                     break;
+                case AnimationMode.Timeline:
+                    if (clipAsset != null)
+                    {
+                        var director = stateMachine.director;
+                        director.Play(clipAsset, DirectorWrapMode.None);
+                        var playableGraph = director.playableGraph;
+                        var playable = playableGraph.GetRootPlayable(0);
+                        playable.SetSpeed(state.animSpeed);
+                    }
+                    else
+                    {
+                        stateMachine.animator.speed = state.animSpeed;
+                        if (state.isCrossFade)
+                        {
+                            var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
+                            if (stateInfo.normalizedTime >= 1f)
+                                stateMachine.animator.Play(clipName, 0, 0f);
+                            else
+                                stateMachine.animator.CrossFade(clipName, state.duration);
+                        }
+                        else stateMachine.animator.Play(clipName, 0, 0f);
+                    }
+                    break;
 #if SHADER_ANIMATED
                 case AnimationMode.MeshAnimator:
                     stateMachine.meshAnimator.speed = state.animSpeed;
@@ -144,6 +172,21 @@ namespace GameDesigner
                 case AnimationMode.Animator:
                     var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
                     animTime = stateInfo.normalizedTime / 1f * 100f;
+                    break;
+                case AnimationMode.Timeline:
+                    if (clipAsset != null)
+                    {
+                        var director = stateMachine.director;
+                        var time = director.time;
+                        var duration = director.duration;
+                        animTime = (float)(time / duration) * 100f;
+                        isPlaying = director.state == PlayState.Playing;
+                    }
+                    else
+                    {
+                        var stateInfo1 = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
+                        animTime = stateInfo1.normalizedTime / 1f * 100f;
+                    }
                     break;
 #if SHADER_ANIMATED
                 case AnimationMode.MeshAnimator:

@@ -7,6 +7,7 @@ Action system|动作系统
 Animation mode|动画模式
 Old animation|旧版动画
 New animation|新版动画
+director animation|导演动画
 Action execution mode|动作执行模式
 Action randomised|动作随机
 Action sequence|动作顺序
@@ -35,6 +36,7 @@ Quit playback|退出播放
 Sound object|音效对象
 Animation time|动画时间
 Animation length|动画长度
+Playable Asset|可播放资源
 mesh Animated|GPU动画
 Skill object|技能对象
 Skill generation|技能生成

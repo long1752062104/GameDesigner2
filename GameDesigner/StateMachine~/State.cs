@@ -24,6 +24,10 @@ namespace GameDesigner
         MeshAnimator,
 #endif
         /// <summary>
+        /// 时间轴可播放导演动画
+        /// </summary>
+        Timeline,
+        /// <summary>
         /// 时间驱动模式
         /// </summary>
         Time,
