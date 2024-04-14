@@ -1,12 +1,14 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using System.Text;
 using Net.Helper;
+using Debug = UnityEngine.Debug;
 #if HYBRIDCLR
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
@@ -65,6 +67,12 @@ namespace GameCore
             if (GUILayout.Button("BuildAssetBundle"))
             {
                 BuildAssetBundle();
+            }
+            if (GUILayout.Button("打开资源包目录"))
+            {
+                var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/";
+                outputPath = PathHelper.Combine(outputPath, "/");
+                Process.Start("explorer.exe", outputPath);
             }
         }
 
@@ -131,8 +139,10 @@ namespace GameCore
             if (File.Exists(assetInfoListPath))
             {
                 var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
+                if (assetBundleBuilder.encrypt)
+                    EncryptHelper.ToDecrypt(assetBundleBuilder.password, assetInfoListBytes);
                 if (assetBundleBuilder.compressionJson)
-                    assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes);
+                    assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes); //如果上次打包没有选择压缩会导致错误
                 var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
                 assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
             }
@@ -157,8 +167,10 @@ namespace GameCore
             if (File.Exists(manifestPath))
             {
                 var manifestBytes = File.ReadAllBytes(manifestPath);
+                if (assetBundleBuilder.encrypt)
+                    EncryptHelper.ToDecrypt(assetBundleBuilder.password, manifestBytes);
                 if (assetBundleBuilder.compressionJson)
-                    manifestBytes = UnZipHelper.Decompress(manifestBytes);
+                    manifestBytes = UnZipHelper.Decompress(manifestBytes); //如果上次打包没有选择压缩会导致错误
                 var manifestJson = Encoding.UTF8.GetString(manifestBytes);
                 assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
             }
@@ -189,12 +201,15 @@ namespace GameCore
                         File.Delete(file);
                     continue;
                 }
-                var bytes = File.ReadAllBytes(file);
-                if (assetBundleBuilder.encrypt)
+                var  bytes = File.ReadAllBytes(file);
+                if (assetBundleBuildList.ContainsKey(fileName) || fileName.EndsWith(".json")) //增量更新的文件才需要加密，否则导致多次加密问题
                 {
-                    EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
-                    File.WriteAllBytes(file, bytes);
-                    Debug.Log($"加密文件:{file}完成!");
+                    if (assetBundleBuilder.encrypt)
+                    {
+                        EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
+                        File.WriteAllBytes(file, bytes);
+                        Debug.Log($"加密文件:{file}完成!"); 
+                    }
                 }
                 var md5 = EncryptHelper.GetMD5(bytes);
                 assetBundleInfos.Add(new AssetBundleInfo(fileName, md5, bytes.Length));
