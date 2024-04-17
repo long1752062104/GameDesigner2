@@ -929,10 +929,10 @@
 
         public static FuncData DeserializeModel(ISegment segment, bool recordType = false, bool ignore = false)
         {
-            FuncData obj = default;
+            FuncData fdata = default;
             try
             {
-                obj.protocol = segment.ReadUInt32();
+                fdata.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
@@ -947,14 +947,15 @@
                     var obj1 = ReadObject(segment, type, recordType, ignore);
                     list.Add(obj1);
                 }
-                obj.pars = list.ToArray();
+                fdata.pars = list.ToArray();
             }
             catch (Exception ex)
             {
-                obj.error = true;
-                NDebug.LogError($"解析[{obj.protocol}]出错 详细信息:" + ex);
+                fdata.error = true;
+                var func = RPCExtensions.GetFunc(fdata.protocol);
+                NDebug.LogError($"反序列化{func}出错:{ex}");
             }
-            return obj;
+            return fdata;
         }
 
         /// <summary>

@@ -46,9 +46,8 @@ namespace Net.Serialize
         /// <summary>
         /// 新版反序列化
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
+        /// <param name="segment"></param>
+        /// <param name="recordType"></param>
         public static FuncData Deserialize(ISegment segment, bool recordType = false)
         {
             FuncData fdata = default;
@@ -78,7 +77,8 @@ namespace Net.Serialize
             catch (Exception ex)
             {
                 fdata.error = true;
-                NDebug.LogError("反序列化:" + ex.ToString());
+                var func = RPCExtensions.GetFunc(fdata.protocol);
+                NDebug.LogError($"反序列化{func}出错:{ex}");
             }
             return fdata;
         }

@@ -116,6 +116,7 @@
     <None Remove="GameDesigner\Network.meta" />
     <None Remove="GameDesigner\Network\Adapter\PackageAdapter.cs.meta" />
     <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Client\ClientPool.cs.meta" />
     <None Remove="GameDesigner\Network\core\Config\TableConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\DataCache.cs.meta" />

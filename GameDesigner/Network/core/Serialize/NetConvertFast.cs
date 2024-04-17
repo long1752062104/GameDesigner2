@@ -213,7 +213,8 @@
             catch (Exception ex)
             {
                 fdata.error = true;
-                NDebug.LogError("反序列化:" + ex.ToString());
+                var func = RPCExtensions.GetFunc(fdata.protocol);
+                NDebug.LogError($"反序列化{func}出错:{ex}");
             }
             return fdata;
         }

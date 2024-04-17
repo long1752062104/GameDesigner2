@@ -93,7 +93,7 @@ namespace Net.Helper
                 return type;
             }
             NotTypes.Add(typeName);
-        JMP: Event.NDebug.LogError($"找不到类型:{typeName}, 类型太复杂时需要使用 AssemblyHelper.AddFindType(type) 标记后面要查找的类");
+        JMP: NDebug.LogError($"找不到类型:{typeName}, 类型太复杂时需要使用 AssemblyHelper.AddFindType(type) 标记后面要查找的类");
             return null;
         }
 
@@ -398,6 +398,35 @@ namespace Net.Helper
             }
             //这里无法卸载程序集, 可能会导致加载的程序集越来越多, 内存可能会涨点, 性能影响应该不大
 #endif
+        }
+
+        /// <summary>
+        /// 获取所有程序集的类的方法定义attribute特性的方法
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns>返回所有带有attribute特性的方法列表</returns>
+        public static List<MethodInfo> GetMethodAttributes(Type attribute)
+        {
+            var methodsList = new List<MethodInfo>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assemblie in assemblies)
+            {
+                if (assemblie.IsDynamic)
+                    continue;
+                var types = assemblie.GetTypes();
+                foreach (var type in types)
+                {
+                    var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
+                    foreach (var method in methods)
+                    {
+                        if (method.GetCustomAttribute(attribute) != null)
+                        {
+                            methodsList.Add(method);
+                        }
+                    }
+                }
+            }
+            return methodsList;
         }
     }
 }
