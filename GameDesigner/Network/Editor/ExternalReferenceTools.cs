@@ -198,7 +198,7 @@ public class ExternalReferenceTools : EditorWindow
             }
             files = fileList.ToArray();
             var extraPath = $"{csprojPath.extraPath}{Path.DirectorySeparatorChar}{path.extraPath}{Path.DirectorySeparatorChar}";
-            while (extraPath.StartsWith(Path.DirectorySeparatorChar))
+            while (extraPath.StartsWith(Path.DirectorySeparatorChar.ToString())) //兼容旧版本
                 extraPath = extraPath.TrimStart(Path.DirectorySeparatorChar);
             var exist = CheckNodeContains(xml, node_list, namespaceURI, dirName, path1, files, extraPath);
             if (!exist)
