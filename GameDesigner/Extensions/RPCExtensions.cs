@@ -11,7 +11,15 @@ internal static class RPCExtensions
     {
         var methods = AssemblyHelper.GetMethodAttributes(typeof(Rpc));
         foreach (var method in methods)
-            FuncMap[method.Name.CRCU32()] = method;
+        {
+            var rpc = method.GetCustomAttribute<Rpc>();
+            if (!string.IsNullOrEmpty(rpc.func))
+                FuncMap[rpc.func.CRCU32()] = method;
+            else
+                FuncMap[method.Name.CRCU32()] = method;
+            if (rpc.hash != 0)
+                FuncMap[rpc.hash] = method;
+        }
     }
 
     internal static string GetFunc(uint protocol)

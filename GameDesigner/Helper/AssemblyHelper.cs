@@ -413,10 +413,10 @@ namespace Net.Helper
             {
                 if (assemblie.IsDynamic)
                     continue;
-                var types = assemblie.GetTypes();
+                var types = assemblie.GetTypes().Where(t => t.IsClass);
                 foreach (var type in types)
                 {
-                    var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
+                    var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     foreach (var method in methods)
                     {
                         if (method.GetCustomAttribute(attribute) != null)
