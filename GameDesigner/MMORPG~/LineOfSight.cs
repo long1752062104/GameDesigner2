@@ -20,6 +20,15 @@ namespace Net.MMORPG
         /// 视图偏移
         /// </summary>
         public Vector3 offset = Vector3.up;
+
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            UnityEditor.Handles.color = new Color(0.8f, 0.7f, 0.2f, 0.3f);
+            UnityEditor.Handles.DrawSolidArc(transform.position + offset, transform.up, transform.forward, viewAngle, detectionRadius);
+            UnityEditor.Handles.DrawSolidArc(transform.position + offset, transform.up, transform.forward, -viewAngle, detectionRadius);
+        }
+#endif
     }
 }
 #endif

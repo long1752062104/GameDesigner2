@@ -2026,11 +2026,11 @@ namespace Net.Client
             if (!addResult)
                 NDebug.LogError($"请求Token添加失败! token:{token}");
             tokenLock.Exit();
-            await UniTaskNetExtensions.Wait((int)timeoutMilliseconds, (state) => ((RPCModelTask)state).IsCompleted, requestTask);
+            await UniTaskNetExtensions.WaitCallback(LoopEvent, (int)timeoutMilliseconds, requestTask);
             if (!requestTask.IsCompleted)
                 body.RequestDict.Remove(token);
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-            await UniTask.SwitchToMainThread();
+            await UniTaskNetExtensions.SwitchToMainThread(WorkerQueue);
 #endif
             return requestTask;
         }

@@ -16,6 +16,7 @@ namespace Net.Share
         /// </summary>
         public RPCModel model;
         internal bool intercept;
+        internal Action callback;
 
         public override string ToString()
         {

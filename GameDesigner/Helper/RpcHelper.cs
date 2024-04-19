@@ -4,6 +4,7 @@ using Net.System;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 
 namespace Net.Helper
 {
@@ -124,6 +125,8 @@ namespace Net.Helper
                 {
                     modelTask.model = model;
                     modelTask.IsCompleted = true;
+                    var original = Interlocked.Exchange(ref modelTask.callback, null);
+                    original?.Invoke();
                     if (modelTask.intercept)
                         return;
                 }
