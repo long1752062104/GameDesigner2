@@ -78,10 +78,6 @@ namespace Net.Client
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
         /// <summary>
-        /// Rpc任务队列
-        /// </summary>
-        public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
-        /// <summary>
         /// 线程字典
         /// </summary>
 #if !UNITY_WEBGL
@@ -327,7 +323,7 @@ namespace Net.Client
         /// <summary>
         /// 同步线程上下文任务队列
         /// </summary>
-        public JobQueueHelper WorkerQueue = new JobQueueHelper();
+        public JobQueueHelper WorkerQueue { get; set; } = new JobQueueHelper();
         /// <summary>
         /// 接收缓存最大的数据长度 默认可缓存5242880(5M)的数据长度
         /// </summary>
@@ -641,8 +637,7 @@ namespace Net.Client
                 }
                 else
                 {
-                    var data = new RPCData(rpc.target, rpc.method, model.pars);
-                    RpcWorkQueue.Enqueue(data);
+                    WorkerQueue.Call(new RpcInvokeArgs(LogRpc, rpc.target, rpc.method, model.pars));
                 }
             }
         }
@@ -696,62 +691,6 @@ namespace Net.Client
         public void NetworkUpdate()
         {
             WorkerQueue.Execute();
-            var count = RpcWorkQueue.Count;
-            for (int i = 0; i < count; i++)
-            {
-                if (RpcWorkQueue.TryDequeue(out IRPCData buffer))
-                {
-                    try
-                    {
-                        if (LogRpc)
-                        {
-                            if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
-                                sequence = new SequencePoint();
-                            NDebug.Log($"RPC:{buffer.method} () (at {sequence.FilePath}:{sequence.StartLine}) \n");
-                        }
-                        OnInvokeRpc(buffer);
-                    }
-                    catch (TargetParameterCountException ex)
-                    {
-#if UNITY_EDITOR
-                        if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
-                            sequence = new SequencePoint();
-                        var info = $"参数不匹配! 请检查服务器Send或Call时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
-                        var reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
-                        info += reg.Replace(ex.ToString(), ") (at $1) ");
-                        var dataPath = PathHelper.PlatformReplace(UnityEngine.Application.dataPath).Replace("Assets", "");
-                        info = PathHelper.PlatformReplace(info.Replace(dataPath, ""));
-                        NDebug.LogError(info);
-#else
-                        NDebug.LogError($"参数不匹配! 请检查服务器Send或Call时的参数是否与{buffer.method.Name}方法的参数类型一致? 参数类型必须一致性! 详细信息:" + ex);
-#endif
-                    }
-                    catch (Exception ex)
-                    {
-#if UNITY_EDITOR
-                        if (!ScriptHelper.Cache.TryGetValue(buffer.target.GetType().FullName + "." + buffer.method.Name, out var sequence))
-                            sequence = new SequencePoint();
-                        var info = $"{buffer.method.Name}方法内部发生错误!\n() (at {sequence.FilePath}:{sequence.StartLine}) \n";
-                        var reg = new Regex(@"\)\s\[0x[0-9,a-f]*\]\sin\s(.*:[0-9]*)\s");
-                        info += reg.Replace(ex.ToString(), ") (at $1) ");
-                        var dataPath = PathHelper.PlatformReplace(UnityEngine.Application.dataPath).Replace("Assets", "");
-                        info = PathHelper.PlatformReplace(info.Replace(dataPath, ""));
-                        NDebug.LogError(info);
-#else
-                        NDebug.LogError($"{buffer.method.Name}方法内部发生错误! 详细信息:" + ex);
-#endif
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 当调用Rpc函数时调用, 如果想提高性能, 可重写此方法自行判断需要调用哪个方法
-        /// </summary>
-        /// <param name="rpc">远程过程函数对象</param>
-        public virtual void OnInvokeRpc(IRPCData rpc)
-        {
-            rpc.Invoke();
         }
 
         /// <summary>
@@ -2029,9 +1968,9 @@ namespace Net.Client
             await UniTaskNetExtensions.WaitCallback(LoopEvent, (int)timeoutMilliseconds, requestTask);
             if (!requestTask.IsCompleted)
                 body.RequestDict.Remove(token);
-#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+            //#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
             await UniTaskNetExtensions.SwitchToMainThread(WorkerQueue);
-#endif
+            //#endif
             return requestTask;
         }
 

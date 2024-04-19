@@ -11,6 +11,11 @@ namespace Net.Helper
         /// </summary>
         public QueueSafe<IThreadArgs> WorkerQueue = new QueueSafe<IThreadArgs>();
 
+        public void Call(IThreadArgs action)
+        {
+            WorkerQueue.Enqueue(action);
+        }
+
         public void Call(Action action)
         {
             WorkerQueue.Enqueue(new ThreadSpan(action));
@@ -20,7 +25,7 @@ namespace Net.Helper
         {
             WorkerQueue.Enqueue(new ThreadArgsGeneric<T>(action, arg));
         }
-        
+
         public void Call<T, T1>(Action<T, T1> action, T arg1, T1 arg2)
         {
             WorkerQueue.Enqueue(new ThreadArgsGeneric<T, T1>(action, arg1, arg2));

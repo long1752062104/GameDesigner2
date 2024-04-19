@@ -1,4 +1,5 @@
-﻿using Net.System;
+﻿using Net.Helper;
+using Net.System;
 using System;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace Net.Share
         public MyDictionary<object, IRPCMethod> RpcDict = new MyDictionary<object, IRPCMethod>();
         public SafeDictionary<uint, RPCModelTask> RequestDict = new SafeDictionary<uint, RPCModelTask>();
         public int Count => RpcDict.Count;
-        
+
         internal void Add(object key, IRPCMethod value)
         {
             RpcDict.Add(key, value);
@@ -40,9 +41,9 @@ namespace Net.Share
         /// </summary>
         MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; }
         /// <summary>
-        /// Rpc任务队列
+        /// 同步线程上下文任务队列
         /// </summary>
-        QueueSafe<IRPCData> RpcWorkQueue { get; set; }
+        JobQueueHelper WorkerQueue { get; set; }
         /// <summary>
         /// 移除target的所有rpc
         /// </summary>

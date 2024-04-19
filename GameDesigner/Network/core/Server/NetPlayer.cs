@@ -63,9 +63,9 @@
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
         /// <summary>
-        /// Rpc任务队列
+        /// 同步线程上下文任务队列
         /// </summary>
-        public QueueSafe<IRPCData> RpcWorkQueue { get; set; } = new QueueSafe<IRPCData>();
+        public JobQueueHelper WorkerQueue { get; set; }
         /// <summary>
         /// 跳动的心
         /// </summary>
