@@ -148,6 +148,14 @@ public class BuildComponentTools : EditorWindow
                             item.select = 1;
                     });
                 });
+                menu.AddItem(new GUIContent("忽略父类属性和方法"), false, () =>
+                {
+                    foldout.fields.ForEach(item =>
+                    {
+                        if (!string.IsNullOrEmpty(item.declaringType))
+                            item.select = 2;
+                    });
+                });
                 menu.AddItem(new GUIContent("全部取消"), false, () =>
                 {
                     foldout.fields.ForEach(item => item.select = 2);
@@ -320,7 +328,7 @@ namespace BuildComponent
         var sb5 = new StringBuilder();
 
         templateCode = templateCode.Replace("{TypeName1}", $"{type.Name}");
-        templateCode = templateCode.Replace("{TypeName}", $"{type.FullName}");
+        templateCode = templateCode.Replace("{TypeName}", $"{type.ToString().Replace("+", ".")}");
 
         var blockCodes = templateCode.Split(new string[] { "[Split]" }, 0);
         blockCodes[0] = blockCodes[0].Remove(blockCodes[0].Length - 2, 2);
@@ -351,7 +359,7 @@ namespace BuildComponent
             sb1.Append(blockCode);
 
             blockCode = blockCodes[4];
-            blockCode = blockCode.Replace("{PropertyType}", $"{item.PropertyType.FullName}");
+            blockCode = blockCode.Replace("{PropertyType}", $"{item.PropertyType.ToString().Replace("+", ".")}");
             blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
             blockCode = blockCode.Replace("{FieldName}", $"fields[{parNum}]");
             blockCode = blockCode.Replace("{FieldIndex}", $"{parNum}");
@@ -367,7 +375,7 @@ namespace BuildComponent
             blockCode = blockCodes[11];
             blockCode = blockCode.Replace("{FieldIndex1}", $"{parNum}");
             blockCode = blockCode.Replace("{FieldName}", $"fields[{parNum}]");
-            blockCode = blockCode.Replace("{FieldType1}", $"{item.PropertyType.FullName}");
+            blockCode = blockCode.Replace("{FieldType1}", $"{item.PropertyType.ToString().Replace("+", ".")}");
             blockCode = blockCode.Replace("{TypeFieldName}", $"{item.Name}");
             blockCode = blockCode.Remove(blockCode.Length - 2, 2);
             sb5.Append(blockCode);
@@ -411,11 +419,11 @@ namespace BuildComponent
             foreach (var item in pars)
             {
                 parNum++;
-                parsStr += $"{item.ParameterType.FullName} {item.Name},";
+                parsStr += $"{item.ParameterType.ToString().Replace("+", ".")} {item.Name},";
                 conditionStr += $"Equals({item.Name}, fields[{parNum}]) & ";
                 setValueStr += $"fields[{parNum}] = {item.Name};\r\n\t\t\t";
                 paramsStr += $"{item.Name},";
-                setValueStr1 += $"var {item.Name} = ({item.ParameterType.FullName})(fields[{parNum}] = data.Obj);\r\n\t\t\t\t\t\t";
+                setValueStr1 += $"var {item.Name} = ({item.ParameterType.ToString().Replace("+", ".")})(fields[{parNum}] = data.Obj);\r\n\t\t\t\t\t\t";
             }
             if (setValueStr.Length > 0)
                 setValueStr = setValueStr.Remove(setValueStr.Length - 5, 5);
@@ -431,7 +439,7 @@ namespace BuildComponent
                 blockCode = blockCodes[9];
                 blockCode = blockCode.Replace("{FuncName}", $"{met.Name}");
                 blockCode = blockCode.Replace("{ParsString}", $"{parsStr}");
-                blockCode = blockCode.Replace("{ReturnType}", $"{(met.ReturnType == typeof(void) ? "void" : met.ReturnType.FullName)}");
+                blockCode = blockCode.Replace("{ReturnType}", $"{(met.ReturnType == typeof(void) ? "void" : met.ReturnType.ToString().Replace("+", "."))}");
                 blockCode = blockCode.Replace("{Return}", $"{(met.ReturnType == typeof(void) ? "" : "return ")}");
                 blockCode = blockCode.Replace("{Params}", $"{paramsStr}");
                 blockCode = blockCode.Remove(blockCode.Length - 2, 2);
@@ -475,7 +483,7 @@ namespace BuildComponent
         }
 
         var blockCodeX = blockCodes[1];
-        blockCodeX = blockCodeX.Replace("{FieldSize}", $"{parNum}");
+        blockCodeX = blockCodeX.Replace("{FieldSize}", $"{parNum + 1}");
         blockCodeX = blockCodeX.Remove(blockCodeX.Length - 2, 2);
         sb.Append(blockCodeX);
         sb.Append(sb1.ToString());
