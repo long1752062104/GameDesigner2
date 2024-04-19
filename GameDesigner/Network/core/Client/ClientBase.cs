@@ -1968,9 +1968,9 @@ namespace Net.Client
             await UniTaskNetExtensions.WaitCallback(LoopEvent, (int)timeoutMilliseconds, requestTask);
             if (!requestTask.IsCompleted)
                 body.RequestDict.Remove(token);
-            //#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
             await UniTaskNetExtensions.SwitchToMainThread(WorkerQueue);
-            //#endif
+#endif
             return requestTask;
         }
 
