@@ -272,7 +272,6 @@
     <Compile Include="GameDesigner\Network\core\Share\ReliableTemp.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\RPCData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPC.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModelTask.cs" />
