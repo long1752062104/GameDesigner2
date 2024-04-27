@@ -336,6 +336,7 @@ namespace Net.Helper
                     NDebug.LogError(err.ErrorText);
                 return assembly;
             }
+            assembly = cr.CompiledAssembly;
 #else
             var metadataReferences = new List<MetadataReference>();
             foreach (var dllPath in includeDllPaths)

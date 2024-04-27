@@ -135,14 +135,6 @@ namespace Net.UnityComponent
             {
                 info.id = (ushort)(syncVarID + networkBehaviour.SyncVarID++);
                 syncVarInfos.Add(info.id, info);
-                if (!isLocal)
-                {
-                    NetworkSceneManager.Instance.AddOperation(new Operation(NetCmd.SyncVarGet, m_identity)
-                    {
-                        index = registerObjectIndex,
-                        index1 = info.id,
-                    });
-                }
             });
         }
 
@@ -165,7 +157,7 @@ namespace Net.UnityComponent
             });
         }
 
-        internal void SyncVarHandler(Operation opt)
+        internal void SyncVarHandler(in Operation opt)
         {
             if (opt.uid == ClientBase.Instance.UID)
                 return;

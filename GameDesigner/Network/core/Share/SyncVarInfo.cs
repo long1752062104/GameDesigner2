@@ -1,7 +1,6 @@
 ﻿using Net.System;
 using System;
 using System.Reflection;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Net.Share
 {

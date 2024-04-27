@@ -7,6 +7,7 @@ using Net.System;
 using Net.Component;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using Net.Helper;
 
 namespace Net.UnityComponent
 {
@@ -155,9 +156,6 @@ namespace Net.UnityComponent
                 case NetCmd.SyncVarNetObj:
                     OnSyncVarHandler(opt);
                     break;
-                case NetCmd.SyncVarGet:
-                    SyncVarGetHandler(opt);
-                    break;
                 case NetCmd.CallRpc:
                     var segment = BufferPool.NewSegment(opt.buffer, 0, opt.buffer.Length, false);
                     var data = client.OnDeserializeRPC(segment);
@@ -253,18 +251,6 @@ namespace Net.UnityComponent
             identity.SyncVarHandler(opt);
         }
 
-        public virtual void SyncVarGetHandler(in Operation opt)
-        {
-            var identity = OnCheckIdentity(opt);
-            if (identity == null)
-                return;
-            if (identity.IsDispose)
-                return;
-            if (!identity.isLocal)
-                return;
-            identity.syncVarInfos[(ushort)opt.index1].SetDefaultValue();
-        }
-
         /// <summary>
         /// 当其他网络物体被删除(入口1)
         /// </summary>
@@ -281,12 +267,15 @@ namespace Net.UnityComponent
         {
             if (opt.identity == client.UID) //这个命令如果是本机发起，则不进行处理，这里控制如果是公共网络物体时会出现拉回原位问题
                 return;
-            foreach (var item in identitys.Values)
+            foreach (var netObj in identitys.Values)
             {
-                if (!item.IsLocal)
+                if (!netObj.IsLocal)
                     continue;
-                for (int i = 0; i < item.networkBehaviours.Count; i++)
-                    if (item.networkBehaviours[i] is NetworkTransformBase networkTransform)
+                foreach (var syncVar in netObj.syncVarInfos.Values)
+                    syncVar.SetDefaultValue();
+                netObj.CheckSyncVar();
+                for (int i = 0; i < netObj.networkBehaviours.Count; i++)
+                    if (netObj.networkBehaviours[i] is NetworkTransformBase networkTransform)
                         networkTransform.ForcedSynchronous();
             }
         }

@@ -100,10 +100,6 @@
         /// </summary>
         public const byte PingCallback = 25;
         /// <summary>
-        /// 当你客户端晚于其他客户端进入场景时，同步字段需要发起获取最新的值
-        /// </summary>
-        public const byte SyncVarGet = 26;
-        /// <summary>
         /// 网络物体的同步指令 （NetworkObject之间同步）
         /// </summary>
         public const byte SyncVarNetObj = 27;

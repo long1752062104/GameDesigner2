@@ -14,10 +14,21 @@ namespace Net.Share
     {
         [UnityEngine.SerializeField]
         private T value;
+        /// <summary>
+        /// 设置值并同步到云端, 并且调用值修改事件
+        /// </summary>
         public T Value
         {
             get => value;
-            set => Set(value);
+            set => Set(value, true);
+        }
+        /// <summary>
+        /// 设置值不通知，但是会同步到云端
+        /// </summary>
+        public T ValueNot
+        {
+            get => value;
+            set => Set(value, false);
         }
         private bool isChanged;
         private object target;
@@ -33,13 +44,13 @@ namespace Net.Share
             OnValueChanged = onValueChanged;
         }
 
-        private void Set(T value)
+        private void Set(T value, bool notify)
         {
             isChanged = true;
             var oldVal = this.value;
             var newVal = value;
             this.value = newVal;
-            OnValueChanged?.Invoke(oldVal, newVal);
+            if (notify) OnValueChanged?.Invoke(oldVal, newVal);
         }
 
         public override void Set() //unity编辑器修改属性值

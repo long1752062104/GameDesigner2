@@ -83,13 +83,13 @@ namespace Net.Helper
         public static byte[] CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos)
         {
             ISegment segment = null;
-            var tick = (uint)Environment.TickCount;
+            //var tick = (uint)Environment.TickCount;
             for (int i = 0; i < syncVarInfos.count; i++)
             {
                 if (syncVarInfos.entries[i].hashCode == -1)
                     continue;
                 var syncVar = syncVarInfos.entries[i].value;
-                if ((!isLocal & !syncVar.authorize) | syncVar.isDispose | tick < syncVar.tick)
+                if ((!isLocal & !syncVar.authorize) | syncVar.isDispose /*| tick < syncVar.tick*/)
                     continue;
                 syncVar.CheckHandlerValue(ref segment, true);
             }
@@ -108,7 +108,7 @@ namespace Net.Helper
                     break;
                 if (syncVar == null)
                     break;
-                syncVar.tick = (uint)Environment.TickCount + 500;
+                //syncVar.tick = (uint)Environment.TickCount + 500;
                 syncVar.CheckHandlerValue(ref segment1, false);
             }
         }

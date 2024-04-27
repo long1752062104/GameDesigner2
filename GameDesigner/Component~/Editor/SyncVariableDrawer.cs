@@ -13,9 +13,14 @@ public class SyncVariableDrawer : PropertyDrawer
         EditorGUI.PropertyField(position, valueProperty, label, true);
         if (EditorGUI.EndChangeCheck())
         {
-            var syncVariable = fieldInfo.GetValue(property.serializedObject.targetObject) as SyncVarInfo;
-            syncVariable?.Set();
-            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            var targetObject = property.serializedObject.targetObject;
+            if (targetObject.GetType() == fieldInfo.DeclaringType)
+            {
+                var syncVariable = fieldInfo.GetValue(targetObject) as SyncVarInfo;
+                syncVariable?.Set();
+                if (!EditorApplication.isPlaying)
+                    EditorUtility.SetDirty(targetObject);
+            }
         }
     }
 }
