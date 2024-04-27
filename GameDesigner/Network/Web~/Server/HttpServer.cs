@@ -81,8 +81,7 @@ namespace Net.Server
             var path = req.RawUrl;
             if (path == "/")
                 path += "index.html";
-            byte[] contents;
-            if (!e.TryReadFile(path, out contents))
+            if (!e.TryReadFile(path, out var contents))
             {
                 res.StatusCode = (int)HttpStatusCode.NotFound;
                 return;

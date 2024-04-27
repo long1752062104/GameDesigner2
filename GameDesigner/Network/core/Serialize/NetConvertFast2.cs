@@ -446,7 +446,7 @@
             return segment.ToArray(true);
         }
 
-        public static void SerializeModel(ISegment segment, RPCModel model)
+        public static bool SerializeModel(ISegment segment, RPCModel model)
         {
             try
             {
@@ -466,10 +466,13 @@
                         bind.WriteValue(obj, segment);
                     else throw new Exception($"请注册或绑定:{type}类型后才能序列化!");
                 }
+                return true;
             }
             catch (Exception ex)
             {
-                NDebug.LogError($"序列化[{model}]出错 详细信息:" + ex);
+                var func = RPCExtensions.GetFunc(model.protocol);
+                NDebug.LogError($"序列化{func}出错:{ex}");
+                return false;
             }
         }
 

@@ -22,11 +22,9 @@ using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using Net.Event;
 using Net.Share;
@@ -145,15 +143,11 @@ namespace Net.Client
         /// 客户端是否处于打开状态
         /// </summary>
         public bool IsOpenClient => openClient;
-
         /// <summary>
         /// 输出调用网络函数
         /// </summary>
         public bool LogRpc { get; set; }
-        /// <summary>
-        /// 输出日志, 这里是输出全部日志(提示,警告,错误等信息). 如果想只输出指定的日志, 请使用NDebug类进行输出
-        /// </summary>
-        public event Action<string> Log { add { NDebug.BindLogAll(value); } remove { NDebug.RemoveLogAll(value); } }
+        #region 网络事件
         /// <summary>
         /// 当连接服务器成功事件
         /// </summary>
@@ -201,9 +195,9 @@ namespace Net.Client
         /// <summary>
         /// 当服务器发送的大数据时, 可监听此事件显示进度值
         /// </summary>
-        public virtual Action<BigDataProgress> OnRevdRTProgress { get; set; }
+        public virtual Action<BigDataProgress> OnRevdBigDataProgress { get; set; }
         /// <summary>
-        /// 当客户端发送可靠数据时, 可监听此事件显示进度值 (NetworkClient,TcpClient类无效)
+        /// 当客户端发送可靠数据时, 可监听此事件显示进度值 (GcpClient有效)
         /// </summary>
         public virtual Action<BigDataProgress> OnCallProgress { get; set; }
         /// <summary>
@@ -251,10 +245,6 @@ namespace Net.Client
         /// </summary>
         public Action<IPEndPoint> OnP2PCallback { get; set; }
         /// <summary>
-        /// 当网关服务器指定这个客户端连接到一个游戏服务器时调用,回调有游戏服务器的ip和端口
-        /// </summary>
-        public Action<string, ushort> OnSwitchPortHandle { get; set; }
-        /// <summary>
         /// 当开始下载文件时调用, 参数1(string):服务器发送的文件名 返回值(string):开发者指定保存的文件路径(全路径名称)
         /// </summary>
         public Func<string, string> OnDownloadFileHandle { get; set; }
@@ -294,6 +284,7 @@ namespace Net.Client
         /// 当数据超出<see cref="LimitQueueCount"/>限制后触发的事件
         /// </summary>
         public Action OnDataQueueOverflow { get; set; }
+        #endregion
         /// <summary>
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
@@ -331,13 +322,13 @@ namespace Net.Client
         /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 > StackNumberMax :清空叠包缓存流
         /// </summary>
-        protected int stack;
-        protected int stackIndex;
-        protected int stackCount;
+        protected int stacking;
+        protected int stackingOffset;
+        protected int stackingCount;
         /// <summary>
-        /// TCP叠包临时缓存流
+        /// 数据缓冲流
         /// </summary>
-        protected MemoryStream StackStream { get; set; }
+        protected MemoryStream BufferStream { get; set; }
         /// <summary>
         /// 待发送的操作列表
         /// </summary>
@@ -414,13 +405,13 @@ namespace Net.Client
         /// </summary>
         public ISerializeAdapter SerializeAdapter { get; set; }
         /// <summary>
-        /// 版本号
-        /// </summary>
-        public int Version { get; set; } = 1;
-        /// <summary>
         /// 数据包适配器
         /// </summary>
         public IPackageAdapter PackageAdapter { get; set; } = new DataAdapter();
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public int Version { get; set; } = 1;
         /// <summary>
         /// 网络循环事件处理
         /// </summary>
@@ -490,6 +481,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        /// <param name="onSyncVarCollect"></param>
         public void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             AddRpcHandle(target, append, onSyncVarCollect);
@@ -509,6 +501,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        /// <param name="onSyncVarCollect"></param>
         public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
@@ -763,7 +756,6 @@ namespace Net.Client
             if (OnSerializeOPT == null) OnSerializeOPT = OnSerializeOptInternal;
             if (OnDeserializeOPT == null) OnDeserializeOPT = OnDeserializeOptInternal;
             if (OnDataQueueOverflow == null) OnDataQueueOverflow = OnDataQueueOverflowInternal;
-            if (OnSwitchPortHandle == null) OnSwitchPortHandle = OnSwitchPortInternal;
             AddRpcHandle(this, false);
             if (Client == null) //如果套接字为空则说明没有连接上服务器
             {
@@ -1107,13 +1099,21 @@ namespace Net.Client
             {
                 if (!rPCModels.TryDequeue(out RPCModel model))
                     continue;
+                var startPos = stream.Position;
                 stream.WriteByte((byte)(model.kernel ? 68 : 74));
                 stream.WriteByte(model.cmd);
                 stream.Write(model.token);
                 var dataSizePos = stream.Position;
                 stream.Position += 4;
                 if (model.kernel & model.serialize)
-                    OnSerializeRPC(stream, model);
+                {
+                    var completed = OnSerializeRPC(stream, model);
+                    if (!completed)
+                    {
+                        stream.Position = startPos;
+                        continue;
+                    }
+                }
                 else if (model.buffer.Length > 0)
                 {
                     var len = stream.Position + model.buffer.Length + frame;
@@ -1185,13 +1185,14 @@ namespace Net.Client
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
         /// </summary>
+        /// <param name="segment"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected internal virtual void OnSerializeRpcInternal(ISegment segment, RPCModel model) => NetConvert.Serialize(segment, model);
+        protected internal virtual bool OnSerializeRpcInternal(ISegment segment, RPCModel model) => NetConvert.Serialize(segment, model);
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
         /// </summary>
-        /// <param name="buffer"></param>
+        /// <param name="segment"></param>
         /// <returns></returns>
         protected internal virtual FuncData OnDeserializeRpcInternal(ISegment segment) { return NetConvert.Deserialize(segment); }
 
@@ -1327,23 +1328,23 @@ namespace Net.Client
         protected void ResolveBuffer(ref ISegment buffer)
         {
             heart = 0;
-            if (stack > 0)
+            if (stacking > 0)
             {
-                stack++;
-                StackStream.Seek(stackIndex, SeekOrigin.Begin);
+                stacking++;
+                BufferStream.Seek(stackingOffset, SeekOrigin.Begin);
                 int size = buffer.Count - buffer.Position;
-                stackIndex += size;
-                StackStream.Write(buffer.Buffer, buffer.Position, size);
-                if (stackIndex < stackCount)
+                stackingOffset += size;
+                BufferStream.Write(buffer.Buffer, buffer.Position, size);
+                if (stackingOffset < stackingCount)
                 {
-                    InvokeRevdRTProgress(stackIndex, stackCount);
+                    InvokeRevdBigDataProgress(stackingOffset, stackingCount);
                     return;
                 }
-                var count = (int)StackStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
+                var count = (int)BufferStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
                 BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
                 buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
-                StackStream.Seek(0, SeekOrigin.Begin);
-                StackStream.Read(buffer.Buffer, 0, count);
+                BufferStream.Seek(0, SeekOrigin.Begin);
+                BufferStream.Read(buffer.Buffer, 0, count);
                 buffer.Count = count;
             }
             while (buffer.Position < buffer.Count)
@@ -1352,11 +1353,11 @@ namespace Net.Client
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
-                    stackIndex = count;
-                    stackCount = 0;
-                    StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer.Buffer, position, count);
-                    stack++;
+                    stackingOffset = count;
+                    stackingCount = 0;
+                    BufferStream.Seek(0, SeekOrigin.Begin);
+                    BufferStream.Write(buffer.Buffer, position, count);
+                    stacking++;
                     break;
                 }
                 var lenBytes = buffer.Read(4);
@@ -1364,20 +1365,20 @@ namespace Net.Client
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
-                    stack = 0;
+                    stacking = 0;
                     NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
                 var size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
-                    stack = 0;
+                    stacking = 0;
                     NDebug.LogError($"[{UID}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 if (buffer.Position + size <= buffer.Count)
                 {
-                    stack = 0;
+                    stacking = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
                     buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
                     ResolveBuffer(ref buffer, true);
@@ -1387,11 +1388,11 @@ namespace Net.Client
                 {
                     var position = buffer.Position - frame;
                     var count = buffer.Count - position;
-                    stackIndex = count;
-                    stackCount = size;
-                    StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer.Buffer, position, count);
-                    stack++;
+                    stackingOffset = count;
+                    stackingCount = size;
+                    BufferStream.Seek(0, SeekOrigin.Begin);
+                    BufferStream.Write(buffer.Buffer, position, count);
+                    stacking++;
                     break;
                 }
             }
@@ -1474,9 +1475,6 @@ namespace Net.Client
                     break;
                 case NetCmd.Connect:
                     Connected = true;
-                    break;
-                case NetCmd.SwitchPort:
-                    InvokeInMainThread(OnSwitchPortHandle, model.AsString, model.AsUshort);
                     break;
                 case NetCmd.Identify:
                     UID = PreUserId = segment.ReadInt32();
@@ -1652,17 +1650,11 @@ namespace Net.Client
             InvokeInMainThread(OnReceiveDataHandle, model);
         }
 
-        protected virtual void OnSwitchPortInternal(string host, ushort port)
-        {
-            Close();
-            Connect(host, port);
-        }
-
-        protected void InvokeRevdRTProgress(int currValue, int dataCount)
+        protected void InvokeRevdBigDataProgress(int currValue, int dataCount)
         {
             float bfb = currValue / (float)dataCount * 100f;
             var progress = new BigDataProgress(bfb, BigDataState.Sending);
-            InvokeInMainThread(OnRevdRTProgress, progress);
+            InvokeInMainThread(OnRevdBigDataProgress, progress);
         }
 
         /// <summary>
@@ -1751,7 +1743,7 @@ namespace Net.Client
             {
                 if (!Connected)
                     InternalReconnection();//尝试连接执行
-                else if (heart < HeartLimit)
+                else if (heart++ < HeartLimit)
                     Call(NetCmd.SendHeartbeat, new byte[0]);
                 else//连接中断事件执行
                     NetworkException(new SocketException((int)SocketError.Disconnecting));
@@ -1861,11 +1853,11 @@ namespace Net.Client
             Client?.Close();
             Client = null;
             RpcModels = new QueueSafe<RPCModel>();
-            StackStream?.Close();
-            StackStream = null;
-            stack = 0;
-            stackIndex = 0;
-            stackCount = 0;
+            BufferStream?.Close();
+            BufferStream = null;
+            stacking = 0;
+            stackingOffset = 0;
+            stackingCount = 0;
             UID = 0;
             PreUserId = 0;
             CurrReconnect = 0;

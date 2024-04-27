@@ -64,17 +64,17 @@ public class ExternalReferenceTools : EditorWindow
             pathList.DoLayoutList();
         }
 
-        private float OnElementHeightCallback(int index)
+        public virtual float OnElementHeightCallback(int index)
         {
             return 40f;
         }
 
-        private void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
+        public virtual void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
         {
             var data = paths[index];
             EditorGUI.BeginChangeCheck();
             data.path = EditorGUI.TextField(new Rect(rect) { width = rect.width - 30f, height = 20f }, "C#项目文件:", data.path, GUI.skin.label);
-            data.extraPath = EditorGUI.TextField(new Rect(rect) { width = rect.width - 30f, height = 20f, y = rect.y + 20f }, "根路径:", data.extraPath);
+            data.extraPath = EditorGUI.TextField(new Rect(rect) { width = rect.width - 30f, height = 20f, y = rect.y + 20f }, "根路径:", data.extraPath, GUI.skin.label);
             if (GUI.Button(new Rect(rect) { width = 25, height = 30f, x = rect.width - 3f, y = rect.y + 5f, }, "x"))
             {
                 paths.RemoveAt(index);
@@ -126,6 +126,7 @@ public class ExternalReferenceTools : EditorWindow
         scrollPosition1 = GUILayout.BeginScrollView(scrollPosition1, false, true, GUILayout.MaxHeight(position.height / 2));
         dataPathList.DoLayoutList();
         GUILayout.EndScrollView();
+        Config.mode = EditorGUILayout.Popup("模式:", Config.mode, new string[] { "动态全部添加 (新版)", "针对性添加 (旧版)" });
         Config.searchPattern = EditorGUILayout.DelayedTextField("引用文件格式:", Config.searchPattern);
         if (GUILayout.Button("执行!", GUILayout.Height(30)))
         {
@@ -133,7 +134,10 @@ public class ExternalReferenceTools : EditorWindow
             {
                 var xml = new XmlDocument();
                 xml.Load(csprojPath.path);
-                ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+                if (Config.mode == 0)
+                    ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+                else
+                    ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
                 xml.Save(csprojPath.path);
             }
             Debug.Log("更新完成!");
@@ -152,7 +156,10 @@ public class ExternalReferenceTools : EditorWindow
                 continue;
             var xml = new XmlDocument();
             xml.LoadXml(content);
-            return ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+            if (Config.mode == 0)
+                return ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+            else
+                return ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
         }
         return content;
     }
@@ -177,10 +184,8 @@ public class ExternalReferenceTools : EditorWindow
             var files = Directory.GetFiles(path1, "*.*", SearchOption.AllDirectories);
             var patterns = searchPattern.Replace("*", "").Split('|');
             var fileList = new List<string>();
-            //相对于服务器路径
             var csPath = Path.GetFullPath(csprojPath.path);
             path1 = PathHelper.GetRelativePath(csPath, path1, true);
-            //只包含三级目录的相对路径
             dirName = PathHelper.GetRelativePath(csPath, dirName, true);
             foreach (var file in files)
             {
@@ -217,7 +222,64 @@ public class ExternalReferenceTools : EditorWindow
         };
         using (var sw = new StringWriter())
         {
-            using (XmlWriter xmlWriter = XmlWriter.Create(sw, settings))
+            using (var xmlWriter = XmlWriter.Create(sw, settings))
+            {
+                xml.WriteTo(xmlWriter);
+            }
+            return sw.ToString();
+        }
+    }
+
+    private static string ChangeCSProjectNew(XmlDocument xml, CsprojData csprojPath, string searchPattern, List<CsprojData> paths)
+    {
+        XmlNodeList node_list;
+        var documentElement = xml.DocumentElement;
+        var namespaceURI = xml.DocumentElement.NamespaceURI;
+        if (!string.IsNullOrEmpty(namespaceURI))
+        {
+            var nsMgr = new XmlNamespaceManager(xml.NameTable);
+            nsMgr.AddNamespace("ns", namespaceURI);
+            node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
+        }
+        else node_list = xml.SelectNodes("/Project/ItemGroup");
+        foreach (var path in paths)
+        {
+            var path1 = Path.GetFullPath(path.path);
+            var dir = new DirectoryInfo(path1);
+            var csPath = Path.GetFullPath(csprojPath.path);
+            path1 = PathHelper.GetRelativePath(csPath, path1, true);
+            var extraPath = $"{csprojPath.extraPath}{Path.DirectorySeparatorChar}{path.extraPath}{Path.DirectorySeparatorChar}";
+            while (extraPath.StartsWith(Path.DirectorySeparatorChar.ToString())) //兼容旧版本
+                extraPath = extraPath.TrimStart(Path.DirectorySeparatorChar);
+            var patterns = searchPattern.Split('|');
+            var node = xml.CreateElement("ItemGroup", namespaceURI);
+            int existCount = 0;
+            foreach (var pattern in patterns)
+            {
+                if (string.IsNullOrEmpty(pattern))
+                    continue;
+                var path2 = PathHelper.Combine(path1, $"**\\{pattern}");
+                var exist = CheckNodeContains(node_list, path2, null);
+                if (!exist)
+                {
+                    existCount++;
+                    CreateElement(xml, node, pattern.EndsWith(".cs") ? "Compile" : "Content", namespaceURI, path2, $"{dir.Name}\\%(RecursiveDir)%(FileName)%(Extension)");
+                }
+            }
+            if (existCount > 0)
+                documentElement.AppendChild(node);
+        }
+        var settings = new XmlWriterSettings
+        {
+            Indent = true,          // 启用缩进
+            NewLineChars = "\n",    // 设置换行符
+            NewLineHandling = NewLineHandling.Replace,
+            Encoding = System.Text.Encoding.UTF8,
+            ConformanceLevel = ConformanceLevel.Document // 设置符合级别
+        };
+        using (var sw = new StringWriter())
+        {
+            using (var xmlWriter = XmlWriter.Create(sw, settings))
             {
                 xml.WriteTo(xmlWriter);
             }
@@ -227,27 +289,8 @@ public class ExternalReferenceTools : EditorWindow
 
     private static bool CheckNodeContains(XmlDocument xml, XmlNodeList node_list, string namespaceURI, string dirName, string path1, string[] files, string extraPath)
     {
-        bool exist = false;
-        for (int i = 0; i < node_list.Count; i++)
+        return CheckNodeContains(node_list, path1, (node, node_child) =>
         {
-            var node = node_list.Item(i);
-            var node_child = node.ChildNodes;
-            foreach (XmlNode child_node in node_child)
-            {
-                if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
-                    continue;
-                var attribute = child_node.Attributes.GetNamedItem("Include");
-                if (attribute == null)
-                    continue;
-                var value = attribute.Value;
-                if (value.Contains(path1))
-                {
-                    exist = true;
-                    break;
-                }
-            }
-            if (!exist)
-                continue;
             foreach (var file in files)
             {
                 bool isExist = false;
@@ -279,7 +322,35 @@ public class ExternalReferenceTools : EditorWindow
                 if (!files.Contains(value))
                     node.RemoveChild(child_node);
             }
-            break;
+        });
+    }
+
+    private static bool CheckNodeContains(XmlNodeList node_list, string path1, Action<XmlNode, XmlNodeList> action)
+    {
+        bool exist = false;
+        for (int i = 0; i < node_list.Count; i++)
+        {
+            var node = node_list.Item(i);
+            var node_child = node.ChildNodes;
+            foreach (XmlNode child_node in node_child)
+            {
+                if (child_node.LocalName != "Compile" & child_node.LocalName != "Content")
+                    continue;
+                var attribute = child_node.Attributes.GetNamedItem("Include");
+                if (attribute == null)
+                    continue;
+                var value = attribute.Value;
+                if (value.Contains(path1))
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist)
+            {
+                action?.Invoke(node, node_child);
+                break;
+            }
         }
         return exist;
     }
@@ -289,6 +360,13 @@ public class ExternalReferenceTools : EditorWindow
         var node = xml.CreateElement("ItemGroup", namespaceURI);
         foreach (var file in files)
             CreateItemElement(xml, node, file, namespaceURI, dirName, extraPath);
+        return node;
+    }
+
+    private static XmlNode CreateItemGroup(XmlDocument xml, string qualifiedName, string namespaceURI, string include, string link)
+    {
+        var node = xml.CreateElement("ItemGroup", namespaceURI);
+        CreateElement(xml, node, qualifiedName, namespaceURI, include, link);
         return node;
     }
 
@@ -322,6 +400,16 @@ public class ExternalReferenceTools : EditorWindow
         }
     }
 
+    private static void CreateElement(XmlDocument xml, XmlNode node, string qualifiedName, string namespaceURI, string include, string link)
+    {
+        var e = xml.CreateElement(qualifiedName, namespaceURI);
+        e.SetAttribute("Include", include);
+        var e1 = xml.CreateElement("Link", namespaceURI);
+        e1.InnerText = link;
+        e.AppendChild(e1);
+        node.AppendChild(e);
+    }
+
     static void LoadData()
     {
         Config = PersistHelper.Deserialize<ExternalReferencesConfig>("external References.json");
@@ -336,7 +424,8 @@ public class ExternalReferenceTools : EditorWindow
     {
         public List<CsprojData> ProjPaths = new List<CsprojData>();
         public List<CsprojData> DataPaths = new List<CsprojData>();
-        public string searchPattern = "*.cs|*.txt|*.ini|*.conf|*.xls|*.xlsx|*.json";
+        public int mode;
+        public string searchPattern = "*.cs|*.txt|*.ini|*.conf|*.xls|*.xlsx|*.json|*.bytes";
     }
 
     [Serializable]

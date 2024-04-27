@@ -71,11 +71,6 @@
         public const byte SyncPropertyData = 14;
 
         /// <summary>
-        /// 当客户端连接主服务器(网关服)时, 主服务器检测分区服务器在线人数如果处于爆满状态, 
-        /// 服务器发送切换端口让客户端连接新的服务器IP和端口. 内部命令
-        /// </summary>
-        public const byte SwitchPort = 17;
-        /// <summary>
         /// 标记客户端唯一标识, 内部命令
         /// </summary>
         public const byte Identify = 18;

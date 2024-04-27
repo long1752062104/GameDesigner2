@@ -195,11 +195,6 @@ namespace Net.Server
         /// </summary>
         public int LimitQueueCount { get; set; } = ushort.MaxValue;
         /// <summary>
-        /// 程序根路径, 网络数据缓存读写路径
-        /// </summary>
-        protected string rootPath;
-        protected List<QueueSafe<RevdDataBuffer>> RcvQueues = new List<QueueSafe<RevdDataBuffer>>();
-        /// <summary>
         /// 同步锁对象
         /// </summary>
         protected readonly object SyncRoot = new object();
@@ -363,7 +358,9 @@ namespace Net.Server
         /// 网络服务器单例
         /// </summary>
         public static ServerBase<Player> Instance { get; protected set; }
-
+        /// <summary>
+        /// 网络线程管线处理池
+        /// </summary>
         protected ThreadPipeline<Player> ThreadPool = new ThreadPipeline<Player>();
         /// <summary>
         /// 排队队列
@@ -554,11 +551,12 @@ namespace Net.Server
         /// <summary>
         /// 当内核序列化远程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义序列化协议
         /// </summary>
+        /// <param name="segment"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         protected virtual void OnSerializeRpc(ISegment segment, RPCModel model) => OnSerializeRPC(segment, model);
 
-        protected internal void OnSerializeRpcInternal(ISegment segment, RPCModel model) => NetConvert.Serialize(segment, model);
+        protected internal bool OnSerializeRpcInternal(ISegment segment, RPCModel model) => NetConvert.Serialize(segment, model);
 
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
@@ -573,12 +571,14 @@ namespace Net.Server
         /// 当客户端使用场景转发命令会调用此方法
         /// </summary>
         /// <param name="client"></param>
+        /// <param name="model"></param>
         protected virtual void OnSceneRelay(Player client, RPCModel model) { }
 
         /// <summary>
         /// 当客户端使用公告转发命令会调用此方法
         /// </summary>
         /// <param name="client"></param>
+        /// <param name="model"></param>
         protected virtual void OnNoticeRelay(Player client, RPCModel model)
         {
             Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol) { token = model.token });
@@ -1413,13 +1413,21 @@ namespace Net.Server
             {
                 if (!rPCModels.TryDequeue(out RPCModel model))
                     continue;
+                var startPos = stream.Position;
                 stream.WriteByte((byte)(model.kernel ? 68 : 74));
                 stream.WriteByte(model.cmd);
                 stream.Write(model.token);
                 var dataSizePos = stream.Position;
                 stream.Position += 4;
                 if (model.kernel & model.serialize)
-                    OnSerializeRPC(stream, model);
+                {
+                    var completed = OnSerializeRPC(stream, model);
+                    if (!completed)
+                    {
+                        stream.Position = startPos;
+                        continue;
+                    }
+                }
                 else if (model.buffer.Length > 0)
                 {
                     var len = stream.Position + model.buffer.Length + frame;
@@ -1650,7 +1658,6 @@ namespace Net.Server
                 item.Value.Interrupt();
             ServerThreads.Clear();
             ThreadPool.Dispose();
-            RcvQueues.Clear();
             OnStartingHandle -= OnStarting;
             OnStartupCompletedHandle -= OnStartupCompleted;
             OnHasConnectHandle -= OnHasConnect;
@@ -1758,6 +1765,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        /// <param name="onSyncVarCollect"></param>
         public void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             AddRpcHandle(target, append, onSyncVarCollect);
@@ -1777,6 +1785,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="target">注册的对象实例</param>
         /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        /// <param name="onSyncVarCollect"></param>
         public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             if (OnAddRpcHandle == null)
@@ -1819,6 +1828,7 @@ namespace Net.Server
         /// playerID玩家是否在线? 并且如果在线则out 在线玩家的对象
         /// </summary>
         /// <param name="playerID"></param>
+        /// <param name="client"></param>
         /// <returns></returns>
         public virtual bool IsOnline(string playerID, out Player client)
         {
@@ -2286,7 +2296,6 @@ namespace Net.Server
         /// <summary>
         /// 创建一个场景, 成功则返回场景对象, 创建失败则返回null
         /// </summary>
-        /// <param name="name"></param>
         /// <param name="scene"></param>
         /// <returns></returns>
         public Scene CreateScene(Scene scene)

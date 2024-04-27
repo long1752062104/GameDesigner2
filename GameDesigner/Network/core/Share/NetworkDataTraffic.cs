@@ -71,6 +71,8 @@ namespace Net.Share
         public string FPSToString()
         {
             var text = string.Empty;
+            if (FPSArray == null)
+                return text;
             for (int i = 0; i < FPSArray.Length; i++)
                 text += $"FPS{FPSArray[i].Id}:{FPSArray[i].FPS} ";
             return text;

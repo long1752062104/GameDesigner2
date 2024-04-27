@@ -21,7 +21,7 @@
         public override int RTO { get => Gcp.RTO; set => Gcp.RTO = value; }
         public override int MTPS { get => Gcp.MTPS; set => Gcp.MTPS = value; }
         public override FlowControlMode FlowControl { get => Gcp.FlowControl; set => Gcp.FlowControl = value; }
-        public override Action<BigDataProgress> OnRevdRTProgress { get => Gcp.OnRevdProgress; set => Gcp.OnRevdProgress = value; }
+        public override Action<BigDataProgress> OnRevdBigDataProgress { get => Gcp.OnRevdProgress; set => Gcp.OnRevdProgress = value; }
         public override Action<BigDataProgress> OnCallProgress { get => Gcp.OnSendProgress; set => Gcp.OnSendProgress = value; }
         /// <summary>
         /// 构造udp可靠客户端

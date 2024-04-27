@@ -151,21 +151,31 @@
             TypeToHashDict.Add(type, typeHash);
         }
 
-        public static void Serialize(ISegment segment, RPCModel model, bool recordType = false)
+        public static bool Serialize(ISegment segment, RPCModel model, bool recordType = false)
         {
-            segment.Write(model.protocol);
-            foreach (object obj in model.pars)
+            try
             {
-                Type type;
-                if (obj == null)
+                segment.Write(model.protocol);
+                foreach (object obj in model.pars)
                 {
-                    type = typeof(DBNull);
+                    Type type;
+                    if (obj == null)
+                    {
+                        type = typeof(DBNull);
+                        segment.Write(GetTypeHash(type));
+                        continue;
+                    }
+                    type = obj.GetType();
                     segment.Write(GetTypeHash(type));
-                    continue;
+                    NetConvertBinary.WriteObject(segment, type, obj, recordType, true);
                 }
-                type = obj.GetType();
-                segment.Write(GetTypeHash(type));
-                NetConvertBinary.WriteObject(segment, type, obj, recordType, true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var func = RPCExtensions.GetFunc(model.protocol);
+                NDebug.LogError($"序列化{func}出错:{ex}");
+                return false;
             }
         }
 

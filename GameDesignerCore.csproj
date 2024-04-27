@@ -120,12 +120,16 @@
     <None Remove="GameDesigner\Network\core\Client\ClientPool.cs.meta" />
     <None Remove="GameDesigner\Network\core\Config\TableConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\BitHelper.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\DataCache.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\FastHashSet.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\FixedSegment.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\HashSetEqualityComparer.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\HashSetEx.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\ISegment.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\SafeDictionary.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\SystemManager.cs.meta" />
+    <None Remove="GameDesigner\Network\core\System\ThreadPipeline.cs.meta" />
     <None Remove="GameDesigner\Network\core\Tools\ObjectConverter.cs.meta" />
     <None Remove="GameDesigner\Network\core\Tools\TypeExtend.cs.meta" />
     <None Remove="GameDesigner\Network\core\Unity\UnityThreadContext.cs.meta" />

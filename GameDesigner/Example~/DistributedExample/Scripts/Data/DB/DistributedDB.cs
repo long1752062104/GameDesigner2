@@ -249,7 +249,12 @@ namespace Distributed
                                 var value = sdr.GetValue(i);
                                 if (value == DBNull.Value) //空值不能进行赋值,会报错
                                     continue;
-                                data[name] = value;
+                                if (value is byte[] bytes)
+                                {
+                                    var hex = Encoding.ASCII.GetString(bytes);
+                                    data[name] = Convert.FromBase64String(hex);
+                                }
+                                else data[name] = value;
                             }
                             data.RowState = DataRowState.Unchanged;
                             datas.Add(data);
