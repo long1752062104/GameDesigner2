@@ -104,7 +104,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                     var count = Config.rpcConfig.Count - Config.rpcConfigSize;
                     Config.rpcConfig.RemoveRange(Config.rpcConfigSize, count);
                 }
-                return;
+                goto J;
             }
             var rpcConfigProperty = configProperty.FindPropertyRelative("rpcConfig");
             for (int i = 0; i < Config.rpcConfig.Count; i++)
@@ -171,7 +171,7 @@ public class InvokeHelperTools : EditorWindow, IPostprocessBuildWithReport, IPre
                 }
             }
         }
-        EditorGUI.indentLevel = 0;
+    J: EditorGUI.indentLevel = 0;
         EditorGUILayout.GetControlRect(GUILayout.Height(10));
         GUILayout.EndScrollView();
         if (GUILayout.Button("保存配置", GUILayout.Height(30)))

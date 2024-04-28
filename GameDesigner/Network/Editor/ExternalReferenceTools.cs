@@ -135,7 +135,7 @@ public class ExternalReferenceTools : EditorWindow
                 var xml = new XmlDocument();
                 xml.Load(csprojPath.path);
                 if (Config.mode == 0)
-                    ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+                    ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths, out _);
                 else
                     ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
                 xml.Save(csprojPath.path);
@@ -157,7 +157,7 @@ public class ExternalReferenceTools : EditorWindow
             var xml = new XmlDocument();
             xml.LoadXml(content);
             if (Config.mode == 0)
-                return ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths);
+                return ChangeCSProjectNew(xml, csprojPath, Config.searchPattern, Config.DataPaths, out _);
             else
                 return ChangeCSProject(xml, csprojPath, Config.searchPattern, Config.DataPaths);
         }
@@ -230,7 +230,7 @@ public class ExternalReferenceTools : EditorWindow
         }
     }
 
-    private static string ChangeCSProjectNew(XmlDocument xml, CsprojData csprojPath, string searchPattern, List<CsprojData> paths)
+    public static string ChangeCSProjectNew(XmlDocument xml, CsprojData csprojPath, string searchPattern, List<CsprojData> paths, out int existCount)
     {
         XmlNodeList node_list;
         var documentElement = xml.DocumentElement;
@@ -242,6 +242,7 @@ public class ExternalReferenceTools : EditorWindow
             node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
         }
         else node_list = xml.SelectNodes("/Project/ItemGroup");
+        existCount = 0;
         foreach (var path in paths)
         {
             var path1 = Path.GetFullPath(path.path);
@@ -253,7 +254,7 @@ public class ExternalReferenceTools : EditorWindow
                 extraPath = extraPath.TrimStart(Path.DirectorySeparatorChar);
             var patterns = searchPattern.Split('|');
             var node = xml.CreateElement("ItemGroup", namespaceURI);
-            int existCount = 0;
+            int existNumber = 0;
             foreach (var pattern in patterns)
             {
                 if (string.IsNullOrEmpty(pattern))
@@ -262,11 +263,12 @@ public class ExternalReferenceTools : EditorWindow
                 var exist = CheckNodeContains(node_list, path2, null);
                 if (!exist)
                 {
+                    existNumber++;
                     existCount++;
                     CreateElement(xml, node, pattern.EndsWith(".cs") ? "Compile" : "Content", namespaceURI, path2, $"{dir.Name}\\%(RecursiveDir)%(FileName)%(Extension)");
                 }
             }
-            if (existCount > 0)
+            if (existNumber > 0)
                 documentElement.AppendChild(node);
         }
         var settings = new XmlWriterSettings

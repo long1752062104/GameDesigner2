@@ -138,7 +138,7 @@ namespace Net.Helper
             var codeTemplate = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
 internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 {
-    public virtual int SortingOrder => 0;
+    public virtual int SortingOrder { get { return 0; } }
 
     public void Init()
     {
@@ -152,7 +152,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 --
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -184,15 +184,15 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
             FIELDNAME = READVALUE
             CHECKVALUE
             segment.Position = end;
-            if (onValueChanged != null)
-                onValueChanged(self.FIELDNAME, FIELDNAME1);
             self.FIELDNAME = FIELDNAME1;
+            if (onValueChanged != null)
+                onValueChanged(self.FIELDNAME);
             syncVar.readCount++;
             syncVar.readBytes += end - pos;
         }
     }
 --
-    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE, FIELDTYPE> onValueChanged) 
+    internal virtual void FIELDNAME(TARGETTYPE self, ref FIELDTYPE FIELDNAME, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<FIELDTYPE> onValueChanged) 
     {
         if (isWrite)
         {
@@ -214,7 +214,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
             var FIELDNAME1 = UnityEditor.AssetDatabase.LoadAssetAtPath<FIELDTYPE>(path);
             self.FIELDNAME = FIELDNAME1;
             if (onValueChanged != null)
-                onValueChanged(self.FIELDNAME, FIELDNAME1);
+                onValueChanged(self.FIELDNAME);
             FIELDNAME = FIELDNAME1;
 #endif
         }
@@ -1121,57 +1121,22 @@ internal static class HelperFileInfo
 }";
                 var csprojPath = config.rpcConfig[i].csprojPath;
                 csprojPath = Path.GetFullPath(PathHelper.PlatformReplace(csprojPath));
-                var path1 = config.rpcConfig[i].savePath + "/SyncVarHandlerGenerate.cs";
+                var path1 = config.rpcConfig[i].savePath;
                 path1 = Path.GetFullPath(PathHelper.PlatformReplace(path1));
-
-                //相对于Assets路径
                 var relativePath = PathHelper.GetRelativePath(csprojPath, path1);
-
                 if (!File.Exists(csprojPath))
                     continue;
                 var xml = new XmlDocument();
                 xml.Load(csprojPath);
-                XmlNodeList node_list;
-                var documentElement = xml.DocumentElement;
-                var namespaceURI = xml.DocumentElement.NamespaceURI;
-                if (!string.IsNullOrEmpty(namespaceURI))
-                {
-                    var nsMgr = new XmlNamespaceManager(xml.NameTable); nsMgr.AddNamespace("ns", namespaceURI);
-                    node_list = xml.SelectNodes("/ns:Project/ns:ItemGroup", nsMgr);
-                }
-                else node_list = xml.SelectNodes("/Project/ItemGroup");
-                bool exist = false;
-                foreach (XmlNode node in node_list)
-                {
-                    var node_child = node.ChildNodes;
-                    foreach (XmlNode child_node in node_child)
-                    {
-                        if (child_node.LocalName != "Compile")
-                            continue;
-                        var value = child_node.Attributes["Include"].Value;
-                        if (value.Contains("SyncVarHandlerGenerate.cs"))
-                        {
-                            if (value != relativePath | !File.Exists(value))
-                            {
-                                child_node.Attributes["Include"].Value = relativePath;
-                                xml.Save(csprojPath);
-                            }
-                            exist = true;
-                            break;
-                        }
-                    }
-                }
-                if (!exist)
-                {
-                    var node = xml.CreateElement("ItemGroup", namespaceURI);
-                    var e = xml.CreateElement("Compile", namespaceURI);
-                    e.SetAttribute("Include", relativePath);
-                    node.AppendChild(e);
-                    documentElement.AppendChild(node);
+                ExternalReferenceTools.ChangeCSProjectNew(xml, new ExternalReferenceTools.CsprojData(csprojPath), "*.cs",
+                    new List<ExternalReferenceTools.CsprojData>() {
+                        new ExternalReferenceTools.CsprojData(relativePath)
+                    }, out var existCount);
+                if (existCount > 0)
                     xml.Save(csprojPath);
-                }
-                if (!Directory.Exists(Path.GetDirectoryName(path1)))
+                if (!Directory.Exists(path1))
                     Directory.CreateDirectory(path1);
+                path1 += "/SyncVarHandlerGenerate.cs";
                 File.WriteAllText(path1, text1);
             }
         J: foreach (var stream in streams)

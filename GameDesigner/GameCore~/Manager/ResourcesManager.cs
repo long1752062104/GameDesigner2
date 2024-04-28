@@ -6,6 +6,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+using UnityEngine.Networking;
 
 namespace GameCore
 {
@@ -90,19 +91,9 @@ namespace GameCore
                 return;
             var assetBundlePath = Global.I.AssetBundlePath;
             var assetInfoList = assetBundlePath + "assetInfoList.json";
-            if (!File.Exists(assetInfoList))
-            {
-                Debug.LogError("请构建AB包后再运行!");
-                return;
-            }
             var json = LoadAssetFileReadAllText(assetInfoList);
             assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(json);
             var manifestBundlePath = assetBundlePath + "assetBundleManifest.json";
-            if (!File.Exists(manifestBundlePath))
-            {
-                Debug.LogError("请构建AB包后再运行!");
-                return;
-            }
             json = LoadAssetFileReadAllText(manifestBundlePath);
             assetBundleManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(json);
         }
@@ -183,10 +174,18 @@ namespace GameCore
 
         public virtual byte[] LoadAssetFile(string assetPath)
         {
-            var bytes = File.ReadAllBytes(assetPath);
-            if (encrypt)
-                Net.Helper.EncryptHelper.ToDecrypt(password, bytes);
-            return bytes;
+            using (var request = UnityWebRequest.Get(assetPath))
+            {
+                var oper = request.SendWebRequest();
+                while (!oper.isDone)
+                    System.Threading.Thread.Yield();
+                if (!string.IsNullOrEmpty(request.error))
+                    throw new Exception("请构建AB包后再运行! " + request.error);
+                var bytes = request.downloadHandler.data;
+                if (encrypt)
+                    Net.Helper.EncryptHelper.ToDecrypt(password, bytes);
+                return bytes;
+            }
         }
 
         public virtual void OnDestroy()
@@ -342,10 +341,12 @@ namespace GameCore
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
             {
                 var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
-                if (File.Exists(fullPath))
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = LoadAssetBundle(fullPath));
-                else return default;
-                DirectDependencies(assetInfoBase.assetBundleName);
+                assetBundle = LoadAssetBundle(fullPath);
+                if (assetBundle != null)
+                {
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle);
+                    DirectDependencies(assetInfoBase.assetBundleName);
+                }
             }
             return assetBundle;
         }
@@ -361,10 +362,12 @@ namespace GameCore
             if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
             {
                 var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
-                if (File.Exists(fullPath))
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle = await LoadAssetBundleAsync(fullPath));
-                else return default;
-                await DirectDependenciesAsync(assetInfoBase.assetBundleName);
+                assetBundle = await LoadAssetBundleAsync(fullPath);
+                if (assetBundle != null)
+                {
+                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle);
+                    await DirectDependenciesAsync(assetInfoBase.assetBundleName);
+                }
             }
             return assetBundle;
         }

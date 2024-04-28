@@ -245,11 +245,12 @@ namespace Net.Helper
             var interfaceTypes = new List<Type>();
             foreach (var assembly in assemblies)
             {
-                var types = assembly.GetTypes().Where(t => t.IsInterfaceType(interfaceType)).ToList();
-                if (types == null)
-                    continue;
-                if (types.Count > 0)
-                    interfaceTypes.AddRange(types);
+                var types = assembly.GetTypes();
+                foreach (var type in types)
+                {
+                    if (type.IsInterfaceType(interfaceType))
+                        interfaceTypes.Add(type);
+                }
             }
             return interfaceTypes;
         }

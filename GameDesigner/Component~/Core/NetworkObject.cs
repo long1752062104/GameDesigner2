@@ -274,7 +274,7 @@ namespace Net.UnityComponent
                     continue;
                 networkBehaviour.OnPropertyAutoCheck();
             }
-            if (IsLocal) CheckSyncVar();
+            CheckSyncVar();
         }
 
 #if UNITY_EDITOR

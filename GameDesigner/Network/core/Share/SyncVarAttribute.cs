@@ -14,7 +14,7 @@ namespace Net.Share
         /// </summary>
         public ushort id;
         /// <summary>
-        /// 值改变后调用的方法名 <see langword="方法必须有两个参数, 第一个是oldValue, 第二个是newValue"/>
+        /// 值改变后调用的方法名 <see langword="方法必须有一个参数value"/>
         /// </summary>
         public string hook;
         /// <summary>
@@ -27,7 +27,6 @@ namespace Net.Share
         /// </summary>
         public SyncVar()
         {
-            authorize = true;
         }
 
         /// <summary>
@@ -36,7 +35,6 @@ namespace Net.Share
         public SyncVar(string hook)
         {
             this.hook = hook;
-            authorize = true;
         }
     }
 }

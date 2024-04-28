@@ -12,14 +12,14 @@ namespace Example1
         [SyncVar(id = 2, hook = nameof(stringCheck))]
         public string teststring;
 
-        private void intCheck(int old, int newval)
+        private void intCheck(int value)
         {
-            NDebug.Log(newval);
+            NDebug.Log(value);
         }
 
-        private void stringCheck(string old, string newval)
+        private void stringCheck(string value)
         {
-            NDebug.Log(newval);
+            NDebug.Log(value);
         }
     }
 }

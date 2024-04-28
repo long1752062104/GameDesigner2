@@ -37,8 +37,8 @@ namespace Net.Helper
             if (!string.IsNullOrEmpty(syncVar.hook) & syncVarInfo.onValueChanged == null)
             {
                 syncVarInfo.onValueChanged = type.GetMethod(syncVar.hook, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                if (syncVarInfo.onValueChanged.GetParameters().Length != 2)
-                    throw new Exception($"{type}.{syncVarInfo.onValueChanged.Name} 方法必须有两个参数, 第一个是oldValue, 第二个是newValue!");
+                if (syncVarInfo.onValueChanged.GetParameters().Length != 1)
+                    throw new Exception($"{type}.{syncVarInfo.onValueChanged.Name} 方法必须有一个参数value!");
             }
             syncVarInfo.id = syncVar.id;
             syncVarInfo.authorize = syncVar.authorize;
