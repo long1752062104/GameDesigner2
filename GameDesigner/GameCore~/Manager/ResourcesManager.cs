@@ -3,10 +3,10 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
-using UnityEngine.Networking;
 
 namespace GameCore
 {
@@ -92,9 +92,13 @@ namespace GameCore
             var assetBundlePath = Global.I.AssetBundlePath;
             var assetInfoList = assetBundlePath + "assetInfoList.json";
             var json = LoadAssetFileReadAllText(assetInfoList);
+            if (string.IsNullOrEmpty(json))
+                throw new Exception("请构建AB包后再运行!");
             assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(json);
             var manifestBundlePath = assetBundlePath + "assetBundleManifest.json";
             json = LoadAssetFileReadAllText(manifestBundlePath);
+            if (string.IsNullOrEmpty(json))
+                throw new Exception("请构建AB包后再运行!");
             assetBundleManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(json);
         }
 
@@ -153,6 +157,8 @@ namespace GameCore
         public virtual string LoadAssetFileReadAllText(string assetPath)
         {
             var bytes = LoadAssetFile(assetPath);
+            if (bytes == null)
+                return null;
             if (Global.I.compressionJson)
                 bytes = Net.Helper.UnZipHelper.Decompress(bytes);
             return Encoding.UTF8.GetString(bytes);
@@ -161,6 +167,8 @@ namespace GameCore
         public virtual AssetBundle LoadAssetBundle(string assetBundlePath)
         {
             var bytes = LoadAssetFile(assetBundlePath);
+            if (bytes == null)
+                return null;
             var assetBundle = AssetBundle.LoadFromMemory(bytes);
             return assetBundle;
         }
@@ -168,6 +176,8 @@ namespace GameCore
         public virtual async UniTask<AssetBundle> LoadAssetBundleAsync(string assetBundlePath)
         {
             var bytes = LoadAssetFile(assetBundlePath);
+            if (bytes == null)
+                return null;
             var assetBundle = await AssetBundle.LoadFromMemoryAsync(bytes);
             return assetBundle;
         }
@@ -180,7 +190,10 @@ namespace GameCore
                 while (!oper.isDone)
                     System.Threading.Thread.Yield();
                 if (!string.IsNullOrEmpty(request.error))
-                    throw new Exception("请构建AB包后再运行! " + request.error);
+                {
+                    Debug.LogError($"读取资源:{assetPath}失败! " + request.error);
+                    return null;
+                }
                 var bytes = request.downloadHandler.data;
                 if (encrypt)
                     Net.Helper.EncryptHelper.ToDecrypt(password, bytes);

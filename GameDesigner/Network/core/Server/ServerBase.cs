@@ -77,7 +77,7 @@ namespace Net.Server
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
         /// <summary>
-        /// 同步线程上下文任务队列
+        /// 跨线程调用任务队列
         /// </summary>
         public JobQueueHelper WorkerQueue { get; set; } = new JobQueueHelper();
         /// <summary>

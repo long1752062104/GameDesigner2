@@ -99,7 +99,7 @@
             stream.Flush(false);
             SetDataHead(stream);
             PackageAdapter.Pack(stream);
-            var len = stream.Count - frame;
+            var len = stream.Count - Frame;
             var lenBytes = BitConverter.GetBytes(len);
             var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
             stream.Position = 0;
@@ -150,7 +150,7 @@
             }
             while (buffer.Position < buffer.Count)
             {
-                if (buffer.Position + frame > buffer.Count)//流数据偶尔小于frame头部字节
+                if (buffer.Position + Frame > buffer.Count)//流数据偶尔小于frame头部字节
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
@@ -187,7 +187,7 @@
                 }
                 else
                 {
-                    var position = buffer.Position - frame;
+                    var position = buffer.Position - Frame;
                     var count = buffer.Count - position;
                     stackingOffset = count;
                     stackingCount = size;

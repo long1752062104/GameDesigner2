@@ -7,7 +7,7 @@ namespace Net.Helper
     public class JobQueueHelper
     {
         /// <summary>
-        /// 同步线程上下文任务队列
+        /// 跨线程调用任务队列
         /// </summary>
         public QueueSafe<IThreadArgs> WorkerQueue = new QueueSafe<IThreadArgs>();
 

@@ -63,7 +63,7 @@
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
         /// <summary>
-        /// 同步线程上下文任务队列
+        /// 跨线程调用任务队列
         /// </summary>
         public JobQueueHelper WorkerQueue { get; set; }
         /// <summary>
@@ -117,6 +117,9 @@
         /// 是否属于排队状态
         /// </summary>
         public bool IsQueueUp => QueueUpNo > 0;
+        /// <summary>
+        /// GCP协议接口
+        /// </summary>
         public IGcp Gcp { get; set; }
         /// <summary>
         /// 客户端连接时间
@@ -252,7 +255,8 @@
         /// </summary>
         /// <param name="target"></param>
         /// <param name="append">可以重复添加rpc?</param>
-        public void AddRpc(object target, bool append = false)
+        /// <param name="onSyncVarCollect"></param>
+        public void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null)
         {
             RpcHelper.AddRpc(this, target, append, null);
         }
@@ -264,34 +268,6 @@
         public void RemoveRpc(object target)
         {
             RpcHelper.RemoveRpc(this, target);
-        }
-
-        //public void CheckRpc()
-        //{
-        //    RpcHelper.CheckRpc(this);
-        //}
-
-        private bool CheckIsClass(Type type, ref int layer, bool root = true)
-        {
-            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var field in fields)
-            {
-                var code = Type.GetTypeCode(field.FieldType);
-                if (code == TypeCode.Object)
-                {
-                    if (field.FieldType.IsClass)
-                        return true;
-                    if (root)
-                        layer = 0;
-                    if (layer++ < 5)
-                    {
-                        var isClass = CheckIsClass(field.FieldType, ref layer, false);
-                        if (isClass)
-                            return true;
-                    }
-                }
-            }
-            return false;
         }
 
         internal byte[] RemoteAddressBuffer()
@@ -518,7 +494,6 @@
         /// <summary>
         /// 发送文件, 客户端可以使用事件<see cref="Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
         /// </summary>
-        /// <param name="client"></param>
         /// <param name="filePath"></param>
         /// <param name="bufferSize">每次发送数据大小</param>
         /// <returns></returns>

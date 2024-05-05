@@ -16,15 +16,15 @@
 *  3. 本通知不得从任何来源分发中删除或更改。
 */
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
+using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using Net.Event;
 using Net.Share;
@@ -56,7 +56,7 @@ namespace Net.Client
         /// </summary>
         public int port = 9543;
         /// <summary>
-        /// 发送缓存器
+        /// 远程模型缓冲区
         /// </summary>
         protected QueueSafe<RPCModel> RpcModels = new QueueSafe<RPCModel>();
         /// <summary>
@@ -288,7 +288,7 @@ namespace Net.Client
         /// <summary>
         /// 4个字节记录数据长度 + 1CRC校验
         /// </summary>
-        protected virtual int frame { get; set; } = 5;
+        protected virtual int Frame { get; set; } = 5;
         /// <summary>
         /// 心跳时间间隔, 默认每1秒检查一次玩家是否离线, 玩家心跳确认为5次, 如果超出5次 则移除玩家客户端. 确认玩家离线总用时5秒, 
         /// 如果设置的值越小, 确认的速度也会越快. 值太小有可能出现直接中断问题, 设置的最小值在100以上
@@ -312,7 +312,7 @@ namespace Net.Client
         /// </summary>
         protected int PreUserId { get; set; }
         /// <summary>
-        /// 同步线程上下文任务队列
+        /// 跨线程调用任务队列
         /// </summary>
         public JobQueueHelper WorkerQueue { get; set; } = new JobQueueHelper();
         /// <summary>
@@ -385,16 +385,9 @@ namespace Net.Client
         /// 断线重连间隔, 默认间隔2秒
         /// </summary>
         public int ReconnectInterval { get; set; } = 2000;
-        private int sendInterval = 1;
         /// <summary>
-        /// 每次发送数据间隔，每秒大概执行1000次
+        /// GCP协议接口
         /// </summary>
-        public int SendInterval
-        {
-            get => sendInterval;
-            set => sendInterval = value;
-        }
-        protected readonly object SyncRoot = new object();
         public IGcp Gcp { get; set; }
         /// <summary>
         /// 网络更新方式
@@ -509,13 +502,7 @@ namespace Net.Client
             OnAddRpcHandle(target, append, onSyncVarCollect);
         }
 
-        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
-        {
-            lock (SyncRoot)
-            {
-                RpcHelper.AddRpc(this, target, append, onSyncVarCollect);
-            }
-        }
+        private void AddRpcInternal(object target, bool append, Action<SyncVarInfo> onSyncVarCollect) => RpcHelper.AddRpc(this, target, append, onSyncVarCollect);
 
         /// <summary>
         /// 移除客户端的Rpc方法
@@ -528,13 +515,7 @@ namespace Net.Client
             OnRemoveRpc(target);
         }
 
-        private void RemoveRpcInternal(object target)
-        {
-            lock (SyncRoot)//checkRpc方法和此方法并行时索引溢出
-            {
-                RpcHelper.RemoveRpc(this, target);
-            }
-        }
+        private void RemoveRpcInternal(object target) => RpcHelper.RemoveRpc(this, target);
 
         /// <summary>
         /// 绑定Rpc函数
@@ -1089,7 +1070,7 @@ namespace Net.Client
 
         protected virtual void SetDataHead(ISegment stream)
         {
-            stream.Position = frame + PackageAdapter.HeadCount;
+            stream.Position = Frame + PackageAdapter.HeadCount;
         }
 
         protected virtual void WriteDataBody(ref ISegment stream, QueueSafe<RPCModel> rPCModels, int count)
@@ -1116,7 +1097,7 @@ namespace Net.Client
                 }
                 else if (model.buffer.Length > 0)
                 {
-                    var len = stream.Position + model.buffer.Length + frame;
+                    var len = stream.Position + model.buffer.Length + Frame;
                     if (len >= stream.Length)
                     {
                         var buffer = stream.ToArray(true);
@@ -1140,7 +1121,7 @@ namespace Net.Client
         /// <param name="stream"></param>
         protected virtual void ResetDataHead(ISegment stream)
         {
-            stream.SetPositionLength(frame + PackageAdapter.HeadCount);
+            stream.SetPositionLength(Frame + PackageAdapter.HeadCount);
         }
 
         /// <summary>
@@ -1164,7 +1145,7 @@ namespace Net.Client
             stream.Flush(false);
             SetDataHead(stream);
             PackageAdapter.Pack(stream);
-            var len = stream.Count - frame;
+            var len = stream.Count - Frame;
             var lenBytes = BitConverter.GetBytes(len);
             var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
             stream.Position = 0;
@@ -1175,7 +1156,7 @@ namespace Net.Client
 
         protected virtual void SendByteData(ISegment buffer)
         {
-            if (buffer.Count <= frame)//解决长度==5的问题(没有数据)
+            if (buffer.Count <= Frame)//解决长度==5的问题(没有数据)
                 return;
             sendAmount++;
             sendCount += buffer.Count;
@@ -1320,7 +1301,7 @@ namespace Net.Client
                 }
                 return;
             }
-            if (!PackageAdapter.Unpack(stream, frame, UID))
+            if (!PackageAdapter.Unpack(stream, Frame, UID))
                 return;
             DataHandle(stream);
         }
@@ -1349,7 +1330,7 @@ namespace Net.Client
             }
             while (buffer.Position < buffer.Count)
             {
-                if (buffer.Position + frame > buffer.Count)//流数据偶尔小于frame头部字节
+                if (buffer.Position + Frame > buffer.Count)//流数据偶尔小于frame头部字节
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
@@ -1386,7 +1367,7 @@ namespace Net.Client
                 }
                 else
                 {
-                    var position = buffer.Position - frame;
+                    var position = buffer.Position - Frame;
                     var count = buffer.Count - position;
                     stackingOffset = count;
                     stackingCount = size;
@@ -1879,7 +1860,7 @@ namespace Net.Client
             if (buffer != null)
             {
                 var count = buffer.Length;
-                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+                var size = BufferPool.Size + Frame + PackageAdapter.HeadCount;
                 if (count >= size)
                 {
                     SendFile(cmd, new MemoryStream(buffer), string.Empty);
@@ -1931,7 +1912,7 @@ namespace Net.Client
             if (buffer != null)
             {
                 var count = buffer.Length;
-                var size = BufferPool.Size + frame + PackageAdapter.HeadCount;
+                var size = BufferPool.Size + Frame + PackageAdapter.HeadCount;
                 if (count >= size)
                 {
                     SendFile(cmd, new MemoryStream(buffer), string.Empty);
@@ -2216,7 +2197,6 @@ namespace Net.Client
             AutoReconnecting = config.AutoReconnecting;
             ReconnectCount = config.ReconnectCount;
             ReconnectInterval = config.ReconnectInterval;
-            SendInterval = config.SendInterval;
             SendBufferSize = config.SendBufferSize;
             ReceiveBufferSize = config.ReceiveBufferSize;
         }

@@ -22,6 +22,9 @@ namespace Net.Share
         }
     }
 
+    /// <summary>
+    /// 远程过程调用处理接口
+    /// </summary>
     public interface IRpcHandler
     {
         /// <summary>
@@ -41,9 +44,16 @@ namespace Net.Share
         /// </summary>
         MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; }
         /// <summary>
-        /// 同步线程上下文任务队列
+        /// 跨线程调用任务队列
         /// </summary>
         JobQueueHelper WorkerQueue { get; set; }
+        /// <summary>
+        /// 添加Rpc
+        /// </summary>
+        /// <param name="target">注册的对象实例</param>
+        /// <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+        /// <param name="onSyncVarCollect">字段同步收集回调</param>
+        void AddRpc(object target, bool append = false, Action<SyncVarInfo> onSyncVarCollect = null);
         /// <summary>
         /// 移除target的所有rpc
         /// </summary>
