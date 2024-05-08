@@ -184,6 +184,12 @@ namespace GameCore
 
         public virtual byte[] LoadAssetFile(string assetPath)
         {
+            if (!assetPath.StartsWith("http"))
+            {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                    assetPath = "file://" + assetPath;
+#endif
+            }
             using (var request = UnityWebRequest.Get(assetPath))
             {
                 var oper = request.SendWebRequest();
