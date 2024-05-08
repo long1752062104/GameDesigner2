@@ -14,38 +14,49 @@ namespace Net.Share
     {
         [UnityEngine.SerializeField]
         private T value;
+        /// <summary>
+        /// 设置值并同步到云端, 并且调用值修改事件
+        /// </summary>
         public T Value
         {
             get => value;
-            set => Set(value);
+            set => Set(value, true);
+        }
+        /// <summary>
+        /// 设置值不通知，但是会同步到云端
+        /// </summary>
+        public T ValueNot
+        {
+            get => value;
+            set => Set(value, false);
         }
         private bool isChanged;
         private object target;
         private MemberInfo memberInfo;
-        public Action<T, T> OnValueChanged { get; set; }
+        public Action<T> OnValueChanged { get; set; }
 
         public SyncVariable() { }
-        public SyncVariable(T value) : this(value, null) { }
-        public SyncVariable(Action<T, T> onValueChanged) : this(default, onValueChanged) { }
-        public SyncVariable(T value, Action<T, T> onValueChanged)
+        public SyncVariable(T value) : this(0, value, null) { }
+        public SyncVariable(Action<T> onValueChanged) : this(0, default, onValueChanged) { }
+        public SyncVariable(T value, Action<T> onValueChanged) : this(0, value, onValueChanged) { }
+        public SyncVariable(ushort id, T value, Action<T> onValueChanged)
         {
+            this.id = id;
             this.value = value;
             OnValueChanged = onValueChanged;
         }
 
-        private void Set(T value)
+        private void Set(T value, bool notify)
         {
             isChanged = true;
-            var oldVal = this.value;
-            var newVal = value;
-            this.value = newVal;
-            OnValueChanged?.Invoke(oldVal, newVal);
+            this.value = value;
+            if (notify) OnValueChanged?.Invoke(value);
         }
 
         public override void Set() //unity编辑器修改属性值
         {
             isChanged = true;
-            OnValueChanged?.Invoke(value, value);
+            OnValueChanged?.Invoke(value);
         }
 
         internal override void SetMemberInfo(MemberInfo memberInfo)
@@ -86,9 +97,8 @@ namespace Net.Share
             else
             {
                 var value = NetConvertBinary.DeserializeObject<T>(segment, false, false, true);
-                var oldVal = this.value;
                 this.value = value;
-                OnValueChanged?.Invoke(oldVal, value);
+                OnValueChanged?.Invoke(value);
             }
         }
 

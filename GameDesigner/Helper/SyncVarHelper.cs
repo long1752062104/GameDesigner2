@@ -37,8 +37,8 @@ namespace Net.Helper
             if (!string.IsNullOrEmpty(syncVar.hook) & syncVarInfo.onValueChanged == null)
             {
                 syncVarInfo.onValueChanged = type.GetMethod(syncVar.hook, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                if (syncVarInfo.onValueChanged.GetParameters().Length != 2)
-                    throw new Exception($"{type}.{syncVarInfo.onValueChanged.Name} 方法必须有两个参数, 第一个是oldValue, 第二个是newValue!");
+                if (syncVarInfo.onValueChanged.GetParameters().Length != 1)
+                    throw new Exception($"{type}.{syncVarInfo.onValueChanged.Name} 方法必须有一个参数value!");
             }
             syncVarInfo.id = syncVar.id;
             syncVarInfo.authorize = syncVar.authorize;
@@ -83,13 +83,13 @@ namespace Net.Helper
         public static byte[] CheckSyncVar(bool isLocal, MyDictionary<ushort, SyncVarInfo> syncVarInfos)
         {
             ISegment segment = null;
-            var tick = (uint)Environment.TickCount;
+            //var tick = (uint)Environment.TickCount;
             for (int i = 0; i < syncVarInfos.count; i++)
             {
                 if (syncVarInfos.entries[i].hashCode == -1)
                     continue;
                 var syncVar = syncVarInfos.entries[i].value;
-                if ((!isLocal & !syncVar.authorize) | syncVar.isDispose | tick < syncVar.tick)
+                if ((!isLocal & !syncVar.authorize) | syncVar.isDispose /*| tick < syncVar.tick*/)
                     continue;
                 syncVar.CheckHandlerValue(ref segment, true);
             }
@@ -108,7 +108,7 @@ namespace Net.Helper
                     break;
                 if (syncVar == null)
                     break;
-                syncVar.tick = (uint)Environment.TickCount + 500;
+                //syncVar.tick = (uint)Environment.TickCount + 500;
                 syncVar.CheckHandlerValue(ref segment1, false);
             }
         }

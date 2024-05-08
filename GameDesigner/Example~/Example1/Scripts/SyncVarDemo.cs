@@ -98,12 +98,12 @@ namespace Example1
         public Rigidbody obj1;//只在编辑器有效!
         [SyncVar]
         public UnityEngine.AI.NavMeshAgent obj3;//只在编辑器有效!
-        //[Header("p2p同步int")]
-        //[SyncVar(id = 1)]
-        //public int testint;
-        //[Header("p2p同步string")]
-        //[SyncVar(id = 2)]
-        //public string teststring;
+        [Header("p2p同步int")]
+        [SyncVar(id = 1)]
+        public int testint;
+        [Header("p2p同步string")]
+        [SyncVar(id = 2)]
+        public string teststring;
 
         [SyncVar]
         public MoveState test1;

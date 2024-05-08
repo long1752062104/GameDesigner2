@@ -36,7 +36,8 @@
         /// <summary>
         /// 当排队时调用
         /// </summary>
-        /// <param name="count"></param>
+        /// <param name="totalCount">总排队人数</param>
+        /// <param name="count">前面排队人数</param>
         void OnWhenQueuing(int totalCount, int count);
         /// <summary>
         /// 当排队结束调用

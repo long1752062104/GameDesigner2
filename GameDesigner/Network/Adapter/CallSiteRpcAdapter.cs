@@ -191,7 +191,7 @@ namespace Net.Adapter
         /// 构造客户端Rpc适配器，参数是xxxServer对象
         /// </summary>
         /// <param name="handle"></param>
-        public CallSiteRpcAdapter(IRpcHandler handle) : base(handle)
+        public CallSiteRpcAdapter(IRpcHandler handle) : base(handle, false)
         {
         }
 
@@ -259,7 +259,7 @@ namespace Net.Adapter
     public class CallSiteRpcAdapter : IRPCAdapter
     {
         protected IRpcHandler handle;
-
+        protected bool logRpc;
 #if UNITY_EDITOR
         private readonly bool useIL2CPP;
 #endif
@@ -267,9 +267,11 @@ namespace Net.Adapter
         /// 构造客户端Rpc适配器，参数是xxxClient对象
         /// </summary>
         /// <param name="handle"></param>
-        public CallSiteRpcAdapter(IRpcHandler handle)
+        /// <param name="logRpc"></param>
+        public CallSiteRpcAdapter(IRpcHandler handle, bool logRpc)
         {
             this.handle = handle;
+            this.logRpc = logRpc;
 #if UNITY_EDITOR
 #pragma warning disable CS0618 // 类型或成员已过时
             useIL2CPP = UnityEditor.PlayerSettings.GetPropertyInt("ScriptingBackend", UnityEditor.BuildTargetGroup.Standalone) == 1;
@@ -351,8 +353,7 @@ namespace Net.Adapter
                 }
                 else
                 {
-                    var data = new RPCDataPtr(rpc.target, rpc.method, rpc.ptr, model.pars);
-                    handle.RpcWorkQueue.Enqueue(data);
+                    handle.WorkerQueue.Call(new RpcInvokePtr(logRpc, rpc.target, rpc.method, rpc.ptr, model.pars));
                 }
             }
         }

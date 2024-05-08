@@ -16,6 +16,8 @@ namespace Net.Serialize
         /// 新版网络序列化
         /// </summary>
         /// <param name="model">函数名</param>
+        /// <param name="flag"></param>
+        /// <param name="recordType"></param>
         /// <returns></returns>
         public static byte[] Serialize(RPCModel model, byte[] flag = null, bool recordType = false)
         {
@@ -24,31 +26,40 @@ namespace Net.Serialize
             return segment.ToArray(true);
         }
 
-        public static void Serialize(ISegment segment, RPCModel model, byte[] flag = null, bool recordType = false)
+        public static bool Serialize(ISegment segment, RPCModel model, byte[] flag = null, bool recordType = false)
         {
-            if (flag != null) segment.Write(flag, 0, flag.Length);
-            segment.Write(model.protocol);
-            foreach (object obj in model.pars)
+            try
             {
-                Type type;
-                if (obj == null)
+                if (flag != null) segment.Write(flag, 0, flag.Length);
+                segment.Write(model.protocol);
+                foreach (object obj in model.pars)
                 {
-                    type = typeof(DBNull);
+                    Type type;
+                    if (obj == null)
+                    {
+                        type = typeof(DBNull);
+                        segment.Write(type.ToString());
+                        continue;
+                    }
+                    type = obj.GetType();
                     segment.Write(type.ToString());
-                    continue;
+                    NetConvertBinary.WriteObject(segment, type, obj, recordType, true);
                 }
-                type = obj.GetType();
-                segment.Write(type.ToString());
-                NetConvertBinary.SerializeObject(segment, obj, recordType, true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var func = RPCExtensions.GetFunc(model.protocol);
+                NDebug.LogError($"序列化{func}出错:{ex}");
+                return false;
             }
         }
 
         /// <summary>
         /// 新版反序列化
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
+        /// <param name="segment"></param>
+        /// <param name="recordType"></param>
         public static FuncData Deserialize(ISegment segment, bool recordType = false)
         {
             FuncData fdata = default;
@@ -78,7 +89,8 @@ namespace Net.Serialize
             catch (Exception ex)
             {
                 fdata.error = true;
-                NDebug.LogError("反序列化:" + ex.ToString());
+                var func = RPCExtensions.GetFunc(fdata.protocol);
+                NDebug.LogError($"反序列化{func}出错:{ex}");
             }
             return fdata;
         }

@@ -123,21 +123,24 @@ namespace Net.Config
 #if UNITY_STANDALONE || UNITY_WSA || UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
         private static void LoadConfigFile(string configPath)
         {
+
 #if UNITY_STANDALONE_OSX
-            var request = UnityEngine.Networking.UnityWebRequest.Get("file:///" + configPath); //支持mac方式
+            using (var request = UnityEngine.Networking.UnityWebRequest.Get("file:///" + configPath)) //支持mac方式
 #else
-            var request = UnityEngine.Networking.UnityWebRequest.Get(configPath);
+            using (var request = UnityEngine.Networking.UnityWebRequest.Get(configPath))
 #endif
-            var oper = request.SendWebRequest();
-            while (!oper.isDone)
-                global::System.Threading.Thread.Yield(); //这里只能这样了，使用UniTask.Yield会导致ThreadManager的BeforeSceneLoad先执行，导致Unitask初始化晚于这个后出问题
-            if (!string.IsNullOrEmpty(request.error))
             {
-                Save();
-                return;
+                var oper = request.SendWebRequest();
+                while (!oper.isDone)
+                    global::System.Threading.Thread.Yield(); //这里只能这样了，使用UniTask.Yield会导致ThreadManager的BeforeSceneLoad先执行，导致Unitask初始化晚于这个后出问题
+                if (!string.IsNullOrEmpty(request.error))
+                {
+                    Save();
+                    return;
+                }
+                var textRows = request.downloadHandler.text.Split(new string[] { "\r\n" }, 0);
+                Init(textRows);
             }
-            var textRows = request.downloadHandler.text.Split(new string[] { "\r\n" }, 0);
-            Init(textRows);
         }
 #endif
 

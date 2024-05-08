@@ -1,11 +1,10 @@
 ﻿using Net.System;
 using System;
 using System.Reflection;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Net.Share
 {
-    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<V, V> onValueChanged);
+    public delegate void SyncVarInfoDelegate<T, V>(T t, ref V v, ushort id, ref ISegment segment, SyncVarInfo syncVar, bool isWrite, Action<V> onValueChanged);
 
     [Serializable]
     public class SyncVarInfo
@@ -14,7 +13,7 @@ namespace Net.Share
         public bool authorize;
         internal MethodInfo onValueChanged;
         internal bool isDispose;
-        internal uint tick;
+        //internal uint tick;
         public int writeCount;
         public int readCount;
         public int writeBytes;
@@ -49,7 +48,7 @@ namespace Net.Share
         internal T target;
         internal V value;
         internal SyncVarInfoDelegate<T, V> action;
-        internal Action<V, V> action1;
+        internal Action<V> onValueChangedEvent;
 
         public SyncVarInfoPtr(SyncVarInfoDelegate<T, V> action)
         {
@@ -58,16 +57,17 @@ namespace Net.Share
 
         internal override SyncVarInfo Clone(object target)
         {
-            Action<V, V> action2 = null;
+            Action<V> onValueChangedEvent = null;
             if (onValueChanged != null)
-                action2 = (Action<V, V>)onValueChanged.CreateDelegate(typeof(Action<V, V>), target);
+                onValueChangedEvent = (Action<V>)onValueChanged.CreateDelegate(typeof(Action<V>), target);
             var segment = BufferPool.Take();
             V value1 = default;
-            action((T)target, ref value1, id, ref segment, this, true, action2);
+            action((T)target, ref value1, id, ref segment, this, true, onValueChangedEvent);
             segment.Dispose();
             return new SyncVarInfoPtr<T, V>(action) 
             {
-                target = (T)target, id = id, authorize = authorize, action1 = action2, value = value1
+                target = (T)target, id = id, authorize = authorize,
+                onValueChangedEvent = onValueChangedEvent, value = value1
             };
         }
 
@@ -83,7 +83,7 @@ namespace Net.Share
 
         internal override void CheckHandlerValue(ref ISegment segment, bool isWrite)
         {
-            action(target, ref value, id, ref segment, this, isWrite, action1);
+            action(target, ref value, id, ref segment, this, isWrite, onValueChangedEvent);
         }
 
         internal override bool EqualsTarget(object target)

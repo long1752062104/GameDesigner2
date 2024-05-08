@@ -71,11 +71,6 @@
         public const byte SyncPropertyData = 14;
 
         /// <summary>
-        /// 当客户端连接主服务器(网关服)时, 主服务器检测分区服务器在线人数如果处于爆满状态, 
-        /// 服务器发送切换端口让客户端连接新的服务器IP和端口. 内部命令
-        /// </summary>
-        public const byte SwitchPort = 17;
-        /// <summary>
         /// 标记客户端唯一标识, 内部命令
         /// </summary>
         public const byte Identify = 18;
@@ -104,10 +99,6 @@
         /// ping回调 内部指令
         /// </summary>
         public const byte PingCallback = 25;
-        /// <summary>
-        /// 当你客户端晚于其他客户端进入场景时，同步字段需要发起获取最新的值
-        /// </summary>
-        public const byte SyncVarGet = 26;
         /// <summary>
         /// 网络物体的同步指令 （NetworkObject之间同步）
         /// </summary>

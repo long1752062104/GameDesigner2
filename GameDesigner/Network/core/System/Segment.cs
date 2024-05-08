@@ -64,6 +64,7 @@ namespace Net.System
         /// 构造内存分片
         /// </summary>
         /// <param name="buffer"></param>
+        /// <param name="isRecovery"></param>
         public Segment(byte[] buffer, bool isRecovery) : this(buffer, 0, buffer.Length, isRecovery)
         {
         }
@@ -74,6 +75,7 @@ namespace Net.System
         /// <param name="buffer"></param>
         /// <param name="index"></param>
         /// <param name="count"></param>
+        /// <param name="isRecovery"></param>
         public Segment(byte[] buffer, int index, int count, bool isRecovery = true)
         {
             Buffer = buffer;

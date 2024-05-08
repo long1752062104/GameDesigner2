@@ -20,7 +20,7 @@ namespace Net.Share
     {
     }
 
-    public delegate void SerializeRpcDelegate(ISegment segment, RPCModel model);
+    public delegate bool SerializeRpcDelegate(ISegment segment, RPCModel model);
     public delegate byte[] SerializeOptDelegate(in OperationList list);
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace Net.Share
     /// </summary>
     public interface ISerializeAdapter : IAdapter
     {
-        void OnSerializeRpc(ISegment segment, RPCModel model);
+        bool OnSerializeRpc(ISegment segment, RPCModel model);
 
         FuncData OnDeserializeRpc(ISegment segment);
 

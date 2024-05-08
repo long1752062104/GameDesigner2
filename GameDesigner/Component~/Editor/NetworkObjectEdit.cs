@@ -1,8 +1,7 @@
 #if UNITY_EDITOR
-using Net.UnityComponent;
-using System;
 using UnityEditor;
 using UnityEngine;
+using Net.UnityComponent;
 
 [CustomEditor(typeof(NetworkObject))]
 [CanEditMultipleObjects]

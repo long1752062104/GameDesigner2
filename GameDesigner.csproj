@@ -136,6 +136,7 @@
     <Compile Include="GameDesigner\Entities~\Transform.cs" />
     <Compile Include="GameDesigner\Extensions\ClientBaseExtensions.cs" />
     <Compile Include="GameDesigner\Extensions\NetPlayerExtensions.cs" />
+    <Compile Include="GameDesigner\Extensions\RPCExtensions.cs" />
     <Compile Include="GameDesigner\Extensions\ServerBaseExtensions.cs" />
     <Compile Include="GameDesigner\Extensions\UniTaskNetExtensions.cs" />
     <Compile Include="GameDesigner\Helper\CertificateHelper.cs" />
@@ -271,7 +272,6 @@
     <Compile Include="GameDesigner\Network\core\Share\ReliableTemp.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdDataBuffer.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RevdRTBuffer.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\RPCData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPC.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModel.cs" />
     <Compile Include="GameDesigner\Network\core\Share\RPCModelTask.cs" />

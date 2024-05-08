@@ -4,7 +4,6 @@
     using global::System.IO;
     using global::System.Net;
     using global::System.Net.Sockets;
-    using Net.Share;
     using Net.System;
     using Net.Event;
     using Net.Helper;
@@ -71,7 +70,7 @@
                     throw new Exception("连接握手失败!");
                 if (UID == 0 && !openClient)
                     throw new Exception("客户端调用Close!");
-                StackStream = new MemoryStream(Config.Config.BaseCapacity);
+                BufferStream = new MemoryStream(Config.Config.BaseCapacity);
                 StartupThread();
                 await UniTask.Yield(); //切换到线程池中, 不要由事件线程去往下执行, 如果有耗时就会卡死事件线程, 在unity会切换到unity线程去执行，解决unity组件访问错误问题
                 result(true);
@@ -100,7 +99,7 @@
             stream.Flush(false);
             SetDataHead(stream);
             PackageAdapter.Pack(stream);
-            var len = stream.Count - frame;
+            var len = stream.Count - Frame;
             var lenBytes = BitConverter.GetBytes(len);
             var crc = CRCHelper.CRC8(lenBytes, 0, lenBytes.Length);
             stream.Position = 0;
@@ -130,36 +129,36 @@
         protected override void ResolveBuffer(ref ISegment buffer, bool isTcp)
         {
             heart = 0;
-            if (stack > 0)
+            if (stacking > 0)
             {
-                stack++;
-                StackStream.Seek(stackIndex, SeekOrigin.Begin);
+                stacking++;
+                BufferStream.Seek(stackingOffset, SeekOrigin.Begin);
                 int size = buffer.Count - buffer.Position;
-                stackIndex += size;
-                StackStream.Write(buffer.Buffer, buffer.Position, size);
-                if (stackIndex < stackCount)
+                stackingOffset += size;
+                BufferStream.Write(buffer.Buffer, buffer.Position, size);
+                if (stackingOffset < stackingCount)
                 {
-                    InvokeRevdRTProgress(stackIndex, stackCount);
+                    InvokeRevdBigDataProgress(stackingOffset, stackingCount);
                     return;
                 }
-                var count = (int)StackStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
+                var count = (int)BufferStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
                 BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
                 buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
-                StackStream.Seek(0, SeekOrigin.Begin);
-                StackStream.Read(buffer.Buffer, 0, count);
+                BufferStream.Seek(0, SeekOrigin.Begin);
+                BufferStream.Read(buffer.Buffer, 0, count);
                 buffer.Count = count;
             }
             while (buffer.Position < buffer.Count)
             {
-                if (buffer.Position + frame > buffer.Count)//流数据偶尔小于frame头部字节
+                if (buffer.Position + Frame > buffer.Count)//流数据偶尔小于frame头部字节
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
-                    stackIndex = count;
-                    stackCount = 0;
-                    StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer.Buffer, position, count);
-                    stack++;
+                    stackingOffset = count;
+                    stackingCount = 0;
+                    BufferStream.Seek(0, SeekOrigin.Begin);
+                    BufferStream.Write(buffer.Buffer, position, count);
+                    stacking++;
                     break;
                 }
                 var lenBytes = buffer.Read(4);
@@ -167,20 +166,20 @@
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
-                    stack = 0;
+                    stacking = 0;
                     NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
                 var size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
-                    stack = 0;
+                    stacking = 0;
                     NDebug.LogError($"[{UID}]数据被拦截修改或数据量太大: size:{size}，如果想传输大数据，请设置PackageSize属性");
                     return;
                 }
                 if (buffer.Position + size <= buffer.Count)
                 {
-                    stack = 0;
+                    stacking = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
                     buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
                     base.ResolveBuffer(ref buffer, true);
@@ -188,13 +187,13 @@
                 }
                 else
                 {
-                    var position = buffer.Position - frame;
+                    var position = buffer.Position - Frame;
                     var count = buffer.Count - position;
-                    stackIndex = count;
-                    stackCount = size;
-                    StackStream.Seek(0, SeekOrigin.Begin);
-                    StackStream.Write(buffer.Buffer, position, count);
-                    stack++;
+                    stackingOffset = count;
+                    stackingCount = size;
+                    BufferStream.Seek(0, SeekOrigin.Begin);
+                    BufferStream.Write(buffer.Buffer, position, count);
+                    stacking++;
                     break;
                 }
             }

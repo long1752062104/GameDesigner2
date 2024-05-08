@@ -313,7 +313,7 @@
             }
         }
 
-        public static void SerializeModel(ISegment segment, RPCModel model, bool recordType = false)
+        public static bool SerializeModel(ISegment segment, RPCModel model, bool recordType = false)
         {
             try
             {
@@ -331,16 +331,13 @@
                     segment.Write(TypeToIndex(type));
                     WriteObject(segment, type, obj, recordType, false);
                 }
+                return true;
             }
             catch (Exception ex)
             {
-                string str = "函数:" + model.protocol + " 参数:";
-                foreach (var obj in model.pars)
-                    if (obj == null)
-                        str += $"[null]";
-                    else
-                        str += $"[{obj}]";
-                NDebug.LogError("序列化:" + str + "方法出错 详细信息:" + ex);
+                var func = RPCExtensions.GetFunc(model.protocol);
+                NDebug.LogError($"序列化{func}出错:{ex}");
+                return false;
             }
         }
 
@@ -377,6 +374,8 @@
         /// 序列化对象, 不记录反序列化类型
         /// </summary>
         /// <param name="obj"></param>
+        /// <param name="recordType"></param>
+        /// <param name="ignore"></param>
         /// <returns></returns>
         public static ISegment SerializeObject(object obj, bool recordType = false, bool ignore = false)
         {
@@ -389,21 +388,26 @@
         /// <summary>
         /// 序列化对象, 不记录反序列化类型
         /// </summary>
+        /// <param name="stream"></param>
         /// <param name="obj"></param>
+        /// <param name="recordType"></param>
+        /// <param name="ignore"></param>
         /// <returns></returns>
-        public static void SerializeObject(ISegment stream, object obj, bool recordType = false, bool ignore = false)
+        public static bool SerializeObject(ISegment stream, object obj, bool recordType = false, bool ignore = false)
         {
             try
             {
                 if (obj == null)
-                    return;
+                    return false;
                 var type = obj.GetType();
                 if (recordType) stream.Write(TypeToIndex(type));
                 WriteObject(stream, type, obj, recordType, ignore);
+                return true;
             }
             catch (Exception ex)
             {
                 NDebug.LogError("序列化:" + obj + "出错 详细信息:" + ex);
+                return false;
             }
             finally
             {
@@ -929,10 +933,10 @@
 
         public static FuncData DeserializeModel(ISegment segment, bool recordType = false, bool ignore = false)
         {
-            FuncData obj = default;
+            FuncData fdata = default;
             try
             {
-                obj.protocol = segment.ReadUInt32();
+                fdata.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
@@ -947,14 +951,15 @@
                     var obj1 = ReadObject(segment, type, recordType, ignore);
                     list.Add(obj1);
                 }
-                obj.pars = list.ToArray();
+                fdata.pars = list.ToArray();
             }
             catch (Exception ex)
             {
-                obj.error = true;
-                NDebug.LogError($"解析[{obj.protocol}]出错 详细信息:" + ex);
+                fdata.error = true;
+                var func = RPCExtensions.GetFunc(fdata.protocol);
+                NDebug.LogError($"反序列化{func}出错:{ex}");
             }
-            return obj;
+            return fdata;
         }
 
         /// <summary>

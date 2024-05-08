@@ -173,16 +173,18 @@ namespace GameCore
 
         private async UniTask<ValueTuple<bool, string>> CopyToPersistentDataPath(string fileUrl, string destPath)
         {
-            var request = UnityWebRequest.Get(fileUrl);
-            await request.SendWebRequest();
-            if (!string.IsNullOrEmpty(request.error))
-                return (false, request.error);
-            var destDir = Path.GetDirectoryName(destPath);
-            if (!Directory.Exists(destDir))
-                Directory.CreateDirectory(destDir);
-            var data = request.downloadHandler.data;
-            File.WriteAllBytes(destPath, data);
-            return (true, null);
+            using (var request = UnityWebRequest.Get(fileUrl))
+            {
+                await request.SendWebRequest();
+                if (!string.IsNullOrEmpty(request.error))
+                    return (false, request.error);
+                var destDir = Path.GetDirectoryName(destPath);
+                if (!Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+                var data = request.downloadHandler.data;
+                File.WriteAllBytes(destPath, data);
+                return (true, null);
+            }
         }
 
         private async UniTask<bool> CheckAssetBundle(Dictionary<string, AssetBundleInfo> serverAssetBundleDict, Dictionary<string, AssetBundleInfo> localAssetBundleDict)
@@ -272,39 +274,41 @@ namespace GameCore
 
         protected virtual async UniTask<ValueTuple<bool, ulong>> DownloadFile(string url, string filePath, string name, ulong totalLength, Action<string, ulong> downloadUpdate = null, Action<string> downloadCompleted = null)
         {
-            var request = new UnityWebRequest(url, "GET", new DownloadHandlerFile(filePath), null);
-            _ = request.SendWebRequest();
-            string progressText;
-            while (!request.isDone)
+            using (var request = new UnityWebRequest(url, "GET", new DownloadHandlerFile(filePath), null))
             {
-                progressText = $"{name}下载进度:{ByteHelper.ToString(request.downloadedBytes)}/{ByteHelper.ToString(totalLength)}";
-                if (downloadUpdate == null)
-                    Global.UI.Loading.ShowUI(progressText, (float)(request.downloadedBytes / (double)totalLength));
+                _ = request.SendWebRequest();
+                string progressText;
+                while (!request.isDone)
+                {
+                    progressText = $"{name}下载进度:{ByteHelper.ToString(request.downloadedBytes)}/{ByteHelper.ToString(totalLength)}";
+                    if (downloadUpdate == null)
+                        Global.UI.Loading.ShowUI(progressText, (float)(request.downloadedBytes / (double)totalLength));
+                    else
+                        downloadUpdate(progressText, request.downloadedBytes);
+                    await UniTask.Yield();
+                }
+                progressText = $"{name}下载完成!";
+                if (downloadCompleted == null)
+                    Global.UI.Loading.ShowUI(progressText, 1f);
                 else
-                    downloadUpdate(progressText, request.downloadedBytes);
-                await UniTask.Yield();
+                    downloadCompleted(progressText);
+                return (true, totalLength);
             }
-            progressText = $"{name}下载完成!";
-            if (downloadCompleted == null)
-                Global.UI.Loading.ShowUI(progressText, 1f);
-            else
-                downloadCompleted(progressText);
-            request.Dispose();
-            return (true, totalLength);
         }
 
         protected virtual async UniTask<ValueTuple<bool, ulong>> GetFileLength(string url)
         {
-            var request = UnityWebRequest.Head(url);
-            await request.SendWebRequest();
-            if (!string.IsNullOrEmpty(request.error))
+            using (var request = UnityWebRequest.Head(url))
             {
-                Debug.LogError($"{url} 获取资源失败:" + request.error);
-                return (false, 0UL);
+                await request.SendWebRequest();
+                if (!string.IsNullOrEmpty(request.error))
+                {
+                    Debug.LogError($"{url} 获取资源失败:" + request.error);
+                    return (false, 0UL);
+                }
+                var totalLength = ulong.Parse(request.GetResponseHeader("Content-Length"));
+                return (true, totalLength);
             }
-            var totalLength = ulong.Parse(request.GetResponseHeader("Content-Length"));
-            request.Dispose();
-            return (true, totalLength);
         }
 
         /// <summary>

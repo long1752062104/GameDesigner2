@@ -9,9 +9,9 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter : ISerializeAdapter
     {
-        public void OnSerializeRpc(ISegment segment, RPCModel model)
+        public bool OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            NetConvertBinary.SerializeModel(segment, model);
+            return NetConvertBinary.SerializeModel(segment, model);
         }
 
         public FuncData OnDeserializeRpc(ISegment segment)
@@ -35,9 +35,9 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeFastAdapter : ISerializeAdapter
     {
-        public void OnSerializeRpc(ISegment segment, RPCModel model)
+        public bool OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            NetConvertFast.Serialize(segment, model);
+            return NetConvertFast.Serialize(segment, model);
         }
 
         public FuncData OnDeserializeRpc(ISegment segment)
@@ -61,9 +61,9 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter2 : ISerializeAdapter
     {
-        public void OnSerializeRpc(ISegment segment, RPCModel model)
+        public bool OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            NetConvertBinary.SerializeModel(segment, model);
+            return NetConvertBinary.SerializeModel(segment, model);
         }
 
         public FuncData OnDeserializeRpc(ISegment segment)
@@ -87,9 +87,9 @@ namespace Net.Adapter
     /// </summary>
     public class SerializeAdapter3 : ISerializeAdapter
     {
-        public void OnSerializeRpc(ISegment segment, RPCModel model)
+        public bool OnSerializeRpc(ISegment segment, RPCModel model)
         {
-            NetConvertFast2.SerializeModel(segment, model);
+            return NetConvertFast2.SerializeModel(segment, model);
         }
 
         public FuncData OnDeserializeRpc(ISegment segment)

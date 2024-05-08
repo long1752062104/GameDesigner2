@@ -63,10 +63,6 @@ namespace Net.Config
         /// </summary>
         public int ReconnectInterval { get; set; } = 2000;
         /// <summary>
-        /// 每次发送数据间隔，每秒大概执行1000次
-        /// </summary>
-        public int SendInterval { get; set; } = 1;
-        /// <summary>
         /// 设置Socket的发送缓冲区大小, 也叫做窗口大小
         /// </summary>
         public int SendBufferSize { get; set; } = ushort.MaxValue;

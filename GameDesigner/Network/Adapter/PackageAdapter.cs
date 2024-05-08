@@ -18,7 +18,7 @@ namespace Net.Adapter
         {
         }
 
-        public bool Unpack(ISegment stream, int frame, int uid) 
+        public bool Unpack(ISegment stream, int frame, int uid)
         {
             return true;
         }
@@ -32,9 +32,15 @@ namespace Net.Adapter
         public int HeadCount { get; set; } = 16;
         public int Password { get; set; } = 123456789;
 
+        private readonly MD5 md5;
+
+        public MD5EncryptDataHeadAdapter()
+        {
+            md5 = MD5.Create();
+        }
+
         public void Pack(ISegment stream)
         {
-            MD5 md5 = new MD5CryptoServiceProvider();
             var retVal = md5.ComputeHash(stream.Buffer, stream.Position, stream.Count - stream.Position);
             EncryptHelper.ToEncrypt(Password, retVal);
             var len = stream.Count;
@@ -46,7 +52,6 @@ namespace Net.Adapter
         public bool Unpack(ISegment stream, int frame, int uid)
         {
             var md5Hash = stream.Read(HeadCount);
-            MD5 md5 = new MD5CryptoServiceProvider();
             var retVal = md5.ComputeHash(stream.Buffer, stream.Position, stream.Count - stream.Position);
             EncryptHelper.ToDecrypt(Password, md5Hash, 0, HeadCount);
             for (int i = 0; i < md5Hash.Length; i++)
@@ -69,9 +74,15 @@ namespace Net.Adapter
         public int HeadCount { get; set; } = 16;
         public int Password { get; set; } = 123456789;
 
+        private readonly MD5 md5;
+
+        public MD5EncryptDataBodyAdapter()
+        {
+            md5 = MD5.Create();
+        }
+
         public void Pack(ISegment stream)
         {
-            MD5 md5 = new MD5CryptoServiceProvider();
             var retVal = md5.ComputeHash(stream.Buffer, stream.Position, stream.Count - stream.Position);
             EncryptHelper.ToEncrypt(Password, stream.Buffer, stream.Position, stream.Count - stream.Position);
             var len = stream.Count;
@@ -83,7 +94,6 @@ namespace Net.Adapter
         public bool Unpack(ISegment stream, int frame, int uid)
         {
             var md5Hash = stream.Read(HeadCount);
-            MD5 md5 = new MD5CryptoServiceProvider();
             EncryptHelper.ToDecrypt(Password, stream.Buffer, stream.Position, stream.Count - stream.Position);
             var retVal = md5.ComputeHash(stream.Buffer, stream.Position, stream.Count - stream.Position);
             for (int i = 0; i < md5Hash.Length; i++)

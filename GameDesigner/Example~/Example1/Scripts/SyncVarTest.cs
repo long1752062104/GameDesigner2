@@ -33,12 +33,12 @@ public class SyncVarTest : NetworkBehaviour
     [SyncVar(authorize = false)]
     public List<SyncVarClass> test11 = new List<SyncVarClass>();
 
-    public void OnTest4Value(int old, int value)
+    public void OnTest4Value(int value)
     {
         Debug.Log(value);
     }
 
-    public void OnTest2Value(SyncVarClass old, SyncVarClass value)
+    public void OnTest2Value(SyncVarClass value)
     {
         Debug.Log(value);
     }
@@ -72,9 +72,9 @@ public class SyncVarTest : NetworkBehaviour
 public class SyncVarClass
 {
     public int value;
-    [Net.Serialize.NonSerialized] //¹ıÂË×Ö¶Î²»½øĞĞĞòÁĞ»¯ºÍÅĞ¶Ï
+    [Net.Serialize.NonSerialized] //è¿‡æ»¤å­—æ®µä¸è¿›è¡Œåºåˆ—åŒ–å’Œåˆ¤æ–­
     public int value1;
-    [Net.Serialize.NonSerialized] //¹ıÂË×Ö¶Î²»½øĞĞĞòÁĞ»¯ºÍÅĞ¶Ï
+    [Net.Serialize.NonSerialized] //è¿‡æ»¤å­—æ®µä¸è¿›è¡Œåºåˆ—åŒ–å’Œåˆ¤æ–­
     public SyncVariable<int> value2 = new SyncVariable<int>();
 
     public int[] value3;
