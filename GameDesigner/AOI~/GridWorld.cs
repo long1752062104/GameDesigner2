@@ -30,6 +30,10 @@ namespace Net.AOI
         public FastListSafe<IGridBody> gridBodies = new FastListSafe<IGridBody>();
         public Rect worldSize;
         public GridType gridType = GridType.Horizontal;
+        /// <summary>
+        /// 当越界提示事件
+        /// </summary>
+        public Action<IGridBody> OnOverflow;
 
         /// <summary>
         /// 初始化九宫格
@@ -205,7 +209,11 @@ namespace Net.AOI
             currGrid.gridBodies.Remove(body);
             body.Grid = null;
             goto JMP;
-        J: Event.NDebug.LogError($"{body.ID}越界了,位置:{body.Position}");
+            J:
+            if (OnOverflow != null)
+                OnOverflow(body);
+            else
+                Event.NDebug.LogError($"{body.ID}越界了,位置:{body.Position}");
             return null;
         }
 
