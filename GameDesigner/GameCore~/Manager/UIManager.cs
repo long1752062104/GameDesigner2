@@ -18,6 +18,7 @@ namespace GameCore
         [SerializeField] private UIBase _Loading;
         [SerializeField] private UIBase _Message;
         [SerializeField] private UIBase _Tips;
+        [SerializeField] private UIBase[] _Forms;
 
         public virtual void Awake()
         {
@@ -27,6 +28,8 @@ namespace GameCore
             AddForm(_Loading);
             AddForm(_Message);
             AddForm(_Tips);
+            foreach (var form in _Forms)
+                AddForm(form);
         }
 
         /// <summary>

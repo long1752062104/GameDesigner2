@@ -78,7 +78,7 @@ namespace Net.System
         }
 
         /// <summary>
-        /// 添加工人
+        /// 添加工作者
         /// </summary>
         /// <param name="worker"></param>
         public void AddWorker(Worker worker)
@@ -87,7 +87,7 @@ namespace Net.System
         }
 
         /// <summary>
-        /// 移除工人
+        /// 移除工作者
         /// </summary>
         /// <param name="worker"></param>
         public void RemoveWorker(Worker worker)

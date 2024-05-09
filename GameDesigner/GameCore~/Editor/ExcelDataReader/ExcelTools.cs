@@ -10,6 +10,11 @@ public class ExcelTools
 {
     public static void GenerateExcelData()
     {
+        if (AssetBundleBuilder.Instance == null)
+        {
+            Debug.LogError("请创建打包资源文件，在Project界面的Assets右键菜单GameCore/Create AssetBundleBuilder");
+            return;
+        }
         var tablePath = AssetBundleBuilder.Instance.tablePath;
         var path = tablePath + "/GameConfig.bytes";
         if (!Directory.Exists(tablePath))
@@ -39,6 +44,11 @@ public class ExcelTools
     [MenuItem("GameDesigner/GameCore/GenerateExcelDataToCs", priority = 3)]
     public static void GenerateExcelDataToCs()
     {
+        if (AssetBundleBuilder.Instance == null)
+        {
+            Debug.LogError("请创建打包资源文件，在Project界面的Assets右键菜单GameCore/Create AssetBundleBuilder");
+            return;
+        }
         string excelPath = "Tools/Excel/GameConfig.xls";
         var temp = excelPath + ".temp";
         File.Copy(excelPath, temp, true);

@@ -1,3 +1,4 @@
+using Net.Event;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,6 +6,7 @@ namespace GameCore
 {
     public class TimerManager : MonoBehaviour
     {
+        public TimerEvent Event = new TimerEvent();
         private readonly Dictionary<string, float> timerDict = new Dictionary<string, float>();
 
         /// <summary>
@@ -32,6 +34,11 @@ namespace GameCore
         public void RemoveTime(string name)
         {
             timerDict.Remove(name);
+        }
+
+        public void Update()
+        {
+            Event.UpdateEventFixed();
         }
     }
 }

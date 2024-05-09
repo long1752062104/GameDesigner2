@@ -24,7 +24,7 @@ namespace Net.Share
         }
     }
 
-    public class ThreadGroup<Worker> : ThreadGroup //where Worker : class
+    public class ThreadGroup<Worker> : ThreadGroup
     {
         public FastListSafe<Worker> Workers = new FastListSafe<Worker>();
 
