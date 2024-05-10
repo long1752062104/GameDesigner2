@@ -56,7 +56,7 @@ namespace Net.Helper
         {
 #if CORE
             var timeout = Environment.TickCount64;
-#elif UNITY_WEBGL
+#elif UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL //在安卓平台下也必须是这个，否则会报kernel32错误!
             var timeout = Environment.TickCount;
 #else
             var timeout = Share.Win32KernelAPI.GetTickCount64();

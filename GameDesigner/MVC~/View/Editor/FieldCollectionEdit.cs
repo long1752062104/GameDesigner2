@@ -106,7 +106,8 @@ namespace MVC.View
             public List<InheritData> inheritTypes = new List<InheritData>()
             {
                 new InheritData(false, "UnityEngine.MonoBehaviour"),
-                new InheritData(true, "Net.Component.SingleCase")
+                new InheritData(true, "Net.Component.SingleCase"),
+                new InheritData(true, "GameCore.UIBase"),
             };
             internal string SavePath(int savePathIndex) => (savePath.Count > 0 ? savePath[savePathIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决
             internal string SavePathExt(int savePathExtIndex) => (savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决

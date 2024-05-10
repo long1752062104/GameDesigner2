@@ -82,10 +82,10 @@ namespace Net.System
         /// 查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
         /// </summary>
         /// <param name="queryFunc">第一次执行查询</param>
-        /// <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
         /// <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
+        /// <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
         /// <returns></returns>
-        public async UniTask<T> QueryOrGetAsync(Func<UniTask<T>> queryFunc, Func<T> onNullQuery = null, Action<T> followQuery = null)
+        public async UniTask<T> QueryOrGetAsync(Func<UniTask<T>> queryFunc, Func<T> onNullQuery = null, Func<T, UniTask> followQuery = null)
         {
             Locking.Enter();
             if (Data != null)
@@ -110,7 +110,8 @@ namespace Net.System
             }
             if (Data == null) //这里是空对象时创建
                 Data = onNullQuery();
-            followQuery?.Invoke(Data);
+            if (followQuery != null) //后续查询也需要异步
+                await followQuery(Data);
             ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
             Locking.Exit();
             return Data;
