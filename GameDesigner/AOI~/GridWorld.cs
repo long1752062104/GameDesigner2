@@ -83,7 +83,7 @@ namespace Net.AOI
         {
             if (body.Grid != null) //防止多次插入
                 return false;
-            body.OnStart();
+            body.OnInit();
             for (int i = 0; i < grids.Length; i++)
             {
                 var grid = grids[i];
