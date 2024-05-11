@@ -3,7 +3,7 @@ using Net.UnityComponent;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(NetworkSceneManager))]
+[CustomEditor(typeof(NetworkSceneManager), editorForChildClasses: true)]
 [CanEditMultipleObjects]
 public class NetworkSceneManagerEdit : Editor
 {
@@ -17,7 +17,7 @@ public class NetworkSceneManagerEdit : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if (GUILayout.Button("ÉèÖÃregisterObjectIndex"))
+        if (GUILayout.Button("è®¾ç½®registerObjectIndex"))
         {
             for (int i = 0; i < nt.registerObjects.Count; i++)
             {

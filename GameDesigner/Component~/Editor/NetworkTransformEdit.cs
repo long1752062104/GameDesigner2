@@ -12,6 +12,7 @@ public class NetworkTransformEdit : Editor
     private void OnEnable()
     {
         nt = target as NetworkTransform;
+        nt.CheckNetworkObjectIsNull();
     }
 
     public override void OnInspectorGUI()

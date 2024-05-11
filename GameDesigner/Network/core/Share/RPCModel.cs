@@ -21,6 +21,9 @@ namespace Net.Share
         /// 这是内存池数据，这个字段要配合index，count两字段使用，如果想得到实际数据，请使用Buffer属性
         /// </summary>
         public byte[] buffer;
+        /// <summary>
+        /// 真正数据段索引和长度
+        /// </summary>
         public int index, count;
         /// <summary>
         /// 数据缓存器(正确的数据段)

@@ -50,10 +50,10 @@ namespace Net.Component
                             break;
                         }
                     }
-					if (hasLocal)
-						OnMainRoleEnter.Invoke();
-					else
-						OnMainRoleExit.Invoke();
+                    if (hasLocal)
+                        OnMainRoleEnter.Invoke();
+                    else
+                        OnMainRoleExit.Invoke();
                 }
             }
         }
@@ -67,12 +67,12 @@ namespace Net.Component
         }
 
 #if UNITY_EDITOR
-        void OnDrawGizmos() 
+        void OnDrawGizmos()
         {
             if (!IsLocal)
                 return;
             if (Grid == null)
-                return; 
+                return;
             Gizmos.color = Color.green;
             for (int i = 0; i < Grid.grids.Length; i++)
             {
@@ -94,7 +94,7 @@ namespace Net.Component
             for (int i = 0; i < Grid.grids.Length; i++)
             {
                 Draw(Grid.grids[i]);
-            } 
+            }
         }
 
         private void Draw(Grid grid)
@@ -120,7 +120,7 @@ namespace Net.Component
         }
 #endif
 
-        public void OnStart() 
+        public void OnInit()
         {
         }
 

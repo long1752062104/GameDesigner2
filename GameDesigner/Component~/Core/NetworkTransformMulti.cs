@@ -110,6 +110,8 @@ namespace Net.UnityComponent
         internal void Init(int childId)
         {
             this.childId = childId;
+            if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
+                return;
             netPosition = position = transform.localPosition;
             netRotation = rotation = transform.localRotation;
             netLocalScale = localScale = transform.localScale;
@@ -117,12 +119,16 @@ namespace Net.UnityComponent
 
         internal void NetworkSyncCheck(int identity, SyncMode mode, int registerObjectIndex, int componentId)
         {
+            if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
+                return;
             if (transform.localPosition != position | transform.localRotation != rotation | transform.localScale != localScale)
                 SyncTransformState(identity, mode, registerObjectIndex, componentId);
         }
 
         public void SyncTransformState(int identity, SyncMode mode, int registerObjectIndex, int componentId)
         {
+            if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
+                return;
             position = transform.localPosition; //必须在这里处理，在上面处理会有点问题
             rotation = transform.localRotation;
             localScale = transform.localScale;
@@ -138,6 +144,8 @@ namespace Net.UnityComponent
 
         public void SyncTransform(float lerpSpeed)
         {
+            if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
+                return;
             if (syncPosition)
                 transform.localPosition = Vector3.Lerp(transform.localPosition, netPosition, lerpSpeed);
             if (syncRotation)
@@ -149,6 +157,8 @@ namespace Net.UnityComponent
 
         public void SyncControlTransform()
         {
+            if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
+                return;
             if (syncPosition)
                 transform.localPosition = netPosition;
             if (syncRotation)

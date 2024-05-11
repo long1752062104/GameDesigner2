@@ -276,22 +276,6 @@ namespace Net.UnityComponent
             }
             CheckSyncVar();
         }
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            var networkBehaviours = gameObject.GetComponentsInChildren<NetworkBehaviour>(true);
-            for (int i = 0; i < networkBehaviours.Length; i++)
-            {
-                var networkBehaviour = networkBehaviours[i];
-                if (networkBehaviour.NetComponentID == -1)
-                {
-                    networkBehaviour.NetComponentID = i;
-                    UnityEditor.EditorUtility.SetDirty(networkBehaviour);
-                }
-            }
-        }
-#endif
     }
 }
 #endif

@@ -76,8 +76,10 @@ namespace MVC.View
                 FieldCollectionWindow.Init(self);
             if (GUILayout.Button("编辑脚本"))
                 FieldCollectionEntity.OpenScript(self);
-            if (GUILayout.Button("代码生成"))
-                FieldCollectionEntity.CodeGeneration(self);
+            if (GUILayout.Button("生成动态代码"))
+                FieldCollectionEntity.CodeGeneration(self, true);
+            if (GUILayout.Button("生成固定代码"))
+                FieldCollectionEntity.CodeGeneration(self, false);
         }
     }
 
@@ -431,42 +433,49 @@ namespace MVC.View
                 }
                 SaveData();
             }
-            EditorGUILayout.BeginHorizontal();
-            data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
-            if (GUILayout.Button("添加", GUILayout.Width(60f)))
+            collect.isInherit = EditorGUILayout.Toggle("是否继承类型", collect.isInherit);
+            if (collect.isInherit)
             {
-                if (!string.IsNullOrEmpty(data.addInheritType))
+                EditorGUILayout.BeginHorizontal();
+                data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
+                if (GUILayout.Button("添加", GUILayout.Width(60f)))
                 {
-                    var inheritData = new InheritData(false, data.addInheritType);
-                    if (!data.inheritTypes.Contains(inheritData))
-                        data.inheritTypes.Add(inheritData);
+                    if (!string.IsNullOrEmpty(data.addInheritType))
+                    {
+                        var inheritData = new InheritData(false, data.addInheritType);
+                        if (!data.inheritTypes.Contains(inheritData))
+                            data.inheritTypes.Add(inheritData);
+                    }
                 }
-            }
-            EditorGUILayout.EndHorizontal();
-            var inheritData1 = data.InheritType(collect.inheritTypeInx);
-            inheritData1.genericType = EditorGUILayout.Toggle("泛型类型", inheritData1.genericType);
-            EditorGUILayout.BeginHorizontal();
-            collect.inheritTypeInx = EditorGUILayout.Popup("继承类型", collect.inheritTypeInx, data.InheritTypesStr);
-            if (GUILayout.Button("删除", GUILayout.Width(60f)))
-            {
-                if (data.inheritTypes.Count > 1)
+                EditorGUILayout.EndHorizontal();
+                var inheritData1 = data.InheritType(collect.inheritTypeInx);
+                inheritData1.genericType = EditorGUILayout.Toggle("泛型类型", inheritData1.genericType);
+                EditorGUILayout.BeginHorizontal();
+                collect.inheritTypeInx = EditorGUILayout.Popup("继承类型", collect.inheritTypeInx, data.InheritTypesStr);
+                if (GUILayout.Button("删除", GUILayout.Width(60f)))
                 {
-                    collect.inheritTypeInx = 0;
-                    data.inheritTypes.Remove(inheritData1);
+                    if (data.inheritTypes.Count > 1)
+                    {
+                        collect.inheritTypeInx = 0;
+                        data.inheritTypes.Remove(inheritData1);
+                    }
                 }
+                EditorGUILayout.EndHorizontal();
             }
-            EditorGUILayout.EndHorizontal();
             if (GUILayout.Button("编辑脚本"))
                 OpenScript(collect);
-            if (GUILayout.Button("代码生成"))
-                CodeGeneration(collect);
+            if (GUILayout.Button("生成动态代码"))
+                CodeGeneration(collect, true);
+            if (GUILayout.Button("生成固定代码"))
+                CodeGeneration(collect, false);
         }
 
-        internal static void CodeGeneration(FieldCollection field)
+        internal static void CodeGeneration(FieldCollection field, bool isDynamic)
         {
-            CodeGenerationFieldPart();
+            CodeGenerationFieldPart(isDynamic);
             CodeGenerationEditPart();
             AssetDatabase.Refresh();
+            field.isDynamic = isDynamic;
             field.compiling = true;
         }
 
@@ -620,17 +629,18 @@ namespace MVC.View
             Debug.Log($"生成成功:{path}");
         }
 
-        private static void CodeGenerationFieldPart()
+        private static void CodeGenerationFieldPart(bool isDynamic)
         {
             var codeTemplate = @"namespace {nameSpace} 
 {
 --
-    public partial class {typeName} : {inherit}
+    public partial class {typeName} {inherit}
     {
+--
         public MVC.View.FieldCollection collect;
 --
         {note}
-        public {fieldType} {fieldName} { get => collect.Get<{fieldType}>({index}); set => collect.Set({index}, value); }
+        {field}
 --
         public void Init(MVC.View.FieldCollection collect)
         {
@@ -645,6 +655,7 @@ namespace MVC.View
                 collect = getComponentMethod.Invoke(this, new object[] { typeof(MVC.View.FieldCollection) }) as MVC.View.FieldCollection;
         }
 #endif
+--
     }
 --
 }";
@@ -656,22 +667,29 @@ namespace MVC.View
             codeTemplate = codeTemplate.Replace("{typeName}", typeName);
             var inheritData = data.InheritType(collect.inheritTypeInx);
             var inheritType = inheritData.genericType ? $"{inheritData.inheritType}<{typeName}>" : inheritData.inheritType;
-            codeTemplate = codeTemplate.Replace("{inherit}", inheritType);
+            if (collect.isInherit) codeTemplate = codeTemplate.Replace("{inherit}", $": {inheritType}");
+            else codeTemplate = codeTemplate.Replace("{inherit}", "");
             var codes = codeTemplate.Split(new string[] { "--\r\n" }, StringSplitOptions.None);
             var codeText = new StringBuilder();
             if (hasns) codeText.Append(codes[0]);
             codeText.Append(codes[1]);
+            if (isDynamic)
+                codeText.Append(codes[2]);
             for (int i = 0; i < collect.fields.Count; i++)
             {
-                var fieldCode = codes[2].Replace("{fieldType}", collect.fields[i].Type.ToString());
-                fieldCode = fieldCode.Replace("{fieldName}", collect.fields[i].name);
-                fieldCode = fieldCode.Replace("{index}", i.ToString());
+                string fieldCode;
+                if (isDynamic)
+                    fieldCode = codes[3].Replace("{field}", $"public {collect.fields[i].Type} {collect.fields[i].name} {{ get => collect.Get<{collect.fields[i].Type}>({i}); set => collect.Set({i}, value); }}");
+                else
+                    fieldCode = codes[3].Replace("{field}", $"public {collect.fields[i].Type} {collect.fields[i].name};");
                 fieldCode = fieldCode.Replace("{note}", string.IsNullOrEmpty(collect.fields[i].note) ? "" : $"/// <summary>{collect.fields[i].note}</summary>");
                 codeText.Append(fieldCode);
             }
             codeText.AppendLine();
-            codeText.Append(codes[3]);
-            if (hasns) codeText.Append(codes[4]);
+            if (isDynamic)
+                codeText.Append(codes[4]);
+            codeText.Append(codes[5]);
+            if (hasns) codeText.Append(codes[6]);
             var scriptCode = codeText.ToString();
             if (!hasns)
             {
@@ -729,13 +747,23 @@ namespace MVC.View
                     return;
                 if (!type.IsSubclassOf(typeof(Component)))
                     return;
-                if (fieldCollection.TryGetComponent(type, out var component))
+                if (!fieldCollection.TryGetComponent(type, out var component))
+                    component = fieldCollection.gameObject.AddComponent(type);
+                if (fieldCollection.isDynamic)
                 {
-                    var onValidateMethod = component.GetType().GetMethod("OnValidate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    var onValidateMethod = type.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     onValidateMethod.Invoke(component, null);
-                    return;
                 }
-                fieldCollection.gameObject.AddComponent(type);
+                else
+                {
+                    foreach (var item in fieldCollection.fields)
+                    {
+                        var field = type.GetField(item.name, BindingFlags.Public | BindingFlags.Instance);
+                        if (field == null) continue;
+                        field.SetValue(component, item.target);
+                    }
+                    EditorUtility.SetDirty(component);
+                }
             }
         }
     }

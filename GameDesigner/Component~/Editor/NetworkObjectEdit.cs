@@ -13,6 +13,16 @@ public class NetworkObjectEdit : Editor
     private void OnEnable()
     {
         no = target as NetworkObject;
+        var networkBehaviours = no.GetComponentsInChildren<NetworkBehaviour>(true);
+        for (int i = 0; i < networkBehaviours.Length; i++)
+        {
+            var networkBehaviour = networkBehaviours[i];
+            if (networkBehaviour.NetComponentID == -1)
+            {
+                networkBehaviour.NetComponentID = i;
+                EditorUtility.SetDirty(networkBehaviour);
+            }
+        }
     }
 
     public override void OnInspectorGUI()

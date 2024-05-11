@@ -49,13 +49,20 @@ namespace Net.UnityComponent
         {
             Init();
         }
-        private void OnValidate()
+        public void CheckNetworkObjectIsNull()
         {
+            if (netObj != null)
+                return;
             if (TryGetComponent(out netObj))
                 return;
             netObj = gameObject.GetComponentInParent<NetworkObject>(true); //此处需要加上参数true, 否则做成预制体时会找不到父组件
             if (netObj == null)
+            {
                 netObj = gameObject.AddComponent<NetworkObject>();
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.SetDirty(netObj);
+#endif
+            }
         }
         public void Init(in Operation opt = default)
         {
@@ -63,6 +70,8 @@ namespace Net.UnityComponent
                 return;
             isInit = true;
             netObj = GetComponentInParent<NetworkObject>();
+            if (!netObj.enabled)
+                return;
             netObj.Init(); //必须先初始化网络物体，否则会出现Identity = -1的问题
             if (NetComponentID == -1)
             {

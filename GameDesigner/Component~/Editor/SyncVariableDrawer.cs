@@ -15,7 +15,7 @@ public class SyncVariableDrawer : PropertyDrawer
         {
             property.serializedObject.ApplyModifiedProperties(); //应用属性修改后触发属性修改事件才是最新的值
             var targetObject = property.serializedObject.targetObject;
-            if (targetObject.GetType() == fieldInfo.DeclaringType)
+            if (targetObject.GetType() == fieldInfo.ReflectedType)
             {
                 var syncVariable = fieldInfo.GetValue(targetObject) as SyncVarInfo;
                 syncVariable?.Set();

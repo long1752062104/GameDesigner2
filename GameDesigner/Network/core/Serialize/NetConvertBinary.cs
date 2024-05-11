@@ -258,6 +258,9 @@
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="array"></param>
+        /// <param name="itemType"></param>
+        /// <param name="recordType"></param>
+        /// <param name="ignore"></param>
         private unsafe static void WriteArray(ISegment stream, IList array, Type itemType, bool recordType, bool ignore)
         {
             int len = array.Count;
@@ -292,9 +295,11 @@
         /// <summary>
         /// 反序列化数组
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
+        /// <param name="segment"></param>
         /// <param name="array"></param>
+        /// <param name="itemType"></param>
+        /// <param name="recordType"></param>
+        /// <param name="ignore"></param>
         private static void ReadArray(ISegment segment, ref IList array, Type itemType, bool recordType, bool ignore)
         {
             if (array.Count == 0) //如果长度是0就不需要读取字段位字节了
@@ -815,7 +820,6 @@
         /// <summary>
         /// 序列化对象
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="segment"></param>
         /// <param name="type"></param>
         /// <param name="target"></param>
@@ -1038,9 +1042,10 @@
         /// <summary>
         /// 反序列化实体对象
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="index"></param>
+        /// <param name="segment"></param>
         /// <param name="type"></param>
+        /// <param name="recordType"></param>
+        /// <param name="ignore"></param>
         /// <returns></returns>
         public static object ReadObject(ISegment segment, Type type, bool recordType, bool ignore)
         {

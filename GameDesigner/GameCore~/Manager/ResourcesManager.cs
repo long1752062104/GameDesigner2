@@ -187,7 +187,7 @@ namespace GameCore
             if (!assetPath.StartsWith("http"))
             {
 #if UNITY_ANDROID && !UNITY_EDITOR
-                    assetPath = "file://" + assetPath;
+                assetPath = "file://" + assetPath;
 #endif
             }
             using (var request = UnityWebRequest.Get(assetPath))
@@ -408,27 +408,7 @@ namespace GameCore
 
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, Action onLoadComplete = null, LoadSceneMode mode = LoadSceneMode.Single)
         {
-            assetPath = GetAssetPath(assetPath);
-            if ((byte)Global.I.Mode <= 1)
-            {
-                assetPath = Path.GetFileNameWithoutExtension(assetPath);
-                goto J;
-            }
-            var assetBundle = await GetAssetBundleAsync(assetPath);
-            if (assetBundle == null)
-                return;
-            J: var asyncOper = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(assetPath, mode);
-            asyncOper.allowSceneActivation = false;
-            while (asyncOper.progress < 0.9f)
-            {
-                Global.UI.Loading.ShowUI("加载场景中..." + (asyncOper.progress * 100f).ToString("f0") + "%", asyncOper.progress);
-                await UniTask.Yield();
-            }
-            Global.UI.Loading.ShowUI("加载完成", 1f);
-            await UniTask.Delay(1000);
-            asyncOper.allowSceneActivation = true;
-            Global.UI.Loading.HideUI();
-            onLoadComplete?.Invoke();
+            await LoadAssetSceneAsync(assetPath, mode, (progress) => Global.UI.Loading.ShowUI("加载场景中..." + (progress * 100f).ToString("f0") + "%", progress), () => Global.UI.Loading.ShowUI("加载完成", 1f));
         }
 
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single, Action<float> progress = null, Action onLoadComplete = null)

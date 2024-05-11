@@ -13,6 +13,7 @@ public class NetworkTransformMultiEdit : Editor
     private void OnEnable()
     {
         nt = target as NetworkTransformMulti;
+        nt.CheckNetworkObjectIsNull();
     }
 
     public override void OnInspectorGUI()

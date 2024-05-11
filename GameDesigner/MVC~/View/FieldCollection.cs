@@ -89,7 +89,9 @@ namespace MVC.View
         public bool compiling;
         public int savePathInx;
         public int savePathExtInx;
+        public bool isInherit = true;
         public int inheritTypeInx;
+        public bool isDynamic;
 #endif
         private bool init;
         public Field this[int index]
