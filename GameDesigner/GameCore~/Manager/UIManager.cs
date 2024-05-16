@@ -178,6 +178,7 @@ namespace GameCore
                 return form;
             form = InstantiateForm(formName);
             form.gameObject.SetActive(isShow);
+            formDict[formName] = form;
             return form;
         }
     }
