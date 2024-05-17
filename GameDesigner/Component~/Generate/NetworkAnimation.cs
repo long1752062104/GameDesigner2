@@ -215,7 +215,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var playAutomatically = (System.Boolean)data.Obj;
                         fields[1] = playAutomatically;
                         self.playAutomatically = playAutomatically;
@@ -226,7 +226,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var wrapMode = (UnityEngine.WrapMode)data.Obj;
                         fields[2] = wrapMode;
                         self.wrapMode = wrapMode;
@@ -237,7 +237,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var animatePhysics = (System.Boolean)data.Obj;
                         fields[3] = animatePhysics;
                         self.animatePhysics = animatePhysics;
@@ -248,7 +248,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var cullingType = (UnityEngine.AnimationCullingType)data.Obj;
                         fields[4] = cullingType;
                         self.cullingType = cullingType;
@@ -257,7 +257,7 @@ namespace BuildComponent
                 case 5:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[6] = data.Obj);
                         self.Stop(name);
                     }
@@ -265,7 +265,7 @@ namespace BuildComponent
                 case 7:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[8] = data.Obj);
                         self.Rewind(name);
                     }
@@ -278,7 +278,7 @@ namespace BuildComponent
                 case 10:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var mode = (UnityEngine.PlayMode)(fields[11] = data.Obj);
                         self.Play(mode);
                     }
@@ -286,7 +286,8 @@ namespace BuildComponent
                 case 12:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[13] = data.Obj);
                         self.Play(animation);
                     }
@@ -294,7 +295,8 @@ namespace BuildComponent
                 case 14:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[15] = data.Obj);
                         self.CrossFade(animation);
                     }
@@ -302,7 +304,8 @@ namespace BuildComponent
                 case 16:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[17] = data.Obj);
                         var fadeLength = (System.Single)(fields[18] = data.Obj);
                         self.CrossFade(animation, fadeLength);
@@ -311,7 +314,8 @@ namespace BuildComponent
                 case 19:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[20] = data.Obj);
                         self.Blend(animation);
                     }
@@ -319,7 +323,8 @@ namespace BuildComponent
                 case 21:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[22] = data.Obj);
                         var targetWeight = (System.Single)(fields[23] = data.Obj);
                         self.Blend(animation, targetWeight);
@@ -328,7 +333,8 @@ namespace BuildComponent
                 case 24:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[25] = data.Obj);
                         self.CrossFadeQueued(animation);
                     }
@@ -336,7 +342,8 @@ namespace BuildComponent
                 case 26:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[27] = data.Obj);
                         var fadeLength = (System.Single)(fields[28] = data.Obj);
                         self.CrossFadeQueued(animation, fadeLength);
@@ -345,7 +352,8 @@ namespace BuildComponent
                 case 29:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[30] = data.Obj);
                         var fadeLength = (System.Single)(fields[31] = data.Obj);
                         var queue = (UnityEngine.QueueMode)(fields[32] = data.Obj);
@@ -355,7 +363,8 @@ namespace BuildComponent
                 case 33:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[34] = data.Obj);
                         self.PlayQueued(animation);
                     }
@@ -363,7 +372,8 @@ namespace BuildComponent
                 case 35:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var animation = (System.String)(fields[36] = data.Obj);
                         var queue = (UnityEngine.QueueMode)(fields[37] = data.Obj);
                         self.PlayQueued(animation, queue);
@@ -372,7 +382,8 @@ namespace BuildComponent
                 case 38:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
                         var clipName = (System.String)(fields[39] = data.Obj);
                         self.RemoveClip(clipName);
                     }

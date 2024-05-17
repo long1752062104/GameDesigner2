@@ -245,7 +245,6 @@
     <Compile Include="GameDesigner\Network\core\Share\ConnectState.cs" />
     <Compile Include="GameDesigner\Network\core\Share\Constituency.cs" />
     <Compile Include="GameDesigner\Network\core\Share\BigData.cs" />
-    <Compile Include="GameDesigner\Network\core\Share\FuncData.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IAdapter.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDataConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Share\IDataRow.cs" />

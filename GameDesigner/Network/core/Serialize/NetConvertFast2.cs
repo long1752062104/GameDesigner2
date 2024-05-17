@@ -476,12 +476,11 @@
             }
         }
 
-        public static FuncData DeserializeModel(ISegment segment, bool isPush = true)
+        public static bool DeserializeModel(ISegment segment, RPCModel model, bool isPush = true)
         {
-            FuncData fdata = default;
             try
             {
-                fdata.protocol = segment.ReadUInt32();
+                model.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 int count = segment.Offset + segment.Count;
                 while (segment.Position < count)
@@ -489,10 +488,7 @@
                     ushort typeIndex = segment.ReadUInt16();
                     var type = IndexToType(typeIndex);
                     if (type == null)
-                    {
-                        fdata.error = true;
-                        break;
-                    }
+                        return false;
                     if (type == typeof(DBNull))
                     {
                         list.Add(null);
@@ -501,17 +497,17 @@
                     var obj1 = DeserializeObject(type, segment, false);
                     list.Add(obj1);
                 }
-                fdata.pars = list.ToArray();
+                model.pars = list.ToArray();
                 if (isPush)
                     BufferPool.Push(segment);
+                return true;
             }
             catch (Exception ex)
             {
-                fdata.error = true;
-                var func = RPCExtensions.GetFunc(fdata.protocol);
+                var func = RPCExtensions.GetFunc(model.protocol);
                 NDebug.LogError($"反序列化{func}出错:{ex}");
+                return false;
             }
-            return fdata;
         }
     }
 }

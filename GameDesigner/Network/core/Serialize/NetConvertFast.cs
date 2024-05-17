@@ -194,22 +194,18 @@
             return null;
         }
 
-        public static FuncData Deserialize(ISegment segment, bool recordType = false)
+        public static bool Deserialize(ISegment segment, RPCModel model, bool recordType = false)
         {
-            FuncData fdata = default;
             try
             {
-                fdata.protocol = segment.ReadUInt32();
+                model.protocol = segment.ReadUInt32();
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
                     var typeName = segment.ReadUInt16();
                     var type = GetTypeHash(typeName);
                     if (type == null)
-                    {
-                        fdata.error = true;
-                        break;
-                    }
+                        return false;
                     if (type == typeof(DBNull))
                     {
                         list.Add(null);
@@ -218,15 +214,15 @@
                     var obj = NetConvertBinary.ReadObject(segment, type, recordType, true);
                     list.Add(obj);
                 }
-                fdata.pars = list.ToArray();
+                model.pars = list.ToArray();
+                return true;
             }
             catch (Exception ex)
             {
-                fdata.error = true;
-                var func = RPCExtensions.GetFunc(fdata.protocol);
+                var func = RPCExtensions.GetFunc(model.protocol);
                 NDebug.LogError($"反序列化{func}出错:{ex}");
+                return false;
             }
-            return fdata;
         }
     }
 }

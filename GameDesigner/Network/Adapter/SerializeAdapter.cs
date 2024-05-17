@@ -14,9 +14,9 @@ namespace Net.Adapter
             return NetConvertBinary.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(ISegment segment)
+        public bool OnDeserializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertBinary.DeserializeModel(segment);
+            return NetConvertBinary.DeserializeModel(segment, model);
         }
 
         public byte[] OnSerializeOpt(in OperationList list)
@@ -40,9 +40,9 @@ namespace Net.Adapter
             return NetConvertFast.Serialize(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(ISegment segment)
+        public bool OnDeserializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertFast.Deserialize(segment);
+            return NetConvertFast.Deserialize(segment, model);
         }
 
         public byte[] OnSerializeOpt(in OperationList list)
@@ -66,9 +66,9 @@ namespace Net.Adapter
             return NetConvertBinary.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(ISegment segment)
+        public bool OnDeserializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertBinary.DeserializeModel(segment);
+            return NetConvertBinary.DeserializeModel(segment, model);
         }
 
         public byte[] OnSerializeOpt(in OperationList list)
@@ -92,9 +92,9 @@ namespace Net.Adapter
             return NetConvertFast2.SerializeModel(segment, model);
         }
 
-        public FuncData OnDeserializeRpc(ISegment segment)
+        public bool OnDeserializeRpc(ISegment segment, RPCModel model)
         {
-            return NetConvertFast2.DeserializeModel(segment, false);
+            return NetConvertFast2.DeserializeModel(segment, model, false);
         }
 
         public byte[] OnSerializeOpt(in OperationList list)

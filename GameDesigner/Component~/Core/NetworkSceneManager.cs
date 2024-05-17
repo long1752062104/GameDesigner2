@@ -158,7 +158,8 @@ namespace Net.UnityComponent
                     break;
                 case NetCmd.CallRpc:
                     var segment = BufferPool.NewSegment(opt.buffer, 0, opt.buffer.Length, false);
-                    var data = client.OnDeserializeRPC(segment);
+                    var data = new RPCModel();
+                    client.OnDeserializeRPC(segment, data);
                     client.DispatchRpc(data.protocol, data.pars);
                     break;
                 default:

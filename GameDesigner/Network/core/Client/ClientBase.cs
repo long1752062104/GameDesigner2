@@ -219,7 +219,7 @@ namespace Net.Client
         /// <summary>
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议 (只允许一个委托, 例子:OnDeserializeRpcHandle = (buffer)=>{return new FuncData();};)
         /// </summary>
-        public Func<ISegment, FuncData> OnDeserializeRPC { get; set; }
+        public DeserializeRpcDelegate OnDeserializeRPC { get; set; }
         /// <summary>
         /// 当内部序列化帧操作列表时调用, 即将发送数据  !!!!!!!只允许一个委托
         /// </summary>
@@ -1110,7 +1110,7 @@ namespace Net.Client
                 stream.Position = dataSizePos;
                 stream.WriteFixed((uint)(currPos - dataSizePos - 4));
                 stream.Position = currPos;
-                if (++index >= PackageLength | currPos + 10240 >= BufferPool.Size)
+                if (++index >= PackageLength | currPos + 1024 >= BufferPool.Size)
                     break;
             }
         }
@@ -1175,7 +1175,7 @@ namespace Net.Client
         /// </summary>
         /// <param name="segment"></param>
         /// <returns></returns>
-        protected internal virtual FuncData OnDeserializeRpcInternal(ISegment segment) { return NetConvert.Deserialize(segment); }
+        protected internal virtual bool OnDeserializeRpcInternal(ISegment segment, RPCModel model) { return NetConvert.Deserialize(segment, model); }
 
         /// <summary>
         /// 网络处理线程
@@ -1402,11 +1402,9 @@ namespace Net.Client
                 {
                     buffer.Count = dataCount;
                     buffer.Offset = buffer.Position;
-                    var func = OnDeserializeRPC(buffer);
-                    if (func.error)
+                    var complete = OnDeserializeRPC(buffer, model);
+                    if (!complete)
                         goto J;
-                    model.protocol = func.protocol;
-                    model.pars = func.pars;
                 }
                 CommandHandler(model, buffer);//解析协议完成
             J: buffer.Position = position;

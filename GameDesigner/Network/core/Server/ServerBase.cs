@@ -289,7 +289,7 @@ namespace Net.Server
         /// <summary>
         /// 当反序列化远程过程调用方法
         /// </summary>
-        public Func<ISegment, FuncData> OnDeserializeRPC { get; set; }
+        public DeserializeRpcDelegate OnDeserializeRPC { get; set; }
         /// <summary>
         /// 当序列化远程过程调用操作
         /// </summary>
@@ -562,10 +562,11 @@ namespace Net.Server
         /// 当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
         /// </summary>
         /// <param name="segment"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
-        protected virtual FuncData OnDeserializeRpc(ISegment segment) { return OnDeserializeRPC(segment); }
+        protected virtual bool OnDeserializeRpc(ISegment segment, RPCModel model) { return OnDeserializeRPC(segment, model); }
 
-        protected internal FuncData OnDeserializeRpcInternal(ISegment segment) { return NetConvert.Deserialize(segment); }
+        protected internal bool OnDeserializeRpcInternal(ISegment segment, RPCModel model) { return NetConvert.Deserialize(segment, model); }
 
         /// <summary>
         /// 当客户端使用场景转发命令会调用此方法
@@ -993,11 +994,9 @@ namespace Net.Server
                 {
                     buffer.Count = dataCount;
                     buffer.Offset = buffer.Position;
-                    var func = OnDeserializeRpc(buffer);
-                    if (func.error)
+                    var complete = OnDeserializeRpc(buffer, model);
+                    if (!complete)
                         goto J;
-                    model.protocol = func.protocol;
-                    model.pars = func.pars;
                 }
                 client.Token = token;
                 DataHandler(client, model, buffer);//解析协议完成
@@ -1443,7 +1442,7 @@ namespace Net.Server
                 stream.Position = dataSizePos;
                 stream.WriteFixed((uint)(currPos - dataSizePos - 4));
                 stream.Position = currPos;
-                if (++index >= PackageLength | currPos + 10240 >= BufferPool.Size)
+                if (++index >= PackageLength | currPos + 1024 >= BufferPool.Size)
                     break;
             }
         }

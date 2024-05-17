@@ -582,7 +582,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var applyRootMotion = (System.Boolean)data.Obj;
                         fields[1] = applyRootMotion;
                         self.applyRootMotion = applyRootMotion;
@@ -593,7 +593,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var updateMode = (UnityEngine.AnimatorUpdateMode)data.Obj;
                         fields[2] = updateMode;
                         self.updateMode = updateMode;
@@ -604,7 +604,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var speed = (System.Single)data.Obj;
                         fields[3] = speed;
                         self.speed = speed;
@@ -615,7 +615,7 @@ namespace BuildComponent
                         if (opt.uid == ClientBase.Instance.UID)
                             return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var cullingMode = (UnityEngine.AnimatorCullingMode)data.Obj;
                         fields[4] = cullingMode;
                         self.cullingMode = cullingMode;
@@ -624,7 +624,7 @@ namespace BuildComponent
                 case 5:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[6] = data.Obj);
                         var value = (System.Single)(fields[7] = data.Obj);
                         self.SetFloat(name, value);
@@ -633,7 +633,7 @@ namespace BuildComponent
                 case 8:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[9] = data.Obj);
                         var value = (System.Single)(fields[10] = data.Obj);
                         var dampTime = (System.Single)(fields[11] = data.Obj);
@@ -644,7 +644,7 @@ namespace BuildComponent
                 case 13:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[14] = data.Obj);
                         var value = (System.Single)(fields[15] = data.Obj);
                         self.SetFloat(id, value);
@@ -653,7 +653,7 @@ namespace BuildComponent
                 case 16:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[17] = data.Obj);
                         var value = (System.Single)(fields[18] = data.Obj);
                         var dampTime = (System.Single)(fields[19] = data.Obj);
@@ -664,7 +664,7 @@ namespace BuildComponent
                 case 21:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[22] = data.Obj);
                         var value = (System.Boolean)(fields[23] = data.Obj);
                         self.SetBool(name, value);
@@ -673,7 +673,7 @@ namespace BuildComponent
                 case 24:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[25] = data.Obj);
                         var value = (System.Boolean)(fields[26] = data.Obj);
                         self.SetBool(id, value);
@@ -682,7 +682,7 @@ namespace BuildComponent
                 case 27:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[28] = data.Obj);
                         var value = (System.Int32)(fields[29] = data.Obj);
                         self.SetInteger(name, value);
@@ -691,7 +691,7 @@ namespace BuildComponent
                 case 30:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[31] = data.Obj);
                         var value = (System.Int32)(fields[32] = data.Obj);
                         self.SetInteger(id, value);
@@ -700,7 +700,7 @@ namespace BuildComponent
                 case 33:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[34] = data.Obj);
                         self.SetTrigger(name);
                     }
@@ -708,7 +708,7 @@ namespace BuildComponent
                 case 35:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[36] = data.Obj);
                         self.SetTrigger(id);
                     }
@@ -716,7 +716,7 @@ namespace BuildComponent
                 case 37:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var name = (System.String)(fields[38] = data.Obj);
                         self.ResetTrigger(name);
                     }
@@ -724,7 +724,7 @@ namespace BuildComponent
                 case 39:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var id = (System.Int32)(fields[40] = data.Obj);
                         self.ResetTrigger(id);
                     }
@@ -732,7 +732,7 @@ namespace BuildComponent
                 case 41:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var goal = (UnityEngine.AvatarIKGoal)(fields[42] = data.Obj);
                         var goalPosition = (UnityEngine.Vector3)(fields[43] = data.Obj);
                         self.SetIKPosition(goal, goalPosition);
@@ -741,7 +741,7 @@ namespace BuildComponent
                 case 44:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var goal = (UnityEngine.AvatarIKGoal)(fields[45] = data.Obj);
                         var goalRotation = (UnityEngine.Quaternion)(fields[46] = data.Obj);
                         self.SetIKRotation(goal, goalRotation);
@@ -750,7 +750,7 @@ namespace BuildComponent
                 case 47:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var goal = (UnityEngine.AvatarIKGoal)(fields[48] = data.Obj);
                         var value = (System.Single)(fields[49] = data.Obj);
                         self.SetIKPositionWeight(goal, value);
@@ -759,7 +759,7 @@ namespace BuildComponent
                 case 50:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var goal = (UnityEngine.AvatarIKGoal)(fields[51] = data.Obj);
                         var value = (System.Single)(fields[52] = data.Obj);
                         self.SetIKRotationWeight(goal, value);
@@ -768,7 +768,7 @@ namespace BuildComponent
                 case 53:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var hint = (UnityEngine.AvatarIKHint)(fields[54] = data.Obj);
                         var hintPosition = (UnityEngine.Vector3)(fields[55] = data.Obj);
                         self.SetIKHintPosition(hint, hintPosition);
@@ -777,7 +777,7 @@ namespace BuildComponent
                 case 56:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var hint = (UnityEngine.AvatarIKHint)(fields[57] = data.Obj);
                         var value = (System.Single)(fields[58] = data.Obj);
                         self.SetIKHintPositionWeight(hint, value);
@@ -786,7 +786,7 @@ namespace BuildComponent
                 case 59:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var lookAtPosition = (UnityEngine.Vector3)(fields[60] = data.Obj);
                         self.SetLookAtPosition(lookAtPosition);
                     }
@@ -794,7 +794,7 @@ namespace BuildComponent
                 case 61:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var weight = (System.Single)(fields[62] = data.Obj);
                         self.SetLookAtWeight(weight);
                     }
@@ -802,7 +802,7 @@ namespace BuildComponent
                 case 63:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var weight = (System.Single)(fields[64] = data.Obj);
                         var bodyWeight = (System.Single)(fields[65] = data.Obj);
                         self.SetLookAtWeight(weight, bodyWeight);
@@ -811,7 +811,7 @@ namespace BuildComponent
                 case 66:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var weight = (System.Single)(fields[67] = data.Obj);
                         var bodyWeight = (System.Single)(fields[68] = data.Obj);
                         var headWeight = (System.Single)(fields[69] = data.Obj);
@@ -821,7 +821,7 @@ namespace BuildComponent
                 case 70:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var weight = (System.Single)(fields[71] = data.Obj);
                         var bodyWeight = (System.Single)(fields[72] = data.Obj);
                         var headWeight = (System.Single)(fields[73] = data.Obj);
@@ -832,7 +832,7 @@ namespace BuildComponent
                 case 75:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var weight = (System.Single)(fields[76] = data.Obj);
                         var bodyWeight = (System.Single)(fields[77] = data.Obj);
                         var headWeight = (System.Single)(fields[78] = data.Obj);
@@ -844,7 +844,7 @@ namespace BuildComponent
                 case 81:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var humanBoneId = (UnityEngine.HumanBodyBones)(fields[82] = data.Obj);
                         var rotation = (UnityEngine.Quaternion)(fields[83] = data.Obj);
                         self.SetBoneLocalRotation(humanBoneId, rotation);
@@ -858,7 +858,7 @@ namespace BuildComponent
                 case 85:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[86] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[87] = data.Obj);
                         self.CrossFadeInFixedTime(stateName, fixedTransitionDuration);
@@ -867,7 +867,7 @@ namespace BuildComponent
                 case 88:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[89] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[90] = data.Obj);
                         var layer = (System.Int32)(fields[91] = data.Obj);
@@ -877,7 +877,7 @@ namespace BuildComponent
                 case 92:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[93] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[94] = data.Obj);
                         var layer = (System.Int32)(fields[95] = data.Obj);
@@ -888,7 +888,7 @@ namespace BuildComponent
                 case 97:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[98] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[99] = data.Obj);
                         var layer = (System.Int32)(fields[100] = data.Obj);
@@ -900,7 +900,7 @@ namespace BuildComponent
                 case 103:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[104] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[105] = data.Obj);
                         var layer = (System.Int32)(fields[106] = data.Obj);
@@ -911,7 +911,7 @@ namespace BuildComponent
                 case 108:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[109] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[110] = data.Obj);
                         var layer = (System.Int32)(fields[111] = data.Obj);
@@ -921,7 +921,7 @@ namespace BuildComponent
                 case 112:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[113] = data.Obj);
                         var fixedTransitionDuration = (System.Single)(fields[114] = data.Obj);
                         self.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration);
@@ -930,7 +930,7 @@ namespace BuildComponent
                 case 115:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[116] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[117] = data.Obj);
                         var layer = (System.Int32)(fields[118] = data.Obj);
@@ -941,7 +941,7 @@ namespace BuildComponent
                 case 120:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[121] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[122] = data.Obj);
                         var layer = (System.Int32)(fields[123] = data.Obj);
@@ -951,7 +951,7 @@ namespace BuildComponent
                 case 124:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[125] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[126] = data.Obj);
                         self.CrossFade(stateName, normalizedTransitionDuration);
@@ -960,7 +960,7 @@ namespace BuildComponent
                 case 127:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[128] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[129] = data.Obj);
                         var layer = (System.Int32)(fields[130] = data.Obj);
@@ -972,7 +972,7 @@ namespace BuildComponent
                 case 133:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[134] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[135] = data.Obj);
                         var layer = (System.Int32)(fields[136] = data.Obj);
@@ -983,7 +983,7 @@ namespace BuildComponent
                 case 138:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[139] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[140] = data.Obj);
                         var layer = (System.Int32)(fields[141] = data.Obj);
@@ -993,7 +993,7 @@ namespace BuildComponent
                 case 142:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateHashName = (System.Int32)(fields[143] = data.Obj);
                         var normalizedTransitionDuration = (System.Single)(fields[144] = data.Obj);
                         self.CrossFade(stateHashName, normalizedTransitionDuration);
@@ -1002,7 +1002,7 @@ namespace BuildComponent
                 case 145:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[146] = data.Obj);
                         var layer = (System.Int32)(fields[147] = data.Obj);
                         self.PlayInFixedTime(stateName, layer);
@@ -1011,7 +1011,7 @@ namespace BuildComponent
                 case 148:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[149] = data.Obj);
                         self.PlayInFixedTime(stateName);
                     }
@@ -1019,7 +1019,7 @@ namespace BuildComponent
                 case 150:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[151] = data.Obj);
                         var layer = (System.Int32)(fields[152] = data.Obj);
                         var fixedTime = (System.Single)(fields[153] = data.Obj);
@@ -1029,7 +1029,7 @@ namespace BuildComponent
                 case 154:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateNameHash = (System.Int32)(fields[155] = data.Obj);
                         var layer = (System.Int32)(fields[156] = data.Obj);
                         self.PlayInFixedTime(stateNameHash, layer);
@@ -1038,7 +1038,7 @@ namespace BuildComponent
                 case 157:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateNameHash = (System.Int32)(fields[158] = data.Obj);
                         self.PlayInFixedTime(stateNameHash);
                     }
@@ -1046,7 +1046,7 @@ namespace BuildComponent
                 case 159:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[160] = data.Obj);
                         var layer = (System.Int32)(fields[161] = data.Obj);
                         self.Play(stateName, layer);
@@ -1055,7 +1055,7 @@ namespace BuildComponent
                 case 162:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[163] = data.Obj);
                         self.Play(stateName);
                     }
@@ -1063,7 +1063,7 @@ namespace BuildComponent
                 case 164:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateName = (System.String)(fields[165] = data.Obj);
                         var layer = (System.Int32)(fields[166] = data.Obj);
                         var normalizedTime = (System.Single)(fields[167] = data.Obj);
@@ -1073,7 +1073,7 @@ namespace BuildComponent
                 case 168:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateNameHash = (System.Int32)(fields[169] = data.Obj);
                         var layer = (System.Int32)(fields[170] = data.Obj);
                         self.Play(stateNameHash, layer);
@@ -1082,7 +1082,7 @@ namespace BuildComponent
                 case 171:
                     {
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel(); DeserializeModel(segment, data);
                         var stateNameHash = (System.Int32)(fields[172] = data.Obj);
                         self.Play(stateNameHash);
                     }

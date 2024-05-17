@@ -273,7 +273,8 @@ namespace BuildComponent
 						if (opt.uid == ClientBase.Instance.UID)
 							return;
                         var segment = new Segment(opt.buffer, false);
-                        var data = DeserializeModel(segment);
+                        var data = new RPCModel();
+                        DeserializeModel(segment, data);
 						var {TypeFieldName} = ({FieldType1})data.Obj;
 						{FieldName} = {TypeFieldName};
 						self.{TypeFieldName} = {TypeFieldName};
@@ -289,7 +290,8 @@ namespace BuildComponent
                 case {FieldIndex1}:
                     {
 						var segment = new Segment(opt.buffer, false);
-						var data = DeserializeModel(segment);
+						var data = new RPCModel();
+                        DeserializeModel(segment, data);
 						{SetPars}
 						self.{FuncName}({Params});
 					}

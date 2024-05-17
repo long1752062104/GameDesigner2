@@ -70,7 +70,16 @@
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="app.config" />
+    <None Remove="GameDesigner\AOI~\AOIObject.cs.meta" />
+    <None Remove="GameDesigner\AOI~\GridWorld.cs.meta" />
+    <None Remove="GameDesigner\AOI~\IGridActor.cs.meta" />
     <None Remove="GameDesigner\Common.meta" />
+    <None Remove="GameDesigner\Common\Command.cs.meta" />
+    <None Remove="GameDesigner\Common\FastLocking.cs.meta" />
+    <None Remove="GameDesigner\Common\NTransform.cs.meta" />
+    <None Remove="GameDesigner\Common\PropertyObserver.cs.meta" />
+    <None Remove="GameDesigner\Common\Singleton.cs.meta" />
+    <None Remove="GameDesigner\Common\TransformEntity.cs.meta" />
     <None Remove="GameDesigner\Distributed.meta" />
     <None Remove="GameDesigner\Distributed~\Config.meta" />
     <None Remove="GameDesigner\Distributed~\Config\LoadBalanceConfig.cs.meta" />
@@ -78,6 +87,7 @@
     <None Remove="GameDesigner\Distributed~\ConsistentHashingTest.cs.meta" />
     <None Remove="GameDesigner\Distributed~\LoadBalance.cs.meta" />
     <None Remove="GameDesigner\Distributed~\UniqueIdGenerator.cs.meta" />
+    <None Remove="GameDesigner\ECS~\GameComponent.cs.meta" />
     <None Remove="GameDesigner\Extensions.meta" />
     <None Remove="GameDesigner\Extensions\ClientBaseExtensions.cs.meta" />
     <None Remove="GameDesigner\Extensions\NetPlayerExtensions.cs.meta" />
@@ -118,8 +128,18 @@
     <None Remove="GameDesigner\Network\Adapter\PackageAdapter.cs.meta" />
     <None Remove="GameDesigner\Network\Binding\BindingExtension.cs.meta" />
     <None Remove="GameDesigner\Network\core\Client\ClientPool.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Config\ClientConfig.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Config\ConfigBase.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Config\ServerConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Config\TableConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\BigData.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\EventDelegate.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\IDataConfig.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\NetPort.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\NetworkUpdateMode.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\SyncVariable.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\ThreadArgs.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\BitHelper.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\DataCache.cs.meta" />
     <None Remove="GameDesigner\Network\core\System\FastHashSet.cs.meta" />
@@ -2105,7 +2125,6 @@
     <None Remove="GameDesigner\Network\core\Share\EventHandle.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\FileData.cs" />
     <None Remove="GameDesigner\Network\core\Share\FileData.cs.meta" />
-    <None Remove="GameDesigner\Network\core\Share\FuncData.cs" />
     <None Remove="GameDesigner\Network\core\Share\FuncData.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\IAdapter.cs" />
     <None Remove="GameDesigner\Network\core\Share\IAdapter.cs.meta" />

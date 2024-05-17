@@ -57,6 +57,7 @@ namespace Binding
         /// 动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
         /// </summary>
         /// <param name="serializeMode">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
+        /// <param name="sortingOrder"></param>
         /// <param name="types"></param>
         /// <returns></returns>
         public static bool DynamicBuild(SerializeMode serializeMode, int sortingOrder, params Type[] types)
