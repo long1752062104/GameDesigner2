@@ -85,6 +85,14 @@ namespace GameCore
             }
         }
 
+        public void StopAll() 
+        {
+            foreach (var desc in sources)
+            {
+                desc.source.Stop();
+            }
+        }
+
         public int PlaySound(string clipRes, float volume, bool isLoop)
         {
             var audioClip = Global.Resources.LoadAsset<AudioClip>(clipRes);
