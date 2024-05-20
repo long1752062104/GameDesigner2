@@ -17,15 +17,15 @@ namespace Net.Distributed
 
         public UniqueIdGenerator() { }
 
-        public UniqueIdGenerator(int machineId, long sequence) : this(true, machineId, 10, sequence) { }
+        public UniqueIdGenerator(int machineId, long uniqueIdMax) : this(true, machineId, 10, uniqueIdMax) { }
 
-        public UniqueIdGenerator(bool useMachineId, int machineId, long sequence) : this(useMachineId, machineId, 10, sequence) { }
+        public UniqueIdGenerator(bool useMachineId, int machineId, long uniqueIdMax) : this(useMachineId, machineId, 10, uniqueIdMax) { }
 
-        public UniqueIdGenerator(bool useMachineId, int machineId, int machineIdBits, long sequence)
+        public UniqueIdGenerator(bool useMachineId, int machineId, int machineIdBits, long uniqueIdMax)
         {
             this.useMachineId = useMachineId;
             this.machineId = machineId;
-            this.sequence = sequence;
+            sequence = uniqueIdMax >> machineIdBits;
             SetMachineIdBits(machineIdBits);
         }
 

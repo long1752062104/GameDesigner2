@@ -62,9 +62,9 @@ namespace Distributed
         private readonly StringBuilder updateCmdText = new StringBuilder();
         private readonly StringBuilder deleteCmdText = new StringBuilder();
         private readonly MyDictionary<short, UniqueIdGenerator> uniqueIdMap = new MyDictionary<short, UniqueIdGenerator>();
-        private readonly MyDictionary<Type, QueueSafe<QueryTask>> queryTypes = new MyDictionary<Type, QueueSafe<QueryTask>>();
+        private readonly MyDictionary<Type, QueueSafe<IQueryTask>> queryTypes = new MyDictionary<Type, QueueSafe<IQueryTask>>();
         private readonly MyDictionary<string, StringBuilder> queryCell = new MyDictionary<string, StringBuilder>();
-        private readonly Queue<QueryTask> queryQueue = new Queue<QueryTask>();
+        private readonly Queue<IQueryTask> queryQueue = new Queue<IQueryTask>();
 
         private MySqlConnection CheckConn(MySqlConnection conn)
         {
@@ -564,11 +564,44 @@ namespace Distributed
             }
         }
 
-        private class QueryTask
+        private interface IQueryTask
         {
-            internal string CommandText;
-            internal bool IsDone;
-            internal IDataRow Data;
+            string CommandText { get; set; }
+            bool IsDone { get; set; }
+            void SetRows(DataRow[] rows);
+        }
+
+        private class QueryTask<T> : IQueryTask where T : IDataRow, new()
+        {
+            public string CommandText { get; set; }
+            public bool IsDone { get; set; }
+            internal T Data;
+
+            public void SetRows(DataRow[] rows)
+            {
+                if (rows.Length > 0)
+                {
+                    Data = new T();
+                    Data.Init(rows[0]);
+                }
+            }
+        }
+
+        private class QueryTaskList<T> : IQueryTask where T : IDataRow, new()
+        {
+            public string CommandText { get; set; }
+            public bool IsDone { get; set; }
+            internal T[] Datas;
+
+            public void SetRows(DataRow[] rows)
+            {
+                Datas = new T[rows.Length];
+                for (int i = 0; i < rows.Length; i++)
+                {
+                    Datas[i] = new T();
+                    Datas[i].Init(rows[i]);
+                }
+            }
         }
 
         /// <summary>
@@ -578,15 +611,32 @@ namespace Distributed
         /// <typeparam name="T"></typeparam>
         /// <param name="filterExpression"></param>
         /// <returns></returns>
-        public async UniTask<T> QueryAsync<T>(string filterExpression) where T : IDataRow
+        public async UniTask<T> QueryAsync<T>(string filterExpression) where T : IDataRow, new()
         {
             var type = typeof(T);
             if (!queryTypes.TryGetValue(type, out var queue))
-                queryTypes[type] = queue = new QueueSafe<QueryTask>();
-            var queryTask = new QueryTask() { CommandText = filterExpression };
+                queryTypes[type] = queue = new QueueSafe<IQueryTask>();
+            var queryTask = new QueryTask<T>() { CommandText = filterExpression };
             queue.Enqueue(queryTask);
-            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((QueryTask)state).IsDone, queryTask);
-            return (T)queryTask.Data;
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((IQueryTask)state).IsDone, queryTask);
+            return queryTask.Data;
+        }
+
+        /// <summary>
+        /// 异步查询, 查询案例: `id`=1 或者 `name` = 'hello'
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filterExpression"></param>
+        /// <returns></returns>
+        public async UniTask<T[]> QueryListAsync<T>(string filterExpression) where T : IDataRow, new()
+        {
+            var type = typeof(T);
+            if (!queryTypes.TryGetValue(type, out var queue))
+                queryTypes[type] = queue = new QueueSafe<IQueryTask>();
+            var queryTask = new QueryTaskList<T>() { CommandText = filterExpression };
+            queue.Enqueue(queryTask);
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((IQueryTask)state).IsDone, queryTask);
+            return queryTask.Datas;
         }
 
         private bool BatchQueryWorkers()
@@ -631,14 +681,10 @@ namespace Distributed
                         while (queryQueue.Count > 0)
                         {
                             var queryTask = queryQueue.Dequeue();
-                            if (dataTable != null) 
+                            if (dataTable != null)
                             {
                                 var rows = dataTable.Select(queryTask.CommandText);
-                                if (rows.Length > 0)
-                                {
-                                    queryTask.Data = (IDataRow)Activator.CreateInstance(item.Key);
-                                    queryTask.Data.Init(rows[0]);
-                                }
+                                queryTask.SetRows(rows);
                             }
                             queryTask.IsDone = true;
                         }
@@ -741,6 +787,14 @@ namespace Distributed
                 if (count != 5) NDebug.LogWarning("user表有改动,请进行处理! 1.如果你新增了列或删除列, 请用MySqlBuild工具重新生成! 2.如果是多人协作请根据提交信息新增或删除列!");
             }
  // -- 6
+        }
+
+        /// <summary>
+        /// 开始运行数据库中间件处理
+        /// </summary>
+        public void Start()
+        {
+            ThreadManager.Invoke(ConnectionBuilder.Database + "Process", BatchWorker, true);
         }
     }
 }
