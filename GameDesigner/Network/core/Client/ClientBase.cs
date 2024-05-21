@@ -1036,7 +1036,7 @@ namespace Net.Client
 
         protected internal virtual OperationList OnDeserializeOptInternal(ISegment segment)
         {
-            return NetConvertFast2.DeserializeObject<OperationList>(segment);
+            return NetConvertFast2.DeserializeObject<OperationList>(segment, false);
         }
 
         /// <summary>
