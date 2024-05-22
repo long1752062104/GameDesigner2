@@ -104,6 +104,7 @@ namespace Net.Share
 
         public override void SetDefaultValue()
         {
+            isChanged = true;
         }
 
         internal override bool EqualsTarget(object target)
