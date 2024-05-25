@@ -119,7 +119,7 @@ namespace Net.Helper
                 log(1, client, model);
                 return;
             }
-            if (model.token != 0 && body.RequestDict.Count > 0)
+            if (model.token != 0)
             {
                 if (body.RequestDict.TryRemove(model.token, out var modelTask))
                 {
@@ -130,8 +130,12 @@ namespace Net.Helper
                     if (modelTask.intercept)
                         return;
                 }
+                //如果超时了会执行到这里，因为开发者是以Request发起的，所以大概率不会再定义一个[Rpc]来二次调用! 如果你二次调用也是没有问题，但是没有二次调用时，我们不应该提示添加[Rpc]
+                //如果你设置intercept=true并且[Rpc]方法存在才会往下执行，要不然就直接返回，也不需要提示添加[Rpc]警告，因为这个不是错误问题
+                if (body.Count <= 0)
+                    return;
             }
-            if (body.Count <= 0)
+            else if (body.Count <= 0)
             {
                 log(2, client, model);
                 return;

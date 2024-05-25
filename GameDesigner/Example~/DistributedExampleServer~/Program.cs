@@ -37,14 +37,16 @@ namespace DistributedExample
             Console.WriteLine("选择服务器模式:");
             Console.WriteLine("1.单进程");
             Console.WriteLine("2.多进程");
-            Console.WriteLine("3.模拟服务器崩溃重启，你先使用2启动多个进程，然后再关闭几个服务器，再使用以下命令启动单个服务器");
+            Console.WriteLine("---------------------------------------------------------------------------------------------");
+            Console.WriteLine("模拟服务器崩溃重启，你先使用2启动多个进程，然后再关闭几个服务器，再使用以下命令启动单个服务器");
             Console.WriteLine("  输入:ConfigService重启配置服务器");
-            Console.WriteLine("  输入:DBService DBGame01 100重启1号DB服务器");
-            Console.WriteLine("  输入:DBService DBGame02 200重启2号DB服务器");
+            Console.WriteLine("  输入:DBService DBGame01 1重启1号DB服务器");
+            Console.WriteLine("  输入:DBService DBGame02 2重启2号DB服务器");
             Console.WriteLine("  输入:LoginService LoginService01重启1号登录服务器");
             Console.WriteLine("  输入:LoginService LoginService02重启2号登录服务器");
             Console.WriteLine("  输入:GatewayService GatewayService01重启1号网关服务器");
             Console.WriteLine("  输入:GatewayService GatewayService02重启2号网关服务器");
+            Console.WriteLine("---------------------------------------------------------------------------------------------");
             while (true)
             {
                 var command = Console.ReadLine();
@@ -54,8 +56,8 @@ namespace DistributedExample
                     StartNewProcess("ConfigService", command == "2");
                     await Task.Delay(1000);
                     //启动数据库服务器, 启动两个节点数据库服务器 参数1是服务器类型, 用于注册到配置服务器, 参数2是DB服名称(唯一), 参数3是机器号(唯一)
-                    StartNewProcess("DBService DBGame01 100", command == "2");
-                    StartNewProcess("DBService DBGame02 200", command == "2");
+                    StartNewProcess("DBService DBGame01 1", command == "2");
+                    StartNewProcess("DBService DBGame02 2", command == "2");
                     //启动登录服务器
                     StartNewProcess("LoginService LoginService01", command == "2");
                     StartNewProcess("LoginService LoginService02", command == "2");

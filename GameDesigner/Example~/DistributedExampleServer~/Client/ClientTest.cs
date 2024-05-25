@@ -55,24 +55,28 @@ namespace DistributedExample
                             tasks[i - start] = client.Request<int>((uint)protoType, 1000 * 30, i.ToString(), i.ToString());
                         }
                         var results = await UniTask.WhenAll(tasks);
+                        int result1 = 0;
+                        int unResult1 = 0;
                         foreach (var item in results)
                         {
-                            if (item == 0)
+                            if (item == 1)
                             {
                                 result++;
+                                result1++;
                             }
                             else
                             {
                                 unResult++;
+                                unResult1++;
                             }
                         }
                         stopwatch1.Stop();
-                        Console.WriteLine($"{start}-{start + len} 完成数量:{result} 未完成:{unResult} {stopwatch1.Elapsed}");
+                        Console.WriteLine($"{start}-{start + len} 完成数量:{result1} 未完成:{unResult1} {stopwatch1.Elapsed}");
                         start += len;
                     }
                     stopwatch.Stop();
                     Console.WriteLine(stopwatch.Elapsed);
-                    Console.WriteLine($"完成数量:{result} 未完成:{unResult}");
+                    Console.WriteLine($"总体完成数量:{result} 未完成:{unResult}");
                 }
             }
         }

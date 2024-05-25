@@ -24,7 +24,7 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, "DBService", name);
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.DBService, name);
             Start((ushort)itemConfig.Port);
             distributedDB = new DistributedDB
             {
@@ -78,7 +78,7 @@ namespace DistributedExample
                 Response(client, ProtoType.Login, token, -2, null);
                 return;
             }
-            Response(client, ProtoType.Login, token, 0, data);
+            Response(client, ProtoType.Login, token, 1, data);
         }
 
         private async UniTaskVoid Register(NetPlayer client, string account, string password)
@@ -97,7 +97,7 @@ namespace DistributedExample
                     Context = distributedDB
                 };
                 data.NewTableRow();
-                code = 0;
+                code = 1;
                 return data;
             });
             Response(client, ProtoType.Register, token, code);

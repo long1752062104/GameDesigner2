@@ -23,8 +23,8 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, "LoginService", name);
-            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, "DBService");
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.LoginService, name);
+            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.DBService);
             loadBalance.Config = config;
             loadBalance.LBConfig = lbConfig;
             //loadBalance.MaxThread = 1;
@@ -61,7 +61,7 @@ namespace DistributedExample
             var token = client.Token; //先保存现场，下面代码有await会切换线程，会导致token丢失
             var node = loadBalance.GetHash(account); //获取此账号负载均衡DB服务器节点
             var dbClient = node.Token; //拿到DB服务器的连接
-            var (code, user) = await dbClient.Request<int, UserData>(ProtoType.Login, 1000 * 30, account, password); //向DB服务器发出请求, 查询数据库账号
+            var (code, user) = await dbClient.Request<int, UserData>(ProtoType.Login, GlobalConfig.RequestTimeoutMilliseconds, account, password); //向DB服务器发出请求, 查询数据库账号
             Response(client, ProtoType.Login, token, code, user); //响应客户端，客户端用await等等
             //Call(client, (int)ProtoType.Login, code, user); //如果客户端用Call发起，则用Call回应，不需要token
             //LoginHandler(client);
@@ -73,7 +73,7 @@ namespace DistributedExample
             var token = client.Token;
             var node = loadBalance.GetHash(account);
             var dbClient = node.Token;
-            var code = await dbClient.Request<int>(ProtoType.Register, 1000 * 30, account, password);
+            var code = await dbClient.Request<int>(ProtoType.Register, GlobalConfig.RequestTimeoutMilliseconds, account, password);
             Response(client, ProtoType.Register, token, code);
         }
     }

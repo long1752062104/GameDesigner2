@@ -20,8 +20,8 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, "GatewayService", name);
-            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, "LoginService");
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.GatewayService, name);
+            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.LoginService);
             loadBalance.Config = config;
             loadBalance.LBConfig = lbConfig;
             //loadBalance.MaxThread = 1;
@@ -62,7 +62,7 @@ namespace DistributedExample
         {
             var token = client.Token; //记录请求响应token, 避免await后丢失
             var loginClient = loadBalance.GetRoundRobin().Token; //获取负载均衡轮询客户端对象
-            var (code, user) = await loginClient.Request<int, UserData>(ProtoType.Login, 1000 * 30, account, password); //网关向登录服务器发出请求
+            var (code, user) = await loginClient.Request<int, UserData>(ProtoType.Login, GlobalConfig.RequestTimeoutMilliseconds, account, password); //网关向登录服务器发出请求
             Response(client, ProtoType.Login, token, code, user); //发给unity客户端
             //if (code == 0)
             //    LoginHandler(client);
@@ -73,7 +73,7 @@ namespace DistributedExample
             //NDebug.Log("注册");
             var token = client.Token;
             var loginClient = loadBalance.GetRoundRobin().Token;
-            var code = await loginClient.Request<int>(ProtoType.Register, 1000 * 30, account, password);
+            var code = await loginClient.Request<int>(ProtoType.Register, GlobalConfig.RequestTimeoutMilliseconds, account, password);
             Response(client, ProtoType.Register, token, code);
         }
     }
