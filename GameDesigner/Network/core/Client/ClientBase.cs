@@ -82,7 +82,7 @@ namespace Net.Client
         protected ConcurrentDictionary<string, Thread> threadDic = new ConcurrentDictionary<string, Thread>();
 #endif
         /// <summary>
-        /// 网络连接状态
+        /// 网络状态
         /// </summary>
         public NetworkState NetworkState { get; protected set; } = NetworkState.None;
         /// <summary>

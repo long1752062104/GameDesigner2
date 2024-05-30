@@ -19,7 +19,7 @@ namespace DistributedExample
                 ReconnectCount = int.MaxValue,
             };
             loadBalance.Config = config;
-            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, "GatewayService");
+            var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.GatewayService);
             loadBalance.LBConfig = lbConfig;
             await loadBalance.Init();
             while (true)

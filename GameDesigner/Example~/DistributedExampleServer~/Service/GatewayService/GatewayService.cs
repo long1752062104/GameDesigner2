@@ -20,7 +20,7 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.GatewayService, name);
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.GatewayService, name, "");
             var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.LoginService);
             loadBalance.Config = config;
             loadBalance.LBConfig = lbConfig;

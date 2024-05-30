@@ -76,24 +76,15 @@ namespace Net.Distributed
         /// <param name="token"></param>
         public void AddNode(string node, T token = default)
         {
-            if (nodes.Add(node))
-            {
-                // 根据节点名称和索引构造虚拟节点，并添加到哈希环中
-                for (int i = 0; i < virtualNodeReplicas; i++) // 假设每个节点有5个虚拟节点
-                {
-                    var virtualNode = $"{node}_V{i}";
-                    var hash = GetHash(virtualNode);
-                    hashRing[hash] = new VirtualNode<T>(virtualNode, node) { Token = token };
-                }
-                RecalculateNode();
-            }
+            AddNodeGet(node, token);
         }
 
         /// <summary>
         /// 添加节点并获得虚拟节点列表
         /// </summary>
         /// <param name="node"></param>
-        public List<VirtualNode<T>> AddNodeGet(string node)
+        /// <param name="token"></param>
+        public List<VirtualNode<T>> AddNodeGet(string node, T token = default)
         {
             var virtualNodes = new List<VirtualNode<T>>();
             if (nodes.Add(node))
@@ -103,7 +94,7 @@ namespace Net.Distributed
                 {
                     var virtualNode = $"{node}_V{i}";
                     var hash = GetHash(virtualNode);
-                    var Node = new VirtualNode<T>(virtualNode, node);
+                    var Node = new VirtualNode<T>(virtualNode, node) { Token = token };
                     hashRing[hash] = Node;
                     virtualNodes.Add(Node);
                 }
@@ -195,11 +186,7 @@ namespace Net.Distributed
         // 哈希函数
         private uint GetHash(string node)
         {
-            //byte[] data = Encoding.UTF8.GetBytes(node);
-            //var sha1 = SHA1.Create();
-            //byte[] hash = sha1.ComputeHash(data);
-            //return BitConverter.ToUInt32(hash, 0);
-            return (uint)node.CRC32();
+            return node.CRCU32();
         }
 
         /// <summary>

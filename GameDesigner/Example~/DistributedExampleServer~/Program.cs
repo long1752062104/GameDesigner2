@@ -37,6 +37,7 @@ namespace DistributedExample
             Console.WriteLine("选择服务器模式:");
             Console.WriteLine("1.单进程");
             Console.WriteLine("2.多进程");
+            Console.WriteLine("3.数据库动态扩缩容");
             Console.WriteLine("---------------------------------------------------------------------------------------------");
             Console.WriteLine("模拟服务器崩溃重启，你先使用2启动多个进程，然后再关闭几个服务器，再使用以下命令启动单个服务器");
             Console.WriteLine("  输入:ConfigService重启配置服务器");
@@ -67,6 +68,16 @@ namespace DistributedExample
                     //启动客户端
                     StartNewProcess("Client", command == "2");
                     if (command == "1")
+                        break;
+                }
+                else if (command.StartsWith("3"))
+                {
+                    //先启动配置服务器
+                    StartNewProcess("ConfigService", command == "2");
+                    await Task.Delay(1000);
+                    //启动客户端
+                    StartNewProcess("DBManager", command == "2");
+                    //if (command == "1")
                         break;
                 }
                 else if (command.StartsWith("ConfigService") | command.StartsWith("DBService") | command.StartsWith("LoginService") | command.StartsWith("GatewayService"))
@@ -124,6 +135,10 @@ namespace DistributedExample
                 case "Client":
                     var clientTest = new ClientTest();
                     clientTest.Init();
+                    break;
+                case "DBManager":
+                    var dbManager = new DBManager();
+                    dbManager.Init();
                     break;
             }
         }

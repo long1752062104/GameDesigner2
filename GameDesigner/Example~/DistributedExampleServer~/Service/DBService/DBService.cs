@@ -24,7 +24,7 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.DBService, name);
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.DBService, name, machineId);
             Start((ushort)itemConfig.Port);
             distributedDB = new DistributedDB
             {
@@ -33,8 +33,8 @@ namespace DistributedExample
             };
             distributedDB.ConnectionBuilder.Database = name;
             distributedDB.CreateTables("root", name);
-            distributedDB.InitTablesId(5, true, int.Parse(machineId), 16);
-            ThreadManager.Invoke(distributedDB.BatchWorker, true);
+            distributedDB.InitTablesId(5, true, int.Parse(machineId), 10);
+            distributedDB.Start();
             AreaName = name;
             //Console.Title = $"{name} {itemConfig.Port}";
             OnNetworkDataTraffic += (df) =>

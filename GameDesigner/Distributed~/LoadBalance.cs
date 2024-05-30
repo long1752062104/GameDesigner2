@@ -80,10 +80,11 @@ namespace Net.Distributed
                 throw new Exception("连接配置服务器失败!");
             var eventId = ThreadManager.Invoke(client.SingleNetworkProcessing);
             var data = await client.Request<DATA>(protocol, args);
+            ThreadManager.Event.RemoveEvent(eventId);
+            await UniTask.Yield(); //需要休眠一下让事件结束
+            client.Close(false);
             if (data == null)
                 throw new Exception("获取配置请求失败!");
-            client.Close(false);
-            ThreadManager.Event.RemoveEvent(eventId);
             return data;
         }
 

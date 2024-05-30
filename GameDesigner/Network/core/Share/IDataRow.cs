@@ -38,5 +38,10 @@ namespace Net.Share
         /// <param name="name"></param>
         /// <returns></returns>
         object this[string name] { get; set; }
+        /// <summary>
+        /// 设置数据库实例
+        /// </summary>
+        /// <param name="context"></param>
+        void SetContext(object context);
     }
 }

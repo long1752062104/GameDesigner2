@@ -52,6 +52,10 @@ namespace Distributed
             }
             set => context = value;
         }
+        public void SetContext(object context)
+        {
+            this.context = context as DistributedDB;
+        }
     #endif
         private Int64 id;
         /// <summary></summary>

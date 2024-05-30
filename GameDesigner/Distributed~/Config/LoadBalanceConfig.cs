@@ -19,10 +19,14 @@ namespace Net.Distributed
         /// 服务器端口
         /// </summary>
         public int Port { get; set; }
+        /// <summary>
+        /// 额外参数，可以是自定义参数或者使用Json记录
+        /// </summary>
+        public string Args { get; set; }
 
         public override string ToString()
         {
-            return $"{Name} {Host} {Port}";
+            return $"{Name} {Host} {Port} {Args}";
         }
     }
 

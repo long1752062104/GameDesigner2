@@ -23,7 +23,7 @@ namespace DistributedExample
             switch ((ProtoType)model.protocol)
             {
                 case ProtoType.RegisterConfig:
-                    RegisterConfig(unClient, model.AsString, model.AsString);
+                    RegisterConfig(unClient, model.AsString, model.AsString, model.AsString);
                     break;
                 case ProtoType.LoadBalanceConfig:
                     LoadBalanceConfig(unClient, model.AsString);
@@ -32,7 +32,7 @@ namespace DistributedExample
             return false;
         }
 
-        private void RegisterConfig(NetPlayer client, string serverType, string serverName)
+        private void RegisterConfig(NetPlayer client, string serverType, string serverName, string args)
         {
             lock (this)
             {
@@ -45,6 +45,7 @@ namespace DistributedExample
                         Name = serverName,
                         Host = ((IPEndPoint)client.RemotePoint).Address.ToString(),
                         Port = dbServerPort,
+                        Args = args,
                     };
                     lbConfig.Add(config);
                     dbServerPort++;

@@ -23,15 +23,12 @@ namespace DistributedExample
                 LimitQueueCount = 1024 * 1024 * 5,
                 ReconnectCount = int.MaxValue,
             };
-            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.LoginService, name);
+            var itemConfig = await loadBalance.RemoteConfig<ItemConfig>("127.0.0.1", 10240, config, (int)ProtoType.RegisterConfig, GlobalConfig.LoginService, name, "");
             var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.DBService);
             loadBalance.Config = config;
             loadBalance.LBConfig = lbConfig;
-            //loadBalance.MaxThread = 1;
-            //loadBalance.LBConfig.Count = 1;
             await loadBalance.Init();
             Start((ushort)itemConfig.Port);
-            //Console.Title = $"{name} {itemConfig.Port}";
             OnNetworkDataTraffic += (df) =>
             {
                 Console.Title = $"{name} {itemConfig.Port} {df}";

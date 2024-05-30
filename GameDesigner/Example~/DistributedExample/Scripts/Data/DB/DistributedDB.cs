@@ -65,6 +65,7 @@ namespace Distributed
         private readonly MyDictionary<Type, QueueSafe<IQueryTask>> queryTypes = new MyDictionary<Type, QueueSafe<IQueryTask>>();
         private readonly MyDictionary<string, StringBuilder> queryCell = new MyDictionary<string, StringBuilder>();
         private readonly Queue<IQueryTask> queryQueue = new Queue<IQueryTask>();
+        private int workerId;
 
         private MySqlConnection CheckConn(MySqlConnection conn)
         {
@@ -97,6 +98,7 @@ namespace Distributed
             foreach (DataRow row in userTable.Rows)
             {
                 var data = new UserData();
+                data.SetContext(this);
                 data.Init(row);
                 list.Add(data);
             }
@@ -257,6 +259,7 @@ namespace Distributed
                                 else data[name] = value;
                             }
                             data.RowState = DataRowState.Unchanged;
+                            data.SetContext(this);
                             datas.Add(data);
                         }
                         QueryCount++;
@@ -568,7 +571,7 @@ namespace Distributed
         {
             string CommandText { get; set; }
             bool IsDone { get; set; }
-            void SetRows(DataRow[] rows);
+            void SetRows(DistributedDB context, DataRow[] rows);
         }
 
         private class QueryTask<T> : IQueryTask where T : IDataRow, new()
@@ -577,11 +580,12 @@ namespace Distributed
             public bool IsDone { get; set; }
             internal T Data;
 
-            public void SetRows(DataRow[] rows)
+            public void SetRows(DistributedDB context, DataRow[] rows)
             {
                 if (rows.Length > 0)
                 {
                     Data = new T();
+                    Data.SetContext(context);
                     Data.Init(rows[0]);
                 }
             }
@@ -593,12 +597,13 @@ namespace Distributed
             public bool IsDone { get; set; }
             internal T[] Datas;
 
-            public void SetRows(DataRow[] rows)
+            public void SetRows(DistributedDB context, DataRow[] rows)
             {
                 Datas = new T[rows.Length];
                 for (int i = 0; i < rows.Length; i++)
                 {
                     Datas[i] = new T();
+                    Datas[i].SetContext(context);
                     Datas[i].Init(rows[i]);
                 }
             }
@@ -684,7 +689,7 @@ namespace Distributed
                             if (dataTable != null)
                             {
                                 var rows = dataTable.Select(queryTask.CommandText);
-                                queryTask.SetRows(rows);
+                                queryTask.SetRows(this, rows);
                             }
                             queryTask.IsDone = true;
                         }
@@ -794,7 +799,16 @@ namespace Distributed
         /// </summary>
         public void Start()
         {
-            ThreadManager.Invoke(ConnectionBuilder.Database + "Process", BatchWorker, true);
+            workerId = ThreadManager.Invoke(ConnectionBuilder.Database + "Process", BatchWorker, true);
+        }
+
+        /// <summary>
+        /// 停止运行
+        /// </summary>
+        public void Stop() 
+        {
+            ThreadManager.Event.RemoveEvent(workerId);
+            workerId = 0;
         }
     }
 }
