@@ -1442,7 +1442,7 @@ namespace Net.Server
                 stream.Position = dataSizePos;
                 stream.WriteFixed((uint)(currPos - dataSizePos - 4));
                 stream.Position = currPos;
-                if (++index >= PackageLength | currPos + 1024 >= BufferPool.Size)
+                if (++index >= PackageLength | currPos + 10240 >= BufferPool.Size)
                     break;
             }
         }
