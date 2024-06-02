@@ -102,14 +102,20 @@ namespace Net.System
             }
             IsQuery = true;
             Data = await queryFunc();
-            if (Data == null && onNullQuery == null) //此处是空对象不创建
+            if (Data == null)
             {
-                ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                if (onNullQuery != null)
+                {
+                    Data = onNullQuery();
+                    ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+                }
+                else
+                {
+                    ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                }
                 Locking.Exit();
-                return default;
+                return Data;
             }
-            if (Data == null) //这里是空对象时创建
-                Data = onNullQuery();
             if (followQuery != null) //后续查询也需要异步
                 await followQuery(Data);
             ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;

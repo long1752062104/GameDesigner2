@@ -39,6 +39,12 @@ namespace Net.Share
         /// <returns></returns>
         object this[string name] { get; set; }
         /// <summary>
+        /// 根据索引获得字段值
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        object this[int index] { get; set; }
+        /// <summary>
         /// 设置数据库实例
         /// </summary>
         /// <param name="context"></param>

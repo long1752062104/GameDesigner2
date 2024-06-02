@@ -172,21 +172,6 @@
             }
         }
 
-        protected override bool HeartHandler()
-        {
-            try
-            {
-                if (++heart <= HeartLimit)
-                    return true;
-                if (Connected & heart < HeartLimit + 5)
-                    Call(NetCmd.SendHeartbeat, new byte[0]);
-                else if (!Connected)//尝试连接执行
-                    InternalReconnection();
-            }
-            catch { }
-            return openClient & CurrReconnect < ReconnectCount;
-        }
-
         protected unsafe override void SendByteData(ISegment buffer)
         {
             if (ClientPtr == IntPtr.Zero)

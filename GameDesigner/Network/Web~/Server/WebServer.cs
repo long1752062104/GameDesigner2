@@ -23,6 +23,9 @@ namespace Net.Server
     /// </summary>
     public class WebServer<Player, Scene> : ServerBase<Player, Scene> where Player : WebPlayer, new() where Scene : NetScene<Player>, new()
     {
+        public override int HeartInterval { get; set; } = 1000 * 60 * 2;//2分钟跳一次
+        public override byte HeartLimit { get; set; } = 2;//确认两次
+
         /// <summary>
         /// webSocket服务器套接字
         /// </summary>

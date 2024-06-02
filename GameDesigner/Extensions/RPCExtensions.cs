@@ -9,16 +9,20 @@ internal static class RPCExtensions
 
     static RPCExtensions()
     {
-        var methods = AssemblyHelper.GetMethodAttributes(typeof(Rpc));
+        var methods = AssemblyHelper.GetMethodAttributes(typeof(RPC), "mscorlib", "System", "Unity");
         foreach (var method in methods)
         {
-            var rpc = method.GetCustomAttribute<Rpc>();
-            if (!string.IsNullOrEmpty(rpc.func))
-                FuncMap[rpc.func.CRCU32()] = method;
-            else
-                FuncMap[method.Name.CRCU32()] = method;
-            if (rpc.hash != 0)
-                FuncMap[rpc.hash] = method;
+            var attributes = method.GetCustomAttributes(typeof(RPC), true);
+            foreach (var attribute in attributes)
+            {
+                RPC rpc = (RPC)attribute;
+                if (!string.IsNullOrEmpty(rpc.func))
+                    FuncMap[rpc.func.CRCU32()] = method;
+                else
+                    FuncMap[method.Name.CRCU32()] = method;
+                if (rpc.hash != 0)
+                    FuncMap[rpc.hash] = method;
+            }
         }
     }
 

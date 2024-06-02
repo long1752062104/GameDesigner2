@@ -482,7 +482,15 @@ namespace Net.Serialize
             }
             internal override void SetValue(ref object obj, object v)
             {
-                setValueCall.Target(setValueCall, obj, (T)v);
+                try
+                {
+                    setValueCall.Target(setValueCall, obj, (T)v);
+                }
+                catch (Exception ex)
+                {
+                }
+
+
             }
             internal override void GetValueCall(object callSite)
             {
@@ -561,6 +569,8 @@ namespace Net.Serialize
                         if (member.MemberType == MemberTypes.Field)
                         {
                             var field = member as FieldInfo;
+                            if (field.IsInitOnly) //只读字段不进行序列化
+                                continue;
                             var fType = field.FieldType;
                             if (fType.IsArray)
                             {

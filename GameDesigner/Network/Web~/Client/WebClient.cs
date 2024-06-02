@@ -30,6 +30,8 @@ namespace Net.Client
     public class WebClient : ClientBase
     {
         public WebSocket WSClient { get; private set; }
+        public override int HeartInterval { get; set; } = 1000 * 60 * 10;//10分钟跳一次
+        public override byte HeartLimit { get; set; } = 2;//确认两次
         /// <summary>
         /// websocket连接策略, 有wss和ws
         /// </summary>
@@ -168,21 +170,6 @@ namespace Net.Client
 
         public override void ReceiveHandler()
         {
-        }
-
-        protected override bool HeartHandler()
-        {
-            try
-            {
-                if (++heart <= HeartLimit)
-                    return true;
-                if (Connected)
-                    Call(NetCmd.SendHeartbeat, new byte[0]);
-                else//尝试连接执行
-                    InternalReconnection();
-            }
-            catch { }
-            return openClient & CurrReconnect < ReconnectCount;
         }
 
         protected override void SendByteData(ISegment buffer)
