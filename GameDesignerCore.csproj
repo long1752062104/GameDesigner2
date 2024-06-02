@@ -77,6 +77,8 @@
     <None Remove="GameDesigner\Common\Command.cs.meta" />
     <None Remove="GameDesigner\Common\FastLocking.cs.meta" />
     <None Remove="GameDesigner\Common\NTransform.cs.meta" />
+    <None Remove="GameDesigner\Common\ObservableArray.cs.meta" />
+    <None Remove="GameDesigner\Common\ObservableProperty.cs.meta" />
     <None Remove="GameDesigner\Common\PropertyObserver.cs.meta" />
     <None Remove="GameDesigner\Common\Singleton.cs.meta" />
     <None Remove="GameDesigner\Common\TransformEntity.cs.meta" />
@@ -105,6 +107,7 @@
     <None Remove="GameDesigner\Helper\JobQueueHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\PathHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\RpcHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\SerializeHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\SyncVarHelper.cs.meta" />
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\ImportCmd.exe" />
@@ -132,10 +135,14 @@
     <None Remove="GameDesigner\Network\core\Config\ConfigBase.cs.meta" />
     <None Remove="GameDesigner\Network\core\Config\ServerConfig.cs.meta" />
     <None Remove="GameDesigner\Network\core\Config\TableConfig.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Serialize\BinarySerializeHelper.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Serialize\BinarySerializeHepler.cs.meta" />
     <None Remove="GameDesigner\Network\core\Serialize\NetConvertHelper.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Serialize\SerializeHelper.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\BigData.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\EventDelegate.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\IDataConfig.cs.meta" />
+    <None Remove="GameDesigner\Network\core\Share\IDataEntity.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\NetPort.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\NetworkUpdateMode.cs.meta" />
     <None Remove="GameDesigner\Network\core\Share\SyncVariable.cs.meta" />
@@ -153,6 +160,9 @@
     <None Remove="GameDesigner\Network\core\Tools\ObjectConverter.cs.meta" />
     <None Remove="GameDesigner\Network\core\Tools\TypeExtend.cs.meta" />
     <None Remove="GameDesigner\Network\core\Unity\UnityThreadContext.cs.meta" />
+    <None Remove="GameDesigner\Network\Web~\Server\HttpPlayer.cs.meta" />
+    <None Remove="GameDesigner\Network\Web~\Server\HttpServer.cs.meta" />
+    <None Remove="GameDesigner\Network\Web~\WebsocketSharp.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />
     <None Remove="GameDesigner\Serialize.meta" />

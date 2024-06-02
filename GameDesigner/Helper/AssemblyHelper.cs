@@ -407,7 +407,7 @@ namespace Net.Helper
         /// </summary>
         /// <param name="attribute"></param>
         /// <returns>返回所有带有attribute特性的方法列表</returns>
-        public static List<MethodInfo> GetMethodAttributes(Type attribute)
+        public static List<MethodInfo> GetMethodAttributes(Type attribute, params string[] filterNames)
         {
             var methodsList = new List<MethodInfo>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -415,15 +415,33 @@ namespace Net.Helper
             {
                 if (assemblie.IsDynamic)
                     continue;
-                var types = assemblie.GetTypes().Where(t => t.IsClass);
+                var isContains = false;
+                foreach (var filter in filterNames)
+                {
+                    if (assemblie.FullName.StartsWith(filter))
+                    {
+                        isContains = true;
+                        break;
+                    }
+                }
+                if (isContains)
+                    continue;
+                var types = assemblie.GetTypes();
                 foreach (var type in types)
                 {
+                    if (!type.IsClass)
+                        continue;
                     var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     foreach (var method in methods)
                     {
-                        if (method.GetCustomAttribute(attribute) != null)
+                        var attributes = method.CustomAttributes;
+                        foreach (var attribute1 in attributes)
                         {
-                            methodsList.Add(method);
+                            if (attribute1.AttributeType == attribute || attribute1.AttributeType.IsSubclassOf(attribute))
+                            {
+                                methodsList.Add(method);
+                                break;
+                            }
                         }
                     }
                 }

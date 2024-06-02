@@ -1,4 +1,4 @@
-﻿/*版权所有（C）GDNet框架
+/*版权所有（C）GDNet框架
 *
 *该软件按“原样”提供，不提供任何形式的明示或暗示担保，
 *无论是由于软件，使用或其他方式产生的，侵权或其他形式的任何索赔，损害或其他责任，作者或版权所有者概不负责。
@@ -1110,7 +1110,7 @@ namespace Net.Client
                 stream.Position = dataSizePos;
                 stream.WriteFixed((uint)(currPos - dataSizePos - 4));
                 stream.Position = currPos;
-                if (++index >= PackageLength | currPos + 1024 >= BufferPool.Size)
+                if (++index >= PackageLength | currPos + 10240 >= BufferPool.Size)
                     break;
             }
         }

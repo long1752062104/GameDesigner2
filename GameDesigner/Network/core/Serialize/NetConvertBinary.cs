@@ -1,4 +1,4 @@
-﻿namespace Net.Serialize
+namespace Net.Serialize
 {
     using Net.Event;
     using global::System;
@@ -341,7 +341,7 @@
             catch (Exception ex)
             {
                 var func = RPCExtensions.GetFunc(model.protocol);
-                NDebug.LogError($"序列化{func}出错:{ex}");
+                NDebug.LogError($"序列化:{func}出错,如果提示为索引溢出,你可以在Call或者Response方法直接设置serialize参数为true 详情:{ex}");
                 return false;
             }
         }
@@ -482,7 +482,15 @@
             }
             internal override void SetValue(ref object obj, object v)
             {
-                setValueCall.Target(setValueCall, obj, (T)v);
+                try
+                {
+                    setValueCall.Target(setValueCall, obj, (T)v);
+                }
+                catch (Exception ex)
+                {
+                }
+
+
             }
             internal override void GetValueCall(object callSite)
             {
@@ -561,6 +569,8 @@
                         if (member.MemberType == MemberTypes.Field)
                         {
                             var field = member as FieldInfo;
+                            if (field.IsInitOnly) //只读字段不进行序列化
+                                continue;
                             var fType = field.FieldType;
                             if (fType.IsArray)
                             {
@@ -960,7 +970,7 @@
             catch (Exception ex)
             {
                 var func = RPCExtensions.GetFunc(model.protocol);
-                NDebug.LogError($"反序列化{func}出错:{ex}");
+                NDebug.LogError($"反序列化:{func}出错:{ex}");
                 return false;
             }
         }
