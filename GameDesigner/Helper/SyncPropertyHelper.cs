@@ -98,7 +98,7 @@ namespace Net.Helper
                     return;
                 }
             }
-            NDebug.LogError($"{typeof(T)}属性同步设置失败: Id:{pars[0]} FieldIdx:{index} Value:{pars[1]}");
+            NDebug.LogError($"{typeof(T)}类的{name}属性同步设置失败: Id:{pars[0]} FieldIdx:{index} Value:{pars[1]}");
         }
 
         public override string ToString()

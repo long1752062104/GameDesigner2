@@ -109,6 +109,7 @@
     <Compile Include="GameDesigner\AOI~\GridWorld.cs" />
     <Compile Include="GameDesigner\AOI~\IGridActor.cs" />
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
+    <Compile Include="GameDesigner\Common\ObservableProperty.cs" />
     <Compile Include="GameDesigner\Distributed~\Config\LoadBalanceConfig.cs" />
     <Compile Include="GameDesigner\Distributed~\ConsistentHashing.cs" />
     <Compile Include="GameDesigner\Common\Command.cs" />
@@ -143,6 +144,8 @@
     <Compile Include="GameDesigner\Helper\DateTimeHelper.cs" />
     <Compile Include="GameDesigner\Helper\JobQueueHelper.cs" />
     <Compile Include="GameDesigner\Helper\PathHelper.cs" />
+    <Compile Include="GameDesigner\Helper\SerializeHelper.cs" />
+    <Compile Include="GameDesigner\Helper\SyncPropertyHelper.cs" />
     <Compile Include="GameDesigner\K4os.Hash.xxHash\HashAlgorithmAdapter.cs" />
     <Compile Include="GameDesigner\K4os.Hash.xxHash\XXH.cs" />
     <Compile Include="GameDesigner\K4os.Hash.xxHash\XXH32.cs" />
@@ -157,6 +160,7 @@
     <Compile Include="GameDesigner\Network\core\Config\ServerConfig.cs" />
     <Compile Include="GameDesigner\Network\core\Serialize\NetConvertHelper.cs" />
     <Compile Include="GameDesigner\Network\core\Share\EventDelegate.cs" />
+    <Compile Include="GameDesigner\Network\core\Share\IDataEntity.cs" />
     <Compile Include="GameDesigner\Network\core\Share\SyncVariable.cs" />
     <Compile Include="GameDesigner\Network\core\Share\ThreadArgs.cs" />
     <Compile Include="GameDesigner\Network\core\Share\NetworkUpdateMode.cs" />

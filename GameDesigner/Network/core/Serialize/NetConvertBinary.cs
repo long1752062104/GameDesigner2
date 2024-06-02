@@ -482,15 +482,7 @@ namespace Net.Serialize
             }
             internal override void SetValue(ref object obj, object v)
             {
-                try
-                {
-                    setValueCall.Target(setValueCall, obj, (T)v);
-                }
-                catch (Exception ex)
-                {
-                }
-
-
+                setValueCall.Target(setValueCall, obj, (T)v);
             }
             internal override void GetValueCall(object callSite)
             {
