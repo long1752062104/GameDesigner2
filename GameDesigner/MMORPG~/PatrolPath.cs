@@ -5,13 +5,14 @@ using System.Collections.Generic;
 namespace Net.MMORPG
 {
     /// <summary>
-    /// 巡逻路径点
+    ///  路径点
     /// </summary>
     [Serializable]
-    public class PatrolPath
+    public class RoamingPathData
     {
+        public string name;
         /// <summary>
-        /// 所有巡逻路径点
+        /// 所有路径点
         /// </summary>
         public List<Vector3> waypoints = new List<Vector3>();
     }

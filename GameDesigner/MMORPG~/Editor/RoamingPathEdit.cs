@@ -41,6 +41,7 @@ namespace Net.MMORPG
                 self.localWaypoints.Clear();
                 EditorUtility.SetDirty(self);
             }
+            self.Name = EditorGUILayout.TextField("Name", self.Name);
             WaypointsFoldout.boolValue = Foldout(WaypointsFoldout.boolValue, "所有路点", true, EditorStyles.foldout);
             if (WaypointsFoldout.boolValue)
             {

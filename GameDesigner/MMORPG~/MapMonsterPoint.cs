@@ -16,7 +16,7 @@ namespace Net.MMORPG
         /// <summary>
         /// 怪物巡逻点
         /// </summary>
-        public PatrolPath patrolPath;
+        public RoamingPathData patrolPath;
 
         public override string ToString()
         {

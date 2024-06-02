@@ -35,7 +35,7 @@ namespace Net.MMORPG
         /// </summary>
         public int height;
     }
-
+    
     /// <summary>
     /// 地图数据
     /// </summary>
@@ -50,6 +50,10 @@ namespace Net.MMORPG
         /// 地图的所有怪物点
         /// </summary>
         public List<MapMonsterPoint> monsterPoints = new List<MapMonsterPoint>();
+        /// <summary>
+        ///  简单在路径点，可以用作服务器NPC位置，玩家出生位置等等
+        /// </summary>
+        public List<RoamingPathData> roamingPaths = new List<RoamingPathData>();
         /// <summary>
         /// 地图九宫格数据
         /// </summary>
@@ -86,12 +90,19 @@ namespace Net.MMORPG
             foreach (var item in roamingPaths)
             {
                 var monsterPoint = item.GetComponent<MonsterPoint>();
-                sceneData.monsterPoints.Add(new MapMonsterPoint()
+                if (monsterPoint != null)
                 {
-                    name = item.name,
-                    patrolPath = new PatrolPath() { waypoints = item.WorldPointList },
-                    monsters = monsterPoint.monsters,
-                });
+                    sceneData.monsterPoints.Add(new MapMonsterPoint()
+                    {
+                        name = item.name,
+                        patrolPath = new RoamingPathData() { name = item.Name, waypoints = item.WorldPointList },
+                        monsters = monsterPoint.monsters,
+                    });
+                }
+                else
+                {
+                    sceneData.roamingPaths.Add( new RoamingPathData() { name = item.Name, waypoints = item.WorldPointList });
+                }
             }
             var aoiMgr = UnityEngine.Object.FindObjectOfType<Component.AOIManager>();
             if (aoiMgr != null)
