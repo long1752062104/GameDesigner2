@@ -74,14 +74,14 @@ namespace GameCore
         /// <param name="onBack">当关闭界面后回调</param>
         /// <param name="formMode">当前界面响应模式</param>
         /// <returns></returns>
-        public UIBase OpenForm(string formName, Delegate onBack = null, UIMode formMode = UIMode.CloseCurrUI, params object[] pars)
+        public virtual UIBase OpenForm(string formName, Delegate onBack = null, UIMode formMode = UIMode.CloseCurrUI, params object[] pars)
         {
             if (formDict.TryGetValue(formName, out var form))
                 if (form != null)
                     goto J;
             form = InstantiateForm(formName);
             formDict[formName] = form;
-        J: if (formStack.Count > 0)
+        J:  if (formStack.Count > 0)
             {
                 UIBase form1;
                 switch (formMode)
@@ -97,13 +97,13 @@ namespace GameCore
                     case UIMode.None://不做任何动作, Message消息框
                         break;
                 }
-            }
+            } 
             form.ShowUI(onBack, pars);
             if (formMode != UIMode.EmptyStack)
                 formStack.Push(form);//如果是消息框, 一定会关闭了才能再次打开, 不存在多次压入
             return form;
         }
-
+        
         protected virtual UIBase InstantiateForm(string formName)
         {
             var dataTable = Global.Table.GetTable(sheetName);
@@ -130,7 +130,7 @@ namespace GameCore
             }
         }
 
-        public void CloseForm(UIBase form, bool isBack = true, bool navigation = true, params object[] pars)
+        public virtual void CloseForm(UIBase form, bool isBack = true, bool navigation = true, params object[] pars)
         {
             if (formStack.Count > 0)
             {
