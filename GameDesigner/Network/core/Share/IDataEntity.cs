@@ -6,6 +6,7 @@ namespace Net.Share
     {
 #if SERVICE
         void Update(bool immediately = false);
+        string GetCellNameAndTextLength(int index, out uint length);
 #endif
     }
 

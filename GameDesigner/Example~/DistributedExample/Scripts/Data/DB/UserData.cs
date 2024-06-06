@@ -34,7 +34,7 @@ namespace Distributed
     /// <para><see href="此脚本支持防内存修改器, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
     /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
     /// </summary>
-    public partial class UserData : IDataRow
+    public partial class UserData : IDataEntity
     {
         [Net.Serialize.NonSerialized]
         [Newtonsoft_X.Json.JsonIgnore]
@@ -56,6 +56,8 @@ namespace Distributed
         {
             this.context = context as DistributedDB;
         }
+    #else
+        public void SetContext(object context) { }
     #endif
         private Int64 id;
         /// <summary></summary>
@@ -108,6 +110,7 @@ namespace Distributed
 #endif
         }
 
+        [DataRowField("account", 1)]
         [Rpc(hash = (ushort)DistributedHashProto.USER_ACCOUNT)]
         private void AccountRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserData));收集Rpc
         {
@@ -160,6 +163,7 @@ namespace Distributed
 #endif
         }
 
+        [DataRowField("password", 2)]
         [Rpc(hash = (ushort)DistributedHashProto.USER_PASSWORD)]
         private void PasswordRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserData));收集Rpc
         {
@@ -212,6 +216,7 @@ namespace Distributed
 #endif
         }
 
+        [DataRowField("name", 3)]
         [Rpc(hash = (ushort)DistributedHashProto.USER_NAME)]
         private void NameRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserData));收集Rpc
         {
@@ -264,6 +269,7 @@ namespace Distributed
 #endif
         }
 
+        [DataRowField("level", 4)]
         [Rpc(hash = (ushort)DistributedHashProto.USER_LEVEL)]
         private void LevelRpc(Int32 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserData));收集Rpc
         {
@@ -301,6 +307,8 @@ namespace Distributed
         }
         public void NewTableRowSync()
         {
+            if (id == default)
+                id = (Int64)Context.GetUniqueId(DistributedUniqueIdType.User);
             var sb = new StringBuilder();
             BulkLoaderBuilder(sb, false);
             Context.ExecuteNonQuery(sb.ToString());
@@ -430,8 +438,8 @@ namespace Distributed
             if (immediately)
             {
                 var sb = new StringBuilder();
-                DeletedSql(sb);
-                _ = Context.ExecuteNonQuery(sb.ToString(), null);
+                BulkDeleteBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
             }
             else
             {
@@ -482,11 +490,21 @@ namespace Distributed
             var datas = await DistributedDB.I.ExecuteQueryListAsync<UserData>(cmdText);
             return datas;
         }
-        public void Update()
+        public void Update(bool immediately = false)
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-            RowState = DataRowState.Modified;
-            Context.Update(this);
+            if (immediately)
+            {
+                var sb = new StringBuilder();
+                BulkLoaderBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
+                RowState = DataRowState.Unchanged;
+            }
+            else
+            {
+                RowState = DataRowState.Modified;
+                Context.Update(this);
+            }
         }
     #endif
 
@@ -534,13 +552,20 @@ namespace Distributed
     #if SERVER
             if (RowState == DataRowState.Deleted)
                 return;
-            string cmdText = $"DELETE FROM `user` {CheckSqlKey(0, id)}";
-            sb.Append(cmdText);
+            BulkDeleteBuilder(sb, true);
             RowState = DataRowState.Deleted;
     #endif
         }
 
     #if SERVER
+        public void BulkDeleteBuilder(StringBuilder sb, bool isBulk = true)
+        {
+            if (!isBulk)
+                sb.Append($"DELETE FROM `user` {CheckSqlKey(0, id)}");
+            else
+                sb.Append($"{(sb.Length == 0 ? "" : ", ")}{id}");
+        }
+
         public void BulkLoaderBuilder(StringBuilder sb, bool isBulk = true)
         {
  //15
