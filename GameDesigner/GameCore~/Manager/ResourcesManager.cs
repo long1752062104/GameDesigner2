@@ -110,7 +110,10 @@ namespace GameCore
         {
             addressablesDict = new Dictionary<string, string>();
             foreach (var package in AssetBundleBuilder.Instance.Packages)
-                SearchFilesInFolderRecursive(package.path.name, addressablesDict);
+            {
+                var path = UnityEditor.AssetDatabase.GetAssetPath(package.path).Replace("Assets/", "");//获取路径并去掉Assets/，以免路径中重复包含Assets/
+                SearchFilesInFolderRecursive(path, addressablesDict);
+            }
         }
 
         /// <summary>
@@ -137,21 +140,21 @@ namespace GameCore
         /// <returns></returns>
         private List<string> GetAllFilesInFolder(string folderPath)
         {
-            var allFiles = new List<string>();
-            var files = Directory.GetFiles(folderPath);
-            foreach (string filePath in files)
-            {
-                if (!filePath.EndsWith(".meta")) // 过滤掉.meta文件
-                    allFiles.Add(filePath);
+                var allFiles = new List<string>();
+                var files = Directory.GetFiles(folderPath);
+                foreach (string filePath in files)
+                {
+                    if (!filePath.EndsWith(".meta")) // 过滤掉.meta文件
+                        allFiles.Add(filePath);
+                }
+                var subFolders = Directory.GetDirectories(folderPath);
+                foreach (string subFolder in subFolders)
+                {
+                    var subFolderFiles = GetAllFilesInFolder(subFolder);
+                    allFiles.AddRange(subFolderFiles);
+                }
+                return allFiles;
             }
-            var subFolders = Directory.GetDirectories(folderPath);
-            foreach (string subFolder in subFolders)
-            {
-                var subFolderFiles = GetAllFilesInFolder(subFolder);
-                allFiles.AddRange(subFolderFiles);
-            }
-            return allFiles;
-        }
 #endif
 
         public virtual string LoadAssetFileReadAllText(string assetPath)
