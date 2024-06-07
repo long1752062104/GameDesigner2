@@ -1,4 +1,4 @@
-public enum DistributedHashProto : ushort
+public enum DistributedHashProto : uint
 {
     /// <summary></summary>
     USER_ACCOUNT = 4096,

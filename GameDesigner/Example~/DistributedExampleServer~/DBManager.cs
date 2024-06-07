@@ -33,15 +33,15 @@ namespace DistributedExample
             int affectedCount = 0;
             string nodeName = "";
             int state = 0;
+            Console.WriteLine("1.输入:a dbName 01新增1个数据库节点,机器号为01");
+            Console.WriteLine("2.输入:add 10000新增1万个数据");
+            Console.WriteLine("3.输入:r dbName移除1个数据库节点");
             while (true)
             {
-                Console.WriteLine("1.输入:n nodeName 01新增1个数据库节点,机器号为01");
-                Console.WriteLine("2.输入:d 10000新增1万个数据");
-                Console.WriteLine("3.输入:n- nodeName移除1个数据库节点");
                 var command = Console.ReadLine();
-                if (command.StartsWith("d"))
+                if (command.StartsWith("add"))
                 {
-                    var countText = command.Remove(0, 2);
+                    var countText = command.Remove(0, 4);
                     var count = int.Parse(countText);
                     var random = new Random(977579129);
                     for (int i = 0; i < count; i++)
@@ -58,14 +58,15 @@ namespace DistributedExample
                     await Task.Delay(1000);
                     foreach (var node in mysqlNodes.Values)
                     {
+                        node.WaitBatchWorker(); //把上面的添加全部执行完成后才能往下执行
                         var dataCount = node.ExecuteScalar<long>($"SELECT COUNT(*) FROM `user`;");
                         Console.WriteLine($"节点:{node.ConnectionBuilder.Database} 数据量:{dataCount}");
                     }
                     continue;
                 }
-                if (command.StartsWith("n-"))
+                if (command.StartsWith("r"))
                 {
-                    nodeName = command.Remove(0, 3);
+                    nodeName = command.Remove(0, 2);
                     if (!mysqlNodes.ContainsKey(nodeName))
                     {
                         Console.WriteLine("要移除的节点不存在!");
@@ -73,7 +74,7 @@ namespace DistributedExample
                     }
                     state = 2;
                 }
-                else if (command.StartsWith("n"))
+                else if (command.StartsWith("a"))
                 {
                     nodeName = command.Split(" ")[1];
                     if (mysqlNodes.ContainsKey(nodeName))
@@ -109,7 +110,7 @@ namespace DistributedExample
                     long currRowsCount = 0;
                     do
                     {
-                        long size = 200000;
+                        long size = 1000000; //正常情况下100万数据加载是没有问题的
                         if (currRowsCount + size >= userIdMax)
                             size = userIdMax - currRowsCount;
                         var users = gameDB.ExecuteQueryList<UserData>($"SELECT * FROM `user` WHERE id >= {currRowsCount} AND id <= {currRowsCount + size};");
@@ -138,21 +139,24 @@ namespace DistributedExample
                 if (state == 2)
                 {
                     mysqlNodes[nodeName].Stop();
+                    mysqlNodes[nodeName].ExecuteNonQuery($"DROP DATABASE {nodeName};");
                     mysqlNodes.Remove(nodeName);
                 }
                 Console.WriteLine("迁移数据量:" + affectedCount);
                 affectedCount = 0;
                 await Task.Delay(1000);
+                long totalDataCount = 0L;
                 foreach (var node in mysqlNodes.Values)
                 {
                     //检查数据是否冗余
                     var gameDB = node;
+                    gameDB.WaitBatchWorker(); //执行所有批处理才能执行下面代码
                     var userIdMax = gameDB.ExecuteScalar<long>(@"SELECT MAX(id) FROM `user`;");
                     long currRowsCount = 0;
                     long dataCount = 0;
                     do
                     {
-                        long size = 200000;
+                        long size = 1000000; //正常情况下100万数据加载是没有问题的
                         if (currRowsCount + size >= userIdMax)
                             size = userIdMax - currRowsCount;
                         var users = gameDB.ExecuteQueryList<UserData>($"SELECT * FROM `user` WHERE id >= {currRowsCount} AND id <= {currRowsCount + size};");
@@ -169,8 +173,10 @@ namespace DistributedExample
                     }
                     while (currRowsCount < userIdMax);
                     Console.WriteLine($"节点:{node.ConnectionBuilder.Database} 数据量:{dataCount}");
+                    totalDataCount += dataCount;
                 }
                 Console.WriteLine("冗余数据量:" + affectedCount);
+                Console.WriteLine("总数据量:" + totalDataCount);
             }
         }
 

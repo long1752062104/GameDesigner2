@@ -26,8 +26,30 @@ namespace Distributed
     /// </summary>
     public partial class DistributedDB
     {
+        internal class DataEntityQueue
+        {
+            public HashSetSafe<IDataEntity> hashSet = new HashSetSafe<IDataEntity>();
+            public string primaryKey;
+            public int Count => hashSet.Count;
+
+            public DataEntityQueue(string primaryKey)
+            {
+                this.primaryKey = primaryKey;
+            }
+
+            public void Add(IDataEntity item)
+            {
+                hashSet.Add(item);
+            }
+
+            public void Remove(IDataEntity item)
+            {
+                hashSet.Remove(item);
+            }
+        }
+
         public static DistributedDB I { get; private set; } = new DistributedDB();
-        private readonly MyDictionary<Type, HashSetSafe<IDataRow>> DataRowHandler = new MyDictionary<Type, HashSetSafe<IDataRow>>();
+        private readonly MyDictionary<Type, DataEntityQueue> DataRowHandler = new MyDictionary<Type, DataEntityQueue>();
         private readonly ConcurrentStack<MySqlConnection> conns = new ConcurrentStack<MySqlConnection>();
         public string ConnectionText { get => ConnectionBuilder.ToString(); set => ConnectionBuilder = new MySqlConnectionStringBuilder(value); }
         public MySqlConnectionStringBuilder ConnectionBuilder = new MySqlConnectionStringBuilder() 
@@ -434,21 +456,11 @@ namespace Distributed
             return cmdText;
         }
 
-        /// <summary>
-        /// 设置表执行顺序, 用到mysql外键时需要设置
-        /// </summary>
-        /// <param name="types">生成的xxData类</param>
-        public void SetExecutionOrder(params Type[] types)
-        {
-            foreach (var type in types)
-                DataRowHandler[type] = new HashSetSafe<IDataRow>();
-        }
-
-        public void Update(IDataRow entity)//更新的行,列
+        public void Update(IDataEntity entity)//更新的行,列
         {
             var type = entity.GetType();
             if (!DataRowHandler.TryGetValue(type, out var hash))
-                DataRowHandler[type] = hash = new HashSetSafe<IDataRow>();
+                DataRowHandler[type] = hash = new DataEntityQueue(entity.GetCellNameAndTextLength(0, out _));
             hash.Add(entity);
         }
 
@@ -457,13 +469,34 @@ namespace Distributed
 
         public bool BatchWorker() //每帧调用一次, 需要自己调用此方法
         {
-            BatchQueryWorkers();
-            BatchSubmitWorkers();
-            return true;
+            lock (this) //当WaitBatchWorker执行的时候，这里就需要等待
+            {
+                BatchQueryWorkers();
+                BatchSubmitWorkers();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 有时候需要强制执行完成所有批操作后再进行查询时用到，可以立即调用WaitBatchWorker方法执行所有的批处理数据
+        /// </summary>
+        public void WaitBatchWorker()
+        {
+            lock (this) //当BatchWorker执行的时候，这里就需要等待
+            {
+                bool isComplete1, isComplete2;
+                do
+                {
+                    isComplete1 = BatchQueryWorkers();
+                    isComplete2 = BatchSubmitWorkers();
+                }
+                while (!isComplete1 || !isComplete2);
+            }
         }
 
         private bool BatchSubmitWorkers()
         {
+            var isComplete = true;
             try
             {
                 foreach (var item in DataRowHandler)
@@ -471,12 +504,16 @@ namespace Distributed
                     var count = item.Value.Count;
                     if (count <= 0)
                         continue;
-                    count = count > BatchSize ? BatchSize : count;
+                    if (count > BatchSize)
+                    {
+                        count = BatchSize;
+                        isComplete = false;
+                    }
                     updateCmdText.Clear();
                     deleteCmdText.Clear();
                     var tableName = item.Key.Name;
                     tableName = tableName.Remove(tableName.Length - 4, 4);
-                    foreach (var row in item.Value)
+                    foreach (var row in item.Value.hashSet)
                     {
                         switch (row.RowState)
                         {
@@ -493,24 +530,24 @@ namespace Distributed
                         item.Value.Remove(row);
                         if (updateCmdText.Length + deleteCmdText.Length >= SqlBatchSize) 
                         {
-                            ExecuteNonQuery(tableName, updateCmdText, deleteCmdText);
+                            ExecuteNonQuery(tableName, item.Value.primaryKey, updateCmdText, deleteCmdText);
                             updateCmdText.Clear();
                             deleteCmdText.Clear();
                         }
                         if (count-- <= 0)
                             break;
                     }
-                    ExecuteNonQuery(tableName, updateCmdText, deleteCmdText);
+                    ExecuteNonQuery(tableName, item.Value.primaryKey, updateCmdText, deleteCmdText);
                 }
             }
             catch (Exception ex)
             {
                 NDebug.LogError("SQL异常: " + ex);
             }
-            return true;
+            return isComplete;
         }
 
-        private void ExecuteNonQuery(string tableName, StringBuilder updateCmdText, StringBuilder deleteCmdText)
+        private void ExecuteNonQuery(string tableName, string primaryKey, StringBuilder updateCmdText, StringBuilder deleteCmdText)
         {
             if (updateCmdText.Length > 0)
             {
@@ -550,7 +587,7 @@ namespace Distributed
                 }
                 catch (Exception ex)
                 {
-                    NDebug.LogError("批量错误: 1.如果表字段更改则需要重新生成! 2.打开Navicat菜单工具->命令列界面,输入SHOW VARIABLES LIKE 'local_infile';后回车,看是否开启批量加载!如果没有则输入SET GLOBAL local_infile = ON;回车设置批量加载! 详细信息:" + ex);
+                    NDebug.LogError($"表{tableName}批量错误: 1.如果表字段更改则需要重新生成! 2.打开Navicat菜单工具->命令列界面,输入SHOW VARIABLES LIKE 'local_infile';后回车,看是否开启批量加载!如果没有则输入SET GLOBAL local_infile = ON;回车设置批量加载! 详细信息:" + ex);
                 }
                 finally
                 {
@@ -560,6 +597,8 @@ namespace Distributed
             }
             if (deleteCmdText.Length > 0)
             {
+                deleteCmdText.Insert(0, $"DELETE FROM `{tableName}` WHERE `{primaryKey}` IN (");
+                deleteCmdText.Append(");");
                 var stopwatch = Stopwatch.StartNew();
                 var rowCount = ExecuteNonQuery(deleteCmdText.ToString());
                 stopwatch.Stop();
@@ -646,6 +685,7 @@ namespace Distributed
 
         private bool BatchQueryWorkers()
         {
+            var isComplete = true;
             try
             {
                 foreach (var item in queryTypes)
@@ -653,7 +693,11 @@ namespace Distributed
                     var count = item.Value.Count;
                     if (count <= 0)
                         continue;
-                    count = count > BatchSize ? BatchSize : count;
+                    if (count > BatchSize)
+                    {
+                        count = BatchSize;
+                        isComplete = false;
+                    }
                     queryCell.Clear();
                     queryQueue.Clear();
                     var tableName = item.Key.Name;
@@ -700,7 +744,7 @@ namespace Distributed
             {
                 NDebug.LogError("批量查询异常: " + ex);
             }
-            return true;
+            return isComplete;
         }
 
         public DataTable ExecuteQueryAsDataTable(string cmdText)
