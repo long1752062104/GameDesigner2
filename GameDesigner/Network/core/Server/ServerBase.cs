@@ -915,7 +915,7 @@ namespace Net.Server
             OnHasConnectHandle(client);
             if (AllClients.Count >= OnlineLimit + LineUp)
             {
-                Call(client, NetCmd.ServerFull, new byte[0]);
+                Call(client, NetCmd.ServerFull, new byte[1]);
                 SendDirect(client);
                 client.Connected = false;
                 client.QueueUpNo = int.MaxValue;
@@ -1081,7 +1081,7 @@ namespace Net.Server
         {
             if (model.cmd == NetCmd.Connect)
             {
-                Call(client, NetCmd.Connect, new byte[0]);
+                Call(client, NetCmd.Connect, new byte[1]);
                 return true;
             }
             if (model.cmd == NetCmd.Broadcast)
@@ -1112,7 +1112,7 @@ namespace Net.Server
             switch (model.cmd)
             {
                 case NetCmd.SendHeartbeat:
-                    Call(client, NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(client, NetCmd.RevdHeartbeat, new byte[1]);
                     return;
                 case NetCmd.RevdHeartbeat:
                     return;
@@ -1206,7 +1206,7 @@ namespace Net.Server
                     OnNoticeRelay(client, model);
                     break;
                 case NetCmd.SendHeartbeat:
-                    Call(client, NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(client, NetCmd.RevdHeartbeat, new byte[1]);
                     break;
                 case NetCmd.RevdHeartbeat:
                     client.heart = 0;
@@ -1570,7 +1570,7 @@ namespace Net.Server
                 return;
             if (client.heart < HeartLimit)
             {
-                Call(client, NetCmd.SendHeartbeat, new byte[0]);
+                Call(client, NetCmd.SendHeartbeat, new byte[1]);
                 return;
             }
             RemoveClient(client);
@@ -1613,7 +1613,7 @@ namespace Net.Server
                 if (!client1.Connected)
                     goto J;
                 client1.QueueUpNo = 0;
-                Call(client1, NetCmd.QueueCancellation, new byte[0]);
+                Call(client1, NetCmd.QueueCancellation, new byte[1]);
             }
         }
 

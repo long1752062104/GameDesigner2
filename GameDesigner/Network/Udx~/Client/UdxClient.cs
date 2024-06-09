@@ -176,6 +176,8 @@
         {
             if (ClientPtr == IntPtr.Zero)
                 return;
+            if (buffer.Count <= Frame)//解决长度==5的问题(没有数据)
+                return;
             sendAmount++;
             sendCount += buffer.Count;
             fixed (byte* ptr = buffer.Buffer)

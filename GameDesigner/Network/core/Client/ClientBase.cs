@@ -76,10 +76,10 @@ namespace Net.Client
         /// </summary>
         public MyDictionary<ushort, SyncVarInfo> SyncVarDic { get; set; } = new MyDictionary<ushort, SyncVarInfo>();
         /// <summary>
-        /// 线程字典
+        /// 网络独立执行线程
         /// </summary>
 #if !UNITY_WEBGL
-        protected ConcurrentDictionary<string, Thread> threadDic = new ConcurrentDictionary<string, Thread>();
+        protected Thread NetworkThread;
 #endif
         /// <summary>
         /// 网络状态
@@ -619,29 +619,18 @@ namespace Net.Client
         /// <summary>
         /// 开启线程
         /// </summary>
-        /// <param name="threadKey">线程名称</param>
+        /// <param name="threadName">线程名称</param>
         /// <param name="start">线程函数</param>
-        public void StartThread(string threadKey, ThreadStart start)
+        public void StartThread(string threadName, ThreadStart start)
         {
 #if !UNITY_WEBGL
-            if (!threadDic.TryGetValue(threadKey, out Thread thread))
+            try { NetworkThread?.Interrupt(); } catch { }
+            NetworkThread = new Thread(start)
             {
-                thread = new Thread(start)
-                {
-                    Name = threadKey,
-                    IsBackground = true
-                };
-                thread.Start();
-                threadDic.TryAdd(threadKey, thread);
-                return;
-            }
-            var str = thread.ThreadState.ToString();
-            if (str.Contains("Abort") | str.Contains("Stop") | str.Contains("WaitSleepJoin"))
-            {
-                thread.Abort();
-                threadDic.TryRemove(threadKey, out _);
-                StartThread(threadKey, start);
-            }
+                Name = threadName,
+                IsBackground = true
+            };
+            NetworkThread.Start();
 #endif
         }
 
@@ -651,9 +640,7 @@ namespace Net.Client
         public void AbortedThread()
         {
 #if !UNITY_WEBGL
-            foreach (var thread in threadDic.Values)
-                try { thread?.Abort(); } catch { }
-            threadDic.Clear();
+            try { NetworkThread?.Interrupt(); } catch { }
 #endif
             ThreadManager.Event.RemoveEvent(singleThreadHandlerID);
             LoopEvent.Clear();
@@ -972,7 +959,7 @@ namespace Net.Client
         public virtual void Disconnect(bool reuseSocket, bool invokeSocketDisconnect = true)
         {
             NetworkState = NetworkState.Disconnect;
-            Call(NetCmd.Disconnect, new byte[0]);
+            Call(NetCmd.Disconnect, new byte[1]);
             SendDirect();
             Connected = false;
             if (Client != null && Client.ProtocolType == ProtocolType.Tcp && invokeSocketDisconnect)
@@ -1201,6 +1188,10 @@ namespace Net.Client
             {
                 return false; //如果这里不返回false, 则在ilcpp编译后执行Abort无法结束线程, 导致错误
             }
+            catch (ThreadInterruptedException)
+            {
+                return false; //使用Thread.Interrupt结束线程触发的异常
+            }
             catch (Exception ex)
             {
                 NDebug.LogError("网络异常:" + ex);
@@ -1420,7 +1411,7 @@ namespace Net.Client
                     heart = 0;
                     break;
                 case NetCmd.SendHeartbeat:
-                    Call(NetCmd.RevdHeartbeat, new byte[0]);
+                    Call(NetCmd.RevdHeartbeat, new byte[1]);
                     break;
                 case NetCmd.CallRpc:
                     if (model.kernel)
@@ -1723,7 +1714,7 @@ namespace Net.Client
                 if (!Connected)
                     InternalReconnection();//尝试连接执行
                 else if (heart++ < HeartLimit)
-                    Call(NetCmd.SendHeartbeat, new byte[0]);
+                    Call(NetCmd.SendHeartbeat, new byte[1]);
                 else//连接中断事件执行
                     NetworkException(new SocketException((int)SocketError.Disconnecting));
             }
