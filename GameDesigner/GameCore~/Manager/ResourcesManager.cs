@@ -354,7 +354,7 @@ namespace GameCore
 
         protected virtual AssetBundle GetAssetBundle(string assetPath)
         {
-            assetPath = GetAssetPath(assetPath);
+            //assetPath = GetAssetPath(assetPath);
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
             {
                 Global.Logger.LogError($"加载资源:{assetPath}失败!");

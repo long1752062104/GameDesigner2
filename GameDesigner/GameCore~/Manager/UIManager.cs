@@ -38,6 +38,8 @@ namespace GameCore
         /// <param name="form"></param>
         public void AddForm(UIBase form)
         {
+            if (form == null) return;
+    
             formDict[form.GetType().Name] = form;
         }
 
