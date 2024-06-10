@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Net.Common;
 
 namespace Net.Distributed
@@ -25,7 +25,10 @@ namespace Net.Distributed
         {
             this.useMachineId = useMachineId;
             this.machineId = machineId;
-            sequence = uniqueIdMax >> machineIdBits;
+            if (useMachineId)
+                sequence = uniqueIdMax >> machineIdBits;
+            else
+                sequence = uniqueIdMax;
             SetMachineIdBits(machineIdBits);
         }
 
