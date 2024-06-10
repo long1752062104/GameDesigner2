@@ -114,7 +114,7 @@
         {
             if (!client.Connected)
                 return;
-            if (buffer.Count == frame)//解决长度==6的问题(没有数据)
+            if (buffer.Count <= frame)//解决长度==6的问题(没有数据)
                 return;
             sendAmount++;
             sendCount += buffer.Count;

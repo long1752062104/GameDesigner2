@@ -174,6 +174,8 @@ namespace Net.Client
 
         protected override void SendByteData(ISegment buffer)
         {
+            if (buffer.Count <= Frame)//解决长度==5的问题(没有数据)
+                return;
             sendCount += buffer.Count;
             sendAmount++;
 #if UNITY_EDITOR || !UNITY_WEBGL

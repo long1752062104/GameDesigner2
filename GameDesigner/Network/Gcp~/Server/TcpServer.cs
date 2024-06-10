@@ -61,7 +61,7 @@
                     if (Server.Poll(0, SelectMode.SelectRead))
                     {
                         var socket = Server.Accept();
-                        socket.ReceiveTimeout = 10000;
+                        socket.ReceiveTimeout = (int)ReconnectionTimeout;
                         acceptList.Add(socket);
                     }
                     else Thread.Sleep(1);
@@ -86,35 +86,40 @@
                     acceptList.RemoveAt(i);
                     continue;
                 }
-                if (client.Poll(0, SelectMode.SelectRead))
+                if (!client.Poll(0, SelectMode.SelectRead))
+                    continue;
+                using (var segment = BufferPool.Take(ReceiveBufferSize))
                 {
-                    using (var segment = BufferPool.Take(ReceiveBufferSize))
+                    segment.Count = client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out var error);
+                    if (segment.Count == 0 | error != SocketError.Success) //当等待10秒超时
                     {
-                        segment.Count = client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out var error);
-                        if (segment.Count == 0 | error != SocketError.Success) //当等待10秒超时
-                        {
-                            client.Close();
-                            acceptList.RemoveAt(i);
-                            continue;
-                        }
-                        client.ReceiveTimeout = 0;
-                        var userID = segment.ReadInt32();
-                        if (!UIDClients.TryGetValue(userID, out var client1))
-                        {
-                            client1 = AcceptHander(client, client.RemoteEndPoint);
-                            goto J;
-                        }
-                        if (!client1.Connected | !client1.Client.Connected) //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
-                        {
-                            client1.Client = client;
-                            client1.Connected = true;
-                            SetClientIdentity(client1);
-                        }
-                        else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
+                        client.Close();
+                        acceptList.RemoveAt(i);
+                        continue;
+                    }
+                    client.ReceiveTimeout = 0;
+                    var userID = segment.ReadInt32();
+                    if (!UIDClients.TryGetValue(userID, out var client1))
+                    {
+                        client1 = AcceptHander(client, client.RemoteEndPoint);
+                        goto J;
+                    }
+                    client1.ReconnectTimeout = (uint)Environment.TickCount + ReconnectionTimeout;
+                    var newRemotePoint = client.RemoteEndPoint as IPEndPoint;
+                    var oldRemotePoint = client1.RemotePoint as IPEndPoint;
+                    //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
+                    //如果是新的IP和旧的IP相同，是可以进行替换的，这样就不会发生假冒客户端问题
+                    //Equals里面有重写IPAddress.Equals，所以能判断出来
+                    if (!client1.Connected | !client1.Client.Connected | Equals(oldRemotePoint.Address, newRemotePoint.Address))
+                    {
+                        client1.Client = client;
+                        client1.Connected = true;
+                        SetClientIdentity(client1);
                         client1.OnReconnecting();
                         OnReconnecting(client1);
-                    J: acceptList.RemoveAt(i);
                     }
+                    else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
+                    J: acceptList.RemoveAt(i);
                 }
             }
         }
@@ -161,7 +166,6 @@
         protected void ConnectLost(Player client, uint tick)
         {
             client.Connected = false;
-            //client.Client?.Disconnect(false);//标记为断开状态
             client.ReconnectTimeout = tick + ReconnectionTimeout;
             client.OnConnectLost();
             OnConnectLost(client);

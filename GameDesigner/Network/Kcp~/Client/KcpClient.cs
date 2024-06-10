@@ -118,6 +118,8 @@
 
         protected override void SendByteData(ISegment buffer)
         {
+            if (buffer.Count <= Frame)//解决长度==5的问题(没有数据)
+                return;
             fixed (byte* p = &buffer.Buffer[0])
             {
                 int count = ikcp_send(kcp, p, buffer.Count);
