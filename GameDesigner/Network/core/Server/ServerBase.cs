@@ -659,7 +659,7 @@ namespace Net.Server
             OnRemoveClientHandle += OnRemoveClient;
             OnOperationSyncHandle += OnOperationSync;
             OnRevdBufferHandle += OnReceiveBuffer;
-            OnReceiveFileHandle += OnReceiveFile;
+            //OnReceiveFileHandle += OnReceiveFile;
             OnCallProgressHandle += OnCallProgress;
             if (OnAddRpcHandle == null) OnAddRpcHandle = AddRpcInternal;//在start之前就要添加你的委托
             if (OnRemoveRpc == null) OnRemoveRpc = RemoveRpcInternal;
@@ -1331,6 +1331,8 @@ namespace Net.Server
                     var isDelete = true;
                     if (OnReceiveFileHandle != null)
                         isDelete = OnReceiveFileHandle(client, data);
+                    else
+                        OnReceiveFile(client, data);
                     if (isDelete)
                     {
                         data.Stream.Close();
@@ -1663,7 +1665,7 @@ namespace Net.Server
             OnRemoveClientHandle -= OnRemoveClient;
             OnOperationSyncHandle -= OnOperationSync;
             OnRevdBufferHandle -= OnReceiveBuffer;
-            OnReceiveFileHandle -= OnReceiveFile;
+            //OnReceiveFileHandle -= OnReceiveFile;
             OnCallProgressHandle -= OnCallProgress;
             Debug.Log("服务器已关闭！");//先打印在移除事件
             Thread.Sleep(100);

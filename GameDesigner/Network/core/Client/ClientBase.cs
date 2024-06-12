@@ -1847,17 +1847,9 @@ namespace Net.Client
         public void Call(byte cmd, uint protocol, byte[] buffer, params object[] pars)
         {
             if (buffer != null)
-            {
-                var count = buffer.Length;
-                var size = BufferPool.Size + Frame + PackageAdapter.HeadCount;
-                if (count >= size)
-                {
-                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
-                    return;
-                }
                 Call(new RPCModel(cmd, buffer, false, false, protocol));
-            }
-            else Call(new RPCModel(cmd, protocol, pars, true, true));
+            else
+                Call(new RPCModel(cmd, protocol, pars, true, true));
         }
 
         public virtual void Call(RPCModel model)
@@ -1900,13 +1892,6 @@ namespace Net.Client
                 goto J;
             if (buffer != null)
             {
-                var count = buffer.Length;
-                var size = BufferPool.Size + Frame + PackageAdapter.HeadCount;
-                if (count >= size)
-                {
-                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
-                    return requestTask; //如果byte[]太大, 则不能等待结果
-                }
                 Call(new RPCModel(cmd, buffer, false, serialize, protocol) { token = token });
             }
             else
@@ -2075,8 +2060,9 @@ namespace Net.Client
         /// 发送文件, 服务器可以通过重写<see cref="Server.ServerBase{Player, Scene}.OnReceiveFile"/>方法来接收 或 使用事件<see cref="Server.ServerBase{Player, Scene}.OnReceiveFileHandle"/>来监听并处理
         /// </summary>
         /// <param name="filePath"></param>
+        /// <param name="bufferSize">每次发送数据大小，如果想最大化发送，你可以设置bufferSize参数为PackageSize - 2048</param>
         /// <returns></returns>
-        public bool SendFile(string filePath)
+        public bool SendFile(string filePath, int bufferSize = 50000)
         {
             var path1 = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(path1))
@@ -2085,18 +2071,18 @@ namespace Net.Client
                 return false;
             }
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            SendFile(NetCmd.UploadData, fileStream, Path.GetFileName(filePath));
+            SendFile(NetCmd.UploadData, fileStream, Path.GetFileName(filePath), bufferSize);
             return true;
         }
 
-        private void SendFile(byte cmd, Stream stream, string name)
+        private void SendFile(byte cmd, Stream stream, string name, int bufferSize = 50000)
         {
             var data = new BigData
             {
                 Id = stream.GetHashCode(),
                 Name = name,
                 Stream = stream,
-                bufferSize = 50000 / (BigDataDic.Count + 1)
+                bufferSize = bufferSize
             };
             BigDataDic.Add(data.Id, data);
             SendFile(cmd, data.Id, data);

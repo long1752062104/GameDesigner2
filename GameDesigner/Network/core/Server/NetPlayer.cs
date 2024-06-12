@@ -456,13 +456,6 @@
         {
             if (buffer != null)
             {
-                var count = buffer.Length;
-                var size = BufferPool.Size + Server.frame + Server.PackageAdapter.HeadCount;
-                if (count >= size)
-                {
-                    SendFile(cmd, new MemoryStream(buffer), string.Empty);
-                    return;
-                }
                 Call(new RPCModel(cmd, buffer, kernel, serialize, protocol));
             }
             else
@@ -495,7 +488,7 @@
         /// 发送文件, 客户端可以使用事件<see cref="Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
         /// </summary>
         /// <param name="filePath"></param>
-        /// <param name="bufferSize">每次发送数据大小</param>
+        /// <param name="bufferSize">每次发送数据大小, 如果想最大化发送，你可以设置bufferSize参数为PackageSize - 2048</param>
         /// <returns></returns>
         public bool SendFile(string filePath, int bufferSize = 50000)
         {
