@@ -215,6 +215,10 @@ namespace Net.Event
     public static class NDebug
     {
         /// <summary>
+        ///  输出日志名称--如果使用
+        /// </summary>
+        public static string Name { get; set; }
+        /// <summary>
         /// 输出调式消息
         /// </summary>
         public static event Action<string> LogHandle;
@@ -302,7 +306,7 @@ namespace Net.Event
                 var path = PathHelper.Combine(Config.Config.BasePath, $"/Log/{now.Year}/{now.Month.ToString("00")}/");
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
-                path += $"{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
+                path += $"{Name}{now.Year}{now.Month.ToString("00")}{now.Day.ToString("00")}{now.Hour.ToString("00")}{now.Minute.ToString("00")}{now.Second.ToString("00")}.txt";
                 if (fileStream != null)
                     fileStream.Close();
                 fileStream = new FileStream(path, FileMode.OpenOrCreate); //不加try会导致服务器崩溃闪退问题
