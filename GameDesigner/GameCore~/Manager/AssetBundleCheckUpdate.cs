@@ -232,7 +232,7 @@ namespace GameCore
             {
                 var serverAssetBundleUrl = $"{url}AssetBundles/{Global.I.platform}/{Global.I.version}/{assetBundleInfo.name}";
                 var localAssetBundleUrl = $"{Global.I.AssetBundlePath}/{assetBundleInfo.name}";
-                var item = await DownloadFile(serverAssetBundleUrl, localAssetBundleUrl, assetBundleInfo.name,
+                var item = await DownloadFile(serverAssetBundleUrl, localAssetBundleUrl, assetBundleInfo.name, (ulong)assetBundleInfo.fileSize,
                     (progressText, downloadedBytes) => Global.UI.Loading.ShowUI(progressText, (float)((currSize + downloadedBytes) / (double)totalSize)),
                     (progressText) => Global.UI.Loading.ShowUI(progressText, (float)(currSize / (double)totalSize)));
                 if (!item.Item1)

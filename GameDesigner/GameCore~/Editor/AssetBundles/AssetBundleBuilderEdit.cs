@@ -201,14 +201,14 @@ namespace GameCore
                         File.Delete(file);
                     continue;
                 }
-                var  bytes = File.ReadAllBytes(file);
+                var bytes = File.ReadAllBytes(file);
                 if (assetBundleBuildList.ContainsKey(fileName) || fileName.EndsWith(".json")) //增量更新的文件才需要加密，否则导致多次加密问题
                 {
                     if (assetBundleBuilder.encrypt)
                     {
                         EncryptHelper.ToEncrypt(assetBundleBuilder.password, bytes);
                         File.WriteAllBytes(file, bytes);
-                        Debug.Log($"加密文件:{file}完成!"); 
+                        Debug.Log($"加密文件:{file}完成!");
                     }
                 }
                 var md5 = EncryptHelper.GetMD5(bytes);
@@ -255,7 +255,7 @@ namespace GameCore
             EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集路径:{assetPath}", progress);
             var type = package.type;
             SearchOption searchOption;
-            if (type == CollectType.AllDirectories)
+            if (type == CollectType.AllDirectories | type == CollectType.AllDirectoriesHashName) //只有这两种获取所有文件夹的文件，Split模式则不能使用
                 searchOption = SearchOption.AllDirectories;
             else
                 searchOption = SearchOption.TopDirectoryOnly;
