@@ -140,21 +140,21 @@ namespace GameCore
         /// <returns></returns>
         private List<string> GetAllFilesInFolder(string folderPath)
         {
-                var allFiles = new List<string>();
-                var files = Directory.GetFiles(folderPath);
-                foreach (string filePath in files)
-                {
-                    if (!filePath.EndsWith(".meta")) // 过滤掉.meta文件
-                        allFiles.Add(filePath);
-                }
-                var subFolders = Directory.GetDirectories(folderPath);
-                foreach (string subFolder in subFolders)
-                {
-                    var subFolderFiles = GetAllFilesInFolder(subFolder);
-                    allFiles.AddRange(subFolderFiles);
-                }
-                return allFiles;
+            var allFiles = new List<string>();
+            var files = Directory.GetFiles(folderPath);
+            foreach (string filePath in files)
+            {
+                if (!filePath.EndsWith(".meta")) // 过滤掉.meta文件
+                    allFiles.Add(filePath);
             }
+            var subFolders = Directory.GetDirectories(folderPath);
+            foreach (string subFolder in subFolders)
+            {
+                var subFolderFiles = GetAllFilesInFolder(subFolder);
+                allFiles.AddRange(subFolderFiles);
+            }
+            return allFiles;
+        }
 #endif
 
         public virtual string LoadAssetFileReadAllText(string assetPath)
@@ -375,7 +375,7 @@ namespace GameCore
 
         protected virtual async UniTask<AssetBundle> GetAssetBundleAsync(string assetPath)
         {
-            assetPath = GetAssetPath(assetPath);
+            //assetPath = GetAssetPath(assetPath);
             if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
             {
                 Global.Logger.LogError($"加载资源:{assetPath}失败!");
