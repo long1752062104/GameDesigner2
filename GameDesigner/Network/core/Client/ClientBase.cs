@@ -794,7 +794,7 @@ namespace Net.Client
                         RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
                     }
                     NetworkTick();
-                    return UID != 0;
+                    return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
                 }, null);
                 if (UID == 0 && openClient)
                     throw new Exception("连接握手失败!");
