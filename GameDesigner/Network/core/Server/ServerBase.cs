@@ -903,7 +903,7 @@ namespace Net.Server
                 uid = GetCurrUserID();
             client.UserID = uid;
             client.Name = uid.ToString();
-            client.stackStream = new MemoryStream(Config.Config.BaseCapacity);
+            client.BufferStream = new MemoryStream(Config.Config.BaseCapacity);
             client.ConnectTime = DateTime.Now;
             client.Connected = true;
             client.Server = this;
@@ -1007,23 +1007,23 @@ namespace Net.Server
         protected virtual void ResolveBuffer(Player client, ref ISegment buffer)
         {
             client.heart = 0;
-            if (client.stack > 0)
+            if (client.stacking > 0)
             {
-                client.stack++;
-                client.stackStream.Seek(client.stackIndex, SeekOrigin.Begin);
+                client.stacking++;
+                client.BufferStream.Seek(client.stackingOffset, SeekOrigin.Begin);
                 var size = buffer.Count - buffer.Position;
-                client.stackIndex += size;
-                client.stackStream.Write(buffer.Buffer, buffer.Position, size);
-                if (client.stackIndex < client.stackCount)
+                client.stackingOffset += size;
+                client.BufferStream.Write(buffer.Buffer, buffer.Position, size);
+                if (client.stackingOffset < client.stackingCount)
                 {
-                    InvokeCallProgress(client, client.stackIndex, client.stackCount);
+                    InvokeCallProgress(client, client.stackingOffset, client.stackingCount);
                     return;
                 }
-                var count = (int)client.stackStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
+                var count = (int)client.BufferStream.Position;//.Length; //错误问题,不能用length, 这是文件总长度, 之前可能已经有很大一波数据
                 BufferPool.Push(buffer);//要回收掉, 否则会提示内存泄露
                 buffer = BufferPool.Take(count);//ref 才不会导致提示内存泄露
-                client.stackStream.Seek(0, SeekOrigin.Begin);
-                client.stackStream.Read(buffer.Buffer, 0, count);
+                client.BufferStream.Seek(0, SeekOrigin.Begin);
+                client.BufferStream.Read(buffer.Buffer, 0, count);
                 buffer.Count = count;
             }
             while (buffer.Position < buffer.Count)
@@ -1032,11 +1032,11 @@ namespace Net.Server
                 {
                     var position = buffer.Position;
                     var count = buffer.Count - position;
-                    client.stackIndex = count;
-                    client.stackCount = 0;
-                    client.stackStream.Seek(0, SeekOrigin.Begin);
-                    client.stackStream.Write(buffer.Buffer, position, count);
-                    client.stack++;
+                    client.stackingOffset = count;
+                    client.stackingCount = 0;
+                    client.BufferStream.Seek(0, SeekOrigin.Begin);
+                    client.BufferStream.Write(buffer.Buffer, position, count);
+                    client.stacking++;
                     break;
                 }
                 var lenBytes = buffer.Read(4);
@@ -1044,34 +1044,34 @@ namespace Net.Server
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
                 {
-                    client.stack = 0;
+                    client.stacking = 0;
                     client.CRCError++;
                     return;
                 }
                 var size = BitConverter.ToInt32(lenBytes, 0);
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
-                    client.stack = 0;
+                    client.stacking = 0;
                     client.DataSizeError++;
                     return;
                 }
                 if (buffer.Position + size <= buffer.Count)
                 {
-                    client.stack = 0;
+                    client.stacking = 0;
                     var count = buffer.Count;//此长度可能会有连续的数据(粘包)
                     buffer.Count = buffer.Position + size;//需要指定一个完整的数据长度给内部解析
                     DataCRCHandler(client, buffer, true);
                     buffer.Count = count;//解析完成后再赋值原来的总长
                 }
-                else if (client.stackStream != null) //当RemoveClient后导致stackStream=null后报错问题
+                else if (client.BufferStream != null) //当RemoveClient后导致stackStream=null后报错问题
                 {
                     var position = buffer.Position - frame;
                     var count = buffer.Count - position;
-                    client.stackIndex = count;
-                    client.stackCount = size;
-                    client.stackStream.Seek(0, SeekOrigin.Begin);
-                    client.stackStream.Write(buffer.Buffer, position, count);
-                    client.stack++;
+                    client.stackingOffset = count;
+                    client.stackingCount = size;
+                    client.BufferStream.Seek(0, SeekOrigin.Begin);
+                    client.BufferStream.Write(buffer.Buffer, position, count);
+                    client.stacking++;
                     break;
                 }
             }

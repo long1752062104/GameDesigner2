@@ -1675,7 +1675,7 @@ namespace Net.Client
         /// <param name="func"></param>
         /// <param name="pars"></param>
         [Obsolete("此方法尽量少用,此方法有可能产生较大的数据，不要频繁发送!", false)]
-        public void AddOperation(byte cmd, ushort func, params object[] pars)
+        public void AddOperation(byte cmd, uint func, params object[] pars)
         {
             var segment = BufferPool.Take();
             OnSerializeRPC(segment, new RPCModel(cmd, func, pars));

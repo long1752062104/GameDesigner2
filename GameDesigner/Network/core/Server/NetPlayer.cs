@@ -73,13 +73,13 @@
         /// <summary>
         /// TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
         /// </summary>
-        internal int stack = 0;
-        internal int stackIndex;
-        internal int stackCount;
+        internal int stacking;
+        internal int stackingOffset;
+        internal int stackingCount;
         /// <summary>
-        /// TCP叠包临时缓存流
+        /// 数据缓冲流
         /// </summary>
-        internal MemoryStream stackStream;
+        internal MemoryStream BufferStream;
         /// <summary>
         /// 用户唯一身份标识
         /// </summary>
@@ -225,11 +225,11 @@
                 Client.Shutdown(SocketShutdown.Both);
                 Client.Close();
             }
-            stackStream?.Close();
-            stackStream = null;
-            stack = 0;
-            stackIndex = 0;
-            stackCount = 0;
+            BufferStream?.Close();
+            BufferStream = null;
+            stacking = 0;
+            stackingOffset = 0;
+            stackingCount = 0;
             Connected = false;
             heart = 0;
             RpcModels = new QueueSafe<RPCModel>();
