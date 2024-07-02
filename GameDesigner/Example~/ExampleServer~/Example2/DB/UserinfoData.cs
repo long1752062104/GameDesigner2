@@ -22,6 +22,7 @@ using Int64Obs = Net.Common.PropertyObserverAuto<long>;
 using UInt64Obs = Net.Common.PropertyObserverAuto<ulong>;
 using DoubleObs = Net.Common.PropertyObserverAuto<double>;
 using DateTimeObs = Net.Common.PropertyObserverAuto<System.DateTime>;
+using TimeSpanObs = Net.Common.PropertyObserverAuto<System.TimeSpan>;
 using BytesObs = Net.Common.PropertyObserverAuto<byte[]>;
 using StringObs = Net.Common.PropertyObserverAuto<string>;
 
@@ -33,36 +34,48 @@ namespace Example2
     /// <para><see href="此脚本支持防内存修改器, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
     /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
     /// </summary>
-    public partial class UserinfoData : IDataRow
+    public partial class UserinfoData : IDataEntity
     {
         [Net.Serialize.NonSerialized]
         [Newtonsoft_X.Json.JsonIgnore]
         public DataRowState RowState { get; set; }
     #if SERVER
         internal Net.Server.NetPlayer client;
+        private Example2DB context;
+        internal Example2DB Context
+        {
+            get
+            {
+                if (context == null) //兼容.NET Framework写法
+                    context = Example2DB.I; 
+                return context;
+            }
+            set => context = value;
+        }
+        public void SetContext(object context)
+        {
+            this.context = context as Example2DB;
+        }
+    #else
+        public void SetContext(object context) { }
     #endif
-        /// <summary>当属性被修改时调用, 参数1: 哪个字段被修改(表名_字段名), 参数2:被修改的值</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action<Example2HashProto, object> OnValueChanged;
-
         private Int64 id;
-        /// <summary>id</summary>
+        /// <summary></summary>
         public Int64 Id { get { return id; } set { this.id = value; } }
 
      //1
         private readonly StringObs account = new StringObs("UserinfoData_account", false, null);
 
-        /// <summary>account --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal StringObs AccountObserver => account;
 
-        /// <summary>account</summary>
+        /// <summary></summary>
         public String Account { get => GetAccountValue(); set => CheckAccountValue(value, 0); }
 
-        /// <summary>account --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal String SyncAccount { get => GetAccountValue(); set => CheckAccountValue(value, 1); }
 
-        /// <summary>account --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDAccount { get => GetAccountValue(); set => CheckAccountValue(value, 2); }
 
         private String GetAccountValue() => this.account.Value;
@@ -78,10 +91,11 @@ namespace Example2
                 AccountCall(false);
             else if (type == 2)
                 AccountCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_ACCOUNT, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_ACCOUNT, id, value);
         }
 
-        /// <summary>account --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void AccountCall(bool syncId = false)
         {
             
@@ -92,10 +106,11 @@ namespace Example2
             CheckUpdate(1);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
 #endif
         }
 
+        [DataRowField("account", 1)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_ACCOUNT)]
         private void AccountRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -104,16 +119,16 @@ namespace Example2
      //1
         private readonly StringObs password = new StringObs("UserinfoData_password", false, null);
 
-        /// <summary>password --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal StringObs PasswordObserver => password;
 
-        /// <summary>password</summary>
+        /// <summary></summary>
         public String Password { get => GetPasswordValue(); set => CheckPasswordValue(value, 0); }
 
-        /// <summary>password --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal String SyncPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 1); }
 
-        /// <summary>password --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDPassword { get => GetPasswordValue(); set => CheckPasswordValue(value, 2); }
 
         private String GetPasswordValue() => this.password.Value;
@@ -129,10 +144,11 @@ namespace Example2
                 PasswordCall(false);
             else if (type == 2)
                 PasswordCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_PASSWORD, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_PASSWORD, id, value);
         }
 
-        /// <summary>password --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void PasswordCall(bool syncId = false)
         {
             
@@ -143,10 +159,11 @@ namespace Example2
             CheckUpdate(2);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
 #endif
         }
 
+        [DataRowField("password", 2)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_PASSWORD)]
         private void PasswordRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -155,16 +172,16 @@ namespace Example2
      //1
         private readonly DoubleObs moveSpeed = new DoubleObs("UserinfoData_moveSpeed", true, null);
 
-        /// <summary>moveSpeed --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal DoubleObs MoveSpeedObserver => moveSpeed;
 
-        /// <summary>moveSpeed</summary>
+        /// <summary></summary>
         public Double MoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 0); }
 
-        /// <summary>moveSpeed --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal Double SyncMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 1); }
 
-        /// <summary>moveSpeed --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Double SyncIDMoveSpeed { get => GetMoveSpeedValue(); set => CheckMoveSpeedValue(value, 2); }
 
         private Double GetMoveSpeedValue() => this.moveSpeed.Value;
@@ -180,10 +197,11 @@ namespace Example2
                 MoveSpeedCall(false);
             else if (type == 2)
                 MoveSpeedCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_MOVESPEED, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_MOVESPEED, id, value);
         }
 
-        /// <summary>moveSpeed --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void MoveSpeedCall(bool syncId = false)
         {
             
@@ -194,10 +212,11 @@ namespace Example2
             CheckUpdate(3);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
 #endif
         }
 
+        [DataRowField("moveSpeed", 3)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_MOVESPEED)]
         private void MoveSpeedRpc(Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -206,16 +225,16 @@ namespace Example2
      //1
         private readonly StringObs position = new StringObs("UserinfoData_position", false, null);
 
-        /// <summary>position --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal StringObs PositionObserver => position;
 
-        /// <summary>position</summary>
+        /// <summary></summary>
         public String Position { get => GetPositionValue(); set => CheckPositionValue(value, 0); }
 
-        /// <summary>position --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal String SyncPosition { get => GetPositionValue(); set => CheckPositionValue(value, 1); }
 
-        /// <summary>position --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDPosition { get => GetPositionValue(); set => CheckPositionValue(value, 2); }
 
         private String GetPositionValue() => this.position.Value;
@@ -231,10 +250,11 @@ namespace Example2
                 PositionCall(false);
             else if (type == 2)
                 PositionCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_POSITION, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_POSITION, id, value);
         }
 
-        /// <summary>position --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void PositionCall(bool syncId = false)
         {
             
@@ -245,10 +265,11 @@ namespace Example2
             CheckUpdate(4);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
 #endif
         }
 
+        [DataRowField("position", 4)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_POSITION)]
         private void PositionRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -257,16 +278,16 @@ namespace Example2
      //1
         private readonly StringObs rotation = new StringObs("UserinfoData_rotation", false, null);
 
-        /// <summary>rotation --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal StringObs RotationObserver => rotation;
 
-        /// <summary>rotation</summary>
+        /// <summary></summary>
         public String Rotation { get => GetRotationValue(); set => CheckRotationValue(value, 0); }
 
-        /// <summary>rotation --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal String SyncRotation { get => GetRotationValue(); set => CheckRotationValue(value, 1); }
 
-        /// <summary>rotation --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDRotation { get => GetRotationValue(); set => CheckRotationValue(value, 2); }
 
         private String GetRotationValue() => this.rotation.Value;
@@ -282,10 +303,11 @@ namespace Example2
                 RotationCall(false);
             else if (type == 2)
                 RotationCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_ROTATION, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_ROTATION, id, value);
         }
 
-        /// <summary>rotation --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void RotationCall(bool syncId = false)
         {
             
@@ -296,10 +318,11 @@ namespace Example2
             CheckUpdate(5);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
 #endif
         }
 
+        [DataRowField("rotation", 5)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_ROTATION)]
         private void RotationRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -308,16 +331,16 @@ namespace Example2
      //1
         private readonly Int64Obs health = new Int64Obs("UserinfoData_health", true, null);
 
-        /// <summary>health --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal Int64Obs HealthObserver => health;
 
-        /// <summary>health</summary>
+        /// <summary></summary>
         public Int64 Health { get => GetHealthValue(); set => CheckHealthValue(value, 0); }
 
-        /// <summary>health --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal Int64 SyncHealth { get => GetHealthValue(); set => CheckHealthValue(value, 1); }
 
-        /// <summary>health --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDHealth { get => GetHealthValue(); set => CheckHealthValue(value, 2); }
 
         private Int64 GetHealthValue() => this.health.Value;
@@ -333,10 +356,11 @@ namespace Example2
                 HealthCall(false);
             else if (type == 2)
                 HealthCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTH, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_HEALTH, id, value);
         }
 
-        /// <summary>health --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void HealthCall(bool syncId = false)
         {
             
@@ -347,10 +371,11 @@ namespace Example2
             CheckUpdate(6);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
 #endif
         }
 
+        [DataRowField("health", 6)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTH)]
         private void HealthRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
@@ -359,16 +384,16 @@ namespace Example2
      //1
         private readonly Int64Obs healthMax = new Int64Obs("UserinfoData_healthMax", true, null);
 
-        /// <summary>healthMax --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal Int64Obs HealthMaxObserver => healthMax;
 
-        /// <summary>healthMax</summary>
+        /// <summary></summary>
         public Int64 HealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 0); }
 
-        /// <summary>healthMax --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal Int64 SyncHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 1); }
 
-        /// <summary>healthMax --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDHealthMax { get => GetHealthMaxValue(); set => CheckHealthMaxValue(value, 2); }
 
         private Int64 GetHealthMaxValue() => this.healthMax.Value;
@@ -384,10 +409,11 @@ namespace Example2
                 HealthMaxCall(false);
             else if (type == 2)
                 HealthMaxCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_HEALTHMAX, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_HEALTHMAX, id, value);
         }
 
-        /// <summary>healthMax --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void HealthMaxCall(bool syncId = false)
         {
             
@@ -398,64 +424,68 @@ namespace Example2
             CheckUpdate(7);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
 #endif
         }
 
+        [DataRowField("healthMax", 7)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTHMAX)]
         private void HealthMaxRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             HealthMax = value;
         }
      //1
-        private readonly BytesObs buffer = new BytesObs("UserinfoData_buffer", false, null);
+        private readonly StringObs buffer = new StringObs("UserinfoData_buffer", false, null);
 
-        /// <summary>buffer --获得属性观察对象</summary>
-        internal BytesObs BufferBytesObserver => buffer;
+        /// <summary> --获得属性观察对象</summary>
+        internal StringObs BufferObserver => buffer;
 
-        /// <summary>buffer</summary>
-        internal System.Byte[] BufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 0); }
+        /// <summary></summary>
+        public String Buffer { get => GetBufferValue(); set => CheckBufferValue(value, 0); }
 
-        /// <summary>buffer --同步到数据库</summary>
-        internal System.Byte[] SyncBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 1); }
+        /// <summary> --同步到数据库</summary>
+        internal String SyncBuffer { get => GetBufferValue(); set => CheckBufferValue(value, 1); }
 
-        /// <summary>buffer --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
-        internal System.Byte[] SyncIDBufferBytes { get => GetBufferBytesValue(); set => CheckBufferBytesValue(value, 2); }
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        internal String SyncIDBuffer { get => GetBufferValue(); set => CheckBufferValue(value, 2); }
 
-        private System.Byte[] GetBufferBytesValue() => this.buffer.Value;
+        private String GetBufferValue() => this.buffer.Value;
 
-        private void CheckBufferBytesValue(System.Byte[] value, int type) 
+        private void CheckBufferValue(String value, int type) 
         {
-            
+            if (this.buffer.Value == value)
+                return;
             this.buffer.Value = value;
             if (type == 0)
                 CheckUpdate(8);
             else if (type == 1)
-                BufferBytesCall(false);
+                BufferCall(false);
             else if (type == 2)
-                BufferBytesCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.USERINFO_BUFFER, value);
+                BufferCall(true);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.USERINFO_BUFFER, id, value);
         }
 
-        /// <summary>buffer --同步当前值到服务器Player对象上，需要处理</summary>
-        public void BufferBytesCall(bool syncId = false)
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
+        public void BufferCall(bool syncId = false)
         {
-            object bytes = buffer.Value;
+            
             object[] objects;
-            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], bytes };
-            else objects = new object[] { bytes };
+            if (syncId) objects = new object[] { this[Example2DBEvent.UserinfoData_SyncID], buffer.Value };
+            else objects = new object[] { buffer.Value };
 #if SERVER
             CheckUpdate(8);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
 #endif
         }
 
+        [DataRowField("buffer", 8)]
         [Rpc(hash = (ushort)Example2HashProto.USERINFO_BUFFER)]
-        private void BufferBytesRpc(System.Byte[] value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
+        private void BufferRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
-            BufferBytes = value;
+            Buffer = value;
         }
      //2
 
@@ -465,15 +495,6 @@ namespace Example2
         public UserinfoData(params object[] parms) : base()
         {
             NewTableRow(parms);
-        }
-        public void NewTableRow()
-        {
-            RowState = DataRowState.Added;
-            Example2DB.I.Update(this);
-        }
-        public object GetDefaultValue(Type type)
-        {
-            return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
         public void NewTableRow(params object[] parms)
         {
@@ -487,14 +508,22 @@ namespace Example2
                     continue;
                 this[i] = parms[i];
             }
+            NewTableRow();
+        }
+        public void NewTableRow()
+        {
+            if (id == default)
+                id = (Int64)Context.GetUniqueId(Example2UniqueIdType.Userinfo);
             RowState = DataRowState.Added;
-            Example2DB.I.Update(this);
+            Context.Update(this);
         }
         public void NewTableRowSync()
         {
+            if (id == default)
+                id = (Int64)Context.GetUniqueId(Example2UniqueIdType.Userinfo);
             var sb = new StringBuilder();
             BulkLoaderBuilder(sb, false);
-            Example2DB.I.ExecuteNonQuery(sb.ToString());
+            Context.ExecuteNonQuery(sb.ToString());
             RowState = DataRowState.Unchanged;
         }
         public string GetCellNameAndTextLength(int index, out uint length)
@@ -502,21 +531,21 @@ namespace Example2
             switch (index)
             {
      //3
-                case 0: length = 65535; return "id";
+                case 0: length = 0; return "id";
      //3
-                case 1: length = 65535; return "account";
+                case 1: length = 1073741823; return "account";
      //3
-                case 2: length = 65535; return "password";
+                case 2: length = 1073741823; return "password";
      //3
-                case 3: length = 65535; return "moveSpeed";
+                case 3: length = 0; return "moveSpeed";
      //3
-                case 4: length = 65535; return "position";
+                case 4: length = 1073741823; return "position";
      //3
-                case 5: length = 65535; return "rotation";
+                case 5: length = 1073741823; return "rotation";
      //3
-                case 6: length = 65535; return "health";
+                case 6: length = 0; return "health";
      //3
-                case 7: length = 65535; return "healthMax";
+                case 7: length = 0; return "healthMax";
      //3
                 case 8: length = 1024; return "buffer";
      //4
@@ -563,35 +592,35 @@ namespace Example2
                         break;
      //7
                     case 1:
-                        CheckAccountValue((String)value, -1);
+                        CheckAccountValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //7
                     case 2:
-                        CheckPasswordValue((String)value, -1);
+                        CheckPasswordValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //7
                     case 3:
-                        CheckMoveSpeedValue((Double)value, -1);
+                        CheckMoveSpeedValue((Double)Convert.ChangeType(value, typeof(Double)), -1);
                         break;
      //7
                     case 4:
-                        CheckPositionValue((String)value, -1);
+                        CheckPositionValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //7
                     case 5:
-                        CheckRotationValue((String)value, -1);
+                        CheckRotationValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //7
                     case 6:
-                        CheckHealthValue((Int64)value, -1);
+                        CheckHealthValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //7
                     case 7:
-                        CheckHealthMaxValue((Int64)value, -1);
+                        CheckHealthMaxValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //7
                     case 8:
-                        CheckBufferBytesValue((System.Byte[])value, -1);
+                        CheckBufferValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //8
                 }
@@ -636,35 +665,35 @@ namespace Example2
                         break;
      //11
                     case "account":
-                        CheckAccountValue((String)value, -1);
+                        CheckAccountValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //11
                     case "password":
-                        CheckPasswordValue((String)value, -1);
+                        CheckPasswordValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //11
                     case "moveSpeed":
-                        CheckMoveSpeedValue((Double)value, -1);
+                        CheckMoveSpeedValue((Double)Convert.ChangeType(value, typeof(Double)), -1);
                         break;
      //11
                     case "position":
-                        CheckPositionValue((String)value, -1);
+                        CheckPositionValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //11
                     case "rotation":
-                        CheckRotationValue((String)value, -1);
+                        CheckRotationValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //11
                     case "health":
-                        CheckHealthValue((Int64)value, -1);
+                        CheckHealthValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //11
                     case "healthMax":
-                        CheckHealthMaxValue((Int64)value, -1);
+                        CheckHealthMaxValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //11
                     case "buffer":
-                        CheckBufferBytesValue((System.Byte[])value, -1);
+                        CheckBufferValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //12
                 }
@@ -677,13 +706,13 @@ namespace Example2
             if (immediately)
             {
                 var sb = new StringBuilder();
-                DeletedSql(sb);
-                _ = Example2DB.I.ExecuteNonQuery(sb.ToString(), null);
+                BulkDeleteBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
             }
             else
             {
                 RowState = DataRowState.Detached;
-                Example2DB.I.Update(this);
+                Context.Update(this);
             }
         }
 
@@ -698,7 +727,7 @@ namespace Example2
         /// <returns></returns>
         public static UserinfoData Query(string filterExpression)
         {
-            var cmdText = $"select * from userinfo where {filterExpression}; ";
+            var cmdText = $"select * from `userinfo` where {filterExpression}; ";
             var data = Example2DB.I.ExecuteQuery<UserinfoData>(cmdText);
             return data;
         }
@@ -713,27 +742,37 @@ namespace Example2
         /// <returns></returns>
         public static async UniTask<UserinfoData> QueryAsync(string filterExpression)
         {
-            var cmdText = $"select * from userinfo where {filterExpression}; ";
+            var cmdText = $"select * from `userinfo` where {filterExpression}; ";
             var data = await Example2DB.I.ExecuteQueryAsync<UserinfoData>(cmdText);
             return data;
         }
         public static UserinfoData[] QueryList(string filterExpression)
         {
-            var cmdText = $"select * from userinfo where {filterExpression}; ";
+            var cmdText = $"select * from `userinfo` where {filterExpression}; ";
             var datas = Example2DB.I.ExecuteQueryList<UserinfoData>(cmdText);
             return datas;
         }
         public static async UniTask<UserinfoData[]> QueryListAsync(string filterExpression)
         {
-            var cmdText = $"select * from userinfo where {filterExpression}; ";
+            var cmdText = $"select * from `userinfo` where {filterExpression}; ";
             var datas = await Example2DB.I.ExecuteQueryListAsync<UserinfoData>(cmdText);
             return datas;
         }
-        public void Update()
+        public void Update(bool immediately = false)
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-            RowState = DataRowState.Modified;
-            Example2DB.I.Update(this);
+            if (immediately)
+            {
+                var sb = new StringBuilder();
+                BulkLoaderBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
+                RowState = DataRowState.Unchanged;
+            }
+            else
+            {
+                RowState = DataRowState.Modified;
+                Context.Update(this);
+            }
         }
     #endif
 
@@ -765,8 +804,8 @@ namespace Example2
             if (row[7] is Int64 healthMax)
                 CheckHealthMaxValue(healthMax, -1);
      //13
-            if (row[8] is System.Byte[] buffer)
-                CheckBufferBytesValue(Convert.FromBase64String(Encoding.ASCII.GetString(buffer)), -1);
+            if (row[8] is String buffer)
+                CheckBufferValue(buffer, -1);
      //14
         }
 
@@ -793,18 +832,25 @@ namespace Example2
     #if SERVER
             if (RowState == DataRowState.Deleted)
                 return;
-            string cmdText = $"DELETE FROM userinfo {CheckSqlKey(0, id)}";
-            sb.Append(cmdText);
+            BulkDeleteBuilder(sb, true);
             RowState = DataRowState.Deleted;
     #endif
         }
 
     #if SERVER
+        public void BulkDeleteBuilder(StringBuilder sb, bool isBulk = false)
+        {
+            if (!isBulk)
+                sb.Append($"DELETE FROM `user` {CheckSqlKey(0, id)}");
+            else
+                sb.Append($"{(sb.Length == 0 ? "" : ", ")}{id}");
+        }
+
         public void BulkLoaderBuilder(StringBuilder sb, bool isBulk = false)
         {
  //15
             if (!isBulk)
-                sb.Append("REPLACE INTO userinfo VALUES (");
+                sb.Append("REPLACE INTO `userinfo` VALUES (");
             for (int i = 0; i < 9; i++)
             {
                 var name = GetCellNameAndTextLength(i, out var length);
@@ -817,7 +863,7 @@ namespace Example2
                 }
                 if (value is string text)
                 {
-                    Example2DB.I.CheckStringValue(ref text, length);
+                    Context.CheckStringValue(ref text, length);
                     if (isBulk) sb.Append(text + "|");
                     else sb.Append($"'{text}',");
                 }
@@ -868,7 +914,7 @@ namespace Example2
                 return "";
             if (value is string text)
             {
-                Example2DB.I.CheckStringValue(ref text, length);
+                Context.CheckStringValue(ref text, length);
                 return $" WHERE `{name}`='{text}'; ";
             }
             else if (value is DateTime)
@@ -882,16 +928,21 @@ namespace Example2
         private void CheckUpdate(int cellIndex)
         {
 #if SERVER
-            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | id <= 0) return; //如果id=-1或者0表示这个对象还没有完成赋值
             if (RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
                 RowState = DataRowState.Modified;
-            Example2DB.I.Update(this);
+            Context.Update(this);
 #endif
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)id; //解决hash碰撞不判断对象是否同一地址问题
         }
 
         public override string ToString()
         {
-            return $"Id:{Id} Account:{Account} Password:{Password} MoveSpeed:{MoveSpeed} Position:{Position} Rotation:{Rotation} Health:{Health} HealthMax:{HealthMax} Buffer:{BufferBytes} ";
+            return $"Id:{Id} Account:{Account} Password:{Password} MoveSpeed:{MoveSpeed} Position:{Position} Rotation:{Rotation} Health:{Health} HealthMax:{HealthMax} Buffer:{Buffer} ";
         }
     }
 }

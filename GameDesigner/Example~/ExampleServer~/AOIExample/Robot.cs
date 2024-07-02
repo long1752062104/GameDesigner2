@@ -83,5 +83,9 @@ namespace AOIExample
                 }
             }
         }
+
+        public void OnInit()
+        {
+        }
     }
 }

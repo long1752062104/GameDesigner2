@@ -22,6 +22,7 @@ using Int64Obs = Net.Common.PropertyObserverAuto<long>;
 using UInt64Obs = Net.Common.PropertyObserverAuto<ulong>;
 using DoubleObs = Net.Common.PropertyObserverAuto<double>;
 using DateTimeObs = Net.Common.PropertyObserverAuto<System.DateTime>;
+using TimeSpanObs = Net.Common.PropertyObserverAuto<System.TimeSpan>;
 using BytesObs = Net.Common.PropertyObserverAuto<byte[]>;
 using StringObs = Net.Common.PropertyObserverAuto<string>;
 
@@ -33,36 +34,48 @@ namespace Example2
     /// <para><see href="此脚本支持防内存修改器, 需要在uniyt的预编译处添加:ANTICHEAT关键字即可"/> </para>
     /// MySqlDataBuild工具gitee地址:https://gitee.com/leng_yue/my-sql-data-build
     /// </summary>
-    public partial class ConfigData : IDataRow
+    public partial class ConfigData : IDataEntity
     {
         [Net.Serialize.NonSerialized]
         [Newtonsoft_X.Json.JsonIgnore]
         public DataRowState RowState { get; set; }
     #if SERVER
         internal Net.Server.NetPlayer client;
+        private Example2DB context;
+        internal Example2DB Context
+        {
+            get
+            {
+                if (context == null) //兼容.NET Framework写法
+                    context = Example2DB.I; 
+                return context;
+            }
+            set => context = value;
+        }
+        public void SetContext(object context)
+        {
+            this.context = context as Example2DB;
+        }
+    #else
+        public void SetContext(object context) { }
     #endif
-        /// <summary>当属性被修改时调用, 参数1: 哪个字段被修改(表名_字段名), 参数2:被修改的值</summary>
-        [Net.Serialize.NonSerialized]
-        [Newtonsoft_X.Json.JsonIgnore]
-        public Action<Example2HashProto, object> OnValueChanged;
-
         private Int64 id;
-        /// <summary>id</summary>
+        /// <summary></summary>
         public Int64 Id { get { return id; } set { this.id = value; } }
 
      //1
         private readonly StringObs name = new StringObs("ConfigData_name", false, null);
 
-        /// <summary>name --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal StringObs NameObserver => name;
 
-        /// <summary>name</summary>
+        /// <summary></summary>
         public String Name { get => GetNameValue(); set => CheckNameValue(value, 0); }
 
-        /// <summary>name --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal String SyncName { get => GetNameValue(); set => CheckNameValue(value, 1); }
 
-        /// <summary>name --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal String SyncIDName { get => GetNameValue(); set => CheckNameValue(value, 2); }
 
         private String GetNameValue() => this.name.Value;
@@ -78,10 +91,11 @@ namespace Example2
                 NameCall(false);
             else if (type == 2)
                 NameCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.CONFIG_NAME, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.CONFIG_NAME, id, value);
         }
 
-        /// <summary>name --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void NameCall(bool syncId = false)
         {
             
@@ -92,10 +106,11 @@ namespace Example2
             CheckUpdate(1);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NAME, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NAME, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NAME, objects);
 #endif
         }
 
+        [DataRowField("name", 1)]
         [Rpc(hash = (ushort)Example2HashProto.CONFIG_NAME)]
         private void NameRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
         {
@@ -104,16 +119,16 @@ namespace Example2
      //1
         private readonly Int64Obs number = new Int64Obs("ConfigData_number", true, null);
 
-        /// <summary>number --获得属性观察对象</summary>
+        /// <summary> --获得属性观察对象</summary>
         internal Int64Obs NumberObserver => number;
 
-        /// <summary>number</summary>
+        /// <summary></summary>
         public Int64 Number { get => GetNumberValue(); set => CheckNumberValue(value, 0); }
 
-        /// <summary>number --同步到数据库</summary>
+        /// <summary> --同步到数据库</summary>
         internal Int64 SyncNumber { get => GetNumberValue(); set => CheckNumberValue(value, 1); }
 
-        /// <summary>number --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步带有Key字段的值到服务器Player对象上，需要处理</summary>
         internal Int64 SyncIDNumber { get => GetNumberValue(); set => CheckNumberValue(value, 2); }
 
         private Int64 GetNumberValue() => this.number.Value;
@@ -129,10 +144,11 @@ namespace Example2
                 NumberCall(false);
             else if (type == 2)
                 NumberCall(true);
-            OnValueChanged?.Invoke(Example2HashProto.CONFIG_NUMBER, value);
+            if (RowState != 0) //初始化完成才能通知
+                Example2DBEvent.OnValueChanged?.Invoke(this, Example2HashProto.CONFIG_NUMBER, id, value);
         }
 
-        /// <summary>number --同步当前值到服务器Player对象上，需要处理</summary>
+        /// <summary> --同步当前值到服务器Player对象上，需要处理</summary>
         public void NumberCall(bool syncId = false)
         {
             
@@ -143,10 +159,11 @@ namespace Example2
             CheckUpdate(2);
             Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NUMBER, objects);
 #else
-            Example2DBEvent.Client.SendRT(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NUMBER, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NUMBER, objects);
 #endif
         }
 
+        [DataRowField("number", 2)]
         [Rpc(hash = (ushort)Example2HashProto.CONFIG_NUMBER)]
         private void NumberRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
         {
@@ -161,15 +178,6 @@ namespace Example2
         {
             NewTableRow(parms);
         }
-        public void NewTableRow()
-        {
-            RowState = DataRowState.Added;
-            Example2DB.I.Update(this);
-        }
-        public object GetDefaultValue(Type type)
-        {
-            return type.IsValueType ? Activator.CreateInstance(type) : null;
-        }
         public void NewTableRow(params object[] parms)
         {
             if (parms == null)
@@ -182,14 +190,22 @@ namespace Example2
                     continue;
                 this[i] = parms[i];
             }
+            NewTableRow();
+        }
+        public void NewTableRow()
+        {
+            if (id == default)
+                id = (Int64)Context.GetUniqueId(Example2UniqueIdType.Config);
             RowState = DataRowState.Added;
-            Example2DB.I.Update(this);
+            Context.Update(this);
         }
         public void NewTableRowSync()
         {
+            if (id == default)
+                id = (Int64)Context.GetUniqueId(Example2UniqueIdType.Config);
             var sb = new StringBuilder();
             BulkLoaderBuilder(sb, false);
-            Example2DB.I.ExecuteNonQuery(sb.ToString());
+            Context.ExecuteNonQuery(sb.ToString());
             RowState = DataRowState.Unchanged;
         }
         public string GetCellNameAndTextLength(int index, out uint length)
@@ -197,11 +213,11 @@ namespace Example2
             switch (index)
             {
      //3
-                case 0: length = 65535; return "id";
+                case 0: length = 0; return "id";
      //3
-                case 1: length = 65535; return "name";
+                case 1: length = 1073741823; return "name";
      //3
-                case 2: length = 65535; return "number";
+                case 2: length = 0; return "number";
      //4
             }
             throw new Exception("错误");
@@ -234,11 +250,11 @@ namespace Example2
                         break;
      //7
                     case 1:
-                        CheckNameValue((String)value, -1);
+                        CheckNameValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //7
                     case 2:
-                        CheckNumberValue((Int64)value, -1);
+                        CheckNumberValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //8
                 }
@@ -271,11 +287,11 @@ namespace Example2
                         break;
      //11
                     case "name":
-                        CheckNameValue((String)value, -1);
+                        CheckNameValue((String)Convert.ChangeType(value, typeof(String)), -1);
                         break;
      //11
                     case "number":
-                        CheckNumberValue((Int64)value, -1);
+                        CheckNumberValue((Int64)Convert.ChangeType(value, typeof(Int64)), -1);
                         break;
      //12
                 }
@@ -288,13 +304,13 @@ namespace Example2
             if (immediately)
             {
                 var sb = new StringBuilder();
-                DeletedSql(sb);
-                _ = Example2DB.I.ExecuteNonQuery(sb.ToString(), null);
+                BulkDeleteBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
             }
             else
             {
                 RowState = DataRowState.Detached;
-                Example2DB.I.Update(this);
+                Context.Update(this);
             }
         }
 
@@ -309,7 +325,7 @@ namespace Example2
         /// <returns></returns>
         public static ConfigData Query(string filterExpression)
         {
-            var cmdText = $"select * from config where {filterExpression}; ";
+            var cmdText = $"select * from `config` where {filterExpression}; ";
             var data = Example2DB.I.ExecuteQuery<ConfigData>(cmdText);
             return data;
         }
@@ -324,27 +340,37 @@ namespace Example2
         /// <returns></returns>
         public static async UniTask<ConfigData> QueryAsync(string filterExpression)
         {
-            var cmdText = $"select * from config where {filterExpression}; ";
+            var cmdText = $"select * from `config` where {filterExpression}; ";
             var data = await Example2DB.I.ExecuteQueryAsync<ConfigData>(cmdText);
             return data;
         }
         public static ConfigData[] QueryList(string filterExpression)
         {
-            var cmdText = $"select * from config where {filterExpression}; ";
+            var cmdText = $"select * from `config` where {filterExpression}; ";
             var datas = Example2DB.I.ExecuteQueryList<ConfigData>(cmdText);
             return datas;
         }
         public static async UniTask<ConfigData[]> QueryListAsync(string filterExpression)
         {
-            var cmdText = $"select * from config where {filterExpression}; ";
+            var cmdText = $"select * from `config` where {filterExpression}; ";
             var datas = await Example2DB.I.ExecuteQueryListAsync<ConfigData>(cmdText);
             return datas;
         }
-        public void Update()
+        public void Update(bool immediately = false)
         {
             if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | RowState == DataRowState.Added | RowState == 0) return;
-            RowState = DataRowState.Modified;
-            Example2DB.I.Update(this);
+            if (immediately)
+            {
+                var sb = new StringBuilder();
+                BulkLoaderBuilder(sb, false);
+                Context.ExecuteNonQuery(sb.ToString());
+                RowState = DataRowState.Unchanged;
+            }
+            else
+            {
+                RowState = DataRowState.Modified;
+                Context.Update(this);
+            }
         }
     #endif
 
@@ -386,18 +412,25 @@ namespace Example2
     #if SERVER
             if (RowState == DataRowState.Deleted)
                 return;
-            string cmdText = $"DELETE FROM config {CheckSqlKey(0, id)}";
-            sb.Append(cmdText);
+            BulkDeleteBuilder(sb, true);
             RowState = DataRowState.Deleted;
     #endif
         }
 
     #if SERVER
+        public void BulkDeleteBuilder(StringBuilder sb, bool isBulk = false)
+        {
+            if (!isBulk)
+                sb.Append($"DELETE FROM `user` {CheckSqlKey(0, id)}");
+            else
+                sb.Append($"{(sb.Length == 0 ? "" : ", ")}{id}");
+        }
+
         public void BulkLoaderBuilder(StringBuilder sb, bool isBulk = false)
         {
  //15
             if (!isBulk)
-                sb.Append("REPLACE INTO config VALUES (");
+                sb.Append("REPLACE INTO `config` VALUES (");
             for (int i = 0; i < 3; i++)
             {
                 var name = GetCellNameAndTextLength(i, out var length);
@@ -410,7 +443,7 @@ namespace Example2
                 }
                 if (value is string text)
                 {
-                    Example2DB.I.CheckStringValue(ref text, length);
+                    Context.CheckStringValue(ref text, length);
                     if (isBulk) sb.Append(text + "|");
                     else sb.Append($"'{text}',");
                 }
@@ -461,7 +494,7 @@ namespace Example2
                 return "";
             if (value is string text)
             {
-                Example2DB.I.CheckStringValue(ref text, length);
+                Context.CheckStringValue(ref text, length);
                 return $" WHERE `{name}`='{text}'; ";
             }
             else if (value is DateTime)
@@ -475,11 +508,16 @@ namespace Example2
         private void CheckUpdate(int cellIndex)
         {
 #if SERVER
-            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached) return;
+            if (RowState == DataRowState.Deleted | RowState == DataRowState.Detached | id <= 0) return; //如果id=-1或者0表示这个对象还没有完成赋值
             if (RowState != DataRowState.Added & RowState != 0)//如果还没初始化或者创建新行,只能修改值不能更新状态
                 RowState = DataRowState.Modified;
-            Example2DB.I.Update(this);
+            Context.Update(this);
 #endif
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)id; //解决hash碰撞不判断对象是否同一地址问题
         }
 
         public override string ToString()

@@ -113,5 +113,9 @@ namespace Example2
                 //TODO 死亡通知
             }
         }
+
+        public void OnInit()
+        {
+        }
     }
 }

@@ -62,6 +62,11 @@
             helper of create add UniTaskVoid to delegate.
             </summary>
         </member>
+        <member name="M:Cysharp.Threading.Tasks.UniTask.Action``1(``0,System.Func{``0,Cysharp.Threading.Tasks.UniTaskVoid})">
+            <summary>
+            helper of create add UniTaskVoid to delegate.
+            </summary>
+        </member>
         <member name="M:Cysharp.Threading.Tasks.UniTask.Defer(System.Func{Cysharp.Threading.Tasks.UniTask})">
             <summary>
             Defer the task creation just before call await.

@@ -52,5 +52,9 @@ namespace AOIExample
         public void OnBodyUpdate()
         {
         }
+
+        public void OnInit()
+        {
+        }
     }
 }

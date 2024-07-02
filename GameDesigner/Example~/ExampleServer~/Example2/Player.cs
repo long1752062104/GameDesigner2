@@ -115,8 +115,12 @@ namespace Example2
             isDead = false;
         }
 
+        public void OnInit()
+        {
+        }
+
         #region 扩展网络请求
-        
+
         #endregion
     }
 }

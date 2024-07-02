@@ -1,23 +1,23 @@
-public enum Example2HashProto : ushort
+public enum Example2HashProto : uint
 {
-    /// <summary>name</summary>
+    /// <summary></summary>
     CONFIG_NAME = 4096,
-    /// <summary>number</summary>
+    /// <summary></summary>
     CONFIG_NUMBER,
-    /// <summary>account</summary>
+    /// <summary></summary>
     USERINFO_ACCOUNT = 5096,
-    /// <summary>password</summary>
+    /// <summary></summary>
     USERINFO_PASSWORD,
-    /// <summary>moveSpeed</summary>
+    /// <summary></summary>
     USERINFO_MOVESPEED,
-    /// <summary>position</summary>
+    /// <summary></summary>
     USERINFO_POSITION,
-    /// <summary>rotation</summary>
+    /// <summary></summary>
     USERINFO_ROTATION,
-    /// <summary>health</summary>
+    /// <summary></summary>
     USERINFO_HEALTH,
-    /// <summary>healthMax</summary>
+    /// <summary></summary>
     USERINFO_HEALTHMAX,
-    /// <summary>buffer</summary>
+    /// <summary></summary>
     USERINFO_BUFFER,
 }

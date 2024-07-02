@@ -35,6 +35,11 @@
             九宫格世界
             </summary>
         </member>
+        <member name="F:Net.AOI.GridWorld.OnOverflow">
+            <summary>
+            当越界提示事件
+            </summary>
+        </member>
         <member name="M:Net.AOI.GridWorld.Init(System.Single,System.Single,System.UInt32,System.UInt32,System.Int32,System.Int32)">
             <summary>
             初始化九宫格
@@ -160,7 +165,7 @@
             主角? true:其他演员进入或退出都会通知自己 false:当自己进入新的格子时, 别人会通知你进来了, 当你退出旧的格子时, 别人也会通知你退出了旧的格子, 而你是无感知的
             </summary>
         </member>
-        <member name="M:Net.AOI.IGridBody.OnStart">
+        <member name="M:Net.AOI.IGridBody.OnInit">
             <summary>
             当初始化完成后调用
             </summary>
@@ -180,6 +185,108 @@
             当body物体退出感兴趣区域
             </summary>
         </member>
+        <member name="T:Net.Common.FastLocking">
+            <summary>
+            快速锁 (共享锁), 比lock性能要好很多
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Enter">
+            <summary>
+            进入锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.TryEnter">
+            <summary>
+            尝试获取锁
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Common.FastLocking.Exit">
+            <summary>
+            退出锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Lock">
+            <summary>
+            加锁
+            </summary>
+        </member>
+        <member name="M:Net.Common.FastLocking.Release">
+            <summary>
+            释放锁
+            </summary>
+        </member>
+        <member name="T:Net.Common.Singleton`1">
+            <summary>
+            通用类单例
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Common.TransformEntity">
+            <summary>
+            新的Trasnform实体类, 性能可能要好点
+            </summary>
+        </member>
+        <member name="T:Net.Common.EntityTransform">
+            <summary>
+            新的Trasnform实体类, 性能可能要好点
+            </summary>
+        </member>
+        <member name="T:Net.Common.IPropertyObserver`1">
+            <summary>
+            属性观察接口
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.Value">
+            <summary>
+            属性值
+            </summary>
+        </member>
+        <member name="P:Net.Common.IPropertyObserver`1.OnValueChanged">
+            <summary>
+            当属性被修改事件
+            </summary>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.GetValue">
+            <summary>
+            获取属性值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Common.IPropertyObserver`1.SetValue(`0,System.Boolean)">
+            <summary>
+            设置属性值
+            </summary>
+            <param name="value">新的属性值</param>
+            <param name="isNotify">是否通知事件</param>
+        </member>
+        <member name="T:Net.Common.PropertyObserver`1">
+            <summary>
+            属性观察类
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Common.ObscuredPropertyObserver`1">
+            <summary>
+            模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Net.Common.PropertyObserverAuto`1">
+            <summary>
+            属性观察自动类, 可模糊,不模糊
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.Common.PropertyObserverAuto`1.#ctor(System.String,System.Boolean,System.Action{`0})">
+            <summary>
+            属性观察自动类构造
+            </summary>
+            <param name="name">当属性被发现修改时提示名称</param>
+            <param name="available">使用模糊属性?</param>
+            <param name="onValueChanged">当属性被修改事件</param>
+        </member>
         <member name="T:Net.Distributed.ItemConfig">
             <summary>
             负载均衡配置项
@@ -198,6 +305,11 @@
         <member name="P:Net.Distributed.ItemConfig.Port">
             <summary>
             服务器端口
+            </summary>
+        </member>
+        <member name="P:Net.Distributed.ItemConfig.Args">
+            <summary>
+            额外参数，可以是自定义参数或者使用Json记录
             </summary>
         </member>
         <member name="T:Net.Distributed.LoadBalanceConfig">
@@ -272,11 +384,12 @@
             <param name="node"></param>
             <param name="token"></param>
         </member>
-        <member name="M:Net.Distributed.ConsistentHashing`1.AddNodeGet(System.String)">
+        <member name="M:Net.Distributed.ConsistentHashing`1.AddNodeGet(System.String,`0)">
             <summary>
             添加节点并获得虚拟节点列表
             </summary>
             <param name="node"></param>
+            <param name="token"></param>
         </member>
         <member name="M:Net.Distributed.ConsistentHashing`1.RemoveNode(System.String)">
             <summary>
@@ -475,108 +588,6 @@
             网络行为组件命令，当你继承NetworkBehaviour组件实现你的网络组件时需要使用这个命令进行同步
             </summary>
         </member>
-        <member name="T:Net.Common.FastLocking">
-            <summary>
-            快速锁 (共享锁), 比lock性能要好很多
-            </summary>
-        </member>
-        <member name="M:Net.Common.FastLocking.Enter">
-            <summary>
-            进入锁
-            </summary>
-        </member>
-        <member name="M:Net.Common.FastLocking.TryEnter">
-            <summary>
-            尝试获取锁
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Common.FastLocking.Exit">
-            <summary>
-            退出锁
-            </summary>
-        </member>
-        <member name="M:Net.Common.FastLocking.Lock">
-            <summary>
-            加锁
-            </summary>
-        </member>
-        <member name="M:Net.Common.FastLocking.Release">
-            <summary>
-            释放锁
-            </summary>
-        </member>
-        <member name="T:Net.Common.Singleton`1">
-            <summary>
-            通用类单例
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Net.Common.TransformEntity">
-            <summary>
-            新的Trasnform实体类, 性能可能要好点
-            </summary>
-        </member>
-        <member name="T:Net.Common.EntityTransform">
-            <summary>
-            新的Trasnform实体类, 性能可能要好点
-            </summary>
-        </member>
-        <member name="T:Net.Common.IPropertyObserver`1">
-            <summary>
-            属性观察接口
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="P:Net.Common.IPropertyObserver`1.Value">
-            <summary>
-            属性值
-            </summary>
-        </member>
-        <member name="P:Net.Common.IPropertyObserver`1.OnValueChanged">
-            <summary>
-            当属性被修改事件
-            </summary>
-        </member>
-        <member name="M:Net.Common.IPropertyObserver`1.GetValue">
-            <summary>
-            获取属性值
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Common.IPropertyObserver`1.SetValue(`0,System.Boolean)">
-            <summary>
-            设置属性值
-            </summary>
-            <param name="value">新的属性值</param>
-            <param name="isNotify">是否通知事件</param>
-        </member>
-        <member name="T:Net.Common.PropertyObserver`1">
-            <summary>
-            属性观察类
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Net.Common.ObscuredPropertyObserver`1">
-            <summary>
-            模糊属性观察类, 此类只支持byte, sbyte, short, ushort, char, int, uint, float, long, ulong, double
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Net.Common.PropertyObserverAuto`1">
-            <summary>
-            属性观察自动类, 可模糊,不模糊
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Net.Common.PropertyObserverAuto`1.#ctor(System.String,System.Boolean,System.Action{`0})">
-            <summary>
-            属性观察自动类构造
-            </summary>
-            <param name="name">当属性被发现修改时提示名称</param>
-            <param name="available">使用模糊属性?</param>
-            <param name="onValueChanged">当属性被修改事件</param>
-        </member>
         <member name="T:Net.Server.NetPlayer">
             <summary>
             网络玩家 - 当客户端连接服务器后都会为每个客户端生成一个网络玩家对象，(玩家对象由服务器管理) 2019.9.9
@@ -640,7 +651,7 @@
         </member>
         <member name="P:Net.Server.NetPlayer.WorkerQueue">
             <summary>
-            同步线程上下文任务队列
+            跨线程调用任务队列
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.heart">
@@ -648,14 +659,14 @@
             跳动的心
             </summary>
         </member>
-        <member name="F:Net.Server.NetPlayer.stack">
+        <member name="F:Net.Server.NetPlayer.stacking">
             <summary>
             TCP叠包值， 0:正常 >1:叠包次数 >25:清空叠包缓存流
             </summary>
         </member>
-        <member name="F:Net.Server.NetPlayer.stackStream">
+        <member name="F:Net.Server.NetPlayer.BufferStream">
             <summary>
-            TCP叠包临时缓存流
+            数据缓冲流
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.UserID">
@@ -681,6 +692,11 @@
         <member name="P:Net.Server.NetPlayer.IsQueueUp">
             <summary>
             是否属于排队状态
+            </summary>
+        </member>
+        <member name="P:Net.Server.NetPlayer.Gcp">
+            <summary>
+            GCP协议接口
             </summary>
         </member>
         <member name="P:Net.Server.NetPlayer.ConnectTime">
@@ -776,12 +792,13 @@
             </summary>
             <param name="append">可以重复添加rpc?</param>
         </member>
-        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean)">
+        <member name="M:Net.Server.NetPlayer.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
             <summary>
             添加远程过程调用函数,从对象进行收集
             </summary>
             <param name="target"></param>
             <param name="append">可以重复添加rpc?</param>
+            <param name="onSyncVarCollect"></param>
         </member>
         <member name="M:Net.Server.NetPlayer.RemoveRpc(System.Object)">
             <summary>
@@ -894,9 +911,8 @@
             <summary>
             发送文件, 客户端可以使用事件<see cref="P:Net.Client.ClientBase.OnReceiveFileHandle"/>来监听并处理
             </summary>
-            <param name="client"></param>
             <param name="filePath"></param>
-            <param name="bufferSize">每次发送数据大小</param>
+            <param name="bufferSize">每次发送数据大小, 如果想最大化发送，你可以设置bufferSize参数为PackageSize - 2048</param>
             <returns></returns>
         </member>
         <member name="M:Net.Server.NetPlayer.CheckCall">
@@ -1139,11 +1155,12 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Server.ServerBase`1.OnDeserializeRpc(Net.System.ISegment)">
+        <member name="M:Net.Server.ServerBase`1.OnDeserializeRpc(Net.System.ISegment,Net.Share.RPCModel)">
             <summary>
             当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
             </summary>
             <param name="segment"></param>
+            <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:Net.Server.ServerBase`1.OnSceneRelay(`0,Net.Share.RPCModel)">
@@ -1702,7 +1719,7 @@
         </member>
         <member name="P:Net.Server.ServerBase.WorkerQueue">
             <summary>
-            同步线程上下文任务队列
+            跨线程调用任务队列
             </summary>
         </member>
         <member name="P:Net.Server.ServerBase.Port">
@@ -2373,7 +2390,7 @@
         </member>
         <member name="F:Net.Helper.JobQueueHelper.WorkerQueue">
             <summary>
-            同步线程上下文任务队列
+            跨线程调用任务队列
             </summary>
         </member>
         <member name="M:Net.Helper.PathHelper.GetRelativePath(System.String,System.String,System.Boolean)">
@@ -2393,6 +2410,89 @@
             <param name="fullPath"></param>
             <returns></returns>
             <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="T:Net.Helper.ISyncProperty">
+            <summary>
+            MySqlBuild属性同步接口
+            </summary>
+        </member>
+        <member name="M:Net.Helper.ISyncProperty.SetProperty(System.Object[])">
+            <summary>
+            设置属性同步
+            </summary>
+            <param name="pars"></param>
+        </member>
+        <member name="T:Net.Helper.SyncProperty`1">
+            <summary>
+            属性同步基础类，是单个类，如UserData
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.Helper.SyncProperty`1.#ctor(`0,System.Int32,System.String)">
+            <summary>
+            属性同步构造
+            </summary>
+            <param name="data"></param>
+            <param name="index"></param>
+            <param name="name"></param>
+        </member>
+        <member name="M:Net.Helper.SyncProperty`1.SetProperty(System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="T:Net.Helper.SyncPropertyList`1">
+            <summary>
+            列表或者数组型的属性同步类型
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyList`1.#ctor(System.Collections.Generic.IList{`0},System.Int32,System.String)">
+            <summary>
+            列表或数组类型构造
+            </summary>
+            <param name="datas"></param>
+            <param name="index"></param>
+            <param name="name"></param>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyList`1.SetProperty(System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="T:Net.Helper.SyncPropertyHelper">
+            <summary>
+            MySqlBuild属性同步帮助类
+            </summary>
+        </member>
+        <member name="F:Net.Helper.SyncPropertyHelper.SyncPropertyDict">
+            <summary>
+            属性同步字典
+            </summary>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyHelper.AddSyncPropertys``1(System.Collections.Generic.IList{``0},Net.Helper.ISyncProperty)">
+            <summary>
+            添加属性同步，数组或者List类型，并且这个是引用地址
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="datas"></param>
+            <param name="syncProperty"></param>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyHelper.AddSyncProperty``1(``0)">
+            <summary>
+            添加基础的属性同步类型
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyHelper.AddSyncProperty``1(System.Func{Net.Share.Rpc,Net.Share.DataRowField,Net.Helper.ISyncProperty})">
+            <summary>
+            添加属性同步，通过onCreateSyncProperty委托自己构造SyncProperty对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="onCreateSyncProperty"></param>
+        </member>
+        <member name="M:Net.Helper.SyncPropertyHelper.SyncPropertyHandler(Net.Share.RPCModel)">
+            <summary>
+            属性同步处理
+            </summary>
+            <param name="model"></param>
         </member>
         <member name="P:Net.Helper.AntiCheatHelper.IsActive">
             <summary>
@@ -2439,7 +2539,7 @@
             <param name="entryTypeName">入口类名称</param>
             <param name="invokeMethodName">调用方法名称, 必须是静态的</param>
         </member>
-        <member name="M:Net.Helper.AssemblyHelper.GetMethodAttributes(System.Type)">
+        <member name="M:Net.Helper.AssemblyHelper.GetMethodAttributes(System.Type,System.String[])">
             <summary>
             获取所有程序集的类的方法定义attribute特性的方法
             </summary>
@@ -2820,7 +2920,7 @@
         </member>
         <member name="F:Net.Client.ClientBase.RpcModels">
             <summary>
-            发送缓存器
+            远程模型缓冲区
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.RpcCollectDic">
@@ -2843,14 +2943,14 @@
             字段同步信息
             </summary>
         </member>
-        <member name="F:Net.Client.ClientBase.threadDic">
+        <member name="F:Net.Client.ClientBase.NetworkThread">
             <summary>
-            线程字典
+            网络独立执行线程
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.NetworkState">
             <summary>
-            网络连接状态
+            网络状态
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.Connected">
@@ -3100,7 +3200,7 @@
             当数据超出<see cref="P:Net.Client.ClientBase.LimitQueueCount"/>限制后触发的事件
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.frame">
+        <member name="P:Net.Client.ClientBase.Frame">
             <summary>
             4个字节记录数据长度 + 1CRC校验
             </summary>
@@ -3134,7 +3234,7 @@
         </member>
         <member name="P:Net.Client.ClientBase.WorkerQueue">
             <summary>
-            同步线程上下文任务队列
+            跨线程调用任务队列
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.PackageSize">
@@ -3217,9 +3317,9 @@
             断线重连间隔, 默认间隔2秒
             </summary>
         </member>
-        <member name="P:Net.Client.ClientBase.SendInterval">
+        <member name="P:Net.Client.ClientBase.Gcp">
             <summary>
-            每次发送数据间隔，每秒大概执行1000次
+            GCP协议接口
             </summary>
         </member>
         <member name="P:Net.Client.ClientBase.UpdateMode">
@@ -3342,7 +3442,7 @@
             <summary>
             开启线程
             </summary>
-            <param name="threadKey">线程名称</param>
+            <param name="threadName">线程名称</param>
             <param name="start">线程函数</param>
         </member>
         <member name="M:Net.Client.ClientBase.AbortedThread">
@@ -3472,7 +3572,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(Net.System.ISegment)">
+        <member name="M:Net.Client.ClientBase.OnDeserializeRpcInternal(Net.System.ISegment,Net.Share.RPCModel)">
             <summary>
             当内核解析远程过程函数时调用, 如果想改变内核rpc的序列化方式, 可重写定义解析协议
             </summary>
@@ -3526,7 +3626,7 @@
             <param name="func"></param>
             <param name="pars"></param>
         </member>
-        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.UInt16,System.Object[])">
+        <member name="M:Net.Client.ClientBase.AddOperation(System.Byte,System.UInt32,System.Object[])">
             <summary>
             添加操作, 跟Send方法类似，区别在于AddOperation方法是将所有要发送的数据收集成一堆数据后，等待时间间隔进行发送。
             而Send则是直接发送
@@ -3621,11 +3721,12 @@
             字段,属性同步处理线程
             </summary>
         </member>
-        <member name="M:Net.Client.ClientBase.SendFile(System.String)">
+        <member name="M:Net.Client.ClientBase.SendFile(System.String,System.Int32)">
             <summary>
             发送文件, 服务器可以通过重写<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFile"/>方法来接收 或 使用事件<see cref="!:Server.ServerBase&lt;Player, Scene&gt;.OnReceiveFileHandle"/>来监听并处理
             </summary>
             <param name="filePath"></param>
+            <param name="bufferSize">每次发送数据大小，如果想最大化发送，你可以设置bufferSize参数为PackageSize - 2048</param>
             <returns></returns>
         </member>
         <member name="M:Net.Client.ClientBase.CheckCall">
@@ -3840,11 +3941,6 @@
             断线重连间隔, 默认间隔2秒
             </summary>
         </member>
-        <member name="P:Net.Config.ConfigBase.SendInterval">
-            <summary>
-            每次发送数据间隔，每秒大概执行1000次
-            </summary>
-        </member>
         <member name="P:Net.Config.ConfigBase.SendBufferSize">
             <summary>
             设置Socket的发送缓冲区大小, 也叫做窗口大小
@@ -3954,11 +4050,12 @@
             <param name="recordType"></param>
             <returns></returns>
         </member>
-        <member name="M:Net.Serialize.NetConvert.Deserialize(Net.System.ISegment,System.Boolean)">
+        <member name="M:Net.Serialize.NetConvert.Deserialize(Net.System.ISegment,Net.Share.RPCModel,System.Boolean)">
             <summary>
             新版反序列化
             </summary>
             <param name="segment"></param>
+            <param name="model"></param>
             <param name="recordType"></param>
         </member>
         <member name="T:Net.Serialize.NetConvertBase">
@@ -4098,14 +4195,19 @@
             </summary>
             <param name="stream"></param>
             <param name="array"></param>
+            <param name="itemType"></param>
+            <param name="recordType"></param>
+            <param name="ignore"></param>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.ReadArray(Net.System.ISegment,System.Collections.IList@,System.Type,System.Boolean,System.Boolean)">
             <summary>
             反序列化数组
             </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
+            <param name="segment"></param>
             <param name="array"></param>
+            <param name="itemType"></param>
+            <param name="recordType"></param>
+            <param name="ignore"></param>
         </member>
         <member name="M:Net.Serialize.NetConvertBinary.Serialize(System.Object,System.Boolean,System.Boolean)">
             <summary>
@@ -4139,7 +4241,6 @@
             <summary>
             序列化对象
             </summary>
-            <typeparam name="T"></typeparam>
             <param name="segment"></param>
             <param name="type"></param>
             <param name="target"></param>
@@ -4193,9 +4294,10 @@
             <summary>
             反序列化实体对象
             </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
+            <param name="segment"></param>
             <param name="type"></param>
+            <param name="recordType"></param>
+            <param name="ignore"></param>
             <returns></returns>
         </member>
         <member name="T:Net.Serialize.NetConvertFast">
@@ -4565,54 +4667,6 @@
             实际文件写入对象
             </summary>
         </member>
-        <member name="T:Net.Share.FuncData">
-            <summary>
-            函数数据
-            </summary>
-        </member>
-        <member name="F:Net.Share.FuncData.protocol">
-            <summary>
-            函数名称
-            </summary>
-        </member>
-        <member name="F:Net.Share.FuncData.pars">
-            <summary>
-            参数数组
-            </summary>
-        </member>
-        <member name="F:Net.Share.FuncData.error">
-            <summary>
-            序列化是否错误?
-            </summary>
-        </member>
-        <member name="M:Net.Share.FuncData.#ctor(System.UInt32,System.Object[])">
-            <summary>
-            构造函数
-            </summary>
-            <param name="func"></param>
-            <param name="pars"></param>
-        </member>
-        <member name="P:Net.Share.FuncData.Item(System.Int32)">
-            <summary>
-            取出index的参数值
-            </summary>
-            <param name="index"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Share.FuncData.To``1">
-            <summary>
-            每次调用参数都会指向下一个参数
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:Net.Share.FuncData.As``1">
-            <summary>
-            每次调用参数都会指向下一个参数
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
         <member name="T:Net.Share.IAdapter">
             <summary>
             基础适配器接口
@@ -4720,6 +4774,19 @@
             </summary>
             <param name="name"></param>
             <returns></returns>
+        </member>
+        <member name="P:Net.Share.IDataRow.Item(System.Int32)">
+            <summary>
+            根据索引获得字段值
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Net.Share.IDataRow.SetContext(System.Object)">
+            <summary>
+            设置数据库实例
+            </summary>
+            <param name="context"></param>
         </member>
         <member name="T:Net.Share.IDebugHandle">
             <summary>
@@ -4971,6 +5038,11 @@
             <param name="exitCurrentSceneCall">即将退出当前场景的处理委托函数: 如果你需要对即将退出的场景进行一些事后处理, 则在此委托函数执行! 如:退出当前场景通知当前场景内的其他客户端将你的玩家对象移除等功能</param>
             <returns></returns>
         </member>
+        <member name="T:Net.Share.IRpcHandler">
+            <summary>
+            远程过程调用处理接口
+            </summary>
+        </member>
         <member name="P:Net.Share.IRpcHandler.RpcCollectDic">
             <summary>
             远程调用方法收集
@@ -4993,8 +5065,16 @@
         </member>
         <member name="P:Net.Share.IRpcHandler.WorkerQueue">
             <summary>
-            同步线程上下文任务队列
+            跨线程调用任务队列
             </summary>
+        </member>
+        <member name="M:Net.Share.IRpcHandler.AddRpc(System.Object,System.Boolean,System.Action{Net.Share.SyncVarInfo})">
+            <summary>
+            添加Rpc
+            </summary>
+            <param name="target">注册的对象实例</param>
+            <param name="append">一个Rpc方法是否可以多次添加到Rpcs里面？</param>
+            <param name="onSyncVarCollect">字段同步收集回调</param>
         </member>
         <member name="M:Net.Share.IRpcHandler.RemoveRpc(System.Object)">
             <summary>
@@ -6060,6 +6140,16 @@
             这是内存池数据，这个字段要配合index，count两字段使用，如果想得到实际数据，请使用Buffer属性
             </summary>
         </member>
+        <member name="F:Net.Share.RPCModel.index">
+            <summary>
+            真正数据段索引和长度
+            </summary>
+        </member>
+        <member name="F:Net.Share.RPCModel.count">
+            <summary>
+            真正数据段索引和长度
+            </summary>
+        </member>
         <member name="P:Net.Share.RPCModel.Buffer">
             <summary>
             数据缓存器(正确的数据段)
@@ -6352,13 +6442,13 @@
             <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
             <returns></returns>
         </member>
-        <member name="M:Net.System.DataCache`1.QueryOrGetAsync(System.Func{Cysharp.Threading.Tasks.UniTask{`0}},System.Func{`0},System.Action{`0})">
+        <member name="M:Net.System.DataCache`1.QueryOrGetAsync(System.Func{Cysharp.Threading.Tasks.UniTask{`0}},System.Func{`0},System.Func{`0,Cysharp.Threading.Tasks.UniTask})">
             <summary>
             查询缓存对象或获取数据对象, 如果对象存在就直接获取, 如果对象不存在则需要查询对象进行缓存并获取
             </summary>
             <param name="queryFunc">第一次执行查询</param>
-            <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
             <param name="onNullQuery">当查询数据为空时，如果想创建对象，可以处理此事件创建对象</param>
+            <param name="followQuery">跟随查询, 比如查询user表成功后, 还需要查询item表, friend表, 其他关联的表等等</param>
             <returns></returns>
         </member>
         <member name="T:Net.System.DataCacheDictionary`2">
@@ -6946,13 +7036,13 @@
         </member>
         <member name="M:Net.System.ThreadPipeline`1.AddWorker(`0)">
             <summary>
-            添加工人
+            添加工作者
             </summary>
             <param name="worker"></param>
         </member>
         <member name="M:Net.System.ThreadPipeline`1.RemoveWorker(`0)">
             <summary>
-            移除工人
+            移除工作者
             </summary>
             <param name="worker"></param>
         </member>
@@ -7790,6 +7880,11 @@
             地图的所有怪物点
             </summary>
         </member>
+        <member name="F:Net.MMORPG.MapData.roamingPaths">
+            <summary>
+             简单在路径点，可以用作服务器NPC位置，玩家出生位置等等
+            </summary>
+        </member>
         <member name="F:Net.MMORPG.MapData.aoiData">
             <summary>
             地图九宫格数据
@@ -7848,14 +7943,14 @@
             可以赋值更多信息
             </summary>
         </member>
-        <member name="T:Net.MMORPG.PatrolPath">
+        <member name="T:Net.MMORPG.RoamingPathData">
             <summary>
-            巡逻路径点
+             路径点
             </summary>
         </member>
-        <member name="F:Net.MMORPG.PatrolPath.waypoints">
+        <member name="F:Net.MMORPG.RoamingPathData.waypoints">
             <summary>
-            所有巡逻路径点
+            所有路径点
             </summary>
         </member>
         <member name="T:Net.MMORPG.RoamingPath">
@@ -7966,6 +8061,11 @@
         <member name="T:Net.Event.NDebug">
             <summary>
             消息输入输出处理类
+            </summary>
+        </member>
+        <member name="P:Net.Event.NDebug.Name">
+            <summary>
+             输出日志名称--如果使用
             </summary>
         </member>
         <member name="E:Net.Event.NDebug.LogHandle">
@@ -8495,6 +8595,7 @@
             动态编译, 在unity开发过程中不需要生成绑定cs文件, 直接运行时编译使用, 当编译apk. app时才进行生成绑定cs文件
             </summary>
             <param name="serializeMode">true: 使用字节压缩模式生成代码 false: 不进行压缩</param>
+            <param name="sortingOrder"></param>
             <param name="types"></param>
             <returns></returns>
         </member>

@@ -63,13 +63,15 @@ namespace ExampleServer
             server.Run((ushort)port);//启动
             run = true;
             button1.Text = "关闭";
-            Example2DB.connStr = $"Data Source='{AppDomain.CurrentDomain.BaseDirectory}/Data/example2.db';";
+            Example2DB.I.ConnectionBuilder.DataSource = $"{AppDomain.CurrentDomain.BaseDirectory}/Data/example2.db";
             Example2DB.I.Init(Example2DB.I.OnInit, 1);
-            ThreadManager.Invoke(1f, Example2DB.I.Executed, true);//每秒检查有没有数据需要往mysql数据库更新
+            Example2DB.I.Start();//每秒检查有没有数据需要往mysql数据库更新
         }
 
         private void Form2_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Example2DB.I.WaitBatchWorker();
+            Example2DB.I.Stop();
             server?.Close();
             Process.GetCurrentProcess().Kill();
         }
