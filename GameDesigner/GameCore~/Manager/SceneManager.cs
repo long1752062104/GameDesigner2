@@ -34,7 +34,11 @@ namespace GameCore
 
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, Action onLoadComplete = null, LoadSceneMode mode = LoadSceneMode.Single)
         {
-            await LoadAssetSceneAsync(assetPath, mode, (progress) => Global.UI.Loading.ShowUI("加载场景中..." + (progress * 100f).ToString("f0") + "%", progress), () => Global.UI.Loading.ShowUI("加载完成", 1f));
+            await LoadAssetSceneAsync(assetPath, mode, (progress) => Global.UI.Loading.ShowUI("加载场景中..." + (progress * 100f).ToString("f0") + "%", progress), () =>
+            {
+                Global.UI.Loading.HideUI();
+                onLoadComplete?.Invoke();
+            });
         }
 
         public virtual async UniTask LoadAssetSceneAsync(string assetPath, LoadSceneMode mode = LoadSceneMode.Single, Action<float> progress = null, Action onLoadComplete = null)

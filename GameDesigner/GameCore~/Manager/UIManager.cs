@@ -14,10 +14,11 @@ namespace GameCore
         public string sheetName = "UI";
         public Dictionary<string, UIBase> formDict = new Dictionary<string, UIBase>();
         public Stack<UIBase> formStack = new Stack<UIBase>();
-        public IUserInterface Loading, Message, Tips;
+        public IUserInterface Loading, Message, Tips, Wait;
         [SerializeField] private UIBase _Loading;
         [SerializeField] private UIBase _Message;
         [SerializeField] private UIBase _Tips;
+        [SerializeField] private UIBase _Wait;
         [SerializeField] private UIBase[] _Forms;
 
         public virtual void Awake()
@@ -25,6 +26,7 @@ namespace GameCore
             Loading = _Loading;
             Message = _Message;
             Tips = _Tips;
+            Wait = _Wait;
             AddForm(_Loading);
             AddForm(_Message);
             AddForm(_Tips);
@@ -39,7 +41,7 @@ namespace GameCore
         public void AddForm(UIBase form)
         {
             if (form == null) return;
-    
+
             formDict[form.GetType().Name] = form;
         }
 
@@ -83,7 +85,7 @@ namespace GameCore
                     goto J;
             form = InstantiateForm(formName);
             formDict[formName] = form;
-        J:  if (formStack.Count > 0)
+        J: if (formStack.Count > 0)
             {
                 UIBase form1;
                 switch (formMode)
@@ -99,13 +101,13 @@ namespace GameCore
                     case UIMode.None://不做任何动作, Message消息框
                         break;
                 }
-            } 
+            }
             form.ShowUI(onBack, pars);
             if (formMode != UIMode.EmptyStack)
                 formStack.Push(form);//如果是消息框, 一定会关闭了才能再次打开, 不存在多次压入
             return form;
         }
-        
+
         protected virtual UIBase InstantiateForm(string formName)
         {
             var dataTable = Global.Table.GetTable(sheetName);
