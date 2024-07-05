@@ -114,6 +114,11 @@ namespace GameCore
             if (!File.Exists(excelPath1))
                 File.Copy(path, excelPath1);
 
+            path = $"{data.gameCorePath}/GameCore/Template/OPCommand.txt";
+            excelPath1 = $"{data.scriptPath}/Data/OPCommand.cs";
+            if (!File.Exists(excelPath1))
+                File.Copy(path, excelPath1);
+
             AssetDatabase.Refresh();
             if (EditorApplication.isCompiling)
                 EditorPrefs.SetBool("GameCoreInstall", true);

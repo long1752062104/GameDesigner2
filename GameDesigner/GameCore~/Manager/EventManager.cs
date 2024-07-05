@@ -6,7 +6,7 @@ namespace GameCore
 {
     public class EventManager : MonoBehaviour
     {
-        private readonly Dictionary<string, List<Action<object[]>>> events = new Dictionary<string, List<Action<object[]>>>();
+        private readonly Dictionary<object, List<Action<object[]>>> events = new Dictionary<object, List<Action<object[]>>>();
 
         /// <summary>
         /// 添加事件, 以方法名为事件名称
@@ -31,6 +31,18 @@ namespace GameCore
         }
 
         /// <summary>
+        /// 添加事件
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="eventDelegate"></param>
+        public void AddEvent(Enum eventType, Action<object[]> eventDelegate)
+        {
+            if (!events.TryGetValue(eventType, out var delegates))
+                events.Add(eventType, delegates = new List<Action<object[]>>());
+            delegates.Add(eventDelegate);
+        }
+
+        /// <summary>
         /// 派发事件
         /// </summary>
         /// <param name="eventName"></param>
@@ -38,6 +50,20 @@ namespace GameCore
         public void Dispatch(string eventName, params object[] pars)
         {
             if (events.TryGetValue(eventName, out var delegates))
+            {
+                foreach (var item in delegates)
+                    item.Invoke(pars);
+            }
+        }
+
+        /// <summary>
+        /// 派发事件
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="pars"></param>
+        public void Dispatch(Enum eventType, params object[] pars)
+        {
+            if (events.TryGetValue(eventType, out var delegates))
             {
                 foreach (var item in delegates)
                     item.Invoke(pars);
@@ -62,6 +88,26 @@ namespace GameCore
         public void Remove(string eventName, Action<object[]> eventDelegate)
         {
             if (events.TryGetValue(eventName, out var delegates))
+            {
+                foreach (var item in delegates)
+                {
+                    if (item.Equals(eventDelegate))
+                    {
+                        delegates.Remove(item);
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 移除事件
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="eventDelegate"></param>
+        public void Remove(Enum eventType, Action<object[]> eventDelegate)
+        {
+            if (events.TryGetValue(eventType, out var delegates))
             {
                 foreach (var item in delegates)
                 {
