@@ -540,5 +540,7 @@ namespace WebSocketSharp.Net.WebSockets
         }
 
         #endregion
+
+        public override Socket Client => _tcpClient.Client;
     }
 }

@@ -222,7 +222,7 @@
             }
             if (Client != null)
             {
-                Client.Shutdown(SocketShutdown.Both);
+                //Client.Shutdown(SocketShutdown.Both);
                 Client.Close();
             }
             BufferStream?.Close();

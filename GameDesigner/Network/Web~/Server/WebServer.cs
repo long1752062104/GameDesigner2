@@ -9,8 +9,6 @@ using Newtonsoft_X.Json;
 using WebSocketSharp.Server;
 using WebSocketSharp;
 using Debug = Net.Event.NDebug;
-using System.IO;
-using WebSocketSharp.Net.WebSockets;
 
 namespace Net.Server
 {
@@ -48,19 +46,21 @@ namespace Net.Server
             internal WebServer<Player, Scene> Server;
             internal Player client;
 
-            protected override void OnOpen()
-            {
-                var context = WebSocket.Context;
-                var remotePoint = context.UserEndPoint;
-                client = Server.AcceptHander(null, remotePoint, WebSocket);
-            }
-
             protected override void OnMessage(MessageEventArgs e)
             {
                 var buffer = e.RawData;
                 var count = buffer.Length;
                 Server.receiveCount += count;
                 Server.receiveAmount++;
+                if (client == null)
+                {
+                    var segment = BufferPool.NewSegment(buffer, 0, count, false);
+                    client = Server.CheckReconnect(WebSocket.Client, segment);
+                    client.WSClient = WebSocket;
+                    return;
+                }
+                if (count <= Server.frame) //这个是WebsocketSharp的bug，第一次会调用两次，不知道为什么!
+                    return;
                 client.BytesReceived += count;
                 if (e.IsBinary)
                 {
@@ -72,11 +72,22 @@ namespace Net.Server
                     Server.WSRevdHandler(client, buffer, e.Data);
                 }
             }
+        }
 
-            protected override void OnClose(CloseEventArgs e)
+        protected override bool CheckIsConnected(Player client, uint tick)
+        {
+            if (!client.Connected)
             {
-                Server.RemoveClient(client);
+                if (tick >= client.ReconnectTimeout)
+                    RemoveClient(client);
+                return false;
             }
+            if (!client.Client.Connected)
+            {
+                ConnectLost(client, tick);
+                return false;
+            }
+            return true;
         }
 
         protected override void CreateServerSocket(ushort port)
@@ -107,11 +118,6 @@ namespace Net.Server
             if (!PackageAdapter.Unpack(buffer, frame, client.UserID))
                 return;
             DataHandler(client, buffer);
-        }
-
-        protected override void AcceptHander(Player client, params object[] args)
-        {
-            client.WSClient = args[0] as WebSocket; //在这里赋值才不会在多线程并行状态下报null问题
         }
 
         protected override bool IsInternalCommand(Player client, RPCModel model)

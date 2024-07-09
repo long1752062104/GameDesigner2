@@ -9,6 +9,8 @@ using Cysharp.Threading.Tasks;
 using System.Security.Authentication;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Net.Sockets;
+
 
 #if !UNITY_EDITOR && UNITY_WEBGL
 using UnityWebSocket;
@@ -101,6 +103,17 @@ namespace Net.Client
                     WSClient.SslConfiguration.EnabledSslProtocols = SslProtocols;
                 }
 #endif
+                WSClient.OnOpen += (sender, e) =>
+                {
+                    var segment = BufferPool.Take(SendBufferSize);
+                    segment.Write(PreUserId);
+                    WSClient.Send(segment.ToArray(true));
+#if UNITY_EDITOR || !UNITY_WEBGL
+                    WSClient.Send(new MemoryStream(segment.Buffer, segment.Offset, segment.Count, true, true), segment.Count);
+#else
+                    WSClient.SendAsync(segment.ToArray());
+#endif
+                };
                 WSClient.OnError += (sender, e) =>
                 {
                     NDebug.LogError(e.Exception);
@@ -135,17 +148,9 @@ namespace Net.Client
                         BufferPool.Push(buffer);
                     }
                 };
-                WSClient.ConnectAsync(); //这里必须是Async才能再WebGL对接相同的API
-                var tick = DateTimeHelper.GetTickCount64();
+                WSClient.ConnectAsync(); //这里必须是Async才能在WebGL对接相同的API
                 await UniTaskNetExtensions.Wait(8000, (state) =>
                 {
-                    if (DateTimeHelper.GetTickCount64() >= tick)
-                    {
-                        tick = DateTimeHelper.GetTickCount64() + 1000;
-                        var segment = BufferPool.Take(SendBufferSize);
-                        segment.Write(PreUserId);
-                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
-                    }
                     NetworkTick();
                     return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
                 }, null);

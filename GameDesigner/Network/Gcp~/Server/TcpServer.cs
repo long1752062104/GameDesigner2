@@ -97,29 +97,8 @@
                         acceptList.RemoveAt(i);
                         continue;
                     }
-                    client.ReceiveTimeout = 0;
-                    var userID = segment.ReadInt32();
-                    if (!UIDClients.TryGetValue(userID, out var client1))
-                    {
-                        client1 = AcceptHander(client, client.RemoteEndPoint);
-                        goto J;
-                    }
-                    client1.ReconnectTimeout = (uint)Environment.TickCount + ReconnectionTimeout;
-                    var newRemotePoint = client.RemoteEndPoint as IPEndPoint;
-                    var oldRemotePoint = client1.RemotePoint as IPEndPoint;
-                    //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
-                    //如果是新的IP和旧的IP相同，是可以进行替换的，这样就不会发生假冒客户端问题
-                    //Equals里面有重写IPAddress.Equals，所以能判断出来
-                    if (!client1.Connected | !client1.Client.Connected | Equals(oldRemotePoint.Address, newRemotePoint.Address))
-                    {
-                        client1.Client = client;
-                        client1.Connected = true;
-                        SetClientIdentity(client1);
-                        client1.OnReconnecting();
-                        OnReconnecting(client1);
-                    }
-                    else AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
-                    J: acceptList.RemoveAt(i);
+                    CheckReconnect(client, segment);
+                    acceptList.RemoveAt(i);
                 }
             }
         }
@@ -161,14 +140,6 @@
                 return false;
             }
             return true;
-        }
-
-        protected void ConnectLost(Player client, uint tick)
-        {
-            client.Connected = false;
-            client.ReconnectTimeout = tick + ReconnectionTimeout;
-            client.OnConnectLost();
-            OnConnectLost(client);
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)

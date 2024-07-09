@@ -4421,6 +4421,14 @@ namespace WebSocketSharp
 
         #endregion
 
-        public WebSocketContext Context => _context;
+        public Socket Client
+        {
+            get
+            {
+                if (_context != null) //这是服务器端获取
+                    return _context.Client;
+                return _tcpClient.Client; //客户端获取
+            }
+        }
     }
 }

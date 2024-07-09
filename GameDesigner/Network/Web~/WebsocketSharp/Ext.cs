@@ -417,10 +417,7 @@ namespace WebSocketSharp
             eventHandler(sender, e);
         }
 
-        internal static void Emit<TEventArgs>(
-          this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e
-        )
-          where TEventArgs : EventArgs
+        internal static void Emit<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e) where TEventArgs : EventArgs
         {
             if (eventHandler == null)
                 return;

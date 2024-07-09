@@ -840,6 +840,14 @@ namespace Net.Server
             return true;
         }
 
+        protected virtual void ConnectLost(Player client, uint tick)
+        {
+            client.Connected = false;
+            client.ReconnectTimeout = tick + ReconnectionTimeout;
+            client.OnConnectLost();
+            OnConnectLost(client);
+        }
+
         protected virtual void OnClientTick(Player client, uint tick)
         {
         }
@@ -2216,6 +2224,36 @@ namespace Net.Server
                     Debug.LogError("场景更新异常:" + ex);
                 }
             }
+        }
+
+        /// <summary>
+        /// 检查断线重连处理
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="segment"></param>
+        protected virtual Player CheckReconnect(Socket client, ISegment segment)
+        {
+            client.ReceiveTimeout = 0;
+            var userID = segment.ReadInt32();
+            if (UIDClients.TryGetValue(userID, out var session))
+            {
+                session.ReconnectTimeout = (uint)Environment.TickCount + ReconnectionTimeout;
+                var newRemotePoint = client.RemoteEndPoint as IPEndPoint;
+                var oldRemotePoint = session.RemotePoint as IPEndPoint;
+                //防止出错或者假冒的客户端设置, 导致直接替换真实的客户端
+                //如果是新的IP和旧的IP相同，是可以进行替换的，这样就不会发生假冒客户端问题
+                //Equals里面有重写IPAddress.Equals，所以能判断出来
+                if (!session.Connected | !session.Client.Connected | Equals(oldRemotePoint.Address, newRemotePoint.Address))
+                {
+                    session.Client = client;
+                    session.Connected = true;
+                    SetClientIdentity(session);
+                    session.OnReconnecting();
+                    OnReconnecting(session);
+                    return session;
+                }
+            }
+            return AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
         }
 
         #region 场景API
