@@ -20,14 +20,14 @@
         public override byte HeartLimit { get; set; } = 2;//确认两次
 
         /// <summary>
-        /// 构造可靠传输客户端
+        /// TCP客户端
         /// </summary>
         public TcpClient()
         {
         }
 
         /// <summary>
-        /// 构造不可靠传输客户端
+        /// TCP客户端
         /// </summary>
         /// <param name="useUnityThread">使用unity多线程?</param>
         public TcpClient(bool useUnityThread) : this()

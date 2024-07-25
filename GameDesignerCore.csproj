@@ -108,6 +108,7 @@
     <None Remove="GameDesigner\Helper\PathHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\RpcHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\SerializeHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\SyncPropertyHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\SyncVarHelper.cs.meta" />
     <None Remove="GameDesigner\Import.meta" />
     <None Remove="GameDesigner\ImportCmd.exe" />

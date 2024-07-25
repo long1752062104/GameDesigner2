@@ -1957,7 +1957,7 @@ namespace Net.Server
                     break;
                 case AdapterType.RPC:
                     var rpc = (IRPCAdapter<Player>)adapter;
-                    OnAddRpcHandle = rpc.AddRpcHandle;
+                    OnAddRpcHandle = rpc.AddRpc;
                     OnRPCExecute = rpc.OnRpcExecute;
                     OnRemoveRpc = rpc.RemoveRpc;
                     break;

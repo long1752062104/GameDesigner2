@@ -64,14 +64,20 @@ namespace Net.System
             }
             IsQuery = true;
             Data = queryFunc();
-            if (Data == null && onNullQuery == null) //此处是空对象不创建
+            if (Data == null)
             {
-                ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                if (onNullQuery != null)
+                {
+                    Data = onNullQuery();
+                    ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
+                }
+                else
+                {
+                    ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.NullQueryTimeout;
+                }
                 Locking.Exit();
-                return default;
+                return Data;
             }
-            if (Data == null) //这里是空对象时创建
-                Data = onNullQuery();
             followQuery?.Invoke(Data);
             ExpirationTime = DateTimeHelper.GetTickCount64() + DataCacheManager.Instance.CacheTimeout;
             Locking.Exit();
@@ -206,6 +212,8 @@ namespace Net.System
         /// 缓存12个小时
         /// </summary>
         public int CacheTimeout = 1000 * 60 * 60 * 12;
+        private int eventId;
+
         /// <summary>
         /// 空查询60秒恢复
         /// </summary>
@@ -269,6 +277,22 @@ namespace Net.System
                 NDebug.LogError(ex);
             }
             return true;
+        }
+
+        /// <summary>
+        /// 开始缓存管理器
+        /// </summary>
+        public void Start()
+        {
+            eventId = ThreadManager.Event.AddEvent("CacheCheck", 1000, Executed, true);
+        }
+
+        /// <summary>
+        /// 停止缓存管理器
+        /// </summary>
+        public void Stop()
+        {
+            ThreadManager.Event.RemoveEvent(eventId);
         }
     }
 }

@@ -229,10 +229,6 @@ namespace Net.Client
         /// </summary>
         public Func<ISegment, OperationList> OnDeserializeOPT { get; set; }
         /// <summary>
-        /// 当可等待的rpc方法被注册, 用于Rpc适配器上
-        /// </summary>
-        public Func<uint, RPCMethodBody> OnRpcTaskRegister { get; set; }
-        /// <summary>
         /// ping服务器回调 参数double为延迟毫秒单位 当RTOMode属性为可变重传时, 内核将会每秒自动ping一次
         /// </summary>
         public Action<uint> OnPingCallback { get; set; }
@@ -1880,12 +1876,9 @@ namespace Net.Client
 
         public async UniTask<RPCModelTask> Request(byte cmd, uint protocol, uint timeoutMilliseconds, bool intercept, bool serialize, byte[] buffer, params object[] pars)
         {
-            var requestTask = new RPCModelTask();
-            RPCMethodBody body;
             tokenLock.Enter();
-            if (OnRpcTaskRegister != null)
-                body = OnRpcTaskRegister(protocol);
-            else if (!RpcCollectDic.TryGetValue(protocol, out body))
+            var requestTask = new RPCModelTask();
+            if (!RpcCollectDic.TryGetValue(protocol, out RPCMethodBody body))
                 RpcCollectDic.Add(protocol, body = new RPCMethodBody()); //并行发起导致问题
             J: uint token = tokenCount++;
             if (token == 0)
@@ -1993,10 +1986,9 @@ namespace Net.Client
                     break;
                 case AdapterType.RPC:
                     var rpc = (IRPCAdapter)adapter;
-                    OnAddRpcHandle = rpc.AddRpcHandle;
+                    OnAddRpcHandle = rpc.AddRpc;
                     OnRPCExecute = rpc.OnRpcExecute;
                     OnRemoveRpc = rpc.RemoveRpc;
-                    OnRpcTaskRegister = rpc.OnRpcTaskRegister;
                     break;
                 case AdapterType.NetworkEvt:
                     BindNetworkHandle((INetworkHandle)adapter);

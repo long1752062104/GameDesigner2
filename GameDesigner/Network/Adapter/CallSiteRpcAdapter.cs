@@ -279,7 +279,7 @@ namespace Net.Adapter
 #endif
         }
 
-        public void AddRpcHandle(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
+        public void AddRpc(object target, bool append, Action<SyncVarInfo> onSyncVarCollect)
         {
             var type = target.GetType();
             RpcHelper.AddRpc(handle, target, type, append, onSyncVarCollect, (info, data) =>
