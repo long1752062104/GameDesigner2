@@ -56,8 +56,7 @@ namespace Net.Server
                 if (client == null)
                 {
                     var segment = BufferPool.NewSegment(buffer, 0, count, false);
-                    client = Server.CheckReconnect(WebSocket.Client, segment);
-                    client.WSClient = WebSocket;
+                    client = Server.CheckReconnect(WebSocket.Client, segment, WebSocket);
                     return;
                 }
                 if (count <= Server.frame) //这个是WebsocketSharp的bug，第一次会调用两次，不知道为什么!
@@ -103,6 +102,11 @@ namespace Net.Server
             }
             Server.AddWebSocketService<WebServerBehavior>("/", client => client.Server = this);
             Server.Start();
+        }
+
+        protected override void AcceptHander(Player client, params object[] args)
+        {
+            client.WSClient = args[0] as WebSocket; //在这里赋值才不会在多线程并行状态下报null问题
         }
 
         protected override void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)

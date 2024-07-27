@@ -113,7 +113,7 @@ namespace Net.Share
             this.kernel = kernel;
             this.serialize = serialize;
             this.protocol = protocol;
-            count = buffer.Length;
+            this.count = buffer.Length;
         }
 
         public RPCModel(byte cmd, uint protocol, object[] pars, bool kernel, bool serialize) : this()

@@ -2542,41 +2542,35 @@ namespace WebSocketSharp
             _receivingExited = new ManualResetEvent(false);
 
             Action receive = null;
-            receive =
-              () =>
-                WebSocketFrame.ReadFrameAsync(
-                  _stream,
-                  false,
-                  frame =>
-                  {
-                      var cont = processReceivedFrame(frame)
-                           && _readyState != WebSocketState.Closed;
+            receive = () => WebSocketFrame.ReadFrameAsync(_stream, false, frame =>
+            {
+                var cont = processReceivedFrame(frame) && _readyState != WebSocketState.Closed;
 
-                      if (!cont)
-                      {
-                          var exited = _receivingExited;
+                if (!cont)
+                {
+                    var exited = _receivingExited;
 
-                          if (exited != null)
-                              exited.Set();
+                    if (exited != null)
+                        exited.Set();
 
-                          return;
-                      }
+                    return;
+                }
 
-                      receive();
+                receive();
 
-                      if (_inMessage)
-                          return;
+                if (_inMessage)
+                    return;
 
-                      message();
-                  },
-                  ex =>
-                  {
-                      _log.Fatal(ex.Message);
-                      _log.Debug(ex.ToString());
+                message();
+            },
+            ex =>
+            {
+                _log.Fatal(ex.Message);
+                _log.Debug(ex.ToString());
 
-                      abort("An exception has occurred while receiving.", ex);
-                  }
-                );
+                abort("An exception has occurred while receiving.", ex);
+            }
+            );
 
             receive();
         }

@@ -2231,7 +2231,8 @@ namespace Net.Server
         /// </summary>
         /// <param name="client"></param>
         /// <param name="segment"></param>
-        protected virtual Player CheckReconnect(Socket client, ISegment segment)
+        /// <param name="args"></param>
+        protected virtual Player CheckReconnect(Socket client, ISegment segment, params object[] args)
         {
             client.ReceiveTimeout = 0;
             var userID = segment.ReadInt32();
@@ -2253,7 +2254,7 @@ namespace Net.Server
                     return session;
                 }
             }
-            return AcceptHander(client, client.RemoteEndPoint);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
+            return AcceptHander(client, client.RemoteEndPoint, args);//如果取出的客户端不断线, 那说明是客户端有问题或者错乱, 给他个新的连接
         }
 
         #region 场景API

@@ -753,12 +753,7 @@ namespace WebSocketSharp
             }
         }
 
-        internal static void ReadBytesAsync(
-          this Stream stream,
-          int length,
-          Action<byte[]> completed,
-          Action<Exception> error
-        )
+        internal static void ReadBytesAsync(this Stream stream, int length, Action<byte[]> completed, Action<Exception> error)
         {
             var ret = new byte[length];
 
