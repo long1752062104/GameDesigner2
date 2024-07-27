@@ -107,7 +107,6 @@ namespace Net.Client
                 {
                     var segment = BufferPool.Take(SendBufferSize);
                     segment.Write(PreUserId);
-                    WSClient.Send(segment.ToArray(true));
 #if UNITY_EDITOR || !UNITY_WEBGL
                     WSClient.Send(new MemoryStream(segment.Buffer, segment.Offset, segment.Count, true, true), segment.Count);
 #else
