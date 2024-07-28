@@ -839,26 +839,22 @@ namespace WebSocketSharp.Server
                 {
                     cl = _listener.AcceptTcpClient();
 
-                    ThreadPool.QueueUserWorkItem(
-                      state =>
-                      {
-                          try
-                          {
-                              var ctx = new TcpListenerWebSocketContext(
-                                cl, null, _secure, _sslConfigInUse, _log
-                              );
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        try
+                        {
+                            var ctx = new TcpListenerWebSocketContext(cl, null, _secure, _sslConfigInUse, _log);
 
-                              processRequest(ctx);
-                          }
-                          catch (Exception ex)
-                          {
-                              _log.Error(ex.Message);
-                              _log.Debug(ex.ToString());
+                            processRequest(ctx);
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error(ex.Message);
+                            _log.Debug(ex.ToString());
 
-                              cl.Close();
-                          }
-                      }
-                    );
+                            cl.Close();
+                        }
+                    });
                 }
                 catch (SocketException ex)
                 {
@@ -1007,9 +1003,7 @@ namespace WebSocketSharp.Server
             _receiveThread.Join(millisecondsTimeout);
         }
 
-        private static bool tryCreateUri(
-          string uriString, out Uri result, out string message
-        )
+        private static bool tryCreateUri(string uriString, out Uri result, out string message)
         {
             if (!uriString.TryCreateWebSocketUri(out result, out message))
                 return false;

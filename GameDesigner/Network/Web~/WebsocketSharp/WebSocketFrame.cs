@@ -80,20 +80,11 @@ namespace WebSocketSharp
 
         #region Internal Constructors
 
-        internal WebSocketFrame(
-          Fin fin, Opcode opcode, byte[] data, bool compressed, bool mask
-        )
-          : this(fin, opcode, new PayloadData(data), compressed, mask)
+        internal WebSocketFrame(Fin fin, Opcode opcode, byte[] data, bool compressed, bool mask) : this(fin, opcode, new PayloadData(data), compressed, mask)
         {
         }
 
-        internal WebSocketFrame(
-          Fin fin,
-          Opcode opcode,
-          PayloadData payloadData,
-          bool compressed,
-          bool mask
-        )
+        internal WebSocketFrame(Fin fin, Opcode opcode, PayloadData payloadData, bool compressed, bool mask)
         {
             _fin = fin;
             _opcode = opcode;
@@ -156,11 +147,7 @@ namespace WebSocketSharp
         {
             get
             {
-                return _payloadLength < 126
-                       ? 0
-                       : _payloadLength == 126
-                         ? 2
-                         : 8;
+                return _payloadLength < 126 ? 0 : _payloadLength == 126 ? 2 : 8;
             }
         }
 

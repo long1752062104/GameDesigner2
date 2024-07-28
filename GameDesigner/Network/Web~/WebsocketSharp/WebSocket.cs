@@ -968,9 +968,7 @@ namespace WebSocketSharp
         }
 
         // As server
-        private bool checkHandshakeRequest(
-          WebSocketContext context, out string message
-        )
+        private bool checkHandshakeRequest(WebSocketContext context, out string message)
         {
             message = null;
 

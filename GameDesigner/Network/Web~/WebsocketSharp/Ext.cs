@@ -761,51 +761,50 @@ namespace WebSocketSharp
             var retry = 0;
 
             AsyncCallback callback = null;
-            callback =
-              ar =>
-              {
-                  try
-                  {
-                      var nread = stream.EndRead(ar);
+            callback = ar =>
+            {
+                try
+                {
+                    var nread = stream.EndRead(ar);
 
-                      if (nread <= 0)
-                      {
-                          if (retry < _maxRetry)
-                          {
-                              retry++;
+                    if (nread <= 0)
+                    {
+                        if (retry < _maxRetry)
+                        {
+                            retry++;
 
-                              stream.BeginRead(ret, offset, length, callback, null);
+                            stream.BeginRead(ret, offset, length, callback, null);
 
-                              return;
-                          }
+                            return;
+                        }
 
-                          if (completed != null)
-                              completed(ret.SubArray(0, offset));
+                        if (completed != null)
+                            completed(ret.SubArray(0, offset));
 
-                          return;
-                      }
+                        return;
+                    }
 
-                      if (nread == length)
-                      {
-                          if (completed != null)
-                              completed(ret);
+                    if (nread == length)
+                    {
+                        if (completed != null)
+                            completed(ret);
 
-                          return;
-                      }
+                        return;
+                    }
 
-                      retry = 0;
+                    retry = 0;
 
-                      offset += nread;
-                      length -= nread;
+                    offset += nread;
+                    length -= nread;
 
-                      stream.BeginRead(ret, offset, length, callback, null);
-                  }
-                  catch (Exception ex)
-                  {
-                      if (error != null)
-                          error(ex);
-                  }
-              };
+                    stream.BeginRead(ret, offset, length, callback, null);
+                }
+                catch (Exception ex)
+                {
+                    if (error != null)
+                        error(ex);
+                }
+            };
 
             try
             {
@@ -818,13 +817,7 @@ namespace WebSocketSharp
             }
         }
 
-        internal static void ReadBytesAsync(
-          this Stream stream,
-          long length,
-          int bufferLength,
-          Action<byte[]> completed,
-          Action<Exception> error
-        )
+        internal static void ReadBytesAsync(this Stream stream, long length, int bufferLength, Action<byte[]> completed, Action<Exception> error)
         {
             var dest = new MemoryStream();
 
@@ -1014,6 +1007,16 @@ namespace WebSocketSharp
         }
 
         internal static byte[] ToByteArray(this ulong value, ByteOrder order)
+        {
+            var ret = BitConverter.GetBytes(value);
+
+            if (!order.IsHostOrder())
+                Array.Reverse(ret);
+
+            return ret;
+        }
+
+        internal static byte[] ToByteArray(this int value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
 
@@ -1227,9 +1230,7 @@ namespace WebSocketSharp
             return true;
         }
 
-        internal static bool TryGetUTF8DecodedString(
-          this byte[] bytes, out string s
-        )
+        internal static bool TryGetUTF8DecodedString(this byte[] bytes, out string s)
         {
             s = null;
 
@@ -1322,9 +1323,7 @@ namespace WebSocketSharp
             return HttpUtility.UrlEncode(value, encoding);
         }
 
-        internal static void WriteBytes(
-          this Stream stream, byte[] bytes, int bufferLength
-        )
+        internal static void WriteBytes(this Stream stream, byte[] bytes, int bufferLength)
         {
             using (var src = new MemoryStream(bytes))
                 src.CopyTo(stream, bufferLength);

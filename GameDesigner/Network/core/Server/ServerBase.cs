@@ -915,8 +915,8 @@ namespace Net.Server
             client.ConnectTime = DateTime.Now;
             client.Connected = true;
             client.Server = this;
-            OnThreadQueueSet(client);
             AcceptHander(client, args);
+            OnThreadQueueSet(client);
             SetClientIdentity(client);//此处发的identity是连接时的标识, 还不是开发者自定义的标识
             AllClients.TryAdd(remotePoint, client);//之前放在上面, 由于接收线程并行, 还没赋值revdQueue就已经接收到数据, 导致提示内存池泄露
             UIDClients.TryAdd(uid, client);//uid必须在这里添加, 不在登录成功后添加了
