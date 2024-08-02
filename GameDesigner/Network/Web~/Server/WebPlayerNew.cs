@@ -96,6 +96,11 @@ namespace Net.Server
         public bool IsData => _opcode == Opcode.Text || _opcode == Opcode.Binary;
         internal int ExtendedPayloadLengthWidth => _payloadLength < 126 ? 0 : _payloadLength == 126 ? 2 : 8;
         internal ulong ExactPayloadLength => _payloadLength < 126 ? _payloadLength : _payloadLength == 126 ? _extPayloadLength.ToUInt16(ByteOrder.Big) : _extPayloadLength.ToUInt64(ByteOrder.Big);
+        public bool IsContinuation => _opcode == Opcode.Cont;
+        public bool IsCompressed => _rsv1 == Rsv.On;
+        public bool IsPing => _opcode == Opcode.Ping;
+        public bool IsPong => _opcode == Opcode.Pong;
+        public bool IsClose => _opcode == Opcode.Close;
 
         internal WebSocketFrame() { }
 
@@ -152,6 +157,16 @@ namespace Net.Server
             return key;
         }
 
+        internal static WebSocketFrame CreatePongFrame(byte[] payloadData, bool mask)
+        {
+            return new WebSocketFrame(Fin.Final, Opcode.Pong, payloadData, false, mask);
+        }
+
+        internal static WebSocketFrame CreateCloseFrame(byte[] payloadData, bool mask)
+        {
+            return new WebSocketFrame(Fin.Final, Opcode.Close, payloadData, false, mask);
+        }
+
         public byte[] ToArray()
         {
             using (var buff = new MemoryStream())
@@ -201,6 +216,7 @@ namespace Net.Server
         internal Socket socket;
         private ISegment fragment;
         private Opcode opcode;
+        private bool isCompressed;
         internal Stream stream;
         private MemoryStream ms;
         internal bool isHandshake;
@@ -252,7 +268,6 @@ namespace Net.Server
                         _mask = (header[1] & 0x80) == 0x80 ? Mask.On : Mask.Off,
                         _payloadLength = (byte)(header[1] & 0x7f)
                     };
-
                     var extendedPayloadLengthWidth = frame.ExtendedPayloadLengthWidth;
                     if (extendedPayloadLengthWidth > 0)
                     {
@@ -264,7 +279,6 @@ namespace Net.Server
                         }
                         frame._extPayloadLength = segment.Read(extendedPayloadLengthWidth);
                     }
-
                     if (!frame.IsMasked)
                         frame._maskingKey = EmptyBytes;
                     else
@@ -277,31 +291,29 @@ namespace Net.Server
                         }
                         frame._maskingKey = segment.Read(_defaultMaskingKeyLength);
                     }
-
                     var exactPayloadLen = (int)frame.ExactPayloadLength;
                     var exactPayloadPos = segment.Position;
-
                     canReadCount = segment.Count - segment.Position;
                     if (canReadCount < exactPayloadLen)
                     {
                         ms.Write(segment.Buffer, segment.Position, canReadCount);
                         break;
                     }
-
                     segment.Position += exactPayloadLen;
-
                     if (frame.IsMasked)
                     {
                         for (int i = exactPayloadPos; i < exactPayloadPos + exactPayloadLen; i++)
                             segment[i] = (byte)(segment[i] ^ frame._maskingKey[(i - exactPayloadPos) % 4]);
                     }
-
                     if (frame.IsFragment)
                     {
                         if (fragment == null)
                         {
+                            if (frame.IsContinuation)
+                                continue;
                             fragment = BufferPool.Take();
                             opcode = frame._opcode;
+                            isCompressed = frame.IsCompressed;
                         }
                         var dataCount = fragment.Position + exactPayloadLen;
                         if (dataCount >= fragment.Length)
@@ -313,6 +325,9 @@ namespace Net.Server
                         if (!frame.IsFinal)
                             continue;
                         fragment.Flush();
+                        if (isCompressed)
+                        {
+                        }
                         onMessage?.Invoke(opcode, fragment);
                         BufferPool.Push(fragment);
                         fragment = null;
@@ -328,6 +343,26 @@ namespace Net.Server
                         segment.Position = pos;
                         segment.Count = count;
                     }
+                    else if (frame.IsPing)
+                    {
+                        var pong = WebSocketFrame.CreatePongFrame(frame._payloadData, false);
+                        var bytes = pong.ToArray();
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                    else if (frame.IsPong)
+                    {
+
+                    }
+                    else if (frame.IsClose)
+                    {
+                        var pong = WebSocketFrame.CreateCloseFrame(frame._payloadData, false);
+                        var bytes = pong.ToArray();
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                    else
+                    {
+
+                    }
                 }
                 segment.Dispose();
             }
@@ -339,10 +374,8 @@ namespace Net.Server
             {
                 var segment = BufferPool.Take();
                 segment.Count = stream.Read(segment.Buffer, 0, segment.Length);
-
                 // 读取 HTTP 请求头
                 var requestBuilder = Encoding.UTF8.GetString(segment.Buffer, 0, segment.Count);
-
                 var headers = new NameValueCollection();
                 var headersText = requestBuilder.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 1; i < headersText.Length; i++)
@@ -352,33 +385,26 @@ namespace Net.Server
                     var value = headersText[i].Substring(idx + 1).Trim();
                     headers.Add(name, value);
                 }
-
                 // 检查是否为 WebSocket 握手请求
                 var upgrade = headers.Get("Upgrade");
                 if (upgrade != "websocket")
                     return false;
-
                 // 解析 Sec-WebSocket-Key
                 var key = headers.Get("Sec-WebSocket-Key");
-
                 // 生成响应
                 var responseKey = Convert.ToBase64String(SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
-
                 // 构建握手响应
                 string response = $"HTTP/1.1 101 Switching Protocols\r\n" +
+                                  $"Server: websocket-gdnet/1.0\r\n" +
                                   $"Upgrade: websocket\r\n" +
                                   $"Connection: Upgrade\r\n" +
                                   $"Sec-WebSocket-Accept: {responseKey}\r\n\r\n";
-
                 // 发送握手响应
                 var responseBytes = Encoding.UTF8.GetBytes(response);
                 stream.Write(responseBytes);
-
                 isHandshake = true;
-
                 return true;
             }
-
             return false;
         }
 

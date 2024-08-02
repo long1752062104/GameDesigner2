@@ -1385,9 +1385,7 @@ namespace WebSocketSharp
             );
         }
 
-        private bool closeHandshake(
-          PayloadData payloadData, bool send, bool received
-        )
+        private bool closeHandshake(PayloadData payloadData, bool send, bool received)
         {
             var sent = false;
 

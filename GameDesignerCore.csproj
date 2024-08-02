@@ -163,6 +163,8 @@
     <None Remove="GameDesigner\Network\core\Unity\UnityThreadContext.cs.meta" />
     <None Remove="GameDesigner\Network\Web~\Server\HttpPlayer.cs.meta" />
     <None Remove="GameDesigner\Network\Web~\Server\HttpServer.cs.meta" />
+    <None Remove="GameDesigner\Network\Web~\Server\WebPlayerNew.cs.meta" />
+    <None Remove="GameDesigner\Network\Web~\Server\WebServerNew.cs.meta" />
     <None Remove="GameDesigner\Network\Web~\WebsocketSharp.meta" />
     <None Remove="GameDesigner\package.json" />
     <None Remove="GameDesigner\package.json.meta" />

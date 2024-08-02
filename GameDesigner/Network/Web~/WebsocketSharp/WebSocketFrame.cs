@@ -783,13 +783,9 @@ Extended Payload Length: {7}
 
         #region Internal Methods
 
-        internal static WebSocketFrame CreateCloseFrame(
-          PayloadData payloadData, bool mask
-        )
+        internal static WebSocketFrame CreateCloseFrame(PayloadData payloadData, bool mask)
         {
-            return new WebSocketFrame(
-                     Fin.Final, Opcode.Close, payloadData, false, mask
-                   );
+            return new WebSocketFrame(Fin.Final, Opcode.Close, payloadData, false, mask);
         }
 
         internal static WebSocketFrame CreatePingFrame(bool mask)
@@ -806,13 +802,9 @@ Extended Payload Length: {7}
                    );
         }
 
-        internal static WebSocketFrame CreatePongFrame(
-          PayloadData payloadData, bool mask
-        )
+        internal static WebSocketFrame CreatePongFrame(PayloadData payloadData, bool mask)
         {
-            return new WebSocketFrame(
-                     Fin.Final, Opcode.Pong, payloadData, false, mask
-                   );
+            return new WebSocketFrame(Fin.Final, Opcode.Pong, payloadData, false, mask);
         }
 
         internal static WebSocketFrame ReadFrame(Stream stream, bool unmask)

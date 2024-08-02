@@ -3,11 +3,11 @@ using Net.Share;
 using Net.System;
 using System;
 using System.Net;
-using System.Net.Security;
+using System.Threading;
 using System.Net.Sockets;
+using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using WebSocketSharp.Net;
 using Debug = Net.Event.NDebug;
 
@@ -30,7 +30,16 @@ namespace Net.Server
         /// Ssl类型
         /// </summary>
         public SslProtocols SslProtocols { get; set; }
-        public ServerSslConfiguration SslConfig { get; private set; }
+        private RemoteCertificateValidationCallback _clientCertValidationCallback;
+        public RemoteCertificateValidationCallback ClientCertificateValidationCallback
+        {
+            get => _clientCertValidationCallback ??= DefaultValidateClientCertificate;
+            set => _clientCertValidationCallback = value;
+        }
+        public bool ClientCertificateRequired { get; private set; }
+        public bool CheckCertificateRevocation { get; private set; }
+
+        private bool DefaultValidateClientCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
         protected override void CreateOtherThread()
         {
@@ -81,19 +90,11 @@ namespace Net.Server
                         var stream = new NetworkStream(socket);
                         if (Scheme == "wss")
                         {
-                            var sslStream = new SslStream(stream, false, (a, b, c, d) => true);
-                            sslStream.AuthenticateAsServer(
-                              Certificate,
-                              false,
-                              SslProtocols,
-                              false
-                            );
+                            var sslStream = new SslStream(stream, false, ClientCertificateValidationCallback);
+                            sslStream.AuthenticateAsServer(Certificate, ClientCertificateRequired, SslProtocols, CheckCertificateRevocation);
                             session.stream = sslStream;
                         }
-                        else
-                        {
-                            session.stream = stream;
-                        }
+                        else session.stream = stream;
                         acceptList.Add(session);
                     }
                     else Thread.Sleep(1);
@@ -120,18 +121,14 @@ namespace Net.Server
                 }
                 if (!session.isHandshake)
                 {
-                    if (session.PerformHandshake())
-                    {
-                    }
+                    session.PerformHandshake();
+                    continue;
                 }
-                else
+                session.Receive((opcode, segment) =>
                 {
-                    session.Receive((opcode, segment) =>
-                    {
-                        CheckReconnect(session.socket, segment, session);
-                        acceptList.RemoveAt(i);
-                    });
-                }
+                    CheckReconnect(session.socket, segment, session);
+                    acceptList.RemoveAt(i);
+                });
             }
         }
 
