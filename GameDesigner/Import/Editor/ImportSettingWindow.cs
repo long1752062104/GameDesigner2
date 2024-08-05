@@ -33,7 +33,7 @@ public class ImportSettingWindow : EditorWindow
             false, //entities
             false, //parrelSync
             false, //example
-            false, //ext2
+            true, //codeObfuscation
             false, //ext3
             false, //ext4
             false, //ext5
@@ -112,7 +112,7 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 },
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }
     };
 
     private void OnGUI()
@@ -191,6 +191,10 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "ParrelSync";
         DrawGUI(path, "ParrelSync", "ParrelSync~", "ParrelSync", null, pathRoot);
 
+        EditorGUILayout.HelpBox("代码混淆工具, 使用代码混淆工具让代码的字段，属性，事件，方法，类名等名称改变的看不懂", MessageType.Info);
+        path = pathRoot + "CodeObfuscation";
+        DrawGUI(path, "CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", null, pathRoot);
+
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
@@ -213,6 +217,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Recast", "Recast~", "Recast", pathRoot);
             Import("GameCore", "GameCore~", "GameCore", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
+            Import("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -247,6 +252,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("Recast", "Recast~", "Recast", pathRoot);
             ReImport("GameCore", "GameCore~", "GameCore", pathRoot);
             ReImport("Entities", "Entities~", "Entities", pathRoot);
+            ReImport("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -266,6 +272,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("Recast~", "Recast", pathRoot);
                 ReverseImport("GameCore~", "GameCore", pathRoot);
                 ReverseImport("Entities~", "Entities", pathRoot);
+                ReverseImport("CodeObfuscation~", "CodeObfuscation", pathRoot);
             }
         }
         GUILayout.EndScrollView();
