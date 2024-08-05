@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
@@ -490,5 +491,31 @@ public static class ArrayExtend
         var array = new T[size];
         Array.Copy(self, 0, array, 0, size);
         self = array;
+    }
+
+    public static T[] Add<T>(T[] self, T item)
+    {
+        var size = self.Length;
+        var array = new T[size + 1];
+        Array.Copy(self, 0, array, 0, size);
+        array[size] = item;
+        return array;
+    }
+
+    public static T[] Remove<T>(T[] self, T item)
+    {
+        var index = Array.IndexOf(self, item);
+        if (index == -1)
+            return self;
+        return RemoveAt(self, index);
+    }
+
+    public static T[] RemoveAt<T>(T[] self, int index)
+    {
+        var size = self.Length - 1;
+        Array.Copy(self, index + 1, self, index, size - index);
+        var array = new T[size];
+        Array.Copy(self, 0, array, 0, size);
+        return array;
     }
 }

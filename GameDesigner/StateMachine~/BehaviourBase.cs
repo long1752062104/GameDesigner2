@@ -306,26 +306,25 @@
             }
             set { metadatas = value; }
         }
-        [HideField]
-        public StateMachine stateMachine;
-        public StateManager stateManager => stateMachine.stateManager;
+        public IStateMachineView fsmView;
+        public IStateMachine stateMachine;
+        public IStateManager stateManager => stateMachine.StateManager;
         /// <summary>
         /// 当前状态
         /// </summary>
-        public State state => stateMachine.states[ID];
+        public State state => fsmView.States[ID];
         /// <summary>
         /// 状态管理器转换组建
         /// </summary>
         public Transform transform => stateManager.transform;
         public Type Type { get { return AssemblyHelper.GetType(name); } }
-        public void InitMetadatas(StateMachine stateMachine)
+        public void InitMetadatas()
         {
             var type = GetType();
-            InitMetadatas(stateMachine, type);
+            InitMetadatas(type);
         }
-        public void InitMetadatas(StateMachine stateMachine, Type type)
+        public void InitMetadatas(Type type)
         {
-            this.stateMachine = stateMachine;
             name = type.ToString();
             var fields = type.GetFields();
             Metadatas.Clear();
@@ -375,10 +374,10 @@
             else Metadatas.Add(new Metadata(field.Name, field.FieldType.ToString(), (TypeCode)code, this, field));
         }
 
-        public void Reload(Type type, StateMachine stateMachine, List<Metadata> metadatas)
+        public void Reload(Type type, List<Metadata> metadatas)
         {
-            InitMetadatas(stateMachine, type);
-            foreach (var item in this.Metadatas)
+            InitMetadatas(type);
+            foreach (var item in Metadatas)
             {
                 foreach (var item1 in metadatas)
                 {

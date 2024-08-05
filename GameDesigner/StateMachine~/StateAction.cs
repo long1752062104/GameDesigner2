@@ -30,6 +30,10 @@ namespace GameDesigner
         /// 动画结束时间
         /// </summary>
 		public float animTimeMax = 100f;
+        /// <summary>
+        /// 动画层， -1是播放所有层，其他值是指定层播放
+        /// </summary>
+        public int layer;
         private bool isStop;
         /// <summary>
         /// 动作是否完成?, 当动画播放结束后为True, 否则为false
@@ -41,7 +45,7 @@ namespace GameDesigner
         public StateAction(State state, string clipName, params ActionBehaviour[] behaviours)
         {
             ID = state.ID;
-            stateMachine = state.stateMachine;
+            fsmView = state.fsmView;
             SetAnimClip(clipName);
             if (behaviours != null)
             {
@@ -67,74 +71,7 @@ namespace GameDesigner
                 if (behaviour.Active)
                     behaviour.OnEnter(this);
             }
-            switch (stateMachine.animMode)
-            {
-                case AnimationMode.Animation:
-                    stateMachine.animation[clipName].speed = state.animSpeed;
-                    if (state.isCrossFade)
-                    {
-                        var animState = stateMachine.animation[clipName];
-                        if (animState.time >= animState.length)
-                        {
-                            stateMachine.animation.Play(clipName);
-                            stateMachine.animation[clipName].time = 0f;
-                        }
-                        else stateMachine.animation.CrossFade(clipName, state.duration);
-                    }
-                    else
-                    {
-                        stateMachine.animation.Play(clipName);
-                        stateMachine.animation[clipName].time = 0f;
-                    }
-                    break;
-                case AnimationMode.Animator:
-                    stateMachine.animator.speed = state.animSpeed;
-                    if (state.isCrossFade)
-                    {
-                        var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
-                        if (stateInfo.normalizedTime >= 1f)
-                            stateMachine.animator.Play(clipName, 0, 0f);
-                        else
-                            stateMachine.animator.CrossFade(clipName, state.duration);
-                    }
-                    else stateMachine.animator.Play(clipName, 0, 0f);
-                    break;
-                case AnimationMode.Timeline:
-                    if (clipAsset != null)
-                    {
-                        var director = stateMachine.director;
-                        director.Play(clipAsset, DirectorWrapMode.None);
-                        var playableGraph = director.playableGraph;
-                        var playable = playableGraph.GetRootPlayable(0);
-                        playable.SetSpeed(state.animSpeed);
-                    }
-                    else
-                    {
-                        stateMachine.animator.speed = state.animSpeed;
-                        if (state.isCrossFade)
-                        {
-                            var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
-                            if (stateInfo.normalizedTime >= 1f)
-                                stateMachine.animator.Play(clipName, 0, 0f);
-                            else
-                                stateMachine.animator.CrossFade(clipName, state.duration);
-                        }
-                        else stateMachine.animator.Play(clipName, 0, 0f);
-                    }
-                    break;
-#if SHADER_ANIMATED
-                case AnimationMode.MeshAnimator:
-                    stateMachine.meshAnimator.speed = state.animSpeed;
-                    if (stateMachine.meshAnimator.currentAnimation.animationName == clipName)
-                        stateMachine.meshAnimator.RestartAnim();
-                    else
-                        stateMachine.meshAnimator.Play(clipIndex);
-                    break;
-#endif
-                case AnimationMode.Time:
-                    animTime = 0f;
-                    break;
-            }
+            stateMachine.OnPlayAnimation(state, this);
         }
 
         internal void Exit()
@@ -147,11 +84,15 @@ namespace GameDesigner
             }
         }
 
-        internal void Init()
+        internal void Init(IStateMachine stateMachine, IStateMachineView stateMachineView)
         {
+            this.stateMachine = stateMachine;
+            fsmView = stateMachineView;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i].InitBehaviour();
+                behaviour.stateMachine = stateMachine;
+                behaviour.fsmView = stateMachineView;
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
@@ -161,43 +102,7 @@ namespace GameDesigner
         {
             if (isStop)
                 return;
-            var isPlaying = true;
-            switch (stateMachine.animMode)
-            {
-                case AnimationMode.Animation:
-                    var animState = stateMachine.animation[clipName];
-                    animTime = animState.time / animState.length * 100f;
-                    isPlaying = stateMachine.animation.isPlaying;
-                    break;
-                case AnimationMode.Animator:
-                    var stateInfo = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
-                    animTime = stateInfo.normalizedTime / 1f * 100f;
-                    break;
-                case AnimationMode.Timeline:
-                    if (clipAsset != null)
-                    {
-                        var director = stateMachine.director;
-                        var time = director.time;
-                        var duration = director.duration;
-                        animTime = (float)(time / duration) * 100f;
-                        isPlaying = director.state == PlayState.Playing;
-                    }
-                    else
-                    {
-                        var stateInfo1 = stateMachine.animator.GetCurrentAnimatorStateInfo(0);
-                        animTime = stateInfo1.normalizedTime / 1f * 100f;
-                    }
-                    break;
-#if SHADER_ANIMATED
-                case AnimationMode.MeshAnimator:
-                    animTime = stateMachine.meshAnimator.currentFrame / (float)stateMachine.meshAnimator.currentAnimation.TotalFrames * 100f;
-                    isPlaying = state.IsPlaying;
-                    break;
-#endif
-                case AnimationMode.Time:
-                    animTime += state.animSpeed * animTimeMax * Time.deltaTime;
-                    break;
-            }
+            var isPlaying = stateMachine.OnAnimationUpdate(state, this);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as ActionBehaviour;
@@ -220,7 +125,7 @@ namespace GameDesigner
                             behaviour.OnExit(this);
                     }
                     state.OnActionExit();
-                    if (stateMachine.nextId == state.ID)//如果在动作行为里面有切换状态代码, 则不需要重载函数了, 否则重载当前状态
+                    if (stateMachine.NextId == state.ID)//如果在动作行为里面有切换状态代码, 则不需要重载函数了, 否则重载当前状态
                         state.Enter(state.actionIndex);//重载进入函数
                     return;
                 }
@@ -241,9 +146,9 @@ namespace GameDesigner
         public void SetAnimClip(string clipName)
         {
             this.clipName = clipName;
-            for (int i = 0; i < stateMachine.clipNames.Count; i++)
+            for (int i = 0; i < fsmView.ClipNames.Count; i++)
             {
-                if (clipName == stateMachine.clipNames[i])
+                if (clipName == fsmView.ClipNames[i])
                 {
                     clipIndex = i;
                     break;

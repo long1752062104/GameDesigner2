@@ -123,83 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &228448104
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 228448106}
-  - component: {fileID: 228448105}
-  m_Layer: 0
-  m_Name: machine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &228448105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 228448104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c78d908e0892d046a783e9a89a5b54f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaulId: 0
-  stateId: 0
-  states: []
-  selectStates: 
-  animMode: 0
-  animation: {fileID: 6466594955317411870}
-  animator: {fileID: 0}
-  director: {fileID: 0}
-  clipNames:
-  - charge
-  - charge_end
-  - charge_start
-  - default_attack
-  - die
-  - frenzied_slash
-  - gethit_from_behind
-  - gethit_from_front
-  - gethit_from_left
-  - gethit_from_right
-  - idle
-  - jump
-  - roar
-  - run
-  - shield_bash
-  - shield_block
-  - shuffle_left
-  - shuffle_right
-  - backpedal
-  - spawn
-  - strafe_right
-  - strafe_left
-  - walk
-  _stateManager: {fileID: 0}
---- !u!4 &228448106
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 228448104}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.5, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6464678842062835995}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &996351055
 GameObject:
   m_ObjectHideFlags: 0
@@ -1519,7 +1442,6 @@ Transform:
   - {fileID: 6460432008375752083}
   - {fileID: 6464411995374658519}
   - {fileID: 6464836971862081227}
-  - {fileID: 228448106}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6464681612907599829
@@ -2319,8 +2241,8 @@ GameObject:
   - component: {fileID: 6466594955317411870}
   - component: {fileID: 6466594955317411874}
   - component: {fileID: 6466594955317411873}
-  - component: {fileID: 6466594955317411872}
-  - component: {fileID: 6466594955317411871}
+  - component: {fileID: 6466594955317411876}
+  - component: {fileID: 6466594955317411875}
   m_Layer: 0
   m_Name: skeleton_swordsman_allinone
   m_TagString: Untagged
@@ -2366,36 +2288,6 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
---- !u!114 &6466594955317411871
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6466594955317411869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ae7454c59719a6408639b9ba4154c04, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 6
-  sm: {fileID: 6466594955317411872}
-  audioClips:
-  - {fileID: 8300000, guid: 52fa067c25c5c401b811eb86d142287e, type: 3}
---- !u!114 &6466594955317411872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6466594955317411869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8672d1e21073a764baa3a9d69fa8b742, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stateMachine: {fileID: 228448105}
-  initMode: 0
 --- !u!54 &6466594955317411873
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2446,6 +2338,65 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &6466594955317411875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6466594955317411869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1db69661ff1e69342882651ba3ff1f2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 6
+  audioClips:
+  - {fileID: 8300000, guid: 52fa067c25c5c401b811eb86d142287e, type: 3}
+--- !u!114 &6466594955317411876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6466594955317411869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c316e4ddc52f44448bbb179d7b750655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  states: []
+  defaulId: 0
+  stateId: 0
+  selectStates: 
+  animMode: 0
+  animation: {fileID: 6466594955317411870}
+  animator: {fileID: 0}
+  director: {fileID: 0}
+  clipNames:
+  - charge
+  - charge_end
+  - charge_start
+  - default_attack
+  - die
+  - frenzied_slash
+  - gethit_from_behind
+  - gethit_from_front
+  - gethit_from_left
+  - gethit_from_right
+  - idle
+  - jump
+  - roar
+  - run
+  - shield_bash
+  - shield_block
+  - shuffle_left
+  - shuffle_right
+  - backpedal
+  - spawn
+  - strafe_right
+  - strafe_left
+  - walk
 --- !u!1 &6466618666956242729
 GameObject:
   m_ObjectHideFlags: 0

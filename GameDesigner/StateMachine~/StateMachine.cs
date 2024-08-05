@@ -12,7 +12,7 @@ namespace GameDesigner
     /// <summary>
     /// 状态机 v2017/12/6
     /// </summary>
-    public class StateMachine : MonoBehaviour
+    public class StateMachine : MonoBehaviour, IStateMachine, IStateMachineView
     {
         /// <summary>
         /// 默认状态ID
@@ -78,7 +78,7 @@ namespace GameDesigner
         /// <summary>
         /// 获取 或 设置 默认状态
         /// </summary>
-        public State defaultState
+        public State DefaultState
         {
             get
             {
@@ -97,7 +97,7 @@ namespace GameDesigner
         /// <summary>
         /// 选择的状态
         /// </summary>
-		public State selectState
+		public State SelectState
         {
             get
             {
@@ -128,6 +128,14 @@ namespace GameDesigner
             set { _stateManager = value; }
         }
 
+        public IStateManager StateManager => stateManager;
+
+        public State[] States { get => states; set => states = value; }
+        public List<string> ClipNames { get => clipNames; set => clipNames = value; }
+        public int NextId { get => nextId; set => nextId = value; }
+        public List<int> SelectStates { get => selectStates; set => selectStates = value; }
+        public int StateId { get => stateId; set => stateId = value; }
+
         private bool isInitialize;
 
         /// <summary>
@@ -152,24 +160,14 @@ namespace GameDesigner
         /// <returns></returns>
         public State AddState(string name, params StateBehaviour[] behaviours)
         {
-            var state = new State(this)
+            var state = new State(this, this)
             {
                 name = name,
 #if UNITY_EDITOR
-                rect = new Rect(10, 10, 150, 30)
+                rect = new Rect(5000, 5000, 150, 30)
 #endif
             };
-            if (behaviours != null)
-            {
-                state.behaviours = behaviours;
-                for (int i = 0; i < behaviours.Length; i++)
-                {
-                    behaviours[i].name = behaviours[i].GetType().ToString();
-                    behaviours[i].stateMachine = this;
-                    behaviours[i].Active = true;
-                    behaviours[i].OnInit();
-                }
-            }
+            state.AddComponent(behaviours);
             return state;
         }
 
@@ -216,12 +214,12 @@ namespace GameDesigner
             if (states.Length == 0)
                 return;
             foreach (var state in states)
-                state.Init();
-            if (defaultState.actionSystem)
-                defaultState.Enter(0);
+                state.Init(this, this);
+            if (DefaultState.actionSystem)
+                DefaultState.Enter(0);
         }
 
-        internal void Execute()
+        public void Execute()
         {
             if (!isInitialize)
                 return;
@@ -237,6 +235,120 @@ namespace GameDesigner
                 return; //有时候你调用Play时，并没有直接更新动画时间，而是下一帧才会更新动画时间，如果Play后直接执行下面的Update计算动画时间会导致鬼畜现象的问题
             }
             currState.Update();
+        }
+
+        public void OnPlayAnimation(State state, StateAction stateAction)
+        {
+            var clipName = stateAction.clipName;
+            switch (animMode)
+            {
+                case AnimationMode.Animation:
+                    var animState = animation[clipName];
+                    animState.speed = state.animSpeed;
+                    if (state.isCrossFade)
+                    {
+                        if (animState.time >= animState.length)
+                        {
+                            animation.Play(clipName);
+                            animState.time = 0f;
+                        }
+                        else animation.CrossFade(clipName, state.duration);
+                    }
+                    else
+                    {
+                        animation.Play(clipName);
+                        animState.time = 0f;
+                    }
+                    break;
+                case AnimationMode.Animator:
+                    animator.speed = state.animSpeed;
+                    if (state.isCrossFade)
+                    {
+                        var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                        if (stateInfo.normalizedTime >= 1f)
+                            animator.Play(clipName, 0, 0f);
+                        else
+                            animator.CrossFade(clipName, state.duration);
+                    }
+                    else animator.Play(clipName, 0, 0f);
+                    break;
+                case AnimationMode.Timeline:
+                    if (stateAction.clipAsset != null)
+                    {
+                        director.Play(stateAction.clipAsset, DirectorWrapMode.None);
+                        var playableGraph = director.playableGraph;
+                        var playable = playableGraph.GetRootPlayable(0);
+                        playable.SetSpeed(state.animSpeed);
+                    }
+                    else
+                    {
+                        animator.speed = state.animSpeed;
+                        if (state.isCrossFade)
+                        {
+                            var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                            if (stateInfo.normalizedTime >= 1f)
+                                animator.Play(clipName, 0, 0f);
+                            else
+                                animator.CrossFade(clipName, state.duration);
+                        }
+                        else animator.Play(clipName, 0, 0f);
+                    }
+                    break;
+#if SHADER_ANIMATED
+                case AnimationMode.MeshAnimator:
+                    meshAnimator.speed = state.animSpeed;
+                    if (meshAnimator.currentAnimation.animationName == clipName)
+                        meshAnimator.RestartAnim();
+                    else
+                        meshAnimator.Play(clipIndex);
+                    break;
+#endif
+                case AnimationMode.Time:
+                    stateAction.animTime = 0f;
+                    break;
+            }
+        }
+
+        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        {
+            var clipName = stateAction.clipName;
+            var isPlaying = true;
+            switch (animMode)
+            {
+                case AnimationMode.Animation:
+                    var animState = animation[clipName];
+                    stateAction.animTime = animState.time / animState.length * 100f;
+                    isPlaying = animation.isPlaying;
+                    break;
+                case AnimationMode.Animator:
+                    var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                    stateAction.animTime = stateInfo.normalizedTime / 1f * 100f;
+                    break;
+                case AnimationMode.Timeline:
+                    if (stateAction.clipAsset != null)
+                    {
+                        var time = director.time;
+                        var duration = director.duration;
+                        stateAction.animTime = (float)(time / duration) * 100f;
+                        isPlaying = director.state == PlayState.Playing;
+                    }
+                    else
+                    {
+                        var stateInfo1 = animator.GetCurrentAnimatorStateInfo(0);
+                        stateAction.animTime = stateInfo1.normalizedTime / 1f * 100f;
+                    }
+                    break;
+#if SHADER_ANIMATED
+                case AnimationMode.MeshAnimator:
+                    stateAction.animTime = meshAnimator.currentFrame / (float)meshAnimator.currentAnimation.TotalFrames * 100f;
+                    isPlaying = state.IsPlaying;
+                    break;
+#endif
+                case AnimationMode.Time:
+                    stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.deltaTime;
+                    break;
+            }
+            return isPlaying;
         }
 
         /// <summary>
@@ -298,7 +410,7 @@ namespace GameDesigner
         {
             foreach (var state in states)
             {
-                state.stateMachine = this;
+                state.fsmView = this;
                 for (int i = 0; i < state.behaviours.Length; i++)
                 {
                     var type = AssemblyHelper.GetType(state.behaviours[i].name);
@@ -312,15 +424,16 @@ namespace GameDesigner
                     var active = state.behaviours[i].Active;
                     var show = state.behaviours[i].show;
                     state.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
-                    state.behaviours[i].Reload(type, this, metadatas);
+                    state.behaviours[i].Reload(type, metadatas);
                     state.behaviours[i].ID = state.ID;
                     state.behaviours[i].Active = active;
                     state.behaviours[i].show = show;
                     state.behaviours[i].stateMachine = this;
+                    state.behaviours[i].fsmView = this;
                 }
                 foreach (var t in state.transitions)
                 {
-                    t.stateMachine = this;
+                    t.fsmView = this;
                     for (int i = 0; i < t.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(t.behaviours[i].name);
@@ -334,16 +447,17 @@ namespace GameDesigner
                         var active = t.behaviours[i].Active;
                         var show = t.behaviours[i].show;
                         t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
-                        t.behaviours[i].Reload(type, this, metadatas);
+                        t.behaviours[i].Reload(type, metadatas);
                         t.behaviours[i].ID = state.ID;
                         t.behaviours[i].Active = active;
                         t.behaviours[i].show = show;
                         t.behaviours[i].stateMachine = this;
+                        t.behaviours[i].fsmView = this;
                     }
                 }
                 foreach (var a in state.actions)
                 {
-                    a.stateMachine = this;
+                    a.fsmView = this;
                     for (int i = 0; i < a.behaviours.Length; i++)
                     {
                         var type = AssemblyHelper.GetType(a.behaviours[i].name);
@@ -357,11 +471,12 @@ namespace GameDesigner
                         var active = a.behaviours[i].Active;
                         var show = a.behaviours[i].show;
                         a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
-                        a.behaviours[i].Reload(type, this, metadatas);
+                        a.behaviours[i].Reload(type, metadatas);
                         a.behaviours[i].ID = state.ID;
                         a.behaviours[i].Active = active;
                         a.behaviours[i].show = show;
                         a.behaviours[i].stateMachine = this;
+                        a.behaviours[i].fsmView = this;
                     }
                 }
             }

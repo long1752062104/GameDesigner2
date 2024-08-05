@@ -108,15 +108,20 @@ namespace GameDesigner
 		public StateAction[] actions;
         internal bool IsPlaying;
 
-        public State() { }
+        public State()
+        {
+            behaviours = new BehaviourBase[0];
+            transitions = new Transition[0];
+            actions = new StateAction[0];
+        }
 
 #if UNITY_EDITOR
         /// <summary>
         /// 创建状态
         /// </summary>
-        public static State CreateStateInstance(StateMachine stateMachine, string stateName, Vector2 position)
+        public static State CreateStateInstance(IStateMachine stateMachine, IStateMachineView view, string stateName, Vector2 position)
         {
-            var state = new State(stateMachine)
+            var state = new State(stateMachine, view)
             {
                 name = stateName,
                 rect = new Rect(position, new Vector2(150, 30))
@@ -128,16 +133,14 @@ namespace GameDesigner
         /// <summary>
         /// 构造函数
         /// </summary>
-        public State(StateMachine _stateMachine)
+        public State(IStateMachine stateMachine, IStateMachineView view) : this()
         {
-            behaviours = new BehaviourBase[0];
-            transitions = new Transition[0];
-            actions = new StateAction[0];
-            stateMachine = _stateMachine;
-            ID = stateMachine.states.Length;
-            ArrayExtend.Add(ref stateMachine.states, this);
-            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine, behaviours = new BehaviourBase[0] });
-            stateMachine.UpdateStates();
+            this.stateMachine = stateMachine;
+            fsmView = view;
+            ID = view.States.Length;
+            view.States = ArrayExtend.Add(view.States, this);
+            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine, fsmView = fsmView, behaviours = new BehaviourBase[0] });
+            view.UpdateStates();
         }
 
         /// <summary>
@@ -210,19 +213,23 @@ namespace GameDesigner
             }
         }
 
-        internal void Init()
+        internal void Init(IStateMachine stateMachine, IStateMachineView stateMachineView)
         {
+            this.stateMachine = stateMachine;
+            fsmView = stateMachineView;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i].InitBehaviour();
+                behaviour.stateMachine = stateMachine;
+                behaviour.fsmView = stateMachineView;
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
             foreach (var t in transitions)
-                t.Init();
+                t.Init(stateMachine, stateMachineView);
             if (actionSystem)
                 foreach (var action in actions)
-                    action.Init();
+                    action.Init(stateMachine, stateMachineView);
         }
 
         internal void Update()

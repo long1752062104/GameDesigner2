@@ -15,8 +15,13 @@ namespace Net.Component
         public bool MainRole { get; set; }
 
         public bool IsLocal;
+
+#if UNITY_EDITOR
         public bool DrawWire = true;
         public bool ShowText = true;
+        public Color planeColor = Color.green;
+        public Color textColor = Color.white;
+#endif
 
         /// <summary>
         /// 当主角进入这个物体所在区域触发
@@ -71,13 +76,7 @@ namespace Net.Component
         {
             if (!IsLocal)
                 return;
-            if (Grid == null)
-                return;
-            Gizmos.color = Color.green;
-            for (int i = 0; i < Grid.grids.Length; i++)
-            {
-                Draw(Grid.grids[i]);
-            }
+            Draw();
         }
 
         private void OnDrawGizmosSelected()
@@ -88,9 +87,15 @@ namespace Net.Component
                 return;
             if (AOIManager.I.world == null)
                 return;
+            Draw();
+        }
+
+        private void Draw()
+        {
             if (Grid == null)
                 return;
-            Gizmos.color = Color.green;
+            Gizmos.color = planeColor;
+            GUI.color = textColor;
             for (int i = 0; i < Grid.grids.Length; i++)
             {
                 Draw(Grid.grids[i]);
@@ -107,7 +112,7 @@ namespace Net.Component
                     Gizmos.DrawWireCube(new Vector3(pos.x, 0.5f, pos.y), new Vector3(size.x, 0.5f, size.y));
                 else
                     Gizmos.DrawCube(new Vector3(pos.x, 0.1f, pos.y), new Vector3(size.x, 0.01f, size.y));
-                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, 0.5f, grid.rect.y), grid.rect.position.ToString());
+                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x + 0.5f, 0.5f, grid.rect.y + 1.5f), grid.rect.position.ToString());
             }
             else
             {
@@ -115,7 +120,7 @@ namespace Net.Component
                     Gizmos.DrawWireCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
                 else
                     Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), new Vector3(size.x, size.y, 1f));
-                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x, grid.rect.y, 0f), grid.rect.position.ToString());
+                if (ShowText) UnityEditor.Handles.Label(new Vector3(grid.rect.x + 0.5f, grid.rect.y + 1.5f, -0.5f), grid.rect.position.ToString());
             }
         }
 #endif

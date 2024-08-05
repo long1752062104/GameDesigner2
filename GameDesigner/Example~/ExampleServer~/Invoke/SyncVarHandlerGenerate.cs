@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 
 /**
 /// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
+[CompilerGenerated]
 internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 {
     public virtual int SortingOrder { get { return 0; } }
@@ -110,6 +111,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 }*/
 
 /// <summary>定位辅助类路径</summary>
+[CompilerGenerated]
 internal static class HelperFileInfo 
 {
     internal static string GetPath()

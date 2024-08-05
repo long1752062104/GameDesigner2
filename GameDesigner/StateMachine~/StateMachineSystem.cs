@@ -23,7 +23,7 @@ namespace GameDesigner
                 return instance;
             }
         }
-        public FastList<StateManager> stateManagers = new FastList<StateManager>();
+        public FastList<IStateManager> stateManagers = new FastList<IStateManager>();
 
         private void Awake()
         {

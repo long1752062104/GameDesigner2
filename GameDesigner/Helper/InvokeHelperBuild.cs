@@ -136,6 +136,7 @@ namespace Net.Helper
         public static string SyncVarBuild(List<TypeDef> types, bool recordType)
         {
             var codeTemplate = @"/// <summary>此类必须在主项目程序集, 如在unity时必须是Assembly-CSharp程序集, 在控制台项目时必须在Main入口类的程序集</summary>
+[CompilerGenerated]
 internal partial class SyncVarHandlerGenerate : ISyncVarHandler
 {
     public virtual int SortingOrder { get { return 0; } }
@@ -1050,6 +1051,7 @@ using System.Runtime.CompilerServices;
             if (config.collectRpc)
                 text += InvokeRpcClientBuild(serverTypes3) + "\r\n\r\n";//客户端要收集服务器的rpc才能识别
             text += @"/// <summary>SyncVar动态编译定位路径</summary>
+[CompilerGenerated]
 internal static class HelperFileInfo 
 {
     internal static string GetPath()
@@ -1107,6 +1109,7 @@ using System.Runtime.CompilerServices;
                     }
                 }
                 text1 += @"/// <summary>定位辅助类路径</summary>
+[CompilerGenerated]
 internal static class HelperFileInfo 
 {
     internal static string GetPath()

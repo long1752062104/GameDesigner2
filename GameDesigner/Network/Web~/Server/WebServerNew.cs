@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using WebSocketSharp.Net;
 using Debug = Net.Event.NDebug;
 
 namespace Net.Server

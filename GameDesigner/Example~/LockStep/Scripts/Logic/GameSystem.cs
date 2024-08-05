@@ -63,10 +63,13 @@ namespace LockStep.Client
             Debug.Log("退出战斗");
         }
 
-        ~GameSystem() 
+        /*~GameSystem()
         {
-            ClientManager.Instance.client.RemoveRpc(this);
-        }
+            var instance = ClientManager.Instance;
+            if(instance == null)
+                return ;
+            instance.client.RemoveRpc(this);
+        }*/
     }
 }
 #endif

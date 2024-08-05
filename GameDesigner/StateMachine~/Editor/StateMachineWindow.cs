@@ -7,7 +7,7 @@ namespace GameDesigner
 {
     public class StateMachineWindow : GraphEditor
     {
-        public static StateMachine stateMachine;
+        public static IStateMachineView fsmView;
 
         private bool dragState = false;
         private State makeTransition;
@@ -17,18 +17,21 @@ namespace GameDesigner
         {
             GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.Language["Game Designer Editor Window"], true);
         }
-        public static void Init(StateMachine stateMachine)
+        public static void Init(IStateMachineView fsmView)
         {
             GetWindow<StateMachineWindow>(BlueprintGUILayout.Instance.Language["Game Designer Editor Window"], true);
-            StateMachineWindow.stateMachine = stateMachine;
+            StateMachineWindow.fsmView = fsmView;
         }
 
         void OnGUI()
         {
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-            GUILayout.Button(new GUIContent(stateMachine ? stateMachine.name : "None", BlueprintGUILayout.Instance.stateMachineImage), GUI.skin.GetStyle("GUIEditor.BreadcrumbLeft"), GUILayout.Width(150));
+            GUILayout.Button(new GUIContent(fsmView != null ? fsmView.name : "None", BlueprintGUILayout.Instance.stateMachineImage), GUI.skin.GetStyle("GUIEditor.BreadcrumbLeft"), GUILayout.Width(150));
             EditorGUILayout.ToggleLeft("固定", true, GUILayout.Width(50));
-            stateMachine = (StateMachine)EditorGUILayout.ObjectField(GUIContent.none, stateMachine, typeof(StateMachine), true, GUILayout.Width(150));
+            if (fsmView == null)
+                fsmView = (IStateMachineView)EditorGUILayout.ObjectField(GUIContent.none, (Object)fsmView, typeof(Object), true, GUILayout.Width(150));
+            else
+                fsmView = (IStateMachineView)EditorGUILayout.ObjectField(GUIContent.none, (Object)fsmView, fsmView.GetType(), true, GUILayout.Width(150));
             GUILayout.FlexibleSpace();
             GUILayout.Space(10);
             if (GUILayout.Button("刷新脚本", GUILayout.Width(60)))
@@ -38,10 +41,10 @@ namespace GameDesigner
             }
             if (GUILayout.Button(BlueprintGUILayout.Instance.Language["reset"], GUILayout.Width(50)))
             {
-                if (stateMachine == null)
+                if (fsmView == null)
                     return;
-                if (stateMachine.states.Length > 0)
-                    UpdateScrollPosition(stateMachine.states[0].rect.position - new Vector2(position.size.x / 2 - 75, position.size.y / 2 - 15)); //更新滑动矩阵
+                if (fsmView.States.Length > 0)
+                    UpdateScrollPosition(fsmView.States[0].rect.position - new Vector2(position.size.x / 2 - 75, position.size.y / 2 - 15)); //更新滑动矩阵
                 else
                     UpdateScrollPosition(Center); //归位到矩形的中心
             }
@@ -49,14 +52,14 @@ namespace GameDesigner
             GUILayout.EndHorizontal();
             ZoomableAreaBegin(new Rect(0f, 0f, scaledCanvasSize.width, scaledCanvasSize.height + 21), scale, false);
             BeginWindow();
-            if (stateMachine)
+            if (fsmView != null)
                 DrawStates();
             EndWindow();
             ZoomableAreaEnd();
-            if (stateMachine == null)
+            if (fsmView == null)
                 CreateStateMachineMenu();
             else if (openStateMenu)
-                OpenStateContextMenu(stateMachine.selectState);
+                OpenStateContextMenu(fsmView.SelectState);
             else
                 OpenWindowContextMenu();
             Repaint();
@@ -81,13 +84,13 @@ namespace GameDesigner
                     {
                         Selection.activeGameObject.GetComponent<StateManager>().stateMachine = StateMachine.CreateStateMachineInstance();
                         Selection.activeGameObject.GetComponent<StateManager>().stateMachine.transform.SetParent(Selection.activeGameObject.GetComponent<StateManager>().transform);
-                        stateMachine = Selection.activeGameObject.GetComponent<StateManager>().stateMachine;
+                        fsmView = Selection.activeGameObject.GetComponent<StateManager>().stateMachine;
                     }
                     else
                     {
                         Selection.activeGameObject.AddComponent<StateManager>().stateMachine = StateMachine.CreateStateMachineInstance();
                         Selection.activeGameObject.GetComponent<StateManager>().stateMachine.transform.SetParent(Selection.activeGameObject.GetComponent<StateManager>().transform);
-                        stateMachine = Selection.activeGameObject.GetComponent<StateManager>().stateMachine;
+                        fsmView = Selection.activeGameObject.GetComponent<StateManager>().stateMachine;
                     }
                 });
                 menu.ShowAsContext();
@@ -102,7 +105,7 @@ namespace GameDesigner
         /// </summary>
         protected void DrawStates()
         {
-            foreach (var state in stateMachine.states)
+            foreach (var state in fsmView.States)
             {
                 DrawLineStatePosToMousePosTransition(state);
                 foreach (var t in state.transitions)
@@ -128,10 +131,10 @@ namespace GameDesigner
                 if (state.rect.Contains(Event.current.mousePosition) & currentType == EventType.MouseDown & Event.current.button == 0)
                 {
                     if (Event.current.control)
-                        stateMachine.selectState = state;
-                    else if (!stateMachine.selectStates.Contains(state.ID))
+                        fsmView.SelectState = state;
+                    else if (!fsmView.SelectStates.Contains(state.ID))
                     {
-                        stateMachine.selectStates = new List<int>
+                        fsmView.SelectStates = new List<int>
                         {
                             state.ID
                         };
@@ -144,7 +147,7 @@ namespace GameDesigner
                 else if (state.rect.Contains(mousePosition) & currentType == EventType.MouseDown & currentEvent.button == 1)
                 {
                     openStateMenu = true;
-                    stateMachine.selectState = state;
+                    fsmView.SelectState = state;
                 }
                 if (currentEvent.keyCode == KeyCode.Delete & currentEvent.type == EventType.KeyUp)
                 {
@@ -152,17 +155,17 @@ namespace GameDesigner
                     return;
                 }
             }
-            foreach (var state in stateMachine.states)
+            foreach (var state in fsmView.States)
             {
-                if (state == stateMachine.defaultState & stateMachine.selectState == stateMachine.defaultState)
+                if (state == fsmView.DefaultState & fsmView.SelectState == fsmView.DefaultState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.defaultAndSelectStyle);
-                else if (state == stateMachine.defaultState & state.ID == stateMachine.stateId)
+                else if (state == fsmView.DefaultState & state.ID == fsmView.StateId)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.defaultAndRuntimeIndexStyle);
-                else if (state == stateMachine.defaultState)
+                else if (state == fsmView.DefaultState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.stateInDefaultStyle);
-                else if (stateMachine.stateId == state.ID)
+                else if (fsmView.StateId == state.ID)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.indexInRuntimeStyle);
-                else if (state == stateMachine.selectState)
+                else if (state == fsmView.SelectState)
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.selectStateStyle);
                 else
                     DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.defaultStyle);
@@ -175,9 +178,9 @@ namespace GameDesigner
         /// </summary>
         private void DragSelectStates()
         {
-            for (int i = 0; i < stateMachine.selectStates.Count; i++)
+            for (int i = 0; i < fsmView.SelectStates.Count; i++)
             {
-                var state = stateMachine.states[stateMachine.selectStates[i]];
+                var state = fsmView.States[fsmView.SelectStates[i]];
                 DragStateBoxPosition(state.rect, state.name, StateMachineSetting.Instance.selectStateStyle);
             }
 
@@ -190,7 +193,7 @@ namespace GameDesigner
                         mode = SelectMode.none;
                         return;
                     }
-                    foreach (State state in stateMachine.states)
+                    foreach (State state in fsmView.States)
                     {
                         if (state.rect.Contains(currentEvent.mousePosition))
                         {
@@ -208,8 +211,8 @@ namespace GameDesigner
             switch (mode)
             {
                 case SelectMode.dragState:
-                    if (stateMachine.selectState != null)
-                        DragStateBoxPosition(stateMachine.selectState.rect, stateMachine.selectState.name, StateMachineSetting.Instance.selectStateStyle);
+                    if (fsmView.SelectState != null)
+                        DragStateBoxPosition(fsmView.SelectState.rect, fsmView.SelectState.name, StateMachineSetting.Instance.selectStateStyle);
                     break;
                 case SelectMode.selectState:
                     GUI.Box(FromToRect(selectionStartPosition, mousePosition), "", "SelectionRect");
@@ -220,19 +223,19 @@ namespace GameDesigner
 
         private void SelectStatesInRect(Rect r)
         {
-            for (int i = 0; i < stateMachine.states.Length; i++)
+            for (int i = 0; i < fsmView.States.Length; i++)
             {
-                Rect rect = stateMachine.states[i].rect;
+                Rect rect = fsmView.States[i].rect;
                 if (rect.xMax < r.x || rect.x > r.xMax || rect.yMax < r.y || rect.y > r.yMax)
                 {
-                    stateMachine.selectStates.Remove(stateMachine.states[i].ID);
+                    fsmView.SelectStates.Remove(fsmView.States[i].ID);
                     continue;
                 }
-                if (!stateMachine.selectStates.Contains(stateMachine.states[i].ID))
+                if (!fsmView.SelectStates.Contains(fsmView.States[i].ID))
                 {
-                    stateMachine.selectStates.Add(stateMachine.states[i].ID);
+                    fsmView.SelectStates.Add(fsmView.States[i].ID);
                 }
-                DragStateBoxPosition(stateMachine.states[i].rect, stateMachine.states[i].name, StateMachineSetting.Instance.selectStateStyle);
+                DragStateBoxPosition(fsmView.States[i].rect, fsmView.States[i].name, StateMachineSetting.Instance.selectStateStyle);
             }
         }
 
@@ -274,7 +277,7 @@ namespace GameDesigner
                 if (HandleUtility.DistanceToLine(start, end) < 8f)//返回到线的距离
                 {
                     selectTransition = t;
-                    stateMachine.selectState = state;
+                    fsmView.SelectState = state;
                 }
             }
         }
@@ -294,7 +297,7 @@ namespace GameDesigner
                 DrawConnection(startpos, endpos, Color.white, 1, true);
                 if (currentEvent.button == 0 & currentType == EventType.MouseDown)
                 {
-                    foreach (var s in stateMachine.states)
+                    foreach (var s in fsmView.States)
                     {
                         if (state != s & s.rect.Contains(mousePosition))
                         {
@@ -340,12 +343,12 @@ namespace GameDesigner
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Default state"]), false, () =>
                 {
-                    stateMachine.defaultState = state;
+                    fsmView.DefaultState = state;
                 });
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Replication state"]), false, () =>
                 {
-                    stateMachine.selectState = state;
+                    fsmView.SelectState = state;
                 });
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["deleted state"]), false, () => { DeletedState(); });
                 menu.ShowAsContext();
@@ -358,34 +361,34 @@ namespace GameDesigner
         /// </summary>
         private void DeletedState()
         {
-            foreach (var state in stateMachine.states)
+            foreach (var state in fsmView.States)
             {
                 for (int n = 0; n < state.transitions.Length; n++)
                 {
                     if (state.transitions[n].nextState == null)
                         continue;
-                    if (stateMachine.selectStates.Contains(state.transitions[n].nextState.ID))
+                    if (fsmView.SelectStates.Contains(state.transitions[n].nextState.ID))
                         ArrayExtend.RemoveAt(ref state.transitions, n);
                 }
             }
             var ids = new List<int>();
-            foreach (var i in stateMachine.selectStates)
-                ids.Add(stateMachine.states[i].ID);
+            foreach (var i in fsmView.SelectStates)
+                ids.Add(fsmView.States[i].ID);
             while (ids.Count > 0)
             {
-                for (int i = 0; i < stateMachine.states.Length; i++)
+                for (int i = 0; i < fsmView.States.Length; i++)
                 {
-                    if (stateMachine.states[i].ID == ids[0])
+                    if (fsmView.States[i].ID == ids[0])
                     {
-                        ArrayExtend.RemoveAt(ref stateMachine.states, i);
-                        EditorUtility.SetDirty(stateMachine);
+                        fsmView.States = ArrayExtend.RemoveAt(fsmView.States, i);
+                        EditorUtility.SetDirty((Object)fsmView);
                         break;
                     }
                 }
                 ids.RemoveAt(0);
             }
-            stateMachine.UpdateStates();
-            stateMachine.selectStates.Clear();
+            fsmView.UpdateStates();
+            fsmView.SelectStates.Clear();
             selectTransition = null;
         }
 
@@ -395,14 +398,14 @@ namespace GameDesigner
 
         protected void OpenWindowContextMenu()
         {
-            if (stateMachine == null)
+            if (fsmView == null)
                 return;
 
             if (currentType == EventType.MouseDown)
             {
                 if (currentEvent.button == 1)
                 {
-                    foreach (State state in stateMachine.states)
+                    foreach (State state in fsmView.States)
                     {
                         if (state.rect.Contains(currentEvent.mousePosition))
                             return;
@@ -410,28 +413,28 @@ namespace GameDesigner
                     var menu = new GenericMenu();
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create state"]), false, () =>
                     {
-                        State.CreateStateInstance(stateMachine, BlueprintGUILayout.Instance.Language["New state"] + stateMachine.states.Length, mousePosition);
+                        State.CreateStateInstance(fsmView as IStateMachine, fsmView, BlueprintGUILayout.Instance.Language["New state"] + fsmView.States.Length, mousePosition);
                     });
-                    if (stateMachine.selectState != null)
+                    if (fsmView.SelectState != null)
                     {
                         menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste Selection Status"]), false, (GenericMenu.MenuFunction)(() =>
                         {
                             List<State> states = new List<State>();
-                            var seles = stateMachine.selectStates;
-                            State s = Net.CloneHelper.DeepCopy<State>(stateMachine.states[seles[0]]);
+                            var seles = fsmView.SelectStates;
+                            State s = Net.CloneHelper.DeepCopy<State>(fsmView.States[seles[0]]);
                             s.perID = s.ID;
-                            s.ID = stateMachine.states.Length;
+                            s.ID = fsmView.States.Length;
                             s.rect.center = mousePosition;
-                            ArrayExtend.Add(ref stateMachine.states, s);
+                            fsmView.States = ArrayExtend.Add(fsmView.States, s);
                             states.Add(s);
-                            Vector2 dis = stateMachine.states[seles[0]].rect.center - mousePosition;
-                            for (int i = 1; i < stateMachine.selectStates.Count; ++i)
+                            Vector2 dis = fsmView.States[seles[0]].rect.center - mousePosition;
+                            for (int i = 1; i < fsmView.SelectStates.Count; ++i)
                             {
-                                State ss = Net.CloneHelper.DeepCopy<State>(stateMachine.states[seles[i]]);
+                                State ss = Net.CloneHelper.DeepCopy<State>(fsmView.States[seles[i]]);
                                 ss.perID = ss.ID;
-                                ss.ID = stateMachine.states.Length;
+                                ss.ID = fsmView.States.Length;
                                 ss.rect.position -= dis;
-                                ArrayExtend.Add(ref stateMachine.states, ss);
+                                fsmView.States = ArrayExtend.Add(fsmView.States, ss);
                                 states.Add(ss);
                             }
                             foreach (var state in states)
@@ -439,11 +442,11 @@ namespace GameDesigner
                                     foreach (var sta in states)
                                         if (tran.nextStateID == sta.perID)
                                             tran.nextStateID = sta.ID;
-                            stateMachine.UpdateStates();
+                            fsmView.UpdateStates();
                             List<int> list = new List<int>();
                             for (int i = 0; i < states.Count; ++i)
                                 list.Add(states[i].ID);
-                            stateMachine.selectStates = list;
+                            fsmView.SelectStates = list;
                         }));
                         menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete Selection State"]), false, delegate { DeletedState(); });
                     }
@@ -488,18 +491,21 @@ namespace GameDesigner
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state machine"]), false, () =>
                     {
-                        if (stateMachine == null)
+                        if (fsmView == null)
                             return;
-                        Undo.DestroyObjectImmediate(stateMachine.gameObject);
+                        Undo.DestroyObjectImmediate(((MonoBehaviour)fsmView).gameObject);
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state manager"]), false, () =>
                     {
-                        if (stateMachine == null)
+                        if (fsmView == null)
                             return;
-                        if (stateMachine.stateManager == null)
-                            return;
-                        Undo.DestroyObjectImmediate(stateMachine.gameObject);
-                        Undo.DestroyObjectImmediate(stateMachine.stateManager);
+                        if (fsmView is IStateMachine machine)
+                        {
+                            if (machine.StateManager == null)
+                                return;
+                            Undo.DestroyObjectImmediate(((MonoBehaviour)fsmView).gameObject);
+                            Undo.DestroyObjectImmediate(((MonoBehaviour)machine.StateManager).gameObject);
+                        }
                     });
                     menu.ShowAsContext();
                     Event.current.Use();
@@ -520,11 +526,11 @@ namespace GameDesigner
                             dragState = true;
                         break;
                     case EventType.MouseDrag:
-                        if (dragState & stateMachine.selectState != null)
+                        if (dragState & fsmView.SelectState != null)
                         {
-                            foreach (var state in stateMachine.selectStates)
+                            foreach (var state in fsmView.SelectStates)
                             {
-                                stateMachine.states[state].rect.position += Event.current.delta;//拖到状态按钮
+                                fsmView.States[state].rect.position += Event.current.delta;//拖到状态按钮
                             }
                         }
                         Event.current.Use();

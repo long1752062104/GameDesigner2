@@ -4,28 +4,27 @@ using UnityEngine;
 
 namespace StateExample
 {
-    public class Player : MonoBehaviour
+    public class FSMPlayer : MonoBehaviour
     {
         public float moveSpeed;
-        public StateManager sm;
-
+        public FSMController controller;
         public AudioClip[] audioClips;
 
         // Start is called before the first frame update
         void Start()
         {
-            sm.stateMachine.animMode = AnimationMode.Animation; //使用旧版本动画模式
-            sm.stateMachine.Init();
+            controller = new FSMController(GetComponent<FSMView>());
+            controller.Init();
 
-            AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new IdleState() }, null); //添加idle状态 和 状态行为
-            AddState("move", true, AnimPlayMode.Sequence, "run", new StateBehaviour[] { new MoveState() }, null); //添加run状态 和 状态行为
+            AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new FsmIdleState() }, null); //添加idle状态 和 状态行为
+            AddState("move", true, AnimPlayMode.Sequence, "run", new StateBehaviour[] { new FsmMoveState() }, null); //添加run状态 和 状态行为
 
-            var attack = AddState("attack", false, AnimPlayMode.Sequence, "default_attack", null, new ActionBehaviour[] { new AttackState() }); //添加attack状态, 并添加动作组件
+            var attack = AddState("attack", false, AnimPlayMode.Sequence, "default_attack", null, new ActionBehaviour[] { new FsmAttackState() }); //添加attack状态, 并添加动作组件
             attack.AddTransition(0); //添加连线到idle状态
             attack.ActionEndTransfer(0); //动作结束后跳到idle状态
 
             var skill_1 = AddState("skill_1", false, AnimPlayMode.Sequence, "frenzied_slash", null, new ActionBehaviour[] { //添加skill_1状态, 并添加动作组件
-                new SkillState(),
+                new FsmSkillState(),
                 new ActionAudio() //音效组件
                 {
                     audioClips = new List<AudioClip>(audioClips)
@@ -34,9 +33,9 @@ namespace StateExample
             skill_1.AddTransition(0);
             skill_1.ActionEndTransfer(0);
 
-            var skill_2 = AddState("skill_2", false, AnimPlayMode.Sequence, "gethit_from_behind", null, new ActionBehaviour[] { 
-                new SkillState(), 
-                new ActionAudio() 
+            var skill_2 = AddState("skill_2", false, AnimPlayMode.Sequence, "gethit_from_behind", null, new ActionBehaviour[] {
+                new FsmSkillState(),
+                new ActionAudio()
                 {
                     audioClips = new List<AudioClip>(audioClips)
                 }
@@ -44,8 +43,8 @@ namespace StateExample
             skill_2.AddTransition(0);
             skill_2.ActionEndTransfer(0);
 
-            var skill_3 = AddState("skill_3", false, AnimPlayMode.Sequence, "shield_bash", null, new ActionBehaviour[] { 
-                new SkillState(),
+            var skill_3 = AddState("skill_3", false, AnimPlayMode.Sequence, "shield_bash", null, new ActionBehaviour[] {
+                new FsmSkillState(),
                 new ActionAudio()
                 {
                     audioClips = new List<AudioClip>(audioClips)
@@ -54,7 +53,7 @@ namespace StateExample
             skill_3.AddTransition(0);
             skill_3.ActionEndTransfer(0);
 
-            var jump = AddState("jump", false, AnimPlayMode.Sequence, "jump", null, new ActionBehaviour[] { new JumpState() });
+            var jump = AddState("jump", false, AnimPlayMode.Sequence, "jump", new StateBehaviour[] { new FsmJumpState() }, null);
             jump.AddTransition(0);
             jump.ActionEndTransfer(0);
 
@@ -65,9 +64,14 @@ namespace StateExample
             AddState("death", false, AnimPlayMode.Sequence, "die", null, null);
         }
 
+        private void Update()
+        {
+            controller.Execute();
+        }
+
         private State AddState(string name, bool animLoop, AnimPlayMode animPlayMode, string clipName, StateBehaviour[] stateBehaviours, ActionBehaviour[] actionBehaviours)
         {
-            var state = sm.stateMachine.AddState(name, stateBehaviours);
+            var state = controller.AddState(name, stateBehaviours);
             state.animLoop = animLoop;
             state.animPlayMode = animPlayMode;
             state.actionSystem = true;
@@ -93,39 +97,39 @@ namespace StateExample
         {
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                sm.ChangeState(2, 0, true);
+                controller.ChangeState(2, 0, true);
                 return;
             }
             if (Input.GetKeyDown(KeyCode.E))
             {
-                sm.ChangeState(3, 0, true);
+                controller.ChangeState(3, 0, true);
                 return;
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                sm.ChangeState(4, 0, true);
+                controller.ChangeState(4, 0, true);
                 return;
             }
             if (Input.GetKeyDown(KeyCode.T))
             {
-                sm.ChangeState(5, 0, true);
+                controller.ChangeState(5, 0, true);
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                sm.ChangeState(6, 0, true);
+                controller.ChangeState(6, 0, true);
                 return;
             }
         }
     }
 
-    public class IdleState : StateBehaviour
+    public class FsmIdleState : StateBehaviour
     {
-        private Player self;
+        private FSMPlayer self;
 
         public override void OnInit()
         {
-            self = transform.GetComponent<Player>();
+            self = transform.GetComponent<FSMPlayer>();
         }
 
         public override void OnUpdate()
@@ -140,13 +144,13 @@ namespace StateExample
         }
     }
 
-    public class MoveState : StateBehaviour
+    public class FsmMoveState : StateBehaviour
     {
-        private Player self;
+        private FSMPlayer self;
 
         public override void OnInit()
         {
-            self = transform.GetComponent<Player>();
+            self = transform.GetComponent<FSMPlayer>();
         }
 
         public override void OnUpdate()
@@ -163,28 +167,32 @@ namespace StateExample
         }
     }
 
-    public class JumpState : ActionCoreBase
+    public class FsmJumpState : StateBehaviour
     {
-        private Player self;
+        private FSMPlayer self;
 
         public override void OnInit()
         {
-            self = transform.GetComponent<Player>();
+            self = transform.GetComponent<FSMPlayer>();
         }
 
-        public override void OnAnimationEvent(StateAction action)
+        public override void OnUpdate()
         {
-            self.GetComponent<Rigidbody>().AddForce(self.transform.forward * 5f, ForceMode.Impulse);
+            var dir = self.Transform3Dir(Camera.main.transform, self.Direction);
+            if (dir == Vector3.zero)
+                return;
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir, Vector3.up), 0.5f);
+            transform.Translate(0, 0, self.moveSpeed * Time.deltaTime);
         }
     }
 
-    public class AttackState : ActionCore
+    public class FsmAttackState : ActionCore
     {
-        private Player self;
+        private FSMPlayer self;
 
         public override void OnInit()
         {
-            self = transform.GetComponent<Player>();
+            self = transform.GetComponent<FSMPlayer>();
         }
 
         public override void OnUpdate(StateAction action)
@@ -208,13 +216,13 @@ namespace StateExample
         }
     }
 
-    public class SkillState : ActionCore
+    public class FsmSkillState : ActionCore
     {
-        private Player self;
+        private FSMPlayer self;
 
         public override void OnInit()
         {
-            self = transform.GetComponent<Player>();
+            self = transform.GetComponent<FSMPlayer>();
         }
 
         public override void OnUpdate(StateAction action)

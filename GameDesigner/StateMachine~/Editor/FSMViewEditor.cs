@@ -14,11 +14,11 @@ using FSG.MeshAnimator.ShaderAnimated;
 
 namespace GameDesigner
 {
-    [CustomEditor(typeof(StateManager))]
+    [CustomEditor(typeof(FSMView))]
     [CanEditMultipleObjects]
-    public class StateManagerEditor : Editor
+    public class FSMViewEditor : Editor
     {
-        private static StateManager stateManager = null;
+        private static FSMView fsmView = null;
         public static string createScriptName = "NewStateBehaviour";
         public static string stateActionScriptPath = "/Actions/StateActions";
         public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
@@ -33,55 +33,54 @@ namespace GameDesigner
 
         void OnEnable()
         {
-            stateManager = target as StateManager;
-            var stateMachine = stateManager.stateMachine;
-            if (stateMachine != null)
+            fsmView = target as FSMView;
+            if (fsmView != null)
             {
-                if (stateMachine.animation == null)
-                    stateMachine.animation = stateManager.GetComponentInChildren<Animation>();
-                if (stateMachine.animation != null)
+                if (fsmView.animation == null)
+                    fsmView.animation = fsmView.GetComponentInChildren<Animation>();
+                if (fsmView.animation != null)
                 {
-                    var clips = AnimationUtility.GetAnimationClips(stateMachine.animation.gameObject);
-                    stateMachine.clipNames.Clear();
+                    var clips = AnimationUtility.GetAnimationClips(fsmView.animation.gameObject);
+                    fsmView.clipNames.Clear();
                     foreach (var clip in clips)
-                        stateMachine.clipNames.Add(clip.name);
+                        fsmView.clipNames.Add(clip.name);
                 }
-                if (stateMachine.animator == null)
-                    stateMachine.animator = stateManager.GetComponentInChildren<Animator>();
-                if (stateMachine.animator != null)
+                if (fsmView.animator == null)
+                    fsmView.animator = fsmView.GetComponentInChildren<Animator>();
+                if (fsmView.animator != null)
                 {
-                    if (stateMachine.animator.runtimeAnimatorController is UnityEditor.Animations.AnimatorController controller)
+                    if (fsmView.animator.runtimeAnimatorController is UnityEditor.Animations.AnimatorController controller)
                     {
                         if (controller.layers.Length > 0) //打AB包后选择这里是0
                         {
                             var layer = controller.layers[0];
                             var states = layer.stateMachine.states;
-                            stateMachine.clipNames.Clear();
+                            fsmView.clipNames.Clear();
                             foreach (var state in states)
-                                stateMachine.clipNames.Add(state.state.name);
+                                fsmView.clipNames.Add(state.state.name);
                         }
                     }
                 }
-                if (stateMachine.director == null)
-                    stateMachine.director = stateManager.GetComponentInChildren<PlayableDirector>();
+                if (fsmView.director == null)
+                    fsmView.director = fsmView.GetComponentInChildren<PlayableDirector>();
 #if SHADER_ANIMATED
-                if (stateMachine.meshAnimator == null)
-                    stateMachine.meshAnimator = stateManager.GetComponentInChildren<ShaderMeshAnimator>();
-                if (stateMachine.meshAnimator != null)
+                if (fsmView.meshAnimator == null)
+                    fsmView.meshAnimator = stateManager.GetComponentInChildren<ShaderMeshAnimator>();
+                if (fsmView.meshAnimator != null)
                 {
-                    var clips = stateMachine.meshAnimator.animations;
-                    if (stateMachine.clipNames.Count != clips.Length)
+                    var clips = fsmView.meshAnimator.animations;
+                    if (fsmView.clipNames.Count != clips.Length)
                     {
-                        stateMachine.clipNames.Clear();
+                        fsmView.clipNames.Clear();
                         foreach (var clip in clips)
                         {
-                            stateMachine.clipNames.Add(clip.AnimationName);
+                            fsmView.clipNames.Add(clip.AnimationName);
                         }
                     }
                 }
 #endif
             }
-            StateMachineWindow.fsmView = stateManager.stateMachine;
+            StateMachineWindow.fsmView = fsmView;
             if (findBehaviourTypes == null)
             {
                 findBehaviourTypes = new List<Type>();
@@ -113,18 +112,18 @@ namespace GameDesigner
         {
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stateMachine"), new GUIContent(BlueprintGUILayout.Instance.Language["State Machine Controller"]));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.Language["initMode"]));
+            //EditorGUILayout.PropertyField(serializedObject.FindProperty("fsmView"), new GUIContent(BlueprintGUILayout.Instance.Language["State Machine Controller"]));
+            //EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.Language["initMode"]));
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
-                StateMachineWindow.Init(stateManager.stateMachine);
-            if (stateManager.stateMachine == null)
+                StateMachineWindow.Init(fsmView);
+            if (fsmView == null)
                 goto J;
-            if (stateManager.stateMachine.SelectState != null)
+            if (fsmView.SelectState != null)
             {
-                DrawState(stateManager.stateMachine.SelectState, stateManager);
+                DrawState(fsmView.SelectState, fsmView);
                 EditorGUILayout.Space();
-                for (int i = 0; i < stateManager.stateMachine.SelectState.transitions.Length; ++i)
-                    DrawTransition(stateManager.stateMachine.SelectState.transitions[i]);
+                for (int i = 0; i < fsmView.SelectState.transitions.Length; ++i)
+                    DrawTransition(fsmView.SelectState.transitions[i]);
             }
             else if (StateMachineWindow.selectTransition != null)
             {
@@ -132,19 +131,19 @@ namespace GameDesigner
             }
             EditorGUILayout.Space();
             if (EditorGUI.EndChangeCheck())
-                EditorUtility.SetDirty(stateManager.stateMachine);
+                EditorUtility.SetDirty(fsmView);
             Repaint();
         J: serializedObject.ApplyModifiedProperties();
         }
 
-        private static SerializedObject _stateMachineObject;
-        private static SerializedObject StateMachineObject
+        private static SerializedObject _fsmViewObject;
+        private static SerializedObject fsmViewObject
         {
             get
             {
-                if (_stateMachineObject == null)
-                    _stateMachineObject = new SerializedObject(stateManager.stateMachine);
-                return _stateMachineObject;
+                if (_fsmViewObject == null)
+                    _fsmViewObject = new SerializedObject(fsmView);
+                return _fsmViewObject;
             }
         }
 
@@ -154,7 +153,7 @@ namespace GameDesigner
             get
             {
                 if (_statesProperty == null)
-                    _statesProperty = StateMachineObject.FindProperty("states").GetArrayElementAtIndex(stateManager.stateMachine.SelectState.ID);
+                    _statesProperty = fsmViewObject.FindProperty("states").GetArrayElementAtIndex(fsmView.SelectState.ID);
                 return _statesProperty;
             }
         }
@@ -220,7 +219,7 @@ namespace GameDesigner
             get
             {
                 if (_animationProperty == null)
-                    _animationProperty = StateMachineObject.FindProperty("animation");
+                    _animationProperty = fsmViewObject.FindProperty("animation");
                 return _animationProperty;
             }
         }
@@ -231,7 +230,7 @@ namespace GameDesigner
             get
             {
                 if (_animatorProperty == null)
-                    _animatorProperty = StateMachineObject.FindProperty("animator");
+                    _animatorProperty = fsmViewObject.FindProperty("animator");
                 return _animatorProperty;
             }
         }
@@ -242,7 +241,7 @@ namespace GameDesigner
             get
             {
                 if (_meshAnimatorProperty == null)
-                    _meshAnimatorProperty = StateMachineObject.FindProperty("meshAnimator");
+                    _meshAnimatorProperty = fsmViewObject.FindProperty("meshAnimator");
                 return _meshAnimatorProperty;
             }
         }
@@ -253,7 +252,7 @@ namespace GameDesigner
             get
             {
                 if (_directorProperty == null)
-                    _directorProperty = StateMachineObject.FindProperty("director");
+                    _directorProperty = fsmViewObject.FindProperty("director");
                 return _directorProperty;
             }
         }
@@ -261,7 +260,7 @@ namespace GameDesigner
 
         private static void ResetPropertys()
         {
-            _stateMachineObject = null;
+            _fsmViewObject = null;
             _statesProperty = null;
             _nameProperty = null;
             _actionSystemProperty = null;
@@ -279,14 +278,14 @@ namespace GameDesigner
         /// <summary>
         /// 绘制状态监视面板属性
         /// </summary>
-        public void DrawState(State state, StateManager sm)
+        public void DrawState(State state, FSMView sm)
         {
             if (CurrentState != state)
             {
                 CurrentState = state;
                 ResetPropertys();
             }
-            StateMachineObject.Update();
+            fsmViewObject.Update();
             GUILayout.Button(BlueprintGUILayout.Instance.Language["State attribute"], GUI.skin.GetStyle("dragtabdropwindow"));
             EditorGUILayout.BeginVertical("ProgressBarBack");
             EditorGUILayout.PropertyField(NameProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Status name"], "name"));
@@ -294,8 +293,8 @@ namespace GameDesigner
             EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Action system"], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
             if (state.actionSystem)
             {
-                sm.stateMachine.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.Language["Animation mode"], "animMode"), sm.stateMachine.animMode);
-                switch (sm.stateMachine.animMode)
+                sm.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.Language["Animation mode"], "animMode"), sm.animMode);
+                switch (sm.animMode)
                 {
                     case AnimationMode.Animation:
                         EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Old animation"], "animation"));
@@ -333,7 +332,7 @@ namespace GameDesigner
 
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
-                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = stateManager.stateMachine, fsmView = state.fsmView, behaviours = new BehaviourBase[0] });
+                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = null, fsmView = state.fsmView, behaviours = new BehaviourBase[0] });
                     return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
@@ -385,10 +384,10 @@ namespace GameDesigner
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(state.fsmView.ClipNames.ToArray(), input => new GUIContent(input)));
-                            if (state.fsmView.ClipNames.Count > 0 && act.clipIndex < state.fsmView.ClipNames.Count)
-                                act.clipName = state.fsmView.ClipNames[act.clipIndex];
-                            if (sm.stateMachine.animMode == AnimationMode.Timeline)
+                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(fsmView.ClipNames.ToArray(), input => new GUIContent(input)));
+                            if (fsmView.ClipNames.Count > 0 && act.clipIndex < fsmView.ClipNames.Count)
+                                act.clipName = fsmView.ClipNames[act.clipIndex];
+                            if (sm.animMode == AnimationMode.Timeline)
                                 EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("clipAsset"), new GUIContent(BlueprintGUILayout.Instance.Language["Playable Asset"], "clipAsset"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));
@@ -461,7 +460,7 @@ namespace GameDesigner
                                     EditorGUI.indentLevel = 3;
                                 }
                             }
-                            switch (sm.stateMachine.animMode)
+                            switch (sm.animMode)
                             {
                                 case AnimationMode.Animation:
                                     break;
@@ -491,7 +490,7 @@ namespace GameDesigner
                                             stb.ID = state.ID;
                                             ArrayExtend.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
-                                            EditorUtility.SetDirty(stateManager.stateMachine);
+                                            EditorUtility.SetDirty(fsmView);
                                         }
                                         if (compiling & type.Name == createScriptName)
                                         {
@@ -501,7 +500,7 @@ namespace GameDesigner
                                             ArrayExtend.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
                                             compiling = false;
-                                            EditorUtility.SetDirty(stateManager.stateMachine);
+                                            EditorUtility.SetDirty(fsmView);
                                         }
                                     }
                                 }
@@ -534,12 +533,12 @@ namespace GameDesigner
             DrawBehaviours(state);
             EditorGUILayout.Space();
             EditorGUILayout.EndVertical();
-            StateMachineObject.ApplyModifiedProperties();
+            fsmViewObject.ApplyModifiedProperties();
         }
 
-        private static void AnimatorPlay(StateManager sm, StateAction act)
+        private static void AnimatorPlay(FSMView sm, StateAction act)
         {
-            var animator = sm.stateMachine.animator;
+            var animator = sm.animator;
             EditorGUILayout.BeginHorizontal();
             var rect = EditorGUILayout.GetControlRect();
             if (GUI.Button(new Rect(rect.x + 45, rect.y, 30, rect.height), EditorGUIUtility.IconContent(animPlay ? "PauseButton" : "PlayButton")))
@@ -671,7 +670,7 @@ namespace GameDesigner
                             stb.ID = s.ID;
                             ArrayExtend.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
-                            EditorUtility.SetDirty(stateManager.stateMachine);
+                            EditorUtility.SetDirty(fsmView);
                         }
                         if (compiling & type.Name == createScriptName)
                         {
@@ -681,7 +680,7 @@ namespace GameDesigner
                             ArrayExtend.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
                             compiling = false;
-                            EditorUtility.SetDirty(stateManager.stateMachine);
+                            EditorUtility.SetDirty(fsmView);
                         }
                     }
                 }
@@ -1013,9 +1012,9 @@ namespace GameDesigner
         [UnityEditor.Callbacks.DidReloadScripts(0)]
         internal static void OnScriptReload()
         {
-            if (stateManager == null)
+            if (fsmView == null)
                 return;
-            stateManager.OnValidate();
+            fsmView.OnValidate();
         }
     }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Net.System;
 
@@ -209,7 +208,7 @@ namespace Net.AOI
             currGrid.gridBodies.Remove(body);
             body.Grid = null;
             goto JMP;
-            J:
+        J:
             if (OnOverflow != null)
                 OnOverflow(body);
             else

@@ -36,6 +36,7 @@ Quit playback|退出播放
 Sound object|音效对象
 Animation time|动画时间
 Animation length|动画长度
+Animation layer|动画层级
 Playable Asset|可播放资源
 mesh Animated|GPU动画
 Skill object|技能对象

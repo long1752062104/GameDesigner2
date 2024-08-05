@@ -3,6 +3,69 @@ using UnityEngine;
 
 namespace GameDesigner
 {
+    public interface IFSM
+    {
+        Transform transform { get; }
+        /// <summary>
+        /// 状态机执行
+        /// </summary>
+        void Execute();
+        /// <summary>
+        /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
+        /// </summary>
+        /// <param name="nextStateIndex">下一个状态的ID</param>
+        void EnterNextState(int nextStateIndex, int actionId = 0);
+        /// <summary>
+        /// 进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
+        /// </summary>
+        /// <param name="stateID"></param>
+        void StatusEntry(int stateID, int actionId = 0);
+        /// <summary>
+        /// 切换状态
+        /// </summary>
+        /// <param name="stateId"></param>
+        /// <param name="force"></param>
+        void ChangeState(int stateId, int actionId = 0, bool force = false);
+    }
+
+    public interface IStateMachineView
+    {
+        string name { get; set; }
+        State[] States { get; set; }
+        State SelectState { get; set; }
+        List<int> SelectStates { get; set; }
+        State DefaultState { get; set; }
+        int StateId { get; set; }
+        List<string> ClipNames { get; set; }
+
+        void UpdateStates();
+    }
+
+    public interface IStateMachine : IFSM
+    {
+        IStateManager StateManager { get; }
+        int NextId { get; set; }
+
+        /// <summary>
+        /// 当播放动画方法
+        /// </summary>
+        /// <param name="state">当前状态</param>
+        /// <param name="stateAction">当前动作</param>
+        void OnPlayAnimation(State state, StateAction stateAction);
+
+        /// <summary>
+        /// 当动画每帧更新
+        /// </summary>
+        /// <param name="state">当前状态</param>
+        /// <param name="stateAction">当前动作</param>
+        /// <returns>是否播放完成</returns>
+        bool OnAnimationUpdate(State state, StateAction stateAction);
+    }
+
+    public interface IStateManager : IFSM
+    {
+    }
+
     /// <summary>
     /// 状态基类
     /// </summary>
@@ -14,14 +77,15 @@ namespace GameDesigner
 #if UNITY_2020_1_OR_NEWER
         [NonReorderable]
 #endif
-        public BehaviourBase[] behaviours;// = new BehaviourBase[0];
-        public StateMachine stateMachine;
-        public StateManager stateManager => stateMachine.stateManager;
+        public BehaviourBase[] behaviours;
+        public IStateMachineView fsmView;
+        public IStateMachine stateMachine;
+        public IStateManager stateManager => stateMachine.StateManager;
 
 #if UNITY_EDITOR
         [HideInInspector]
         public bool foldout = true;
-        public Rect rect;// = new Rect(10, 10, 150, 30);
+        public Rect rect;
 #endif
 
         /// <summary>
@@ -42,11 +106,7 @@ namespace GameDesigner
         /// <returns></returns>
         public T AddComponent<T>(T component) where T : BehaviourBase
         {
-            component.name = component.GetType().ToString();
-            component.ID = ID;
-            component.stateMachine = stateMachine;
-            ArrayExtend.Add(ref behaviours, component);
-            return component;
+            return (T)AddComponentInternal(component);
         }
 
         public void AddComponent(params BehaviourBase[] behaviours)
@@ -54,12 +114,21 @@ namespace GameDesigner
             if (behaviours == null)
                 return;
             foreach (var component in behaviours)
-            {
-                component.name = component.GetType().ToString();
-                component.ID = ID;
-                component.stateMachine = stateMachine;
-                ArrayExtend.Add(ref this.behaviours, component);
-            }
+                AddComponentInternal(component);
+        }
+
+        private BehaviourBase AddComponentInternal(BehaviourBase component)
+        {
+            component.name = component.GetType().ToString();
+            component.ID = ID;
+            component.stateMachine = stateMachine;
+            component.fsmView = fsmView;
+#if UNITY_EDITOR
+            component.InitMetadatas();
+#endif
+            component.OnInit();
+            ArrayExtend.Add(ref behaviours, component);
+            return component;
         }
 
         /// <summary>

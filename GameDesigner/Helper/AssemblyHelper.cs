@@ -448,5 +448,39 @@ namespace Net.Helper
             }
             return methodsList;
         }
+
+        public static List<string> GetAssemblieNames()
+        {
+            var list = new List<string>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assemblie in assemblies)
+            {
+                if (assemblie.IsDynamic)
+                    continue;
+                list.Add(assemblie.FullName);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// 获取所有程序集文件路径
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetAssembliePaths()
+        {
+            var list = new HashSet<string>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assemblie in assemblies)
+            {
+                if (assemblie.IsDynamic)
+                    continue;
+                try
+                {
+                    list.Add(Path.GetDirectoryName(assemblie.Location));
+                }
+                catch (Exception) { }
+            }
+            return list.ToList();
+        }
     }
 }

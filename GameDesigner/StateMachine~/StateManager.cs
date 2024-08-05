@@ -16,7 +16,7 @@ namespace GameDesigner
     /// V2017.12.6
     /// 版本修改V2019.8.27
     /// </summary>
-    public sealed class StateManager : MonoBehaviour
+    public sealed class StateManager : MonoBehaviour, IStateManager
     {
         /// <summary>
         /// 状态机

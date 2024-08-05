@@ -14,12 +14,20 @@ namespace Net.Component
         public uint zMax = 50;
         public int width = 20;
         public int height = 20;
-        public bool EditInit;
+#if UNITY_EDITOR
         public bool showText;
+        public UnityEngine.Color planeColor = UnityEngine.Color.cyan;
+        public UnityEngine.Color textColor = UnityEngine.Color.white;
+#endif
 
         protected override void Awake()
         {
             base.Awake();
+            InitAOI();
+        }
+
+        public void InitAOI()
+        {
             world.Init(xPos, zPos, xMax, zMax, width, height);
         }
 
@@ -28,14 +36,11 @@ namespace Net.Component
             world.UpdateHandler();
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if (EditInit)
-            {
-                EditInit = false;
-                world.Init(xPos, zPos, xMax, zMax, width, height);
-            }
-            Gizmos.color = Color.cyan;
+            Gizmos.color = planeColor;
+            GUI.color = textColor;
             for (int i = 0; i < world.grids.Length; i++)
             {
                 Draw(world.grids[i]);
@@ -46,20 +51,19 @@ namespace Net.Component
         {
             var pos = grid.rect.center;
             var size = grid.rect.size;
-            if(world.gridType == GridType.Horizontal)
+            if (world.gridType == GridType.Horizontal)
                 Gizmos.DrawWireCube(new UnityEngine.Vector3(pos.x, 0f, pos.y), new UnityEngine.Vector3(size.x, 0, size.y));
             else
                 Gizmos.DrawWireCube(new UnityEngine.Vector3(pos.x, pos.y, 0f), new UnityEngine.Vector3(size.x, size.y, 0));
-#if UNITY_EDITOR
-            if (showText) 
+            if (showText)
             {
                 if (world.gridType == GridType.Horizontal)
-                    UnityEditor.Handles.Label(new UnityEngine.Vector3(grid.rect.x, 1f, grid.rect.y), grid.rect.position.ToString());
+                    UnityEditor.Handles.Label(new UnityEngine.Vector3(grid.rect.x + 0.5f, 1f, grid.rect.y + 1.5f), grid.rect.position.ToString());
                 else
-                    UnityEditor.Handles.Label(new UnityEngine.Vector3(grid.rect.x, grid.rect.y, 0f), grid.rect.position.ToString());
+                    UnityEditor.Handles.Label(new UnityEngine.Vector3(grid.rect.x + 0.5f, grid.rect.y + 1.5f, 0f), grid.rect.position.ToString());
             }
-#endif
         }
+#endif
     }
 }
 #endif
