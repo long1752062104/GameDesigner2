@@ -45,7 +45,6 @@ namespace GameDesigner
         public StateAction(State state, string clipName, params ActionBehaviour[] behaviours)
         {
             ID = state.ID;
-            fsmView = state.fsmView;
             SetAnimClip(clipName);
             if (behaviours != null)
             {
@@ -71,7 +70,7 @@ namespace GameDesigner
                 if (behaviour.Active)
                     behaviour.OnEnter(this);
             }
-            stateMachine.OnPlayAnimation(state, this);
+            stateMachine.Handler.OnPlayAnimation(state, this);
         }
 
         internal void Exit()
@@ -84,15 +83,13 @@ namespace GameDesigner
             }
         }
 
-        internal void Init(IStateMachine stateMachine, IStateMachineView stateMachineView)
+        internal void Init(IStateMachine stateMachine)
         {
             this.stateMachine = stateMachine;
-            fsmView = stateMachineView;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i].InitBehaviour();
                 behaviour.stateMachine = stateMachine;
-                behaviour.fsmView = stateMachineView;
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
@@ -102,7 +99,7 @@ namespace GameDesigner
         {
             if (isStop)
                 return;
-            var isPlaying = stateMachine.OnAnimationUpdate(state, this);
+            var isPlaying = stateMachine.Handler.OnAnimationUpdate(state, this);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as ActionBehaviour;
@@ -146,9 +143,9 @@ namespace GameDesigner
         public void SetAnimClip(string clipName)
         {
             this.clipName = clipName;
-            for (int i = 0; i < fsmView.ClipNames.Count; i++)
+            for (int i = 0; i < stateMachine.ClipNames.Count; i++)
             {
-                if (clipName == fsmView.ClipNames[i])
+                if (clipName == stateMachine.ClipNames[i])
                 {
                     clipIndex = i;
                     break;

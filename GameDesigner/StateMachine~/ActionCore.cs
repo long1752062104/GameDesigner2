@@ -238,17 +238,17 @@ namespace GameDesigner
             switch (spwanMode)
             {
                 case SpwanMode.localPosition:
-                    go.transform.localPosition = stateManager.transform.TransformPoint(postion);
-                    go.transform.eulerAngles = stateManager.transform.eulerAngles + rotation;
+                    go.transform.localPosition = transform.TransformPoint(postion);
+                    go.transform.eulerAngles = transform.eulerAngles + rotation;
                     break;
                 case SpwanMode.SetParent:
-                    parent = parent ? parent : stateManager.transform;
+                    parent = parent ? parent : transform;
                     go.transform.SetParent(parent);
                     go.transform.position = parent.TransformPoint(postion);
                     go.transform.eulerAngles = parent.eulerAngles + rotation;
                     break;
                 case SpwanMode.SetInTargetPosition:
-                    parent = parent ? parent : stateManager.transform;
+                    parent = parent ? parent : transform;
                     go.transform.SetParent(parent);
                     go.transform.position = parent.TransformPoint(postion);
                     go.transform.eulerAngles = parent.eulerAngles + rotation;

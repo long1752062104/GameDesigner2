@@ -2351,6 +2351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 6
+  view: {fileID: 6466594955317411876}
   audioClips:
   - {fileID: 8300000, guid: 52fa067c25c5c401b811eb86d142287e, type: 3}
 --- !u!114 &6466594955317411876
@@ -2362,41 +2363,40 @@ MonoBehaviour:
   m_GameObject: {fileID: 6466594955317411869}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c316e4ddc52f44448bbb179d7b750655, type: 3}
+  m_Script: {fileID: 11500000, guid: 78945d5219d41cf4aa13262e0f9288c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  states: []
-  defaulId: 0
-  stateId: 0
-  selectStates: 
-  animMode: 0
+  stateMachine:
+    defaulId: 0
+    stateId: 0
+    states: []
+    selectStates: 
+    clipNames:
+    - charge
+    - charge_end
+    - charge_start
+    - default_attack
+    - die
+    - frenzied_slash
+    - gethit_from_behind
+    - gethit_from_front
+    - gethit_from_left
+    - gethit_from_right
+    - idle
+    - jump
+    - roar
+    - run
+    - shield_bash
+    - shield_block
+    - shuffle_left
+    - shuffle_right
+    - backpedal
+    - spawn
+    - strafe_right
+    - strafe_left
+    - walk
+    _transform: {fileID: 6464678842062835995}
   animation: {fileID: 6466594955317411870}
-  animator: {fileID: 0}
-  director: {fileID: 0}
-  clipNames:
-  - charge
-  - charge_end
-  - charge_start
-  - default_attack
-  - die
-  - frenzied_slash
-  - gethit_from_behind
-  - gethit_from_front
-  - gethit_from_left
-  - gethit_from_right
-  - idle
-  - jump
-  - roar
-  - run
-  - shield_bash
-  - shield_block
-  - shuffle_left
-  - shuffle_right
-  - backpedal
-  - spawn
-  - strafe_right
-  - strafe_left
-  - walk
 --- !u!1 &6466618666956242729
 GameObject:
   m_ObjectHideFlags: 0

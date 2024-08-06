@@ -14,8 +14,8 @@ namespace StateExample
         // Start is called before the first frame update
         void Start()
         {
-            sm.stateMachine.animMode = AnimationMode.Animation; //使用旧版本动画模式
-            sm.stateMachine.Init();
+            sm.support.animMode = AnimationMode.Animation; //使用旧版本动画模式
+            sm.support.Init(transform);
 
             AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new IdleState() }, null); //添加idle状态 和 状态行为
             AddState("move", true, AnimPlayMode.Sequence, "run", new StateBehaviour[] { new MoveState() }, null); //添加run状态 和 状态行为
@@ -67,7 +67,7 @@ namespace StateExample
 
         private State AddState(string name, bool animLoop, AnimPlayMode animPlayMode, string clipName, StateBehaviour[] stateBehaviours, ActionBehaviour[] actionBehaviours)
         {
-            var state = sm.stateMachine.AddState(name, stateBehaviours);
+            var state = sm.support.stateMachine.AddState(name, stateBehaviours);
             state.animLoop = animLoop;
             state.animPlayMode = animPlayMode;
             state.actionSystem = true;

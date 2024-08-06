@@ -152,39 +152,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c78d908e0892d046a783e9a89a5b54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaulId: 0
-  stateId: 0
-  states: []
-  selectStates: 
+  stateMachine:
+    defaulId: 0
+    stateId: 0
+    states: []
+    selectStates: 
+    clipNames:
+    - charge
+    - charge_end
+    - charge_start
+    - default_attack
+    - die
+    - frenzied_slash
+    - gethit_from_behind
+    - gethit_from_front
+    - gethit_from_left
+    - gethit_from_right
+    - idle
+    - jump
+    - roar
+    - run
+    - shield_bash
+    - shield_block
+    - shuffle_left
+    - shuffle_right
+    - backpedal
+    - spawn
+    - strafe_right
+    - strafe_left
+    - walk
+    _transform: {fileID: 228448106}
   animMode: 0
   animation: {fileID: 6466594955317411870}
   animator: {fileID: 0}
   director: {fileID: 0}
-  clipNames:
-  - charge
-  - charge_end
-  - charge_start
-  - default_attack
-  - die
-  - frenzied_slash
-  - gethit_from_behind
-  - gethit_from_front
-  - gethit_from_left
-  - gethit_from_right
-  - idle
-  - jump
-  - roar
-  - run
-  - shield_bash
-  - shield_block
-  - shuffle_left
-  - shuffle_right
-  - backpedal
-  - spawn
-  - strafe_right
-  - strafe_left
-  - walk
-  _stateManager: {fileID: 0}
+  states: []
 --- !u!4 &228448106
 Transform:
   m_ObjectHideFlags: 0
@@ -2394,7 +2396,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8672d1e21073a764baa3a9d69fa8b742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stateMachine: {fileID: 228448105}
+  support: {fileID: 228448105}
   initMode: 0
 --- !u!54 &6466594955317411873
 Rigidbody:

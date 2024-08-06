@@ -3,9 +3,36 @@ using UnityEngine;
 
 namespace GameDesigner
 {
-    public interface IFSM
+    public interface IAnimationHandler 
     {
-        Transform transform { get; }
+        public void OnInit();
+        /// <summary>
+        /// 当播放动画方法
+        /// </summary>
+        /// <param name="state">当前状态</param>
+        /// <param name="stateAction">当前动作</param>
+        public void OnPlayAnimation(State state, StateAction stateAction);
+        /// <summary>
+        /// 当动画每帧更新
+        /// </summary>
+        /// <param name="state">当前状态</param>
+        /// <param name="stateAction">当前动作</param>
+        /// <returns>是否播放完成</returns>
+        public bool OnAnimationUpdate(State state, StateAction stateAction);
+    }
+
+    public interface IStateMachine
+    {
+        string name { get; set; }
+        Transform transform { get; set; }
+        State[] States { get; set; }
+        State SelectState { get; set; }
+        List<int> SelectStates { get; set; }
+        State DefaultState { get; set; }
+        int StateId { get; set; }
+        List<string> ClipNames { get; set; }
+        int NextId { get; set; }
+        IAnimationHandler Handler { get; set; }
         /// <summary>
         /// 状态机执行
         /// </summary>
@@ -26,44 +53,7 @@ namespace GameDesigner
         /// <param name="stateId"></param>
         /// <param name="force"></param>
         void ChangeState(int stateId, int actionId = 0, bool force = false);
-    }
-
-    public interface IStateMachineView
-    {
-        string name { get; set; }
-        State[] States { get; set; }
-        State SelectState { get; set; }
-        List<int> SelectStates { get; set; }
-        State DefaultState { get; set; }
-        int StateId { get; set; }
-        List<string> ClipNames { get; set; }
-
         void UpdateStates();
-    }
-
-    public interface IStateMachine : IFSM
-    {
-        IStateManager StateManager { get; }
-        int NextId { get; set; }
-
-        /// <summary>
-        /// 当播放动画方法
-        /// </summary>
-        /// <param name="state">当前状态</param>
-        /// <param name="stateAction">当前动作</param>
-        void OnPlayAnimation(State state, StateAction stateAction);
-
-        /// <summary>
-        /// 当动画每帧更新
-        /// </summary>
-        /// <param name="state">当前状态</param>
-        /// <param name="stateAction">当前动作</param>
-        /// <returns>是否播放完成</returns>
-        bool OnAnimationUpdate(State state, StateAction stateAction);
-    }
-
-    public interface IStateManager : IFSM
-    {
     }
 
     /// <summary>
@@ -78,10 +68,7 @@ namespace GameDesigner
         [NonReorderable]
 #endif
         public BehaviourBase[] behaviours;
-        public IStateMachineView fsmView;
         public IStateMachine stateMachine;
-        public IStateManager stateManager => stateMachine.StateManager;
-
 #if UNITY_EDITOR
         [HideInInspector]
         public bool foldout = true;
@@ -122,7 +109,6 @@ namespace GameDesigner
             component.name = component.GetType().ToString();
             component.ID = ID;
             component.stateMachine = stateMachine;
-            component.fsmView = fsmView;
 #if UNITY_EDITOR
             component.InitMetadatas();
 #endif

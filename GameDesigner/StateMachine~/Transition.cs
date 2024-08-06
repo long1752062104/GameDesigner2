@@ -14,11 +14,11 @@ namespace GameDesigner
         /// <summary>
         /// 当前状态
         /// </summary>
-		public State currState => fsmView.States[currStateID];
+		public State CurrState => stateMachine.States[currStateID];
         /// <summary>
         /// 下一个状态
         /// </summary>
-		public State nextState => fsmView.States[nextStateID];
+		public State NextState => stateMachine.States[nextStateID];
         /// <summary>
         /// 连接控制模式
         /// </summary>
@@ -42,7 +42,6 @@ namespace GameDesigner
         {
             currStateID = state.ID;
             nextStateID = stateId;
-            fsmView = state.fsmView;
             stateMachine = state.stateMachine;
             if (behaviours != null)
             {
@@ -51,7 +50,6 @@ namespace GameDesigner
                 {
                     behaviours[i].name = behaviours[i].GetType().ToString();
                     behaviours[i].stateMachine = stateMachine;
-                    behaviours[i].fsmView = fsmView;
                     behaviours[i].Active = true;
                     behaviours[i].OnInit();
                 }
@@ -77,7 +75,6 @@ namespace GameDesigner
                 currStateID = state.ID,
                 nextStateID = nextState.ID,
                 stateMachine = state.stateMachine,
-                fsmView = state.fsmView,
                 behaviours = new BehaviourBase[0],
             };
             ArrayExtend.Add(ref state.transitions, t);
@@ -86,15 +83,13 @@ namespace GameDesigner
             return t;
         }
 
-        internal void Init(IStateMachine stateMachine, IStateMachineView stateMachineView)
+        internal void Init(IStateMachine stateMachine)
         {
             this.stateMachine = stateMachine;
-            fsmView = stateMachineView;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = (TransitionBehaviour)behaviours[i].InitBehaviour();
                 behaviour.stateMachine = stateMachine;
-                behaviour.fsmView = stateMachineView;
                 behaviour.transitionID = i;
                 behaviours[i] = behaviour;
                 behaviour.OnInit();

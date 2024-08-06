@@ -23,7 +23,7 @@ namespace GameDesigner
                 return instance;
             }
         }
-        public FastList<IStateManager> stateManagers = new FastList<IStateManager>();
+        public FastList<IStateMachine> stateMachines = new FastList<IStateMachine>();
 
         private void Awake()
         {
@@ -34,26 +34,26 @@ namespace GameDesigner
 
         private void Update()
         {
-            for (int i = 0; i < stateManagers._size; i++)
+            for (int i = 0; i < stateMachines._size; i++)
             {
-                stateManagers._items[i].Execute();
+                stateMachines._items[i].Execute();
             }
         }
 
-        public static void AddStateManager(StateManager stateManager)
+        public static void AddStateMachine(IStateMachine stateMachine)
         {
             var i = Instance;
-            if (i == null)
+            if (i == null | stateMachine == null)
                 return;
-            i.stateManagers.Add(stateManager);
+            i.stateMachines.Add(stateMachine);
         }
 
-        public static void RemoveStateManager(StateManager stateManager)
+        public static void RemoveStateMachine(IStateMachine stateMachine)
         {
             var i = Instance;
-            if (i == null)
+            if (i == null | stateMachine == null)
                 return;
-            i.stateManagers.Remove(stateManager);
+            i.stateMachines.Remove(stateMachine);
         }
     }
 }

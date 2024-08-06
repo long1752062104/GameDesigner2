@@ -306,17 +306,15 @@
             }
             set { metadatas = value; }
         }
-        public IStateMachineView fsmView;
         public IStateMachine stateMachine;
-        public IStateManager stateManager => stateMachine.StateManager;
         /// <summary>
         /// 当前状态
         /// </summary>
-        public State state => fsmView.States[ID];
+        public State state => stateMachine.States[ID];
         /// <summary>
-        /// 状态管理器转换组建
+        /// 当前状态机挂载在物体的父转换对象
         /// </summary>
-        public Transform transform => stateManager.transform;
+        public Transform transform => stateMachine.transform;
         public Type Type { get { return AssemblyHelper.GetType(name); } }
         public void InitMetadatas()
         {

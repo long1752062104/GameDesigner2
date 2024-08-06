@@ -7,14 +7,15 @@ namespace StateExample
     public class FSMPlayer : MonoBehaviour
     {
         public float moveSpeed;
-        public FSMController controller;
+        public StateMachineView view;
+        private StateMachineCore controller;
         public AudioClip[] audioClips;
 
         // Start is called before the first frame update
         void Start()
         {
-            controller = new FSMController(GetComponent<FSMView>());
-            controller.Init();
+            view.Init(transform);
+            controller = view.stateMachine;
 
             AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new FsmIdleState() }, null); //添加idle状态 和 状态行为
             AddState("move", true, AnimPlayMode.Sequence, "run", new StateBehaviour[] { new FsmMoveState() }, null); //添加run状态 和 状态行为
