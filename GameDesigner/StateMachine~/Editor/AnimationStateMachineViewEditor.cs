@@ -30,7 +30,7 @@ namespace GameDesigner
 
         protected override void OnPlayAnimation(StateAction action)
         {
-            var view = (AnimationStateMachineView)self;
+            var view = (AnimationStateMachineView)Self;
             var animation = view.animation;
             EditorGUILayout.BeginHorizontal();
             var rect = EditorGUILayout.GetControlRect();

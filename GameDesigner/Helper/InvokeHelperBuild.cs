@@ -932,7 +932,7 @@ internal partial class SyncVarHandlerGenerate : ISyncVarHandler
                     bool isHas = false;
                     while (baseType != null)
                     {
-                        if (baseType.FullName == "GameDesigner.IBehaviour")
+                        if (baseType.FullName == "GameDesigner.BehaviourBase")
                         {
                             isHas = true;
                             break;

@@ -12,28 +12,28 @@ namespace GameDesigner
 {
     public abstract class StateMachineViewEditor : Editor
     {
-        protected static StateMachineView self;
+        protected virtual StateMachineView Self { get; set; }
         public static string createScriptName = "NewStateBehaviour";
         public static string stateActionScriptPath = "/Actions/StateActions";
         public static string stateBehaviourScriptPath = "/Actions/StateBehaviours";
         public static string transitionScriptPath = "/Actions/Transitions";
-        protected static StateBase addBehaviourState;
+        protected StateBase addBehaviourState;
+        protected StateAction animAction;
         private static bool compiling;
         protected static List<Type> findBehaviourTypes;
         protected static List<Type> findBehaviourTypes1;
         protected static List<Type> findBehaviourTypes2;
         protected static bool animPlay;
-        protected static StateAction animAction;
 
         protected virtual void OnEnable()
         {
-            self = target as StateMachineView;
-            self.EditorInit(self.transform);
-            self.editStateMachine.View = self;
-            if (string.IsNullOrEmpty(self.editStateMachine.name))
-                self.editStateMachine.name = "Base Layer";
-            if (StateMachineWindow.support != self)
-                StateMachineWindow.Init(self);
+            Self = target as StateMachineView;
+            Self.EditorInit(Self.transform);
+            Self.editStateMachine.View = Self;
+            if (string.IsNullOrEmpty(Self.editStateMachine.name))
+                Self.editStateMachine.name = "Base Layer";
+            if (StateMachineWindow.support != Self)
+                StateMachineWindow.Init(Self);
             if (findBehaviourTypes == null)
             {
                 findBehaviourTypes = new List<Type>();
@@ -67,10 +67,16 @@ namespace GameDesigner
             serializedObject.Update();
             OnDrawPreField();
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
-                StateMachineWindow.ShowWindow(self);
-            if (self == null)
+            {
+                Self.OnScriptReload();
+                StateMachineWindow.ShowWindow(Self);
+            }
+            if (Self == null)
+            {
+                ResetPropertys();
                 goto J;
-            var sm = self.editStateMachine;
+            }
+            var sm = Self.editStateMachine;
             if (sm.SelectState != null)
             {
                 DrawState(sm.SelectState);
@@ -84,7 +90,7 @@ namespace GameDesigner
             }
             EditorGUILayout.Space();
             if (EditorGUI.EndChangeCheck())
-                EditorUtility.SetDirty(self);
+                EditorUtility.SetDirty(Self);
             Repaint();
         J: serializedObject.ApplyModifiedProperties();
         }
@@ -99,7 +105,7 @@ namespace GameDesigner
             get
             {
                 if (_supportObject == null)
-                    _supportObject = new SerializedObject(self);
+                    _supportObject = new SerializedObject(Self);
                 return _supportObject;
             }
         }
@@ -121,7 +127,7 @@ namespace GameDesigner
             get
             {
                 if (_statesProperty == null)
-                    _statesProperty = StateMachineObject.FindPropertyRelative("states").GetArrayElementAtIndex(self.editStateMachine.SelectState.ID);
+                    _statesProperty = StateMachineObject.FindPropertyRelative("states").GetArrayElementAtIndex(Self.editStateMachine.SelectState.ID);
                 return _statesProperty;
             }
         }
@@ -185,6 +191,7 @@ namespace GameDesigner
 
         protected virtual void ResetPropertys()
         {
+            _supportObject = null;
             _stateMachineObject = null;
             _statesProperty = null;
             _nameProperty = null;
@@ -244,10 +251,9 @@ namespace GameDesigner
                 EditorGUI.indentLevel = 1;
                 var actRect = EditorGUILayout.GetControlRect();
                 state.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), state.foldout, BlueprintGUILayout.Instance.Language["Action Tree Set"], true);
-
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
-                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = self.editStateMachine, behaviours = new BehaviourBase[0] });
+                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = Self.editStateMachine, behaviours = new BehaviourBase[0] });
                     return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
@@ -256,7 +262,6 @@ namespace GameDesigner
                         ArrayExtend.RemoveAt(ref state.actions, state.actions.Length - 1);
                     return;
                 }
-
                 if (state.foldout)
                 {
                     EditorGUI.indentLevel = 2;
@@ -299,9 +304,9 @@ namespace GameDesigner
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(self.ClipNames.ToArray(), input => new GUIContent(input)));
-                            if (self.ClipNames.Count > 0 && act.clipIndex < self.ClipNames.Count)
-                                act.clipName = self.ClipNames[act.clipIndex];
+                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(Self.ClipNames.ToArray(), input => new GUIContent(input)));
+                            if (Self.ClipNames.Count > 0 && act.clipIndex < Self.ClipNames.Count)
+                                act.clipName = Self.ClipNames[act.clipIndex];
                             OnDrawActionPropertyField(actionProperty);
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));
@@ -356,7 +361,7 @@ namespace GameDesigner
                                         var index = (int)obj;
                                         var scriptName = act.behaviours[index].name;
                                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
-                                            sequence = new Net.Helper.SequencePoint();
+                                            throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
                                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                                     }, i);
                                     menu.ShowAsContext();
@@ -393,7 +398,7 @@ namespace GameDesigner
                                             stb.ID = state.ID;
                                             ArrayExtend.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
-                                            EditorUtility.SetDirty(self);
+                                            EditorUtility.SetDirty(Self);
                                         }
                                         if (compiling & type.Name == createScriptName)
                                         {
@@ -403,7 +408,7 @@ namespace GameDesigner
                                             ArrayExtend.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
                                             compiling = false;
-                                            EditorUtility.SetDirty(self);
+                                            EditorUtility.SetDirty(Self);
                                         }
                                     }
                                 }
@@ -506,7 +511,7 @@ namespace GameDesigner
                         var index = (int)obj;
                         var scriptName = s.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
-                            sequence = new Net.Helper.SequencePoint();
+                            throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     }, i);
                     menu.ShowAsContext();
@@ -546,7 +551,7 @@ namespace GameDesigner
                             stb.ID = s.ID;
                             ArrayExtend.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
-                            EditorUtility.SetDirty(self);
+                            EditorUtility.SetDirty(Self);
                         }
                         if (compiling & type.Name == createScriptName)
                         {
@@ -556,7 +561,7 @@ namespace GameDesigner
                             ArrayExtend.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
                             compiling = false;
-                            EditorUtility.SetDirty(self);
+                            EditorUtility.SetDirty(Self);
                         }
                     }
                 }
@@ -727,7 +732,7 @@ namespace GameDesigner
         /// <summary>
         /// 绘制状态连接行为
         /// </summary>
-        public static void DrawTransition(Transition tr)
+        public void DrawTransition(Transition tr)
         {
             EditorGUI.indentLevel = 0;
             var style = GUI.skin.GetStyle("dragtabdropwindow");
@@ -813,7 +818,7 @@ namespace GameDesigner
                         var index = (int)obj;
                         var scriptName = tr.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
-                            sequence = new Net.Helper.SequencePoint();
+                            throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
                         InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     }, i);
                     menu.ShowAsContext();
@@ -888,9 +893,14 @@ namespace GameDesigner
         [UnityEditor.Callbacks.DidReloadScripts(0)]
         internal static void OnScriptReload()
         {
-            if (self == null)
+            var go = Selection.activeGameObject;
+            if (go == null)
                 return;
-            self.OnScriptReload();
+            if (!go.TryGetComponent<StateManager>(out var sm))
+                return;
+            if (sm.support == null)
+                return;
+            sm.support.OnScriptReload();
         }
     }
 }

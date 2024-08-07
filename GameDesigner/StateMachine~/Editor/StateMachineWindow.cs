@@ -106,12 +106,13 @@ namespace GameDesigner
             }
         }
 
-        void OnGUI()
+        private void OnGUI()
         {
             GUILayout.BeginHorizontal();//(EditorStyles.toolbar);
             for (int i = 0; i < layers.Count; i++)
                 BreadCrumb(i, layers[i].name);
             GUILayout.FlexibleSpace();
+            support = (StateMachineView)EditorGUILayout.ObjectField(string.Empty, support, typeof(StateMachineView), true, GUILayout.Width(150));
             GUILayout.Space(10);
             if (GUILayout.Button("刷新脚本", EditorStyles.toolbarButton, GUILayout.Width(60)))
             {
@@ -132,6 +133,8 @@ namespace GameDesigner
             BeginWindow();
             if (support != null)
                 DrawStates();
+            else
+                layers.Clear();
             EndWindow();
             ZoomableAreaEnd();
             if (support == null)
@@ -158,19 +161,15 @@ namespace GameDesigner
                             BlueprintGUILayout.Instance.Language["Please select the object and click to create the state machine!"],
                             BlueprintGUILayout.Instance.Language["yes"],
                             BlueprintGUILayout.Instance.Language["no"]);
+                        return;
                     }
-                    else if (go.GetComponent<StateManager>())
-                    {
-                        go.GetComponent<StateManager>().support = StateMachineMono.CreateSupport();
-                        go.GetComponent<StateManager>().support.transform.SetParent(go.GetComponent<StateManager>().transform);
-                        support = go.GetComponent<StateManager>().support;
-                    }
-                    else
-                    {
-                        go.AddComponent<StateManager>().support = StateMachineMono.CreateSupport();
-                        go.GetComponent<StateManager>().support.transform.SetParent(go.GetComponent<StateManager>().transform);
-                        support = go.GetComponent<StateManager>().support;
-                    }
+                    if (!go.TryGetComponent<StateManager>(out var manager))
+                        manager = go.AddComponent<StateManager>();
+                    var support = StateMachineMono.CreateSupport();
+                    manager.support = support;
+                    support.transform.SetParent(manager.transform);
+                    support.OnScriptReload();
+                    Init(support);
                 });
                 menu.ShowAsContext();
                 Event.current.Use();
@@ -313,7 +312,7 @@ namespace GameDesigner
             {
                 case SelectMode.DragEnd:
                     var rect = FromToRect(selectionStartPosition, mousePosition);
-                    GUI.Box(rect, "", "SelectionRect");
+                    GUI.Box(rect, string.Empty, "SelectionRect");
                     SelectStatesInRect(rect);
                     break;
             }
@@ -558,7 +557,8 @@ namespace GameDesigner
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create and replace state machines"]), false, () =>
                 {
-                    if (Selection.activeGameObject == null)
+                    var go = Selection.activeGameObject;
+                    if (go == null)
                     {
                         EditorUtility.DisplayDialog(
                             BlueprintGUILayout.Instance.Language["Tips!"],
@@ -567,17 +567,20 @@ namespace GameDesigner
                             BlueprintGUILayout.Instance.Language["no"]);
                         return;
                     }
-                    if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
-                        manager = Selection.activeGameObject.AddComponent<StateManager>();
+                    if (!go.TryGetComponent<StateManager>(out var manager))
+                        manager = go.AddComponent<StateManager>();
                     else if (manager.support != null)
                         DestroyImmediate(manager.support.gameObject, true);
                     var support = StateMachineMono.CreateSupport();
                     manager.support = support;
                     support.transform.SetParent(manager.transform);
+                    support.OnScriptReload();
+                    Init(support);
                 });
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create and replace state machines"]), false, () =>
                 {
-                    if (Selection.activeGameObject == null)
+                    var go = Selection.activeGameObject;
+                    if (go == null)
                     {
                         EditorUtility.DisplayDialog(
                             BlueprintGUILayout.Instance.Language["Tips!"],
@@ -586,23 +589,19 @@ namespace GameDesigner
                             BlueprintGUILayout.Instance.Language["no"]);
                         return;
                     }
-                    if (!Selection.activeGameObject.TryGetComponent<StateManager>(out var manager))
-                        manager = Selection.activeGameObject.AddComponent<StateManager>();
+                    if (!go.TryGetComponent<StateManager>(out var manager))
+                        manager = go.AddComponent<StateManager>();
                     var support = StateMachineMono.CreateSupport(BlueprintGUILayout.Instance.Language["New state machine"]);
                     manager.support = support;
                     support.transform.SetParent(manager.transform);
+                    support.OnScriptReload();
+                    Init(support);
                 });
                 menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state machine"]), false, () =>
                 {
                     if (support == null)
                         return;
-                    Undo.DestroyObjectImmediate(support);
-                });
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Delete state manager"]), false, () =>
-                {
-                    if (support == null)
-                        return;
-                    Undo.DestroyObjectImmediate(support);
+                    Undo.DestroyObjectImmediate(support.gameObject);
                 });
                 menu.ShowAsContext();
                 Event.current.Use();

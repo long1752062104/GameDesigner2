@@ -13,6 +13,9 @@ namespace GameDesigner
     [CustomEditor(typeof(StateManager))]
     public class StateManagerEditor : StateMachineViewEditor
     {
+        private StateManager self;
+        protected override StateMachineView Self { get => self.support; set => self.support = (StateMachineMono)value; }
+
         private SerializedProperty _animationProperty;
         private SerializedProperty animationProperty
         {
@@ -59,16 +62,15 @@ namespace GameDesigner
 
         protected override void OnEnable()
         {
-            var sm = target as StateManager;
-            self = sm.support;
-            if (self != null)
+            self = target as StateManager;
+            if (Self != null)
             {
-                self.EditorInit(sm.transform);
-                self.editStateMachine.View = self;
-                if (string.IsNullOrEmpty(self.editStateMachine.name))
-                    self.editStateMachine.name = "Base Layer";
-                if (StateMachineWindow.support != self)
-                    StateMachineWindow.Init(self);
+                Self.EditorInit(self.transform);
+                Self.editStateMachine.View = Self;
+                if (string.IsNullOrEmpty(Self.editStateMachine.name))
+                    Self.editStateMachine.name = "Base Layer";
+                if (StateMachineWindow.support != Self)
+                    StateMachineWindow.Init(Self);
             }
             if (findBehaviourTypes == null)
             {
@@ -104,7 +106,7 @@ namespace GameDesigner
 
         protected override void OnDrawAnimationField()
         {
-            var view = (StateMachineMono)self;
+            var view = (StateMachineMono)Self;
             view.animMode = (AnimationMode)EditorGUILayout.EnumPopup(new GUIContent(BlueprintGUILayout.Instance.Language["Animation mode"], "animMode"), view.animMode);
             switch (view.animMode)
             {
@@ -128,14 +130,14 @@ namespace GameDesigner
 
         protected override void OnDrawActionPropertyField(SerializedProperty actionProperty)
         {
-            var view = (StateMachineMono)self;
+            var view = (StateMachineMono)Self;
             if (view.animMode == AnimationMode.Timeline)
                 EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("clipAsset"), new GUIContent(BlueprintGUILayout.Instance.Language["Playable Asset"], "clipAsset"));
         }
 
         protected override void OnPlayAnimation(StateAction action)
         {
-            var view = (StateMachineMono)self;
+            var view = (StateMachineMono)Self;
             EditorGUILayout.BeginHorizontal();
             var rect = EditorGUILayout.GetControlRect();
             if (GUI.Button(new Rect(rect.x + 45, rect.y, 30, rect.height), EditorGUIUtility.IconContent(animPlay ? "PauseButton" : "PlayButton")))
