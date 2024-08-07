@@ -32,6 +32,8 @@ namespace GameDesigner
             Self.editStateMachine.View = Self;
             if (string.IsNullOrEmpty(Self.editStateMachine.name))
                 Self.editStateMachine.name = "Base Layer";
+            if (StateMachineWindow.support == null) //这个是假的“null”
+                StateMachineWindow.support = null;
             if (StateMachineWindow.support != Self)
                 StateMachineWindow.Init(Self);
             if (findBehaviourTypes == null)
@@ -68,7 +70,8 @@ namespace GameDesigner
             OnDrawPreField();
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
             {
-                Self.OnScriptReload();
+                if (Self != null)
+                    Self.OnScriptReload();
                 StateMachineWindow.ShowWindow(Self);
             }
             if (Self == null)

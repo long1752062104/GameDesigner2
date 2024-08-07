@@ -69,6 +69,8 @@ namespace GameDesigner
                 Self.editStateMachine.View = Self;
                 if (string.IsNullOrEmpty(Self.editStateMachine.name))
                     Self.editStateMachine.name = "Base Layer";
+                if (StateMachineWindow.support == null) //这个是假的“null”
+                    StateMachineWindow.support = null;
                 if (StateMachineWindow.support != Self)
                     StateMachineWindow.Init(Self);
             }

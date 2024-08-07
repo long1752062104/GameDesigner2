@@ -51,7 +51,10 @@ namespace GameDesigner
 
         public virtual void UpdateEditStateMachine(int editStateMachineId)
         {
+            stateMachines ??= new List<IStateMachine>();
             this.editStateMachineId = editStateMachineId;
+            if (stateMachines.Count == 0)
+                OnScriptReload();
             if (editStateMachineId >= stateMachines.Count)
                 editStateMachineId = 0;
             editStateMachine = (StateMachineCore)stateMachines[editStateMachineId];

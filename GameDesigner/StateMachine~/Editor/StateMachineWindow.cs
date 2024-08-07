@@ -108,12 +108,12 @@ namespace GameDesigner
 
         private void OnGUI()
         {
-            GUILayout.BeginHorizontal();//(EditorStyles.toolbar);
+            GUILayout.BeginHorizontal();
             for (int i = 0; i < layers.Count; i++)
                 BreadCrumb(i, layers[i].name);
             GUILayout.FlexibleSpace();
-            support = (StateMachineView)EditorGUILayout.ObjectField(string.Empty, support, typeof(StateMachineView), true, GUILayout.Width(150));
             GUILayout.Space(10);
+            support = (StateMachineView)EditorGUILayout.ObjectField(string.Empty, support, typeof(StateMachineView), true, GUILayout.Width(150));
             if (GUILayout.Button("刷新脚本", EditorStyles.toolbarButton, GUILayout.Width(60)))
             {
                 StateMachineViewEditor.OnScriptReload();
@@ -224,6 +224,11 @@ namespace GameDesigner
                         else if (state.Type == StateType.Parent)
                         {
                             var index = layers.Count - 2;
+                            if (index <= -1)
+                            {
+                                Debug.LogError("无法跳转，已经是根状态机!");
+                                return;
+                            }
                             stateMachine = layers[index].stateMachine;
                             support.UpdateEditStateMachine(stateMachine.Id);
                             layers.RemoveRange(index + 1, layers.Count - 1 - index);

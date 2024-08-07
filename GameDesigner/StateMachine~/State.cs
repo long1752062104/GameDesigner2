@@ -156,10 +156,6 @@ namespace GameDesigner
                 name = stateName,
                 rect = new Rect(position, new Vector2(150, 30)),
                 Type = StateType.Parent,
-                subStateMachine = new StateMachineCore
-                {
-                    name = stateName
-                }
             };
             return state;
         }
@@ -212,6 +208,8 @@ namespace GameDesigner
             }
             if (Type == StateType.Parent)
             {
+                if (stateMachine.Parent == null)
+                    return;
                 var states = stateMachine.Parent.States;
                 for (int i = 0; i < states.Length; i++)
                 {
