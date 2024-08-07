@@ -516,9 +516,9 @@ namespace GameDesigner
                     var state = State.AddSubStateMachine(stateMachine, "子状态机" + stateMachine.States.Length, mousePosition);
                     support.OnScriptReload();
                 });
-                menu.AddItem(new GUIContent("创建返回父节点状态"), false, () =>
+                menu.AddItem(new GUIContent("创建返回状态"), false, () =>
                 {
-                    State.AddParent(stateMachine, "父节点" + stateMachine.States.Length, mousePosition);
+                    State.AddParent(stateMachine, "返回状态" + stateMachine.States.Length, mousePosition);
                 });
                 if (stateMachine.SelectState != null)
                 {

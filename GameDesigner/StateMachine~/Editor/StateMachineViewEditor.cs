@@ -213,12 +213,13 @@ namespace GameDesigner
             EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.Language["Status identifier"], "stateID"), state.ID);
             if (state.Type == StateType.SubStateMachine)
             {
+                EditorGUILayout.HelpBox("你在此状态连线到其他状态，当子状态机执行返回后，会进入到连线的状态。", MessageType.Info);
                 EditorGUILayout.EndVertical();
                 return;
             }
             if (state.Type == StateType.Parent)
             {
-                state.DstStateID = EditorGUILayout.IntField("跳转父状态ID:", state.DstStateID);
+                EditorGUILayout.HelpBox("你在此状态连线到其他状态，当返回到父状态机执行后，会进入到连线的状态。", MessageType.Info);
                 EditorGUILayout.EndVertical();
                 return;
             }
