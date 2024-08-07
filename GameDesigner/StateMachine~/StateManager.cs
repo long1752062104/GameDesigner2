@@ -31,7 +31,7 @@ namespace GameDesigner
         {
             if (initMode == RuntimeInitMode.Start)
                 Init();
-            support.Init(transform); //解决awake初始化其他组件还没被初始化导致获取失效
+            support.Init(); //解决awake初始化其他组件还没被初始化导致获取失效
         }
 
         private void Init()

@@ -6,10 +6,10 @@ namespace GameDesigner
     {
         public new Animation animation;
 
-        public override void Init(Transform root)
+        public override void Init()
         {
             stateMachine.Handler = new AnimationStateMachine(animation);
-            stateMachine.transform = root;
+            stateMachine.View = this;
             stateMachine.Init();
         }
 
@@ -21,9 +21,9 @@ namespace GameDesigner
             if (animation != null)
             {
                 var clips = UnityEditor.AnimationUtility.GetAnimationClips(animation.gameObject);
-                stateMachine.ClipNames.Clear();
+                ClipNames.Clear();
                 foreach (var clip in clips)
-                    stateMachine.ClipNames.Add(clip.name);
+                    ClipNames.Add(clip.name);
             }
         }
 #endif

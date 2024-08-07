@@ -64,8 +64,11 @@ namespace GameDesigner
             if (self != null)
             {
                 self.EditorInit(sm.transform);
-                self.stateMachine.transform = self.transform;
-                StateMachineWindow.stateMachine = self.stateMachine;
+                self.editStateMachine.View = self;
+                if (string.IsNullOrEmpty(self.editStateMachine.name))
+                    self.editStateMachine.name = "Base Layer";
+                if (StateMachineWindow.support != self)
+                    StateMachineWindow.Init(self);
             }
             if (findBehaviourTypes == null)
             {
@@ -82,6 +85,15 @@ namespace GameDesigner
                 findBehaviourTypes2 = new List<Type>();
                 AddBehaviourTypes(findBehaviourTypes2, typeof(TransitionBehaviour));
             }
+        }
+
+        protected override void ResetPropertys()
+        {
+            base.ResetPropertys();
+            _animationProperty = null;
+            _animatorProperty = null;
+            _directorProperty = null;
+            _meshAnimatorProperty = null;
         }
 
         protected override void OnDrawPreField()

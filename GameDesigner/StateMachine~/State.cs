@@ -56,6 +56,13 @@ namespace GameDesigner
         Code,
     }
 
+    public enum StateType
+    {
+        None,
+        SubStateMachine,
+        Parent,
+    }
+
     /// <summary>
     /// 状态 -- v2017/12/6
     /// </summary>
@@ -107,7 +114,8 @@ namespace GameDesigner
         /// </summary>
 		public StateAction[] actions;
         internal bool IsPlaying;
-        public bool IsSubStateMachine;
+
+        public StateType Type;
         /// <summary>
         /// 子状态机
         /// </summary>
@@ -124,6 +132,34 @@ namespace GameDesigner
             {
                 name = stateName,
                 rect = new Rect(position, new Vector2(150, 30))
+            };
+            return state;
+        }
+        public static State AddSubStateMachine(IStateMachine stateMachine, string stateName, Vector2 position)
+        {
+            var state = new State(stateMachine)
+            {
+                name = stateName,
+                rect = new Rect(position, new Vector2(150, 30)),
+                Type = StateType.SubStateMachine,
+                subStateMachine = new StateMachineCore
+                {
+                    name = stateName
+                }
+            };
+            return state;
+        }
+        public static State AddParent(IStateMachine stateMachine, string stateName, Vector2 position)
+        {
+            var state = new State(stateMachine)
+            {
+                name = stateName,
+                rect = new Rect(position, new Vector2(150, 30)),
+                Type = StateType.Parent,
+                subStateMachine = new StateMachineCore
+                {
+                    name = stateName
+                }
             };
             return state;
         }
@@ -154,6 +190,46 @@ namespace GameDesigner
         /// </summary>
 		public void Enter(int actionIdx)
         {
+            if (Type == StateType.SubStateMachine)
+            {
+                var states = subStateMachine.States;
+                for (int i = 0; i < states.Length; i++)
+                {
+                    if (states[i].Type == StateType.Parent)
+                    {
+                        if (states[i].transitions.Length > 0)
+                        {
+                            subStateMachine.ChangeState(states[i].transitions[0].nextStateID);
+                        }
+                        else
+                        {
+                            subStateMachine.ChangeState(subStateMachine.DefaultState.ID);
+                        }
+                        break;
+                    }
+                }
+                return;
+            }
+            if (Type == StateType.Parent)
+            {
+                var states = stateMachine.Parent.States;
+                for (int i = 0; i < states.Length; i++)
+                {
+                    if (states[i].subStateMachine == stateMachine)
+                    {
+                        if (states[i].transitions.Length > 0)
+                        {
+                            stateMachine.Parent.ChangeState(states[i].transitions[0].nextStateID);
+                        }
+                        else
+                        {
+                            stateMachine.Parent.ChangeState(stateMachine.Parent.DefaultState.ID);
+                        }
+                        break;
+                    }
+                }
+                return;
+            }
             IsPlaying = true;
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
                 actionIndex = Random.Range(0, actions.Length);
@@ -178,6 +254,10 @@ namespace GameDesigner
 
         internal void Exit()
         {
+            if (Type == StateType.SubStateMachine)
+                return;
+            if (Type == StateType.Parent)
+                return;
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as StateBehaviour;
@@ -216,6 +296,17 @@ namespace GameDesigner
 
         internal void Init(IStateMachine stateMachine)
         {
+            if (Type == StateType.SubStateMachine)
+            {
+                subStateMachine.View = stateMachine.View;
+                subStateMachine.Parent = stateMachine;
+                subStateMachine.Handler = stateMachine.Handler;
+                subStateMachine.Init();
+            }
+            else if (Type == StateType.Parent)
+            {
+
+            }
             this.stateMachine = stateMachine;
             for (int i = 0; i < behaviours.Length; i++)
             {
@@ -233,6 +324,16 @@ namespace GameDesigner
 
         internal void Update()
         {
+            if (Type == StateType.SubStateMachine)
+            {
+                subStateMachine.Execute();
+                return;
+            }
+            else if (Type == StateType.Parent)
+            {
+                stateMachine.Parent.Execute();
+                return;
+            }
             if (actionSystem)
                 Action.Update(this);
             for (int i = 0; i < behaviours.Length; i++)

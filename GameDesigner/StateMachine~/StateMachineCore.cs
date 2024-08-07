@@ -11,10 +11,16 @@ namespace GameDesigner
     [Serializable]
     public class StateMachineCore : IStateMachine
     {
+        [SerializeField] private string _name;
+        public string name { get => _name; set => _name = value; }
+        public int Id { get; set; }
+        [SerializeField] private StateMachineView _view;
+        public StateMachineView View { get => _view; set => _view = value; }
+        public Transform transform => _view.transform;
         /// <summary>
         /// 默认状态ID
         /// </summary>
-		public int defaulId;
+        public int defaulId;
         /// <summary>
         /// 当前运行的状态索引
         /// </summary>
@@ -34,14 +40,12 @@ namespace GameDesigner
         [NonReorderable]
 #endif
         public State[] states;
+#if UNITY_EDITOR
         /// <summary>
         /// 选中的状态,可以多选
         /// </summary>
-		public List<int> selectStates;
-        /// <summary>
-        /// 动画剪辑
-        /// </summary>
-        public List<string> clipNames;
+        public List<int> selectStates;
+#endif
         /// <summary>
         /// 以状态ID取出状态对象
         /// </summary>
@@ -65,10 +69,11 @@ namespace GameDesigner
         /// 当前状态
         /// </summary>
 		public State CurrState => states[stateId];
+#if UNITY_EDITOR
         /// <summary>
         /// 选择的状态
         /// </summary>
-		public State SelectState
+        public State SelectState
         {
             get
             {
@@ -83,15 +88,16 @@ namespace GameDesigner
                     selectStates.Add(value.ID);
             }
         }
+#endif
         public State[] States { get => states ??= new State[0]; set => states = value; }
-        public List<string> ClipNames { get => clipNames ??= new List<string>(); set => clipNames = value; }
+        
         public int NextId { get => nextId; set => nextId = value; }
+#if UNITY_EDITOR
         public List<int> SelectStates { get => selectStates ??= new List<int>(); set => selectStates = value; }
+#endif
         public int StateId { get => stateId; set => stateId = value; }
-        public string name { get; set; }
-        public Transform _transform;
-        public Transform transform { get => _transform; set => _transform = value; }
         public IAnimationHandler Handler { get; set; }
+        public IStateMachine Parent { get; set; }
         private bool isInitialize;
 
         /// <summary>
@@ -218,21 +224,18 @@ namespace GameDesigner
             }
         }
 
-        public override bool Equals(object obj)
-        {
-            return _transform != null;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
 #if UNITY_EDITOR
-        public void OnScriptReload()
+        public void OnScriptReload(StateMachineView view)
         {
+            view.stateMachines.Add(this);
             foreach (var state in States)
             {
+                if (state.Type == StateType.SubStateMachine)
+                {
+                    state.subStateMachine.View = view;
+                    state.subStateMachine.Parent = this;
+                    state.subStateMachine.OnScriptReload(view);
+                }
                 state.stateMachine = this;
                 for (int i = 0; i < state.behaviours.Length; i++)
                 {

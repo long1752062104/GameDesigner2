@@ -143,9 +143,9 @@ namespace GameDesigner
         public void SetAnimClip(string clipName)
         {
             this.clipName = clipName;
-            for (int i = 0; i < stateMachine.ClipNames.Count; i++)
+            for (int i = 0; i < stateMachine.View.ClipNames.Count; i++)
             {
-                if (clipName == stateMachine.ClipNames[i])
+                if (clipName == stateMachine.View.ClipNames[i])
                 {
                     clipIndex = i;
                     break;

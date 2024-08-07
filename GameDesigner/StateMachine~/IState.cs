@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GameDesigner
 {
-    public interface IAnimationHandler 
+    public interface IAnimationHandler
     {
         public void OnInit();
         /// <summary>
@@ -23,15 +23,19 @@ namespace GameDesigner
 
     public interface IStateMachine
     {
+        int Id { get; set; }
         string name { get; set; }
-        Transform transform { get; set; }
+        StateMachineView View { get; set; }
+        Transform transform { get; }
         State[] States { get; set; }
+#if UNITY_EDITOR
         State SelectState { get; set; }
         List<int> SelectStates { get; set; }
+#endif
         State DefaultState { get; set; }
         int StateId { get; set; }
-        List<string> ClipNames { get; set; }
         int NextId { get; set; }
+        IStateMachine Parent { get; set; }
         IAnimationHandler Handler { get; set; }
         /// <summary>
         /// 状态机执行

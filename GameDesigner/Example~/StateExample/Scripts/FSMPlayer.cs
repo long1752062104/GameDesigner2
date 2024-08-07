@@ -14,7 +14,7 @@ namespace StateExample
         // Start is called before the first frame update
         void Start()
         {
-            view.Init(transform);
+            view.Init();
             controller = view.stateMachine;
 
             AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new FsmIdleState() }, null); //添加idle状态 和 状态行为

@@ -41,7 +41,7 @@ namespace GameDesigner
 #endif
         public State[] states;
 
-        public static StateMachineMono CreateSupport(string name = "machine")
+        public static StateMachineMono CreateSupport(string name = "Base Layer")
         {
             var monoStateMachine = new GameObject(name).AddComponent<StateMachineMono>();
             monoStateMachine.name = name;
@@ -49,15 +49,19 @@ namespace GameDesigner
             {
                 name = name,
                 states = new State[0],
+#if UNITY_EDITOR
                 selectStates = new List<int>(),
-                clipNames = new List<string>(),
-                transform = monoStateMachine.transform,
+#endif
+                View = monoStateMachine,
             };
             monoStateMachine.stateMachine = stateMachine;
+#if UNITY_EDITOR
+            monoStateMachine.editStateMachine = stateMachine;
+#endif
             return monoStateMachine;
         }
 
-        public override void Init(Transform root)
+        public override void Init()
         {
             switch (animMode)
             {
@@ -79,7 +83,7 @@ namespace GameDesigner
                     break;
 #endif
             }
-            stateMachine.transform = root;
+            stateMachine.View = this;
             stateMachine.Init();
         }
 
@@ -91,9 +95,9 @@ namespace GameDesigner
             if (animation != null)
             {
                 var clips = UnityEditor.AnimationUtility.GetAnimationClips(animation.gameObject);
-                stateMachine.ClipNames.Clear();
+                ClipNames.Clear();
                 foreach (var clip in clips)
-                    stateMachine.ClipNames.Add(clip.name);
+                    ClipNames.Add(clip.name);
             }
             if (animator == null)
                 animator = root.GetComponentInChildren<Animator>();
@@ -105,9 +109,9 @@ namespace GameDesigner
                     {
                         var layer = controller.layers[0];
                         var states = layer.stateMachine.states;
-                        stateMachine.ClipNames.Clear();
+                        ClipNames.Clear();
                         foreach (var state in states)
-                            stateMachine.ClipNames.Add(state.state.name);
+                            ClipNames.Add(state.state.name);
                     }
                 }
             }
@@ -133,6 +137,7 @@ namespace GameDesigner
 
         public override void OnScriptReload()
         {
+            stateMachines ??= new List<IStateMachine>();
             if (states != null && states.Length > 0)
             {
                 stateMachine.states = states;
@@ -141,8 +146,12 @@ namespace GameDesigner
             }
             if (stateMachine == null)
                 return;
-            stateMachine.transform = transform;
-            stateMachine.OnScriptReload();
+            stateMachine.View = this;
+            stateMachines.Clear();
+            stateMachine.OnScriptReload(this);
+            for (int i = 0; i < stateMachines.Count; i++)
+                stateMachines[i].Id = i;
+            UpdateEditStateMachine(editStateMachineId);
         }
 #endif
     }

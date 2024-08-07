@@ -29,8 +29,11 @@ namespace GameDesigner
         {
             self = target as StateMachineView;
             self.EditorInit(self.transform);
-            self.stateMachine.transform = self.transform;
-            StateMachineWindow.stateMachine = self.stateMachine;
+            self.editStateMachine.View = self;
+            if (string.IsNullOrEmpty(self.editStateMachine.name))
+                self.editStateMachine.name = "Base Layer";
+            if (StateMachineWindow.support != self)
+                StateMachineWindow.Init(self);
             if (findBehaviourTypes == null)
             {
                 findBehaviourTypes = new List<Type>();
@@ -64,10 +67,10 @@ namespace GameDesigner
             serializedObject.Update();
             OnDrawPreField();
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
-                StateMachineWindow.Init(self ? self.stateMachine : null);
+                StateMachineWindow.ShowWindow(self);
             if (self == null)
                 goto J;
-            var sm = self.stateMachine;
+            var sm = self.editStateMachine;
             if (sm.SelectState != null)
             {
                 DrawState(sm.SelectState);
@@ -107,7 +110,7 @@ namespace GameDesigner
             get
             {
                 if (_stateMachineObject == null)
-                    _stateMachineObject = SupportObject.FindProperty("stateMachine");
+                    _stateMachineObject = SupportObject.FindProperty("editStateMachine");
                 return _stateMachineObject;
             }
         }
@@ -118,7 +121,7 @@ namespace GameDesigner
             get
             {
                 if (_statesProperty == null)
-                    _statesProperty = StateMachineObject.FindPropertyRelative("states").GetArrayElementAtIndex(self.stateMachine.SelectState.ID);
+                    _statesProperty = StateMachineObject.FindPropertyRelative("states").GetArrayElementAtIndex(self.editStateMachine.SelectState.ID);
                 return _statesProperty;
             }
         }
@@ -208,6 +211,17 @@ namespace GameDesigner
             EditorGUILayout.BeginVertical("ProgressBarBack");
             EditorGUILayout.PropertyField(NameProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Status name"], "name"));
             EditorGUILayout.IntField(new GUIContent(BlueprintGUILayout.Instance.Language["Status identifier"], "stateID"), state.ID);
+            if (state.Type == StateType.SubStateMachine)
+            {
+                EditorGUILayout.EndVertical();
+                return;
+            }
+            if (state.Type == StateType.Parent)
+            {
+                state.DstStateID = EditorGUILayout.IntField("跳转父状态ID:", state.DstStateID);
+                EditorGUILayout.EndVertical();
+                return;
+            }
             EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Action system"], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
             if (state.actionSystem)
             {
@@ -232,7 +246,7 @@ namespace GameDesigner
 
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
-                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = self.stateMachine, behaviours = new BehaviourBase[0] });
+                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = self.editStateMachine, behaviours = new BehaviourBase[0] });
                     return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
@@ -284,9 +298,9 @@ namespace GameDesigner
                         if (act.foldout)
                         {
                             EditorGUI.indentLevel = 3;
-                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(self.stateMachine.ClipNames.ToArray(), input => new GUIContent(input)));
-                            if (self.stateMachine.ClipNames.Count > 0 && act.clipIndex < self.stateMachine.ClipNames.Count)
-                                act.clipName = self.stateMachine.ClipNames[act.clipIndex];
+                            act.clipIndex = EditorGUILayout.Popup(new GUIContent(BlueprintGUILayout.Instance.Language["Movie clips"], "clipIndex"), act.clipIndex, Array.ConvertAll(self.ClipNames.ToArray(), input => new GUIContent(input)));
+                            if (self.ClipNames.Count > 0 && act.clipIndex < self.ClipNames.Count)
+                                act.clipName = self.ClipNames[act.clipIndex];
                             OnDrawActionPropertyField(actionProperty);
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));

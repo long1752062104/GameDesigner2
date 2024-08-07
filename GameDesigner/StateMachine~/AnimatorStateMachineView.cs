@@ -6,10 +6,10 @@ namespace GameDesigner
     {
         public Animator animator;
 
-        public override void Init(Transform root)
+        public override void Init()
         {
             stateMachine.Handler = new AnimatorStateMachine(animator);
-            stateMachine.transform = root;
+            stateMachine.View = this;
             stateMachine.Init();
         }
 
@@ -26,9 +26,9 @@ namespace GameDesigner
                     {
                         var layer = controller.layers[0];
                         var states = layer.stateMachine.states;
-                        stateMachine.ClipNames.Clear();
+                        ClipNames.Clear();
                         foreach (var state in states)
-                            stateMachine.ClipNames.Add(state.state.name);
+                            ClipNames.Add(state.state.name);
                     }
                 }
             }

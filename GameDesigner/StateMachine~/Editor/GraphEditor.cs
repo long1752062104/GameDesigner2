@@ -12,14 +12,14 @@ namespace GameDesigner
         public static Rect ScaleSizeBy(this Rect rect, float scale, Vector2 pivotPoint)
         {
             Rect rect1 = rect;
-            rect1.x = rect1.x - pivotPoint.x;
-            rect1.y = rect1.y - pivotPoint.y;
-            rect1.xMin = rect1.xMin * scale;
-            rect1.xMax = rect1.xMax * scale;
-            rect1.yMin = rect1.yMin * scale;
-            rect1.yMax = rect1.yMax * scale;
-            rect1.x = rect1.x + pivotPoint.x;
-            rect1.y = rect1.y + pivotPoint.y;
+            rect1.x -= pivotPoint.x;
+            rect1.y -= pivotPoint.y;
+            rect1.xMin *= scale;
+            rect1.xMax *= scale;
+            rect1.yMin *= scale;
+            rect1.yMax *= scale;
+            rect1.x += pivotPoint.x;
+            rect1.y += pivotPoint.y;
             return rect1;
         }
 
@@ -36,9 +36,9 @@ namespace GameDesigner
 
     public enum SelectMode
     {
-        none,
-        selectState,
-        dragState
+        None,
+        Drag,
+        DragEnd,
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ namespace GameDesigner
         private Material material;
         protected bool openStateMenu = false;
         protected Vector2 selectionStartPosition;
-        protected SelectMode mode = SelectMode.none;
+        protected SelectMode mode;
 
         private GUIStyle canvasBackground => "flow background";
 

@@ -15,7 +15,7 @@ namespace StateExample
         void Start()
         {
             sm.support.animMode = AnimationMode.Animation; //使用旧版本动画模式
-            sm.support.Init(transform);
+            sm.support.Init();
 
             AddState("idle", true, AnimPlayMode.Sequence, "idle", new StateBehaviour[] { new IdleState() }, null); //添加idle状态 和 状态行为
             AddState("move", true, AnimPlayMode.Sequence, "run", new StateBehaviour[] { new MoveState() }, null); //添加run状态 和 状态行为
