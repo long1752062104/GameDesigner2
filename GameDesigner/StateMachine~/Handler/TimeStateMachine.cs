@@ -17,10 +17,11 @@ namespace GameDesigner
             stateAction.animTime = 0f;
         }
 
-        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        public bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode)
         {
             var isPlaying = true;
-            stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.deltaTime;
+            if (currMode == StateMachineUpdateMode.Update)
+                stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.deltaTime;
             return isPlaying;
         }
     }

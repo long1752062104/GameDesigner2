@@ -40,21 +40,11 @@ namespace GameDesigner
 
         public Transition(State state, int stateId, params TransitionBehaviour[] behaviours)
         {
+            this.behaviours = new BehaviourBase[0];
             currStateID = state.ID;
             nextStateID = stateId;
             stateMachine = state.stateMachine;
-            if (behaviours != null)
-            {
-                this.behaviours = behaviours;
-                for (int i = 0; i < behaviours.Length; i++)
-                {
-                    behaviours[i].name = behaviours[i].GetType().ToString();
-                    behaviours[i].stateMachine = stateMachine;
-                    behaviours[i].Active = true;
-                    behaviours[i].OnInit();
-                }
-            }
-            else this.behaviours = new BehaviourBase[0];
+            AddComponent(behaviours);
             ArrayExtend.Add(ref state.transitions, this);
             for (int i = 0; i < state.transitions.Length; i++)
                 state.transitions[i].ID = i;
@@ -88,21 +78,33 @@ namespace GameDesigner
             this.stateMachine = stateMachine;
             for (int i = 0; i < behaviours.Length; i++)
             {
-                var behaviour = (TransitionBehaviour)behaviours[i].InitBehaviour();
-                behaviour.stateMachine = stateMachine;
+                var behaviour = (TransitionBehaviour)behaviours[i].InitBehaviour(stateMachine);
                 behaviour.transitionID = i;
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
         }
 
-        internal void Update()
+        internal void Update(StateMachineUpdateMode currMode)
         {
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as TransitionBehaviour;
                 if (behaviour.Active)
-                    behaviour.OnUpdate(ref isEnterNextState);
+                {
+                    switch (currMode)
+                    {
+                        case StateMachineUpdateMode.Update:
+                            behaviour.OnUpdate(ref isEnterNextState);
+                            break;
+                        case StateMachineUpdateMode.LateUpdate:
+                            behaviour.OnLateUpdate(ref isEnterNextState);
+                            break;
+                        case StateMachineUpdateMode.FixedUpdate:
+                            behaviour.OnFixedUpdate(ref isEnterNextState);
+                            break;
+                    }
+                }
             }
             if (mode == TransitionMode.ExitTime)
             {

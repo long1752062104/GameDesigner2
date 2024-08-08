@@ -19,11 +19,6 @@ namespace GameDesigner
         {
         }
 
-        public virtual void Execute()
-        {
-            stateMachine.Execute();
-        }
-
         public virtual void OnDestroy()
         {
             stateMachine.OnDestroy();

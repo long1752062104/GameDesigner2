@@ -401,7 +401,7 @@
         /// <summary>
         /// 当组件被删除调用一次
         /// </summary>
-        public virtual void OnDestroyComponent() { }
+        public virtual void OnDestroy() { }
 
         /// <summary>
         /// 当绘制编辑器检视面板 (重要提示!你想自定义编辑器检视面板则返回真,否则显示默认编辑器检视面板)
@@ -412,8 +412,6 @@
         {
             return false; //返回假: 绘制默认监视面板 | 返回真: 绘制扩展自定义监视面板
         }
-
-        public virtual void OnSceneGUI(State state) { }
 
         /// <summary>
         /// 进入下一个状态, 如果状态正在播放就不做任何处理, 如果想让动作立即播放可以使用 OnEnterNextState 方法
@@ -435,31 +433,10 @@
         public void ChangeState(int stateId, int actionId = 0, bool force = false) => stateMachine.ChangeState(stateId, actionId, force);
 
         /// <summary>
-        /// 重写此方法，方法内只需要一行return GetClassFileInfo();即可，此方法用于查找你的类在哪个cs文件
-        /// </summary>
-        /// <returns></returns>
-        public virtual ClassFileInfo FindClassFile(string typeName)
-        {
-            throw new Exception($"{typeName}类需要重写FindClassFile方法! 代码: public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();");
-        }
-
-        /// <summary>
-        /// 获取此类的cs文件
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <param name="sourceFilePath"></param>
-        /// <param name="sourceLineNumber"></param>
-        /// <returns></returns>
-        public ClassFileInfo GetClassFileInfo([CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
-        {
-            return new ClassFileInfo(memberName, sourceFilePath, sourceLineNumber);
-        }
-
-        /// <summary>
         /// 初始化真实类型并且赋值记录的值
         /// </summary>
         /// <returns></returns>
-        public BehaviourBase InitBehaviour()
+        public BehaviourBase InitBehaviour(IStateMachine stateMachine)
         {
             var type = AssemblyHelper.GetType(name);
             var runtimeBehaviour = (BehaviourBase)Activator.CreateInstance(type);
@@ -479,21 +456,11 @@
                 metadata.target = runtimeBehaviour;
                 field.SetValue(runtimeBehaviour, value);
             }
+            var lateUpdateMethod = type.GetMethod("OnLateUpdate");
+            var fixedUpdateMethod = type.GetMethod("OnFixedUpdate");
+            stateMachine.UpdateMode |= (lateUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.LateUpdate : StateMachineUpdateMode.Update;
+            stateMachine.UpdateMode |= (fixedUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.FixedUpdate : StateMachineUpdateMode.Update;
             return runtimeBehaviour;
-        }
-    }
-
-    public struct ClassFileInfo
-    {
-        public string Item1;
-        public string Item2;
-        public int Item3;
-
-        public ClassFileInfo(string item1, string item2, int item3)
-        {
-            Item1 = item1;
-            Item2 = item2;
-            Item3 = item3;
         }
     }
 }

@@ -36,8 +36,7 @@ namespace GameDesigner
         {
             for (int i = 0; i < stateMachines._size; i++)
             {
-                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.Update)
-                    stateMachines._items[i].Execute();
+                stateMachines._items[i].Execute(StateMachineUpdateMode.Update);
             }
         }
 
@@ -45,8 +44,8 @@ namespace GameDesigner
         {
             for (int i = 0; i < stateMachines._size; i++)
             {
-                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.LateUpdate)
-                    stateMachines._items[i].Execute();
+                if ((stateMachines._items[i].UpdateMode & StateMachineUpdateMode.LateUpdate) != 0)
+                    stateMachines._items[i].Execute(StateMachineUpdateMode.LateUpdate);
             }
         }
 
@@ -54,8 +53,8 @@ namespace GameDesigner
         {
             for (int i = 0; i < stateMachines._size; i++)
             {
-                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.FixedUpdate)
-                    stateMachines._items[i].Execute();
+                if ((stateMachines._items[i].UpdateMode & StateMachineUpdateMode.FixedUpdate) != 0)
+                    stateMachines._items[i].Execute(StateMachineUpdateMode.FixedUpdate);
             }
         }
 

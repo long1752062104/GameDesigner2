@@ -36,7 +36,7 @@ namespace GameDesigner
             }
         }
 
-        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        public bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode)
         {
             var clipName = stateAction.clipName;
             var animState = animation[clipName];

@@ -43,7 +43,7 @@ namespace GameDesigner
             }
         }
 
-        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        public bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode)
         {
             var isPlaying = true;
             if (stateAction.clipAsset != null)

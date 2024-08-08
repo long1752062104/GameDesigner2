@@ -2367,36 +2367,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stateMachine:
-    _transform: {fileID: 6464678842062835995}
+    _name: Base Layer
+    _view: {fileID: 6466594955317411876}
     defaulId: 0
     stateId: 0
     states: []
     selectStates: 
-    clipNames:
-    - charge
-    - charge_end
-    - charge_start
-    - default_attack
-    - die
-    - frenzied_slash
-    - gethit_from_behind
-    - gethit_from_front
-    - gethit_from_left
-    - gethit_from_right
-    - idle
-    - jump
-    - roar
-    - run
-    - shield_bash
-    - shield_block
-    - shuffle_left
-    - shuffle_right
-    - backpedal
-    - spawn
-    - strafe_right
-    - strafe_left
-    - walk
-    layers: []
+  editStateMachine:
+    _name: Base Layer
+    _view: {fileID: 6466594955317411876}
+    defaulId: 0
+    stateId: 0
+    states: []
+    selectStates: 
+  clipNames:
+  - charge
+  - charge_end
+  - charge_start
+  - default_attack
+  - die
+  - frenzied_slash
+  - gethit_from_behind
+  - gethit_from_front
+  - gethit_from_left
+  - gethit_from_right
+  - idle
+  - jump
+  - roar
+  - run
+  - shield_bash
+  - shield_block
+  - shuffle_left
+  - shuffle_right
+  - backpedal
+  - spawn
+  - strafe_right
+  - strafe_left
+  - walk
   animation: {fileID: 6466594955317411870}
 --- !u!1 &6466618666956242729
 GameObject:

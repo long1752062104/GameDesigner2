@@ -19,6 +19,16 @@ namespace GameDesigner
         public virtual void OnUpdate() { }
 
         /// <summary>
+        /// 当状态晚于更新
+        /// </summary>
+        public virtual void OnLateUpdate() { }
+
+        /// <summary>
+        /// 当状态固定更新
+        /// </summary>
+        public virtual void OnFixedUpdate() { }
+
+        /// <summary>
         /// 当状态退出后
         /// </summary>
         public virtual void OnExit() { }

@@ -46,16 +46,7 @@ namespace GameDesigner
             ID = state.ID;
             SetAnimClip(clipName);
             if (behaviours != null)
-            {
-                this.behaviours = behaviours;
-                for (int i = 0; i < behaviours.Length; i++)
-                {
-                    behaviours[i].name = behaviours[i].GetType().ToString();
-                    behaviours[i].stateMachine = stateMachine;
-                    behaviours[i].Active = true;
-                    behaviours[i].OnInit();
-                }
-            }
+                AddComponent(behaviours);
             else this.behaviours = new ActionBehaviour[0];
             ArrayExtend.Add(ref state.actions, this);
         }
@@ -87,23 +78,35 @@ namespace GameDesigner
             this.stateMachine = stateMachine;
             for (int i = 0; i < behaviours.Length; i++)
             {
-                var behaviour = behaviours[i].InitBehaviour();
-                behaviour.stateMachine = stateMachine;
+                var behaviour = behaviours[i].InitBehaviour(stateMachine);
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
         }
 
-        internal void Update(State state)
+        internal void Update(State state, StateMachineUpdateMode currMode)
         {
             if (isStop)
                 return;
-            var isPlaying = stateMachine.Handler.OnAnimationUpdate(state, this);
+            var isPlaying = stateMachine.Handler.OnAnimationUpdate(state, this, currMode);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as ActionBehaviour;
                 if (behaviour.Active)
-                    behaviour.OnUpdate(this);
+                {
+                    switch (currMode)
+                    {
+                        case StateMachineUpdateMode.Update:
+                            behaviour.OnUpdate(this);
+                            break;
+                        case StateMachineUpdateMode.LateUpdate:
+                            behaviour.OnLateUpdate(this);
+                            break;
+                        case StateMachineUpdateMode.FixedUpdate:
+                            behaviour.OnFixedUpdate(this);
+                            break;
+                    }
+                }
             }
             if (animTime >= animTimeMax | !isPlaying)
             {

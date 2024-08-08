@@ -103,8 +103,7 @@ namespace GameDesigner
         public int StateId { get => stateId; set => stateId = value; }
         public IAnimationHandler Handler { get; set; }
         public IStateMachine Parent { get; set; }
-        [SerializeField] private StateMachineUpdateMode _updateMode;
-        public StateMachineUpdateMode UpdateMode { get => _updateMode; set => _updateMode = value; }
+        public StateMachineUpdateMode UpdateMode { get; set; }
         private bool isInitialize;
 
         /// <summary>
@@ -165,7 +164,7 @@ namespace GameDesigner
                 DefaultState.Enter(0);
         }
 
-        public void Execute()
+        public void Execute(StateMachineUpdateMode currMode)
         {
             if (!isInitialize)
                 return;
@@ -173,6 +172,8 @@ namespace GameDesigner
                 return;
             if (stateId != nextId)
             {
+                if (currMode != StateMachineUpdateMode.Update) //不允许LateUpdate和FixedUpdate更新方式执行切换状态
+                    return;
                 var currIdTemo = stateId;
                 var nextIdTemp = nextId; //防止进入或退出行为又执行了EnterNextState切换了状态
                 stateId = nextId;
@@ -180,7 +181,7 @@ namespace GameDesigner
                 states[nextIdTemp].Enter(nextActionId);
                 return; //有时候你调用Play时，并没有直接更新动画时间，而是下一帧才会更新动画时间，如果Play后直接执行下面的Update计算动画时间会导致鬼畜现象的问题
             }
-            CurrState.Update();
+            CurrState.Update(currMode);
         }
 
         /// <summary>
@@ -221,13 +222,13 @@ namespace GameDesigner
             foreach (var state in states)
             {
                 foreach (var behaviour in state.behaviours)
-                    behaviour.OnDestroyComponent();
+                    behaviour.OnDestroy();
                 foreach (var transition in state.transitions)
                     foreach (var behaviour in transition.behaviours)
-                        behaviour.OnDestroyComponent();
+                        behaviour.OnDestroy();
                 foreach (var action in state.actions)
                     foreach (var behaviour in action.behaviours)
-                        behaviour.OnDestroyComponent();
+                        behaviour.OnDestroy();
             }
         }
 

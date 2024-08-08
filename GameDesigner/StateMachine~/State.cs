@@ -290,15 +290,10 @@ namespace GameDesigner
                 subStateMachine.Handler = stateMachine.Handler;
                 subStateMachine.Init();
             }
-            else if (Type == StateType.Parent)
-            {
-
-            }
             this.stateMachine = stateMachine;
             for (int i = 0; i < behaviours.Length; i++)
             {
-                var behaviour = behaviours[i].InitBehaviour();
-                behaviour.stateMachine = stateMachine;
+                var behaviour = behaviours[i].InitBehaviour(stateMachine);
                 behaviours[i] = behaviour;
                 behaviour.OnInit();
             }
@@ -309,28 +304,41 @@ namespace GameDesigner
                     action.Init(stateMachine);
         }
 
-        internal void Update()
+        internal void Update(StateMachineUpdateMode currMode)
         {
             if (Type == StateType.SubStateMachine)
             {
-                subStateMachine.Execute();
+                subStateMachine.Execute(currMode);
                 return;
             }
             else if (Type == StateType.Parent)
             {
-                stateMachine.Parent.Execute();
+                stateMachine.Parent.Execute(currMode);
                 return;
             }
             if (actionSystem)
-                Action.Update(this);
+                Action.Update(this, currMode);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i] as StateBehaviour;
                 if (behaviour.Active)
-                    behaviour.OnUpdate();
+                {
+                    switch (currMode)
+                    {
+                        case StateMachineUpdateMode.Update:
+                            behaviour.OnUpdate();
+                            break;
+                        case StateMachineUpdateMode.LateUpdate:
+                            behaviour.OnLateUpdate();
+                            break;
+                        case StateMachineUpdateMode.FixedUpdate:
+                            behaviour.OnFixedUpdate();
+                            break;
+                    }
+                }
             }
             for (int i = 0; i < transitions.Length; i++)
-                transitions[i].Update();
+                transitions[i].Update(currMode);
         }
 
         public StateAction AddAction(string clipName, params ActionBehaviour[] behaviours)

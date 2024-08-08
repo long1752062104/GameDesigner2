@@ -12,5 +12,7 @@
         public int transitionID;
         public Transition Transition => state.transitions[transitionID];
         public virtual void OnUpdate(ref bool isEnterNextState) { }
+        public virtual void OnLateUpdate(ref bool isEnterNextState) { }
+        public virtual void OnFixedUpdate(ref bool isEnterNextState) { }
     }
 }

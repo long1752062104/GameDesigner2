@@ -21,6 +21,16 @@
         public virtual void OnUpdate(StateAction action) { }
 
         /// <summary>
+        /// 当状态晚于更新
+        /// </summary>
+        public virtual void OnLateUpdate(StateAction action) { }
+
+        /// <summary>
+        /// 当状态固定更新
+        /// </summary>
+        public virtual void OnFixedUpdate(StateAction action) { }
+
+        /// <summary>
         /// 当退出状态
         /// </summary>
         /// <param name="action">当前动作</param>

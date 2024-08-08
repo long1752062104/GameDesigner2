@@ -17,15 +17,16 @@ namespace GameDesigner
         /// </summary>
         /// <param name="state">当前状态</param>
         /// <param name="stateAction">当前动作</param>
+        /// <param name="currMode">当前所属某个执行模式</param>
         /// <returns>是否播放完成</returns>
-        bool OnAnimationUpdate(State state, StateAction stateAction);
+        bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode);
     }
 
-    public enum StateMachineUpdateMode 
+    public enum StateMachineUpdateMode
     {
-        Update,
-        LateUpdate,
-        FixedUpdate,
+        Update = 1,
+        LateUpdate = 2,
+        FixedUpdate = 4,
     }
 
     public interface IStateMachine
@@ -48,7 +49,7 @@ namespace GameDesigner
         /// <summary>
         /// 状态机执行
         /// </summary>
-        void Execute();
+        void Execute(StateMachineUpdateMode currMode);
         /// <summary>
         /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
         /// </summary>
@@ -118,12 +119,17 @@ namespace GameDesigner
 
         private BehaviourBase AddComponentInternal(BehaviourBase component)
         {
-            component.name = component.GetType().ToString();
+            var type = component.GetType();
+            component.name = type.ToString();
             component.ID = ID;
             component.stateMachine = stateMachine;
 #if UNITY_EDITOR
             component.InitMetadatas();
 #endif
+            var lateUpdateMethod = type.GetMethod("OnLateUpdate");
+            var fixedUpdateMethod = type.GetMethod("OnFixedUpdate");
+            stateMachine.UpdateMode |= (lateUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.LateUpdate : StateMachineUpdateMode.Update;
+            stateMachine.UpdateMode |= (fixedUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.FixedUpdate : StateMachineUpdateMode.Update;
             component.OnInit();
             ArrayExtend.Add(ref behaviours, component);
             return component;

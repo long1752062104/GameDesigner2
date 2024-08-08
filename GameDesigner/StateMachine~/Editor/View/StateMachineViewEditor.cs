@@ -104,7 +104,6 @@ namespace GameDesigner
 
         protected virtual void OnDrawPreField()
         {
-            EditorGUILayout.PropertyField(StateMachineObject.FindPropertyRelative("_updateMode"), new GUIContent("状态机更新模式", "updateMode"));
         }
 
         private SerializedObject _supportObject;
@@ -328,7 +327,7 @@ namespace GameDesigner
                                 EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), act.behaviours[i].name, GUI.skin.GetStyle("BoldLabel"));
                                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                                 {
-                                    act.behaviours[i].OnDestroyComponent();
+                                    act.behaviours[i].OnDestroy();
                                     ArrayExtend.RemoveAt(ref act.behaviours, i);
                                     continue;
                                 }
@@ -338,7 +337,7 @@ namespace GameDesigner
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove action scripts"]), false, (obj) =>
                                     {
                                         var index = (int)obj;
-                                        act.behaviours[index].OnDestroyComponent();
+                                        act.behaviours[index].OnDestroy();
                                         ArrayExtend.RemoveAt(ref act.behaviours, index);
                                         return;
                                     }, i);
@@ -478,7 +477,7 @@ namespace GameDesigner
                 EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, rect.width - 15, rect.height), s.behaviours[i].name, GUI.skin.GetStyle("BoldLabel"));
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
-                    s.behaviours[i].OnDestroyComponent();
+                    s.behaviours[i].OnDestroy();
                     ArrayExtend.RemoveAt(ref s.behaviours, i);
                     continue;
                 }
@@ -488,7 +487,7 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove status scripts"]), false, (obj) =>
                     {
                         var index = (int)obj;
-                        s.behaviours[index].OnDestroyComponent();
+                        s.behaviours[index].OnDestroy();
                         ArrayExtend.RemoveAt(ref s.behaviours, index);
                         return;
                     }, i);
@@ -787,7 +786,7 @@ namespace GameDesigner
                 tr.behaviours[i].Active = EditorGUI.ToggleLeft(new Rect(rect.x + 5, rect.y, 30, 20), GUIContent.none, tr.behaviours[i].Active);
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
-                    tr.behaviours[i].OnDestroyComponent();
+                    tr.behaviours[i].OnDestroy();
                     ArrayExtend.RemoveAt(ref tr.behaviours, i);
                     continue;
                 }
@@ -797,7 +796,7 @@ namespace GameDesigner
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove connection scripts"]), false, (obj) =>
                     {
                         var index = (int)obj;
-                        tr.behaviours[index].OnDestroyComponent();
+                        tr.behaviours[index].OnDestroy();
                         ArrayExtend.RemoveAt(ref tr.behaviours, index);
                         return;
                     }, i);

@@ -67,7 +67,19 @@ namespace StateExample
 
         private void Update()
         {
-            controller.Execute();
+            controller.Execute(StateMachineUpdateMode.Update);
+        }
+
+        private void LateUpdate()
+        {
+            if ((controller.UpdateMode & StateMachineUpdateMode.Update) != 0)
+                controller.Execute(StateMachineUpdateMode.LateUpdate);
+        }
+
+        private void FixedUpdate()
+        {
+            if ((controller.UpdateMode & StateMachineUpdateMode.FixedUpdate) != 0)
+                controller.Execute(StateMachineUpdateMode.FixedUpdate);
         }
 
         private State AddState(string name, bool animLoop, AnimPlayMode animPlayMode, string clipName, StateBehaviour[] stateBehaviours, ActionBehaviour[] actionBehaviours)
@@ -196,9 +208,9 @@ namespace StateExample
             self = transform.GetComponent<FSMPlayer>();
         }
 
-        public override void OnUpdate(StateAction action)
+        public override void OnLateUpdate(StateAction action)
         {
-            base.OnUpdate(action);
+            base.OnLateUpdate(action);
             if (Input.GetKeyDown(KeyCode.E))
             {
                 ChangeState(3, 0, true);

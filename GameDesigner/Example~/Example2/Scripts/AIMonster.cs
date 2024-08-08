@@ -88,8 +88,6 @@
                 number++;
             }
         }
-
-        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterRun : StateBehaviour
@@ -133,8 +131,6 @@
                 }
             }
         }
-
-        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterAttack : ActionCore//ActionBehaviour
@@ -171,8 +167,6 @@
                     self.target = null;
             }
         }
-
-        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 
     public class MonsterDie : StateBehaviour
@@ -197,7 +191,5 @@
             self.GetComponent<Rigidbody>().isKinematic = false;
             self.target = null;
         }
-
-        public override ClassFileInfo FindClassFile(string typeName) => GetClassFileInfo();
     }
 }

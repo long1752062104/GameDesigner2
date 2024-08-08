@@ -30,7 +30,7 @@ namespace GameDesigner
             else animator.Play(clipName, stateAction.layer, 0f);
         }
 
-        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        public bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode)
         {
             var isPlaying = true;
             var stateInfo = animator.GetCurrentAnimatorStateInfo(stateAction.layer);

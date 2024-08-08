@@ -278,7 +278,7 @@ namespace GameDesigner
         /// <param name="effect"></param>
         public virtual void OnSpwanEffect(GameObject effect) { }
 
-        public override void OnDestroyComponent()
+        public override void OnDestroy()
         {
             foreach (var obj in objectPool)
             {

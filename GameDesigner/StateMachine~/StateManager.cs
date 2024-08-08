@@ -68,11 +68,6 @@ namespace GameDesigner
             }
         }
 
-        public void Execute()
-        {
-            support.Execute();
-        }
-
         /// <summary>
         /// 当进入下一个状态, 你也可以立即进入当前播放的状态, 如果不想进入当前播放的状态, 使用StatusEntry方法
         /// </summary>
