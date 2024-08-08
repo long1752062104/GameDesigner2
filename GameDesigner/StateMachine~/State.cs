@@ -113,8 +113,6 @@ namespace GameDesigner
         /// 状态动作集合
         /// </summary>
 		public StateAction[] actions;
-        internal bool IsPlaying;
-
         public StateType Type;
         /// <summary>
         /// 子状态机
@@ -220,7 +218,6 @@ namespace GameDesigner
                 }
                 return;
             }
-            IsPlaying = true;
             if (animPlayMode == AnimPlayMode.Random)//选择要进入的动作索引
                 actionIndex = Random.Range(0, actions.Length);
             else if (animPlayMode == AnimPlayMode.Sequence)

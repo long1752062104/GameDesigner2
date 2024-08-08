@@ -103,6 +103,8 @@ namespace GameDesigner
         public int StateId { get => stateId; set => stateId = value; }
         public IAnimationHandler Handler { get; set; }
         public IStateMachine Parent { get; set; }
+        [SerializeField] private StateMachineUpdateMode _updateMode;
+        public StateMachineUpdateMode UpdateMode { get => _updateMode; set => _updateMode = value; }
         private bool isInitialize;
 
         /// <summary>

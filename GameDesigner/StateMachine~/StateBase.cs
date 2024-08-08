@@ -21,6 +21,13 @@ namespace GameDesigner
         bool OnAnimationUpdate(State state, StateAction stateAction);
     }
 
+    public enum StateMachineUpdateMode 
+    {
+        Update,
+        LateUpdate,
+        FixedUpdate,
+    }
+
     public interface IStateMachine
     {
         int Id { get; set; }
@@ -37,6 +44,7 @@ namespace GameDesigner
         int NextId { get; set; }
         IStateMachine Parent { get; set; }
         IAnimationHandler Handler { get; set; }
+        StateMachineUpdateMode UpdateMode { get; set; }
         /// <summary>
         /// 状态机执行
         /// </summary>

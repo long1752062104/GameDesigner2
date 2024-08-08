@@ -65,20 +65,16 @@ namespace GameDesigner
 
         public override void OnInspectorGUI()
         {
+            if (Self == null)
+            {
+                OpenWindow();
+                ResetPropertys();
+                return;
+            }
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
             OnDrawPreField();
-            if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
-            {
-                if (Self != null)
-                    Self.OnScriptReload();
-                StateMachineWindow.ShowWindow(Self);
-            }
-            if (Self == null)
-            {
-                ResetPropertys();
-                goto J;
-            }
+            OpenWindow();
             var sm = Self.editStateMachine;
             if (sm.SelectState != null)
             {
@@ -88,18 +84,27 @@ namespace GameDesigner
                     DrawTransition(sm.SelectState.transitions[i]);
             }
             else if (StateMachineWindow.selectTransition != null)
-            {
                 DrawTransition(StateMachineWindow.selectTransition);
-            }
             EditorGUILayout.Space();
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(Self);
+            serializedObject.ApplyModifiedProperties();
             Repaint();
-        J: serializedObject.ApplyModifiedProperties();
+        }
+
+        private void OpenWindow()
+        {
+            if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
+            {
+                if (Self != null)
+                    Self.OnScriptReload();
+                StateMachineWindow.ShowWindow(Self);
+            }
         }
 
         protected virtual void OnDrawPreField()
         {
+            EditorGUILayout.PropertyField(StateMachineObject.FindPropertyRelative("_updateMode"), new GUIContent("状态机更新模式", "updateMode"));
         }
 
         private SerializedObject _supportObject;

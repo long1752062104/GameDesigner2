@@ -36,7 +36,26 @@ namespace GameDesigner
         {
             for (int i = 0; i < stateMachines._size; i++)
             {
-                stateMachines._items[i].Execute();
+                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.Update)
+                    stateMachines._items[i].Execute();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            for (int i = 0; i < stateMachines._size; i++)
+            {
+                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.LateUpdate)
+                    stateMachines._items[i].Execute();
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            for (int i = 0; i < stateMachines._size; i++)
+            {
+                if (stateMachines._items[i].UpdateMode == StateMachineUpdateMode.FixedUpdate)
+                    stateMachines._items[i].Execute();
             }
         }
 

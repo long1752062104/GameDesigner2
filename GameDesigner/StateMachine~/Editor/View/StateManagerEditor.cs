@@ -104,6 +104,7 @@ namespace GameDesigner
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("support"), new GUIContent(BlueprintGUILayout.Instance.Language["State Machine Controller"]));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("initMode"), new GUIContent(BlueprintGUILayout.Instance.Language["initMode"]));
+            base.OnDrawPreField();
         }
 
         protected override void OnDrawAnimationField()
