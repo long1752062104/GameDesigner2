@@ -16,7 +16,7 @@ namespace GameDesigner
         public int Id { get; set; }
         [SerializeField] private StateMachineView _view;
         public StateMachineView View { get => _view; set => _view = value; }
-        public Transform transform => _view.transform;
+        public Transform transform => _view.Parent != null ? _view.Parent : _view.transform;
         /// <summary>
         /// 默认状态ID
         /// </summary>
@@ -90,7 +90,7 @@ namespace GameDesigner
         }
 #endif
         public State[] States { get => states ??= new State[0]; set => states = value; }
-        
+
         public int NextId { get => nextId; set => nextId = value; }
 #if UNITY_EDITOR
         public List<int> SelectStates { get => selectStates ??= new List<int>(); set => selectStates = value; }
@@ -238,71 +238,43 @@ namespace GameDesigner
                 }
                 state.stateMachine = this;
                 for (int i = 0; i < state.behaviours.Length; i++)
-                {
-                    var type = AssemblyHelper.GetType(state.behaviours[i].name);
-                    if (type == null)
-                    {
-                        ArrayExtend.RemoveAt(ref state.behaviours, i);
-                        if (i >= 0) i--;
-                        continue;
-                    }
-                    var metadatas = new List<Metadata>(state.behaviours[i].Metadatas);
-                    var active = state.behaviours[i].Active;
-                    var show = state.behaviours[i].show;
-                    state.behaviours[i] = (StateBehaviour)Activator.CreateInstance(type);
-                    state.behaviours[i].Reload(type, metadatas);
-                    state.behaviours[i].ID = state.ID;
-                    state.behaviours[i].Active = active;
-                    state.behaviours[i].show = show;
-                    state.behaviours[i].stateMachine = this;
-                }
+                    ReloadBehaviour(ref state.behaviours, ref i, state.ID);
                 foreach (var t in state.transitions)
                 {
                     t.stateMachine = this;
                     for (int i = 0; i < t.behaviours.Length; i++)
-                    {
-                        var type = AssemblyHelper.GetType(t.behaviours[i].name);
-                        if (type == null)
-                        {
-                            ArrayExtend.RemoveAt(ref t.behaviours, i);
-                            if (i >= 0) i--;
-                            continue;
-                        }
-                        var metadatas = new List<Metadata>(t.behaviours[i].Metadatas);
-                        var active = t.behaviours[i].Active;
-                        var show = t.behaviours[i].show;
-                        t.behaviours[i] = (TransitionBehaviour)Activator.CreateInstance(type);
-                        t.behaviours[i].Reload(type, metadatas);
-                        t.behaviours[i].ID = state.ID;
-                        t.behaviours[i].Active = active;
-                        t.behaviours[i].show = show;
-                        t.behaviours[i].stateMachine = this;
-                    }
+                        ReloadBehaviour(ref t.behaviours, ref i, state.ID);
                 }
                 foreach (var a in state.actions)
                 {
                     a.stateMachine = this;
                     for (int i = 0; i < a.behaviours.Length; i++)
-                    {
-                        var type = AssemblyHelper.GetType(a.behaviours[i].name);
-                        if (type == null)
-                        {
-                            ArrayExtend.RemoveAt(ref a.behaviours, i);
-                            if (i >= 0) i--;
-                            continue;
-                        }
-                        var metadatas = new List<Metadata>(a.behaviours[i].Metadatas);
-                        var active = a.behaviours[i].Active;
-                        var show = a.behaviours[i].show;
-                        a.behaviours[i] = (ActionBehaviour)Activator.CreateInstance(type);
-                        a.behaviours[i].Reload(type, metadatas);
-                        a.behaviours[i].ID = state.ID;
-                        a.behaviours[i].Active = active;
-                        a.behaviours[i].show = show;
-                        a.behaviours[i].stateMachine = this;
-                    }
+                        ReloadBehaviour(ref a.behaviours, ref i, state.ID);
                 }
             }
+        }
+        private void ReloadBehaviour(ref BehaviourBase[] behaviours, ref int i, int id)
+        {
+            var type = AssemblyHelper.GetType(behaviours[i].name);
+            if (type == null)
+            {
+                ArrayExtend.RemoveAt(ref behaviours, i);
+                if (i >= 0) i--;
+                return;
+            }
+            //如果类型相等，说明已经初始化过了，默认是BehaviourBase类型
+            //如果在运行中再次初始化会把正常游戏的初始化丢弃导致报错
+            if (behaviours[i].GetType() == type && Application.isPlaying)
+                return;
+            var metadatas = new List<Metadata>(behaviours[i].Metadatas);
+            var active = behaviours[i].Active;
+            var show = behaviours[i].show;
+            behaviours[i] = (BehaviourBase)Activator.CreateInstance(type);
+            behaviours[i].Reload(type, metadatas);
+            behaviours[i].ID = id;
+            behaviours[i].Active = active;
+            behaviours[i].show = show;
+            behaviours[i].stateMachine = this;
         }
 #endif
     }

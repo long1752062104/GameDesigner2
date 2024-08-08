@@ -439,21 +439,13 @@ namespace GameDesigner
             else if (currentType == EventType.MouseDown & currentEvent.button == 1)
             {
                 var menu = new GenericMenu();
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create transition"]), false, () =>
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Create transition"]), false, () => makeTransition = state);
+                if (state.Type == StateType.None)
                 {
-                    makeTransition = state;
-                });
-                menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Default state"]), false, () =>
-                {
-                    stateMachine.DefaultState = state;
-                });
-                menu.AddSeparator("");
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Replication state"]), false, () =>
-                {
-                    stateMachine.SelectState = state;
-                });
-                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["deleted state"]), false, () => { DeletedState(); });
+                    menu.AddSeparator(string.Empty);
+                    menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Default state"]), false, () => stateMachine.DefaultState = state);
+                }
+                menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["deleted state"]), false, DeletedState);
                 menu.ShowAsContext();
                 Event.current.Use();
             }

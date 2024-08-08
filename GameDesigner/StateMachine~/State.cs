@@ -194,13 +194,9 @@ namespace GameDesigner
                     if (states[i].Type == StateType.Parent)
                     {
                         if (states[i].transitions.Length > 0)
-                        {
                             subStateMachine.ChangeState(states[i].transitions[0].nextStateID);
-                        }
                         else
-                        {
                             subStateMachine.ChangeState(subStateMachine.DefaultState.ID);
-                        }
                         break;
                     }
                 }
@@ -216,13 +212,9 @@ namespace GameDesigner
                     if (states[i].subStateMachine == stateMachine)
                     {
                         if (states[i].transitions.Length > 0)
-                        {
                             stateMachine.Parent.ChangeState(states[i].transitions[0].nextStateID);
-                        }
                         else
-                        {
                             stateMachine.Parent.ChangeState(stateMachine.Parent.DefaultState.ID);
-                        }
                         break;
                     }
                 }

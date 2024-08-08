@@ -5,33 +5,53 @@ using UnityEngine;
 namespace GameDesigner
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(AnimationStateMachineView))]
-    public class AnimationStateMachineViewEditor : StateMachineViewEditor
+    [CustomEditor(typeof(TimelineStateMachineView))]
+    public class TimelineStateMachineViewEditor : StateMachineViewEditor
     {
-        private SerializedProperty _animationProperty;
-        private SerializedProperty animationProperty
+        private SerializedProperty _animatorProperty;
+        private SerializedProperty animatorProperty
         {
             get
             {
-                if (_animationProperty == null)
-                    _animationProperty = SupportObject.FindProperty("animation");
-                return _animationProperty;
+                if (_animatorProperty == null)
+                    _animatorProperty = SupportObject.FindProperty("animator");
+                return _animatorProperty;
             }
+        }
+
+        private SerializedProperty _directorProperty;
+        private SerializedProperty directorProperty
+        {
+            get
+            {
+                if (_directorProperty == null)
+                    _directorProperty = SupportObject.FindProperty("director");
+                return _directorProperty;
+            }
+        }
+
+        protected override void ResetPropertys()
+        {
+            base.ResetPropertys();
+            _animatorProperty = null;
+            _directorProperty = null;
         }
 
         protected override void OnDrawAnimationField()
         {
-            EditorGUILayout.PropertyField(animationProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Old animation"], "animation"));
+            EditorGUILayout.PropertyField(directorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["director animation"], "director"));
+            EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["New animation"], "animator"));
         }
 
         protected override void OnDrawActionPropertyField(SerializedProperty actionProperty)
         {
+            EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("clipAsset"), new GUIContent(BlueprintGUILayout.Instance.Language["Playable Asset"], "clipAsset"));
         }
 
         protected override void OnPlayAnimation(StateAction action)
         {
-            var view = (AnimationStateMachineView)Self;
-            var animation = view.animation;
+            var view = (TimelineStateMachineView)Self;
+            var animator = view.animator;
             EditorGUILayout.BeginHorizontal();
             var rect = EditorGUILayout.GetControlRect();
             if (GUI.Button(new Rect(rect.x + 45, rect.y, 30, rect.height), EditorGUIUtility.IconContent(animPlay ? "PauseButton" : "PlayButton")))
@@ -49,9 +69,8 @@ namespace GameDesigner
                 animAction = action;
                 if (!EditorApplication.isPlaying)
                 {
-                    var clip = animation[action.clipName].clip;
-                    float time = clip.length * normalizedTime;
-                    clip.SampleAnimation(view.gameObject, time);
+                    animator.Play(action.clipName, 0, normalizedTime);
+                    animator.Update(0f);
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -60,9 +79,8 @@ namespace GameDesigner
                 action.animTime += 20f * Time.deltaTime;
                 if (action.animTime >= action.animTimeMax)
                     action.animTime = 0f;
-                var clip = animation[action.clipName].clip;
-                float time = clip.length * normalizedTime;
-                clip.SampleAnimation(view.gameObject, time);
+                animator.Play(action.clipName, 0, normalizedTime);
+                animator.Update(0f);
             }
         }
     }

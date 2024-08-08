@@ -13,6 +13,7 @@ namespace GameDesigner
 #endif
         public List<string> clipNames;
         public List<string> ClipNames { get => clipNames ??= new List<string>(); set => clipNames = value; }
+        public virtual Transform Parent { get; }
 
         public virtual void Init()
         {

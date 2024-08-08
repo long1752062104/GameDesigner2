@@ -41,6 +41,8 @@ namespace GameDesigner
 #endif
         public State[] states;
 
+        public override Transform Parent { get => transform.parent != null ? transform.parent : transform; }
+
         public static StateMachineMono CreateSupport(string name = "Base Layer")
         {
             var monoStateMachine = new GameObject(name).AddComponent<StateMachineMono>();

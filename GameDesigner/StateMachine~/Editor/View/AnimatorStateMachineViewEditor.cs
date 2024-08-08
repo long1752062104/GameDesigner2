@@ -19,6 +19,12 @@ namespace GameDesigner
             }
         }
 
+        protected override void ResetPropertys()
+        {
+            base.ResetPropertys();
+            _animatorProperty = null;
+        }
+
         protected override void OnDrawAnimationField()
         {
             EditorGUILayout.PropertyField(animatorProperty, new GUIContent(BlueprintGUILayout.Instance.Language["New animation"], "animator"));
