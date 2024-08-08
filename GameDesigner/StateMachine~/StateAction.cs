@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 using UnityEngine.Playables;
 
 namespace GameDesigner
@@ -143,9 +142,12 @@ namespace GameDesigner
         public void SetAnimClip(string clipName)
         {
             this.clipName = clipName;
-            for (int i = 0; i < stateMachine.View.ClipNames.Count; i++)
+            if (stateMachine.View == null)
+                return;
+            var clipNames = stateMachine.View.ClipNames;
+            for (int i = 0; i < clipNames.Count; i++)
             {
-                if (clipName == stateMachine.View.ClipNames[i])
+                if (clipName == clipNames[i])
                 {
                     clipIndex = i;
                     break;

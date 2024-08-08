@@ -16,7 +16,12 @@ namespace GameDesigner
         public int Id { get; set; }
         [SerializeField] private StateMachineView _view;
         public StateMachineView View { get => _view; set => _view = value; }
-        public Transform transform => _view.Parent != null ? _view.Parent : _view.transform;
+        private Transform _transform; //当view不用的时候，需要设置这个transform对象
+        public Transform transform
+        {
+            get => _view == null ? _transform : _view.Parent != null ? _view.Parent : _view.transform;
+            set => _transform = value;
+        }
         /// <summary>
         /// 默认状态ID
         /// </summary>
@@ -150,9 +155,9 @@ namespace GameDesigner
                 return;
             isInitialize = true;
             Handler.OnInit();
-            if (states.Length == 0)
+            if (States.Length == 0)
                 return;
-            foreach (var state in states)
+            foreach (var state in States)
                 state.Init(this);
             if (DefaultState.actionSystem)
                 DefaultState.Enter(0);

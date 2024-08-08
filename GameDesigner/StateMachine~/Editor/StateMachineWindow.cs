@@ -476,7 +476,7 @@ namespace GameDesigner
                     if (stateMachine.States[i].ID == ids[0])
                     {
                         stateMachine.States = ArrayExtend.RemoveAt(stateMachine.States, i);
-                        EditorUtility.SetDirty(stateMachine.transform.gameObject);
+                        EditorUtility.SetDirty(stateMachine.View);
                         break;
                     }
                 }

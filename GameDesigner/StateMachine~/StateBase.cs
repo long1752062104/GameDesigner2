@@ -5,20 +5,20 @@ namespace GameDesigner
 {
     public interface IAnimationHandler
     {
-        public void OnInit();
+        void OnInit();
         /// <summary>
         /// 当播放动画方法
         /// </summary>
         /// <param name="state">当前状态</param>
         /// <param name="stateAction">当前动作</param>
-        public void OnPlayAnimation(State state, StateAction stateAction);
+        void OnPlayAnimation(State state, StateAction stateAction);
         /// <summary>
         /// 当动画每帧更新
         /// </summary>
         /// <param name="state">当前状态</param>
         /// <param name="stateAction">当前动作</param>
         /// <returns>是否播放完成</returns>
-        public bool OnAnimationUpdate(State state, StateAction stateAction);
+        bool OnAnimationUpdate(State state, StateAction stateAction);
     }
 
     public interface IStateMachine
