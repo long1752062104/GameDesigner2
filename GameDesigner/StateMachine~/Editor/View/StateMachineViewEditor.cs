@@ -229,13 +229,13 @@ namespace GameDesigner
             {
                 EditorGUILayout.HelpBox("你在此状态连线到其他状态，当子状态机执行返回后，会进入到连线的状态。", MessageType.Info);
                 EditorGUILayout.EndVertical();
-                return;
+                goto v;
             }
             if (state.Type == StateType.Parent)
             {
                 EditorGUILayout.HelpBox("你在此状态连线到其他状态，当返回到父状态机执行后，会进入到连线的状态。", MessageType.Info);
                 EditorGUILayout.EndVertical();
-                return;
+                goto v;
             }
             EditorGUILayout.PropertyField(ActionSystemProperty, new GUIContent(BlueprintGUILayout.Instance.Language["Action system"], "actionSystem  专为玩家角色AI其怪物AI所设计的一套AI系统！"));
             if (state.actionSystem)
@@ -448,7 +448,7 @@ namespace GameDesigner
             DrawBehaviours(state);
             EditorGUILayout.Space();
             EditorGUILayout.EndVertical();
-            SupportObject.ApplyModifiedProperties();
+            v:SupportObject.ApplyModifiedProperties();
         }
 
         protected virtual void OnPlayAnimation(StateAction action)
