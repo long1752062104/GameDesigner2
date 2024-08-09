@@ -66,6 +66,7 @@ namespace GameDesigner
         /// <param name="stateId"></param>
         /// <param name="force"></param>
         void ChangeState(int stateId, int actionId = 0, bool force = false);
+        void ChangeChildState(int stateId, int actionId = 0);
         void UpdateStates();
     }
 

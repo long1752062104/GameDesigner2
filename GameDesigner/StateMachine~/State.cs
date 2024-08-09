@@ -192,9 +192,9 @@ namespace GameDesigner
                     if (states[i].Type == StateType.Parent)
                     {
                         if (states[i].transitions.Length > 0)
-                            subStateMachine.ChangeState(states[i].transitions[0].nextStateID);
+                            subStateMachine.ChangeChildState(states[i].transitions[0].nextStateID, 0);
                         else
-                            subStateMachine.ChangeState(subStateMachine.DefaultState.ID);
+                            subStateMachine.ChangeChildState(subStateMachine.DefaultState.ID, 0); //需要强制进入，否则可能会不触发行为的OnEnter
                         break;
                     }
                 }
@@ -210,9 +210,9 @@ namespace GameDesigner
                     if (states[i].subStateMachine == stateMachine)
                     {
                         if (states[i].transitions.Length > 0)
-                            stateMachine.Parent.ChangeState(states[i].transitions[0].nextStateID);
+                            stateMachine.Parent.ChangeChildState(states[i].transitions[0].nextStateID, 0);
                         else
-                            stateMachine.Parent.ChangeState(stateMachine.Parent.DefaultState.ID);
+                            stateMachine.Parent.ChangeChildState(stateMachine.Parent.DefaultState.ID, 0);
                         break;
                     }
                 }

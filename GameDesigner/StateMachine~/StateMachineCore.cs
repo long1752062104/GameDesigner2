@@ -160,7 +160,7 @@ namespace GameDesigner
                 return;
             foreach (var state in States)
                 state.Init(this);
-            if (DefaultState.actionSystem)
+            if (Parent == null)
                 DefaultState.Enter(0);
         }
 
@@ -215,6 +215,18 @@ namespace GameDesigner
                 nextId = stateId;
                 nextActionId = actionId;
             }
+        }
+
+        /// <summary>
+        /// 切换子状态，不需要退出当前状态
+        /// </summary>
+        /// <param name="stateId"></param>
+        /// <param name="actionId"></param>
+        public void ChangeChildState(int stateId, int actionId = 0)
+        {
+            states[stateId].Enter(actionId);
+            nextId = this.stateId = stateId;
+            nextActionId = actionId;
         }
 
         public void OnDestroy()
