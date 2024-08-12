@@ -185,5 +185,12 @@ namespace GameCore
             formDict[formName] = form;
             return form;
         }
+
+        public bool IsCurrentUI(UIBase form)
+        {
+            if (formStack.TryPeek(out var result))
+                return form == result;
+            return false;
+        }
     }
 }

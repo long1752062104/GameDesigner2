@@ -6,27 +6,12 @@ using GameCore;
 
 namespace GameCore
 {
-    public class PoolListCache
+    public abstract class PoolListCache
     {
-        public virtual void Add(Component poolObj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Clear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual object GetList()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual object GetIndex(int index)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Add(Component poolObj);
+        public abstract void Clear();
+        public abstract object GetList();
+        public abstract object GetIndex(int index);
     }
 
     public class PoolListCache<T> : PoolListCache where T : Component
@@ -63,7 +48,7 @@ namespace GameCore
     public class ObjectPool : MonoBehaviour
     {
         protected readonly Dictionary<Type, Queue<Object>> pool = new Dictionary<Type, Queue<Object>>();
-        protected readonly Dictionary<Enum, PoolListCache> cacheList = new Dictionary<Enum, PoolListCache>();
+        protected readonly Dictionary<Type, Dictionary<Enum, PoolListCache>> cacheList = new Dictionary<Type, Dictionary<Enum, PoolListCache>>();
 
         public T GetObject<T>(string resPath) where T : Object
         {
@@ -122,8 +107,10 @@ namespace GameCore
             }
             poolObj = Instantiate(component);
         J: poolObj.transform.SetParent(parent);
-            if (!cacheList.TryGetValue(command, out var comList))
-                cacheList.Add(command, comList = new PoolListCache<T>());
+            if (!cacheList.TryGetValue(type, out var cacheDict))
+                cacheList.Add(type, cacheDict = new Dictionary<Enum, PoolListCache>());
+            if (!cacheDict.TryGetValue(command, out var comList))
+                cacheDict.Add(command, comList = new PoolListCache<T>());
             comList.Add(poolObj);
             return poolObj;
         }
@@ -134,22 +121,31 @@ namespace GameCore
         /// <param name="command"></param>
         public void RecyclingObjectList<T>(Enum command) where T : Component
         {
-            if (!cacheList.TryGetValue(command, out var comList))
-                cacheList.Add(command, comList = new PoolListCache<T>());
+            var type = typeof(T);
+            if (!cacheList.TryGetValue(type, out var cacheDict))
+                cacheList.Add(type, cacheDict = new Dictionary<Enum, PoolListCache>());
+            if (!cacheDict.TryGetValue(command, out var comList))
+                cacheDict.Add(command, comList = new PoolListCache<T>());
             comList.Clear();
         }
 
         public List<T> GetObjectList<T>(Enum command) where T : Component
         {
-            if (!cacheList.TryGetValue(command, out var comList))
-                cacheList.Add(command, comList = new PoolListCache<T>());
+            var type = typeof(T);
+            if (!cacheList.TryGetValue(type, out var cacheDict))
+                cacheList.Add(type, cacheDict = new Dictionary<Enum, PoolListCache>());
+            if (!cacheDict.TryGetValue(command, out var comList))
+                cacheDict.Add(command, comList = new PoolListCache<T>());
             return comList.GetList() as List<T>;
         }
 
         public T GetObjectListIndex<T>(Enum command, int index) where T : Component
         {
-            if (!cacheList.TryGetValue(command, out var comList))
-                cacheList.Add(command, comList = new PoolListCache<T>());
+            var type = typeof(T);
+            if (!cacheList.TryGetValue(type, out var cacheDict))
+                cacheList.Add(type, cacheDict = new Dictionary<Enum, PoolListCache>());
+            if (!cacheDict.TryGetValue(command, out var comList))
+                cacheDict.Add(command, comList = new PoolListCache<T>());
             return comList.GetIndex(index) as T;
         }
     }
