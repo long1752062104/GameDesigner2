@@ -968,7 +968,9 @@ namespace WebSocketSharp
         }
 
         // As server
-        private bool checkHandshakeRequest(WebSocketContext context, out string message)
+        private bool checkHandshakeRequest(
+          WebSocketContext context, out string message
+        )
         {
             message = null;
 
@@ -1385,7 +1387,9 @@ namespace WebSocketSharp
             );
         }
 
-        private bool closeHandshake(PayloadData payloadData, bool send, bool received)
+        private bool closeHandshake(
+          PayloadData payloadData, bool send, bool received
+        )
         {
             var sent = false;
 
@@ -2538,35 +2542,41 @@ namespace WebSocketSharp
             _receivingExited = new ManualResetEvent(false);
 
             Action receive = null;
-            receive = () => WebSocketFrame.ReadFrameAsync(_stream, false, frame =>
-            {
-                var cont = processReceivedFrame(frame) && _readyState != WebSocketState.Closed;
+            receive =
+              () =>
+                WebSocketFrame.ReadFrameAsync(
+                  _stream,
+                  false,
+                  frame =>
+                  {
+                      var cont = processReceivedFrame(frame)
+                           && _readyState != WebSocketState.Closed;
 
-                if (!cont)
-                {
-                    var exited = _receivingExited;
+                      if (!cont)
+                      {
+                          var exited = _receivingExited;
 
-                    if (exited != null)
-                        exited.Set();
+                          if (exited != null)
+                              exited.Set();
 
-                    return;
-                }
+                          return;
+                      }
 
-                receive();
+                      receive();
 
-                if (_inMessage)
-                    return;
+                      if (_inMessage)
+                          return;
 
-                message();
-            },
-            ex =>
-            {
-                _log.Fatal(ex.Message);
-                _log.Debug(ex.ToString());
+                      message();
+                  },
+                  ex =>
+                  {
+                      _log.Fatal(ex.Message);
+                      _log.Debug(ex.ToString());
 
-                abort("An exception has occurred while receiving.", ex);
-            }
-            );
+                      abort("An exception has occurred while receiving.", ex);
+                  }
+                );
 
             receive();
         }
@@ -3543,15 +3553,20 @@ namespace WebSocketSharp
                 throw new InvalidOperationException(msg);
             }
 
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                var connected = connect();
+            Func<bool> connector = connect;
 
-                if (!connected)
-                    return;
+            connector.BeginInvoke(
+              ar =>
+              {
+                  var connected = connector.EndInvoke(ar);
 
-                open();
-            });
+                  if (!connected)
+                      return;
+
+                  open();
+              },
+              null
+            );
         }
 
         /// <summary>
@@ -3850,7 +3865,7 @@ namespace WebSocketSharp
         /// <exception cref="ArgumentNullException">
         /// <paramref name="data"/> is <see langword="null"/>.
         /// </exception>
-        public void SendAsync(byte[] data, Action<bool> completed = null)
+        public void SendAsync(byte[] data, Action<bool> completed)
         {
             if (_readyState != WebSocketState.Open)
             {

@@ -232,7 +232,8 @@ namespace WebSocketSharp
         }
 
         internal static bool Contains(
-          this NameValueCollection collection, string name
+          this NameValueCollection collection,
+          string name
         )
         {
             return collection[name] != null;
@@ -260,7 +261,8 @@ namespace WebSocketSharp
         }
 
         internal static bool Contains<T>(
-          this IEnumerable<T> source, Func<T, bool> condition
+          this IEnumerable<T> source,
+          Func<T, bool> condition
         )
         {
             foreach (T elm in source)
@@ -417,7 +419,10 @@ namespace WebSocketSharp
             eventHandler(sender, e);
         }
 
-        internal static void Emit<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e) where TEventArgs : EventArgs
+        internal static void Emit<TEventArgs>(
+          this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e
+        )
+          where TEventArgs : EventArgs
         {
             if (eventHandler == null)
                 return;
@@ -553,7 +558,9 @@ namespace WebSocketSharp
         }
 
         internal static bool IsEqualTo(
-          this int value, char c, Action<int> beforeComparing
+          this int value,
+          char c,
+          Action<int> beforeComparing
         )
         {
             beforeComparing(value);
@@ -650,14 +657,15 @@ namespace WebSocketSharp
         }
 
         internal static bool KeepsAlive(
-          this NameValueCollection headers, Version version
+          this NameValueCollection headers,
+          Version version
         )
         {
             var compType = StringComparison.OrdinalIgnoreCase;
 
-            return version < HttpVersion.Version11
-                   ? headers.Contains("Connection", "keep-alive", compType)
-                   : !headers.Contains("Connection", "close", compType);
+            return version > HttpVersion.Version10
+                   ? !headers.Contains("Connection", "close", compType)
+                   : headers.Contains("Connection", "keep-alive", compType);
         }
 
         internal static bool MaybeUri(this string value)
@@ -713,7 +721,9 @@ namespace WebSocketSharp
         }
 
         internal static byte[] ReadBytes(
-          this Stream stream, long length, int bufferLength
+          this Stream stream,
+          long length,
+          int bufferLength
         )
         {
             using (var dest = new MemoryStream())
@@ -753,7 +763,12 @@ namespace WebSocketSharp
             }
         }
 
-        internal static void ReadBytesAsync(this Stream stream, int length, Action<byte[]> completed, Action<Exception> error)
+        internal static void ReadBytesAsync(
+          this Stream stream,
+          int length,
+          Action<byte[]> completed,
+          Action<Exception> error
+        )
         {
             var ret = new byte[length];
 
@@ -761,50 +776,51 @@ namespace WebSocketSharp
             var retry = 0;
 
             AsyncCallback callback = null;
-            callback = ar =>
-            {
-                try
-                {
-                    var nread = stream.EndRead(ar);
+            callback =
+              ar =>
+              {
+                  try
+                  {
+                      var nread = stream.EndRead(ar);
 
-                    if (nread <= 0)
-                    {
-                        if (retry < _maxRetry)
-                        {
-                            retry++;
+                      if (nread <= 0)
+                      {
+                          if (retry < _maxRetry)
+                          {
+                              retry++;
 
-                            stream.BeginRead(ret, offset, length, callback, null);
+                              stream.BeginRead(ret, offset, length, callback, null);
 
-                            return;
-                        }
+                              return;
+                          }
 
-                        if (completed != null)
-                            completed(ret.SubArray(0, offset));
+                          if (completed != null)
+                              completed(ret.SubArray(0, offset));
 
-                        return;
-                    }
+                          return;
+                      }
 
-                    if (nread == length)
-                    {
-                        if (completed != null)
-                            completed(ret);
+                      if (nread == length)
+                      {
+                          if (completed != null)
+                              completed(ret);
 
-                        return;
-                    }
+                          return;
+                      }
 
-                    retry = 0;
+                      retry = 0;
 
-                    offset += nread;
-                    length -= nread;
+                      offset += nread;
+                      length -= nread;
 
-                    stream.BeginRead(ret, offset, length, callback, null);
-                }
-                catch (Exception ex)
-                {
-                    if (error != null)
-                        error(ex);
-                }
-            };
+                      stream.BeginRead(ret, offset, length, callback, null);
+                  }
+                  catch (Exception ex)
+                  {
+                      if (error != null)
+                          error(ex);
+                  }
+              };
 
             try
             {
@@ -817,7 +833,13 @@ namespace WebSocketSharp
             }
         }
 
-        internal static void ReadBytesAsync(this Stream stream, long length, int bufferLength, Action<byte[]> completed, Action<Exception> error)
+        internal static void ReadBytesAsync(
+          this Stream stream,
+          long length,
+          int bufferLength,
+          Action<byte[]> completed,
+          Action<Exception> error
+        )
         {
             var dest = new MemoryStream();
 
@@ -857,6 +879,7 @@ namespace WebSocketSharp
                                   dest.Close();
 
                                   var ret = dest.ToArray();
+
                                   completed(ret);
                               }
 
@@ -874,6 +897,7 @@ namespace WebSocketSharp
                                   dest.Close();
 
                                   var ret = dest.ToArray();
+
                                   completed(ret);
                               }
 
@@ -996,7 +1020,7 @@ namespace WebSocketSharp
             }
         }
 
-        internal static byte[] ToByteArray(this ushort value, ByteOrder order)
+        public static byte[] ToByteArray(this ushort value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
 
@@ -1006,7 +1030,7 @@ namespace WebSocketSharp
             return ret;
         }
 
-        internal static byte[] ToByteArray(this ulong value, ByteOrder order)
+        public static byte[] ToByteArray(this int value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
 
@@ -1016,7 +1040,7 @@ namespace WebSocketSharp
             return ret;
         }
 
-        internal static byte[] ToByteArray(this int value, ByteOrder order)
+        public static byte[] ToByteArray(this ulong value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
 
@@ -1230,7 +1254,9 @@ namespace WebSocketSharp
             return true;
         }
 
-        internal static bool TryGetUTF8DecodedString(this byte[] bytes, out string s)
+        internal static bool TryGetUTF8DecodedString(
+          this byte[] bytes, out string s
+        )
         {
             s = null;
 
@@ -1302,7 +1328,8 @@ namespace WebSocketSharp
         }
 
         internal static bool Upgrades(
-          this NameValueCollection headers, string protocol
+          this NameValueCollection headers,
+          string protocol
         )
         {
             var compType = StringComparison.OrdinalIgnoreCase;
@@ -1323,7 +1350,9 @@ namespace WebSocketSharp
             return HttpUtility.UrlEncode(value, encoding);
         }
 
-        internal static void WriteBytes(this Stream stream, byte[] bytes, int bufferLength)
+        internal static void WriteBytes(
+          this Stream stream, byte[] bytes, int bufferLength
+        )
         {
             using (var src = new MemoryStream(bytes))
                 src.CopyTo(stream, bufferLength);

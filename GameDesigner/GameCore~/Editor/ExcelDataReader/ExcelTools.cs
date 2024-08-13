@@ -103,6 +103,12 @@ public class ExcelTools
                         sb.Append(text2[4]);
                         var text5 = sb.ToString();
                         File.WriteAllText($"{AssetBundleBuilder.Instance.tableScriptPath}/{table.TableName}DataConfig.cs", text5);
+                        var path = $"{AssetBundleBuilder.Instance.tableScriptPathEx}/{table.TableName}DataConfigEx.cs";
+                        if (!File.Exists(path))
+                        {
+                            var excelScriptEx = $"public partial class {table.TableName}DataConfig\r\n{{\r\n}}";
+                            File.WriteAllText(path, excelScriptEx);
+                        }
                         Debug.Log($"生成表:{table.TableName}完成!");
                     }
                     Debug.Log("全部表生成完毕!");

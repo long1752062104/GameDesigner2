@@ -1,6 +1,5 @@
 using Net.Helper;
 using Net.Share;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -17,6 +16,7 @@ namespace GameCore
             public string gameCorePath = "Assets/Plugins/GameDesigner";
             public string scriptPath = "Assets/Scripts";
             public string resourcePath = "Assets/Arts";
+            public string excelScriptEx = "Assets/Scripts/Data/ConfigEx";
         }
 
         [MenuItem("GameDesigner/GameCore/Install", priority = 1)]
@@ -52,6 +52,7 @@ namespace GameCore
             data.gameCorePath = EditorGUILayout.TextField("框架路径:", data.gameCorePath);
             data.scriptPath = EditorGUILayout.TextField("脚本路径:", data.scriptPath);
             data.resourcePath = EditorGUILayout.TextField("资源路径:", data.resourcePath);
+            data.excelScriptEx = EditorGUILayout.TextField("Excel脚本扩展路径:", data.excelScriptEx);
             if (GUILayout.Button("安装", GUILayout.Height(30f)))
                 InstallStep1();
             if (EditorGUI.EndChangeCheck())
@@ -73,7 +74,7 @@ namespace GameCore
             {
                 $"{data.scriptPath}/Data/DB/", $"{data.scriptPath}/Data/DBExt/", $"{data.scriptPath}/Data/Proto/",
                 $"{data.scriptPath}/Data/Binding/", $"{data.scriptPath}/Data/BindingExt/",
-                $"{data.scriptPath}/Data/Config", $"{data.scriptPath}/Data/ConfigExt", $"{data.scriptPath}/GameCoreEx",
+                $"{data.scriptPath}/Data/Config", $"{data.scriptPath}/Data/ConfigEx", $"{data.scriptPath}/GameCoreEx",
                 $"{data.resourcePath}/Audio", $"{data.resourcePath}/Prefabs", $"{data.resourcePath}/UI", $"{data.resourcePath}/Table",
             };
 
@@ -189,7 +190,7 @@ namespace GameCore
             var serializedObject = new SerializedObject(monoBehaviour);
             var scriptProperty = serializedObject.FindProperty("m_Script");
             scriptProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<MonoScript>(monoScriptPath);
-            var applyModified = serializedObject.ApplyModifiedProperties();
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

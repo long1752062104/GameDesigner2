@@ -2,12 +2,12 @@
 /*
  * HttpVersion.cs
  *
- * This code is derived from System.Net.HttpVersion.cs of Mono
+ * This code is derived from HttpVersion.cs (System.Net) of Mono
  * (http://www.mono-project.com).
  *
  * The MIT License
  *
- * Copyright (c) 2012-2014 sta.blockhead
+ * Copyright (c) 2012-2024 sta.blockhead
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

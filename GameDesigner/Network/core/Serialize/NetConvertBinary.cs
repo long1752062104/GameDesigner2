@@ -988,6 +988,7 @@ namespace Net.Serialize
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="segment"></param>
+        /// <param name="isPush"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>
@@ -1015,6 +1016,8 @@ namespace Net.Serialize
         /// 反序列化
         /// </summary>
         /// <param name="segment"></param>
+        /// <param name="type"></param>
+        /// <param name="isPush"></param>
         /// <param name="recordType"></param>
         /// <param name="ignore">忽略不使用<see cref="AddBaseType"/>方法也会被序列化</param>
         /// <returns></returns>

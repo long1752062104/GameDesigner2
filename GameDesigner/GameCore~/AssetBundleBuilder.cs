@@ -96,6 +96,7 @@ namespace GameCore
         public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
+        public string tableScriptPathEx = "Assets/Scripts/Data/ConfigEx";
         public string hotfixPath = "Assets/Arts/Hotfix";
         [Tooltip("可寻址资源，资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
         public bool addressables;
