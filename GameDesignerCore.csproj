@@ -3342,6 +3342,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="dnlib">
+      <HintPath>GameDesigner\Network\Library\dnlib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="RecastNet">
       <HintPath>GameDesigner\Recast~\Library\RecastNet.dll</HintPath>
     </Reference>

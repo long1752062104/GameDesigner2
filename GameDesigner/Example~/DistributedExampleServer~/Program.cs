@@ -13,7 +13,7 @@ namespace DistributedExample
         {
             NDebug.BindConsoleLog(false);
             Fast2BuildMethod.DynamicBuild(SerializeMode.Compress, 1, typeof(ItemConfig), typeof(LoadBalanceConfig), typeof(UserData));
-            ThreadManager.Invoke("DataCacheManagerLoop", 1f, DataCacheManager.Instance.Executed, true);
+            DataCacheManager.Instance.Start();
             if (args.Length == 0)
             {
                 Start();

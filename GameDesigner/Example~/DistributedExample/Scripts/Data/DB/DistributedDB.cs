@@ -4,6 +4,7 @@ using System.IO;
 using System.Data;
 using System.Text;
 using System.Threading;
+using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -87,6 +88,10 @@ namespace Distributed
         private readonly MyDictionary<Type, QueueSafe<IQueryTask>> queryTypes = new MyDictionary<Type, QueueSafe<IQueryTask>>();
         private readonly MyDictionary<string, StringBuilder> queryCell = new MyDictionary<string, StringBuilder>();
         private readonly Queue<IQueryTask> queryQueue = new Queue<IQueryTask>();
+        private readonly List<NonQueryTask> nonQueryList = new List<NonQueryTask>();
+        private readonly StringBuilder commandTextBuilder = new StringBuilder();
+        private readonly QueueSafe<NonQueryTask> nonQueryQueue = new QueueSafe<NonQueryTask>();
+        private FieldInfo nonQueryHandlerField;
         private int workerId;
 
         private MySqlConnection CheckConn(MySqlConnection conn)
@@ -156,6 +161,10 @@ namespace Distributed
 
         public void InitConnection(int connLen = 1) //初学者避免发生死锁, 默认只创建一条连接
         {
+            var cmdType = typeof(MySqlCommand);
+            nonQueryHandlerField = cmdType.GetField("NonQueryHandler");
+            if (nonQueryHandlerField == null)
+                NDebug.LogError("未注入MySql!, 如果要使用新优化的NonQueryAsync非查询方法，请在Main入口函数加上这段代码: MySQLHelper.Inject(); 必须提前于xxDB.Initxx，否则会出现写入失败!");
             while (conns.TryPop(out var conn))
                 conn.Close();
             for (int i = 0; i < connLen; i++)
@@ -226,6 +235,7 @@ namespace Distributed
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用QueryAsync代替", false)]
         public T ExecuteQuery<T>(string cmdText) where T : IDataRow, new()
         {
             var array = ExecuteQueryList<T>(cmdText);
@@ -250,6 +260,7 @@ namespace Distributed
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用QueryListAsync代替", false)]
         public T[] ExecuteQueryList<T>(string cmdText) where T : IDataRow, new()
         {
             var conn = PopConnect();
@@ -314,6 +325,7 @@ namespace Distributed
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用QueryAsync代替", false)]
         public async UniTask<T> ExecuteQueryAsync<T>(string cmdText) where T : IDataRow, new()
         {
             var array = await ExecuteQueryListAsync<T>(cmdText);
@@ -338,6 +350,7 @@ namespace Distributed
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用QueryListAsync代替", false)]
         public async UniTask<T[]> ExecuteQueryListAsync<T>(string cmdText) where T : IDataRow, new()
         {
             await UniTask.SwitchToThreadPool();
@@ -345,6 +358,7 @@ namespace Distributed
             return datas;
         }
 
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用NonQueryAsync代替", false)]
         public async UniTaskVoid ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters, Action<int, Stopwatch> onComplete)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -353,6 +367,7 @@ namespace Distributed
             onComplete(count, stopwatch);
         }
 
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用NonQueryAsync代替", false)]
         public async UniTask<int> ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters)
         {
             await UniTask.SwitchToThreadPool();
@@ -363,6 +378,7 @@ namespace Distributed
             return count;
         }
 
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用NonQueryAsync代替", false)]
         public int ExecuteNonQuery(string cmdText)
         {
             var conn = PopConnect();
@@ -376,7 +392,7 @@ namespace Distributed
         {
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand())
+                using (var cmd = new MySqlCommand())
                 {
                     cmd.CommandText = cmdText;
                     cmd.Connection = conn;
@@ -473,6 +489,7 @@ namespace Distributed
             {
                 BatchQueryWorkers();
                 BatchSubmitWorkers();
+                ExecuteNonQueryWorkers();
                 return true;
             }
         }
@@ -485,12 +502,14 @@ namespace Distributed
             lock (this) //当BatchWorker执行的时候，这里就需要等待
             {
                 bool isComplete1, isComplete2;
+                int affectedRows;
                 do
                 {
                     isComplete1 = BatchQueryWorkers();
                     isComplete2 = BatchSubmitWorkers();
+                    affectedRows = ExecuteNonQueryWorkers();
                 }
-                while (!isComplete1 || !isComplete2);
+                while (!isComplete1 || !isComplete2 || affectedRows > 0);
             }
         }
 
@@ -648,6 +667,13 @@ namespace Distributed
             }
         }
 
+        private class NonQueryTask
+        {
+            public string CommandText { get; set; }
+            public bool IsDone { get; set; }
+            public int AffectedRows { get; set; }
+        }
+
         /// <summary>
         /// 异步查询, 查询案例: `id`=1 或者 `name` = 'hello'
         /// <para></para>
@@ -681,6 +707,22 @@ namespace Distributed
             queue.Enqueue(queryTask);
             await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((IQueryTask)state).IsDone, queryTask);
             return queryTask.Datas;
+        }
+
+        /// <summary>
+        /// 非查询执行，异步
+        /// </summary>
+        /// <param name="cmdText"></param>
+        /// <returns>影响行数</returns>
+        public async UniTask<int> NonQueryAsync(string cmdText)
+        {
+            var query = new NonQueryTask()
+            {
+                CommandText = cmdText,
+            };
+            nonQueryQueue.Enqueue(query);
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((NonQueryTask)state).IsDone, query);
+            return query.AffectedRows;
         }
 
         private bool BatchQueryWorkers()
@@ -778,6 +820,57 @@ namespace Distributed
             return default;
         }
 
+        private int ExecuteNonQueryWorkers()
+        {
+            var count = nonQueryQueue.Count;
+            if (count <= 0)
+                return 0;
+            if (count > BatchSize)
+                count = BatchSize;
+            nonQueryList.Clear();
+            commandTextBuilder.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                if (nonQueryQueue.TryDequeue(out var nonQuery))
+                {
+                    nonQueryList.Add(nonQuery);
+                    commandTextBuilder.AppendLine(nonQuery.CommandText);
+                }
+            }
+            var conn = PopConnect();
+            try
+            {
+                using (var cmd = new MySqlCommand())
+                {
+                    cmd.CommandText = commandTextBuilder.ToString();
+                    cmd.Connection = conn;
+                    cmd.CommandTimeout = CommandTimeout;
+                    nonQueryHandlerField?.SetValue(cmd, new Action<int, int>(OnNonQueryHandler));
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                NDebug.LogError("非查询错误: " + ex);
+                for (int i = 0; i < nonQueryList.Count; i++)
+                {
+                    nonQueryList[i].IsDone = true;
+                }
+            }
+            finally
+            {
+                conns.Push(conn);
+            }
+            return 0;
+        }
+
+        private void OnNonQueryHandler(int index, int affectedRows)
+        {
+            var nonQuery = nonQueryList[index];
+            nonQuery.AffectedRows = affectedRows;
+            nonQuery.IsDone = true;
+        }
+
         public string CheckStringValue(string value, uint length)
         {
             CheckStringValue(ref value, length);
@@ -800,7 +893,7 @@ namespace Distributed
         /// </summary>
         public void CreateTables(string password, string dbName = "Distributed")
         {
-            ConnectionBuilder.Database = "";
+            SetDatabaseName("");
             ConnectionBuilder.Password = password;
             InitConnection();
             int count = (int)ExecuteScalar<long>($"SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '{dbName}'");
@@ -812,7 +905,7 @@ namespace Distributed
                     return;
             }
             CloseConnect();
-            ConnectionBuilder.Database = dbName;
+            SetDatabaseName(dbName);
             InitConnection();
             //新增表时判断
  // -- 5
@@ -838,12 +931,22 @@ namespace Distributed
  // -- 6
         }
 
+        private void SetDatabaseName(string name)
+        {
+            ConnectionBuilder.Database = name;
+        }
+
+        private string GetDatabaseName()
+        {
+            return ConnectionBuilder.Database;
+        }
+
         /// <summary>
         /// 开始运行数据库中间件处理
         /// </summary>
         public void Start()
         {
-            workerId = ThreadManager.Invoke(ConnectionBuilder.Database + "Process", BatchWorker, true);
+            workerId = ThreadManager.Invoke(GetDatabaseName() + "Process", BatchWorker, true);
         }
 
         /// <summary>

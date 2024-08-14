@@ -143,6 +143,7 @@
     <Compile Include="GameDesigner\Helper\CertificateHelper.cs" />
     <Compile Include="GameDesigner\Helper\DateTimeHelper.cs" />
     <Compile Include="GameDesigner\Helper\JobQueueHelper.cs" />
+    <Compile Include="GameDesigner\Helper\MySQLHelper.cs" />
     <Compile Include="GameDesigner\Helper\PathHelper.cs" />
     <Compile Include="GameDesigner\Helper\SerializeHelper.cs" />
     <Compile Include="GameDesigner\Helper\SyncPropertyHelper.cs" />
