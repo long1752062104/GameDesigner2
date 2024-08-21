@@ -194,10 +194,10 @@ namespace Net.UnityComponent
                 return;
             if (!isLocal | m_identity < 10000)//0-10000是场景可用标识
             {
-                sm.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
+                //sm.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
                 return;
             }
-            sm.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
+            //sm.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
             if (!CanDestroy)
                 return;
             if (ClientBase.Instance == null)

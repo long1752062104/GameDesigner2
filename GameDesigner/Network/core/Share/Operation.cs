@@ -237,7 +237,7 @@
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{cmd}:{name}:{position}:{rotation}:{direction}";
+            return $"cmd:{cmd} identity:{identity} uid:{uid} name:{name} pos:{position} rot:{rotation} dir:{direction}";
         }
     }
 }

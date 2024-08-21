@@ -34,8 +34,8 @@ namespace Net.UnityComponent
         public MyDictionary<int, NetworkObject> identitys = new MyDictionary<int, NetworkObject>();
         [Tooltip("如果onExitDelectAll=true 当客户端退出游戏,客户端所创建的所有网络物体也将随之被删除? onExitDelectAll=false只删除玩家物体")]
         public bool onExitDelectAll = true;
-        [HideInInspector]
-        public List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
+        //[HideInInspector]
+        //public List<WaitDestroy> waitDestroyList = new List<WaitDestroy>();
         protected ClientBase client; //当多场景时, 退出战斗场景, 回主场景时, 先进入主场景再卸载战斗场景, 而ClientBase.Instance被赋值到其他多连接客户端对象上就会出现OnDestry时没有正确移除OnOperationSync事件
         protected Queue<Action> waitNetworkIdentityQueue = new Queue<Action>();
         protected MyDictionary<byte, HashSet<OnOperationEvent>> operationHandlerDict = new MyDictionary<byte, HashSet<OnOperationEvent>>();
@@ -113,19 +113,19 @@ namespace Net.UnityComponent
                     operations._size = 0;
                 }
             }
-            WaitDestroy waitDestroy;
-            for (int i = 0; i < waitDestroyList.Count; i++)
-            {
-                waitDestroy = waitDestroyList[i];
-                if (Time.time >= waitDestroy.time)
-                {
-                    RemoveIdentity(waitDestroy.identity);
-                    waitDestroyList.RemoveAt(i);
-                    if (!waitDestroy.isPush)
-                        continue;
-                    NetworkObject.PushIdentity(waitDestroy.identity);
-                }
-            }
+            //WaitDestroy waitDestroy;
+            //for (int i = 0; i < waitDestroyList.Count; i++)
+            //{
+            //    waitDestroy = waitDestroyList[i];
+            //    if (Time.time >= waitDestroy.time)
+            //    {
+            //        RemoveIdentity(waitDestroy.identity);
+            //        waitDestroyList.RemoveAt(i);
+            //        if (!waitDestroy.isPush)
+            //            continue;
+            //        NetworkObject.PushIdentity(waitDestroy.identity);
+            //    }
+            //}
         }
 
         private void OperationSyncHandler(in OperationList list)
@@ -258,10 +258,9 @@ namespace Net.UnityComponent
         /// <param name="opt"></param>
         public virtual void OnNetworkObjectDestroy(in Operation opt)
         {
-            if (identitys.TryGetValue(opt.identity, out NetworkObject identity))
-            {
+            //如果在本地执行移除id，在网络延迟时，会偶尔出现本机的物体被删除后，操作同步才到达，导致又重新实例化网络物体，这时候id栈已经压入当前网络物体的id，导致id冲突提示实例化两次的问题
+            if (identitys.TryRemove(opt.identity, out var identity))
                 OnPlayerDestroy(identity, false);
-            }
         }
 
         public virtual void OnPlayerEnter(in Operation opt)
@@ -283,7 +282,7 @@ namespace Net.UnityComponent
 
         public virtual void OnPlayerExit(in Operation opt)
         {
-            if (identitys.TryGetValue(opt.identity, out NetworkObject identity))//删除退出游戏的玩家游戏物体
+            if (identitys.TryGetValue(opt.identity, out var identity))//删除退出游戏的玩家游戏物体
                 OnPlayerDestroy(identity, true);
             if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
@@ -301,14 +300,10 @@ namespace Net.UnityComponent
                 return;
             if (identity.IsDispose)
                 return;
+            NetworkObject.PushIdentity(identity.Identity);
             if (isPlayer)
                 OnOtherExit(identity);
             OnOtherDestroy(identity);
-        }
-
-        public void RemoveIdentity(int identity)
-        {
-            identitys.Remove(identity);
         }
 
         /// <summary>
