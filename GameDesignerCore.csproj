@@ -105,6 +105,7 @@
     <None Remove="GameDesigner\Helper\EncryptHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\InvokeHelperBuild.cs.meta" />
     <None Remove="GameDesigner\Helper\JobQueueHelper.cs.meta" />
+    <None Remove="GameDesigner\Helper\MySQLHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\PathHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\RpcHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\SerializeHelper.cs.meta" />

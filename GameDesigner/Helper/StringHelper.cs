@@ -115,5 +115,15 @@ namespace Net.Helper
                     return false;
             return true;
         }
+
+        public static byte[] ToBytes(this string self)
+        {
+            return Encoding.UTF8.GetBytes(self);
+        }
+
+        public static string ToText(this byte[] self)
+        {
+            return Encoding.UTF8.GetString(self);
+        }
     }
 }

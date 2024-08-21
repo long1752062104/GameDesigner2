@@ -9,6 +9,8 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Debug = Net.Event.NDebug;
+using Newtonsoft_X.Json;
+using Newtonsoft_X.Json.Bson;
 
 namespace Net.Server
 {
@@ -145,8 +147,30 @@ namespace Net.Server
                 receiveAmount++;
                 receiveCount += segment.Count;
                 client.BytesReceived += segment.Count;
-                ResolveBuffer(client, ref segment);
+                if (opcode == Opcode.Binary)
+                    ResolveBuffer(client, ref segment);
+                else
+                    OnWSRevdHandler(client, segment);
             });
+        }
+
+        protected virtual void OnWSRevdHandler(Player client, ISegment segment)
+        {
+            try
+            {
+                var buffer = segment.Read(segment.Count - segment.Position);
+                var jsonString = buffer.ToText();
+                var message = JsonConvert.DeserializeObject<MessageModel>(jsonString);
+                var model = new RPCModel(message.cmd, message.func.CRCU32(), message.GetPars());
+                DataHandler(client, model, null);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[{client}]json解析出错:" + ex);
+                var message = new MessageModel(0, "error", new object[] { ex.Message });
+                var jsonStr = JsonConvert.SerializeObject(message);
+                client.Session.Send(jsonStr);
+            }
         }
 
         protected override bool CheckIsConnected(Player client, uint tick)

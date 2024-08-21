@@ -3553,20 +3553,15 @@ namespace WebSocketSharp
                 throw new InvalidOperationException(msg);
             }
 
-            Func<bool> connector = connect;
+            Task.Run(() =>
+            {
+                var connected = connect();
 
-            connector.BeginInvoke(
-              ar =>
-              {
-                  var connected = connector.EndInvoke(ar);
+                if (!connected)
+                    return;
 
-                  if (!connected)
-                      return;
-
-                  open();
-              },
-              null
-            );
+                open();
+            });
         }
 
         /// <summary>

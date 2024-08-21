@@ -1,4 +1,5 @@
-﻿using Net.System;
+﻿using Net.Helper;
+using Net.System;
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -218,7 +219,7 @@ namespace Net.Server
         private Opcode opcode;
         private bool isCompressed;
         internal Stream stream;
-        private MemoryStream ms;
+        private readonly MemoryStream ms;
         internal bool isHandshake;
         public int FragmentLength { get; private set; }
         public bool Connected => socket.Connected;
@@ -355,13 +356,12 @@ namespace Net.Server
                     }
                     else if (frame.IsClose)
                     {
-                        var pong = WebSocketFrame.CreateCloseFrame(frame._payloadData, false);
+                        var pong = WebSocketFrame.CreateCloseFrame(new byte[0], false);
                         var bytes = pong.ToArray();
                         stream.Write(bytes, 0, bytes.Length);
                     }
                     else
                     {
-
                     }
                 }
                 segment.Dispose();
@@ -413,82 +413,58 @@ namespace Net.Server
             socket.Close();
         }
 
-        internal void Send(byte[] buffer, int offset, int count)
+        internal void Send(string text)
         {
-            send(Opcode.Binary, new MemoryStream(buffer, offset, count), false);
+            var buffer = text.ToBytes();
+            Send(Opcode.Text, new MemoryStream(buffer, 0, buffer.Length), false);
         }
 
-        private bool send(Opcode opcode, Stream dataStream, bool compressed)
+        internal void Send(byte[] buffer, int offset, int count)
+        {
+            Send(Opcode.Binary, new MemoryStream(buffer, offset, count), false);
+        }
+
+        private bool Send(Opcode opcode, Stream dataStream, bool compressed)
         {
             var len = dataStream.Length;
-
             if (len == 0)
-                return send(Fin.Final, opcode, EmptyBytes, false);
-
+                return Send(Fin.Final, opcode, EmptyBytes, false);
             var quo = len / FragmentLength;
             var rem = (int)(len % FragmentLength);
-
-            byte[] buff = null;
-
+            byte[] buff;
             if (quo == 0)
             {
                 buff = new byte[rem];
-
-                return dataStream.Read(buff, 0, rem) == rem
-                       && send(Fin.Final, opcode, buff, compressed);
+                return dataStream.Read(buff, 0, rem) == rem && Send(Fin.Final, opcode, buff, compressed);
             }
-
             if (quo == 1 && rem == 0)
             {
                 buff = new byte[FragmentLength];
-
-                return dataStream.Read(buff, 0, FragmentLength) == FragmentLength
-                       && send(Fin.Final, opcode, buff, compressed);
+                return dataStream.Read(buff, 0, FragmentLength) == FragmentLength && Send(Fin.Final, opcode, buff, compressed);
             }
-
-            /* Send fragments */
-
-            // Begin
-
             buff = new byte[FragmentLength];
-
-            var sent = dataStream.Read(buff, 0, FragmentLength) == FragmentLength
-                       && send(Fin.More, opcode, buff, compressed);
-
+            var sent = dataStream.Read(buff, 0, FragmentLength) == FragmentLength && Send(Fin.More, opcode, buff, compressed);
             if (!sent)
                 return false;
-
-            // Continue
-
             var n = rem == 0 ? quo - 2 : quo - 1;
-
             for (long i = 0; i < n; i++)
             {
-                sent = dataStream.Read(buff, 0, FragmentLength) == FragmentLength
-                       && send(Fin.More, Opcode.Cont, buff, false);
-
+                sent = dataStream.Read(buff, 0, FragmentLength) == FragmentLength && Send(Fin.More, Opcode.Cont, buff, false);
                 if (!sent)
                     return false;
             }
-
-            // End
-
             if (rem == 0)
                 rem = FragmentLength;
             else
                 buff = new byte[rem];
-
-            return dataStream.Read(buff, 0, rem) == rem
-                   && send(Fin.Final, Opcode.Cont, buff, false);
+            return dataStream.Read(buff, 0, rem) == rem && Send(Fin.Final, Opcode.Cont, buff, false);
         }
 
-        private bool send(Fin fin, Opcode opcode, byte[] data, bool compressed)
+        private bool Send(Fin fin, Opcode opcode, byte[] data, bool compressed)
         {
             var frame = new WebSocketFrame(fin, opcode, data, compressed, false);
             var rawFrame = frame.ToArray();
-
             stream.Write(rawFrame, 0, rawFrame.Length);
-
             return true;
         }
     }
