@@ -81,11 +81,14 @@ namespace Net.Server
             {
                 try
                 {
-                    if (Server.Poll(0, SelectMode.SelectRead))
+                    if (Server.Poll(performance, SelectMode.SelectRead))
                     {
                         var socket = Server.Accept();
                         socket.ReceiveTimeout = (int)ReconnectionTimeout;
-                        session = new WebSocketSession(socket);
+                        session = new WebSocketSession(socket)
+                        {
+                            performance = performance
+                        };
                         var stream = new NetworkStream(socket);
                         if (Scheme == "wss")
                         {
@@ -227,7 +230,7 @@ namespace Net.Server
                 return;
             if (buffer.Count <= frame)//解决长度==6的问题(没有数据)
                 return;
-            if (client.Client.Poll(0, SelectMode.SelectWrite))
+            if (client.Client.Poll(performance, SelectMode.SelectWrite))
             {
                 sendAmount++;
                 sendCount += buffer.Count;

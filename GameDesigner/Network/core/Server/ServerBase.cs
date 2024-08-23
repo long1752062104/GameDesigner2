@@ -251,6 +251,15 @@ namespace Net.Server
                 receiveBufferSize = value;
             }
         }
+        protected int performance;
+        /// <summary>
+        /// 服务器性能模式
+        /// </summary>
+        public Performance Performance
+        {
+            get => (Performance)performance;
+            set => performance = (int)value;
+        }
         #endregion
 
         #region 服务器事件处理
@@ -869,7 +878,7 @@ namespace Net.Server
 
         protected virtual void ReceiveProcessed(EndPoint remotePoint, ref bool isSleep)
         {
-            if (Server.Poll(0, SelectMode.SelectRead))
+            if (Server.Poll(performance, SelectMode.SelectRead))
             {
                 var buffer = BufferPool.Take(ReceiveBufferSize);
                 buffer.Count = Server.ReceiveFrom(buffer.Buffer, 0, buffer.Length, SocketFlags.None, ref remotePoint);

@@ -58,7 +58,7 @@
             {
                 try
                 {
-                    if (Server.Poll(0, SelectMode.SelectRead))
+                    if (Server.Poll(performance, SelectMode.SelectRead))
                     {
                         var socket = Server.Accept();
                         socket.ReceiveTimeout = (int)ReconnectionTimeout;
@@ -86,7 +86,7 @@
                     acceptList.RemoveAt(i);
                     continue;
                 }
-                if (!client.Poll(0, SelectMode.SelectRead))
+                if (!client.Poll(performance, SelectMode.SelectRead))
                     continue;
                 using (var segment = BufferPool.Take(ReceiveBufferSize))
                 {
@@ -107,7 +107,7 @@
         {
             if (!client.Client.Connected)
                 return;
-            if (client.Client.Poll(0, SelectMode.SelectRead))
+            if (client.Client.Poll(performance, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(ReceiveBufferSize);
                 segment.Count = client.Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
@@ -173,7 +173,7 @@
                 return;
             if (buffer.Count <= frame)//解决长度==6的问题(没有数据)
                 return;
-            if (client.Client.Poll(0, SelectMode.SelectWrite))
+            if (client.Client.Poll(performance, SelectMode.SelectWrite))
             {
                 sendAmount++;
                 sendCount += buffer.Count;

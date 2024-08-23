@@ -1,4 +1,5 @@
 ﻿using Net.Helper;
+using Net.Share;
 using Net.System;
 using System;
 using System.Collections.Specialized;
@@ -225,6 +226,7 @@ namespace Net.Server
         public bool Connected => socket.Connected;
         public OnMessageHandler onMessageHandler;
         private readonly WebSocketFrame frame;
+        internal int performance;
 
         public WebSocketSession(Socket socket)
         {
@@ -242,7 +244,7 @@ namespace Net.Server
 
         public unsafe void Receive(object state, OnMessageHandler onMessage)
         {
-            if (socket.Poll(0, SelectMode.SelectRead))
+            if (socket.Poll(performance, SelectMode.SelectRead))
             {
                 ISegment segment;
                 if (bufferStream.Position > 0)
@@ -369,7 +371,7 @@ namespace Net.Server
 
         internal bool PerformHandshake()
         {
-            if (socket.Poll(0, SelectMode.SelectRead))
+            if (socket.Poll(performance, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take();
                 segment.Count = stream.Read(segment.Buffer, 0, segment.Length);

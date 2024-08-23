@@ -8,6 +8,7 @@
     using Net.Event;
     using Net.Helper;
     using Cysharp.Threading.Tasks;
+    using Net.Share;
 
     /// <summary>
     /// TCP客户端类型 
@@ -114,7 +115,7 @@
                 return;
             sendCount += buffer.Count;
             sendAmount++;
-            if (Client.Poll(0, SelectMode.SelectWrite))
+            if (Client.Poll(performance, SelectMode.SelectWrite))
             {
                 int count = Client.Send(buffer.Buffer, buffer.Offset, buffer.Count, SocketFlags.None);
                 if (count <= 0)

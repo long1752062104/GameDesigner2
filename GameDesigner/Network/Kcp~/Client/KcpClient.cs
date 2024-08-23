@@ -82,7 +82,7 @@
 
         public override void ReceiveHandler()
         {
-            if (Client.Poll(0, SelectMode.SelectRead))
+            if (Client.Poll(performance, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(ReceiveBufferSize);
                 segment.Count = Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);

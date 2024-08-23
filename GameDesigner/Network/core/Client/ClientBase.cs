@@ -435,6 +435,15 @@ namespace Net.Client
                 receiveBufferSize = value;
             }
         }
+        protected int performance;
+        /// <summary>
+        /// 客户端性能模式
+        /// </summary>
+        public Performance Performance
+        {
+            get => (Performance)performance;
+            set => performance = (int)value;
+        }
 
         /// <summary>
         /// 构造函数
@@ -1216,7 +1225,7 @@ namespace Net.Client
 
         public virtual void ReceiveHandler()
         {
-            if (Client.Poll(0, SelectMode.SelectRead))
+            if (Client.Poll(performance, SelectMode.SelectRead))
             {
                 var segment = BufferPool.Take(ReceiveBufferSize);
                 segment.Count = Client.Receive(segment.Buffer, 0, segment.Length, SocketFlags.None, out SocketError error);
