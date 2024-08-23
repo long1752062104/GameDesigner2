@@ -191,7 +191,7 @@ namespace GameDesigner
                         DrawConnection(state.rect.center, t.NextState.rect.center, Color.green, 1, true);
                         if (Event.current.keyCode == KeyCode.Delete)
                         {
-                            ArrayExtend.Remove(ref state.transitions, t);
+                            ArrayHelper.Remove(ref state.transitions, t);
                             for (int i = 0; i < state.transitions.Length; i++)
                                 state.transitions[i].ID = i;
                             return;
@@ -463,7 +463,7 @@ namespace GameDesigner
                     if (state.transitions[n].NextState == null)
                         continue;
                     if (stateMachine.SelectStates.Contains(state.transitions[n].NextState.ID))
-                        ArrayExtend.RemoveAt(ref state.transitions, n);
+                        ArrayHelper.RemoveAt(ref state.transitions, n);
                 }
             }
             var ids = new List<int>();
@@ -475,7 +475,7 @@ namespace GameDesigner
                 {
                     if (stateMachine.States[i].ID == ids[0])
                     {
-                        stateMachine.States = ArrayExtend.RemoveAt(stateMachine.States, i);
+                        stateMachine.States = ArrayHelper.RemoveAt(stateMachine.States, i);
                         EditorUtility.SetDirty(stateMachine.View);
                         break;
                     }
@@ -526,7 +526,7 @@ namespace GameDesigner
                         s.perID = s.ID;
                         s.ID = stateMachine.States.Length;
                         s.rect.center = mousePosition;
-                        stateMachine.States = ArrayExtend.Add(stateMachine.States, s);
+                        stateMachine.States = ArrayHelper.Add(stateMachine.States, s);
                         states.Add(s);
                         var dis = stateMachine.States[seles[0]].rect.center - mousePosition;
                         for (int i = 1; i < stateMachine.SelectStates.Count; ++i)
@@ -535,7 +535,7 @@ namespace GameDesigner
                             ss.perID = ss.ID;
                             ss.ID = stateMachine.States.Length;
                             ss.rect.position -= dis;
-                            stateMachine.States = ArrayExtend.Add(stateMachine.States, ss);
+                            stateMachine.States = ArrayHelper.Add(stateMachine.States, ss);
                             states.Add(ss);
                         }
                         foreach (var state in states)

@@ -3,6 +3,18 @@ using System.Runtime.CompilerServices;
 
 namespace Net.Share
 {
+    internal class Inc
+    {
+        /// <summary>
+        /// 参数To或As调用一次+1
+        /// </summary>
+        internal byte parsIndex;
+        /// <summary>
+        /// 当数据已经填充, 获取Buffer可直接返回真正数据
+        /// </summary>
+        internal bool isFill;
+    }
+
     /// <summary>
     /// 远程过程调用模型,此类负责网络通讯中数据解析临时缓存的对象
     /// 经过测试结构体和类差距不大，如果用in修饰符，结构会比较快，但是我们不知道开发者在哪里会使用Asxxx读取参数，如果都全部用in修饰符，则Asxxx会失效，由于只读属性原因，导致parsIndex无法++
@@ -12,11 +24,11 @@ namespace Net.Share
         /// <summary>
         /// 内核? true:数据经过框架内部序列化 false:数据由开发者自己处理
         /// </summary>
-        public bool kernel;
+        public readonly bool kernel;
         /// <summary>
         /// 网络指令
         /// </summary>
-        public byte cmd;
+        public readonly byte cmd;
         /// <summary>
         /// 这是内存池数据，这个字段要配合index，count两字段使用，如果想得到实际数据，请使用Buffer属性
         /// </summary>
@@ -32,18 +44,13 @@ namespace Net.Share
         {
             get
             {
-                if (isFill)
+                if (inc.isFill)
                     return buffer;
                 if (count == 0)
-                    return new byte[0];//byte[]不能为空,否则出错
+                    return Array.Empty<byte>(); //byte[]不能为空,否则出错
                 var array = new byte[count];
                 Unsafe.CopyBlockUnaligned(ref array[0], ref buffer[index], (uint)count);
                 return array;
-            }
-            set
-            {
-                buffer = value;
-                count = value.Length;
             }
         }
         /// <summary>
@@ -61,17 +68,10 @@ namespace Net.Share
         /// <summary>
         /// 请求和响应的Token, 当几千几万个客户端同时发起相同的请求时, 可以根据Token区分响应, 得到真正的响应值
         /// </summary>
-        public uint token;
-        /// <summary>
-        /// 参数To或As调用一次+1
-        /// </summary>
-        private byte parsIndex;
-        /// <summary>
-        /// 当数据已经填充, 获取Buffer可直接返回真正数据
-        /// </summary>
-        private bool isFill;
+        public readonly uint token;
+        private readonly Inc inc;
 
-        public RPCModel() { }
+        public RPCModel() { inc = new Inc(); }
 
         public RPCModel(byte cmd, byte[] buffer) : this()
         {
@@ -97,16 +97,17 @@ namespace Net.Share
             count = buffer.Length;
         }
 
-        public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size) : this()
+        public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size, uint token = 0U) : this()
         {
             this.cmd = cmd;
             this.buffer = buffer;
             this.index = index;
             this.count = size;
             this.kernel = kernel;
+            this.token = token;
         }
 
-        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, uint protocol = 0) : this()
+        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, uint protocol = 0U, uint token = 0U) : this()
         {
             this.cmd = cmd;
             this.buffer = buffer;
@@ -114,15 +115,17 @@ namespace Net.Share
             this.serialize = serialize;
             this.protocol = protocol;
             this.count = buffer.Length;
+            this.token = token;
         }
 
-        public RPCModel(byte cmd, uint protocol, object[] pars, bool kernel, bool serialize) : this()
+        public RPCModel(byte cmd, uint protocol, object[] pars, bool kernel, bool serialize, uint token = 0U) : this()
         {
             this.cmd = cmd;
             this.protocol = protocol;
             this.pars = pars;
             this.kernel = kernel;
             this.serialize = serialize;
+            this.token = token;
         }
 
         /// <summary>
@@ -132,8 +135,8 @@ namespace Net.Share
         /// <returns></returns>
         public T To<T>()
         {
-            var t = (T)pars[parsIndex];
-            parsIndex++;
+            var t = (T)pars[inc.parsIndex];
+            inc.parsIndex++;
             return t;
         }
 
@@ -144,8 +147,8 @@ namespace Net.Share
         /// <returns></returns>
         public T As<T>() where T : class
         {
-            var t = pars[parsIndex] as T;
-            parsIndex++;
+            var t = pars[inc.parsIndex] as T;
+            inc.parsIndex++;
             return t;
         }
 
@@ -167,8 +170,8 @@ namespace Net.Share
         {
             get
             {
-                var obj = pars[parsIndex];
-                parsIndex++;
+                var obj = pars[inc.parsIndex];
+                inc.parsIndex++;
                 return obj;
             }
         }
@@ -180,7 +183,7 @@ namespace Net.Share
         public override string ToString()
         {
             var fields = typeof(NetCmd).GetFields(global::System.Reflection.BindingFlags.Static | global::System.Reflection.BindingFlags.Public);
-            string cmdStr = "";
+            var cmdStr = string.Empty;
             for (int i = 0; i < fields.Length; i++)
             {
                 if (cmd.Equals(fields[i].GetValue(null)))
@@ -197,7 +200,7 @@ namespace Net.Share
             buffer = Buffer;
             index = 0;
             count = buffer.Length;
-            isFill = true;
+            inc.isFill = true;
         }
 
         /// <summary>

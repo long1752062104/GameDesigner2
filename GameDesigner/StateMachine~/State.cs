@@ -169,8 +169,8 @@ namespace GameDesigner
             actions = new StateAction[0];
             this.stateMachine = stateMachine;
             ID = stateMachine.States.Length;
-            stateMachine.States = ArrayExtend.Add(stateMachine.States, this);
-            ArrayExtend.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine, behaviours = new BehaviourBase[0] });
+            stateMachine.States = ArrayHelper.Add(stateMachine.States, this);
+            ArrayHelper.Add(ref actions, new StateAction() { ID = ID, stateMachine = stateMachine, behaviours = new BehaviourBase[0] });
             stateMachine.UpdateStates();
         }
 

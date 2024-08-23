@@ -278,7 +278,7 @@ namespace GameDesigner
             var type = AssemblyHelper.GetType(behaviours[i].name);
             if (type == null)
             {
-                ArrayExtend.RemoveAt(ref behaviours, i);
+                ArrayHelper.RemoveAt(ref behaviours, i);
                 if (i >= 0) i--;
                 return;
             }

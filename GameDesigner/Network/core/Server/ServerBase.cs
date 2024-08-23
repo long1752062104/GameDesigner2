@@ -582,7 +582,7 @@ namespace Net.Server
         /// <param name="model"></param>
         protected virtual void OnNoticeRelay(Player client, RPCModel model)
         {
-            Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol) { token = model.token });
+            Multicast(Clients, new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol, model.token));
         }
         #endregion
 
@@ -827,6 +827,11 @@ namespace Net.Server
                 Debug.LogError($"[{client}]大数据缓存超出限制,在服务器类属性BigDataCacheLength设置大数据缓存最大长度! {client.BigDataCacheLengthError}/秒");
                 client.BigDataCacheLengthError = 0;
             }
+            if (client.ProtocolError > 0)
+            {
+                Debug.LogError($"[{client}][可忽略]协议出错! {client.ProtocolError}/秒");
+                client.ProtocolError = 0;
+            }
         }
 
         protected virtual bool CheckIsConnected(Player client, uint tick)
@@ -988,7 +993,7 @@ namespace Net.Server
                 var kernel = kernelV == 68;
                 if (!kernel & kernelV != 74)
                 {
-                    Debug.LogError($"[{client}][可忽略]协议出错!");
+                    client.ProtocolError++;
                     break;
                 }
                 var cmd1 = buffer.ReadByte();
@@ -997,7 +1002,7 @@ namespace Net.Server
                 if (buffer.Position + dataCount > count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount) { token = token };
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount, token);
                 if (kernel & cmd1 != NetCmd.Scene & cmd1 != NetCmd.Notice & cmd1 != NetCmd.Local)
                 {
                     buffer.Count = dataCount;
@@ -1012,7 +1017,7 @@ namespace Net.Server
             }
         }
 
-        protected virtual void ResolveBuffer(Player client, ref ISegment buffer)
+        protected unsafe virtual void ResolveBuffer(Player client, ref ISegment buffer)
         {
             client.heart = 0;
             if (client.stacking > 0)
@@ -1047,7 +1052,7 @@ namespace Net.Server
                     client.stacking++;
                     break;
                 }
-                var lenBytes = buffer.Read(4);
+                var lenBytes = buffer.ReadPtr(4);
                 var crcCode = buffer.ReadByte();//CRC检验索引
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
@@ -1056,7 +1061,7 @@ namespace Net.Server
                     client.CRCError++;
                     return;
                 }
-                var size = BitConverter.ToInt32(lenBytes, 0);
+                var size = *(int*)lenBytes;
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     client.stacking = 0;
@@ -1205,7 +1210,7 @@ namespace Net.Server
                     OnRpcExecute(client, model);
                     break;
                 case NetCmd.Local:
-                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol) { token = model.token });
+                    client.RpcModels.Enqueue(new RPCModel(model.cmd, model.Buffer, model.kernel, false, model.protocol, model.token));
                     break;
                 case NetCmd.Scene:
                     OnSceneRelay(client, model);

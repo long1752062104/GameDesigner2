@@ -10,7 +10,6 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Debug = Net.Event.NDebug;
 using Newtonsoft_X.Json;
-using Newtonsoft_X.Json.Bson;
 
 namespace Net.Server
 {
@@ -125,7 +124,7 @@ namespace Net.Server
                     session.PerformHandshake();
                     continue;
                 }
-                session.Receive((opcode, segment) =>
+                session.Receive(session, (object state, Opcode opcode, ref ISegment segment) =>
                 {
                     CheckReconnect(session.socket, segment, session);
                     acceptList.RemoveAt(i);
@@ -135,23 +134,40 @@ namespace Net.Server
 
         protected override void AcceptHander(Player client, params object[] args)
         {
-            client.Session = args[0] as WebSocketSession;
+            var session = args[0] as WebSocketSession;
+            session.onMessageHandler = OnMessageHandler;
+            client.Session = session;
         }
 
         protected override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
             if (!client.Client.Connected)
                 return;
-            client.Session.Receive((opcode, segment) =>
+            client.Session.Receive(client);
+        }
+
+        protected override void DataCRCHandler(Player client, ISegment buffer, bool isTcp)
+        {
+            if (!isTcp)
             {
-                receiveAmount++;
-                receiveCount += segment.Count;
-                client.BytesReceived += segment.Count;
-                if (opcode == Opcode.Binary)
-                    ResolveBuffer(client, ref segment);
-                else
-                    OnWSRevdHandler(client, segment);
-            });
+                ResolveBuffer(client, ref buffer);
+                return;
+            }
+            if (!PackageAdapter.Unpack(buffer, frame, client.UserID))
+                return;
+            DataHandler(client, buffer);
+        }
+
+        private void OnMessageHandler(object state, Opcode opcode, ref ISegment segment)
+        {
+            var client = state as Player;
+            receiveAmount++;
+            receiveCount += segment.Count;
+            client.BytesReceived += segment.Count;
+            if (opcode == Opcode.Binary)
+                ResolveBuffer(client, ref segment);
+            else
+                OnWSRevdHandler(client, segment);
         }
 
         protected virtual void OnWSRevdHandler(Player client, ISegment segment)

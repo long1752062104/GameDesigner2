@@ -8,7 +8,7 @@ namespace Net.System
     /// <summary>
     /// 内存数据片段接口
     /// </summary>
-    public interface ISegment : IDisposable
+    public unsafe interface ISegment : IDisposable
     {
         /// <summary>
         /// 总内存
@@ -67,6 +67,10 @@ namespace Net.System
         object ReadValue(TypeCode type);
 
         byte[] Read(int count);
+
+        void Read(byte[] destination, int count);
+
+        byte* ReadPtr(int count);
 
         void WriteList(object value);
 

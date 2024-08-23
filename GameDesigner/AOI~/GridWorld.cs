@@ -68,7 +68,7 @@ namespace Net.AOI
                 {
                     var grid1 = grids[j];
                     if (rect.Contains(grid1.rect.position))
-                        ArrayExtend.Add(ref grid.grids, grid1);
+                        ArrayHelper.Add(ref grid.grids, grid1);
                 }
             }
         }

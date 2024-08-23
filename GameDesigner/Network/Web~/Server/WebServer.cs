@@ -69,7 +69,7 @@ namespace Net.Server
                 }
                 else if (e.IsText)
                 {
-                    Server.WSRevdHandler(client, buffer, e.Data);
+                    Server.WSRevdHandler(client, e.Data);
                 }
             }
         }
@@ -134,17 +134,13 @@ namespace Net.Server
             return false;
         }
 
-        private void WSRevdHandler(Player client, byte[] buffer, string message)
+        private void WSRevdHandler(Player client, string text)
         {
             try
             {
-                var model = JsonConvert.DeserializeObject<MessageModel>(message);
-                var model1 = new RPCModel(model.cmd, model.func.CRCU32(), model.GetPars())
-                {
-                    buffer = buffer,
-                    count = buffer.Length
-                };
-                DataHandler(client, model1, null);
+                var message = JsonConvert.DeserializeObject<MessageModel>(text);
+                var model = new RPCModel(message.cmd, message.func.CRCU32(), message.GetPars());
+                DataHandler(client, model, null);
             }
             catch (Exception ex)
             {

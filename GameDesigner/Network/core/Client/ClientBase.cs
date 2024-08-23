@@ -1293,7 +1293,7 @@ namespace Net.Client
             DataHandle(stream);
         }
 
-        protected void ResolveBuffer(ref ISegment buffer)
+        protected unsafe void ResolveBuffer(ref ISegment buffer)
         {
             heart = 0;
             if (stacking > 0)
@@ -1328,7 +1328,7 @@ namespace Net.Client
                     stacking++;
                     break;
                 }
-                var lenBytes = buffer.Read(4);
+                var lenBytes = buffer.ReadPtr(4);
                 var crcCode = buffer.ReadByte();//CRC检验索引
                 var retVal = CRCHelper.CRC8(lenBytes, 0, 4);
                 if (crcCode != retVal)
@@ -1337,7 +1337,7 @@ namespace Net.Client
                     NDebug.LogError($"[{UID}]CRC校验失败!");
                     return;
                 }
-                var size = BitConverter.ToInt32(lenBytes, 0);
+                var size = *(int*)lenBytes;
                 if (size < 0 | size > PackageSize)//如果出现解析的数据包大小有问题，则不处理
                 {
                     stacking = 0;
@@ -1384,7 +1384,7 @@ namespace Net.Client
                 if (buffer.Position + dataCount > count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount) { token = token };
+                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount, token);
                 if (kernel)
                 {
                     buffer.Count = dataCount;
@@ -1885,11 +1885,11 @@ namespace Net.Client
                 goto J;
             if (buffer != null)
             {
-                Call(new RPCModel(cmd, buffer, false, serialize, protocol) { token = token });
+                Call(new RPCModel(cmd, buffer, false, serialize, protocol, token));
             }
             else
             {
-                var model = new RPCModel(cmd, protocol, pars, true, !serialize) { token = token };
+                var model = new RPCModel(cmd, protocol, pars, true, !serialize, token);
                 if (serialize)
                 {
                     var segment = BufferPool.Take();

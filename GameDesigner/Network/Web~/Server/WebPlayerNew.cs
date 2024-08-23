@@ -208,6 +208,8 @@ namespace Net.Server
         }
     }
 
+    public delegate void OnMessageHandler(object state, Opcode opcode, ref ISegment segment);
+
     public class WebSocketSession
     {
         internal static readonly int _defaultHeaderLength = 2;
@@ -223,6 +225,8 @@ namespace Net.Server
         internal bool isHandshake;
         public int FragmentLength { get; private set; }
         public bool Connected => socket.Connected;
+        public OnMessageHandler onMessageHandler;
+        private readonly WebSocketFrame frame;
 
         public WebSocketSession(Socket socket)
         {
@@ -230,9 +234,15 @@ namespace Net.Server
             ms = new MemoryStream(socket.ReceiveBufferSize);
             FragmentLength = 1016;
             RandomNumber = new RNGCryptoServiceProvider();
+            frame = new WebSocketFrame();
         }
 
-        internal void Receive(Action<Opcode, ISegment> onMessage)
+        public void Receive(object state)
+        {
+            Receive(state, onMessageHandler);
+        }
+
+        public unsafe void Receive(object state, OnMessageHandler onMessage)
         {
             if (socket.Poll(0, SelectMode.SelectRead))
             {
@@ -258,17 +268,14 @@ namespace Net.Server
                         ms.Write(segment.Buffer, segment.Position, canReadCount);
                         break;
                     }
-                    var header = segment.Read(_defaultHeaderLength);
-                    var frame = new WebSocketFrame
-                    {
-                        _fin = (header[0] & 0x80) == 0x80 ? Fin.Final : Fin.More,
-                        _rsv1 = (header[0] & 0x40) == 0x40 ? Rsv.On : Rsv.Off,
-                        _rsv2 = (header[0] & 0x20) == 0x20 ? Rsv.On : Rsv.Off,
-                        _rsv3 = (header[0] & 0x10) == 0x10 ? Rsv.On : Rsv.Off,
-                        _opcode = (Opcode)(byte)(header[0] & 0x0f),
-                        _mask = (header[1] & 0x80) == 0x80 ? Mask.On : Mask.Off,
-                        _payloadLength = (byte)(header[1] & 0x7f)
-                    };
+                    var header = segment.ReadPtr(_defaultHeaderLength);
+                    frame._fin = (header[0] & 0x80) == 0x80 ? Fin.Final : Fin.More;
+                    frame._rsv1 = (header[0] & 0x40) == 0x40 ? Rsv.On : Rsv.Off;
+                    frame._rsv2 = (header[0] & 0x20) == 0x20 ? Rsv.On : Rsv.Off;
+                    frame._rsv3 = (header[0] & 0x10) == 0x10 ? Rsv.On : Rsv.Off;
+                    frame._opcode = (Opcode)(byte)(header[0] & 0x0f);
+                    frame._mask = (header[1] & 0x80) == 0x80 ? Mask.On : Mask.Off;
+                    frame._payloadLength = (byte)(header[1] & 0x7f);
                     var extendedPayloadLengthWidth = frame.ExtendedPayloadLengthWidth;
                     if (extendedPayloadLengthWidth > 0)
                     {
@@ -278,11 +285,10 @@ namespace Net.Server
                             ms.Write(segment.Buffer, segment.Position, canReadCount);
                             break;
                         }
-                        frame._extPayloadLength = segment.Read(extendedPayloadLengthWidth);
+                        frame._extPayloadLength ??= new byte[extendedPayloadLengthWidth];
+                        segment.Read(frame._extPayloadLength, extendedPayloadLengthWidth);
                     }
-                    if (!frame.IsMasked)
-                        frame._maskingKey = EmptyBytes;
-                    else
+                    if (frame.IsMasked)
                     {
                         canReadCount = segment.Count - segment.Position;
                         if (canReadCount < _defaultMaskingKeyLength)
@@ -290,7 +296,8 @@ namespace Net.Server
                             ms.Write(segment.Buffer, segment.Position, canReadCount);
                             break;
                         }
-                        frame._maskingKey = segment.Read(_defaultMaskingKeyLength);
+                        frame._maskingKey ??= new byte[_defaultMaskingKeyLength];
+                        segment.Read(frame._maskingKey, _defaultMaskingKeyLength);
                     }
                     var exactPayloadLen = (int)frame.ExactPayloadLength;
                     var exactPayloadPos = segment.Position;
@@ -329,7 +336,7 @@ namespace Net.Server
                         if (isCompressed)
                         {
                         }
-                        onMessage?.Invoke(opcode, fragment);
+                        onMessage?.Invoke(state, opcode, ref fragment);
                         BufferPool.Push(fragment);
                         fragment = null;
                         continue;
@@ -340,23 +347,22 @@ namespace Net.Server
                         var count = segment.Count;
                         segment.Position = exactPayloadPos;
                         segment.Count = exactPayloadPos + exactPayloadLen;
-                        onMessage?.Invoke(frame._opcode, segment);
+                        onMessage?.Invoke(state, frame._opcode, ref segment);
                         segment.Position = pos;
                         segment.Count = count;
                     }
                     else if (frame.IsPing)
                     {
-                        var pong = WebSocketFrame.CreatePongFrame(frame._payloadData, false);
+                        var pong = WebSocketFrame.CreatePongFrame(EmptyBytes, false);
                         var bytes = pong.ToArray();
                         stream.Write(bytes, 0, bytes.Length);
                     }
                     else if (frame.IsPong)
                     {
-
                     }
                     else if (frame.IsClose)
                     {
-                        var pong = WebSocketFrame.CreateCloseFrame(new byte[0], false);
+                        var pong = WebSocketFrame.CreateCloseFrame(EmptyBytes, false);
                         var bytes = pong.ToArray();
                         stream.Write(bytes, 0, bytes.Length);
                     }

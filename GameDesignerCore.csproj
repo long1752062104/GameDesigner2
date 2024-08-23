@@ -99,6 +99,7 @@
     <None Remove="GameDesigner\GameDesigner.asmdef" />
     <None Remove="GameDesigner\GameDesigner.asmdef.meta" />
     <None Remove="GameDesigner\Helper.meta" />
+    <None Remove="GameDesigner\Helper\ArrayHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\CertificateHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\CRCHelper.cs.meta" />
     <None Remove="GameDesigner\Helper\DateTimeHelper.cs.meta" />
@@ -2264,7 +2265,6 @@
     <None Remove="GameDesigner\Network\core\Tools\ArrayExtend.cs.meta" />
     <None Remove="GameDesigner\Network\core\Tools\FPExtend.cs" />
     <None Remove="GameDesigner\Network\core\Tools\FPExtend.cs.meta" />
-    <None Remove="GameDesigner\Network\core\Tools\Loop.cs" />
     <None Remove="GameDesigner\Network\core\Tools\Loop.cs.meta" />
     <None Remove="GameDesigner\Network\core\Tools\OtherExtend.cs" />
     <None Remove="GameDesigner\Network\core\Tools\OtherExtend.cs.meta" />

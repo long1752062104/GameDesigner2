@@ -45,7 +45,7 @@ namespace GameDesigner
             nextStateID = stateId;
             stateMachine = state.stateMachine;
             AddComponent(behaviours);
-            ArrayExtend.Add(ref state.transitions, this);
+            ArrayHelper.Add(ref state.transitions, this);
             for (int i = 0; i < state.transitions.Length; i++)
                 state.transitions[i].ID = i;
         }
@@ -67,7 +67,7 @@ namespace GameDesigner
                 stateMachine = state.stateMachine,
                 behaviours = new BehaviourBase[0],
             };
-            ArrayExtend.Add(ref state.transitions, t);
+            ArrayHelper.Add(ref state.transitions, t);
             for (int i = 0; i < state.transitions.Length; i++)
                 state.transitions[i].ID = i;
             return t;

@@ -775,52 +775,50 @@ namespace WebSocketSharp
             var offset = 0;
             var retry = 0;
 
-            AsyncCallback callback = null;
-            callback =
-              ar =>
-              {
-                  try
-                  {
-                      var nread = stream.EndRead(ar);
+            void callback(IAsyncResult ar)
+            {
+                try
+                {
+                    var nread = stream.EndRead(ar);
 
-                      if (nread <= 0)
-                      {
-                          if (retry < _maxRetry)
-                          {
-                              retry++;
+                    if (nread <= 0)
+                    {
+                        if (retry < _maxRetry)
+                        {
+                            retry++;
 
-                              stream.BeginRead(ret, offset, length, callback, null);
+                            stream.BeginRead(ret, offset, length, callback, null);
 
-                              return;
-                          }
+                            return;
+                        }
 
-                          if (completed != null)
-                              completed(ret.SubArray(0, offset));
+                        if (completed != null)
+                            completed(ret.SubArray(0, offset));
 
-                          return;
-                      }
+                        return;
+                    }
 
-                      if (nread == length)
-                      {
-                          if (completed != null)
-                              completed(ret);
+                    if (nread == length)
+                    {
+                        if (completed != null)
+                            completed(ret);
 
-                          return;
-                      }
+                        return;
+                    }
 
-                      retry = 0;
+                    retry = 0;
 
-                      offset += nread;
-                      length -= nread;
+                    offset += nread;
+                    length -= nread;
 
-                      stream.BeginRead(ret, offset, length, callback, null);
-                  }
-                  catch (Exception ex)
-                  {
-                      if (error != null)
-                          error(ex);
-                  }
-              };
+                    stream.BeginRead(ret, offset, length, callback, null);
+                }
+                catch (Exception ex)
+                {
+                    if (error != null)
+                        error(ex);
+                }
+            }
 
             try
             {
@@ -935,17 +933,18 @@ namespace WebSocketSharp
             }
         }
 
-        internal static T[] Reverse<T>(this T[] array)
+        public static T[] Reverse<T>(this T[] array)
         {
-            var len = array.LongLength;
-            var ret = new T[len];
-
-            var end = len - 1;
-
-            for (long i = 0; i <= end; i++)
-                ret[i] = array[end - i];
-
-            return ret;
+            var count = array.Length - 1;
+            var size = array.Length / 2;
+            T x;
+            for (int i = 0; i < size; i++)
+            {
+                x = array[i];
+                array[i] = array[count - i];
+                array[count - i] = x;
+            }
+            return array;
         }
 
         internal static IEnumerable<string> SplitHeaderValue(
@@ -1121,21 +1120,19 @@ namespace WebSocketSharp
         {
             return bracketIPv6
                    && address.AddressFamily == AddressFamily.InterNetworkV6
-                   ? String.Format("[{0}]", address)
+                   ? string.Format("[{0}]", address)
                    : address.ToString();
         }
 
         internal static ushort ToUInt16(this byte[] source, ByteOrder sourceOrder)
         {
             var val = source.ToHostOrder(sourceOrder);
-
             return BitConverter.ToUInt16(val, 0);
         }
 
         internal static ulong ToUInt64(this byte[] source, ByteOrder sourceOrder)
         {
             var val = source.ToHostOrder(sourceOrder);
-
             return BitConverter.ToUInt64(val, 0);
         }
 

@@ -132,7 +132,7 @@ namespace GameDesigner
             stateMachine.UpdateMode |= (lateUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.LateUpdate : StateMachineUpdateMode.Update;
             stateMachine.UpdateMode |= (fixedUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.FixedUpdate : StateMachineUpdateMode.Update;
             component.OnInit();
-            ArrayExtend.Add(ref behaviours, component);
+            ArrayHelper.Add(ref behaviours, component);
             return component;
         }
 

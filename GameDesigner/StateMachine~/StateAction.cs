@@ -48,7 +48,7 @@ namespace GameDesigner
             if (behaviours != null)
                 AddComponent(behaviours);
             else this.behaviours = new ActionBehaviour[0];
-            ArrayExtend.Add(ref state.actions, this);
+            ArrayHelper.Add(ref state.actions, this);
         }
 
         internal void Enter(State state)

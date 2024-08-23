@@ -302,6 +302,21 @@ namespace Net.System
             return array;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Read(byte[] destination, int count)
+        {
+            Unsafe.CopyBlockUnaligned(ref destination[0], ref Buffer[Position], (uint)count);
+            Position += count;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe byte* ReadPtr(int count)
+        {
+            var ptr = (byte*)Unsafe.AsPointer(ref Buffer[Position]);
+            Position += count;
+            return ptr;
+        }
+
         public void WriteList(object value)
         {
             switch (value)

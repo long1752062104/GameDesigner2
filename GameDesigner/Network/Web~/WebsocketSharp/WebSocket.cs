@@ -42,14 +42,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using WebSocketSharp.Net;
 using WebSocketSharp.Net.WebSockets;
 
@@ -512,7 +511,7 @@ namespace WebSocketSharp
         {
             get
             {
-                return _extensions ?? String.Empty;
+                return _extensions ?? string.Empty;
             }
         }
 
@@ -672,7 +671,7 @@ namespace WebSocketSharp
         {
             get
             {
-                return _protocol ?? String.Empty;
+                return _protocol ?? string.Empty;
             }
 
             internal set
@@ -1411,7 +1410,7 @@ namespace WebSocketSharp
 
             var ret = sent && received;
 
-            var msg = String.Format(
+            var msg = string.Format(
                         "The closing was clean? {0} (sent: {1} received: {2})",
                         ret,
                         sent,
@@ -2541,10 +2540,7 @@ namespace WebSocketSharp
             _pongReceived = new ManualResetEvent(false);
             _receivingExited = new ManualResetEvent(false);
 
-            Action receive = null;
-            receive =
-              () =>
-                WebSocketFrame.ReadFrameAsync(
+            void receive() => WebSocketFrame.ReadFrameAsync(
                   _stream,
                   false,
                   frame =>
@@ -2577,7 +2573,6 @@ namespace WebSocketSharp
                       abort("An exception has occurred while receiving.", ex);
                   }
                 );
-
             receive();
         }
 
@@ -2701,7 +2696,7 @@ namespace WebSocketSharp
 
             var res = sent && received;
 
-            var msg = String.Format(
+            var msg = string.Format(
                         "The closing was clean? {0} (sent: {1} received: {2})",
                         res,
                         sent,
@@ -2848,7 +2843,7 @@ namespace WebSocketSharp
         /// </remarks>
         public void Close()
         {
-            close(1005, String.Empty);
+            close(1005, string.Empty);
         }
 
         /// <summary>
@@ -2887,7 +2882,7 @@ namespace WebSocketSharp
         /// </exception>
         public void Close(ushort code)
         {
-            Close(code, String.Empty);
+            Close(code, string.Empty);
         }
 
         /// <summary>
@@ -2920,7 +2915,7 @@ namespace WebSocketSharp
         /// </exception>
         public void Close(CloseStatusCode code)
         {
-            Close(code, String.Empty);
+            Close(code, string.Empty);
         }
 
         /// <summary>
@@ -3011,7 +3006,7 @@ namespace WebSocketSharp
 
             if (reason.IsNullOrEmpty())
             {
-                close(code, String.Empty);
+                close(code, string.Empty);
 
                 return;
             }
@@ -3112,7 +3107,7 @@ namespace WebSocketSharp
 
             if (reason.IsNullOrEmpty())
             {
-                close((ushort)code, String.Empty);
+                close((ushort)code, string.Empty);
 
                 return;
             }
@@ -3157,7 +3152,7 @@ namespace WebSocketSharp
         /// </remarks>
         public void CloseAsync()
         {
-            closeAsync(1005, String.Empty);
+            closeAsync(1005, string.Empty);
         }
 
         /// <summary>
@@ -3201,7 +3196,7 @@ namespace WebSocketSharp
         /// </exception>
         public void CloseAsync(ushort code)
         {
-            CloseAsync(code, String.Empty);
+            CloseAsync(code, string.Empty);
         }
 
         /// <summary>
@@ -3239,7 +3234,7 @@ namespace WebSocketSharp
         /// </exception>
         public void CloseAsync(CloseStatusCode code)
         {
-            CloseAsync(code, String.Empty);
+            CloseAsync(code, string.Empty);
         }
 
         /// <summary>
@@ -3335,7 +3330,7 @@ namespace WebSocketSharp
 
             if (reason.IsNullOrEmpty())
             {
-                closeAsync(code, String.Empty);
+                closeAsync(code, string.Empty);
 
                 return;
             }
@@ -3441,7 +3436,7 @@ namespace WebSocketSharp
 
             if (reason.IsNullOrEmpty())
             {
-                closeAsync((ushort)code, String.Empty);
+                closeAsync((ushort)code, string.Empty);
 
                 return;
             }
@@ -3822,7 +3817,7 @@ namespace WebSocketSharp
             if (len < length)
             {
                 var fmt = "Only {0} byte(s) of data could be read from the stream.";
-                var msg = String.Format(fmt, len);
+                var msg = string.Format(fmt, len);
 
                 _log.Warn(msg);
             }
@@ -4104,7 +4099,7 @@ namespace WebSocketSharp
             if (len < length)
             {
                 var fmt = "Only {0} byte(s) of data could be read from the stream.";
-                var msg = String.Format(fmt, len);
+                var msg = string.Format(fmt, len);
 
                 _log.Warn(msg);
             }
@@ -4390,7 +4385,7 @@ namespace WebSocketSharp
                                     ? new NetworkCredential(
                                         username,
                                         password,
-                                        String.Format(
+                                        string.Format(
                                           "{0}:{1}", _uri.DnsSafeHost, _uri.Port
                                         )
                                       )
@@ -4416,7 +4411,7 @@ namespace WebSocketSharp
         /// </remarks>
         void IDisposable.Dispose()
         {
-            close(1001, String.Empty);
+            close(1001, string.Empty);
         }
 
         #endregion

@@ -162,6 +162,10 @@
         /// </summary>
         public int BigDataCacheLengthError { get; set; }
         /// <summary>
+        /// 协议出错次数，这是解析数据包时协议码不正确时提示
+        /// </summary>
+        public int ProtocolError { get; internal set; }
+        /// <summary>
         /// 当接收到发送的文件进度
         /// </summary>
         public Action<BigDataProgress> OnRevdFileProgress { get; set; }
@@ -460,7 +464,7 @@
             }
             else
             {
-                var model = new RPCModel(cmd, protocol, pars, kernel, !serialize) { token = token };
+                var model = new RPCModel(cmd, protocol, pars, kernel, !serialize, token);
                 if (serialize)
                 {
                     var segment = BufferPool.Take();

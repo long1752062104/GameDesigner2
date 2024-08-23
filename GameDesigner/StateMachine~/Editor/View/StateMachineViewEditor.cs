@@ -260,13 +260,13 @@ namespace GameDesigner
                 state.foldout = EditorGUI.Foldout(new Rect(actRect.position, new Vector2(actRect.size.x - 120f, 15)), state.foldout, BlueprintGUILayout.Instance.Language["Action Tree Set"], true);
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 40f, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Add action"]))
                 {
-                    ArrayExtend.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = Self.editStateMachine, behaviours = new BehaviourBase[0] });
+                    ArrayHelper.Add(ref state.actions, new StateAction() { ID = state.ID, stateMachine = Self.editStateMachine, behaviours = new BehaviourBase[0] });
                     return;
                 }
                 if (GUI.Button(new Rect(new Vector2(actRect.size.x - 100, actRect.position.y), new Vector2(60, 16)), BlueprintGUILayout.Instance.Language["Remove action"]))
                 {
                     if (state.actions.Length > 1)
-                        ArrayExtend.RemoveAt(ref state.actions, state.actions.Length - 1);
+                        ArrayHelper.RemoveAt(ref state.actions, state.actions.Length - 1);
                     return;
                 }
                 if (state.foldout)
@@ -285,7 +285,7 @@ namespace GameDesigner
                             var menu = new GenericMenu();
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Remove action"]), false, (obj) =>
                             {
-                                ArrayExtend.RemoveAt(ref state.actions, (int)obj);
+                                ArrayHelper.RemoveAt(ref state.actions, (int)obj);
                             }, x);
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy action"]), false, (obj) =>
                             {
@@ -294,7 +294,7 @@ namespace GameDesigner
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste new action"]), StateSystem.CopyComponent != null, () =>
                             {
                                 if (StateSystem.Component is StateAction stateAction)
-                                    ArrayExtend.Add(ref state.actions, Net.CloneHelper.DeepCopy<StateAction>(stateAction, new List<Type>() { typeof(Object), typeof(StateMachineCore) }));
+                                    ArrayHelper.Add(ref state.actions, Net.CloneHelper.DeepCopy<StateAction>(stateAction, new List<Type>() { typeof(Object), typeof(StateMachineCore) }));
                             });
                             menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste action value"]), StateSystem.CopyComponent != null, (obj) =>
                             {
@@ -328,7 +328,7 @@ namespace GameDesigner
                                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                                 {
                                     act.behaviours[i].OnDestroy();
-                                    ArrayExtend.RemoveAt(ref act.behaviours, i);
+                                    ArrayHelper.RemoveAt(ref act.behaviours, i);
                                     continue;
                                 }
                                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -338,7 +338,7 @@ namespace GameDesigner
                                     {
                                         var index = (int)obj;
                                         act.behaviours[index].OnDestroy();
-                                        ArrayExtend.RemoveAt(ref act.behaviours, index);
+                                        ArrayHelper.RemoveAt(ref act.behaviours, index);
                                         return;
                                     }, i);
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy action scripts"]), false, (obj) =>
@@ -351,7 +351,7 @@ namespace GameDesigner
                                         if (StateSystem.CopyComponent is ActionBehaviour behaviour)
                                         {
                                             ActionBehaviour ab = (ActionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                                            ArrayExtend.Add(ref act.behaviours, ab);
+                                            ArrayHelper.Add(ref act.behaviours, ab);
                                         }
                                     });
                                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste action script values"]), StateSystem.CopyComponent != null, (obj) =>
@@ -403,7 +403,7 @@ namespace GameDesigner
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas();
                                             stb.ID = state.ID;
-                                            ArrayExtend.Add(ref act.behaviours, stb);
+                                            ArrayHelper.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
                                             EditorUtility.SetDirty(Self);
                                         }
@@ -412,7 +412,7 @@ namespace GameDesigner
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas();
                                             stb.ID = state.ID;
-                                            ArrayExtend.Add(ref act.behaviours, stb);
+                                            ArrayHelper.Add(ref act.behaviours, stb);
                                             addBehaviourState = null;
                                             compiling = false;
                                             EditorUtility.SetDirty(Self);
@@ -478,7 +478,7 @@ namespace GameDesigner
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
                     s.behaviours[i].OnDestroy();
-                    ArrayExtend.RemoveAt(ref s.behaviours, i);
+                    ArrayHelper.RemoveAt(ref s.behaviours, i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -488,7 +488,7 @@ namespace GameDesigner
                     {
                         var index = (int)obj;
                         s.behaviours[index].OnDestroy();
-                        ArrayExtend.RemoveAt(ref s.behaviours, index);
+                        ArrayHelper.RemoveAt(ref s.behaviours, index);
                         return;
                     }, i);
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy status script"]), false, (obj) =>
@@ -501,7 +501,7 @@ namespace GameDesigner
                         if (StateSystem.CopyComponent is StateBehaviour behaviour)
                         {
                             var ab = (StateBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                            ArrayExtend.Add(ref s.behaviours, ab);
+                            ArrayHelper.Add(ref s.behaviours, ab);
                         }
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste status script values"]), StateSystem.CopyComponent != null, (obj) =>
@@ -556,7 +556,7 @@ namespace GameDesigner
                             var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas();
                             stb.ID = s.ID;
-                            ArrayExtend.Add(ref s.behaviours, stb);
+                            ArrayHelper.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
                             EditorUtility.SetDirty(Self);
                         }
@@ -565,7 +565,7 @@ namespace GameDesigner
                             var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas();
                             stb.ID = s.ID;
-                            ArrayExtend.Add(ref s.behaviours, stb);
+                            ArrayHelper.Add(ref s.behaviours, stb);
                             addBehaviourState = null;
                             compiling = false;
                             EditorUtility.SetDirty(Self);
@@ -775,7 +775,7 @@ namespace GameDesigner
             {
                 if (tr.behaviours[i] == null)
                 {
-                    ArrayExtend.RemoveAt(ref tr.behaviours, i);
+                    ArrayHelper.RemoveAt(ref tr.behaviours, i);
                     continue;
                 }
                 EditorGUI.indentLevel = 1;
@@ -787,7 +787,7 @@ namespace GameDesigner
                 if (GUI.Button(new Rect(rect.x + rect.width - 15, rect.y, rect.width, rect.height), GUIContent.none, GUI.skin.GetStyle("ToggleMixed")))
                 {
                     tr.behaviours[i].OnDestroy();
-                    ArrayExtend.RemoveAt(ref tr.behaviours, i);
+                    ArrayHelper.RemoveAt(ref tr.behaviours, i);
                     continue;
                 }
                 if (rect.Contains(Event.current.mousePosition) & Event.current.button == 1)
@@ -797,7 +797,7 @@ namespace GameDesigner
                     {
                         var index = (int)obj;
                         tr.behaviours[index].OnDestroy();
-                        ArrayExtend.RemoveAt(ref tr.behaviours, index);
+                        ArrayHelper.RemoveAt(ref tr.behaviours, index);
                         return;
                     }, i);
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Copy connection scripts"]), false, (obj) =>
@@ -810,7 +810,7 @@ namespace GameDesigner
                         if (StateSystem.CopyComponent is TransitionBehaviour behaviour)
                         {
                             TransitionBehaviour ab = (TransitionBehaviour)Net.CloneHelper.DeepCopy(behaviour);
-                            ArrayExtend.Add(ref tr.behaviours, ab);
+                            ArrayHelper.Add(ref tr.behaviours, ab);
                         }
                     });
                     menu.AddItem(new GUIContent(BlueprintGUILayout.Instance.Language["Paste connection script values"]), StateSystem.CopyComponent != null, (obj) =>
@@ -862,14 +862,14 @@ namespace GameDesigner
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas();
-                        ArrayExtend.Add(ref tr.behaviours, stb);
+                        ArrayHelper.Add(ref tr.behaviours, stb);
                         addBehaviourState = null;
                     }
                     if (compiling & type.Name == createScriptName)
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas();
-                        ArrayExtend.Add(ref tr.behaviours, stb);
+                        ArrayHelper.Add(ref tr.behaviours, stb);
                         addBehaviourState = null;
                         compiling = false;
                     }

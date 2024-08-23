@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 #endif
-public static class ArrayExtend
+public static class ArrayHelper
 {
     #region 数组For
     public static void For<T>(this T[] self, Action<T> action)
@@ -517,5 +517,31 @@ public static class ArrayExtend
         var array = new T[size];
         Array.Copy(self, 0, array, 0, size);
         return array;
+    }
+
+    public static void Reverse<T>(this T[] array)
+    {
+        var count = array.Length - 1;
+        var size = array.Length / 2;
+        T x;
+        for (int i = 0; i < size; i++)
+        {
+            x = array[i];
+            array[i] = array[count - i];
+            array[count - i] = x;
+        }
+    }
+
+    public static void Reverse<T>(this List<T> array)
+    {
+        var count = array.Count - 1;
+        var size = array.Count / 2;
+        T x;
+        for (int i = 0; i < size; i++)
+        {
+            x = array[i];
+            array[i] = array[count - i];
+            array[count - i] = x;
+        }
     }
 }
