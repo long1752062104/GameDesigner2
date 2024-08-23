@@ -373,7 +373,6 @@ namespace Net.Server
             {
                 var segment = BufferPool.Take();
                 segment.Count = stream.Read(segment.Buffer, 0, segment.Length);
-                // 读取 HTTP 请求头
                 var requestBuilder = Encoding.UTF8.GetString(segment.Buffer, 0, segment.Count);
                 var headers = new NameValueCollection();
                 var headersText = requestBuilder.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
@@ -384,22 +383,19 @@ namespace Net.Server
                     var value = headersText[i].Substring(idx + 1).Trim();
                     headers.Add(name, value);
                 }
-                // 检查是否为 WebSocket 握手请求
                 var upgrade = headers.Get("Upgrade");
                 if (upgrade != "websocket")
                     return false;
-                // 解析 Sec-WebSocket-Key
                 var key = headers.Get("Sec-WebSocket-Key");
-                // 生成响应
                 var responseKey = Convert.ToBase64String(SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
-                // 构建握手响应
-                string response = $"HTTP/1.1 101 Switching Protocols\r\n" +
-                                  $"Server: websocket-gdnet/1.0\r\n" +
-                                  $"Upgrade: websocket\r\n" +
-                                  $"Connection: Upgrade\r\n" +
-                                  $"Sec-WebSocket-Accept: {responseKey}\r\n\r\n";
-                // 发送握手响应
-                var responseBytes = Encoding.UTF8.GetBytes(response);
+                var response = new StringBuilder();
+                response.AppendLine("HTTP/1.1 101 Switching Protocols");
+                response.AppendLine("Server: websocket-gdnet/1.0");
+                response.AppendLine("Upgrade: websocket");
+                response.AppendLine("Connection: Upgrade");
+                response.AppendLine($"Sec-WebSocket-Accept: {responseKey}");
+                response.AppendLine(); //必须有最后这个换行，否则失败
+                var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
                 stream.Write(responseBytes);
                 isHandshake = true;
                 return true;
