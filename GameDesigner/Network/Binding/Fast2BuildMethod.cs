@@ -247,9 +247,9 @@ namespace Binding
             return value;
         }
 
-		public void Read(ref {TYPE} value, ISegment stream)
+		public unsafe void Read(ref {TYPE} value, ISegment stream)
 		{
-			var bits = stream.Read({SIZE});
+			var bits = stream.ReadPtr({SIZE});
 {Split}
 			if(NetConvertBase.GetBit(bits[{BITPOS}], {FIELDINDEX}))
 				value.{FIELDNAME} = stream.{READTYPE}();

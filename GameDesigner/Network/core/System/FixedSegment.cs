@@ -33,7 +33,7 @@ namespace Net.System
 
         public static implicit operator byte[](FixedSegment segment)
         {
-            return segment.Buffer;
+            return segment.buffer;
         }
 
         ~FixedSegment()
@@ -64,11 +64,11 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe void Write(string value)
         {
-            fixed (byte* ptr1 = &Buffer[Position])
+            fixed (byte* ptr1 = &buffer[position])
             {
                 int offset = 0;
                 NetConvertHelper.Write(ptr1, ref offset, value);
-                Position += offset;
+                position += offset;
             }
         }
 
@@ -93,11 +93,11 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe string ReadString()
         {
-            fixed (byte* ptr1 = &Buffer[Position])
+            fixed (byte* ptr1 = &buffer[position])
             {
                 int offset = 0;
                 var value = NetConvertHelper.Read(ptr1, ref offset);
-                Position += offset;
+                position += offset;
                 return value;
             }
         }

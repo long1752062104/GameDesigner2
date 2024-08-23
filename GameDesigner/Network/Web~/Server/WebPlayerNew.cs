@@ -123,19 +123,19 @@ namespace Net.Server
             }
             else if (len < 0x010000)
             {
-                _payloadLength = (byte)126;
+                _payloadLength = 126;
                 _extPayloadLength = ((ushort)len).ToByteArray(ByteOrder.Big);
             }
             else
             {
-                _payloadLength = (byte)127;
+                _payloadLength = 127;
                 _extPayloadLength = len.ToByteArray(ByteOrder.Big);
             }
 
             if (mask)
             {
                 _mask = Mask.On;
-                _maskingKey = createMaskingKey();
+                _maskingKey = CreateMaskingKey();
 
                 for (int i = 0; i < len; i++)
                     payloadData[i] = (byte)(payloadData[i] ^ _maskingKey[i % 4]);
@@ -149,12 +149,10 @@ namespace Net.Server
             _payloadData = payloadData;
         }
 
-        private static byte[] createMaskingKey()
+        private static byte[] CreateMaskingKey()
         {
             var key = new byte[WebSocketSession._defaultMaskingKeyLength];
-
             WebSocketSession.RandomNumber.GetBytes(key);
-
             return key;
         }
 
@@ -178,9 +176,9 @@ namespace Net.Server
                 header = (header << 1) + (int)_rsv3;
                 header = (header << 4) + (int)_opcode;
                 header = (header << 1) + (int)_mask;
-                header = (header << 7) + (int)_payloadLength;
+                header = (header << 7) + _payloadLength;
 
-                var uint16Header = (ushort)header;
+                ushort uint16Header = (ushort)header;
                 var rawHeader = uint16Header.ToByteArray(ByteOrder.Big);
 
                 buff.Write(rawHeader, 0, WebSocketSession._defaultHeaderLength);
@@ -214,14 +212,14 @@ namespace Net.Server
     {
         internal static readonly int _defaultHeaderLength = 2;
         internal static readonly int _defaultMaskingKeyLength = 4;
-        internal static readonly byte[] EmptyBytes = new byte[0];
+        internal static readonly byte[] EmptyBytes = Array.Empty<byte>();
         internal static RandomNumberGenerator RandomNumber;
         internal Socket socket;
         private ISegment fragment;
         private Opcode opcode;
         private bool isCompressed;
         internal Stream stream;
-        private readonly MemoryStream ms;
+        private readonly ISegment bufferStream;
         internal bool isHandshake;
         public int FragmentLength { get; private set; }
         public bool Connected => socket.Connected;
@@ -231,7 +229,7 @@ namespace Net.Server
         public WebSocketSession(Socket socket)
         {
             this.socket = socket;
-            ms = new MemoryStream(socket.ReceiveBufferSize);
+            bufferStream = BufferPool.Take(socket.ReceiveBufferSize);
             FragmentLength = 1016;
             RandomNumber = new RNGCryptoServiceProvider();
             frame = new WebSocketFrame();
@@ -247,25 +245,26 @@ namespace Net.Server
             if (socket.Poll(0, SelectMode.SelectRead))
             {
                 ISegment segment;
-                if (ms.Position > 0)
+                if (bufferStream.Position > 0)
                 {
-                    var buffer = ms.GetBuffer();
-                    ms.Position += stream.Read(buffer, (int)ms.Position, buffer.Length - (int)ms.Position);
-                    segment = BufferPool.NewSegment(buffer, 0, (int)ms.Position);
-                    ms.Position = 0;
+                    var buffer = bufferStream.Buffer;
+                    bufferStream.Position += stream.Read(buffer, bufferStream.Position, buffer.Length - bufferStream.Position);
+                    segment = BufferPool.NewSegment(buffer, 0, bufferStream.Position);
+                    bufferStream.SetPositionLength(0);
                 }
                 else
                 {
                     segment = BufferPool.Take();
                     segment.Count = stream.Read(segment.Buffer, 0, segment.Length);
                 }
-                int canReadCount;
+                int startPos, canReadCount;
                 while (segment.Position < segment.Count)
                 {
-                    canReadCount = segment.Count - segment.Position;
+                    startPos = segment.Position; //初始位置
+                    canReadCount = segment.Count - startPos;
                     if (canReadCount < _defaultHeaderLength)
                     {
-                        ms.Write(segment.Buffer, segment.Position, canReadCount);
+                        bufferStream.Write(segment.Buffer, startPos, canReadCount);
                         break;
                     }
                     var header = segment.ReadPtr(_defaultHeaderLength);
@@ -282,10 +281,10 @@ namespace Net.Server
                         canReadCount = segment.Count - segment.Position;
                         if (canReadCount < extendedPayloadLengthWidth)
                         {
-                            ms.Write(segment.Buffer, segment.Position, canReadCount);
+                            bufferStream.Write(segment.Buffer, startPos, segment.Count - startPos);
                             break;
                         }
-                        frame._extPayloadLength ??= new byte[extendedPayloadLengthWidth];
+                        frame._extPayloadLength = new byte[extendedPayloadLengthWidth];
                         segment.Read(frame._extPayloadLength, extendedPayloadLengthWidth);
                     }
                     if (frame.IsMasked)
@@ -293,7 +292,7 @@ namespace Net.Server
                         canReadCount = segment.Count - segment.Position;
                         if (canReadCount < _defaultMaskingKeyLength)
                         {
-                            ms.Write(segment.Buffer, segment.Position, canReadCount);
+                            bufferStream.Write(segment.Buffer, startPos, segment.Count - startPos);
                             break;
                         }
                         frame._maskingKey ??= new byte[_defaultMaskingKeyLength];
@@ -304,7 +303,7 @@ namespace Net.Server
                     canReadCount = segment.Count - segment.Position;
                     if (canReadCount < exactPayloadLen)
                     {
-                        ms.Write(segment.Buffer, segment.Position, canReadCount);
+                        bufferStream.Write(segment.Buffer, startPos, segment.Count - startPos);
                         break;
                     }
                     segment.Position += exactPayloadLen;
@@ -357,17 +356,11 @@ namespace Net.Server
                         var bytes = pong.ToArray();
                         stream.Write(bytes, 0, bytes.Length);
                     }
-                    else if (frame.IsPong)
-                    {
-                    }
                     else if (frame.IsClose)
                     {
                         var pong = WebSocketFrame.CreateCloseFrame(EmptyBytes, false);
                         var bytes = pong.ToArray();
                         stream.Write(bytes, 0, bytes.Length);
-                    }
-                    else
-                    {
                     }
                 }
                 segment.Dispose();
@@ -466,11 +459,11 @@ namespace Net.Server
             return dataStream.Read(buff, 0, rem) == rem && Send(Fin.Final, Opcode.Cont, buff, false);
         }
 
-        private bool Send(Fin fin, Opcode opcode, byte[] data, bool compressed)
+        internal bool Send(Fin fin, Opcode opcode, byte[] data, bool compressed)
         {
             var frame = new WebSocketFrame(fin, opcode, data, compressed, false);
             var rawFrame = frame.ToArray();
-            stream.Write(rawFrame, 0, rawFrame.Length);
+            stream.WriteAsync(rawFrame, 0, rawFrame.Length);
             return true;
         }
     }

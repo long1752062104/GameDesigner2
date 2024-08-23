@@ -151,7 +151,6 @@ namespace WebSocketSharp
             using (var output = stream.decompress())
             {
                 output.Close();
-
                 return output.ToArray();
             }
         }
@@ -400,9 +399,7 @@ namespace WebSocketSharp
                    : stream;
         }
 
-        internal static byte[] DecompressToArray(
-          this Stream stream, CompressionMethod method
-        )
+        internal static byte[] DecompressToArray(this Stream stream, CompressionMethod method)
         {
             return method == CompressionMethod.Deflate
                    ? stream.decompressToArray()
@@ -1009,12 +1006,10 @@ namespace WebSocketSharp
         internal static byte[] ToByteArray(this Stream stream)
         {
             stream.Position = 0;
-
             using (var buff = new MemoryStream())
             {
                 stream.CopyTo(buff, 1024);
                 buff.Close();
-
                 return buff.ToArray();
             }
         }
@@ -1022,30 +1017,24 @@ namespace WebSocketSharp
         public static byte[] ToByteArray(this ushort value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
-
             if (!order.IsHostOrder())
-                Array.Reverse(ret);
-
+                Reverse(ret);
             return ret;
         }
 
         public static byte[] ToByteArray(this int value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
-
             if (!order.IsHostOrder())
-                Array.Reverse(ret);
-
+                Reverse(ret);
             return ret;
         }
 
         public static byte[] ToByteArray(this ulong value, ByteOrder order)
         {
             var ret = BitConverter.GetBytes(value);
-
             if (!order.IsHostOrder())
-                Array.Reverse(ret);
-
+                Reverse(ret);
             return ret;
         }
 

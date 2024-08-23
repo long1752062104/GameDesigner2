@@ -124,9 +124,9 @@ namespace Binding
             return value;
         }
 
-        public void Read(ref Net.Share.Operation value, ISegment stream)
+        public unsafe void Read(ref Net.Share.Operation value, ISegment stream)
         {
-            var bits = stream.Read(2);
+            var bits = stream.ReadPtr(2);
 
             if (NetConvertBase.GetBit(bits[0], 1))
                 value.cmd = stream.ReadByte();

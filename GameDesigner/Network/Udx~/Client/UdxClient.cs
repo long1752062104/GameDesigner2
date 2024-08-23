@@ -101,7 +101,7 @@
                         tick = DateTimeHelper.GetTickCount64() + 1000;
                         var segment = BufferPool.Take(SendBufferSize);
                         segment.Write(PreUserId);
-                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
+                        RpcModels.Enqueue(new RPCModel(cmd: NetCmd.Identify, buffer: segment.ToArray(true)));
                     }
                     return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
                 }, null);

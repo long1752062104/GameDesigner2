@@ -24,11 +24,11 @@ namespace Net.Share
         /// <summary>
         /// 内核? true:数据经过框架内部序列化 false:数据由开发者自己处理
         /// </summary>
-        public readonly bool kernel;
+        public bool kernel;
         /// <summary>
         /// 网络指令
         /// </summary>
-        public readonly byte cmd;
+        public byte cmd;
         /// <summary>
         /// 这是内存池数据，这个字段要配合index，count两字段使用，如果想得到实际数据，请使用Buffer属性
         /// </summary>
@@ -68,64 +68,37 @@ namespace Net.Share
         /// <summary>
         /// 请求和响应的Token, 当几千几万个客户端同时发起相同的请求时, 可以根据Token区分响应, 得到真正的响应值
         /// </summary>
-        public readonly uint token;
+        public uint token;
         private readonly Inc inc;
 
-        public RPCModel() { inc = new Inc(); }
-
-        public RPCModel(byte cmd, byte[] buffer) : this()
+        public RPCModel(bool kernel = default, byte cmd = default, byte[] buffer = default, int index = default, int count = default, uint protocol = default, object[] pars = default, bool serialize = default, uint token = default)
         {
-            this.cmd = cmd;
-            this.buffer = buffer;
-            count = buffer.Length;
-        }
-
-        public RPCModel(byte cmd, uint protocol, object[] pars) : this()
-        {
-            kernel = true;
-            serialize = true;
-            this.cmd = cmd;
-            this.protocol = protocol;
-            this.pars = pars;
-        }
-
-        public RPCModel(byte cmd, byte[] buffer, bool kernel) : this()
-        {
-            this.cmd = cmd;
-            this.buffer = buffer;
+            this.inc = new Inc();
             this.kernel = kernel;
-            count = buffer.Length;
-        }
-
-        public RPCModel(byte cmd, bool kernel, byte[] buffer, int index, int size, uint token = 0U) : this()
-        {
             this.cmd = cmd;
             this.buffer = buffer;
             this.index = index;
-            this.count = size;
-            this.kernel = kernel;
-            this.token = token;
-        }
-
-        public RPCModel(byte cmd, byte[] buffer, bool kernel, bool serialize, uint protocol = 0U, uint token = 0U) : this()
-        {
-            this.cmd = cmd;
-            this.buffer = buffer;
-            this.kernel = kernel;
-            this.serialize = serialize;
-            this.protocol = protocol;
-            this.count = buffer.Length;
-            this.token = token;
-        }
-
-        public RPCModel(byte cmd, uint protocol, object[] pars, bool kernel, bool serialize, uint token = 0U) : this()
-        {
-            this.cmd = cmd;
+            this.count = count;
             this.protocol = protocol;
             this.pars = pars;
-            this.kernel = kernel;
             this.serialize = serialize;
             this.token = token;
+        }
+
+        public RPCModel Reset(bool kernel = default, byte cmd = default, byte[] buffer = default, int index = default, int count = default, uint protocol = default, object[] pars = default, bool serialize = default, uint token = default)
+        {
+            this.inc.isFill = false;
+            this.inc.parsIndex = 0;
+            this.kernel = kernel;
+            this.cmd = cmd;
+            this.buffer = buffer;
+            this.index = index;
+            this.count = count;
+            this.protocol = protocol;
+            this.pars = pars;
+            this.serialize = serialize;
+            this.token = token;
+            return this;
         }
 
         /// <summary>
@@ -209,7 +182,7 @@ namespace Net.Share
         /// <returns></returns>
         public RPCModel Copy()
         {
-            return new RPCModel(cmd, Buffer, kernel, false);
+            return new RPCModel(cmd: cmd, buffer: Buffer, kernel: kernel, serialize: false);
         }
 
         public override int GetHashCode()

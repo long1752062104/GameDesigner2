@@ -130,7 +130,7 @@ namespace Net.Client
                         receiveCount += e.Data.Length * 2;
                         receiveAmount++;
                         var model = JsonConvert.DeserializeObject<MessageModel>(e.Data);
-                        var model1 = new RPCModel(model.cmd, model.func.CRCU32(), model.GetPars());
+                        var model1 = new RPCModel(cmd: model.cmd, protocol: model.func.CRCU32(), pars: model.GetPars());
                         CommandHandler(model1, null);
                     }
                     else if (e.IsBinary)

@@ -32,25 +32,25 @@ namespace Binding
             stream.Write(bits, 0, 1);
             stream.Position = pos1;
         }
-		
-        public UnityEngine.Vector2 Read(ISegment stream) 
+
+        public UnityEngine.Vector2 Read(ISegment stream)
         {
             var value = new UnityEngine.Vector2();
             Read(ref value, stream);
             return value;
         }
 
-		public void Read(ref UnityEngine.Vector2 value, ISegment stream)
-		{
-			var bits = stream.Read(1);
+        public unsafe void Read(ref UnityEngine.Vector2 value, ISegment stream)
+        {
+            var bits = stream.ReadPtr(1);
 
-			if(NetConvertBase.GetBit(bits[0], 1))
-				value.x = stream.ReadSingle();
+            if (NetConvertBase.GetBit(bits[0], 1))
+                value.x = stream.ReadSingle();
 
-			if(NetConvertBase.GetBit(bits[0], 2))
-				value.y = stream.ReadSingle();
+            if (NetConvertBase.GetBit(bits[0], 2))
+                value.y = stream.ReadSingle();
 
-		}
+        }
 
         public void WriteValue(object value, ISegment stream)
         {
@@ -72,83 +72,83 @@ namespace Binding
 namespace Binding
 {
     public readonly struct UnityEngineVector2ArrayBind : ISerialize<UnityEngine.Vector2[]>, ISerialize
-	{
+    {
         public ushort HashCode { get { return 104; } }
 
-		public void Write(UnityEngine.Vector2[] value, ISegment stream)
-		{
-			int count = value.Length;
-			stream.Write(count);
-			if (count == 0) return;
-			var bind = new UnityEngineVector2Bind();
-			foreach (var value1 in value)
-				bind.Write(value1, stream);
-		}
+        public void Write(UnityEngine.Vector2[] value, ISegment stream)
+        {
+            int count = value.Length;
+            stream.Write(count);
+            if (count == 0) return;
+            var bind = new UnityEngineVector2Bind();
+            foreach (var value1 in value)
+                bind.Write(value1, stream);
+        }
 
-		public UnityEngine.Vector2[] Read(ISegment stream)
-		{
-			var count = stream.ReadInt32();
-			var value = new UnityEngine.Vector2[count];
-			if (count == 0) return value;
-			var bind = new UnityEngineVector2Bind();
-			for (int i = 0; i < count; i++)
-				value[i] = bind.Read(stream);
-			return value;
-		}
+        public UnityEngine.Vector2[] Read(ISegment stream)
+        {
+            var count = stream.ReadInt32();
+            var value = new UnityEngine.Vector2[count];
+            if (count == 0) return value;
+            var bind = new UnityEngineVector2Bind();
+            for (int i = 0; i < count; i++)
+                value[i] = bind.Read(stream);
+            return value;
+        }
 
-		public void WriteValue(object value, ISegment stream)
-		{
-			Write((UnityEngine.Vector2[])value, stream);
-		}
+        public void WriteValue(object value, ISegment stream)
+        {
+            Write((UnityEngine.Vector2[])value, stream);
+        }
 
-		public object ReadValue(ISegment stream)
-		{
-			return Read(stream);
-		}
+        public object ReadValue(ISegment stream)
+        {
+            return Read(stream);
+        }
 
         public void Bind()
         {
-			SerializeCache<UnityEngine.Vector2[]>.Serialize = this;
+            SerializeCache<UnityEngine.Vector2[]>.Serialize = this;
         }
     }
 }
 
 namespace Binding
 {
-	public readonly struct SystemCollectionsGenericListUnityEngineVector2Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Vector2>>, ISerialize
-	{
+    public readonly struct SystemCollectionsGenericListUnityEngineVector2Bind : ISerialize<System.Collections.Generic.List<UnityEngine.Vector2>>, ISerialize
+    {
         public ushort HashCode { get { return 105; } }
 
-		public void Write(System.Collections.Generic.List<UnityEngine.Vector2> value, ISegment stream)
-		{
-			int count = value.Count;
-			stream.Write(count);
-			if (count == 0) return;
-			var bind = new UnityEngineVector2Bind();
-			foreach (var value1 in value)
-				bind.Write(value1, stream);
-		}
+        public void Write(System.Collections.Generic.List<UnityEngine.Vector2> value, ISegment stream)
+        {
+            int count = value.Count;
+            stream.Write(count);
+            if (count == 0) return;
+            var bind = new UnityEngineVector2Bind();
+            foreach (var value1 in value)
+                bind.Write(value1, stream);
+        }
 
-		public System.Collections.Generic.List<UnityEngine.Vector2> Read(ISegment stream)
-		{
-			var count = stream.ReadInt32();
-			var value = new System.Collections.Generic.List<UnityEngine.Vector2>(count);
-			if (count == 0) return value;
-			var bind = new UnityEngineVector2Bind();
-			for (int i = 0; i < count; i++)
-				value.Add(bind.Read(stream));
-			return value;
-		}
+        public System.Collections.Generic.List<UnityEngine.Vector2> Read(ISegment stream)
+        {
+            var count = stream.ReadInt32();
+            var value = new System.Collections.Generic.List<UnityEngine.Vector2>(count);
+            if (count == 0) return value;
+            var bind = new UnityEngineVector2Bind();
+            for (int i = 0; i < count; i++)
+                value.Add(bind.Read(stream));
+            return value;
+        }
 
-		public void WriteValue(object value, ISegment stream)
-		{
-			Write((System.Collections.Generic.List<UnityEngine.Vector2>)value, stream);
-		}
+        public void WriteValue(object value, ISegment stream)
+        {
+            Write((System.Collections.Generic.List<UnityEngine.Vector2>)value, stream);
+        }
 
-		public object ReadValue(ISegment stream)
-		{
-			return Read(stream);
-		}
+        public object ReadValue(ISegment stream)
+        {
+            return Read(stream);
+        }
 
         public void Bind()
         {

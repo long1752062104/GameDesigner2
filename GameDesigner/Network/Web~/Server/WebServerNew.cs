@@ -59,8 +59,7 @@ namespace Net.Server
                     ReceiveBufferSize = ReceiveBufferSize,
                     NoDelay = true
                 };
-                if (Certificate == null)
-                    Certificate = CertificateHelper.GetDefaultCertificate();
+                Certificate ??= CertificateHelper.GetDefaultCertificate();
                 Server.Bind(address);
                 Server.Listen(LineUp);
             }
@@ -162,12 +161,18 @@ namespace Net.Server
         {
             var client = state as Player;
             receiveAmount++;
-            receiveCount += segment.Count;
-            client.BytesReceived += segment.Count;
-            if (opcode == Opcode.Binary)
-                ResolveBuffer(client, ref segment);
-            else
-                OnWSRevdHandler(client, segment);
+            var count = segment.Count - segment.Position;
+            receiveCount += count;
+            client.BytesReceived += count;
+            switch (opcode)
+            {
+                case Opcode.Binary:
+                    ResolveBuffer(client, ref segment);
+                    break;
+                case Opcode.Text:
+                    OnWSRevdHandler(client, segment);
+                    break;
+            }
         }
 
         protected virtual void OnWSRevdHandler(Player client, ISegment segment)
@@ -177,7 +182,7 @@ namespace Net.Server
                 var buffer = segment.Read(segment.Count - segment.Position);
                 var jsonString = buffer.ToText();
                 var message = JsonConvert.DeserializeObject<MessageModel>(jsonString);
-                var model = new RPCModel(message.cmd, message.func.CRCU32(), message.GetPars());
+                var model = new RPCModel(cmd: message.cmd, protocol: message.func.CRCU32(), pars: message.GetPars());
                 DataHandler(client, model, null);
             }
             catch (Exception ex)

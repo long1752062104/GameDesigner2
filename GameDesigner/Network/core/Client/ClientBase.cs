@@ -562,7 +562,7 @@ namespace Net.Client
         /// <param name="pars"></param>
         public void DispatchRpc(string func, params object[] pars)
         {
-            PushRpcData(new RPCModel(0, func.CRCU32(), pars));
+            PushRpcData(new RPCModel(cmd: 0, protocol: func.CRCU32(), pars: pars));
         }
 
         /// <summary>
@@ -572,7 +572,7 @@ namespace Net.Client
         /// <param name="pars"></param>
         public void DispatchRpc(uint hash, params object[] pars)
         {
-            PushRpcData(new RPCModel(0, hash, pars));
+            PushRpcData(new RPCModel(cmd: 0, protocol: hash, pars: pars));
         }
 
         /// <summary>
@@ -787,7 +787,7 @@ namespace Net.Client
                         tick = DateTimeHelper.GetTickCount64() + 1000;
                         var segment = BufferPool.Take(SendBufferSize);
                         segment.Write(PreUserId);
-                        RpcModels.Enqueue(new RPCModel(NetCmd.Identify, segment.ToArray(true)));
+                        RpcModels.Enqueue(new RPCModel(cmd: NetCmd.Identify, buffer: segment.ToArray(true)));
                     }
                     NetworkTick();
                     return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
@@ -1009,7 +1009,7 @@ namespace Net.Client
             var operations1 = operations.GetRemoveRange(0, count);
             var list = new OperationList(operations1);
             var buffer = OnSerializeOPT(list);
-            RpcModels.Enqueue(new RPCModel(NetCmd.OperationSync, buffer, false, false));
+            RpcModels.Enqueue(new RPCModel(cmd: NetCmd.OperationSync, buffer: buffer, kernel: false, serialize: false));
         }
 
         protected internal virtual byte[] OnSerializeOptInternal(in OperationList list)
@@ -1384,7 +1384,8 @@ namespace Net.Client
                 if (buffer.Position + dataCount > count)
                     break;
                 var position = buffer.Position + dataCount;
-                var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount, token);
+                //var model = new RPCModel(cmd1, kernel, buffer.Buffer, buffer.Position, dataCount, token);
+                var model = new RPCModel(cmd: cmd1, kernel: kernel, buffer: buffer.Buffer, index: buffer.Position, count: dataCount, token: token);
                 if (kernel)
                 {
                     buffer.Count = dataCount;
@@ -1462,7 +1463,7 @@ namespace Net.Client
                     InvokeInMainThread(OnOperationSync, operList);
                     break;
                 case NetCmd.Ping:
-                    RpcModels.Enqueue(new RPCModel(NetCmd.PingCallback, model.Buffer, model.kernel, false));
+                    RpcModels.Enqueue(new RPCModel(cmd: NetCmd.PingCallback, buffer: model.Buffer, kernel: model.kernel, serialize: false));
                     break;
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
@@ -1589,7 +1590,7 @@ namespace Net.Client
                         buffer = new byte[length];
                         data.Stream.Read(buffer, 0, length);
                         data.Stream.Dispose();
-                        var model = new RPCModel(cmd, buffer);
+                        var model = new RPCModel(cmd: cmd, buffer: buffer);
                         OnReceiveDataHandle?.Invoke(model);
                     }
                 });
@@ -1658,7 +1659,7 @@ namespace Net.Client
         public void AddOperation(byte cmd, string func, params object[] pars)
         {
             var segment = BufferPool.Take();
-            OnSerializeRPC(segment, new RPCModel(cmd, func.CRCU32(), pars));
+            OnSerializeRPC(segment, new RPCModel(cmd: cmd, protocol: func.CRCU32(), pars: pars));
             var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
@@ -1674,7 +1675,7 @@ namespace Net.Client
         public void AddOperation(byte cmd, uint func, params object[] pars)
         {
             var segment = BufferPool.Take();
-            OnSerializeRPC(segment, new RPCModel(cmd, func, pars));
+            OnSerializeRPC(segment, new RPCModel(cmd: cmd, protocol: func, pars: pars));
             var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
@@ -1843,9 +1844,9 @@ namespace Net.Client
         public void Call(byte cmd, uint protocol, byte[] buffer, params object[] pars)
         {
             if (buffer != null)
-                Call(new RPCModel(cmd, buffer, false, false, protocol));
+                Call(new RPCModel(cmd: cmd, protocol: protocol, buffer: buffer, kernel: false, serialize: false));
             else
-                Call(new RPCModel(cmd, protocol, pars, true, true));
+                Call(new RPCModel(cmd: cmd, protocol: protocol, pars: pars, kernel: true, serialize: true));
         }
 
         public virtual void Call(RPCModel model)
@@ -1885,11 +1886,11 @@ namespace Net.Client
                 goto J;
             if (buffer != null)
             {
-                Call(new RPCModel(cmd, buffer, false, serialize, protocol, token));
+                Call(new RPCModel(cmd: cmd, buffer: buffer, kernel: false, serialize: serialize, protocol: protocol, token: token));
             }
             else
             {
-                var model = new RPCModel(cmd, protocol, pars, true, !serialize, token);
+                var model = new RPCModel(cmd: cmd, protocol: protocol, pars: pars, kernel: true, serialize: !serialize, token: token);
                 if (serialize)
                 {
                     var segment = BufferPool.Take();
