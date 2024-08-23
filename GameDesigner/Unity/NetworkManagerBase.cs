@@ -67,6 +67,7 @@ namespace Net.Component
         public bool debugRpc = true;
         public bool startConnect = true;
         public NetworkUpdateMode updateMode = NetworkUpdateMode.Thread;
+        public Performance performance = Performance.Realtime;
         public int heartInterval = 1000;
         public byte heartLimit = 5;
         public int reconnectInterval = 2000;
@@ -88,6 +89,7 @@ namespace Net.Component
                 _client.port = port;
                 _client.LogRpc = debugRpc;
                 _client.UpdateMode = updateMode;
+                _client.Performance = performance;
                 _client.ReconnectCount = reconnectCount;
                 _client.ReconnectInterval = reconnectInterval;
                 _client.SetHeartTime(heartLimit, heartInterval);
