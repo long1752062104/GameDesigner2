@@ -57,7 +57,19 @@ namespace GameCore
 
     public class AssetManifest
     {
+        public List<AssetInfo> assetInfos = new List<AssetInfo>();
         public Dictionary<string, string[]> dependencies = new Dictionary<string, string[]>();
+        internal Dictionary<string, AssetInfo> assetInfoDict = new Dictionary<string, AssetInfo>();
+        internal Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
+
+        public Dictionary<string, AssetInfo> GetAssetInfoDict() => assetInfoDict;
+
+        public void Init()
+        {
+            assetInfoDict.Clear();
+            foreach (var assetInfo in assetInfos)
+                assetInfoDict.Add(assetInfo.name, assetInfo);
+        }
 
         public string[] GetDirectDependencies(string assetBundleName)
         {
@@ -65,15 +77,46 @@ namespace GameCore
                 return directDependencies;
             return new string[0];
         }
+
+        public bool TryGetAssetInfo(string assetPath, out AssetInfo assetInfo)
+        {
+            if (!assetInfoDict.TryGetValue(assetPath, out assetInfo))
+            {
+                Global.Logger.LogError($"加载资源:{assetPath}失败!");
+                return false;
+            }
+            return true;
+        }
+
+        public bool TryGetAssetBundle(string assetBundleName, out AssetBundle assetBundle)
+        {
+            return assetBundles.TryGetValue(assetBundleName, out assetBundle);
+        }
+
+        public void AddAssetBundle(string assetBundleName, AssetBundle assetBundle)
+        {
+            assetBundles.Add(assetBundleName, assetBundle);
+        }
+
+        public bool ContainsAssetBundle(string assetBundleName)
+        {
+            return assetBundles.ContainsKey(assetBundleName);
+        }
+
+        public void AddAssetInfo(string assetName, AssetInfo assetInfo)
+        {
+            assetInfos.Add(assetInfo);
+            assetInfoDict.Add(assetName, assetInfo);
+        }
+
+        public bool ContainsAssetInfo(string assetName)
+        {
+            return assetInfoDict.ContainsKey(assetName);
+        }
     }
 
     public class ResourcesManager : MonoBehaviour
     {
-#if UNITY_2020_1_OR_NEWER
-        [NonReorderable]
-#endif
-        public Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
-        public Dictionary<string, AssetInfo> assetInfos = new Dictionary<string, AssetInfo>();
         private AssetManifest assetBundleManifest;
         public bool encrypt;
         public int password = 154789548;
@@ -90,16 +133,12 @@ namespace GameCore
             if ((byte)Global.I.Mode <= 1)
                 return;
             var assetBundlePath = Global.I.AssetBundlePath;
-            var assetInfoList = assetBundlePath + "assetInfoList.json";
-            var json = LoadAssetFileReadAllText(assetInfoList);
-            if (string.IsNullOrEmpty(json))
-                throw new Exception("请构建AB包后再运行!");
-            assetInfos = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(json);
             var manifestBundlePath = assetBundlePath + "assetBundleManifest.json";
-            json = LoadAssetFileReadAllText(manifestBundlePath);
+            var json = LoadAssetFileReadAllText(manifestBundlePath);
             if (string.IsNullOrEmpty(json))
                 throw new Exception("请构建AB包后再运行!");
             assetBundleManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(json);
+            assetBundleManifest.Init();
         }
 
 #if UNITY_EDITOR
@@ -212,10 +251,10 @@ namespace GameCore
 
         public virtual void OnDestroy()
         {
-            if (assetBundles == null)
+            if (assetBundleManifest == null)
                 return;
-            foreach (var AssetBundleInfo in assetBundles)
-                AssetBundleInfo.Value?.Unload(true);
+            foreach (var assetBundleInfo in assetBundleManifest.assetBundles)
+                assetBundleInfo.Value?.Unload(true);
         }
 
         /// <summary>
@@ -229,20 +268,10 @@ namespace GameCore
             assetPath = GetAssetPath(assetPath);
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
-            {
-                if (Global.I.addressables)
-                    addressablesDict.TryGetValue(assetPath, out assetPath);
-                return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            }
+                return LoadAssetAtPath<T>(assetPath);
 #endif
             if (Global.I.Mode == AssetBundleMode.ResourceMode)
-            {
-                var index = assetPath.IndexOf("Resources");
-                assetPath = assetPath.Remove(0, index + 10);
-                index = assetPath.LastIndexOf(".");
-                assetPath = assetPath.Remove(index, assetPath.Length - index);
-                return Resources.Load<T>(assetPath);
-            }
+                return ResourcesLoad<T>(assetPath);
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
@@ -258,20 +287,10 @@ namespace GameCore
             assetPath = GetAssetPath(assetPath);
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
-            {
-                if (Global.I.addressables)
-                    addressablesDict.TryGetValue(assetPath, out assetPath);
-                return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            }
+                return LoadAssetAtPath<T>(assetPath);
 #endif
             if (Global.I.Mode == AssetBundleMode.ResourceMode)
-            {
-                var index = assetPath.IndexOf("Resources");
-                assetPath = assetPath.Remove(0, index + 10);
-                index = assetPath.LastIndexOf(".");
-                assetPath = assetPath.Remove(index, assetPath.Length - index);
-                return Resources.Load<T>(assetPath);
-            }
+                return ResourcesLoad<T>(assetPath);
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
@@ -289,31 +308,17 @@ namespace GameCore
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
-                if (Global.I.addressables)
-                    addressablesDict.TryGetValue(assetPath, out assetPath);
-                if (assetPath == null)
-                    return default;
-                assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                assetObjects = LoadAllAssetsAtPath(assetPath);
                 goto J;
             }
 #endif
             if (Global.I.Mode == AssetBundleMode.ResourceMode)
-            {
-                var index = assetPath.IndexOf("Resources");
-                assetPath = assetPath.Remove(0, index + 10);
-                index = assetPath.LastIndexOf(".");
-                assetPath = assetPath.Remove(index, assetPath.Length - index);
-                return Resources.LoadAll<T>(assetPath);
-            }
+                return ResourcesLoadAll<T>(assetPath);
             var assetBundle = GetAssetBundle(assetPath);
             if (assetBundle == null)
                 return default;
             assetObjects = assetBundle.LoadAssetWithSubAssets(assetPath);
-        J: var subAssets = new List<T>(assetObjects.Length);
-            for (int i = 0; i < assetObjects.Length; i++)
-                if (assetObjects[i] is T assetObject) //这里获取Sprite, 这里的第一个元素会是Texture2D
-                    subAssets.Add(assetObject);
-            return subAssets.ToArray();
+        J: return ConvertObjects<T>(assetObjects);
         }
 
         public virtual async UniTask<T[]> LoadAssetWithSubAssetsAsync<T>(string assetPath) where T : Object
@@ -323,51 +328,76 @@ namespace GameCore
 #if UNITY_EDITOR
             if (Global.I.Mode == AssetBundleMode.EditorMode)
             {
-                if (Global.I.addressables)
-                    addressablesDict.TryGetValue(assetPath, out assetPath);
-                if (assetPath == null)
-                    return default;
-                assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                assetObjects = LoadAllAssetsAtPath(assetPath);
                 goto J;
             }
 #endif
             if (Global.I.Mode == AssetBundleMode.ResourceMode)
-            {
-                var index = assetPath.IndexOf("Resources");
-                assetPath = assetPath.Remove(0, index + 10);
-                index = assetPath.LastIndexOf(".");
-                assetPath = assetPath.Remove(index, assetPath.Length - index);
-                return Resources.LoadAll<T>(assetPath);
-            }
+                return ResourcesLoadAll<T>(assetPath);
             var assetBundle = await GetAssetBundleAsync(assetPath);
             if (assetBundle == null)
                 return default;
             var assetBundleRequest = assetBundle.LoadAssetWithSubAssetsAsync(assetPath);
             await assetBundleRequest;
             assetObjects = assetBundleRequest.allAssets;
-        J: var subAssets = new List<T>(assetObjects.Length);
+        J: return ConvertObjects<T>(assetObjects);
+        }
+
+        private T[] ConvertObjects<T>(Object[] assetObjects) where T : Object
+        {
+            var subAssets = new List<T>(assetObjects.Length);
             for (int i = 0; i < assetObjects.Length; i++)
                 if (assetObjects[i] is T assetObject) //这里获取Sprite, 这里的第一个元素会是Texture2D
                     subAssets.Add(assetObject);
             return subAssets.ToArray();
         }
 
+#if UNITY_EDITOR
+        private T LoadAssetAtPath<T>(string assetPath) where T : Object
+        {
+            if (Global.I.addressables)
+                addressablesDict.TryGetValue(assetPath, out assetPath);
+            return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
+        }
+
+        private Object[] LoadAllAssetsAtPath(string assetPath)
+        {
+            if (Global.I.addressables)
+                addressablesDict.TryGetValue(assetPath, out assetPath);
+            return assetPath == null ? default : UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+        }
+#endif
+
+        private T ResourcesLoad<T>(string assetPath) where T : Object
+        {
+            var index = assetPath.LastIndexOf("Resources");
+            assetPath = assetPath.Remove(0, index);
+            index = assetPath.LastIndexOf(".");
+            assetPath = assetPath.Remove(index, assetPath.Length - index);
+            return Resources.Load<T>(assetPath);
+        }
+
+        private T[] ResourcesLoadAll<T>(string assetPath) where T : Object
+        {
+            var index = assetPath.LastIndexOf("Resources");
+            assetPath = assetPath.Remove(0, index);
+            index = assetPath.LastIndexOf(".");
+            assetPath = assetPath.Remove(index, assetPath.Length - index);
+            return Resources.LoadAll<T>(assetPath);
+        }
+
         protected virtual AssetBundle GetAssetBundle(string assetPath)
         {
-            //assetPath = GetAssetPath(assetPath);
-            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+            if (!assetBundleManifest.TryGetAssetInfo(assetPath, out var assetInfo))
+                return null;
+            if (!assetBundleManifest.TryGetAssetBundle(assetInfo.assetBundleName, out var assetBundle))
             {
-                Global.Logger.LogError($"加载资源:{assetPath}失败!");
-                return default;
-            }
-            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
-            {
-                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
+                var fullPath = Global.I.AssetBundlePath + assetInfo.assetBundleName;
                 assetBundle = LoadAssetBundle(fullPath);
                 if (assetBundle != null)
                 {
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle);
-                    DirectDependencies(assetInfoBase.assetBundleName);
+                    assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
+                    DirectDependencies(assetInfo.assetBundleName);
                 }
             }
             return assetBundle;
@@ -375,20 +405,16 @@ namespace GameCore
 
         protected virtual async UniTask<AssetBundle> GetAssetBundleAsync(string assetPath)
         {
-            //assetPath = GetAssetPath(assetPath);
-            if (!assetInfos.TryGetValue(assetPath, out var assetInfoBase))
+            if (!assetBundleManifest.TryGetAssetInfo(assetPath, out var assetInfo))
+                return null;
+            if (!assetBundleManifest.TryGetAssetBundle(assetInfo.assetBundleName, out var assetBundle))
             {
-                Global.Logger.LogError($"加载资源:{assetPath}失败!");
-                return default;
-            }
-            if (!assetBundles.TryGetValue(assetInfoBase.assetBundleName, out var assetBundle))
-            {
-                var fullPath = Global.I.AssetBundlePath + assetInfoBase.assetBundleName;
+                var fullPath = Global.I.AssetBundlePath + assetInfo.assetBundleName;
                 assetBundle = await LoadAssetBundleAsync(fullPath);
                 if (assetBundle != null)
                 {
-                    assetBundles.Add(assetInfoBase.assetBundleName, assetBundle);
-                    await DirectDependenciesAsync(assetInfoBase.assetBundleName);
+                    assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
+                    await DirectDependenciesAsync(assetInfo.assetBundleName);
                 }
             }
             return assetBundle;
@@ -443,11 +469,11 @@ namespace GameCore
             var dependencies = assetBundleManifest.GetDirectDependencies(assetBundleName);
             foreach (var dependencie in dependencies)
             {
-                if (assetBundles.ContainsKey(dependencie))
+                if (assetBundleManifest.ContainsAssetBundle(dependencie))
                     continue;
                 var fullPath = Global.I.AssetBundlePath + dependencie;
                 var assetBundle = LoadAssetBundle(fullPath);
-                assetBundles.Add(dependencie, assetBundle);
+                assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
                 DirectDependencies(dependencie);
             }
         }
@@ -457,11 +483,11 @@ namespace GameCore
             var dependencies = assetBundleManifest.GetDirectDependencies(assetBundleName);
             foreach (var dependencie in dependencies)
             {
-                if (assetBundles.ContainsKey(dependencie))
+                if (assetBundleManifest.ContainsAssetBundle(dependencie))
                     continue;
                 var fullPath = Global.I.AssetBundlePath + dependencie;
                 var assetBundle = await LoadAssetBundleAsync(fullPath);
-                assetBundles.Add(dependencie, assetBundle);
+                assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
                 await DirectDependenciesAsync(dependencie);
             }
         }
@@ -504,15 +530,11 @@ namespace GameCore
         /// <param name="resources"></param>
         public void Change(ResourcesManager resources)
         {
-            assetBundles = resources.assetBundles;
-            assetInfos = resources.assetInfos;
             assetBundleManifest = resources.assetBundleManifest;
 #if UNITY_EDITOR
             addressablesDict = resources.addressablesDict;
             resources.addressablesDict = null;
 #endif
-            resources.assetBundles = null;
-            resources.assetInfos = null;
             resources.assetBundleManifest = null;
         }
 

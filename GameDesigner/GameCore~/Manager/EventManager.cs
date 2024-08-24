@@ -27,16 +27,6 @@ namespace GameCore
         private readonly Dictionary<object, GetEventBase> getEvents = new Dictionary<object, GetEventBase>(); //这个事件是你不想在Global定义全局字段时用到，并且无耦合代码
 
         /// <summary>
-        /// 添加事件, 以方法名为事件名称
-        /// </summary>
-        /// <param name="eventDelegate"></param>
-        public void AddEvent(Action<object[]> eventDelegate)
-        {
-            var eventName = eventDelegate.Method.Name;
-            AddEvent(eventName, eventDelegate);
-        }
-
-        /// <summary>
         /// 添加事件
         /// </summary>
         /// <param name="eventName"></param>
@@ -69,6 +59,50 @@ namespace GameCore
         public void AddGetEvent<T>(Enum eventType, Func<T> func)
         {
             getEvents[eventType] = new GetEvent<T>(func); //获取函数只能有一个
+        }
+
+        /// <summary>
+        /// 注册的事件在self物体被销毁或关闭时自动移除
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="eventType"></param>
+        /// <param name="eventDelegate"></param>
+        public void AutoEvent(MonoBehaviour self, Enum eventType, Action<object[]> eventDelegate) => AutoEvent(self, UnEventMode.OnDestroy, eventType, eventDelegate);
+
+        /// <summary>
+        /// 注册的事件在self物体被销毁或关闭时自动移除
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="eventType"></param>
+        /// <param name="eventDelegate"></param>
+        public void AutoEvent(MonoBehaviour self, UnEventMode eventMode, Enum eventType, Action<object[]> eventDelegate)
+        {
+            AddEvent(eventType, eventDelegate);
+            if (!self.TryGetComponent<UnEventTrigger>(out var trigger))
+                trigger = self.gameObject.AddComponent<UnEventTrigger>();
+            trigger.RegisterUnEvents(eventMode, 1, eventType, eventDelegate);
+        }
+
+        /// <summary>
+        /// 注册的事件在self物体被销毁或关闭时自动移除
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="eventType"></param>
+        /// <param name="func"></param>
+        public void AutoGetEvent<T>(MonoBehaviour self, Enum eventType, Func<T> func) => AutoGetEvent(self, UnEventMode.OnDestroy, eventType, func);
+
+        /// <summary>
+        /// 注册的事件在self物体被销毁或关闭时自动移除
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="eventType"></param>
+        /// <param name="func"></param>
+        public void AutoGetEvent<T>(MonoBehaviour self, UnEventMode eventMode, Enum eventType, Func<T> func)
+        {
+            AddGetEvent(eventType, func);
+            if (!self.TryGetComponent<UnEventTrigger>(out var trigger))
+                trigger = self.gameObject.AddComponent<UnEventTrigger>();
+            trigger.RegisterUnEvents(eventMode, 2, eventType, null);
         }
 
         /// <summary>
@@ -110,16 +144,6 @@ namespace GameCore
             if (getEvents.TryGetValue(eventType, out var getEvent))
                 return (T)getEvent.Invoke();
             return default;
-        }
-
-        /// <summary>
-        /// 移除事件, 以方法名为事件名查找并移除
-        /// </summary>
-        /// <param name="eventDelegate"></param>
-        public void Remove(Action<object[]> eventDelegate)
-        {
-            var eventName = eventDelegate.Method.Name;
-            Remove(eventName, eventDelegate);
         }
 
         /// <summary>

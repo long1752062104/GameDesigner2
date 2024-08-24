@@ -110,7 +110,7 @@ namespace GameCore
             if (assetBundleBuilder.DryRunBuild)
                 opt |= BuildAssetBundleOptions.DryRunBuild;
             var abBuildList = new Dictionary<string, AssetBundleBuild>();
-            var assetInfoList = new Dictionary<string, AssetInfo>();
+            var assetManifestNew = new AssetManifest();
             string[] files;
             int errorCount = 0;
             for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
@@ -121,9 +121,9 @@ namespace GameCore
                 var assetPath = AssetDatabase.GetAssetPath(package.path);
                 var isFolder = AssetDatabase.IsValidFolder(assetPath);
                 if (isFolder)
-                    AssetBundleCollect(abBuildList, assetInfoList, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
+                    AssetBundleCollect(abBuildList, assetManifestNew, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
                 else
-                    AddSinglePackage(abBuildList, assetInfoList, assetPath, package, ref errorCount);
+                    AddSinglePackage(abBuildList, assetManifestNew, assetPath, package, ref errorCount);
             }
             EditorUtility.ClearProgressBar();
             if (errorCount > 0)
@@ -131,29 +131,30 @@ namespace GameCore
                 Debug.Log("请先解决错误后再打包!");
                 return;
             }
-            Debug.Log($"收集的资源包数量:{abBuildList.Count} 资源文件数量:{assetInfoList.Count}");
+            Debug.Log($"收集的资源包数量:{abBuildList.Count} 资源文件数量:{assetManifestNew.assetInfos.Count}");
             if (!Directory.Exists(outputPath))
                 Directory.CreateDirectory(outputPath);
-            var assetInfoListPath = outputPath + "assetInfoList.json";
-            var assetInfoListSource = new Dictionary<string, AssetInfo>();
-            if (File.Exists(assetInfoListPath))
+            var assetManifestPath = outputPath + "assetBundleManifest.json";
+            var assetManifestOld = new AssetManifest();
+            if (File.Exists(assetManifestPath))
             {
-                var assetInfoListBytes = File.ReadAllBytes(assetInfoListPath);
+                var assetManifestBytes = File.ReadAllBytes(assetManifestPath);
                 if (assetBundleBuilder.encrypt)
-                    EncryptHelper.ToDecrypt(assetBundleBuilder.password, assetInfoListBytes);
+                    EncryptHelper.ToDecrypt(assetBundleBuilder.password, assetManifestBytes);
                 if (assetBundleBuilder.compressionJson)
-                    assetInfoListBytes = UnZipHelper.Decompress(assetInfoListBytes); //如果上次打包没有选择压缩会导致错误
-                var assetInfoListJson = Encoding.UTF8.GetString(assetInfoListBytes);
-                assetInfoListSource = Newtonsoft_X.Json.JsonConvert.DeserializeObject<Dictionary<string, AssetInfo>>(assetInfoListJson);
+                    assetManifestBytes = UnZipHelper.Decompress(assetManifestBytes); //如果上次打包没有选择压缩会导致错误
+                var assetManifestJson = Encoding.UTF8.GetString(assetManifestBytes);
+                assetManifestOld = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(assetManifestJson);
+                assetManifestOld.Init();
             }
             var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
-            foreach (var assetInfo in assetInfoList)
+            foreach (var assetInfo in assetManifestNew.assetInfos)
             {
-                if (assetInfoListSource.TryGetValue(assetInfo.Key, out var assetInfo1))
-                    if (assetInfo.Value.md5 == assetInfo1.md5)
+                if (assetManifestOld.GetAssetInfoDict().TryGetValue(assetInfo.name, out var assetInfo1))
+                    if (assetInfo.md5 == assetInfo1.md5)
                         continue;
-                if (abBuildList.TryGetValue(assetInfo.Value.assetBundleName, out var assetBundleBuild))
-                    assetBundleBuildList[assetInfo.Value.assetBundleName] = assetBundleBuild;
+                if (abBuildList.TryGetValue(assetInfo.assetBundleName, out var assetBundleBuild))
+                    assetBundleBuildList[assetInfo.assetBundleName] = assetBundleBuild;
             }
             Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
             if (assetBundleBuildList.Count == 0)
@@ -162,34 +163,17 @@ namespace GameCore
                 return;
             }
             var assetBundleManifest = BuildPipeline.BuildAssetBundles(outputPath, assetBundleBuildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
-            var manifestPath = outputPath + "assetBundleManifest.json";
-            var assetManifest = new AssetManifest();
-            if (File.Exists(manifestPath))
-            {
-                var manifestBytes = File.ReadAllBytes(manifestPath);
-                if (assetBundleBuilder.encrypt)
-                    EncryptHelper.ToDecrypt(assetBundleBuilder.password, manifestBytes);
-                if (assetBundleBuilder.compressionJson)
-                    manifestBytes = UnZipHelper.Decompress(manifestBytes); //如果上次打包没有选择压缩会导致错误
-                var manifestJson = Encoding.UTF8.GetString(manifestBytes);
-                assetManifest = Newtonsoft_X.Json.JsonConvert.DeserializeObject<AssetManifest>(manifestJson);
-            }
             if (assetBundleManifest != null)
             {
                 var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
                 foreach (var allAssetBundle in allAssetBundles)
-                    assetManifest.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
+                    assetManifestNew.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
             }
-            var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifest, Newtonsoft_X.Json.Formatting.Indented);
+            var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifestNew, Newtonsoft_X.Json.Formatting.Indented);
             byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
             if (assetBundleBuilder.compressionJson)
                 jsonBytes = UnZipHelper.Compress(jsonBytes);
             File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
-            json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetInfoList, Newtonsoft_X.Json.Formatting.Indented);
-            jsonBytes = Encoding.UTF8.GetBytes(json);
-            if (assetBundleBuilder.compressionJson)
-                jsonBytes = UnZipHelper.Compress(jsonBytes);
-            File.WriteAllBytes(outputPath + "assetInfoList.json", jsonBytes);
             var assetBundleInfos = new List<AssetBundleInfo>();
             files = Directory.GetFiles(outputPath, "*.*").Where(s => !s.EndsWith(".meta")).ToArray();
             foreach (var file in files)
@@ -250,7 +234,7 @@ namespace GameCore
             return assetBundleName;
         }
 
-        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, float progress, ref int errorCount)
+        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, float progress, ref int errorCount)
         {
             EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集路径:{assetPath}", progress);
             var type = package.type;
@@ -289,7 +273,7 @@ namespace GameCore
                 files[i] = files[i].Replace('\\', '/');
                 if (files[i].EndsWith(".unity"))
                 {
-                    var sceneAssetBundleName = AddSinglePackage(buildList, assetInfoList, files[i], package, ref errorCount);
+                    var sceneAssetBundleName = AddSinglePackage(buildList, assetManifest, files[i], package, ref errorCount);
                     files.RemoveAt(i);
                     if (i >= 0) i--;
                     EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{sceneAssetBundleName}完成!", progress);
@@ -321,13 +305,13 @@ namespace GameCore
                     var assetName = assetNames[i];
                     if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
                         assetName = Path.GetFileNameWithoutExtension(assetName);
-                    if (assetInfoList.ContainsKey(assetName))
+                    if (assetManifest.ContainsAssetInfo(assetName))
                     {
                         errorCount++;
                         Debug.LogError($"资源{assetName}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                         continue;
                     }
-                    assetInfoList.Add(assetName, new AssetInfo()
+                    assetManifest.AddAssetInfo(assetName, new AssetInfo()
                     {
                         name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetName) : assetName,
                         assetBundleName = assetBundleName,
@@ -347,11 +331,11 @@ namespace GameCore
             var directories = Directory.GetDirectories(assetPath);
             foreach (var directorie in directories)
             {
-                AssetBundleCollect(buildList, assetInfoList, directorie, package, progress, ref errorCount);
+                AssetBundleCollect(buildList, assetManifest, directorie, package, progress, ref errorCount);
             }
         }
 
-        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, Dictionary<string, AssetInfo> assetInfoList, string assetPath, AssetBundlePackage package, ref int errorCount)
+        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, ref int errorCount)
         {
             var sceneAssetBundleName = GetAssetBundleName(assetPath, package.type);
             var assetBundleBuild = new AssetBundleBuild
@@ -365,13 +349,13 @@ namespace GameCore
             var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
             if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
-            if (assetInfoList.ContainsKey(assetPath))
+            if (assetManifest.ContainsAssetInfo(assetPath))
             {
                 errorCount++;
                 Debug.LogError($"资源{assetPath}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                 return string.Empty;
             }
-            assetInfoList.Add(assetPath, new AssetInfo()
+            assetManifest.AddAssetInfo(assetPath, new AssetInfo()
             {
                 name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetPath) : assetPath,
                 assetBundleName = sceneAssetBundleName,
