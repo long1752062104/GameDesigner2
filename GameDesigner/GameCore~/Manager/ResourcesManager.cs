@@ -370,8 +370,8 @@ namespace GameCore
 
         private T ResourcesLoad<T>(string assetPath) where T : Object
         {
-            var index = assetPath.LastIndexOf("Resources");
-            assetPath = assetPath.Remove(0, index);
+            var index = assetPath.IndexOf("Resources");
+            assetPath = assetPath.Remove(0, index + 10);
             index = assetPath.LastIndexOf(".");
             assetPath = assetPath.Remove(index, assetPath.Length - index);
             return Resources.Load<T>(assetPath);
@@ -379,8 +379,8 @@ namespace GameCore
 
         private T[] ResourcesLoadAll<T>(string assetPath) where T : Object
         {
-            var index = assetPath.LastIndexOf("Resources");
-            assetPath = assetPath.Remove(0, index);
+            var index = assetPath.IndexOf("Resources");
+            assetPath = assetPath.Remove(0, index + 10);
             index = assetPath.LastIndexOf(".");
             assetPath = assetPath.Remove(index, assetPath.Length - index);
             return Resources.LoadAll<T>(assetPath);
