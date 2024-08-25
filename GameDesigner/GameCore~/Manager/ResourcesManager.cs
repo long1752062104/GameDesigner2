@@ -370,20 +370,23 @@ namespace GameCore
 
         private T ResourcesLoad<T>(string assetPath) where T : Object
         {
-            var index = assetPath.IndexOf("Resources");
-            assetPath = assetPath.Remove(0, index + 10);
-            index = assetPath.LastIndexOf(".");
-            assetPath = assetPath.Remove(index, assetPath.Length - index);
+            assetPath = GetResourcesPath(assetPath);
             return Resources.Load<T>(assetPath);
         }
 
         private T[] ResourcesLoadAll<T>(string assetPath) where T : Object
         {
+            assetPath = GetResourcesPath(assetPath);
+            return Resources.LoadAll<T>(assetPath);
+        }
+
+        private string GetResourcesPath(string assetPath)
+        {
             var index = assetPath.IndexOf("Resources");
             assetPath = assetPath.Remove(0, index + 10);
             index = assetPath.LastIndexOf(".");
             assetPath = assetPath.Remove(index, assetPath.Length - index);
-            return Resources.LoadAll<T>(assetPath);
+            return assetPath;
         }
 
         protected virtual AssetBundle GetAssetBundle(string assetPath)
