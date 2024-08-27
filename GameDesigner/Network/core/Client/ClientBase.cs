@@ -298,7 +298,7 @@ namespace Net.Client
         /// <summary>
         /// 客户端唯一标识, 当登录游戏后, 服务器下发下来的唯一标识, 这个标识就是你的玩家名称, 是<see cref="Server.NetPlayer.PlayerID"/>值
         /// </summary>
-        public string Identify { get; protected set; }
+        public int Identify => UID;
         /// <summary>
         /// 用户唯一标识, 对应服务器的<see cref="Server.NetPlayer.UserID"/>
         /// </summary>
@@ -1454,7 +1454,6 @@ namespace Net.Client
                     break;
                 case NetCmd.Identify:
                     UID = PreUserId = segment.ReadInt32();
-                    Identify = segment.ReadString();
                     if (segment.Position >= segment.Count) //此代码是兼容旧版本写法
                         return;
                     var adapterType = segment.ReadString();

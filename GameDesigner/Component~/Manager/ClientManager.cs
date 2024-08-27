@@ -61,7 +61,7 @@ namespace Net.Component
         /// <summary>
         /// 客户端唯一标识
         /// </summary>
-        public static string Identify { get { return Instance.client.Identify; } }
+        public static int Identify { get { return Instance.client.Identify; } }
         /// <summary>
         /// 客户端唯一标识
         /// </summary>
@@ -141,23 +141,11 @@ namespace Net.Component
         }
 
         /// <summary>
-        /// 判断name是否是本地唯一id(本机玩家标识)
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        internal static bool IsLocal(string name)
-        {
-            if (Instance == null)
-                return false;
-            return instance._client.Identify == name;
-        }
-
-        /// <summary>
         /// 判断uid是否是本地唯一id(本机玩家标识)
         /// </summary>
         /// <param name="uid"></param>
         /// <returns></returns>
-        internal static bool IsLocal(int uid)
+        public static bool IsLocal(int uid)
         {
             if (Instance == null)
                 return false;

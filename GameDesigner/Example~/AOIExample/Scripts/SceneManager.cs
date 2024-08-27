@@ -16,7 +16,7 @@ namespace AOIExample
             base.OnConnected();
             var player1 = Instantiate(player, new Vector3(Random.Range(-20, 20), 1, Random.Range(-20, 20)), Quaternion.identity);
             player1.AddComponent<PlayerControl>();
-            player1.name = ClientBase.Instance.Identify;
+            player1.name = ClientBase.Instance.Identify.ToString();
             player1.GetComponent<NetworkObject>().Identity = ClientBase.Instance.UID;
             player1.GetComponent<AOIObject>().IsLocal = true;
             player1.GetComponent<PlayerControl>().moveSpeed = 20f;

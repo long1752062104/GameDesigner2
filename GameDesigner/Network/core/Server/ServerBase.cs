@@ -320,7 +320,7 @@ namespace Net.Server
         /// <summary>
         /// 登录的客户端 与<see cref="UIDClients"/>为互助字典 所添加的键值为<see cref="NetPlayer.PlayerID"/>
         /// </summary>
-        public ConcurrentDictionary<string, Player> Players { get; private set; } = new ConcurrentDictionary<string, Player>();
+        public ConcurrentDictionary<object, Player> Players { get; private set; } = new ConcurrentDictionary<object, Player>();
         /// <summary>
         /// 登录的客户端 与<see cref="Players"/>为互助字典 所添加的键值为<see cref="NetPlayer.UserID"/>
         /// </summary>
@@ -967,7 +967,6 @@ namespace Net.Server
         {
             var segment = BufferPool.Take(byte.MaxValue);
             segment.Write(client.UserID);
-            segment.Write(client.PlayerID);
             var adapterType = string.Empty;
             if (SerializeAdapter != null)
                 adapterType = SerializeAdapter.GetType().ToString();
@@ -1194,8 +1193,7 @@ namespace Net.Server
             if (Players.TryRemove(client.PlayerID, out var client1) & client1 != client)
                 SignOutInternal(client1);
             //当此玩家一直从登录到被退出登录, 再登录后PlayerID被清除了, 如果是这种情况下, 开发者也没有给PlayerID赋值, 那么默认就需要给uid得值
-            if (string.IsNullOrEmpty(client.PlayerID))
-                client.PlayerID = client.UserID.ToString();
+            client.PlayerID ??= client.UserID;
             Players[client.PlayerID] = client;
             client.OnStart();
             OnAddPlayerToScene(client);
@@ -1839,7 +1837,7 @@ namespace Net.Server
         /// </summary>
         /// <param name="playerID"></param>
         /// <returns></returns>
-        public virtual bool IsOnline(string playerID)
+        public virtual bool IsOnline(object playerID)
         {
             return IsOnline(playerID, out _);
         }
@@ -1850,7 +1848,7 @@ namespace Net.Server
         /// <param name="playerID"></param>
         /// <param name="client"></param>
         /// <returns></returns>
-        public virtual bool IsOnline(string playerID, out Player client)
+        public virtual bool IsOnline(object playerID, out Player client)
         {
             return Players.TryGetValue(playerID, out client);
         }
@@ -1884,7 +1882,7 @@ namespace Net.Server
             OnSignOut(client);
             client.OnSignOut();
             client.Login = false;
-            client.PlayerID = string.Empty;//此处必须清除,要不然当移除断线的账号后, 就会移除掉新登录的此账号在线字段Players
+            client.PlayerID = null;//此处必须清除,要不然当移除断线的账号后, 就会移除掉新登录的此账号在线字段Players
             Debug.Log("[" + client.Name + "]退出登录...!");
         }
 

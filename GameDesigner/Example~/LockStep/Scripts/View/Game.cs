@@ -13,7 +13,7 @@ namespace LockStep.Client
     public class Game : SingleCase<Game>
     {
         private int frame;
-        private readonly List<OperationList> snapshots=new List<OperationList>();
+        private readonly List<OperationList> snapshots = new List<OperationList>();
         private int logicFrame, frame1;
         public int frame2;
         public uint delay;
@@ -25,7 +25,7 @@ namespace LockStep.Client
         // Use this for initialization
         async void Start()
         {
-            gameSystem.OnCreate += (opt) => 
+            gameSystem.OnCreate += (opt) =>
             {
                 var entity = gameSystem.Create<Entity>();
                 Player actor = entity.AddComponent<Player>();
@@ -39,7 +39,8 @@ namespace LockStep.Client
                     FindObjectOfType<ARPGcamera>().target = actor.gameObject.transform;
                 return actor;
             };
-            gameSystem.OnExitBattle += ()=> {
+            gameSystem.OnExitBattle += () =>
+            {
                 frame = 0;
                 logicFrame = 0;
                 snapshots.Clear();
@@ -58,7 +59,7 @@ namespace LockStep.Client
             Physics.autoSimulation = false;
             Physics.autoSyncTransforms = false;
 
-            ThreadManager.Invoke("", 1f, ()=> 
+            ThreadManager.Invoke("", 1f, () =>
             {
                 frame2 = frame - frame1;
                 frame1 = frame;
@@ -66,7 +67,8 @@ namespace LockStep.Client
                 return ClientBase.Instance != null;
             });
 
-            ClientBase.Instance.OnPingCallback += (delay) => {
+            ClientBase.Instance.OnPingCallback += (delay) =>
+            {
                 this.delay = delay;
             };
         }
@@ -112,7 +114,7 @@ namespace LockStep.Client
 
         private void OnDestroy()
         {
-            if(ClientBase.Instance != null)
+            if (ClientBase.Instance != null)
                 ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
     }
