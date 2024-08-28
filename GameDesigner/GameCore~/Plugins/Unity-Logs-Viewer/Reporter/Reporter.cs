@@ -199,6 +199,8 @@ public class Reporter : MonoBehaviour
 	public float fps;
 	public string fpsText;
 
+	public Font font;
+
 	//List<Texture2D> snapshots = new List<Texture2D>() ;
 
 	enum ReportView
@@ -451,10 +453,11 @@ public class Reporter : MonoBehaviour
 		barStyle.active.background = images.button_activeImage;
 		barStyle.alignment = TextAnchor.MiddleCenter;
 		barStyle.margin = new RectOffset(1, 1, 1, 1);
+        if (font != null) barStyle.font = font;
 
-		//barStyle.padding = new RectOffset(paddingX,paddingX,paddingY,paddingY); 
-		//barStyle.wordWrap = true ;
-		barStyle.clipping = TextClipping.Clip;
+        //barStyle.padding = new RectOffset(paddingX,paddingX,paddingY,paddingY); 
+        //barStyle.wordWrap = true ;
+        barStyle.clipping = TextClipping.Clip;
 		barStyle.fontSize = (int)(size.y / 2);
 
 
@@ -465,31 +468,35 @@ public class Reporter : MonoBehaviour
 		buttonActiveStyle.margin = new RectOffset(1, 1, 1, 1);
 		//buttonActiveStyle.padding = new RectOffset(4,4,4,4);
 		buttonActiveStyle.fontSize = (int)(size.y / 2);
+        if (font != null) buttonActiveStyle.font = font;
 
-		backStyle = new GUIStyle();
+        backStyle = new GUIStyle();
 		backStyle.normal.background = images.even_logImage;
 		backStyle.clipping = TextClipping.Clip;
 		backStyle.fontSize = (int)(size.y / 2);
+        if (font != null) backStyle.font = font;
 
-		evenLogStyle = new GUIStyle();
+        evenLogStyle = new GUIStyle();
 		evenLogStyle.normal.background = images.even_logImage;
 		evenLogStyle.fixedHeight = size.y;
 		evenLogStyle.clipping = TextClipping.Clip;
 		evenLogStyle.alignment = TextAnchor.UpperLeft;
 		evenLogStyle.imagePosition = ImagePosition.ImageLeft;
 		evenLogStyle.fontSize = (int)(size.y / 2);
-		//evenLogStyle.wordWrap = true;
+        //evenLogStyle.wordWrap = true;
+        if (font != null) evenLogStyle.font = font;
 
-		oddLogStyle = new GUIStyle();
+        oddLogStyle = new GUIStyle();
 		oddLogStyle.normal.background = images.odd_logImage;
 		oddLogStyle.fixedHeight = size.y;
 		oddLogStyle.clipping = TextClipping.Clip;
 		oddLogStyle.alignment = TextAnchor.UpperLeft;
 		oddLogStyle.imagePosition = ImagePosition.ImageLeft;
 		oddLogStyle.fontSize = (int)(size.y / 2);
-		//oddLogStyle.wordWrap = true ;
+        //oddLogStyle.wordWrap = true ;
+        if (font != null) oddLogStyle.font = font;
 
-		logButtonStyle = new GUIStyle();
+        logButtonStyle = new GUIStyle();
 		//logButtonStyle.wordWrap = true;
 		logButtonStyle.fixedHeight = size.y;
 		logButtonStyle.clipping = TextClipping.Clip;
@@ -498,8 +505,9 @@ public class Reporter : MonoBehaviour
 		//logButtonStyle.wordWrap = true;
 		logButtonStyle.fontSize = (int)(size.y / 2);
 		logButtonStyle.padding = new RectOffset(paddingX, paddingX, paddingY, paddingY);
+        if (font != null) logButtonStyle.font = font;
 
-		selectedLogStyle = new GUIStyle();
+        selectedLogStyle = new GUIStyle();
 		selectedLogStyle.normal.background = images.selectedImage;
 		selectedLogStyle.fixedHeight = size.y;
 		selectedLogStyle.clipping = TextClipping.Clip;
@@ -507,8 +515,9 @@ public class Reporter : MonoBehaviour
 		selectedLogStyle.normal.textColor = Color.white;
 		//selectedLogStyle.wordWrap = true;
 		selectedLogStyle.fontSize = (int)(size.y / 2);
+        if (font != null) selectedLogStyle.font = font;
 
-		selectedLogFontStyle = new GUIStyle();
+        selectedLogFontStyle = new GUIStyle();
 		selectedLogFontStyle.normal.background = images.selectedImage;
 		selectedLogFontStyle.fixedHeight = size.y;
 		selectedLogFontStyle.clipping = TextClipping.Clip;
@@ -517,53 +526,61 @@ public class Reporter : MonoBehaviour
 		//selectedLogStyle.wordWrap = true;
 		selectedLogFontStyle.fontSize = (int)(size.y / 2);
 		selectedLogFontStyle.padding = new RectOffset(paddingX, paddingX, paddingY, paddingY);
+        if (font != null) selectedLogFontStyle.font = font;
 
-		stackLabelStyle = new GUIStyle();
+        stackLabelStyle = new GUIStyle();
 		stackLabelStyle.wordWrap = true;
 		stackLabelStyle.fontSize = (int)(size.y / 2);
 		stackLabelStyle.padding = new RectOffset(paddingX, paddingX, paddingY, paddingY);
+        if (font != null) stackLabelStyle.font = font;
 
-		scrollerStyle = new GUIStyle();
+        scrollerStyle = new GUIStyle();
 		scrollerStyle.normal.background = images.barImage;
+        if (font != null) scrollerStyle.font = font;
 
-		searchStyle = new GUIStyle();
+        searchStyle = new GUIStyle();
 		searchStyle.clipping = TextClipping.Clip;
 		searchStyle.alignment = TextAnchor.LowerCenter;
 		searchStyle.fontSize = (int)(size.y / 2);
 		searchStyle.wordWrap = true;
+        if (font != null) searchStyle.font = font;
 
-
-		sliderBackStyle = new GUIStyle();
+        sliderBackStyle = new GUIStyle();
 		sliderBackStyle.normal.background = images.barImage;
 		sliderBackStyle.fixedHeight = size.y;
 		sliderBackStyle.border = new RectOffset(1, 1, 1, 1);
+        if (sliderBackStyle != null) barStyle.font = font;
 
-		sliderThumbStyle = new GUIStyle();
+        sliderThumbStyle = new GUIStyle();
 		sliderThumbStyle.normal.background = images.selectedImage;
 		sliderThumbStyle.fixedWidth = size.x;
+        if (font != null) sliderThumbStyle.font = font;
 
-		GUISkin skin = images.reporterScrollerSkin;
+        GUISkin skin = images.reporterScrollerSkin;
 
 		toolbarScrollerSkin = (GUISkin)GameObject.Instantiate(skin);
 		toolbarScrollerSkin.verticalScrollbar.fixedWidth = 0f;
 		toolbarScrollerSkin.horizontalScrollbar.fixedHeight = 0f;
 		toolbarScrollerSkin.verticalScrollbarThumb.fixedWidth = 0f;
 		toolbarScrollerSkin.horizontalScrollbarThumb.fixedHeight = 0f;
+        if (font != null) toolbarScrollerSkin.font = font;
 
-		logScrollerSkin = (GUISkin)GameObject.Instantiate(skin);
+        logScrollerSkin = (GUISkin)GameObject.Instantiate(skin);
 		logScrollerSkin.verticalScrollbar.fixedWidth = size.x * 2f;
 		logScrollerSkin.horizontalScrollbar.fixedHeight = 0f;
 		logScrollerSkin.verticalScrollbarThumb.fixedWidth = size.x * 2f;
 		logScrollerSkin.horizontalScrollbarThumb.fixedHeight = 0f;
+        if (font != null) logScrollerSkin.font = font;
 
-		graphScrollerSkin = (GUISkin)GameObject.Instantiate(skin);
+        graphScrollerSkin = (GUISkin)GameObject.Instantiate(skin);
 		graphScrollerSkin.verticalScrollbar.fixedWidth = 0f;
 		graphScrollerSkin.horizontalScrollbar.fixedHeight = size.x * 2f;
 		graphScrollerSkin.verticalScrollbarThumb.fixedWidth = 0f;
 		graphScrollerSkin.horizontalScrollbarThumb.fixedHeight = size.x * 2f;
-		//inGameLogsScrollerSkin.verticalScrollbarThumb.fixedWidth = size.x * 2;
-		//inGameLogsScrollerSkin.verticalScrollbar.fixedWidth = size.x * 2;
-	}
+        //inGameLogsScrollerSkin.verticalScrollbarThumb.fixedWidth = size.x * 2;
+        //inGameLogsScrollerSkin.verticalScrollbar.fixedWidth = size.x * 2;
+        if (font != null) graphScrollerSkin.font = font;
+    }
 
 	void Start()
 	{
