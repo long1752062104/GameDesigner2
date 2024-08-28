@@ -1,3 +1,4 @@
+using Net.Client;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,18 @@ namespace GameCore
         internal byte type;
         internal Enum eventType;
         internal object value;
+    }
+
+    internal class RpcUnRegister
+    {
+        internal ClientBase client;
+        internal object target;
+
+        public RpcUnRegister(ClientBase self, object target)
+        {
+            this.client = self;
+            this.target = target;
+        }
     }
 
     public class UnEventTrigger : MonoBehaviour
@@ -53,6 +66,13 @@ namespace GameCore
                 if (data.type == 2)
                 {
                     Global.Event.RemoveGet(data.eventType);
+                    unEvents.RemoveAt(i);
+                    continue;
+                }
+                if (data.type == 3)
+                {
+                    var unRegister = (RpcUnRegister)data.value;
+                    unRegister.client.RemoveRpc(unRegister.target);
                     unEvents.RemoveAt(i);
                 }
             }

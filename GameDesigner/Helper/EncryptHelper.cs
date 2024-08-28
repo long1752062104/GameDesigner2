@@ -26,6 +26,8 @@ namespace Net.Helper
         /// </summary>
         /// <param name="password"></param>
         /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
         /// <returns></returns>
         public static byte[] ToEncrypt(int password, byte[] buffer, int index, int count)
         {
@@ -55,6 +57,8 @@ namespace Net.Helper
         /// </summary>
         /// <param name="password"></param>
         /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
         /// <returns></returns>
         public static byte[] ToDecrypt(int password, byte[] buffer, int index, int count)
         {
@@ -70,7 +74,8 @@ namespace Net.Helper
 
         /// <summary> 
         /// 加密字符串  
-        /// </summary> 
+        /// </summary>
+        /// <param name="encryptKey"></param> 
         /// <param name="text">要加密的字符串</param> 
         /// <returns>加密后的字符串</returns> 
         public static string DESEncrypt(string encryptKey, string text)
@@ -92,7 +97,8 @@ namespace Net.Helper
 
         /// <summary> 
         /// 解密字符串  
-        /// </summary> 
+        /// </summary>
+        /// <param name="encryptKey"></param> 
         /// <param name="text">要解密的字符串</param> 
         /// <returns>解密后的字符串</returns>   
         public static string DESDecrypt(string encryptKey, string text)
@@ -150,7 +156,7 @@ namespace Net.Helper
 
         public static string ToSHA256(string input)
         {
-            using (SHA256 sha256 = SHA256.Create())
+            using (var sha256 = SHA256.Create())
             {
                 var inputBytes = Encoding.UTF8.GetBytes(input);
                 var hashBytes = sha256.ComputeHash(inputBytes);
