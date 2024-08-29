@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using GameCore;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -26,6 +27,9 @@ public static class OtherExtensions
     {
         if (string.IsNullOrEmpty(imgUrl))
             return;
+        if (!imgUrl.StartsWith("http"))
+            if (!File.Exists(imgUrl))
+                return;
         var request = UnityWebRequestTexture.GetTexture(imgUrl);
         await request.SendWebRequest();
         if (request.result != UnityWebRequest.Result.Success)
