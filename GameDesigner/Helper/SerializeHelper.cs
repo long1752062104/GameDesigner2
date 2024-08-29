@@ -13,10 +13,12 @@ namespace Net.Helper
             return NetConvertBinary.SerializeObject(self).ToArray(true);
         }
 
-        public static T ByteDeserialize<T>(this byte[] self)
+        public static T ByteDeserialize<T>(this byte[] self, T defaultValue = default)
         {
             if (self == null)
-                return default;
+                return defaultValue;
+            if (self.Length == 0)
+                return defaultValue;
             return NetConvertBinary.DeserializeObject<T>(self, 0, self.Length);
         }
 

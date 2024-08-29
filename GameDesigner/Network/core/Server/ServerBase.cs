@@ -1193,7 +1193,8 @@ namespace Net.Server
             if (Players.TryRemove(client.PlayerID, out var client1) & client1 != client)
                 SignOutInternal(client1);
             //当此玩家一直从登录到被退出登录, 再登录后PlayerID被清除了, 如果是这种情况下, 开发者也没有给PlayerID赋值, 那么默认就需要给uid得值
-            client.PlayerID ??= client.UserID;
+            if (client.PlayerID == DBNull.Value)
+                client.PlayerID = client.UserID;
             Players[client.PlayerID] = client;
             client.OnStart();
             OnAddPlayerToScene(client);
@@ -1882,7 +1883,7 @@ namespace Net.Server
             OnSignOut(client);
             client.OnSignOut();
             client.Login = false;
-            client.PlayerID = null;//此处必须清除,要不然当移除断线的账号后, 就会移除掉新登录的此账号在线字段Players
+            client.PlayerID = DBNull.Value;//此处必须清除,要不然当移除断线的账号后, 就会移除掉新登录的此账号在线字段Players
             Debug.Log("[" + client.Name + "]退出登录...!");
         }
 

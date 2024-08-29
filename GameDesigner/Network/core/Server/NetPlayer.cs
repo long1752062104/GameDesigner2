@@ -41,7 +41,7 @@
         /// <summary>
         /// 客户端玩家的标识
         /// </summary>
-        public object PlayerID { get; set; } = new object();
+        public object PlayerID { get; set; } = DBNull.Value;
         /// <summary>
         /// 玩家所在的场景实体
         /// </summary>
