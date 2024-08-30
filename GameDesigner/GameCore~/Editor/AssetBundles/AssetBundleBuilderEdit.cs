@@ -150,11 +150,11 @@ namespace GameCore
             var assetBundleBuildList = new Dictionary<string, AssetBundleBuild>();
             foreach (var assetInfo in assetManifestNew.assetInfos)
             {
-                if (assetManifestOld.GetAssetInfoDict().TryGetValue(assetInfo.name, out var assetInfo1))
-                    if (assetInfo.md5 == assetInfo1.md5)
-                        continue;
-                if (abBuildList.TryGetValue(assetInfo.assetBundleName, out var assetBundleBuild))
-                    assetBundleBuildList[assetInfo.assetBundleName] = assetBundleBuild;
+                if (assetManifestOld.CheckMD5(assetInfo))
+                    continue;
+                var assetBundleName = assetInfo.assetBundleName;
+                if (abBuildList.TryGetValue(assetBundleName, out var assetBundleBuild))
+                    assetBundleBuildList[assetBundleName] = assetBundleBuild;
             }
             Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
             if (assetBundleBuildList.Count == 0)
@@ -296,15 +296,20 @@ namespace GameCore
                     }
                 }
                 var assetNames = files.GetRange(0, sizeIndex);
+                var addressableNames = new List<string>();
                 files.RemoveRange(0, sizeIndex);
+                var addressables = AssetBundleBuilder.Instance.addressables;
                 for (int i = 0; i < assetNames.Count; i++)
                 {
                     var lastModified = File.GetLastWriteTime(assetNames[i]);
                     var lastModified1 = File.GetLastWriteTime(assetNames[i] + ".meta");
                     var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
                     var assetName = assetNames[i];
-                    if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
+                    if (addressables)//资源名不包含路径和后缀
+                    {
                         assetName = Path.GetFileNameWithoutExtension(assetName);
+                        addressableNames.Add(assetName);
+                    }
                     if (assetManifest.ContainsAssetInfo(assetName))
                     {
                         errorCount++;
@@ -313,7 +318,7 @@ namespace GameCore
                     }
                     assetManifest.AddAssetInfo(assetName, new AssetInfo()
                     {
-                        name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetName) : assetName,
+                        name = assetName,
                         assetBundleName = assetBundleName,
                         md5 = md5,
                     });
@@ -321,7 +326,8 @@ namespace GameCore
                 var assetBundleBuild = new AssetBundleBuild
                 {
                     assetBundleName = assetBundleName,
-                    assetNames = assetNames.ToArray()
+                    assetNames = assetNames.ToArray(),
+                    addressableNames = addressableNames.ToArray()
                 };
                 buildList.Add(assetBundleName, assetBundleBuild);
                 EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{assetBundleName}完成!", progress);
@@ -337,30 +343,36 @@ namespace GameCore
 
         private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, ref int errorCount)
         {
-            var sceneAssetBundleName = GetAssetBundleName(assetPath, package.type);
-            var assetBundleBuild = new AssetBundleBuild
-            {
-                assetBundleName = sceneAssetBundleName,
-                assetNames = new string[] { assetPath }
-            };
-            buildList.Add(sceneAssetBundleName, assetBundleBuild);
             var lastModified = File.GetLastWriteTime(assetPath);
             var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
             var md5 = EncryptHelper.GetMD5($"{lastModified}-{lastModified1}");
-            if (AssetBundleBuilder.Instance.addressables)//资源名不包含路径和后缀
+            var addressableNames = new List<string>();
+            var addressables = AssetBundleBuilder.Instance.addressables;
+            if (addressables)//资源名不包含路径和后缀
+            {
                 assetPath = Path.GetFileNameWithoutExtension(assetPath);
+                addressableNames.Add(assetPath);
+            }
             if (assetManifest.ContainsAssetInfo(assetPath))
             {
                 errorCount++;
                 Debug.LogError($"资源{assetPath}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                 return string.Empty;
             }
+            var sceneAssetBundleName = GetAssetBundleName(assetPath, package.type);
             assetManifest.AddAssetInfo(assetPath, new AssetInfo()
             {
-                name = AssetBundleBuilder.Instance.addressables ? Path.GetFileName(assetPath) : assetPath,
+                name = assetPath,
                 assetBundleName = sceneAssetBundleName,
                 md5 = md5,
             });
+            var assetBundleBuild = new AssetBundleBuild
+            {
+                assetBundleName = sceneAssetBundleName,
+                assetNames = new string[] { assetPath },
+                addressableNames = addressableNames.ToArray()
+            };
+            buildList.Add(sceneAssetBundleName, assetBundleBuild);
             return sceneAssetBundleName;
         }
 

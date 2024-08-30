@@ -59,10 +59,8 @@ namespace GameCore
     {
         public List<AssetInfo> assetInfos = new List<AssetInfo>();
         public Dictionary<string, string[]> dependencies = new Dictionary<string, string[]>();
-        internal Dictionary<string, AssetInfo> assetInfoDict = new Dictionary<string, AssetInfo>();
-        internal Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
-
-        public Dictionary<string, AssetInfo> GetAssetInfoDict() => assetInfoDict;
+        private readonly Dictionary<string, AssetInfo> assetInfoDict = new Dictionary<string, AssetInfo>();
+        private readonly Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
 
         public void Init()
         {
@@ -112,6 +110,23 @@ namespace GameCore
         public bool ContainsAssetInfo(string assetName)
         {
             return assetInfoDict.ContainsKey(assetName);
+        }
+
+        public void Destroy()
+        {
+            foreach (var assetBundle in assetBundles.Values)
+            {
+                if (assetBundle == null)
+                    continue;
+                assetBundle.Unload(true);
+            }
+        }
+
+        public bool CheckMD5(AssetInfo assetInfo)
+        {
+            if (assetInfoDict.TryGetValue(assetInfo.name, out var assetInfo1))
+                return assetInfo.md5 == assetInfo1.md5;
+            return false;
         }
     }
 
@@ -253,8 +268,7 @@ namespace GameCore
         {
             if (assetBundleManifest == null)
                 return;
-            foreach (var assetBundleInfo in assetBundleManifest.assetBundles)
-                assetBundleInfo.Value?.Unload(true);
+            assetBundleManifest.Destroy();
         }
 
         /// <summary>
