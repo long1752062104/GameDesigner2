@@ -85,7 +85,9 @@ namespace GameCore
                     goto J;
             form = InstantiateForm(formName);
             formDict[formName] = form;
-        J: if (formStack.Count > 0)
+        J:
+            var openMultiple = false;
+            if (formStack.Count > 0)
             {
                 UIBase form1;
                 switch (formMode)
@@ -93,17 +95,20 @@ namespace GameCore
                     case UIMode.HideCurrUI:
                         form1 = formStack.Peek();//只是隐藏当前界面不能弹出
                         form1.HideUI(false);
+                        openMultiple = form1 == form; //控制不能多次压入UI栈
                         break;
                     case UIMode.CloseCurrUI:
                         form1 = formStack.Pop();//关闭上一个界面需要弹出
                         form1.HideUI(false);
                         break;
                     case UIMode.None://不做任何动作, Message消息框
+                        form1 = formStack.Peek();
+                        openMultiple = form1 == form; //控制不能多次压入UI栈
                         break;
                 }
             }
             form.ShowUI(onBack, pars);
-            if (formMode != UIMode.EmptyStack)
+            if (formMode != UIMode.EmptyStack && !openMultiple)
                 formStack.Push(form);//如果是消息框, 一定会关闭了才能再次打开, 不存在多次压入
             return form;
         }
