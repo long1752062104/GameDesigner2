@@ -88,7 +88,7 @@ namespace GameDesigner
         /// <summary>
         /// 动作索引
         /// </summary>
-		public int actionIndex;
+		internal int actionIndex = -1;
         /// <summary>
         /// 动画速度
         /// </summary>
