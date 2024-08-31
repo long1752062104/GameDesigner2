@@ -5,7 +5,6 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
     using UnityEngine;
     using Object = UnityEngine.Object;
 
@@ -458,8 +457,17 @@
             }
             var lateUpdateMethod = type.GetMethod("OnLateUpdate");
             var fixedUpdateMethod = type.GetMethod("OnFixedUpdate");
-            stateMachine.UpdateMode |= (lateUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.LateUpdate : StateMachineUpdateMode.Update;
-            stateMachine.UpdateMode |= (fixedUpdateMethod.DeclaringType == type) ? StateMachineUpdateMode.FixedUpdate : StateMachineUpdateMode.Update;
+            var root = stateMachine;
+            while (root != null)
+            {
+                if (root.Parent == null) //最后一层
+                    break;
+                root = root.Parent;
+            }
+            if ((lateUpdateMethod.DeclaringType == type) && (stateMachine.UpdateMode & StateMachineUpdateMode.LateUpdate) == 0)
+                root.UpdateMode |= StateMachineUpdateMode.LateUpdate;
+            if ((fixedUpdateMethod.DeclaringType == type) && (stateMachine.UpdateMode & StateMachineUpdateMode.FixedUpdate) == 0)
+                root.UpdateMode |= StateMachineUpdateMode.FixedUpdate;
             return runtimeBehaviour;
         }
     }
