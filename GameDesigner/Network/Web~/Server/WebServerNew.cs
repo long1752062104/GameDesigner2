@@ -185,7 +185,7 @@ namespace Net.Server
                 var buffer = segment.Read(segment.Count - segment.Position);
                 var jsonString = buffer.ToText();
                 var message = JsonConvert.DeserializeObject<MessageModel>(jsonString);
-                var model = new RPCModel(cmd: message.cmd, protocol: message.func.CRCU32(), pars: message.GetPars());
+                var model = new RPCModel(cmd: message.cmd, kernel: true, protocol: message.func.CRCU32(), pars: message.GetPars());
                 DataHandler(client, model, null);
             }
             catch (Exception ex)

@@ -22,13 +22,13 @@ namespace Net.Share
     public class RPCModel
     {
         /// <summary>
-        /// 内核? true:数据经过框架内部序列化 false:数据由开发者自己处理
-        /// </summary>
-        public bool kernel;
-        /// <summary>
         /// 网络指令
         /// </summary>
         public byte cmd;
+        /// <summary>
+        /// 内核? true:数据经过框架内部序列化 false:数据由开发者自己处理
+        /// </summary>
+        public bool kernel;
         /// <summary>
         /// 这是内存池数据，这个字段要配合index，count两字段使用，如果想得到实际数据，请使用Buffer属性
         /// </summary>
@@ -71,11 +71,11 @@ namespace Net.Share
         public uint token;
         private readonly Inc inc;
 
-        public RPCModel(bool kernel = default, byte cmd = default, byte[] buffer = default, int index = default, int count = default, uint protocol = default, object[] pars = default, bool serialize = default, uint token = default)
+        public RPCModel(byte cmd = default, bool kernel = default, byte[] buffer = default, int index = default, int count = default, uint protocol = default, object[] pars = default, bool serialize = default, uint token = default)
         {
             this.inc = new Inc();
-            this.kernel = kernel;
             this.cmd = cmd;
+            this.kernel = kernel;
             this.buffer = buffer;
             this.index = index;
             this.count = count;
@@ -182,7 +182,7 @@ namespace Net.Share
         /// <returns></returns>
         public RPCModel Copy()
         {
-            return new RPCModel(cmd: cmd, buffer: Buffer, kernel: kernel, serialize: false);
+            return new RPCModel(cmd: cmd, kernel: kernel, buffer: Buffer, serialize: false);
         }
 
         public override int GetHashCode()

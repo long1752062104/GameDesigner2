@@ -153,7 +153,7 @@ namespace Net.Server
             try
             {
                 var message = JsonConvert.DeserializeObject<MessageModel>(text);
-                var model = new RPCModel(cmd: message.cmd, protocol: message.func.CRCU32(), pars: message.GetPars());
+                var model = new RPCModel(cmd: message.cmd, kernel: true, protocol: message.func.CRCU32(), pars: message.GetPars());
                 DataHandler(client, model, null);
             }
             catch (Exception ex)

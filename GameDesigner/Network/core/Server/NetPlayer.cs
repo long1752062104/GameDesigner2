@@ -460,11 +460,11 @@
         {
             if (buffer != null)
             {
-                Call(new RPCModel(cmd: cmd, buffer: buffer, kernel: kernel, serialize: serialize, protocol: protocol));
+                Call(new RPCModel(cmd: cmd, kernel: kernel, buffer: buffer, serialize: serialize, protocol: protocol));
             }
             else
             {
-                var model = new RPCModel(cmd: cmd, protocol: protocol, pars: pars, kernel: kernel, serialize: !serialize, token: token);
+                var model = new RPCModel(cmd: cmd, kernel: kernel, protocol: protocol, pars: pars, serialize: !serialize, token: token);
                 if (serialize)
                 {
                     var segment = BufferPool.Take();

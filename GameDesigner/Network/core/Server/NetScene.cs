@@ -326,7 +326,7 @@
         public virtual void AddOperation(byte cmd, string func, params object[] pars)
         {
             var segment = BufferPool.Take();
-            onSerializeRpc(segment, new RPCModel(cmd: 0, protocol: func.CRCU32(), pars: pars));
+            onSerializeRpc(segment, new RPCModel(cmd: 0, kernel: true, protocol: func.CRCU32(), pars: pars));
             var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }
@@ -341,7 +341,7 @@
         public virtual void AddOperation(byte cmd, uint func, params object[] pars)
         {
             var segment = BufferPool.Take();
-            onSerializeRpc(segment, new RPCModel(cmd: 0, protocol: func, pars: pars));
+            onSerializeRpc(segment, new RPCModel(cmd: 0, kernel: true, protocol: func, pars: pars));
             var opt = new Operation(cmd, segment.ToArray(true));
             AddOperation(opt);
         }

@@ -591,7 +591,7 @@ namespace Net.Server
         /// <param name="model"></param>
         protected virtual void OnNoticeRelay(Player client, RPCModel model)
         {
-            Multicast(Clients, new RPCModel(cmd: model.cmd, buffer: model.Buffer, kernel: model.kernel, serialize: false, protocol: model.protocol, token: model.token));
+            Multicast(Clients, new RPCModel(cmd: model.cmd, kernel: model.kernel, buffer: model.Buffer, serialize: false, protocol: model.protocol, token: model.token));
         }
         #endregion
 
@@ -1218,7 +1218,7 @@ namespace Net.Server
                     OnRpcExecute(client, model);
                     break;
                 case NetCmd.Local:
-                    client.RpcModels.Enqueue(new RPCModel(cmd: model.cmd, buffer: model.Buffer, kernel: model.kernel, serialize: false, protocol: model.protocol, token: model.token));
+                    client.RpcModels.Enqueue(new RPCModel(cmd: model.cmd, kernel: model.kernel, buffer: model.Buffer, serialize: false, protocol: model.protocol, token: model.token));
                     break;
                 case NetCmd.Scene:
                     OnSceneRelay(client, model);
@@ -1240,7 +1240,7 @@ namespace Net.Server
                     OnOperationSyncHandle(client, operList);
                     break;
                 case NetCmd.Ping:
-                    client.RpcModels.Enqueue(new RPCModel(cmd: NetCmd.PingCallback, buffer: model.Buffer, kernel: model.kernel, serialize: false, protocol: model.protocol));
+                    client.RpcModels.Enqueue(new RPCModel(cmd: NetCmd.PingCallback, kernel: model.kernel, buffer: model.Buffer, serialize: false, protocol: model.protocol));
                     break;
                 case NetCmd.PingCallback:
                     uint ticks = BitConverter.ToUInt32(model.buffer, model.index);
@@ -1735,20 +1735,20 @@ namespace Net.Server
             => Multicast(clients, NetCmd.OtherCmd, buffer);
         /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
-            => Multicast(clients, new RPCModel(cmd: cmd, buffer: buffer, kernel: false, serialize: false));
+            => Multicast(clients, new RPCModel(cmd: cmd, kernel: false, buffer: buffer, serialize: false));
         /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
-            => Multicast(clients, new RPCModel(cmd: cmd, buffer: buffer, kernel: kernel, serialize: serialize));
+            => Multicast(clients, new RPCModel(cmd: cmd, kernel: kernel, buffer: buffer, serialize: serialize));
         /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, uint protocol, params object[] pars)
             => Multicast(clients, NetCmd.CallRpc, protocol, pars);
         /// <inheritdoc/>
         public virtual void Multicast(IList<Player> clients, byte cmd, uint protocol, params object[] pars)
-            => Multicast(clients, new RPCModel(cmd: cmd, protocol: protocol, pars: pars));
+            => Multicast(clients, new RPCModel(cmd: cmd, kernel: true, protocol: protocol, pars: pars));
         public virtual void Multicast(IList<Player> clients, string func, params object[] pars)
             => Multicast(clients, NetCmd.CallRpc, func, pars);
         public virtual void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
-            => Multicast(clients, new RPCModel(cmd: cmd, protocol: func.CRCU32(), pars: pars));
+            => Multicast(clients, new RPCModel(cmd: cmd, kernel: true, protocol: func.CRCU32(), pars: pars));
         public virtual void Multicast(IList<Player> clients, RPCModel model)
         {
             if (model.buffer == null)
@@ -2149,10 +2149,10 @@ namespace Net.Server
         {
             if (!(client.Scene is Scene scene))
             {
-                client.RpcModels.Enqueue(new RPCModel(cmd: model.cmd, buffer: model.Buffer, kernel: model.kernel, serialize: false, protocol: model.protocol));
+                client.RpcModels.Enqueue(new RPCModel(cmd: model.cmd, kernel: model.kernel, buffer: model.Buffer, serialize: false, protocol: model.protocol));
                 return;
             }
-            Multicast(scene.Players, new RPCModel(cmd: model.cmd, buffer: model.Buffer, kernel: model.kernel, serialize: false, protocol: model.protocol));
+            Multicast(scene.Players, new RPCModel(cmd: model.cmd, kernel: model.kernel, buffer: model.Buffer, serialize: false, protocol: model.protocol));
         }
         #endregion
 

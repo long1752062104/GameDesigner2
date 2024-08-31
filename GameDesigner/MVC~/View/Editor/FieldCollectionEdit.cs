@@ -195,6 +195,8 @@ namespace MVC.View
 
         private static void OnDrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
         {
+            if (index >= collect.fields.Count) //移除元素时报错
+                return;
             var field = collect.fields[index];
             if (field.enableLabel)
             {
