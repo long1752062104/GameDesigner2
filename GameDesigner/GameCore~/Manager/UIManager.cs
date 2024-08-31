@@ -197,5 +197,14 @@ namespace GameCore
                 return form == result;
             return false;
         }
+
+        public void CloseFormAll()
+        {
+            while (formStack.Count > 0)
+            {
+                var form = formStack.Pop();
+                form.HideUI();
+            }
+        }
     }
 }

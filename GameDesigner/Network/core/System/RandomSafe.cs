@@ -11,16 +11,12 @@ namespace Net.System
     public class RandomSafe
     {
         private int inext;
-
         private int inextp;
-
         private readonly int[] SeedArray = new int[56];
-
 
         public RandomSafe() : this(Environment.TickCount)
         {
         }
-
 
         public RandomSafe(int Seed)
         {
@@ -97,7 +93,6 @@ namespace Net.System
             }
         }
 
-
         public virtual int Next()
         {
             return InternalSample();
@@ -116,7 +111,6 @@ namespace Net.System
             return num2 / 4294967293.0;
         }
 
-
         public virtual int Next(int minValue, int maxValue)
         {
             if (minValue > maxValue)
@@ -133,7 +127,6 @@ namespace Net.System
             return (int)((long)(GetSampleForLargeRange() * num) + minValue);
         }
 
-
         public virtual int Next(int maxValue)
         {
             if (maxValue < 0)
@@ -144,12 +137,10 @@ namespace Net.System
             return (int)(Sample() * maxValue);
         }
 
-
         public virtual double NextDouble()
         {
             return Sample();
         }
-
 
         public virtual void NextBytes(byte[] buffer)
         {
@@ -162,6 +153,44 @@ namespace Net.System
             {
                 buffer[i] = (byte)(InternalSample() % 256);
             }
+        }
+
+        /// <summary>
+        /// 随机范围
+        /// </summary>
+        /// <param name="minValue"></param>
+        /// <param name="maxValue"></param>
+        /// <returns></returns>
+        public int Range(int minValue, int maxValue)
+        {
+            if (minValue > maxValue)
+            {
+                return Next(maxValue, minValue);
+            }
+            return Next(minValue, maxValue);
+        }
+
+        /// <summary>
+        /// 随机范围
+        /// </summary>
+        /// <param name="minValue"></param>
+        /// <param name="maxValue"></param>
+        /// <returns></returns>
+        public float Range(float minValue, float maxValue)
+        {
+            if (minValue > maxValue)
+            {
+                float maxValue1 = maxValue;
+                float minValue1 = minValue;
+                minValue = maxValue1;
+                maxValue = minValue1;
+            }
+            int value1 = (int)(minValue * 10000);
+            int value2 = (int)(maxValue * 10000);
+            float value3 = Next(value1, value2) * 0.0001f;
+            if (value3 < minValue | value3 > maxValue)
+                return Range(minValue, maxValue);
+            return value3;
         }
     }
 }
