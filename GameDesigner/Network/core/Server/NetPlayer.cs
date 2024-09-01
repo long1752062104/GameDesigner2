@@ -428,35 +428,35 @@
         #endregion
 
         #region 客户端发送请求
-        public virtual void Call(uint protocol, params object[] pars)
+        public void Call(uint protocol, params object[] pars)
             => Call(NetCmd.CallRpc, protocol, true, false, 0, null, pars);
-        public virtual void Call(byte cmd, uint protocol, params object[] pars)
+        public void Call(byte cmd, uint protocol, params object[] pars)
             => Call(cmd, protocol, true, false, 0, null, pars);
-        public virtual void Response(uint protocol, bool serialize, uint token, params object[] pars)
+        public void Response(uint protocol, bool serialize, uint token, params object[] pars)
             => Call(NetCmd.CallRpc, protocol, true, serialize, token, null, pars);
-        public virtual void Response(uint protocol, uint token, params object[] pars)
+        public void Response(uint protocol, uint token, params object[] pars)
             => Call(NetCmd.CallRpc, protocol, true, false, token, null, pars);
-        public virtual void Response(byte cmd, uint protocol, uint token, params object[] pars)
+        public void Response(byte cmd, uint protocol, uint token, params object[] pars)
             => Call(cmd, protocol, true, false, token, null, pars);
 
-        public virtual void Call(string func, params object[] pars)
+        public void Call(string func, params object[] pars)
             => Call(NetCmd.CallRpc, func.CRCU32(), true, false, 0, null, pars);
-        public virtual void Call(byte cmd, string func, params object[] pars)
+        public void Call(byte cmd, string func, params object[] pars)
             => Call(cmd, func.CRCU32(), true, false, 0, null, pars);
-        public virtual void Response(string func, bool serialize, uint token, params object[] pars)
+        public void Response(string func, bool serialize, uint token, params object[] pars)
             => Call(NetCmd.CallRpc, func.CRCU32(), true, serialize, token, null, pars);
-        public virtual void Response(string func, uint token, params object[] pars)
+        public void Response(string func, uint token, params object[] pars)
             => Call(NetCmd.CallRpc, func.CRCU32(), true, false, token, null, pars);
-        public virtual void Response(byte cmd, string func, uint token, params object[] pars)
+        public void Response(byte cmd, string func, uint token, params object[] pars)
             => Call(cmd, func.CRCU32(), true, false, token, null, pars);
 
-        public virtual void Call(byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
+        public void Call(byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
             => Call(cmd, protocol, true, serialize, token, null, pars);
 
-        public virtual void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0, false, false, 0, buffer);
-        public virtual void Call(byte cmd, byte[] buffer) => Call(cmd, 0, false, false, 0, buffer);
+        public void Call(byte[] buffer) => Call(NetCmd.OtherCmd, 0, false, false, 0, buffer);
+        public void Call(byte cmd, byte[] buffer) => Call(cmd, 0, false, false, 0, buffer);
         public void Call(byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(cmd, 0, kernel, serialize, 0, buffer);
-        public void Call(byte cmd, uint protocol, bool kernel, bool serialize, uint token, byte[] buffer, params object[] pars)
+        public virtual void Call(byte cmd, uint protocol, bool kernel, bool serialize, uint token, byte[] buffer, params object[] pars)
         {
             if (buffer != null)
             {

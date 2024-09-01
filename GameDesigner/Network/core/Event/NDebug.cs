@@ -298,7 +298,7 @@ namespace Net.Event
             return seconds;
         }
 
-        private static bool CreateLogFile()
+        public static bool CreateLogFile()
         {
             try
             {

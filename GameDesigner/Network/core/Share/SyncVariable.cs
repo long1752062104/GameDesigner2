@@ -116,5 +116,15 @@ namespace Net.Share
         {
             return $"ID: {id} authorize: {authorize} target: {target.GetType().Name}.{memberInfo.Name}";
         }
+
+        //public static implicit operator SyncVariable<T>(T v)
+        //{
+        //    return v;
+        //}
+
+        //public static implicit operator T(SyncVariable<T> v)
+        //{
+        //    return v.value;
+        //}
     }
 }

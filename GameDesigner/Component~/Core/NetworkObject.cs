@@ -48,6 +48,7 @@ namespace Net.UnityComponent
         /// 是否可以发送销毁指令给服务器
         /// </summary>
         public bool CanDestroy { get; set; } = true;
+        public List<NetworkBehaviour> NetworkBehaviours => networkBehaviours;
 
         public virtual void Start()
         {
@@ -260,7 +261,7 @@ namespace Net.UnityComponent
             return 10000 + ((uid + 1 - 10000) * Capacity);
         }
 
-        internal void NetworkUpdate()
+        public void NetworkUpdate()
         {
             for (int i = 0; i < networkBehaviours.Count; i++)
             {

@@ -1698,56 +1698,56 @@ namespace Net.Server
                 Instance = null;
         }
 
-        public virtual void Call(Player client, uint protocol, params object[] pars)
+        public void Call(Player client, uint protocol, params object[] pars)
             => Call(client, NetCmd.CallRpc, protocol, true, false, 0, null, pars);
-        public virtual void Call(Player client, byte cmd, uint protocol, params object[] pars)
+        public void Call(Player client, byte cmd, uint protocol, params object[] pars)
             => Call(client, cmd, protocol, true, false, 0, null, pars);
-        public virtual void Response(Player client, uint protocol, bool serialize, uint token, params object[] pars)
+        public void Response(Player client, uint protocol, bool serialize, uint token, params object[] pars)
             => Call(client, NetCmd.CallRpc, protocol, true, serialize, token, null, pars);
-        public virtual void Response(Player client, uint protocol, uint token, params object[] pars)
+        public void Response(Player client, uint protocol, uint token, params object[] pars)
             => Call(client, NetCmd.CallRpc, protocol, true, false, token, null, pars);
-        public virtual void Response(Player client, byte cmd, uint protocol, uint token, params object[] pars)
+        public void Response(Player client, byte cmd, uint protocol, uint token, params object[] pars)
             => Call(client, cmd, protocol, true, false, token, null, pars);
 
-        public virtual void Call(Player client, string func, params object[] pars)
+        public void Call(Player client, string func, params object[] pars)
             => Call(client, NetCmd.CallRpc, func.CRCU32(), true, false, 0, null, pars);
-        public virtual void Call(Player client, byte cmd, string func, params object[] pars)
+        public void Call(Player client, byte cmd, string func, params object[] pars)
             => Call(client, cmd, func.CRCU32(), true, false, 0, null, pars);
-        public virtual void Response(Player client, string func, bool serialize, uint token, params object[] pars)
+        public void Response(Player client, string func, bool serialize, uint token, params object[] pars)
             => Call(client, NetCmd.CallRpc, func.CRCU32(), true, serialize, token, null, pars);
-        public virtual void Response(Player client, string func, uint token, params object[] pars)
+        public void Response(Player client, string func, uint token, params object[] pars)
             => Call(client, NetCmd.CallRpc, func.CRCU32(), true, false, token, null, pars);
-        public virtual void Response(Player client, byte cmd, string func, uint token, params object[] pars)
+        public void Response(Player client, byte cmd, string func, uint token, params object[] pars)
             => Call(client, cmd, func.CRCU32(), true, false, token, null, pars);
 
-        public virtual void Call(Player client, byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
+        public void Call(Player client, byte cmd, uint protocol, bool serialize, uint token, params object[] pars)
             => Call(client, cmd, protocol, true, serialize, token, null, pars);
 
-        public virtual void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, 0, false, false, 0, buffer);
-        public virtual void Call(Player client, byte cmd, byte[] buffer) => Call(client, cmd, 0, false, false, 0, buffer);
+        public void Call(Player client, byte[] buffer) => Call(client, NetCmd.OtherCmd, 0, false, false, 0, buffer);
+        public void Call(Player client, byte cmd, byte[] buffer) => Call(client, cmd, 0, false, false, 0, buffer);
 
         public void Call(Player client, byte cmd, byte[] buffer, bool kernel, bool serialize) => Call(client, cmd, 0, kernel, serialize, 0, buffer);
         public void Call(Player client, byte cmd, uint protocol, bool kernel, bool serialize, uint token, byte[] buffer, params object[] pars)
             => client.Call(cmd, protocol, kernel, serialize, token, buffer, pars);
 
         /// <inheritdoc/>
-        public virtual void Multicast(IList<Player> clients, byte[] buffer)
+        public void Multicast(IList<Player> clients, byte[] buffer)
             => Multicast(clients, NetCmd.OtherCmd, buffer);
         /// <inheritdoc/>
-        public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
+        public void Multicast(IList<Player> clients, byte cmd, byte[] buffer)
             => Multicast(clients, new RPCModel(cmd: cmd, kernel: false, buffer: buffer, serialize: false));
         /// <inheritdoc/>
-        public virtual void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
+        public void Multicast(IList<Player> clients, byte cmd, byte[] buffer, bool kernel, bool serialize)
             => Multicast(clients, new RPCModel(cmd: cmd, kernel: kernel, buffer: buffer, serialize: serialize));
         /// <inheritdoc/>
-        public virtual void Multicast(IList<Player> clients, uint protocol, params object[] pars)
+        public void Multicast(IList<Player> clients, uint protocol, params object[] pars)
             => Multicast(clients, NetCmd.CallRpc, protocol, pars);
         /// <inheritdoc/>
-        public virtual void Multicast(IList<Player> clients, byte cmd, uint protocol, params object[] pars)
+        public void Multicast(IList<Player> clients, byte cmd, uint protocol, params object[] pars)
             => Multicast(clients, new RPCModel(cmd: cmd, kernel: true, protocol: protocol, pars: pars));
-        public virtual void Multicast(IList<Player> clients, string func, params object[] pars)
+        public void Multicast(IList<Player> clients, string func, params object[] pars)
             => Multicast(clients, NetCmd.CallRpc, func, pars);
-        public virtual void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
+        public void Multicast(IList<Player> clients, byte cmd, string func, params object[] pars)
             => Multicast(clients, new RPCModel(cmd: cmd, kernel: true, protocol: func.CRCU32(), pars: pars));
         public virtual void Multicast(IList<Player> clients, RPCModel model)
         {
