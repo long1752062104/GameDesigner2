@@ -8,6 +8,10 @@ namespace GameDesigner
         {
         }
 
+        public void SetParams(params object[] args)
+        {
+        }
+
         public void OnInit()
         {
         }

@@ -7,6 +7,11 @@ namespace GameDesigner
     {
         void OnInit();
         /// <summary>
+        /// 设置内部参数
+        /// </summary>
+        /// <param name="target"></param>
+        void SetParams(params object[] args);
+        /// <summary>
         /// 当播放动画方法
         /// </summary>
         /// <param name="state">当前状态</param>

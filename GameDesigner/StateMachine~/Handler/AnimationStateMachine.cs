@@ -4,11 +4,16 @@ namespace GameDesigner
 {
     public class AnimationStateMachine : IAnimationHandler
     {
-        private readonly Animation animation;
+        private Animation animation;
 
         public AnimationStateMachine(Animation animation)
         {
             this.animation = animation;
+        }
+
+        public void SetParams(params object[] args) //中途修改动画对象用
+        {
+            animation = args[0] as Animation;
         }
 
         public void OnInit()

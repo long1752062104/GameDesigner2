@@ -5,13 +5,19 @@ namespace GameDesigner
 {
     public class TimelineStateMachine : IAnimationHandler
     {
-        private readonly Animator animator;
-        private readonly PlayableDirector director;
+        private Animator animator;
+        private PlayableDirector director;
 
         public TimelineStateMachine(Animator animator, PlayableDirector director)
         {
             this.animator = animator;
             this.director = director;
+        }
+
+        public void SetParams(params object[] args) //中途修改动画对象用
+        {
+            animator = args[0] as Animator;
+            director = args[1] as PlayableDirector;
         }
 
         public void OnInit()

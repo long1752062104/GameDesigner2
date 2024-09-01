@@ -88,8 +88,9 @@ namespace GameDesigner
         /// <summary>
         /// 动作索引
         /// </summary>
-		internal int actionIndex = -1;
-        /// <summary>
+		[HideInInspector]
+        public int actionIndex = -1;
+        /// <summary>s
         /// 动画速度
         /// </summary>
 		public float animSpeed = 1;
