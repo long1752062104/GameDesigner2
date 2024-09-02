@@ -109,6 +109,7 @@
     <Compile Include="GameDesigner\AOI~\GridWorld.cs" />
     <Compile Include="GameDesigner\AOI~\IGridActor.cs" />
     <Compile Include="GameDesigner\AOI~\IGridBody.cs" />
+    <Compile Include="GameDesigner\Common\Metadata.cs" />
     <Compile Include="GameDesigner\Common\ObservableProperty.cs" />
     <Compile Include="GameDesigner\Distributed~\Config\LoadBalanceConfig.cs" />
     <Compile Include="GameDesigner\Distributed~\ConsistentHashing.cs" />

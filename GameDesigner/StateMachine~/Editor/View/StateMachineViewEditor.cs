@@ -1,8 +1,8 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Editor;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -379,7 +379,7 @@ namespace GameDesigner
                                     EditorGUI.indentLevel = 4;
                                     if (!act.behaviours[i].OnInspectorGUI(state))
                                         foreach (var metadata in act.behaviours[i].Metadatas)
-                                            PropertyField(metadata, 60f, 5, 4);
+                                            MetadataDrawer.PropertyField(EditorGUILayout.GetControlRect(), metadata, 60f, 5, 4);
                                     GUILayout.Space(4);
                                     GUILayout.Box("", BlueprintSetting.Instance.HorSpaceStyle, GUILayout.Height(1), GUILayout.ExpandWidth(true));
                                     GUILayout.Space(4);
@@ -448,7 +448,7 @@ namespace GameDesigner
             DrawBehaviours(state);
             EditorGUILayout.Space();
             EditorGUILayout.EndVertical();
-            v:SupportObject.ApplyModifiedProperties();
+        v: SupportObject.ApplyModifiedProperties();
         }
 
         protected virtual void OnPlayAnimation(StateAction action)
@@ -531,7 +531,7 @@ namespace GameDesigner
                     {
                         foreach (var metadata in s.behaviours[i].Metadatas)
                         {
-                            PropertyField(metadata);
+                            MetadataDrawer.PropertyField(EditorGUILayout.GetControlRect(), metadata);
                         }
                     }
                     EditorGUI.indentLevel = 1;
@@ -590,150 +590,6 @@ namespace GameDesigner
                 if (GUILayout.Button(BlueprintGUILayout.Instance.Language["cancel"]))
                     addBehaviourState = null;
             }
-        }
-
-        private static void PropertyField(Metadata metadata, float width = 40f, int arrayBeginSpace = 3, int arrayEndSpace = 2)
-        {
-            if (metadata.type == TypeCode.Byte)
-                metadata.value = (byte)EditorGUILayout.IntField(metadata.name, (byte)metadata.value);
-            else if (metadata.type == TypeCode.SByte)
-                metadata.value = (sbyte)EditorGUILayout.IntField(metadata.name, (sbyte)metadata.value);
-            else if (metadata.type == TypeCode.Boolean)
-                metadata.value = EditorGUILayout.Toggle(metadata.name, (bool)metadata.value);
-            else if (metadata.type == TypeCode.Int16)
-                metadata.value = (short)EditorGUILayout.IntField(metadata.name, (short)metadata.value);
-            else if (metadata.type == TypeCode.UInt16)
-                metadata.value = (ushort)EditorGUILayout.IntField(metadata.name, (ushort)metadata.value);
-            else if (metadata.type == TypeCode.Char)
-                metadata.value = EditorGUILayout.TextField(metadata.name, metadata.value.ToString()).ToCharArray();
-            else if (metadata.type == TypeCode.Int32)
-                metadata.value = EditorGUILayout.IntField(metadata.name, (int)metadata.value);
-            else if (metadata.type == TypeCode.UInt32)
-                metadata.value = (uint)EditorGUILayout.IntField(metadata.name, (int)metadata.value);
-            else if (metadata.type == TypeCode.Single)
-                metadata.value = EditorGUILayout.FloatField(metadata.name, (float)metadata.value);
-            else if (metadata.type == TypeCode.Int64)
-                metadata.value = EditorGUILayout.LongField(metadata.name, (long)metadata.value);
-            else if (metadata.type == TypeCode.UInt64)
-                metadata.value = (ulong)EditorGUILayout.LongField(metadata.name, (long)metadata.value);
-            else if (metadata.type == TypeCode.Double)
-                metadata.value = EditorGUILayout.DoubleField(metadata.name, (double)metadata.value);
-            else if (metadata.type == TypeCode.String)
-                metadata.value = EditorGUILayout.TextField(metadata.name, metadata.value.ToString());
-            else if (metadata.type == TypeCode.Enum)
-                metadata.value = EditorGUILayout.EnumPopup(metadata.name, (Enum)metadata.value);
-            else if (metadata.type == TypeCode.Vector2)
-                metadata.value = EditorGUILayout.Vector2Field(metadata.name, (Vector2)metadata.value);
-            else if (metadata.type == TypeCode.Vector3)
-                metadata.value = EditorGUILayout.Vector3Field(metadata.name, (Vector3)metadata.value);
-            else if (metadata.type == TypeCode.Vector4)
-                metadata.value = EditorGUILayout.Vector4Field(metadata.name, (Vector4)metadata.value);
-            else if (metadata.type == TypeCode.Quaternion)
-            {
-                var q = (Quaternion)metadata.value;
-                var value = EditorGUILayout.Vector4Field(metadata.name, new Vector4(q.x, q.y, q.z, q.w));
-                var q1 = new Quaternion(value.x, value.y, value.z, value.w);
-                metadata.value = q1;
-            }
-            else if (metadata.type == TypeCode.Rect)
-                metadata.value = EditorGUILayout.RectField(metadata.name, (Rect)metadata.value);
-            else if (metadata.type == TypeCode.Color)
-                metadata.value = EditorGUILayout.ColorField(metadata.name, (Color)metadata.value);
-            else if (metadata.type == TypeCode.Color32)
-                metadata.value = (Color32)EditorGUILayout.ColorField(metadata.name, (Color32)metadata.value);
-            else if (metadata.type == TypeCode.AnimationCurve)
-                metadata.value = EditorGUILayout.CurveField(metadata.name, (AnimationCurve)metadata.value);
-            else if (metadata.type == TypeCode.Object)
-                metadata.value = EditorGUILayout.ObjectField(metadata.name, (Object)metadata.value, metadata.Type, true);
-            else if (metadata.type == TypeCode.GenericType | metadata.type == TypeCode.Array)
-            {
-                var rect = EditorGUILayout.GetControlRect();
-                rect.x += width;
-                metadata.foldout = EditorGUI.BeginFoldoutHeaderGroup(rect, metadata.foldout, metadata.name);
-                if (metadata.foldout)
-                {
-                    EditorGUI.indentLevel = arrayBeginSpace;
-                    EditorGUI.BeginChangeCheck();
-                    var arraySize = EditorGUILayout.DelayedIntField("Size", metadata.arraySize);
-                    bool flag8 = EditorGUI.EndChangeCheck();
-                    IList list = (IList)metadata.value;
-                    if (flag8 | list.Count != metadata.arraySize)
-                    {
-                        metadata.arraySize = arraySize;
-                        IList list1 = Array.CreateInstance(metadata.itemType, arraySize);
-                        for (int i = 0; i < list1.Count; i++)
-                            if (i < list.Count)
-                                list1[i] = list[i];
-                        if (metadata.type == TypeCode.GenericType)
-                        {
-                            IList list2 = (IList)Activator.CreateInstance(metadata.Type);
-                            for (int i = 0; i < list1.Count; i++)
-                                list2.Add(list1[i]);
-                            list = list2;
-                        }
-                        else list = list1;
-                    }
-                    for (int i = 0; i < list.Count; i++)
-                        list[i] = PropertyField("Element " + i, list[i], metadata.itemType);
-                    metadata.value = list;
-                    EditorGUI.indentLevel = arrayEndSpace;
-                }
-                EditorGUI.EndFoldoutHeaderGroup();
-            }
-        }
-
-        private static object PropertyField(string name, object obj, Type type)
-        {
-            var typeCode = (TypeCode)Type.GetTypeCode(type);
-            if (typeCode == TypeCode.Byte)
-                obj = (byte)EditorGUILayout.IntField(name, (byte)obj);
-            else if (typeCode == TypeCode.SByte)
-                obj = (sbyte)EditorGUILayout.IntField(name, (sbyte)obj);
-            else if (typeCode == TypeCode.Boolean)
-                obj = EditorGUILayout.Toggle(name, (bool)obj);
-            else if (typeCode == TypeCode.Int16)
-                obj = (short)EditorGUILayout.IntField(name, (short)obj);
-            else if (typeCode == TypeCode.UInt16)
-                obj = (ushort)EditorGUILayout.IntField(name, (ushort)obj);
-            else if (typeCode == TypeCode.Char)
-                obj = EditorGUILayout.TextField(name, (string)obj).ToCharArray();
-            else if (typeCode == TypeCode.Int32)
-                obj = EditorGUILayout.IntField(name, (int)obj);
-            else if (typeCode == TypeCode.UInt32)
-                obj = (uint)EditorGUILayout.IntField(name, (int)obj);
-            else if (typeCode == TypeCode.Single)
-                obj = EditorGUILayout.FloatField(name, (float)obj);
-            else if (typeCode == TypeCode.Int64)
-                obj = EditorGUILayout.LongField(name, (long)obj);
-            else if (typeCode == TypeCode.UInt64)
-                obj = (ulong)EditorGUILayout.LongField(name, (long)obj);
-            else if (typeCode == TypeCode.Double)
-                obj = EditorGUILayout.DoubleField(name, (double)obj);
-            else if (typeCode == TypeCode.String)
-                obj = EditorGUILayout.TextField(name, (string)obj);
-            else if (type == typeof(Vector2))
-                obj = EditorGUILayout.Vector2Field(name, (Vector2)obj);
-            else if (type == typeof(Vector3))
-                obj = EditorGUILayout.Vector3Field(name, (Vector3)obj);
-            else if (type == typeof(Vector4))
-                obj = EditorGUILayout.Vector4Field(name, (Vector4)obj);
-            else if (type == typeof(Quaternion))
-            {
-                var value = EditorGUILayout.Vector4Field(name, (Vector4)obj);
-                var quaternion = new Quaternion(value.x, value.y, value.z, value.w);
-                obj = quaternion;
-            }
-            else if (type == typeof(Rect))
-                obj = EditorGUILayout.RectField(name, (Rect)obj);
-            else if (type == typeof(Color))
-                obj = EditorGUILayout.ColorField(name, (Color)obj);
-            else if (type == typeof(Color32))
-                obj = EditorGUILayout.ColorField(name, (Color32)obj);
-            else if (type == typeof(AnimationCurve))
-                obj = EditorGUILayout.CurveField(name, (AnimationCurve)obj);
-            else if (type.IsSubclassOf(typeof(Object)) | type == typeof(Object))
-                obj = EditorGUILayout.ObjectField(name, (Object)obj, type, true);
-            return obj;
         }
 
         /// <summary>
@@ -838,7 +694,7 @@ namespace GameDesigner
                     {
                         foreach (var metadata in tr.behaviours[i].Metadatas)
                         {
-                            PropertyField(metadata);
+                            MetadataDrawer.PropertyField(EditorGUILayout.GetControlRect(), metadata);
                         }
                     }
                     EditorGUI.indentLevel = 1;
