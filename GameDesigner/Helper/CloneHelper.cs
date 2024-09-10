@@ -4,6 +4,7 @@
     using global::System.Collections;
     using global::System.Collections.Generic;
     using global::System.Reflection;
+    using Net.Helper;
     using Net.Serialize;
 
     /// <summary>

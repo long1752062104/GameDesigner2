@@ -1094,11 +1094,11 @@ namespace Binding
                 }
                 else
                 {
-                    str.AppendLine($"\t\t\t\t{{ typeof({item.ToString()}), typeof({item.ToString().Replace(".", "")}Bind) }},");
-                    str.AppendLine($"\t\t\t\t{{ typeof({item.ToString()}[]), typeof({item.ToString().Replace(".", "")}ArrayBind) }},");
+                    str.AppendLine($"\t\t\t\t{{ typeof({item}), typeof({item.ToString().Replace(".", "")}Bind) }},");
+                    str.AppendLine($"\t\t\t\t{{ typeof({item}[]), typeof({item.ToString().Replace(".", "")}ArrayBind) }},");
                     var typeName = AssemblyHelper.GetCodeTypeName(typeof(List<>).MakeGenericType(item).ToString());
                     typeName = typeName.Replace(".", "").Replace("+", "").Replace("<", "").Replace(">", "") + "Bind";
-                    str.AppendLine($"\t\t\t\t{{ typeof(List<{item.ToString()}>), typeof({typeName}) }},");
+                    str.AppendLine($"\t\t\t\t{{ typeof(List<{item}>), typeof({typeName}) }},");
                 }
             }
             str.AppendLine("            };");
@@ -1406,57 +1406,97 @@ public readonly struct {Dictionary}_{TKeyName}_{TValueName}_Bind : ISerialize<{D
     }
 }";
             var args = type.GenericTypeArguments;
-            string value;
-            string typeBindName;
-            string keyRead = $"{Type.GetTypeCode(args[0])}";
-            if (args[1].IsArray)
+            var keyType = args[0];
+            var valyeType = args[1];
+            var value = AssemblyHelper.GetCodeTypeName(valyeType.ToString());
+            var keyName = keyType.ToString().ReplaceClear("+", ".", "[", "]", "<", ">");
+            string typeBindName, valueName, keyRead;
+            var typeCode = Type.GetTypeCode(keyType);
+            if (typeCode == TypeCode.Object)
+                throw new Exception($"{type}字典不支持除了基础类型外的其他自定义类型作为Key!");
+            if (keyType.IsEnum)
+                keyRead = $"Enum<{keyType}>";
+            else
+                keyRead = typeCode.ToString();
+            if (valyeType.IsArray)
             {
-                value = args[1].ToString().Replace("+", ".");
-                typeBindName = args[1].ToString().ReplaceClear("+", ".", "[", "]", "<", ">") + "ArrayBind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                var arrayItemType = valyeType.GetArrayOrListElementType();
+                if (arrayItemType.IsEnum)
+                {
+                    var elementName = arrayItemType.ToString();
+                    typeBindName = $"SystemEnumArrayBind<{elementName}>";
+                    valueName += "Array";
+                }
+                else typeBindName = valueName + "ArrayBind";
             }
-            else if (args[1].IsGenericType)
+            else if (valyeType.IsGenericType)
             {
-                value = AssemblyHelper.GetCodeTypeName(args[1].ToString());
-                typeBindName = value.ReplaceClear("+", ".", "[", "]", "<", ">") + "Bind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                var arrayItemType = valyeType.GetArrayOrListElementType();
+                if (arrayItemType.IsEnum)
+                {
+                    var elementName = arrayItemType.ToString();
+                    typeBindName = $"SystemCollectionsGenericListSystemEnumBind<{elementName}>";
+                    valueName += "List";
+                }
+                else typeBindName = valueName + "Bind";
+            }
+            else if (valyeType.IsEnum)
+            {
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                typeBindName = $"SystemEnumBind<{value}>";
             }
             else
             {
-                value = args[1].ToString().Replace("+", ".");
-                typeBindName = args[1].ToString().Replace(".", "").Replace("+", "") + "Bind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                typeBindName = valueName + "Bind";
             }
-            text = text.Replace("{TKeyName}", $"{args[0].ToString().Replace(".", "").Replace("+", "")}");
-            text = text.Replace("{TValueName}", $"{typeBindName}");
-            text = text.Replace("{TKey}", $"{args[0]}");
+            text = text.Replace("{TKeyName}", $"{keyName}");
+            text = text.Replace("{TValueName}", $"{valueName}");
+            text = text.Replace("{TKey}", $"{keyType}");
             text = text.Replace("{TValue}", $"{value}");
             text = text.Replace("{BindTypeName}", $"{typeBindName}");
             text = text.Replace("{READ}", $"{keyRead}");
             var dictName = type.Name.Replace("`2", "");
             text = text.Replace("{Dictionary}", $"{dictName}");
             text = text.Replace("{orderId}", orderId.ToString());
-
-            fileTypeName = $"{dictName}_{args[0].ToString().Replace(".", "")}_{typeBindName}_Bind"; ;
+            fileTypeName = $"{dictName}_{keyName}_{valueName}_Bind";
             return text;
         }
 
         public static string GetDictionaryBindTypeName(Type type)
         {
             var args = type.GenericTypeArguments;
-            string typeBindName;
-            if (args[1].IsArray)
+            var keyType = args[0];
+            var valyeType = args[1];
+            var value = AssemblyHelper.GetCodeTypeName(valyeType.ToString());
+            var keyName = keyType.ToString().ReplaceClear("+", ".", "[", "]", "<", ">");
+            string valueName;
+            if (valyeType.IsArray)
             {
-                typeBindName = args[1].ToString().ReplaceClear("+", ".", "[", "]", "<", ">") + "ArrayBind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                var arrayItemType = valyeType.GetArrayOrListElementType();
+                if (arrayItemType.IsEnum)
+                    valueName += "Array";
             }
-            else if (args[1].IsGenericType)
+            else if (valyeType.IsGenericType)
             {
-                var value = AssemblyHelper.GetCodeTypeName(args[1].ToString());
-                typeBindName = value.ReplaceClear("+", ".", "[", "]", "<", ">") + "Bind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+                var arrayItemType = valyeType.GetArrayOrListElementType();
+                if (arrayItemType.IsEnum)
+                    valueName += "List";
             }
-            else
+            else if (valyeType.IsEnum)
             {
-                typeBindName = args[1].ToString().Replace(".", "").Replace("+", "") + "Bind";
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
+            }
+            else //泛型和普通类型一样
+            {
+                valueName = value.ReplaceClear("+", ".", "[", "]", "<", ">");
             }
             var dictName = type.Name.Replace("`2", "");
-            var fileTypeName = $"{dictName}_{args[0].ToString().Replace(".", "")}_{typeBindName}_Bind"; ;
+            var fileTypeName = $"{dictName}_{keyName}_{valueName}_Bind";
             return fileTypeName;
         }
     }

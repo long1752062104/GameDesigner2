@@ -296,12 +296,19 @@ public class Fast2BuildTools2 : EditorWindow
             data.SavePath = PathHelper.GetRelativePath(Application.dataPath, savePath);
         }
         GUILayout.EndHorizontal();
+        data.ClearFile = EditorGUILayout.Toggle("清除旧文件", data.ClearFile);
         if (GUILayout.Button("生成绑定代码", GUILayout.Height(30)))
         {
             if (string.IsNullOrEmpty(data.SavePath))
             {
                 EditorUtility.DisplayDialog("提示", "请选择生成脚本路径!", "确定");
                 return;
+            }
+            if (data.ClearFile)
+            {
+                var files = Directory.GetFiles(data.SavePath, "*.*", SearchOption.AllDirectories);
+                foreach (var file in files)
+                    File.Delete(file);
             }
             var types = new HashSet<Type>();
             ushort orderId = (ushort)(data.SortingOrder * 1000);
@@ -526,6 +533,7 @@ public class Fast2BuildTools2 : EditorWindow
         private string includePath;
         private bool includeAll;
         private string bindingEntryType;
+        private bool clearFile;
         private bool init;
 
         public void Init()
@@ -635,6 +643,17 @@ public class Fast2BuildTools2 : EditorWindow
                 if (bindingEntryType != value & init)
                     PersistHelper.Serialize(this, "fastProtoBuild.json");
                 bindingEntryType = value;
+            }
+        }
+
+        public bool ClearFile
+        {
+            get => clearFile;
+            set
+            {
+                if (clearFile != value & init)
+                    PersistHelper.Serialize(this, "fastProtoBuild.json");
+                clearFile = value;
             }
         }
     }
