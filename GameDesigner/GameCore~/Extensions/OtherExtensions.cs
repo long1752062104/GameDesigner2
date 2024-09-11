@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using GameCore;
-using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -8,6 +7,11 @@ using UnityEngine.UI;
 
 public static class OtherExtensions
 {
+    public static T LoadAsset<T>(this string self) where T : Object
+    {
+        return Global.Resources.LoadAsset<T>(self);
+    }
+
     public static Sprite ToSprite(this string self)
     {
         return Global.Resources.LoadAsset<Sprite>(self);

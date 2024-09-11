@@ -14,10 +14,6 @@
         /// </summary>
         public byte cmd1, cmd2;
         /// <summary>
-        /// 玩家名称
-        /// </summary>
-        public string name;
-        /// <summary>
         /// 玩家位置信息
         /// </summary>
         public Vector3 position;
@@ -46,13 +42,17 @@
         /// </summary>
         public int index1, index2, index3;
         /// <summary>
-        /// 数据数组, 备用
+        /// 玩家名称
         /// </summary>
-        public byte[] buffer;
+        public string name;
         /// <summary>
         /// 备用字符串
         /// </summary>
         public string name1, name2;
+        /// <summary>
+        /// 数据数组, 备用
+        /// </summary>
+        public byte[] buffer;
 
         /// <summary>
         /// 玩家操作指令

@@ -1,9 +1,10 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
-using UnityEditor.SceneManagement;
+using System.IO;
 using UnityEngine;
+using UnityEditor;
+using UnityEngine.SceneManagement;
+using UnityEditor.SceneManagement;
 
 namespace UnityToolbarExtender.Examples
 {
@@ -13,48 +14,42 @@ namespace UnityToolbarExtender.Examples
     {
         private static List<(string sceneName, string scenePath)> m_Scenes;
         private static string[] m_SceneName;
-        private static List<string> m_SceneNameIndex;
         private static string[] m_ScenePath;
         private static int sceneSelected = 0;
 
-
         static SceneSwitchLeftButton()
         {
-
-
-            void UpdateCurrent()
-            {
-                m_Scenes = SceneHelper.GetAllScenesInProject();
-                m_SceneName = m_Scenes.Select((x) => x.sceneName).Append(string.Empty).ToArray();
-                m_SceneNameIndex = m_Scenes.Select((x) => x.sceneName).Append(string.Empty).ToList();
-                m_ScenePath = m_Scenes.Select((x) => x.scenePath).Append(string.Empty).ToArray();
-            }
             EditorApplication.projectChanged += UpdateCurrent;
-
             UpdateCurrent();
-
             ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
+        }
+
+        static void UpdateCurrent()
+        {
+            m_Scenes = SceneHelper.GetAllScenesInProject();
+            m_SceneName = new string[m_Scenes.Count];
+            m_ScenePath = new string[m_Scenes.Count];
+            for (int i = 0; i < m_Scenes.Count; i++)
+            {
+                var (name, path) = m_Scenes[i];
+                m_SceneName[i] = name;
+                m_ScenePath[i] = path;
+                if (SceneManager.GetActiveScene().path == path)
+                    sceneSelected = i;
+            }
         }
 
         static void OnToolbarGUI()
         {
-
-            sceneSelected = m_SceneNameIndex.IndexOf(EditorSceneManager.GetActiveScene().name);
-            if (sceneSelected < 0)
-            {
-                sceneSelected = m_SceneName.Length - 1;
-            }
-
             var size = EditorStyles.popup.CalcSize(new GUIContent(m_SceneName[sceneSelected]));
-            int sceneSelectedNew = EditorGUILayout.Popup(sceneSelected, m_SceneName, GUILayout.Width(size.x), GUILayout.MinWidth(50));
-
-            if (sceneSelectedNew != sceneSelected && sceneSelectedNew != m_SceneName.Length - 1)
+            EditorGUILayout.LabelField("当前场景:", GUILayout.Width(55));
+            int sceneSelectedNew = EditorGUILayout.Popup(sceneSelected, m_SceneName, GUILayout.Width(size.x + 5f), GUILayout.MinWidth(55));
+            if (sceneSelectedNew != sceneSelected)
             {
-                //Debug.Log("场景变更");
+                sceneSelected = sceneSelectedNew;
                 SceneHelper.PromptSaveCurrentScene();
                 EditorSceneManager.OpenScene(m_ScenePath[sceneSelectedNew]);
             }
-
         }
     }
 
@@ -64,7 +59,7 @@ namespace UnityToolbarExtender.Examples
         public static bool PromptSaveCurrentScene()
         {
             // 检查当前场景是否已保存
-            if (EditorSceneManager.GetActiveScene().isDirty)
+            if (SceneManager.GetActiveScene().isDirty)
             {
                 // 提示用户是否要保存当前场景
                 bool saveScene = EditorUtility.DisplayDialog(
@@ -77,7 +72,7 @@ namespace UnityToolbarExtender.Examples
                 // 如果用户选择“保存”，则保存当前场景
                 if (saveScene)
                 {
-                    EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+                    EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
                 }
 
                 return saveScene;
@@ -96,13 +91,13 @@ namespace UnityToolbarExtender.Examples
 
             // 查找所有场景文件
             string[] guids = AssetDatabase.FindAssets("t:Scene");
-            foreach (string guid in guids)
+            for (int i = 0; i < guids.Length; i++)
             {
+                var guid = guids[i];
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                string sceneName = System.IO.Path.GetFileNameWithoutExtension(path);
+                string sceneName = $"{i + 1}_{Path.GetFileNameWithoutExtension(path)}";
                 scenes.Add((sceneName, path));
             }
-
             return scenes;
         }
     }

@@ -77,13 +77,66 @@ namespace Unity.Editor
         }
     }
 
+    public class FieldReference
+    {
+        public object target;
+        public FieldInfo field;
+
+        public object GetValue()
+        {
+            return field.GetValue(target);
+        }
+
+        public void SetValue(object value)
+        {
+            field.SetValue(target, value);
+        }
+    }
+
+    public class PropertyDrawerBase : PropertyDrawer
+    {
+        protected FieldReference GetFieldReference(SerializedProperty property)
+        {
+            var path = property.propertyPath;
+            path = Regex.Replace(path, "\\.Array\\.data", ".___ArrayElement___");
+            object target = property.serializedObject.targetObject;
+            var type = target.GetType();
+            var strArray = path.Split('.', StringSplitOptions.None);
+            FieldInfo fieldInfo = null;
+            var fieldReference = new FieldReference();
+            for (int index = 0; index < strArray.Length; ++index)
+            {
+                string name = strArray[index];
+                for (Type type1 = type; fieldInfo == null && type1 != null; type1 = type1.BaseType)
+                    fieldInfo = type1.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (fieldInfo == null)
+                    break;
+                fieldReference.field = fieldInfo;
+                fieldReference.target = target;
+                type = fieldInfo.FieldType;
+                target = fieldInfo.GetValue(target);
+                if (index < strArray.Length - 1 && strArray[index + 1].StartsWith("___ArrayElement___") && type.IsArrayOrList())
+                {
+                    var arrayElement = strArray[index + 1];
+                    arrayElement = arrayElement.Replace("___ArrayElement___[", "").Replace("]", "");
+                    var array = target as IList; //IList数组或者索引才能获取
+                    target = array[int.Parse(arrayElement)];
+
+                    type = type.GetArrayOrListElementType();
+                    index++;
+                }
+            }
+            return fieldReference;
+        }
+    }
+
     [CustomPropertyDrawer(typeof(Metadata))]
-    public class MetadataDrawer : PropertyDrawer
+    public class MetadataDrawer : PropertyDrawerBase
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (GetMetadata(property) is not Metadata metadata)
-                return;
+            var reference = GetFieldReference(property);
+            var metadata = (Metadata)reference.GetValue();
             if (metadata.target == null)
             {
                 var value = MetadataValue.Create(metadata.type, metadata.data);
@@ -113,37 +166,6 @@ namespace Unity.Editor
             }
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
-        }
-
-        private object GetMetadata(SerializedProperty property)
-        {
-            var path = property.propertyPath;
-            path = Regex.Replace(path, "\\.Array\\.data", ".___ArrayElement___");
-            object target = property.serializedObject.targetObject;
-            var type = target.GetType();
-            var strArray = path.Split('.', StringSplitOptions.None);
-            for (int index = 0; index < strArray.Length; ++index)
-            {
-                string name = strArray[index];
-                FieldInfo fieldInfo = null;
-                for (Type type1 = type; fieldInfo == null && type1 != null; type1 = type1.BaseType)
-                    fieldInfo = type1.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (fieldInfo == null)
-                    break;
-                type = fieldInfo.FieldType;
-                target = fieldInfo.GetValue(target);
-                if (index < strArray.Length - 1 && strArray[index + 1].StartsWith("___ArrayElement___") && type.IsArrayOrList())
-                {
-                    var arrayElement = strArray[index + 1];
-                    arrayElement = arrayElement.Replace("___ArrayElement___[", "").Replace("]", "");
-                    var array = target as IList; //IList数组或者索引才能获取
-                    target = array[int.Parse(arrayElement)];
-
-                    type = type.GetArrayOrListElementType();
-                    index++;
-                }
-            }
-            return target;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
