@@ -1,7 +1,7 @@
 using Net.Share;
 using System.Data;
 
-public partial class SHEETNAMEDataConfig : IDataConfig
+public partial class SHEETNAMEDataConfig : IEntityDataConfig
 {
     public int ID { get; set; }
 

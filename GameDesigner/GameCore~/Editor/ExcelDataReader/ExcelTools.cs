@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Data;
 using System.Text;
 using GameCore;
+using System;
 
 public class ExcelTools
 {
@@ -87,6 +88,9 @@ public class ExcelTools
                             var name = table.Rows[0][i].ToString();
                             var typeStr = table.Rows[1][i].ToString();
                             var des = table.Rows[2][i].ToString();
+
+                            if (string.IsNullOrEmpty(name) | string.IsNullOrEmpty(typeStr))
+                                continue;
 
                             indexGetSB.AppendLine($"                case {i - 1}: return {name};");
                             indexSetSB.AppendLine($"                case {i - 1}: {name} = ({typeStr})value; break;");
