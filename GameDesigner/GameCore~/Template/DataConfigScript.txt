@@ -4,10 +4,50 @@ using System.Data;
 public partial class SHEETNAMEDataConfig : IDataConfig
 {
     public int ID { get; set; }
+
 SPLIT
     /// <summary>NOTE</summary>
     public TYPE NAME { get; set; }
 SPLIT
+
+    public object this[int index]
+    {
+        get
+        {
+            switch (index)
+            {
+INDEX_GET
+                default: return null;
+            }
+        }
+        set
+        {
+            switch (index)
+            {
+INDEX_SET
+            }
+        }
+    }
+
+    public object this[string columnName] 
+    {
+        get
+        {
+            switch (columnName)
+            {
+COLUMN_GET
+                default: return null;
+            }
+        }
+        set
+        {
+            switch (columnName)
+            {
+COLUMN_SET
+            }
+        }
+    }
+
     public void Init(DataRow row)
     {
         ID = ObjectConverter.AsInt(row["ID"]);

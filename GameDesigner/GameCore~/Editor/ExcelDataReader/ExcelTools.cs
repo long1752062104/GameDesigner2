@@ -70,38 +70,52 @@ public class ExcelTools
                             break;
                         }
                     }
-                    var text = File.ReadAllText(excelPath1);
+                    var textSource = File.ReadAllText(excelPath1);
                     foreach (DataTable table in dataSet.Tables)
                     {
-                        var text1 = text;
-                        text1 = text1.Replace("SHEETNAME", table.TableName);
-                        var text2 = text1.Split(new string[] { "SPLIT" }, 0);
-                        var sb = new StringBuilder();
-                        var sb1 = new StringBuilder();
-                        sb.Append(text2[0]);
+                        var text = textSource.Replace("SHEETNAME", table.TableName);
+                        var texts = text.Split(new string[] { "SPLIT" }, 0);
+                        var fullSB = new StringBuilder();
+                        var fieldSB = new StringBuilder();
+                        var indexGetSB = new StringBuilder();
+                        var indexSetSB = new StringBuilder();
+                        var nameGetSB = new StringBuilder();
+                        var nameSetSB = new StringBuilder();
+                        var initSB = new StringBuilder();
                         for (int i = 1; i < table.Columns.Count; i++)
                         {
                             var name = table.Rows[0][i].ToString();
                             var typeStr = table.Rows[1][i].ToString();
                             var des = table.Rows[2][i].ToString();
 
-                            var text3 = text2[1].Replace("NAME", name);
+                            indexGetSB.AppendLine($"                case {i - 1}: return {name};");
+                            indexSetSB.AppendLine($"                case {i - 1}: {name} = ({typeStr})value; break;");
+                            nameGetSB.AppendLine($"                case \"{name}\": return {name};");
+                            nameSetSB.AppendLine($"                case \"{name}\": {name} = ({typeStr})value; break;");
+
+                            var text3 = texts[1].Replace("NAME", name);
                             text3 = text3.Replace("TYPE", typeStr);
                             text3 = text3.Replace("NOTE", des);
                             text3 = text3.TrimStart('\r', '\n');
-                            sb.AppendLine(text3);
+                            fieldSB.AppendLine(text3);
 
-                            var text4 = text2[3].Replace("NAME", name);
+                            text3 = texts[3].Replace("NAME", name);
                             typeStr = typeStr[0].ToString().ToUpper() + typeStr.Substring(1, typeStr.Length - 1);
-                            text4 = text4.Replace("TYPE", typeStr);
-                            text4 = text4.TrimStart('\r', '\n');
-                            text4 = text4.TrimEnd('\n', '\r');
-                            sb1.AppendLine(text4);
+                            text3 = text3.Replace("TYPE", typeStr);
+                            text3 = text3.TrimStart('\r', '\n');
+                            text3 = text3.TrimEnd('\n', '\r');
+                            initSB.AppendLine(text3);
                         }
-                        sb.Append(text2[2]);
-                        sb.Append(sb1.ToString());
-                        sb.Append(text2[4]);
-                        var text5 = sb.ToString();
+                        texts[2] = texts[2].Replace("INDEX_GET", indexGetSB.ToString());
+                        texts[2] = texts[2].Replace("INDEX_SET", indexSetSB.ToString());
+                        texts[2] = texts[2].Replace("COLUMN_GET", nameGetSB.ToString());
+                        texts[2] = texts[2].Replace("COLUMN_SET", nameSetSB.ToString());
+                        fullSB.Append(texts[0]);
+                        fullSB.Append(fieldSB.ToString());
+                        fullSB.Append(texts[2]);
+                        fullSB.Append(initSB.ToString());
+                        fullSB.Append(texts[4]);
+                        var text5 = fullSB.ToString();
                         File.WriteAllText($"{AssetBundleBuilder.Instance.tableScriptPath}/{table.TableName}DataConfig.cs", text5);
                         var path = $"{AssetBundleBuilder.Instance.tableScriptPathEx}/{table.TableName}DataConfigEx.cs";
                         if (!File.Exists(path))

@@ -3,17 +3,31 @@ using System.Data;
 namespace Net.Share
 {
     /// <summary>
-    /// ÓÎÏ·Êı¾İÅäÖÃ½Ó¿Ú
+    /// æ¸¸æˆæ•°æ®é…ç½®æ¥å£
     /// </summary>
     public interface IDataConfig
     {
         /// <summary>
-        /// Î¨Ò»ID
+        /// å”¯ä¸€ID
         /// </summary>
         int ID { get; set; }
 
         /// <summary>
-        /// ³õÊ¼»¯±í¸ñĞĞÊı¾İ×ªÊµÌå¶ÔÏó
+        /// è·å–é…ç½®è¡¨åˆ—çš„ç´¢å¼•å€¼
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        object this[int index] { get; set; }
+
+        /// <summary>
+        /// è·å–é…ç½®è¡¨åˆ—çš„å€¼
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        object this[string columnName] { get; set; }
+
+        /// <summary>
+        /// åˆå§‹åŒ–è¡¨æ ¼è¡Œæ•°æ®è½¬å®ä½“å¯¹è±¡
         /// </summary>
         /// <param name="row"></param>
         void Init(DataRow row);
