@@ -251,7 +251,7 @@ namespace Net.UnityComponent
 
         public virtual void OnPlayerExit(in Operation opt)
         {
-            if (identitys.TryGetValue(opt.identity, out var identity))//删除退出游戏的玩家游戏物体
+            if (identitys.TryRemove(opt.identity, out var identity))//删除退出游戏的玩家游戏物体
                 OnPlayerDestroy(identity, true);
             if (onExitDelectAll)//删除此玩家所创建的所有游戏物体
             {
