@@ -36,7 +36,10 @@ namespace Net.Config
             {
                 for (int i = 0; i < table.Columns.Count; i++)
                 {
-                    table.Columns[i].ColumnName = table.Rows[0][i].ToString();
+                    var columnName = table.Rows[0][i].ToString();
+                    if (string.IsNullOrEmpty(columnName))
+                        continue;
+                    table.Columns[i].ColumnName = columnName;
                 }
             }
         }
