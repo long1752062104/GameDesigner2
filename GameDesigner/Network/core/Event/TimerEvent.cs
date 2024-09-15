@@ -358,15 +358,15 @@ namespace Net.Event
         /// <param name="ptr"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
-        public int AddEvent(string name, int time, Func<bool> ptr, bool isAsync = false)
+        public int AddEvent(string name, long time, Func<bool> ptr, bool isAsync = false)
         {
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
                 name = name,
-                time = this.time + (long)time,
+                time = this.time + time,
                 eventId = eventID,
-                timeMax = (long)time,
+                timeMax = time,
             };
             eventObj.action = new EventAction3()
             {

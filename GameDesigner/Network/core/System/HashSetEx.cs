@@ -88,7 +88,6 @@ namespace Net.System
     public class HashSetEx<T> : ICollection<T>, ISet<T>, IReadOnlyCollection<T>
 #else
     [Serializable()]
-    [HostProtection(MayLeakOnAbort = true)]
     public class HashSetEx<T> : ICollection<T>, ISet<T>, IReadOnlyCollection<T>
 #endif
     {
@@ -1691,7 +1690,6 @@ namespace Net.System
 
 #if !SILVERLIGHT
         [Serializable()]
-        [HostProtection(MayLeakOnAbort = true)]
 #endif
         public struct Enumerator : IEnumerator<T>, IEnumerator
         {

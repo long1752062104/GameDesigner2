@@ -12,14 +12,27 @@ namespace Net.Helper
         /// <param name="hour"></param>
         /// <param name="minute"></param>
         /// <param name="second"></param>
-        /// <returns></returns>
-        public static int GetNextTime(int day, int hour, int minute, int second)
+        /// <returns>总毫秒数</returns>
+        public static long GetNextTime(int day, int hour, int minute, int second)
         {
             var now = DateTime.Now;
             var dayTime = now.AddDays(day);
             dayTime = new DateTime(dayTime.Year, dayTime.Month, dayTime.Day, hour, minute, second);
             var time = (dayTime - now).TotalMilliseconds;
-            var seconds = (int)Math.Ceiling(time);
+            var seconds = (long)Math.Ceiling(time);
+            return seconds;
+        }
+
+        /// <summary>
+        /// 获取当前时间到dateTime时间的总毫秒数
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns>总毫秒数</returns>
+        public static long GetNextTime(DateTime dateTime)
+        {
+            var now = DateTime.Now;
+            var time = (dateTime - now).TotalMilliseconds;
+            var seconds = (long)Math.Ceiling(time); //用int，30天的倒计时会出问题
             return seconds;
         }
 

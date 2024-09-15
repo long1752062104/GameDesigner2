@@ -314,7 +314,7 @@ namespace Net.Helper
         public static Assembly DynamicBuild(string dllName, Dictionary<string, string> codes, HashSet<string> includeDllPaths)
         {
             Assembly assembly = null;
-#if !CORE
+#if !CORE && !NETSTANDARD //unity api兼容net standard 2.1
             var provider = new CSharpCodeProvider();
             var param = new CompilerParameters();
             param.ReferencedAssemblies.AddRange(includeDllPaths.ToArray());
@@ -338,7 +338,7 @@ namespace Net.Helper
                 return assembly;
             }
             assembly = cr.CompiledAssembly;
-#else
+#elif CORE
             var metadataReferences = new List<MetadataReference>();
             foreach (var dllPath in includeDllPaths)
                 metadataReferences.Add(MetadataReference.CreateFromFile(dllPath));
