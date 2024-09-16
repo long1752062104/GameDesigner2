@@ -377,7 +377,7 @@ namespace Net.Server
                 segment.Count = stream.Read(segment.Buffer, 0, segment.Length);
                 var requestBuilder = Encoding.UTF8.GetString(segment.Buffer, 0, segment.Count);
                 var headers = new NameValueCollection();
-                var headersText = requestBuilder.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+                var headersText = requestBuilder.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 1; i < headersText.Length; i++)
                 {
                     var idx = headersText[i].IndexOf(':'); //必须用这个，否则遇到"Host: 192.168.1.6:9543"会出问题
@@ -398,7 +398,7 @@ namespace Net.Server
                 response.AppendLine($"Sec-WebSocket-Accept: {responseKey}");
                 response.AppendLine(); //必须有最后这个换行，否则失败
                 var responseBytes = Encoding.UTF8.GetBytes(response.ToString());
-                stream.Write(responseBytes);
+                stream.Write(responseBytes, 0, responseBytes.Length);
                 isHandshake = true;
                 return true;
             }

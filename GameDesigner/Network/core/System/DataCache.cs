@@ -153,12 +153,12 @@ namespace Net.System
             DataCacheManager.Instance.AddCache(this);
         }
 
-        protected override bool Insert(TKey key, TValue value, bool hasKeyThrow, out TValue oldValue)
+        protected override bool Insert(TKey key, TValue value, bool hasKeyThrow, out TValue oldValue, out int index)
         {
             lock (this)
             {
                 value.key = key;
-                return base.Insert(key, value, hasKeyThrow, out oldValue);
+                return base.Insert(key, value, hasKeyThrow, out oldValue, out index);
             }
         }
 

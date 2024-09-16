@@ -5,100 +5,83 @@ using System.Security;
 
 namespace Net.System
 {
-    // Token: 0x0200005B RID: 91
     internal static class ThrowHelper
     {
-        // Token: 0x06000334 RID: 820 RVA: 0x00008089 File Offset: 0x00006289
         internal static void ThrowArgumentOutOfRangeException()
         {
             ThrowArgumentOutOfRangeException(ExceptionArgument.index, ExceptionResource.ArgumentOutOfRange_Index);
         }
 
-        // Token: 0x06000335 RID: 821 RVA: 0x00008094 File Offset: 0x00006294
         internal static void ThrowWrongKeyTypeArgumentException(object key, Type targetType)
         {
             throw new ArgumentException("Arg_WrongType");
         }
 
-        // Token: 0x06000336 RID: 822 RVA: 0x000080B8 File Offset: 0x000062B8
         internal static void ThrowWrongValueTypeArgumentException(object value, Type targetType)
         {
             throw new ArgumentException("Arg_WrongType");
         }
 
-        // Token: 0x06000337 RID: 823 RVA: 0x000080DC File Offset: 0x000062DC
         internal static void ThrowKeyNotFoundException()
         {
             throw new KeyNotFoundException();
         }
 
-        // Token: 0x06000338 RID: 824 RVA: 0x000080E3 File Offset: 0x000062E3
         internal static void ThrowArgumentException(ExceptionResource resource)
         {
             throw new ArgumentException(GetResourceName(resource));
         }
 
-        // Token: 0x06000339 RID: 825 RVA: 0x000080F5 File Offset: 0x000062F5
         internal static void ThrowArgumentException(ExceptionResource resource, ExceptionArgument argument)
         {
-            throw new ArgumentException(GetResourceName(resource));
+            throw new ArgumentException(GetResourceName(resource), GetArgumentName(argument));
         }
 
-        // Token: 0x0600033A RID: 826 RVA: 0x0000810D File Offset: 0x0000630D
         internal static void ThrowArgumentNullException(ExceptionArgument argument)
         {
             throw new ArgumentNullException(GetArgumentName(argument));
         }
 
-        // Token: 0x0600033B RID: 827 RVA: 0x0000811A File Offset: 0x0000631A
         internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument));
         }
 
-        // Token: 0x0600033C RID: 828 RVA: 0x00008127 File Offset: 0x00006327
         internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
         {
-            throw new ArgumentOutOfRangeException(GetArgumentName(argument));
+            throw new ArgumentOutOfRangeException(GetArgumentName(argument), GetResourceName(resource));
         }
 
-        // Token: 0x0600033D RID: 829 RVA: 0x00008157 File Offset: 0x00006357
         internal static void ThrowInvalidOperationException(ExceptionResource resource)
         {
             throw new InvalidOperationException(GetResourceName(resource));
         }
 
-        // Token: 0x0600033E RID: 830 RVA: 0x00008169 File Offset: 0x00006369
         internal static void ThrowSerializationException(ExceptionResource resource)
         {
             throw new SerializationException(GetResourceName(resource));
         }
 
-        // Token: 0x0600033F RID: 831 RVA: 0x0000817B File Offset: 0x0000637B
         internal static void ThrowSecurityException(ExceptionResource resource)
         {
             throw new SecurityException(GetResourceName(resource));
         }
 
-        // Token: 0x06000340 RID: 832 RVA: 0x0000818D File Offset: 0x0000638D
         internal static void ThrowNotSupportedException(ExceptionResource resource)
         {
             throw new NotSupportedException(GetResourceName(resource));
         }
 
-        // Token: 0x06000341 RID: 833 RVA: 0x0000819F File Offset: 0x0000639F
         internal static void ThrowUnauthorizedAccessException(ExceptionResource resource)
         {
             throw new UnauthorizedAccessException(GetResourceName(resource));
         }
 
-        // Token: 0x06000342 RID: 834 RVA: 0x000081B1 File Offset: 0x000063B1
         internal static void ThrowObjectDisposedException(string objectName, ExceptionResource resource)
         {
             throw new ObjectDisposedException(objectName, GetResourceName(resource));
         }
 
-        // Token: 0x06000343 RID: 835 RVA: 0x000081C4 File Offset: 0x000063C4
         internal static void IfNullAndNullsAreIllegalThenThrow<T>(object value, ExceptionArgument argName)
         {
             if (value == null && default(T) != null)
@@ -107,7 +90,6 @@ namespace Net.System
             }
         }
 
-        // Token: 0x06000344 RID: 836 RVA: 0x000081EC File Offset: 0x000063EC
         internal static string GetArgumentName(ExceptionArgument argument)
         {
             string result;
@@ -191,7 +173,6 @@ namespace Net.System
             return result;
         }
 
-        // Token: 0x06000345 RID: 837 RVA: 0x00008348 File Offset: 0x00006548
         internal static string GetResourceName(ExceptionResource resource)
         {
             string result;

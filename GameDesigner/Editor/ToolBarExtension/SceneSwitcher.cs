@@ -41,6 +41,8 @@ namespace UnityToolbarExtender.Examples
 
         static void OnToolbarGUI()
         {
+            if (sceneSelected >= m_SceneName.Length - 1) //空项目0场景判断
+                return;
             var size = EditorStyles.popup.CalcSize(new GUIContent(m_SceneName[sceneSelected]));
             EditorGUILayout.LabelField("当前场景:", GUILayout.Width(55));
             int sceneSelectedNew = EditorGUILayout.Popup(sceneSelected, m_SceneName, GUILayout.Width(size.x + 5f), GUILayout.MinWidth(55));

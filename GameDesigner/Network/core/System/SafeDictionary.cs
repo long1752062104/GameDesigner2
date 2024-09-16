@@ -1,6 +1,4 @@
-﻿using Net.Common;
-
-namespace Net.System
+﻿namespace Net.System
 {
     /// <summary>
     /// 安全字典, 无GC快速字典
@@ -9,11 +7,11 @@ namespace Net.System
     /// <typeparam name="TValue"></typeparam>
     public class SafeDictionary<TKey, TValue> : MyDictionary<TKey, TValue>
     {
-        protected override bool Insert(TKey key, TValue value, bool tryAdd, out TValue oldValue)
+        protected override bool Insert(TKey key, TValue value, bool tryAdd, out TValue oldValue, out int index)
         {
             lock (this)
             {
-                return base.Insert(key, value, tryAdd, out oldValue);
+                return base.Insert(key, value, tryAdd, out oldValue, out index);
             }
         }
 
