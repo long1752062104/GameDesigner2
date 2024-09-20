@@ -1887,8 +1887,7 @@ GameObject:
   - component: {fileID: 619350524187504670}
   - component: {fileID: 619350524177331614}
   - component: {fileID: 619350524187274746}
-  - component: {fileID: -2481786256156807769}
-  - component: {fileID: 1374833729856303268}
+  - component: {fileID: 2480616029536392452}
   m_Layer: 0
   m_Name: player1
   m_TagString: soldier
@@ -1972,53 +1971,23 @@ MonoBehaviour:
     rigidBody: {fileID: 0}
     jCollider: {fileID: 0}
   lerpSpeed: 0.25
---- !u!136 &-2481786256156807769
-CapsuleCollider:
+--- !u!114 &2480616029536392452
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619350524187274750}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
---- !u!54 &1374833729856303268
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 619350524187274750}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 80
-  m_CollisionDetection: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f0c956251719844af5ca4850768944, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isStatic: 0
+  friction: 0.2
+  linear: 0
+  angular: 0
+  freezeRot: 0
+  center: {x: 0, y: 1, z: 0}
+  radius: 0.5
+  height: 1

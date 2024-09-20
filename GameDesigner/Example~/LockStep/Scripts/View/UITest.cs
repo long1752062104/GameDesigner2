@@ -52,7 +52,7 @@ public class UITest : SingleCase<UITest>
 
     private void Update()
     {
-        var i = LockStep.Client.Game.I;
+        var i = LockStep.Client.GameWorld.I;
         text.text = $"网络帧:{i.frame2}/秒 延迟:{i.delay}/秒";
     }
 

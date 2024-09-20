@@ -59,6 +59,7 @@
         /// 单例实例
         /// </summary>
         public static T I => Instance;
+        public static T Singleton => Instance;
 
         protected virtual void Awake()
         {

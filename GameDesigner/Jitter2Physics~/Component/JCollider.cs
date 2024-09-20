@@ -15,6 +15,14 @@ public enum Freeze
     Z = 4,
 }
 
+public enum InitMode
+{
+    None = 0,
+    Awake,
+    Start,
+    OnEnable,
+}
+
 public abstract class JCollider : MonoBehaviour
 {
     public bool isStatic;
@@ -25,10 +33,24 @@ public abstract class JCollider : MonoBehaviour
     public RigidBody rigidBody;
     internal List<RigidBodyShape> shapes;
     private bool isInitialize;
+    public InitMode initMode = InitMode.Start;
+
+    public virtual void Awake()
+    {
+        if (initMode == InitMode.Awake)
+            Initialize();
+    }
 
     public virtual void Start()
     {
-        Initialize();
+        if (initMode == InitMode.Start)
+            Initialize();
+    }
+
+    public virtual void OnEnable()
+    {
+        if (initMode == InitMode.OnEnable)
+            Initialize();
     }
 
     public void Initialize()
@@ -36,6 +58,11 @@ public abstract class JCollider : MonoBehaviour
         if (isInitialize)
             return;
         isInitialize = true;
+        InitRigidBody();
+    }
+
+    public void InitRigidBody()
+    {
         var world = JPhysics.I.world;
         rigidBody = world.CreateRigidBody();
         rigidBody.AddShape(shapes = OnCreateShape(), false);
@@ -60,6 +87,8 @@ public abstract class JCollider : MonoBehaviour
 
     private void Update()
     {
+        if (rigidBody == null)
+            return;
         transform.SetPositionAndRotation(rigidBody.Position.ToVector3(), rigidBody.Orientation.ToQuaternion());
     }
 

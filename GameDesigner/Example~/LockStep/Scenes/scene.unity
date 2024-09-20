@@ -236,13 +236,17 @@ MonoBehaviour:
   delay: 0
   player: {fileID: 619350524187274750, guid: 5efec1cf334b8274a8d38c63b3fb868f, type: 3}
   enemyObj: {fileID: 2534605082900056454, guid: b0d4c23db4cec1a4cb62004b2c4800b8, type: 3}
+  boxPrefab: {fileID: 5807609148942528658, guid: 0e4676329de2b1645ad746206376dbca, type: 3}
   direction:
     x: 0
     y: 0
     z: 0
   actors: []
+  boxs: []
   frameRate: 30
   frameFor: 1
+  colliders:
+  - {fileID: 4303035326721279318}
 --- !u!4 &78165518
 Transform:
   m_ObjectHideFlags: 0
@@ -3276,6 +3280,7 @@ MonoBehaviour:
   angular: 0
   freezeRot: 0
   center: {x: 0, y: 0, z: 0}
+  initMode: 0
   mesh: {fileID: 4300002, guid: fb4a4223a5d4ac0489a60bbfdf81d94a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

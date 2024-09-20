@@ -1,17 +1,17 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using ECS;
+using Jitter2.LinearMath;
 using Net.Client;
 using Net.Component;
+using Net.Event;
 using Net.Share;
 using Net.System;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace LockStep.Client
 {
-    public class Game : SingleCase<Game>
+    public class GameWorld : SingleCase<GameWorld>
     {
         private int frame;
         private readonly List<OperationList> snapshots = new List<OperationList>();
@@ -20,14 +20,18 @@ namespace LockStep.Client
         public uint delay;
         public GameObject player;
         public GameObject enemyObj;
+        public GameObject boxPrefab;
         public Net.Vector3 direction;
 
         public List<Player> actors = new List<Player>();
+        public List<GameObject> boxs = new List<GameObject>();
         public Dictionary<int, Player> actorDic = new Dictionary<int, Player>();
         private bool playback;
         public int frameRate = 30;
         public int frameFor = 1;
         private float time;
+        public JCollider[] colliders;
+        public TimerEvent Event;
 
         // Use this for initialization
         async void Start()
@@ -38,10 +42,8 @@ namespace LockStep.Client
                 await Task.Yield();
             ClientBase.Instance.OnOperationSync += OnOperationSync;
             ClientBase.Instance.AddRpcAuto(this, this);
-
             Physics.simulationMode = SimulationMode.Script;
             Physics.autoSyncTransforms = false;
-
             ThreadManager.Invoke(string.Empty, 1f, () =>
             {
                 frame2 = frame - frame1;
@@ -49,7 +51,6 @@ namespace LockStep.Client
                 ClientBase.Instance?.Ping();
                 return ClientBase.Instance != null;
             });
-
             ClientBase.Instance.OnPingCallback += (delay) =>
             {
                 this.delay = delay;
@@ -124,6 +125,16 @@ namespace LockStep.Client
 
         private void GameUpdate(OperationList list)
         {
+            if (logicFrame == 1)
+            {
+                Event = new TimerEvent();
+                JPhysics.ReBuild();
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    colliders[i].InitRigidBody();
+                }
+                BuildJenga(new JVector(0, 0, 10f));
+            }
             if (list.operations == null)
                 return;
             LSTime.time += LSTime.deltaTime;//最先执行的时间,逻辑时间
@@ -157,8 +168,8 @@ namespace LockStep.Client
                 actors[i].OnUpdate();
             }
             Physics.Simulate(0.01666667f);
-            JPhysics.I.Simulate();
-            EventSystem.UpdateEvent();//事件帧同步更新
+            JPhysics.Singleton.Simulate();
+            Event.UpdateEvent();
         }
 
         private Player CreateActor(Operation opt)
@@ -183,6 +194,7 @@ namespace LockStep.Client
         {
             get { return new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); }
         }
+
         public Vector3 Transform3Dir(Transform t, Vector3 dir)
         {
             var f = Mathf.Deg2Rad * (-t.rotation.eulerAngles.y);
@@ -195,6 +207,36 @@ namespace LockStep.Client
         {
             if (ClientBase.Instance != null)
                 ClientBase.Instance.OnOperationSync -= OnOperationSync;
+        }
+
+        public void BuildJenga(JVector position, int size = 20)
+        {
+            boxs.ClearObjects();
+
+            position += new JVector(0, 0.5f, 0);
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int e = 0; e < 3; e++)
+                {
+                    var box = Instantiate(boxPrefab);
+                    if (i % 2 == 0)
+                    {
+                        //body.AddShape(new BoxShape(3, 1, 1));
+                        box.transform.position = position + new JVector(0, i, -1 + e);
+                    }
+                    else
+                    {
+                        //body.AddShape(new BoxShape(1, 1, 3));
+                        box.transform.position = position + new JVector(-1 + e, i, 0);
+                    }
+                    if (box.TryGetComponent<JBoxCollider>(out var boxCollider))
+                    {
+                        boxCollider.InitRigidBody();
+                    }
+                    boxs.Add(box);
+                }
+            }
         }
     }
 }

@@ -15,14 +15,7 @@ public class JPhysics : SingletonMono<JPhysics>
     protected override void Awake()
     {
         base.Awake();
-        world = new World(64_000, 64_000, 32_000);
-        //world.NullBody.Tag = new RigidBodyTag();
-        world.DynamicTree.Filter = World.DefaultDynamicTreeFilter;
-        world.BroadPhaseFilter = null;
-        world.NarrowPhaseFilter = new TriangleEdgeCollisionFilter();
-        world.Gravity = gravity;
-        world.NumberSubsteps = 1;
-        world.SolverIterations = 12;
+        Build();
     }
 
     // Update is called once per frame
@@ -41,6 +34,23 @@ public class JPhysics : SingletonMono<JPhysics>
     public void Simulate()
     {
         world.Step(step, false);
+    }
+
+    public static void ReBuild()
+    {
+        Instance.Build();
+    }
+
+    public void Build()
+    {
+        world = new World(64_000, 64_000, 32_000);
+        //world.NullBody.Tag = new RigidBodyTag();
+        world.DynamicTree.Filter = World.DefaultDynamicTreeFilter;
+        world.BroadPhaseFilter = null;
+        world.NarrowPhaseFilter = new TriangleEdgeCollisionFilter();
+        world.Gravity = gravity;
+        world.NumberSubsteps = 1;
+        world.SolverIterations = 12;
     }
 }
 #endif
