@@ -5,7 +5,10 @@ using Net.Component;
 using Net.Event;
 using Net.Share;
 using Net.System;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -13,25 +16,24 @@ namespace LockStep.Client
 {
     public class GameWorld : SingleCase<GameWorld>
     {
-        private int frame;
+        internal int frame;
         private readonly List<OperationList> snapshots = new List<OperationList>();
-        private int logicFrame, frame1;
-        public int frame2;
+        private int logicFrame;
         public uint delay;
         public GameObject player;
         public GameObject enemyObj;
         public GameObject boxPrefab;
-        public Net.Vector3 direction;
+        private Net.Vector3 direction;
 
-        public List<Player> actors = new List<Player>();
-        public List<GameObject> boxs = new List<GameObject>();
-        public Dictionary<int, Player> actorDic = new Dictionary<int, Player>();
+        public List<Actor> actors = new List<Actor>();
+        public Dictionary<int, Actor> actorDic = new Dictionary<int, Actor>();
         private bool playback;
         public int frameRate = 30;
         public int frameFor = 1;
         private float time;
         public JCollider[] colliders;
         public TimerEvent Event;
+        private StringBuilder frameLog = new StringBuilder();
 
         // Use this for initialization
         async void Start()
@@ -46,8 +48,6 @@ namespace LockStep.Client
             Physics.autoSyncTransforms = false;
             ThreadManager.Invoke(string.Empty, 1f, () =>
             {
-                frame2 = frame - frame1;
-                frame1 = frame;
                 ClientBase.Instance?.Ping();
                 return ClientBase.Instance != null;
             });
@@ -58,31 +58,43 @@ namespace LockStep.Client
         }
 
         [Rpc]
+        void StartGameSync()
+        {
+            foreach (var actor in actors)
+                actor.Destroy();
+            actorDic.Clear();
+            actors.Clear();
+            frame = 0;
+            logicFrame = 0;
+            playback = false;
+            snapshots.Clear();
+            frameLog.Clear();
+        }
+
+        [Rpc]
         void ExitBattle(int uid)
         {
-            if (actorDic.TryGetValue(uid, out Player actor1))
+            if (actorDic.TryGetValue(uid, out var actor))
             {
-                actors.Remove(actor1);
+                actors.Remove(actor);
                 actorDic.Remove(uid);
-                actor1.Destroy();
+                actor.Destroy();
             }
             frame = 0;
             logicFrame = 0;
-            //snapshots.Clear();
             Debug.Log("退出战斗");
         }
 
         [Rpc]
         void Playback()
         {
-            foreach (var player in actorDic.Values)
-            {
-                player.Destroy();
-            }
+            foreach (var actor in actors)
+                actor.Destroy();
             actorDic.Clear();
             actors.Clear();
             playback = true;
             logicFrame = 0;
+            frameLog.Clear();
         }
 
         private void OnOperationSync(in OperationList list)
@@ -130,9 +142,7 @@ namespace LockStep.Client
                 Event = new TimerEvent();
                 JPhysics.ReBuild();
                 for (int i = 0; i < colliders.Length; i++)
-                {
                     colliders[i].InitRigidBody();
-                }
                 BuildJenga(new JVector(0, 0, 10f));
             }
             if (list.operations == null)
@@ -144,17 +154,17 @@ namespace LockStep.Client
                 switch (opt.cmd)
                 {
                     case Command.Input:
-                        if (!actorDic.TryGetValue(opt.identity, out Player actor))
+                        if (!actorDic.TryGetValue(opt.identity, out var actor))
                         {
                             actor = CreateActor(opt);
                             actor.name = opt.identity.ToString();
                             actorDic.Add(opt.identity, actor);
                             actors.Add(actor);
                         }
-                        actor.opt = opt;
+                        actor.operation = opt;
                         break;
                     case NetCmd.QuitGame:
-                        if (actorDic.TryGetValue(opt.identity, out Player actor1))
+                        if (actorDic.TryGetValue(opt.identity, out var actor1))
                         {
                             actors.Remove(actor1);
                             actorDic.Remove(opt.identity);
@@ -164,36 +174,37 @@ namespace LockStep.Client
                 }
             }
             for (int i = 0; i < actors.Count; i++)
-            {
-                actors[i].OnUpdate();
-            }
+                actors[i].Update();
             Physics.Simulate(0.01666667f);
             JPhysics.Singleton.Simulate();
             Event.UpdateEvent();
+            frameLog.AppendLine($"frame:{logicFrame}");
+            for (int i = 0; i < actors.Count; i++)
+            {
+                var actor = actors[i];
+                frameLog.AppendLine($"actorId: {i} pos: ({actor.jCollider.Position}) rot: ({actor.jCollider.Rotation})");
+            }
         }
 
         private Player CreateActor(Operation opt)
         {
+            var gameObject = Instantiate(player);
             var actor = new Player
             {
                 name = opt.identity.ToString(),
-                gameObject = Instantiate(player)
+                gameObject = gameObject,
+                anim = gameObject.GetComponent<Animation>(),
+                rigidBody = gameObject.GetComponent<Rigidbody>(),
+                jCollider = gameObject.GetComponent<JCollider>()
             };
-            actor.objectView = actor.gameObject.GetComponent<ObjectView>();
-            actor.objectView.actor = actor;
-            actor.objectView.anim = actor.gameObject.GetComponent<Animation>();
-            actor.rigidBody = actor.gameObject.GetComponent<Rigidbody>();
-            actor.jCollider = actor.gameObject.GetComponent<JCapsuleCollider>();
-            actor.jCollider?.Initialize();
+            if (actor.jCollider != null)
+                actor.jCollider.Initialize();
             if (opt.identity == ClientBase.Instance.UID)
-                FindObjectOfType<ARPGcamera>().target = actor.gameObject.transform;
+                FindObjectOfType<ARPGcamera>().target = gameObject.transform;
             return actor;
         }
 
-        public Vector3 Direction
-        {
-            get { return new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); }
-        }
+        public Vector3 Direction => new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
         public Vector3 Transform3Dir(Transform t, Vector3 dir)
         {
@@ -211,32 +222,41 @@ namespace LockStep.Client
 
         public void BuildJenga(JVector position, int size = 20)
         {
-            boxs.ClearObjects();
-
             position += new JVector(0, 0.5f, 0);
-
             for (int i = 0; i < size; i++)
             {
                 for (int e = 0; e < 3; e++)
                 {
-                    var box = Instantiate(boxPrefab);
+                    var gameObject = Instantiate(boxPrefab);
                     if (i % 2 == 0)
                     {
-                        //body.AddShape(new BoxShape(3, 1, 1));
-                        box.transform.position = position + new JVector(0, i, -1 + e);
+                        gameObject.transform.localScale = new Vector3(3, 1, 1);
+                        gameObject.transform.position = position + new JVector(0, i, -1 + e);
                     }
                     else
                     {
-                        //body.AddShape(new BoxShape(1, 1, 3));
-                        box.transform.position = position + new JVector(-1 + e, i, 0);
+                        gameObject.transform.localScale = new Vector3(1, 1, 3);
+                        gameObject.transform.position = position + new JVector(-1 + e, i, 0);
                     }
-                    if (box.TryGetComponent<JBoxCollider>(out var boxCollider))
+                    var actor = new Box()
                     {
-                        boxCollider.InitRigidBody();
-                    }
-                    boxs.Add(box);
+                        gameObject = gameObject,
+                        rigidBody = gameObject.GetComponent<Rigidbody>(),
+                        jCollider = gameObject.GetComponent<JCollider>()
+                    };
+                    if (actor.jCollider != null)
+                        actor.jCollider.Initialize();
+                    actors.Add(actor);
                 }
             }
+        }
+
+        internal void SaveData()
+        {
+            var now = DateTime.Now;
+            var file = Application.streamingAssetsPath + "/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+            File.WriteAllText(file, frameLog.ToString());
+            Debug.Log($"数据保存成功:{file}");
         }
     }
 }

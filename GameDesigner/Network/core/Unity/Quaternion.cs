@@ -7,7 +7,6 @@ namespace Net
     public struct Quaternion : IEquatable<Quaternion>
     {
         #region "源码"
-        // Token: 0x0600491F RID: 18719 RVA: 0x0007E4CB File Offset: 0x0007C6CB
         public Quaternion(float x, float y, float z, float w)
         {
             this.x = x;
@@ -16,7 +15,6 @@ namespace Net
             this.w = w;
         }
 
-        // Token: 0x17001111 RID: 4369
         public float this[int index]
         {
             get
@@ -63,7 +61,6 @@ namespace Net
             }
         }
 
-        // Token: 0x0600492E RID: 18734 RVA: 0x0007E4CB File Offset: 0x0007C6CB
         public void Set(float newX, float newY, float newZ, float newW)
         {
             x = newX;
@@ -72,13 +69,11 @@ namespace Net
             w = newW;
         }
 
-        // Token: 0x17001112 RID: 4370
-        // (get) Token: 0x0600492F RID: 18735 RVA: 0x0007E6EC File Offset: 0x0007C8EC
         public static Quaternion identity
         {
             get
             {
-                return Quaternion.identityQuaternion;
+                return identityQuaternion;
             }
         }
 
@@ -95,13 +90,11 @@ namespace Net
             }
         }
 
-        // Token: 0x06004930 RID: 18736 RVA: 0x0007E708 File Offset: 0x0007C908
         public static Quaternion operator *(Quaternion lhs, Quaternion rhs)
         {
             return new Quaternion(lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y, lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z, lhs.w * rhs.z + lhs.z * rhs.w + lhs.x * rhs.y - lhs.y * rhs.x, lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);
         }
 
-        // Token: 0x06004931 RID: 18737 RVA: 0x0007E820 File Offset: 0x0007CA20
         public static Vector3 operator *(Quaternion rotation, Vector3 point)
         {
             float num = rotation.x * 2f;
@@ -123,38 +116,32 @@ namespace Net
             return result;
         }
 
-        // Token: 0x06004932 RID: 18738 RVA: 0x0007E968 File Offset: 0x0007CB68
         private static bool IsEqualUsingDot(float dot)
         {
             return dot > 0.999999f;
         }
 
-        // Token: 0x06004933 RID: 18739 RVA: 0x0007E988 File Offset: 0x0007CB88
         public static bool operator ==(Quaternion lhs, Quaternion rhs)
         {
             return lhs.x == rhs.x & lhs.y == rhs.y & lhs.z == rhs.z & lhs.w == rhs.w;
         }
 
-        // Token: 0x06004934 RID: 18740 RVA: 0x0007E9AC File Offset: 0x0007CBAC
         public static bool operator !=(Quaternion lhs, Quaternion rhs)
         {
             return !(lhs == rhs);
         }
 
-        // Token: 0x06004935 RID: 18741 RVA: 0x0007E9CC File Offset: 0x0007CBCC
         public static float Dot(Quaternion a, Quaternion b)
         {
             return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
         }
 
-        // Token: 0x06004938 RID: 18744 RVA: 0x0007EA4C File Offset: 0x0007CC4C
         public static float Angle(Quaternion a, Quaternion b)
         {
             float num = Dot(a, b);
             return (!IsEqualUsingDot(num)) ? (Mathf.Acos(Mathf.Min(Mathf.Abs(num), 1f)) * 2f * 57.29578f) : 0f;
         }
 
-        // Token: 0x06004939 RID: 18745 RVA: 0x0007EAA0 File Offset: 0x0007CCA0
         private static Vector3 Internal_MakePositive(Vector3 euler)
         {
             float num = -0.005729578f;
@@ -186,14 +173,13 @@ namespace Net
             return euler;
         }
 
-        // Token: 0x06004941 RID: 18753 RVA: 0x0007EC9C File Offset: 0x0007CE9C
         public static Quaternion Normalize(Quaternion q)
         {
-            float num = Mathf.Sqrt(Quaternion.Dot(q, q));
+            float num = Mathf.Sqrt(Dot(q, q));
             Quaternion result;
             if (num < Mathf.Epsilon)
             {
-                result = Quaternion.identity;
+                result = identity;
             }
             else
             {
@@ -202,42 +188,35 @@ namespace Net
             return result;
         }
 
-        // Token: 0x06004942 RID: 18754 RVA: 0x0007ECFD File Offset: 0x0007CEFD
         public void Normalize()
         {
-            this = Quaternion.Normalize(this);
+            this = Normalize(this);
         }
 
-        // Token: 0x17001114 RID: 4372
-        // (get) Token: 0x06004943 RID: 18755 RVA: 0x0007ED14 File Offset: 0x0007CF14
         [Newtonsoft_X.Json.JsonIgnore]
         public Quaternion normalized
         {
             get
             {
-                return Quaternion.Normalize(this);
+                return Normalize(this);
             }
         }
 
-        // Token: 0x06004944 RID: 18756 RVA: 0x0007ED34 File Offset: 0x0007CF34
         public override int GetHashCode()
         {
             return x.GetHashCode() ^ y.GetHashCode() << 2 ^ z.GetHashCode() >> 2 ^ w.GetHashCode() >> 1;
         }
 
-        // Token: 0x06004945 RID: 18757 RVA: 0x0007ED98 File Offset: 0x0007CF98
         public override bool Equals(object other)
         {
-            return other is Quaternion && Equals((Quaternion)other);
+            return other is Quaternion quaternion && Equals(quaternion);
         }
 
-        // Token: 0x06004946 RID: 18758 RVA: 0x0007EDCC File Offset: 0x0007CFCC
         public bool Equals(Quaternion other)
         {
             return x.Equals(other.x) && y.Equals(other.y) && z.Equals(other.z) && w.Equals(other.w);
         }
 
-        // Token: 0x06004947 RID: 18759 RVA: 0x0007EE3C File Offset: 0x0007D03C
         public override string ToString()
         {
             return string.Format("({0:F1}, {1:F1}, {2:F1}, {3:F1})", new object[]
@@ -249,7 +228,6 @@ namespace Net
             });
         }
 
-        // Token: 0x06004948 RID: 18760 RVA: 0x0007EE9C File Offset: 0x0007D09C
         public string ToString(string format)
         {
             return string.Format("({0}, {1}, {2}, {3})", new object[]
@@ -261,24 +239,13 @@ namespace Net
             });
         }
 
-        // Token: 0x04001925 RID: 6437
         public float x;
-
-        // Token: 0x04001926 RID: 6438
         public float y;
-
-        // Token: 0x04001927 RID: 6439
         public float z;
-
-        // Token: 0x04001928 RID: 6440
         public float w;
-
-        // Token: 0x04001929 RID: 6441
         private static readonly Quaternion identityQuaternion = new Quaternion(0f, 0f, 0f, 1f);
-
         public static readonly Quaternion zero = new Quaternion(0, 0, 0, 0);
 
-        // Token: 0x0400192A RID: 6442
         public const float kEpsilon = 1E-06f;
         #endregion
 
@@ -307,7 +274,7 @@ namespace Net
             identityM[0, 2] = zaxis.x;
             identityM[1, 2] = zaxis.y;
             identityM[2, 2] = zaxis.z;
-            Quaternion.CreateFromRotationMatrix(ref identityM, out this);
+            CreateFromRotationMatrix(ref identityM, out this);
         }
 
         public Quaternion(float yaw, float pitch, float roll)
@@ -933,7 +900,7 @@ namespace Net
 
         private static void Angle(ref Quaternion a, ref Quaternion b, out float result)
         {
-            result = (float)(Math.Acos(Math.Min(Math.Abs(Quaternion.Dot(a, b)), 1f)) * 2.0 * 57.2957801818848);
+            result = (float)(Math.Acos(Math.Min(Math.Abs(Dot(a, b)), 1f)) * 2.0 * 57.2957801818848);
         }
 
         public static Quaternion Negate(Quaternion quaternion)
@@ -1083,26 +1050,21 @@ namespace Net
         #endregion
 
 
-        // Token: 0x06005159 RID: 20825 RVA: 0x0008CF7C File Offset: 0x0008B17C
         public static bool operator ==(Quaternion lhs, UnityEngine.Quaternion rhs)
         {
             return IsEqualUsingDot(Dot(lhs, rhs));
         }
 
-        // Token: 0x0600515A RID: 20826 RVA: 0x0008CFA8 File Offset: 0x0008B1A8
         public static bool operator !=(Quaternion lhs, UnityEngine.Quaternion rhs)
         {
             return !(lhs == rhs);
         }
 
-
-        // Token: 0x06005159 RID: 20825 RVA: 0x0008CF7C File Offset: 0x0008B17C
         public static bool operator ==(UnityEngine.Quaternion lhs, Quaternion rhs)
         {
             return IsEqualUsingDot(Dot(lhs, rhs));
         }
 
-        // Token: 0x0600515A RID: 20826 RVA: 0x0008CFA8 File Offset: 0x0008B1A8
         public static bool operator !=(UnityEngine.Quaternion lhs, Quaternion rhs)
         {
             return !(lhs == rhs);
@@ -1114,6 +1076,16 @@ namespace Net
         }
 
         public static implicit operator Quaternion(UnityEngine.Quaternion q)
+        {
+            return new Quaternion(q.x, q.y, q.z, q.w);
+        }
+
+        public static implicit operator UnityEngine.Vector4(Quaternion q)
+        {
+            return new UnityEngine.Vector4(q.x, q.y, q.z, q.w);
+        }
+
+        public static implicit operator Quaternion(UnityEngine.Vector4 q)
         {
             return new Quaternion(q.x, q.y, q.z, q.w);
         }

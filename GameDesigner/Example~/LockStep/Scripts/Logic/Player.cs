@@ -1,5 +1,4 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using Net.Share;
 using System;
 using UnityEngine;
 
@@ -8,31 +7,29 @@ namespace LockStep.Client
     [Serializable]
     public class Player : Actor
     {
-        public ObjectView objectView;
+        public Animation anim;
         public float moveSpeed = 6f;
-        internal Operation opt;
 
-        public void OnUpdate()
+        public override void Update()
         {
-            var dir = (Vector3)opt.direction * moveSpeed;
+            var dir = (Vector3)operation.direction * moveSpeed;
             if (jCollider != null)
             {
-                var vel = jCollider.rigidBody.Velocity;
+                var vel = jCollider.Velocity;
                 if (dir == Net.Vector3.zero)
                 {
-                    objectView.anim.Play("soldierIdle");
+                    anim.Play("soldierIdle");
 
                     dir.y = vel.Y;
-                    jCollider.rigidBody.Velocity = dir;
+                    jCollider.Velocity = dir;
                 }
                 else
                 {
-                    objectView.anim.Play("soldierRun");
+                    anim.Play("soldierRun");
 
                     dir.y = vel.Y;
-                    jCollider.rigidBody.SetActivationState(true);
-                    jCollider.rigidBody.Velocity = dir;
-                    jCollider.rigidBody.Orientation = Quaternion.Lerp(jCollider.rigidBody.Orientation, Quaternion.LookRotation(opt.direction, Vector3.up), 0.5f);
+                    jCollider.Velocity = dir;
+                    jCollider.Rotation = Quaternion.Lerp(jCollider.Rotation, Quaternion.LookRotation(operation.direction, Vector3.up), 0.5f);
                 }
             }
             else
@@ -40,25 +37,20 @@ namespace LockStep.Client
                 var vel = rigidBody.velocity;
                 if (dir == Net.Vector3.zero)
                 {
-                    objectView.anim.Play("soldierIdle");
+                    anim.Play("soldierIdle");
 
                     dir.y = vel.y;
                     rigidBody.velocity = dir;
                 }
                 else
                 {
-                    objectView.anim.Play("soldierRun");
+                    anim.Play("soldierRun");
 
                     dir.y = vel.y;
                     rigidBody.velocity = dir;
-                    rigidBody.rotation = Quaternion.Lerp(rigidBody.rotation, Quaternion.LookRotation(opt.direction, Vector3.up), 0.5f);
+                    rigidBody.rotation = Quaternion.Lerp(rigidBody.rotation, Quaternion.LookRotation(operation.direction, Vector3.up), 0.5f);
                 }
             }
-        }
-
-        public void Destroy()
-        {
-            UnityEngine.Object.DestroyImmediate(objectView.gameObject);
         }
     }
 }

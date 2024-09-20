@@ -5,7 +5,7 @@ using Jitter2.LinearMath;
 using Unity.Editor;
 using FixedMath;
 
-namespace GGPhysUnity.Editor
+namespace Jitter2.Editor
 {
     [CustomPropertyDrawer(typeof(Fix64))]
     public class Fix64Drawer : PropertyDrawerBase

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class UITest : SingleCase<UITest>
 {
     public InputField cri;
-    public Button cr, jr, er, rb, eb, playback;
+    public Button cr, jr, er, rb, eb, playback, saveDataBtn;
     public Text text;
 
     // Start is called before the first frame update
@@ -39,21 +39,21 @@ public class UITest : SingleCase<UITest>
         {
             ClientBase.Instance.DispatchRpc("Playback");
         });
+        saveDataBtn.onClick.AddListener(() =>
+        {
+            LockStep.Client.GameWorld.I.SaveData();
+        });
         while (ClientBase.Instance == null)
-        {
             await Task.Yield();
-        }
         while (!ClientBase.Instance.Connected)
-        {
             await Task.Yield();
-        }
-        ClientBase.Instance.AddRpcHandle(this);
+        ClientBase.Instance.AddRpcAuto(this, this);
     }
 
     private void Update()
     {
         var i = LockStep.Client.GameWorld.I;
-        text.text = $"网络帧:{i.frame2}/秒 延迟:{i.delay}/秒";
+        text.text = $"网络帧:{i.frame}/秒 延迟:{i.delay}/秒";
     }
 
     [Rpc]

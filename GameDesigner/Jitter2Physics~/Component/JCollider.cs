@@ -35,6 +35,10 @@ public abstract class JCollider : MonoBehaviour
     private bool isInitialize;
     public InitMode initMode = InitMode.Start;
 
+    public JQuaternion Rotation { get => rigidBody.Orientation; set => rigidBody.Orientation = value; }
+    public JVector Position { get => rigidBody.Position; set => rigidBody.Position = value; }
+    public JVector Velocity { get => rigidBody.Velocity; set { rigidBody.SetActivationState(true); rigidBody.Velocity = value; } }
+
     public virtual void Awake()
     {
         if (initMode == InitMode.Awake)

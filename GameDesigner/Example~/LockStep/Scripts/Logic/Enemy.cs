@@ -6,8 +6,7 @@ namespace LockStep.Client
 {
     public class Enemy : Actor
     {
-        public ObjectView objectView;
-        private Player target;
+        private Actor target;
 
         //public Enemy(GameSystem gameSystem) : base(gameSystem)
         //{
