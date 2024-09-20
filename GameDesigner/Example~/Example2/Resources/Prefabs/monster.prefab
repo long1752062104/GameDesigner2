@@ -2321,11 +2321,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c78d908e0892d046a783e9a89a5b54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animMode: 0
-  animation: {fileID: 8117216886536976500}
-  animator: {fileID: 0}
-  director: {fileID: 0}
   stateMachine:
+    _name: Base Layer
+    _view: {fileID: 6614214838361262869}
     defaulId: 0
     stateId: 0
     states:
@@ -2373,7 +2371,14 @@ MonoBehaviour:
         animTime: 0
         animTimeMax: 100
         layer: 0
-      IsSubStateMachine: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
     - name: walk
       ID: 1
       perID: 0
@@ -2418,7 +2423,14 @@ MonoBehaviour:
         animTime: 0
         animTimeMax: 100
         layer: 0
-      IsSubStateMachine: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
     - name: move
       ID: 2
       perID: 0
@@ -2463,7 +2475,14 @@ MonoBehaviour:
         animTime: 0
         animTimeMax: 100
         layer: 0
-      IsSubStateMachine: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
     - name: attack
       ID: 3
       perID: 0
@@ -2629,7 +2648,14 @@ MonoBehaviour:
         animTime: 0
         animTimeMax: 100
         layer: 0
-      IsSubStateMachine: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
     - name: dead
       ID: 4
       perID: 0
@@ -2674,31 +2700,429 @@ MonoBehaviour:
         animTime: 0
         animTimeMax: 100
         layer: 0
-      IsSubStateMachine: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
     selectStates: 
-    clipNames:
-    - backpedal
-    - charge_start
-    - charge
-    - charge_end
-    - default_attack
-    - die
-    - frenzied_slash
-    - gethit_from_behind
-    - gethit_from_front
-    - gethit_from_left
-    - gethit_from_right
-    - idle
-    - jump
-    - roar
-    - run
-    - shield_bash
-    - shield_block
-    - shuffle_left
-    - shuffle_right
-    - spawn
-    - strafe_left
-    - strafe_right
-    - walk
-    _transform: {fileID: 6614214838361262868}
+  editStateMachine:
+    _name: Base Layer
+    _view: {fileID: 6614214838361262869}
+    defaulId: 0
+    stateId: 0
+    states:
+    - name: idle
+      ID: 0
+      perID: 0
+      behaviours:
+      - name: Example2.MonsterIdle
+        ID: 0
+        show: 1
+        Active: 1
+        metadatas: []
+      foldout: 1
+      rect:
+        serializedVersion: 2
+        x: 5370
+        y: 5085
+        width: 150
+        height: 30
+      transitions: []
+      actionSystem: 1
+      animLoop: 1
+      animPlayMode: 0
+      actionIndex: 0
+      animSpeed: 1
+      isCrossFade: 0
+      duration: 0.25
+      isExitState: 0
+      DstStateID: 0
+      actions:
+      - name: 
+        ID: 0
+        perID: 0
+        behaviours: []
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        clipName: idle
+        clipIndex: 11
+        clipAsset: {fileID: 0}
+        animTime: 0
+        animTimeMax: 100
+        layer: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
+    - name: walk
+      ID: 1
+      perID: 0
+      behaviours:
+      - name: Example2.MonsterIdle
+        ID: 1
+        show: 1
+        Active: 1
+        metadatas: []
+      foldout: 1
+      rect:
+        serializedVersion: 2
+        x: 5232
+        y: 5176
+        width: 150
+        height: 30
+      transitions: []
+      actionSystem: 1
+      animLoop: 1
+      animPlayMode: 0
+      actionIndex: 0
+      animSpeed: 1
+      isCrossFade: 0
+      duration: 0.25
+      isExitState: 0
+      DstStateID: 0
+      actions:
+      - name: 
+        ID: 0
+        perID: 0
+        behaviours: []
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        clipName: walk
+        clipIndex: 22
+        clipAsset: {fileID: 0}
+        animTime: 0
+        animTimeMax: 100
+        layer: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
+    - name: move
+      ID: 2
+      perID: 0
+      behaviours:
+      - name: Example2.MonsterRun
+        ID: 2
+        show: 1
+        Active: 1
+        metadatas: []
+      foldout: 1
+      rect:
+        serializedVersion: 2
+        x: 5253
+        y: 5281
+        width: 150
+        height: 30
+      transitions: []
+      actionSystem: 1
+      animLoop: 1
+      animPlayMode: 0
+      actionIndex: 0
+      animSpeed: 1
+      isCrossFade: 0
+      duration: 0.25
+      isExitState: 0
+      DstStateID: 0
+      actions:
+      - name: 
+        ID: 0
+        perID: 0
+        behaviours: []
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        clipName: run
+        clipIndex: 14
+        clipAsset: {fileID: 0}
+        animTime: 0
+        animTimeMax: 100
+        layer: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
+    - name: attack
+      ID: 3
+      perID: 0
+      behaviours: []
+      foldout: 1
+      rect:
+        serializedVersion: 2
+        x: 5480
+        y: 5221
+        width: 150
+        height: 30
+      transitions:
+      - name: attack -> idle
+        ID: 0
+        perID: 0
+        behaviours: []
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        currStateID: 3
+        nextStateID: 0
+        mode: 1
+        time: 0
+        exitTime: 1
+        isEnterNextState: 0
+      actionSystem: 1
+      animLoop: 0
+      animPlayMode: 0
+      actionIndex: 0
+      animSpeed: 1
+      isCrossFade: 0
+      duration: 0.25
+      isExitState: 1
+      DstStateID: 0
+      actions:
+      - name: 
+        ID: 0
+        perID: 0
+        behaviours:
+        - name: Example2.MonsterAttack
+          ID: 3
+          show: 1
+          Active: 1
+          metadatas:
+          - name: distance
+            type: 13
+            typeName: System.Single
+            data: 3
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: range
+            type: 13
+            typeName: System.Single
+            data: 90
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: damage
+            type: 13
+            typeName: System.Single
+            data: 30
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: damageEffect
+            type: 1
+            typeName: UnityEngine.GameObject
+            data: 
+            Value: {fileID: 1702769780010282, guid: 3844e40a0c1d3c44f8bf4c7326ebf281, type: 3}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: effect
+            type: 1
+            typeName: UnityEngine.GameObject
+            data: 
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: activeMode
+            type: 29
+            typeName: GameDesigner.ActiveMode
+            data: Instantiate
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: hideTime
+            type: 13
+            typeName: System.Single
+            data: 1
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: objectPool
+            type: 27
+            typeName: System.Collections.Generic.List`1[UnityEngine.GameObject]
+            data: 
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: spwanMode
+            type: 29
+            typeName: GameDesigner.SpwanMode
+            data: localPosition
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: parent
+            type: 1
+            typeName: UnityEngine.Transform
+            data: 
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: postion
+            type: 20
+            typeName: UnityEngine.Vector3
+            data: 0,1.5,2
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: rotation
+            type: 20
+            typeName: UnityEngine.Vector3
+            data: 0,0,0
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+          - name: animEventTime
+            type: 13
+            typeName: System.Single
+            data: 50
+            Value: {fileID: 0}
+            values: []
+            arraySize: 0
+            foldout: 0
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        clipName: frenzied_slash
+        clipIndex: 6
+        clipAsset: {fileID: 0}
+        animTime: 0
+        animTimeMax: 100
+        layer: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
+    - name: dead
+      ID: 4
+      perID: 0
+      behaviours:
+      - name: Example2.MonsterDie
+        ID: 4
+        show: 1
+        Active: 1
+        metadatas: []
+      foldout: 1
+      rect:
+        serializedVersion: 2
+        x: 5514
+        y: 5329
+        width: 150
+        height: 30
+      transitions: []
+      actionSystem: 1
+      animLoop: 0
+      animPlayMode: 0
+      actionIndex: 0
+      animSpeed: 1
+      isCrossFade: 0
+      duration: 0.25
+      isExitState: 0
+      DstStateID: 0
+      actions:
+      - name: 
+        ID: 0
+        perID: 0
+        behaviours: []
+        foldout: 1
+        rect:
+          serializedVersion: 2
+          x: 10
+          y: 10
+          width: 150
+          height: 30
+        clipName: die
+        clipIndex: 5
+        clipAsset: {fileID: 0}
+        animTime: 0
+        animTimeMax: 100
+        layer: 0
+      Type: 0
+      subStateMachine:
+        _name: 
+        _view: {fileID: 0}
+        defaulId: 0
+        stateId: 0
+        states: []
+        selectStates: 
+    selectStates: 
+  clipNames:
+  - backpedal
+  - charge_start
+  - charge
+  - charge_end
+  - default_attack
+  - die
+  - frenzied_slash
+  - gethit_from_behind
+  - gethit_from_front
+  - gethit_from_left
+  - gethit_from_right
+  - idle
+  - jump
+  - roar
+  - run
+  - shield_bash
+  - shield_block
+  - shuffle_left
+  - shuffle_right
+  - spawn
+  - strafe_left
+  - strafe_right
+  - walk
+  animMode: 0
+  animation: {fileID: 8117216886536976500}
+  animator: {fileID: 0}
+  director: {fileID: 0}
   states: []

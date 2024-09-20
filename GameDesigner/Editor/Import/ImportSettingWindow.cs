@@ -34,7 +34,7 @@ public class ImportSettingWindow : EditorWindow
             false, //parrelSync
             false, //example
             true, //codeObfuscation
-            false, //ext3
+            true, //jitter2
             false, //ext4
             false, //ext5
             false, //ext6
@@ -112,7 +112,7 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "Jitter2Physics", 16 }
     };
 
     private void OnGUI()
@@ -168,7 +168,7 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "MMORPG", "MMORPG~", "MMORPG", () =>
         {
             Import("AOI", "AOI~", "AOI", pathRoot);//依赖
-            //Import("Recast", "Recast~", "Recast", pathRoot);//依赖 2020版本或以下编译不了!
+                                                   //Import("Recast", "Recast~", "Recast", pathRoot);//依赖 2020版本或以下编译不了!
         }, pathRoot);
 
         EditorGUILayout.HelpBox("AOI模块 可用于MMORPG大地图同步方案，九宫格同步， 或者单机大地图分割显示", MessageType.Info);
@@ -195,6 +195,10 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "CodeObfuscation";
         DrawGUI(path, "CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", null, pathRoot);
 
+        EditorGUILayout.HelpBox("Jitter2物理引擎模块，用于帧同步定点数物理和定点数学库", MessageType.Info);
+        path = pathRoot + "Jitter2Physics";
+        DrawGUI(path, "Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", null, pathRoot);
+
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
@@ -218,6 +222,7 @@ public class ImportSettingWindow : EditorWindow
             Import("GameCore", "GameCore~", "GameCore", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
             Import("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
+            Import("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -234,6 +239,7 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI", "AOI~", "AOI", pathRoot);
             Import("Recast", "Recast~", "Recast", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
+            Import("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
             Import("Example", "Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -253,6 +259,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("GameCore", "GameCore~", "GameCore", pathRoot);
             ReImport("Entities", "Entities~", "Entities", pathRoot);
             ReImport("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
+            ReImport("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -273,6 +280,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("GameCore~", "GameCore", pathRoot);
                 ReverseImport("Entities~", "Entities", pathRoot);
                 ReverseImport("CodeObfuscation~", "CodeObfuscation", pathRoot);
+                ReverseImport("Jitter2Physics~", "Jitter2Physics", pathRoot);
             }
         }
         GUILayout.EndScrollView();
@@ -286,7 +294,7 @@ public class ImportSettingWindow : EditorWindow
         {
             Application.OpenURL(@"https://jq.qq.com/?_wv=1027&k=nx1Psgjz");
         }
-        if (GUILayout.Button("版本:2022.12.12", GUILayout.Height(20)))
+        if (GUILayout.Button("版本:2024.9.20", GUILayout.Height(20)))
         {
         }
         GUILayout.EndHorizontal();

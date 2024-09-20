@@ -5,12 +5,12 @@ using UnityEngine;
 namespace LockStep.Client
 {
     [Serializable]
-    public class Actor : ECS.Component
+    public class Actor
     {
         public string name;
         public GameObject gameObject;
-        //public TSTransform transform;
         public Rigidbody rigidBody;
+        public JCapsuleCollider jCollider;
     }
 }
 #endif
