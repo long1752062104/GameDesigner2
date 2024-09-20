@@ -9,13 +9,25 @@ public class JSphereCollider : JCollider
 
     public override List<RigidBodyShape> OnCreateShape()
     {
-        return new List<RigidBodyShape>() { new SphereShape(radius) };
+        var localScale = transform.localScale;
+        var value = MathF.Max(localScale.x, localScale.y);
+        value = Mathf.Max(value, localScale.z);
+        return new List<RigidBodyShape>()
+        {
+            new SphereShape(radius * value)
+            {
+                CenterOffset = center
+            }
+        };
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, radius);
+        var localScale = transform.localScale;
+        var value = MathF.Max(localScale.x, localScale.y);
+        value = Mathf.Max(value, localScale.z);
+        Gizmos.DrawWireSphere(transform.position + center, radius * value);
     }
 }
 #endif

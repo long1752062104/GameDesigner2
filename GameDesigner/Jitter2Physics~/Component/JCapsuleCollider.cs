@@ -10,20 +10,25 @@ public class JCapsuleCollider : JCollider
 
     public override List<RigidBodyShape> OnCreateShape()
     {
+        var localScale = transform.localScale;
+        var value = MathF.Max(localScale.x, localScale.z);
         return new List<RigidBodyShape>() { new CapsuleShape
         {
-            Radius = radius,
-            Length = height,
+            Radius = radius * value,
+            Length = height * localScale.y,
+            CenterOffset = center,
         }};
     }
 
     private void OnDrawGizmosSelected()
     {
-        var offsetOne = new Vector3(center.x, center.y + 0.5f * height + radius, center.z);
-        var offsetTwo = new Vector3(center.x, center.y - 0.5f * height - radius, center.z);
+        var localScale = transform.localScale;
+        var value = MathF.Max(localScale.x, localScale.z);
+        var offsetOne = new Vector3(center.x, center.y + height * localScale.y, center.z);
+        var offsetTwo = new Vector3(center.x, center.y - height * localScale.y, center.z);
         var centerOneWorld = transform.position + transform.TransformDirection(offsetOne.ToVector3());
         var centerTwoWorld = transform.position + transform.TransformDirection(offsetTwo.ToVector3());
-        ColliderDraw.DrawCapsule(centerOneWorld, centerTwoWorld, Color.green, radius);
+        ColliderDraw.DrawCapsule(centerOneWorld, centerTwoWorld, Color.green, radius * value);
     }
 }
 #endif

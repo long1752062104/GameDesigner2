@@ -15,6 +15,8 @@ public class JMeshCollider : JCollider
 
     public List<RigidBodyShape> CreateShapes()
     {
+        var localScale = transform.localScale;
+
         var indices = mesh.GetIndices(0);
         var vertices = mesh.vertices;
 
@@ -27,6 +29,10 @@ public class JMeshCollider : JCollider
             JVector v2 = Conversion.ToJVector(vertices[indices[i + 1]]);
             JVector v3 = Conversion.ToJVector(vertices[indices[i + 2]]);
 
+            v1 = new JVector(v1.X * localScale.x, v1.Y * localScale.y, v1.Z * localScale.z);
+            v2 = new JVector(v2.X * localScale.x, v2.Y * localScale.y, v2.Z * localScale.z);
+            v3 = new JVector(v3.X * localScale.x, v3.Y * localScale.y, v3.Z * localScale.z);
+
             triangles.Add(new JTriangle(v1, v2, v3));
         }
 
@@ -34,16 +40,26 @@ public class JMeshCollider : JCollider
 
         for (int i = 0; i < jtm.Indices.Length; i++)
         {
-            var ts = new FatTriangleShape(jtm, i);
+            var ts = new FatTriangleShape(jtm, i)
+            {
+                CenterOffset = center
+            };
             shapesToAdd.Add(ts);
         }
 
         return shapesToAdd;
     }
 
+    private void OnValidate()
+    {
+        if (gameObject.TryGetComponent<MeshFilter>(out var mf))
+            mesh = mf.sharedMesh;
+    }
+
     private void OnDrawGizmosSelected()
     {
-        //Gizmos.DrawWireMesh(mesh, transform.position, transform.rotation);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireMesh(mesh, transform.position + center, transform.rotation, transform.localScale);
     }
 }
 #endif
