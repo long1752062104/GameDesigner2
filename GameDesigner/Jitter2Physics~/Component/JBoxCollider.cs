@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2.Collision.Shapes;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,3 +20,4 @@ public class JBoxCollider : JCollider
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
     }
 }
+#endif

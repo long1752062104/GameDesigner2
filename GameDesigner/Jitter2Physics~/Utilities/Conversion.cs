@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2.LinearMath;
 using UnityEngine;
 
@@ -33,3 +34,4 @@ public static class Conversion
         return new JQuaternion(-v.x, v.y, v.z, -v.w);
     }
 }
+#endif

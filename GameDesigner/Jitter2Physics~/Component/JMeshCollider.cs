@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2.Collision.Shapes;
 using Jitter2.LinearMath;
 using System.Collections.Generic;
@@ -45,3 +46,4 @@ public class JMeshCollider : JCollider
         //Gizmos.DrawWireMesh(mesh, transform.position, transform.rotation);
     }
 }
+#endif

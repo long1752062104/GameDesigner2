@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2;
 using Jitter2.Collision;
 using Jitter2.LinearMath;
@@ -42,3 +43,4 @@ public class JPhysics : SingletonMono<JPhysics>
         world.Step(step, false);
     }
 }
+#endif

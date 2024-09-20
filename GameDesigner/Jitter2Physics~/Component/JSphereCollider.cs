@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2.Collision.Shapes;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,3 +18,4 @@ public class JSphereCollider : JCollider
         Gizmos.DrawWireSphere(transform.position, radius);
     }
 }
+#endif

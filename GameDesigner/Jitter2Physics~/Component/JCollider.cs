@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Jitter2.Collision.Shapes;
 using Jitter2.Dynamics;
 using Jitter2.Dynamics.Constraints;
@@ -64,3 +65,4 @@ public abstract class JCollider : MonoBehaviour
 
     public abstract List<RigidBodyShape> OnCreateShape();
 }
+#endif
