@@ -18,7 +18,6 @@ public class JPhysics : SingletonMono<JPhysics>
         Build();
     }
 
-    // Update is called once per frame
     private void Update()
     {
         if (simulationMode == SimulationMode.Update)
@@ -44,9 +43,8 @@ public class JPhysics : SingletonMono<JPhysics>
     public void Build()
     {
         world = new World(64_000, 64_000, 32_000);
-        //world.NullBody.Tag = new RigidBodyTag();
         world.DynamicTree.Filter = World.DefaultDynamicTreeFilter;
-        world.BroadPhaseFilter = null;
+        world.BroadPhaseFilter = new TriggerCollisionDetection(world);
         world.NarrowPhaseFilter = new TriangleEdgeCollisionFilter();
         world.Gravity = gravity;
         world.NumberSubsteps = 1;

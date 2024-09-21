@@ -10,9 +10,12 @@ namespace LockStep.Client
     {
         public string name;
         public GameObject gameObject;
+        public Animation animation;
         public Rigidbody rigidBody;
-        public JCollider jCollider;
+        public JCollider jRigidBody;
         internal Operation operation;
+
+        public virtual void Start() { }
 
         public virtual void Update() { }
 

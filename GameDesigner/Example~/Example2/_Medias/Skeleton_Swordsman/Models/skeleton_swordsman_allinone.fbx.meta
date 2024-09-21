@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: fdb031097e06548bcbd93c253ac24868
 ModelImporter:
-  serializedVersion: 19301
+  serializedVersion: 22200
   internalIDToNameTable:
   - first:
       1: 100000
@@ -462,6 +462,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -2102,11 +2103,11 @@ ModelImporter:
       internalID: 0
       firstFrame: 574
       lastFrame: 633
-      wrapMode: 0
+      wrapMode: 2
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
-      loop: 0
+      loop: 1
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 1
@@ -2543,11 +2544,11 @@ ModelImporter:
       internalID: 0
       firstFrame: 813
       lastFrame: 836
-      wrapMode: 0
+      wrapMode: 2
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
-      loop: 0
+      loop: 1
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 1
@@ -2565,16 +2566,14 @@ ModelImporter:
       - time: 0.08067839
         functionName: PlayFootstepSound
         data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5,
-          type: 3}
+        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.60286003
         functionName: PlayFootstepSound
         data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5,
-          type: 3}
+        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -3735,11 +3734,11 @@ ModelImporter:
       internalID: 0
       firstFrame: 1339
       lastFrame: 1368
-      wrapMode: 0
+      wrapMode: 2
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
-      loop: 0
+      loop: 1
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 1
@@ -3757,16 +3756,14 @@ ModelImporter:
       - time: 0.43009412
         functionName: PlayFootstepSound
         data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5,
-          type: 3}
+        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.9512243
         functionName: PlayFootstepSound
         data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5,
-          type: 3}
+        objectReferenceParameter: {fileID: 11500000, guid: 942aa1016ee861c41b64d78e1dbad8f5, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -3900,27 +3897,35 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 0
     importBlendShapes: 1
     importCameras: 0
     importLights: 0
+    nodeNameCollisionStrategy: 0
     fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
+    optimizeBones: 1
     meshOptimizationFlags: -1
     indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -3942,7 +3947,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.008
+    globalScale: 0.8
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 1
@@ -3952,6 +3957,9 @@ ModelImporter:
   animationType: 1
   humanoidOversampling: 1
   avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

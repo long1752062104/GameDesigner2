@@ -1886,7 +1886,6 @@ GameObject:
   m_Component:
   - component: {fileID: 619350524187504670}
   - component: {fileID: 619350524177331614}
-  - component: {fileID: 619350524187274746}
   - component: {fileID: 2480616029536392452}
   m_Layer: 0
   m_Name: player
@@ -1923,7 +1922,7 @@ Animation:
   m_GameObject: {fileID: 619350524187274750}
   m_Enabled: 1
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 89cdcd349473ac4489489ec4acb36698, type: 2}
+  m_Animation: {fileID: 7400000, guid: c66175c9efdaada4aa12ab7be0169485, type: 2}
   m_Animations:
   - {fileID: 7400000, guid: 53d138a68550952488d87158a8618501, type: 2}
   - {fileID: 7400000, guid: c66175c9efdaada4aa12ab7be0169485, type: 2}
@@ -1952,25 +1951,6 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
---- !u!114 &619350524187274746
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 619350524187274750}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e8497a8f02bae1479d2a27f28a39d19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  anim: {fileID: 619350524177331614}
-  actor:
-    name: 
-    gameObject: {fileID: 0}
-    rigidBody: {fileID: 0}
-    jCollider: {fileID: 0}
-  lerpSpeed: 0.25
 --- !u!114 &2480616029536392452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1984,11 +1964,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isStatic: 0
+  isTriggered: 0
   friction: 0.2
   linear: 0
   angular: 0.5
   freezeRot: 2
   center: {x: 0, y: 1, z: 0}
-  initMode: 2
+  initMode: 0
   radius: 0.5
   height: 1

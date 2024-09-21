@@ -25,7 +25,7 @@ namespace GameDesigner
         {
             var isPlaying = true;
             if (currMode == StateMachineUpdateMode.Update)
-                stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.deltaTime;
+                stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.fixedDeltaTime;
             return isPlaying;
         }
     }

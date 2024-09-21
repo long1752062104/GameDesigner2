@@ -5,7 +5,6 @@ using UnityEngine;
 using System.Data;
 using System.Text;
 using GameCore;
-using System;
 
 public class ExcelTools
 {

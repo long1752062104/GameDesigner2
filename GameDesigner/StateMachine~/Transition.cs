@@ -108,7 +108,7 @@ namespace GameDesigner
             }
             if (mode == TransitionMode.ExitTime)
             {
-                time += Time.deltaTime;
+                time += Time.fixedDeltaTime;
                 if (time > exitTime)
                     isEnterNextState = true;
             }

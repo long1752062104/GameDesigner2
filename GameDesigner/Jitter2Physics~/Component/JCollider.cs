@@ -26,6 +26,7 @@ public enum InitMode
 public abstract class JCollider : MonoBehaviour
 {
     public bool isStatic;
+    public bool isTriggered;
     public float friction = 0.2f;
     public float linear, angular;
     public Freeze freezeRot;
@@ -34,6 +35,11 @@ public abstract class JCollider : MonoBehaviour
     internal List<RigidBodyShape> shapes;
     private bool isInitialize;
     public InitMode initMode = InitMode.Start;
+
+    public Action<JCollider, Arbiter> onTriggerEnter;
+    public Action<JCollider, Arbiter> onTriggerExit;
+    public Action<JCollider, Arbiter> onCollisionEnter;
+    public Action<JCollider, Arbiter> onCollisionExit;
 
     public JQuaternion Rotation { get => rigidBody.Orientation; set => rigidBody.Orientation = value; }
     public JVector Position { get => rigidBody.Position; set => rigidBody.Position = value; }
@@ -73,8 +79,12 @@ public abstract class JCollider : MonoBehaviour
         rigidBody.Position = transform.position.ToJVector();
         rigidBody.Orientation = transform.rotation.ToQuaternion();
         rigidBody.IsStatic = isStatic;
+        rigidBody.IsTriggered = isTriggered;
         rigidBody.Friction = friction;
         rigidBody.Damping = (linear, angular);
+        rigidBody.BeginCollide = BeginCollide;
+        rigidBody.EndCollide = EndCollide;
+        rigidBody.Tag = this;
         if (freezeRot != 0)
         {
             var freeze = JVector.Zero;
@@ -89,6 +99,32 @@ public abstract class JCollider : MonoBehaviour
         }
     }
 
+    private void BeginCollide(Arbiter arbiter)
+    {
+        JCollider other;
+        if (arbiter.Body1 == rigidBody)
+            other = (JCollider)arbiter.Body2.Tag;
+        else
+            other = (JCollider)arbiter.Body1.Tag;
+        if (arbiter.Body1.IsTriggered | arbiter.Body2.IsTriggered)
+            onTriggerEnter?.Invoke(other, arbiter);
+        else
+            onCollisionEnter?.Invoke(other, arbiter);
+    }
+
+    private void EndCollide(Arbiter arbiter)
+    {
+        JCollider other;
+        if (arbiter.Body1 == rigidBody)
+            other = (JCollider)arbiter.Body2.Tag;
+        else
+            other = (JCollider)arbiter.Body1.Tag;
+        if (arbiter.Body1.IsTriggered | arbiter.Body2.IsTriggered)
+            onTriggerExit?.Invoke(other, arbiter);
+        else
+            onCollisionExit?.Invoke(other, arbiter);
+    }
+
     private void Update()
     {
         if (rigidBody == null)
@@ -97,5 +133,43 @@ public abstract class JCollider : MonoBehaviour
     }
 
     public abstract List<RigidBodyShape> OnCreateShape();
+
+    public JVector TransformDirection(Vector3 direction)
+    {
+        return (Quaternion)Rotation * direction;
+    }
+
+    public JVector TransformPoint(Vector3 direction)
+    {
+        var forwardOffset = (Quaternion)Rotation * direction;
+        return Position + forwardOffset;
+    }
+
+    public void Translate(Vector3 translation)
+    {
+        Translate(translation, Space.Self);
+    }
+
+    public void Translate(float x, float y, float z, Space relativeTo = Space.Self)
+    {
+        Translate(new Vector3(x, y, z), relativeTo);
+    }
+
+    public void Translate(float x, float y, float z)
+    {
+        Translate(new Vector3(x, y, z), Space.Self);
+    }
+
+    public void Translate(Vector3 translation, Space relativeTo = Space.Self)
+    {
+        if (relativeTo == Space.World)
+            translation *= 30f;
+        else
+            translation = TransformDirection(translation) * 30f;
+        var vel = Velocity;
+        vel.X = -translation.x;
+        vel.Z = translation.z;
+        Velocity = vel;
+    }
 }
 #endif

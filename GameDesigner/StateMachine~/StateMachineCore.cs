@@ -7,7 +7,7 @@ using Unity;
 namespace GameDesigner
 {
     /// <summary>
-    /// 状态机 v2017/12/6
+    /// 状态机 v2017/12/6 -> 2024.9.21(大改)
     /// </summary>
     [Serializable]
     public class StateMachineCore : IStateMachine
