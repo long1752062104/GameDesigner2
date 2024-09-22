@@ -11,6 +11,7 @@ public class JPhysics : SingletonMono<JPhysics>
     internal World world;
     public JVector gravity = new JVector(0, -9.81f, 0);
     public float step = 1f / 60f;
+    public bool multiThread;
 
     protected override void Awake()
     {
@@ -32,7 +33,7 @@ public class JPhysics : SingletonMono<JPhysics>
 
     public void Simulate()
     {
-        world.Step(step, false);
+        world.Step(step, multiThread);
     }
 
     public static void ReBuild()

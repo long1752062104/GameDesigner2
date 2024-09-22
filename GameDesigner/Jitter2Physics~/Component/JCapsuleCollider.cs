@@ -1,4 +1,5 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using SoftFloat;
 using Jitter2.Collision.Shapes;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,8 +12,8 @@ public class JCapsuleCollider : JCollider
     public override List<RigidBodyShape> OnCreateShape()
     {
         var localScale = transform.localScale;
-        var value = MathF.Max(localScale.x, localScale.z);
-        return new List<RigidBodyShape>() { new CapsuleShape
+        var value = libm.Max(localScale.x, localScale.z);
+        return new List<RigidBodyShape>() { new CapsuleShape(radius * value, height * localScale.y)
         {
             Radius = radius * value,
             Length = height * localScale.y,
@@ -23,7 +24,7 @@ public class JCapsuleCollider : JCollider
     private void OnDrawGizmosSelected()
     {
         var localScale = transform.localScale;
-        var value = MathF.Max(localScale.x, localScale.z);
+        var value = libm.Max(localScale.x, localScale.z);
         var offsetOne = new Vector3(center.x, center.y + height * localScale.y, center.z);
         var offsetTwo = new Vector3(center.x, center.y - height * localScale.y, center.z);
         var centerOneWorld = transform.position + transform.TransformDirection(offsetOne.ToVector3());

@@ -3,20 +3,20 @@ using UnityEngine;
 using UnityEditor;
 using Jitter2.LinearMath;
 using Unity.Editor;
-using FixedMath;
+using SoftFloat;
 
 namespace Jitter2.Editor
 {
-    [CustomPropertyDrawer(typeof(Fix64))]
+    [CustomPropertyDrawer(typeof(sfloat))]
     public class Fix64Drawer : PropertyDrawerBase
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var reference = GetFieldReference(property);
             EditorGUI.BeginChangeCheck();
-            var fix = (Fix64)reference.GetValue();
+            var fix = (sfloat)reference.GetValue();
             var newVal = EditorGUI.FloatField(position, label, fix);
-            reference.SetValue(new Fix64(newVal));
+            reference.SetValue((sfloat)newVal);
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
         }

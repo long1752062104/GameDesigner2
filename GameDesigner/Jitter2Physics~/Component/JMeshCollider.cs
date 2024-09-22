@@ -40,7 +40,7 @@ public class JMeshCollider : JCollider
 
         for (int i = 0; i < jtm.Indices.Length; i++)
         {
-            var ts = new FatTriangleShape(jtm, i)
+            var ts = new FatTriangleShape(jtm, i, 0.2f)
             {
                 CenterOffset = center
             };

@@ -2160,9 +2160,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isStatic: 0
-  friction: 0.8
-  linear: 0.1
-  angular: 0.5
+  isTriggered: 0
+  friction: 0.2
+  linear: 0
+  angular: 0
   freezeRot: 2
   center: {x: 0, y: 1, z: 0}
   initMode: 0

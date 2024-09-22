@@ -574,7 +574,7 @@ namespace Net.System
                 Array.Clear(_items, _size, count);
                 return array;
             }
-            return null;
+            return new T[0];
         }
 
         public int IndexOf(T item)
@@ -803,7 +803,7 @@ namespace Net.System
                 Array.Clear(_items, _size, count);
             }
         }
-        
+
         public virtual void Reverse()
         {
             Reverse(0, Count);

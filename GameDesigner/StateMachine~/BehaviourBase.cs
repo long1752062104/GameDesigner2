@@ -125,8 +125,10 @@ namespace GameDesigner
                         item.data = item1.data;
                         item.Value = item1.Value;
                         item.Values = item1.Values;
+#if UNITY_EDITOR
                         item.arraySize = item1.arraySize;
                         item.foldout = item1.foldout;
+#endif
                         item.field.SetValue(this, item1.value);
                         break;
                     }

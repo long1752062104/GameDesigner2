@@ -36,6 +36,7 @@ namespace LockStep.Client
         public RoamingPath[] roamings;
         public TimerEvent Event;
         private StringBuilder frameLog = new StringBuilder();
+        private Vector3 playerPos;
 
         // Use this for initialization
         async void Start()
@@ -48,6 +49,7 @@ namespace LockStep.Client
             ClientBase.Instance.AddRpcAuto(this, this);
             Physics.simulationMode = SimulationMode.Script;
             Physics.autoSyncTransforms = false;
+            //Application.targetFrameRate = 60;
             ThreadManager.Invoke(string.Empty, 1f, () =>
             {
                 ClientBase.Instance?.Ping();
@@ -71,6 +73,7 @@ namespace LockStep.Client
             playback = false;
             snapshots.Clear();
             frameLog.Clear();
+            playerPos.z = -20f;
             operation.cmd = Command.Input;
             operation.identity = ClientBase.Instance.UID;
         }
@@ -151,17 +154,15 @@ namespace LockStep.Client
                 JPhysics.ReBuild();
                 for (int i = 0; i < colliders.Length; i++)
                     colliders[i].InitRigidBody();
-                for (int i = 0; i < roamings.Length; i++)
-                {
-                    for (int n = 0; n < 5; n++)
-                    {
-                        CreateEnemyActor(roamings[i]);
-                    }
-                }
-                BuildJenga(new JVector(0, 0, 10f));
+                //for (int i = 0; i < roamings.Length; i++)
+                //{
+                //    for (int n = 0; n < 5; n++)
+                //    {
+                //        CreateEnemyActor(roamings[i]);
+                //    }
+                //}
+                BuildJenga(new JVector(0, 1, 20f), 5);
             }
-            if (list.operations == null)
-                return;
             LSTime.time += LSTime.deltaTime;//最先执行的时间,逻辑时间
             for (int i = 0; i < list.operations.Length; i++)
             {
@@ -211,6 +212,8 @@ namespace LockStep.Client
                 rigidBody = gameObject.GetComponent<Rigidbody>(),
                 jRigidBody = gameObject.GetComponent<JCollider>()
             };
+            gameObject.transform.position = playerPos;
+            playerPos.z -= 5f;
             if (actor.jRigidBody != null)
                 actor.jRigidBody.Initialize();
             if (opt.identity == ClientBase.Instance.UID)
@@ -313,7 +316,12 @@ namespace LockStep.Client
         internal void SaveData()
         {
             var now = DateTime.Now;
-            var file = Application.streamingAssetsPath + "/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+#if UNITY_ANDROID && !UNITY_EDITOR
+            //雷电模拟器共享路径
+            var file = "/mnt/shared/Pictures/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+#else
+            var file = Application.persistentDataPath + "/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+#endif
             File.WriteAllText(file, frameLog.ToString());
             Debug.Log($"数据保存成功:{file}");
         }
