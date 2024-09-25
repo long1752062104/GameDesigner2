@@ -1,5 +1,7 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using GameDesigner;
+using Jitter2.LinearMath;
+using SoftFloat;
 using System;
 using UnityEngine;
 
@@ -8,7 +10,7 @@ namespace LockStep.Client
     [Serializable]
     public class Player : Actor
     {
-        public float moveSpeed = 6f;
+        public sfloat moveSpeed = 10f;
         public StateMachineCore fsm = new();
 
         public override void Start()
@@ -78,7 +80,8 @@ namespace LockStep.Client
 
         public override void OnUpdate()
         {
-            if (self.operation.direction == Net.Vector3.zero)
+            var dir = self.operation.direction;
+            if (dir == Net.Vector3.zero)
             {
                 ChangeState(0);
             }
@@ -90,7 +93,7 @@ namespace LockStep.Client
             }
             else
             {
-                self.jRigidBody.Rotation = Quaternion.Lerp(self.jRigidBody.Rotation, Quaternion.LookRotation(self.operation.direction, Vector3.up), 0.5f);
+                self.jRigidBody.Rotation = JQuaternionEx.Lerp(self.jRigidBody.Rotation, JQuaternionEx.LookRotation(new JVector(-dir.x, dir.y, dir.z), JVector.UnitY), 0.5f);
                 self.jRigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
             }
         }
@@ -112,8 +115,8 @@ namespace LockStep.Client
 
         public override void OnAnimationEvent(StateAction action)
         {
-            var direction = self.jRigidBody.TransformDirection(Vector3.forward);
-            GameWorld.I.CreateBulletActor(self.jRigidBody.TransformPoint(new Vector3(0, 1.5f, 1)), direction);
+            var direction = self.jRigidBody.TransformDirection(JVector.UnitZ);
+            GameWorld.I.CreateBulletActor(self.jRigidBody.TransformPoint(new JVector(0, 1.5f, 1)), direction);
         }
     }
 }

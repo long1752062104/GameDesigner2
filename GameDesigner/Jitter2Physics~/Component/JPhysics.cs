@@ -8,7 +8,7 @@ using UnityEngine;
 public class JPhysics : SingletonMono<JPhysics>
 {
     public SimulationMode simulationMode;
-    internal World world;
+    public World world;
     public JVector gravity = new JVector(0, -9.81f, 0);
     public float step = 1f / 60f;
     public bool multiThread;

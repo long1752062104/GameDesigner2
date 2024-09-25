@@ -3,6 +3,7 @@ using Jitter2.Collision.Shapes;
 using Jitter2.Dynamics;
 using Jitter2.Dynamics.Constraints;
 using Jitter2.LinearMath;
+using SoftFloat;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,8 +28,8 @@ public abstract class JCollider : MonoBehaviour
 {
     public bool isStatic;
     public bool isTriggered;
-    public float friction = 0.2f;
-    public float linear, angular;
+    public sfloat friction = 0.2f;
+    public sfloat linear, angular;
     public Freeze freezeRot;
     public Vector3 center;
     public RigidBody rigidBody;
@@ -134,41 +135,41 @@ public abstract class JCollider : MonoBehaviour
 
     public abstract List<RigidBodyShape> OnCreateShape();
 
-    public JVector TransformDirection(Vector3 direction)
+    public JVector TransformDirection(JVector direction)
     {
-        return (Quaternion)Rotation * direction;
+        return JQuaternionEx.Mul(Rotation, direction);
     }
 
-    public JVector TransformPoint(Vector3 direction)
+    public JVector TransformPoint(JVector direction)
     {
-        var forwardOffset = (Quaternion)Rotation * direction;
+        var forwardOffset = JQuaternionEx.Mul(Rotation, direction);
         return Position + forwardOffset;
     }
 
-    public void Translate(Vector3 translation)
+    public void Translate(JVector translation)
     {
         Translate(translation, Space.Self);
     }
 
-    public void Translate(float x, float y, float z, Space relativeTo = Space.Self)
+    public void Translate(sfloat x, sfloat y, sfloat z, Space relativeTo = Space.Self)
     {
-        Translate(new Vector3(x, y, z), relativeTo);
+        Translate(new JVector(x, y, z), relativeTo);
     }
 
-    public void Translate(float x, float y, float z)
+    public void Translate(sfloat x, sfloat y, sfloat z)
     {
-        Translate(new Vector3(x, y, z), Space.Self);
+        Translate(new JVector(x, y, z), Space.Self);
     }
 
-    public void Translate(Vector3 translation, Space relativeTo = Space.Self)
+    public void Translate(JVector translation, Space relativeTo = Space.Self)
     {
         if (relativeTo == Space.World)
             translation *= 30f;
         else
             translation = TransformDirection(translation) * 30f;
         var vel = Velocity;
-        vel.X = -translation.x;
-        vel.Z = translation.z;
+        vel.X = translation.X;
+        vel.Z = translation.Z;
         Velocity = vel;
     }
 }

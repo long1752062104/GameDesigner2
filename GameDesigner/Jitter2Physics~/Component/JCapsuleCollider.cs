@@ -6,8 +6,8 @@ using UnityEngine;
 
 public class JCapsuleCollider : JCollider
 {
-    public float radius = 0.5f;
-    public float height = 1f;
+    public sfloat radius = 0.5f;
+    public sfloat height = 1f;
 
     public override List<RigidBodyShape> OnCreateShape()
     {

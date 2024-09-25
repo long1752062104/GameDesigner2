@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class JSphereCollider : JCollider
 {
-    public float radius = 0.5f;
+    public sfloat radius = 0.5f;
 
     public override List<RigidBodyShape> OnCreateShape()
     {

@@ -98,10 +98,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isStatic: 0
   isTriggered: 0
-  friction: 0.2
-  linear: 0
-  angular: 0
+  friction:
+    RawValue: 1045220557
+  linear:
+    RawValue: 0
+  angular:
+    RawValue: 0
   freezeRot: 0
   center: {x: 0, y: 0, z: 0}
   initMode: 0
-  size: {x: 1, y: 1, z: 1}
+  size:
+    X:
+      RawValue: 3212836864
+    Y:
+      RawValue: 1065353216
+    Z:
+      RawValue: 1065353216

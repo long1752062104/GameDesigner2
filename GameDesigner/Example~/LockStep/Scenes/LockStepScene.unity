@@ -160,7 +160,7 @@ MonoBehaviour:
   bullet: {fileID: 6600103488882257663, guid: 2c5fada105bb9d248a231d54554ab0d6, type: 3}
   actors: []
   frameRate: 30
-  frameFor: 1
+  frameLoopMax: 1
   colliders:
   - {fileID: 4303035326721279318}
   roamings:
@@ -193,11 +193,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationMode: 2
-  gravity:
-    X: 0
-    Y: -9.81
-    Z: 0
+  gravity: {}
   step: 0.016
+  multiThread: 0
 --- !u!1 &241183878
 GameObject:
   m_ObjectHideFlags: 0
@@ -2597,50 +2595,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1972647755}
   m_CullTransparentMesh: 0
---- !u!1 &2000313156
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2000313158}
-  - component: {fileID: 2000313157}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2000313157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2000313156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f3fdb49570c350479899a5dc90505f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &2000313158
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2000313156}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.834805, y: 10.022789, z: 7.680409}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2008975500
 GameObject:
   m_ObjectHideFlags: 0
@@ -3055,9 +3009,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isStatic: 1
   isTriggered: 0
-  friction: 0.2
-  linear: 0
-  angular: 0
   freezeRot: 0
   center: {x: 0, y: 0, z: 0}
   initMode: 0
@@ -3075,4 +3026,3 @@ SceneRoots:
   - {fileID: 4303035326721055092}
   - {fileID: 754991764}
   - {fileID: 2090860994}
-  - {fileID: 2000313158}

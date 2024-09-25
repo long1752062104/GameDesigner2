@@ -30,7 +30,7 @@ namespace LockStep.Client
         public Dictionary<int, Actor> actorDic = new Dictionary<int, Actor>();
         private bool playback;
         public int frameRate = 30;
-        public int frameFor = 1;
+        public int frameLoopMax = 1;
         private float time;
         public JCollider[] colliders;
         public RoamingPath[] roamings;
@@ -127,13 +127,14 @@ namespace LockStep.Client
                 if (Input.GetKeyDown(KeyCode.Q))
                     operation.cmd1 = 1;
                 forLogic = frame - logicFrame;
+                forLogic = forLogic > frameLoopMax ? frameLoopMax : forLogic;
             }
             else
             {
                 if (Time.time < time)
                     return;
                 time = Time.time + (1f / frameRate);
-                forLogic = frameFor;
+                forLogic = frameLoopMax;
             }
             for (int i = 0; i < forLogic; i++)
             {
@@ -161,7 +162,7 @@ namespace LockStep.Client
                 //        CreateEnemyActor(roamings[i]);
                 //    }
                 //}
-                BuildJenga(new JVector(0, 1, 20f), 5);
+                BuildJenga(new JVector(0, 1, 10f), 5);
             }
             LSTime.time += LSTime.deltaTime;//最先执行的时间,逻辑时间
             for (int i = 0; i < list.operations.Length; i++)
@@ -197,7 +198,7 @@ namespace LockStep.Client
             for (int i = 0; i < actors.Count; i++)
             {
                 var actor = actors[i];
-                frameLog.AppendLine($"actorId: {i} pos: ({actor.jRigidBody.Position}) rot: ({actor.jRigidBody.Rotation})");
+                frameLog.AppendLine($"actorId: {i} pos: ({actor.jRigidBody.Position}) rot: ({actor.jRigidBody.Rotation}) vel: ({actor.jRigidBody.Velocity})");
             }
         }
 
@@ -318,9 +319,9 @@ namespace LockStep.Client
             var now = DateTime.Now;
 #if UNITY_ANDROID && !UNITY_EDITOR
             //雷电模拟器共享路径
-            var file = "/mnt/shared/Pictures/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+            var file = "/mnt/shared/Pictures/" + $"FRAME{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
 #else
-            var file = Application.persistentDataPath + "/" + $"{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
+            var file = Application.persistentDataPath + "/" + $"FRAME{now.Year}{now.Month:00}{now.Day:00}{now.Hour:00}{now.Minute:00}{now.Second:00}.txt";
 #endif
             File.WriteAllText(file, frameLog.ToString());
             Debug.Log($"数据保存成功:{file}");

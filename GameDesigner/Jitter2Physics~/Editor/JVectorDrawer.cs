@@ -20,11 +20,6 @@ namespace Jitter2.Editor
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
         }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return 18f;
-        }
     }
 
     [CustomPropertyDrawer(typeof(JVector))]
@@ -40,11 +35,6 @@ namespace Jitter2.Editor
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
         }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return 18f;
-        }
     }
 
     [CustomPropertyDrawer(typeof(JQuaternion))]
@@ -59,11 +49,6 @@ namespace Jitter2.Editor
             reference.SetValue(newVal.ToQuaternion());
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
-        }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return 18f;
         }
     }
 }
