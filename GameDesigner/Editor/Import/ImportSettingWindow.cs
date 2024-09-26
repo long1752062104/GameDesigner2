@@ -11,34 +11,37 @@ public class ImportSettingWindow : EditorWindow
     private Vector2 scrollPosition;
     private Data data;
     private readonly string[] displayedOptions = new string[] { "使用者", "开发者" };
+    private readonly string version = "2.1";
+    private readonly bool[] copyAssemblys = new bool[]
+    {
+        false, //gcp
+        false, //udx
+        false, //kcp
+        false, //web
+        true, //stateMachine
+        true, //networkComponent
+        false, //mvc
+        false, //ecs
+        false, //mmorpg
+        false, //aoi
+        false, //recast
+        true, //framework
+        false, //entities
+        false, //parrelSync
+        false, //example
+        true, //codeObfuscation
+        true, //lockstep
+        false, //ext4
+        false, //ext5
+        false, //ext6
+    };
 
     public class Data
     {
+        public string version;
         public string path = "Assets/Plugins/GameDesigner";
         public int develop;
-        public bool[] copyAssemblys = new bool[]
-        {
-            false, //gcp
-            false, //udx
-            false, //kcp
-            false, //web
-            false, //stateMachine
-            false, //networkComponent
-            false, //mvc
-            false, //ecs
-            false, //mmorpg
-            false, //aoi
-            false, //recast
-            true, //framework
-            false, //entities
-            false, //parrelSync
-            false, //example
-            true, //codeObfuscation
-            true, //jitter2
-            false, //ext4
-            false, //ext5
-            false, //ext6
-        };
+        public bool[] copyAssemblys;
     }
 
     [MenuItem("GameDesigner/Import Window", priority = 0)]
@@ -61,6 +64,12 @@ public class ImportSettingWindow : EditorWindow
     void LoadData()
     {
         data = PersistHelper.Deserialize<Data>("importdata.json");
+        if (data.version != version)
+        {
+            data.version = version;
+            data.copyAssemblys = copyAssemblys;
+            SaveData();
+        }
     }
 
     void SaveData()
@@ -112,7 +121,7 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "Jitter2Physics", 16 }
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "LockStep", 16 }
     };
 
     private void OnGUI()
@@ -195,9 +204,9 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "CodeObfuscation";
         DrawGUI(path, "CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", null, pathRoot);
 
-        EditorGUILayout.HelpBox("Jitter2物理引擎模块，用于帧同步定点数物理和定点数学库", MessageType.Info);
-        path = pathRoot + "Jitter2Physics";
-        DrawGUI(path, "Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", null, pathRoot);
+        EditorGUILayout.HelpBox("帧同步模块，内置帧同步多平台一致性物理引擎和一致性软浮点数数学库", MessageType.Info);
+        path = pathRoot + "LockStep";
+        DrawGUI(path, "LockStep", "LockStep~", "LockStep", null, pathRoot);
 
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
@@ -222,7 +231,7 @@ public class ImportSettingWindow : EditorWindow
             Import("GameCore", "GameCore~", "GameCore", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
             Import("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
-            Import("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
+            Import("LockStep", "LockStep~", "LockStep", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -239,7 +248,7 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI", "AOI~", "AOI", pathRoot);
             Import("Recast", "Recast~", "Recast", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
-            Import("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
+            Import("LockStep", "LockStep~", "LockStep", pathRoot);
             Import("Example", "Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -259,7 +268,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("GameCore", "GameCore~", "GameCore", pathRoot);
             ReImport("Entities", "Entities~", "Entities", pathRoot);
             ReImport("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
-            ReImport("Jitter2Physics", "Jitter2Physics~", "Jitter2Physics", pathRoot);
+            ReImport("LockStep", "LockStep~", "LockStep", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -280,7 +289,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("GameCore~", "GameCore", pathRoot);
                 ReverseImport("Entities~", "Entities", pathRoot);
                 ReverseImport("CodeObfuscation~", "CodeObfuscation", pathRoot);
-                ReverseImport("Jitter2Physics~", "Jitter2Physics", pathRoot);
+                ReverseImport("LockStep~", "LockStep", pathRoot);
             }
         }
         GUILayout.EndScrollView();

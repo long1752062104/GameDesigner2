@@ -1,6 +1,12 @@
 ﻿using System;
 using UnityEngine;
+#if LOCK_STEP
+using FLOAT = SoftFloat.sfloat;
+using Random = LockStep.LSRandom;
+#else
+using FLOAT = System.Single;
 using Random = UnityEngine.Random;
+#endif
 
 namespace GameDesigner
 {
@@ -93,7 +99,7 @@ namespace GameDesigner
         /// <summary>s
         /// 动画速度
         /// </summary>
-		public float animSpeed = 1;
+		public FLOAT animSpeed = 1;
         /// <summary>
         /// 动画淡入淡出
         /// </summary>
@@ -101,7 +107,7 @@ namespace GameDesigner
         /// <summary>
         /// 过渡的持续时间
         /// </summary>
-        public float duration = 0.25f;
+        public FLOAT duration = 0.25f;
         /// <summary>
         /// 动画结束是否进入下一个状态
         /// </summary>

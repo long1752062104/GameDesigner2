@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿#if LOCK_STEP
+using Time = LockStep.LSTime;
+#else
+using Time = UnityEngine.Time;
+#endif
 
 namespace GameDesigner
 {
@@ -25,7 +29,7 @@ namespace GameDesigner
         {
             var isPlaying = true;
             if (currMode == StateMachineUpdateMode.Update)
-                stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.fixedDeltaTime;
+                stateAction.animTime += state.animSpeed * stateAction.animTimeMax * Time.deltaTime;
             return isPlaying;
         }
     }

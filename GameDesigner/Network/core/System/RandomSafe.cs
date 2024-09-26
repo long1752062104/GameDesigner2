@@ -1,5 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+#if LOCK_STEP
+using FLOAT = SoftFloat.sfloat;
+#else
+using FLOAT = System.Single;
+#endif
+
 
 namespace Net.System
 {
@@ -54,9 +60,9 @@ namespace Net.System
         }
 
 
-        protected virtual double Sample()
+        protected virtual FLOAT Sample()
         {
-            return InternalSample() * 4.6566128752457969E-10;
+            return InternalSample() * (FLOAT)4.6566128752457969E-10;
         }
 
         private int InternalSample()
@@ -98,7 +104,7 @@ namespace Net.System
             return InternalSample();
         }
 
-        private double GetSampleForLargeRange()
+        private FLOAT GetSampleForLargeRange()
         {
             int num = InternalSample();
             if (InternalSample() % 2 == 0)
@@ -106,9 +112,9 @@ namespace Net.System
                 num = -num;
             }
 
-            double num2 = num;
-            num2 += 2147483646.0;
-            return num2 / 4294967293.0;
+            FLOAT num2 = num;
+            num2 += (FLOAT)2147483646.0f;
+            return num2 / (FLOAT)4294967293.0f;
         }
 
         public virtual int Next(int minValue, int maxValue)
@@ -137,7 +143,7 @@ namespace Net.System
             return (int)(Sample() * maxValue);
         }
 
-        public virtual double NextDouble()
+        public virtual FLOAT NextDouble()
         {
             return Sample();
         }
@@ -187,7 +193,7 @@ namespace Net.System
             }
             int value1 = (int)(minValue * 10000);
             int value2 = (int)(maxValue * 10000);
-            float value3 = Next(value1, value2) * 0.0001f;
+            float value3 = Next(value1, value2) * (float)0.0001f;
             if (value3 < minValue | value3 > maxValue)
                 return Range(minValue, maxValue);
             return value3;

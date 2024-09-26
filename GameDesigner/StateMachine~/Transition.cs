@@ -1,5 +1,11 @@
 ﻿using System;
-using UnityEngine;
+#if LOCK_STEP
+using FLOAT = SoftFloat.sfloat;
+using Time = LockStep.LSTime;
+#else
+using FLOAT = System.Single;
+using Time = UnityEngine.Time;
+#endif
 
 namespace GameDesigner
 {
@@ -26,11 +32,11 @@ namespace GameDesigner
         /// <summary>
         /// 当前时间
         /// </summary>
-		public float time;
+		public FLOAT time;
         /// <summary>
         /// 结束时间
         /// </summary>
-		public float exitTime = 1f;
+		public FLOAT exitTime = 1f;
         /// <summary>
         /// 是否进入下一个状态?
         /// </summary>
@@ -108,7 +114,7 @@ namespace GameDesigner
             }
             if (mode == TransitionMode.ExitTime)
             {
-                time += Time.fixedDeltaTime;
+                time += Time.deltaTime;
                 if (time > exitTime)
                     isEnterNextState = true;
             }

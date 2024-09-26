@@ -3,7 +3,6 @@ using System;
 using System.Threading;
 #if !UNITY_WEBGL
 using System.Threading.Tasks;
-using static Net.Event.TimerEvent;
 #endif
 
 namespace Net.Event
@@ -224,6 +223,13 @@ namespace Net.Event
 
         public long CurrentTime => time;
 
+        public TimerEvent()
+        {
+            frame = 0u;//一秒60次
+            startTick = (uint)Environment.TickCount;
+            nextTick = startTick + 1000u;
+        }
+
         /// <summary>
         /// 添加计时器事件, time时间后调用ptr
         /// </summary>
@@ -233,21 +239,7 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action ptr, bool isAsync = false)
         {
-            var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
-            {
-                time = (long)(this.time + (time * 1000)),
-                eventId = eventID,
-            };
-            eventObj.action = new EventAction1()
-            {
-                Event = eventObj,
-                IsAsync = isAsync,
-                action = ptr,
-                IsCompleted = true,
-            };
-            events.Add(eventObj);
-            return eventID;
+            return AddEvent(string.Empty, (long)(time * 1000f), ptr, isAsync);
         }
 
         /// <summary>
@@ -260,22 +252,7 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
-            {
-                time = (long)(this.time + (time * 1000)),
-                obj = obj,
-                eventId = eventID,
-            };
-            eventObj.action = new EventAction2()
-            {
-                Event = eventObj,
-                IsAsync = isAsync,
-                action = ptr,
-                IsCompleted = true,
-            };
-            events.Add(eventObj);
-            return eventID;
+            return AddEvent(string.Empty, (long)(time * 1000f), 0, ptr, obj, isAsync);
         }
 
         /// <summary>
@@ -289,24 +266,7 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
         {
-            var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
-            {
-                time = (long)(this.time + (time * 1000)),
-                obj = obj,
-                invokeNum = invokeNum,
-                timeMax = (long)(time * 1000),
-                eventId = eventID
-            };
-            eventObj.action = new EventAction2()
-            {
-                Event = eventObj,
-                IsAsync = isAsync,
-                action = ptr,
-                IsCompleted = true,
-            };
-            events.Add(eventObj);
-            return eventID;
+            return AddEvent(string.Empty, (long)(time * 1000f), invokeNum, ptr, obj, isAsync);
         }
 
         /// <summary>
@@ -318,7 +278,7 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(float time, Func<bool> ptr, bool isAsync = false)
         {
-            return AddEvent(string.Empty, time, ptr, isAsync);
+            return AddEvent(string.Empty, (long)(time * 1000f), ptr, isAsync);
         }
 
         /// <summary>
@@ -331,15 +291,78 @@ namespace Net.Event
         /// <returns>可用于结束事件的id</returns>
         public int AddEvent(string name, float time, Func<bool> ptr, bool isAsync = false)
         {
+            return AddEvent(name, (long)(time * 1000f), ptr, isAsync);
+        }
+
+        /// <summary>
+        /// 添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
+        /// </summary>
+        /// <param name="time">以秒为单位</param>
+        /// <param name="ptr"></param>
+        /// <param name="obj"></param>
+        /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
+        /// <returns>可用于结束事件的id</returns>
+        public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
+        {
+            return AddEvent(string.Empty, (long)(time * 1000f), ptr, obj, isAsync);
+        }
+
+        public int AddEvent(string name, long time, Action ptr, bool isAsync = false)
+        {
             var eventID = Interlocked.Increment(ref eId);
             var eventObj = new Event()
             {
                 name = name,
-                time = (long)(this.time + (time * 1000)),
+                time = this.time + time,
                 eventId = eventID,
-                timeMax = (long)(time * 1000),
+                timeMax = time,
             };
-            eventObj.action = new EventAction3()
+            eventObj.action = new EventAction1()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr,
+                IsCompleted = true,
+            };
+            events.Add(eventObj);
+            return eventID;
+        }
+
+        public int AddEvent(string name, long time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
+        {
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
+            {
+                name = name,
+                time = this.time + time,
+                eventId = eventID,
+                timeMax = time,
+                obj = obj,
+                invokeNum = invokeNum,
+            };
+            eventObj.action = new EventAction2()
+            {
+                Event = eventObj,
+                IsAsync = isAsync,
+                action = ptr,
+                IsCompleted = true,
+            };
+            events.Add(eventObj);
+            return eventID;
+        }
+
+        public int AddEvent(string name, long time, Func<object, bool> ptr, object obj, bool isAsync = false)
+        {
+            var eventID = Interlocked.Increment(ref eId);
+            var eventObj = new Event()
+            {
+                name = name,
+                time = this.time + time,
+                eventId = eventID,
+                timeMax = time,
+                obj = obj,
+            };
+            eventObj.action = new EventAction4()
             {
                 Event = eventObj,
                 IsAsync = isAsync,
@@ -377,43 +400,6 @@ namespace Net.Event
             };
             events.Add(eventObj);
             return eventID;
-        }
-
-        /// <summary>
-        /// 添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
-        /// </summary>
-        /// <param name="time">以秒为单位</param>
-        /// <param name="ptr"></param>
-        /// <param name="obj"></param>
-        /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
-        /// <returns>可用于结束事件的id</returns>
-        public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
-        {
-            var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
-            {
-                time = (long)(this.time + (time * 1000)),
-                obj = obj,
-                invokeNum = 1,
-                timeMax = (long)(time * 1000),
-                eventId = eventID,
-            };
-            eventObj.action = new EventAction4()
-            {
-                Event = eventObj,
-                IsAsync = isAsync,
-                action = ptr,
-                IsCompleted = true,
-            };
-            events.Add(eventObj);
-            return eventID;
-        }
-
-        public TimerEvent()
-        {
-            frame = 0u;//一秒60次
-            startTick = (uint)Environment.TickCount;
-            nextTick = startTick + 1000u;
         }
 
         public void UpdateEventFixed(uint interval = 17, bool sleep = false)//60帧

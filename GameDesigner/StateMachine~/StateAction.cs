@@ -1,5 +1,10 @@
 ﻿using System;
 using UnityEngine.Playables;
+#if LOCK_STEP
+using FLOAT = SoftFloat.sfloat;
+#else
+using FLOAT = System.Single;
+#endif
 
 namespace GameDesigner
 {
@@ -24,11 +29,11 @@ namespace GameDesigner
         /// <summary>
         /// 当前动画时间
         /// </summary>
-		public float animTime;
+		public FLOAT animTime;
         /// <summary>
         /// 动画结束时间
         /// </summary>
-		public float animTimeMax = 100f;
+		public FLOAT animTimeMax = 100f;
         /// <summary>
         /// 动画层， -1是播放所有层，其他值是指定层播放
         /// </summary>
