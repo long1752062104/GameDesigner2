@@ -103,7 +103,7 @@ MonoBehaviour:
   linear:
     RawValue: 0
   angular:
-    RawValue: 0
+    RawValue: 1056964608
   freezeRot: 0
   center: {x: 0, y: 0, z: 0}
   initMode: 0

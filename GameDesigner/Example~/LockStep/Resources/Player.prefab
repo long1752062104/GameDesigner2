@@ -1966,7 +1966,7 @@ MonoBehaviour:
   isStatic: 0
   isTriggered: 0
   friction:
-    RawValue: 1045220557
+    RawValue: 1056964608
   linear:
     RawValue: 0
   angular:

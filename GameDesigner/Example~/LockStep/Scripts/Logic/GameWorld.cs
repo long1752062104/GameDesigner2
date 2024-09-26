@@ -34,9 +34,8 @@ namespace LockStep.Client
         private float time;
         public JCollider[] colliders;
         public RoamingPath[] roamings;
-        public TimerEvent Event;
         private StringBuilder frameLog = new StringBuilder();
-        private Vector3 playerPos;
+        private JVector playerPos;
 
         // Use this for initialization
         async void Start()
@@ -73,7 +72,6 @@ namespace LockStep.Client
             playback = false;
             snapshots.Clear();
             frameLog.Clear();
-            playerPos.z = -20f;
             operation.cmd = Command.Input;
             operation.identity = ClientBase.Instance.UID;
         }
@@ -126,6 +124,8 @@ namespace LockStep.Client
                 operation.direction = Transform3Dir(Camera.main.transform, Direction);
                 if (Input.GetKeyDown(KeyCode.Q))
                     operation.cmd1 = 1;
+                if (Input.GetKeyDown(KeyCode.Space))
+                    operation.cmd1 = 2;
                 forLogic = frame - logicFrame;
                 forLogic = forLogic > frameLoopMax ? frameLoopMax : forLogic;
             }
@@ -150,21 +150,22 @@ namespace LockStep.Client
         {
             if (logicFrame == 1)
             {
+                LSTime.Init();
                 LSRandom.InitSeed(1752062104);
-                Event = new TimerEvent();
+                LSEvent.Init();
                 JPhysics.ReBuild();
+                playerPos.Z = -20f;
                 for (int i = 0; i < colliders.Length; i++)
                     colliders[i].InitRigidBody();
-                //for (int i = 0; i < roamings.Length; i++)
-                //{
-                //    for (int n = 0; n < 5; n++)
-                //    {
-                //        CreateEnemyActor(roamings[i]);
-                //    }
-                //}
-                BuildJenga(new JVector(0, 1, 10f), 5);
+                for (int i = 0; i < roamings.Length; i++)
+                {
+                    for (int n = 0; n < 5; n++)
+                    {
+                        CreateEnemyActor(roamings[i]);
+                    }
+                }
+                BuildJenga(new JVector(0, 1, 10f), 4);
             }
-            LSTime.time += LSTime.deltaTime;//最先执行的时间,逻辑时间
             for (int i = 0; i < list.operations.Length; i++)
             {
                 var opt = list.operations[i];
@@ -191,14 +192,14 @@ namespace LockStep.Client
             }
             for (int i = 0; i < actors.Count; i++)
                 actors[i].Update();
-            Physics.Simulate(0.01666667f);
             JPhysics.Singleton.Simulate();
-            Event.UpdateEvent();
+            LSTime.Update();
+            LSEvent.Update();
             frameLog.AppendLine($"frame:{logicFrame}");
             for (int i = 0; i < actors.Count; i++)
             {
                 var actor = actors[i];
-                frameLog.AppendLine($"actorId: {i} pos: ({actor.jRigidBody.Position}) rot: ({actor.jRigidBody.Rotation}) vel: ({actor.jRigidBody.Velocity})");
+                frameLog.AppendLine($"actorId: {i} pos: ({actor.rigidBody.Position}) rot: ({actor.rigidBody.Rotation}) vel: ({actor.rigidBody.Velocity})");
             }
         }
 
@@ -210,13 +211,13 @@ namespace LockStep.Client
                 name = opt.identity.ToString(),
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<Rigidbody>(),
-                jRigidBody = gameObject.GetComponent<JCollider>()
+                rigidBody = gameObject.GetComponent<JCollider>(),
+                Health = 1000,
             };
             gameObject.transform.position = playerPos;
-            playerPos.z -= 5f;
-            if (actor.jRigidBody != null)
-                actor.jRigidBody.Initialize();
+            playerPos.Z -= 5f;
+            actor.rigidBody.Tag = actor;
+            actor.rigidBody.Initialize();
             if (opt.identity == ClientBase.Instance.UID)
                 FindObjectOfType<ARPGcamera>().target = gameObject.transform;
             actors.Add(actor);
@@ -231,40 +232,42 @@ namespace LockStep.Client
             {
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<Rigidbody>(),
-                jRigidBody = gameObject.GetComponent<JCollider>(),
+                rigidBody = gameObject.GetComponent<JCollider>(),
                 roamingPath = roamingPath,
             };
             gameObject.transform.position = roamingPath.waypointsList[LSRandom.Range(0, roamingPath.waypointsList.Count)];
-            if (actor.jRigidBody != null)
-                actor.jRigidBody.Initialize();
+            actor.rigidBody.Tag = actor;
+            actor.rigidBody.Initialize();
             actors.Add(actor);
             actor.Start();
             return actor;
         }
 
-        public Actor CreateBulletActor(Vector3 position, Vector3 direction)
+        public Actor CreateBulletActor(Actor self, Vector3 position, Vector3 direction)
         {
             var gameObject = Instantiate(bullet);
             var actor = new Bullet
             {
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<Rigidbody>(),
-                jRigidBody = gameObject.GetComponent<JCollider>(),
+                rigidBody = gameObject.GetComponent<JCollider>(),
                 direction = direction,
+                This = self
             };
+            actor.Init();
             gameObject.transform.position = position;
-            if (actor.jRigidBody != null)
-                actor.jRigidBody.Initialize();
+            actor.rigidBody.Tag = actor;
+            actor.rigidBody.Initialize();
             actors.Add(actor);
             actor.Start();
-            Event.AddEvent(5f, () =>
-            {
-                actors.Remove(actor);
-                actor.Destroy();
-            });
+            LSEvent.AddEvent(5f, () => RemoveActor(actor));
             return actor;
+        }
+
+        public void RemoveActor(Actor actor)
+        {
+            actors.Remove(actor);
+            actor.Destroy();
         }
 
         public Vector3 Direction => new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
@@ -304,11 +307,10 @@ namespace LockStep.Client
                     var actor = new Box()
                     {
                         gameObject = gameObject,
-                        rigidBody = gameObject.GetComponent<Rigidbody>(),
-                        jRigidBody = gameObject.GetComponent<JCollider>()
+                        rigidBody = gameObject.GetComponent<JCollider>()
                     };
-                    if (actor.jRigidBody != null)
-                        actor.jRigidBody.Initialize();
+                    if (actor.rigidBody != null)
+                        actor.rigidBody.Initialize();
                     actors.Add(actor);
                 }
             }

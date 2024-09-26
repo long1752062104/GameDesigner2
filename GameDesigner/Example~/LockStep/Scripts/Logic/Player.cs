@@ -3,7 +3,6 @@ using GameDesigner;
 using Jitter2.LinearMath;
 using SoftFloat;
 using System;
-using UnityEngine;
 
 namespace LockStep.Client
 {
@@ -26,11 +25,23 @@ namespace LockStep.Client
             fireState.DstStateID = 0;
             fireState.actionSystem = true;
             fireState.animSpeed = 6f;
+            fsm.AddState("die", new PlayerDie(this));
         }
 
         public override void Update()
         {
             fsm.Execute(StateMachineUpdateMode.Update);
+        }
+
+        public override void OnDamage(Actor attack)
+        {
+            if (IsDeath)
+                return;
+            Health -= attack.Damage;
+            if (Health <= 0)
+            {
+                fsm.ChangeState(3, 0, true);
+            }
         }
     }
 
@@ -46,7 +57,7 @@ namespace LockStep.Client
         public override void OnEnter()
         {
             self.animation.Play("soldierIdleRelaxed");
-            self.jRigidBody.Translate(0, 0, 0);
+            self.rigidBody.Translate(0, 0, 0);
         }
 
         public override void OnUpdate()
@@ -58,7 +69,7 @@ namespace LockStep.Client
             else if (self.operation.cmd1 == 1)
             {
                 self.operation.cmd1 = 0;
-                self.jRigidBody.Translate(0, 0, 0);
+                self.rigidBody.Translate(0, 0, 0);
                 ChangeState(2);
             }
         }
@@ -88,13 +99,13 @@ namespace LockStep.Client
             else if (self.operation.cmd1 == 1)
             {
                 self.operation.cmd1 = 0;
-                self.jRigidBody.Translate(0, 0, 0);
+                self.rigidBody.Translate(0, 0, 0);
                 ChangeState(2);
             }
             else
             {
-                self.jRigidBody.Rotation = JQuaternionEx.Lerp(self.jRigidBody.Rotation, JQuaternionEx.LookRotation(new JVector(-dir.x, dir.y, dir.z), JVector.UnitY), 0.5f);
-                self.jRigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
+                self.rigidBody.Rotation = JQuaternion.Lerp(self.rigidBody.Rotation, JQuaternion.LookRotation(new JVector(-dir.x, dir.y, dir.z), JVector.UnitY), 0.5f);
+                self.rigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
             }
         }
     }
@@ -115,8 +126,23 @@ namespace LockStep.Client
 
         public override void OnAnimationEvent(StateAction action)
         {
-            var direction = self.jRigidBody.TransformDirection(JVector.UnitZ);
-            GameWorld.I.CreateBulletActor(self.jRigidBody.TransformPoint(new JVector(0, 1.5f, 1)), direction);
+            var direction = self.rigidBody.TransformDirection(JVector.UnitZ);
+            GameWorld.I.CreateBulletActor(self, self.rigidBody.TransformPoint(new JVector(0, 1.5f, 1)), direction);
+        }
+    }
+
+    public class PlayerDie : StateBehaviour
+    {
+        private readonly Player self;
+
+        public PlayerDie(Player player)
+        {
+            self = player;
+        }
+
+        public override void OnEnter()
+        {
+            self.animation.Play(LSRandom.Range(0, 2) == 0 ? "soldierDieBack" : "soldierDieFront");
         }
     }
 }

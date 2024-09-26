@@ -36,6 +36,7 @@ public abstract class JCollider : MonoBehaviour
     internal List<RigidBodyShape> shapes;
     private bool isInitialize;
     public InitMode initMode = InitMode.Start;
+    public object Tag; //存特别引用
 
     public Action<JCollider, Arbiter> onTriggerEnter;
     public Action<JCollider, Arbiter> onTriggerExit;
@@ -137,12 +138,12 @@ public abstract class JCollider : MonoBehaviour
 
     public JVector TransformDirection(JVector direction)
     {
-        return JQuaternionEx.Mul(Rotation, direction);
+        return Rotation * direction;
     }
 
     public JVector TransformPoint(JVector direction)
     {
-        var forwardOffset = JQuaternionEx.Mul(Rotation, direction);
+        var forwardOffset = Rotation * direction;
         return Position + forwardOffset;
     }
 
@@ -171,6 +172,12 @@ public abstract class JCollider : MonoBehaviour
         vel.X = translation.X;
         vel.Z = translation.Z;
         Velocity = vel;
+    }
+
+    public void LookAt(JVector targetPosition, JVector worldUp)
+    {
+        var direction = targetPosition - Position;
+        rigidBody.Orientation = JQuaternion.LookRotation(direction, worldUp);
     }
 }
 #endif

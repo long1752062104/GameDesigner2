@@ -160,7 +160,7 @@ MonoBehaviour:
   bullet: {fileID: 6600103488882257663, guid: 2c5fada105bb9d248a231d54554ab0d6, type: 3}
   actors: []
   frameRate: 30
-  frameLoopMax: 1
+  frameLoopMax: 3
   colliders:
   - {fileID: 4303035326721279318}
   roamings:
@@ -193,7 +193,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationMode: 2
-  gravity: {}
+  gravity:
+    X:
+      RawValue: 0
+    Y:
+      RawValue: 3239900611
+    Z:
+      RawValue: 0
   step: 0.016
   multiThread: 0
 --- !u!1 &241183878
@@ -3009,6 +3015,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isStatic: 1
   isTriggered: 0
+  friction:
+    RawValue: 1045220557
+  linear:
+    RawValue: 0
+  angular:
+    RawValue: 0
   freezeRot: 0
   center: {x: 0, y: 0, z: 0}
   initMode: 0
