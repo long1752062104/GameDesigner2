@@ -2,7 +2,6 @@
 using Jitter2.LinearMath;
 using Net.Client;
 using Net.Component;
-using Net.Event;
 using Net.MMORPG;
 using Net.Share;
 using Net.System;
@@ -18,7 +17,7 @@ namespace LockStep.Client
     public class GameWorld : SingleCase<GameWorld>
     {
         internal int frame;
-        private readonly List<OperationList> snapshots = new List<OperationList>();
+        private readonly List<OperationList> snapshots = new();
         private int logicFrame;
         public uint delay;
         public GameObject player;
@@ -26,15 +25,15 @@ namespace LockStep.Client
         public GameObject boxPrefab;
         public GameObject bullet;
         private Operation operation;
-        public List<Actor> actors = new List<Actor>();
-        public Dictionary<int, Actor> actorDic = new Dictionary<int, Actor>();
+        public List<Actor> actors = new();
+        public Dictionary<int, Actor> actorDic = new();
         private bool playback;
         public int frameRate = 30;
         public int frameLoopMax = 1;
         private float time;
         public JCollider[] colliders;
         public RoamingPath[] roamings;
-        private StringBuilder frameLog = new StringBuilder();
+        private readonly StringBuilder frameLog = new();
         private JVector playerPos;
 
         // Use this for initialization

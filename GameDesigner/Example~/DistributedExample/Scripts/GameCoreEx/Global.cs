@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using GameCore;
-using System;
 
 /// <summary>
 /// Global扩展类
@@ -8,13 +7,10 @@ using System;
 public class Global : GameCore.Global
 {
     //扩展你的Global管理器代码
-    public UIBase[] panels;
 
     protected override void Awake()
     {
         base.Awake();
-        foreach (var panel in panels)
-            UI.AddForm(panel);
     }
 
     public override async void OnInit()

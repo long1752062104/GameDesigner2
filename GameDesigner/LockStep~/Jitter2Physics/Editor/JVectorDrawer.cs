@@ -8,7 +8,7 @@ using SoftFloat;
 namespace Jitter2.Editor
 {
     [CustomPropertyDrawer(typeof(sfloat))]
-    public class Fix64Drawer : PropertyDrawerBase
+    public class SFloatDrawer : PropertyDrawerBase
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

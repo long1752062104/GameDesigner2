@@ -72,7 +72,7 @@ namespace StateExample
 
         private void LateUpdate()
         {
-            if ((controller.UpdateMode & StateMachineUpdateMode.Update) != 0)
+            if ((controller.UpdateMode & StateMachineUpdateMode.LateUpdate) != 0)
                 controller.Execute(StateMachineUpdateMode.LateUpdate);
         }
 

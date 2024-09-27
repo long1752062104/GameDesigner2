@@ -102,13 +102,14 @@ namespace Unity.Editor
             object target = property.serializedObject.targetObject;
             var type = target.GetType();
             var strArray = path.Split('.', StringSplitOptions.None);
-            FieldInfo fieldInfo = null;
+            FieldInfo fieldInfo;
             var fieldReference = new FieldReference();
             for (int index = 0; index < strArray.Length; ++index)
             {
                 string name = strArray[index];
-                for (Type type1 = type; fieldInfo == null && type1 != null; type1 = type1.BaseType)
-                    fieldInfo = type1.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                //for (Type type1 = type; fieldInfo == null && type1 != null; type1 = type1.BaseType)
+                //    fieldInfo = type1.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                fieldInfo = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (fieldInfo == null)
                     break;
                 fieldReference.field = fieldInfo;

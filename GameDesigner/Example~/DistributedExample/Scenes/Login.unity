@@ -710,11 +710,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 162dac4c6abe52142b1845c3c6781f9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  url: http://192.168.1.6/
+  url: http://192.168.1.9/
   metadataList: Assets/Samples/GameDesigner/Example/DistributedExample/Arts/Hotfix/MetadataList.bytes
   hotfixDll: Assets/Samples/GameDesigner/Example/DistributedExample/Arts/Hotfix/Main.dll.bytes
   checkFileMD5: 0
   useFirstPackage: 1
+  firstPackageInStreamingAssets: 0
+  checkAssetsRefresh: 1
 --- !u!114 &4747602340723001753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -737,6 +739,8 @@ MonoBehaviour:
   _Loading: {fileID: 7318713021771097218}
   _Message: {fileID: 7236130214811587135}
   _Tips: {fileID: 6780767337172211703}
+  _Wait: {fileID: 0}
+  _Forms: []
 --- !u!114 &4747602340723001755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -811,8 +815,8 @@ MonoBehaviour:
   version: 1.0.0
   entryRes: 
   compressionJson: 0
+  addressables: 0
   dontDestroyOnLoad: 1
-  panels: []
 --- !u!4 &4747602340723001758
 Transform:
   m_ObjectHideFlags: 0
@@ -2487,13 +2491,13 @@ MonoBehaviour:
     port: 9543
     localTest: 0
     debugRpc: 1
-    authorize: 0
     startConnect: 1
-    singleThread: 0
-    reconnectCount: 10
-    reconnectInterval: 2000
-    heartLimit: 5
+    updateMode: 0
+    performance: 0
     heartInterval: 1000
+    heartLimit: 5
+    reconnectInterval: 2000
+    reconnectCount: 10
     webSetting:
       scheme: ws
       sslProtocols: 0
