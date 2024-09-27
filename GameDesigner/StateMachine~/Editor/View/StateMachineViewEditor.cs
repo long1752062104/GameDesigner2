@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Editor;
 using UnityEditor;
-using UnityEditorInternal;
+using UnityEditor.Animations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -211,6 +211,37 @@ namespace GameDesigner
         protected virtual void OnDrawAnimationField() { }
 
         /// <summary>
+        /// 是否是混合树
+        /// </summary>
+        /// <param name="animator"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        public static bool IsStateBlendTree(Animator animator, string clipName, out BlendTree blendTree)
+        {
+            blendTree = null;
+            if (animator == null)
+                return false;
+            var controller = animator.runtimeAnimatorController as AnimatorController;
+            if (controller == null) return false;
+            int hash = Animator.StringToHash(clipName);
+
+            foreach (var item in controller.layers)
+            {
+                var stateMachine = item.stateMachine;
+
+                foreach (var state in stateMachine.states)
+                {
+                    if (state.state.motion is BlendTree tree && state.state.nameHash == hash)
+                    {
+                        blendTree = tree;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        /// <summary>
         /// 绘制状态监视面板属性
         /// </summary>
         public void DrawState(State state)
@@ -318,6 +349,38 @@ namespace GameDesigner
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTime"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation time"], "animTime"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("animTimeMax"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation length"], "animTimeMax"));
                             EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("layer"), new GUIContent(BlueprintGUILayout.Instance.Language["Animation layer"], "layer"));
+                            if (Self is StateMachineMono mono && IsStateBlendTree(mono.animator, act.clipName, out BlendTree blendTree))
+                            {
+                                EditorGUILayout.HelpBox(BlueprintGUILayout.Instance.Language["BlendTree Info"] + blendTree.blendType, MessageType.Info);
+                                EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("blendParameter"), new GUIContent(BlueprintGUILayout.Instance.Language["Blend Parameter"] + blendTree.blendParameter, "blendParameter"));
+                                act.blendParameterName = blendTree.blendParameter;
+                                act.blendParameterYName = blendTree.blendParameterY;
+                                switch (blendTree.blendType)
+                                {
+                                    case BlendTreeType.Simple1D:
+                                        //1D不需要参数Y
+                                        act.blendParameterYName = string.Empty;
+                                        break;
+                                    case BlendTreeType.SimpleDirectional2D:
+                                        EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("blendParameterY"), new GUIContent(BlueprintGUILayout.Instance.Language["Blend ParameterY"] + blendTree.blendParameterY, "blendParameterY"));
+                                        break;
+                                    case BlendTreeType.FreeformDirectional2D:
+                                        EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("blendParameterY"), new GUIContent(BlueprintGUILayout.Instance.Language["Blend ParameterY"] + blendTree.blendParameterY, "blendParameterY"));
+                                        break;
+                                    case BlendTreeType.FreeformCartesian2D:
+                                        EditorGUILayout.PropertyField(actionProperty.FindPropertyRelative("blendParameterY"), new GUIContent(BlueprintGUILayout.Instance.Language["Blend ParameterY"] + blendTree.blendParameterY, "blendParameterY"));
+                                        break;
+                                }
+
+
+                            }
+                            else
+                            {
+                                act.blendParameter = 0;
+                                act.blendParameterY = 0;
+                                act.blendParameterName = string.Empty;
+                                act.blendParameterYName = string.Empty;
+                            }
                             for (int i = 0; i < act.behaviours.Length; ++i)
                             {
                                 EditorGUILayout.BeginHorizontal();
@@ -369,7 +432,7 @@ namespace GameDesigner
                                         var scriptName = act.behaviours[index].name;
                                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                                             throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
-                                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
+                                        UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                                     }, i);
                                     menu.ShowAsContext();
                                 }
@@ -519,7 +582,7 @@ namespace GameDesigner
                         var scriptName = s.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                             throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
-                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
+                        UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     }, i);
                     menu.ShowAsContext();
                 }
@@ -682,7 +745,7 @@ namespace GameDesigner
                         var scriptName = tr.behaviours[index].name;
                         if (!Net.Helper.ScriptHelper.Cache.TryGetValue(scriptName, out var sequence))
                             throw new Exception($"请启用调用帮助设置，菜单:GameDesigner/Network/InvokeHelper");
-                        InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
+                        UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(sequence.FilePath, sequence.StartLine, 0);
                     }, i);
                     menu.ShowAsContext();
                 }

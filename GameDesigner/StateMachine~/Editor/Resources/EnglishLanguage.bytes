@@ -22,6 +22,9 @@ Action tree|Action tree
 Action Tree Set|Action Tree Set
 Add action|Add action
 Remove action|Remove action
+BlendTree Info|Set the action to blend tree, will display the blend tree parameter set blend tree type:
+Blend Parameter|Blend Parameter
+Blend ParameterY|Blend ParameterY
 Action ->|Action ->
 Remove action|Remove action
 Copy action|Copy action

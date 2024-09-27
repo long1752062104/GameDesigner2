@@ -24,6 +24,9 @@ Add action|添加动作
 Remove action|移除动作
 Action ->|动作 ->
 Remove action|移除动作
+BlendTree Info|设置的动作为混合树，将显示混合树参数设置 混合树类型:
+Blend Parameter|混合树参数
+Blend ParameterY|混合树参数Y
 Copy action|复制动作
 Paste new action|黏贴新的动作
 Paste action value|黏贴动作值

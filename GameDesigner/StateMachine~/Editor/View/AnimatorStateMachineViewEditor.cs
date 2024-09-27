@@ -55,6 +55,7 @@ namespace GameDesigner
                 animAction = action;
                 if (!EditorApplication.isPlaying)
                 {
+                    StateAction.SetBlendTreeParameter(action, view.animator);
                     animator.Play(action.clipName, 0, normalizedTime);
                     animator.Update(0f);
                 }
@@ -62,6 +63,7 @@ namespace GameDesigner
             EditorGUILayout.EndHorizontal();
             if (animPlay && animAction == action && !EditorApplication.isPlaying)
             {
+                StateAction.SetBlendTreeParameter(action, view.animator);
                 action.animTime += 20f * Time.deltaTime;
                 if (action.animTime >= action.animTimeMax)
                     action.animTime = 0f;
