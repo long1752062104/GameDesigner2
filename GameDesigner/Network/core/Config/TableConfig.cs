@@ -32,16 +32,6 @@ namespace Net.Config
         public void LoadTable(string jsonStr)
         {
             dataSet = Newtonsoft_X.Json.JsonConvert.DeserializeObject<DataSet>(jsonStr);
-            foreach (DataTable table in dataSet.Tables)
-            {
-                for (int i = 0; i < table.Columns.Count; i++)
-                {
-                    var columnName = table.Rows[0][i].ToString();
-                    if (string.IsNullOrEmpty(columnName))
-                        continue;
-                    table.Columns[i].ColumnName = columnName;
-                }
-            }
         }
 
         /// <summary>

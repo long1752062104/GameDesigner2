@@ -1,6 +1,11 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
+#if LOCK_STEP
+using FLOAT = SoftFloat.sfloat;
+#else
+using FLOAT = System.Single;
+#endif
 
 namespace GameDesigner
 {
@@ -71,7 +76,7 @@ namespace GameDesigner
         /// <summary>
         /// 动画事件时间
         /// </summary>
-		public float animEventTime = 50f;
+		public FLOAT animEventTime = 50f;
         /// <summary>
         /// 是否已到达事件时间或超过事件时间，到为true，没到为flase
         /// </summary>
