@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using Net.Event;
 using SoftFloat;
 using System;
@@ -96,3 +97,4 @@ namespace LockStep
         }
     }
 }
+#endif

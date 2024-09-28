@@ -126,11 +126,16 @@ namespace Net.Server
                     session.PerformHandshake();
                     continue;
                 }
-                session.Receive(session, (object state, Opcode opcode, ref ISegment segment) =>
+                var code = session.Receive(session, (object state, Opcode opcode, ref ISegment segment) =>
                 {
                     CheckReconnect(session.socket, segment, session);
                     acceptList.RemoveAt(i);
                 });
+                if (code == -1)
+                {
+                    session.Close();
+                    acceptList.RemoveAt(i);
+                }
             }
         }
 
@@ -143,9 +148,11 @@ namespace Net.Server
 
         protected override void ResolveDataQueue(Player client, ref bool isSleep, uint tick)
         {
-            if (!client.Client.Connected)
+            if (!client.Client.Connected | !client.Connected)
                 return;
-            client.Session.Receive(client);
+            var code = client.Session.Receive(client);
+            if (code == -1)
+                client.Connected = false;
         }
 
         protected override void DataCRCHandler(Player client, ISegment buffer, bool isTcp)

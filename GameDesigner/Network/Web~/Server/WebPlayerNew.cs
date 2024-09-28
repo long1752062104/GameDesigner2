@@ -237,12 +237,12 @@ namespace Net.Server
             frame = new WebSocketFrame();
         }
 
-        public void Receive(object state)
+        public int Receive(object state)
         {
-            Receive(state, onMessageHandler);
+            return Receive(state, onMessageHandler);
         }
 
-        public unsafe void Receive(object state, OnMessageHandler onMessage)
+        public unsafe int Receive(object state, OnMessageHandler onMessage)
         {
             if (socket.Poll(performance, SelectMode.SelectRead))
             {
@@ -257,7 +257,12 @@ namespace Net.Server
                 else
                 {
                     segment = BufferPool.Take();
-                    segment.Count = stream.Read(segment.Buffer, 0, segment.Length);
+                    try { segment.Count = stream.Read(segment.Buffer, 0, segment.Length); }
+                    catch (Exception ex)
+                    {
+                        segment.Dispose();
+                        return -1;
+                    }
                 }
                 int startPos, canReadCount;
                 while (segment.Position < segment.Count)
@@ -367,6 +372,7 @@ namespace Net.Server
                 }
                 segment.Dispose();
             }
+            return 0;
         }
 
         internal bool PerformHandshake()

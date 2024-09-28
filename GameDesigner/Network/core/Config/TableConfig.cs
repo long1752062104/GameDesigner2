@@ -81,7 +81,7 @@ namespace Net.Config
                 if (string.IsNullOrEmpty(filterExpression))
                 {
                     var rows = table.Rows;
-                    for (int i = 3; i < rows.Count; i++)
+                    for (int i = 0; i < rows.Count; i++)
                     {
                         var obj = rows[i]["ID"];
                         if (obj == null)

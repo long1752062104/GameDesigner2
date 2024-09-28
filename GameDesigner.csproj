@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GameDesigner</RootNamespace>
     <AssemblyName>GameDesigner</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -84,6 +84,7 @@
     <Compile Include="GameDesigner\Network\**\*.cs" />
     <Compile Include="GameDesigner\Recast~\**\*.cs" />
     <Compile Include="GameDesigner\Serialize\**\*.cs" />
+    <Compile Include="GameDesigner\LockStep~\**\*.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
