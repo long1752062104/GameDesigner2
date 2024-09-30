@@ -91,9 +91,9 @@ namespace GameCore
             return assetBundles.TryGetValue(assetBundleName, out assetBundle);
         }
 
-        public void AddAssetBundle(string assetBundleName, AssetBundle assetBundle)
+        public bool AddAssetBundle(string assetBundleName, AssetBundle assetBundle)
         {
-            assetBundles.Add(assetBundleName, assetBundle);
+            return assetBundles.TryAdd(assetBundleName, assetBundle);
         }
 
         public bool ContainsAssetBundle(string assetBundleName)
@@ -138,6 +138,7 @@ namespace GameCore
 #if UNITY_EDITOR
         private Dictionary<string, string> addressablesDict;//可寻址资源字典,仅用于编辑器模式
 #endif
+        protected readonly Dictionary<string, AssetBundleCreateRequest> assetBundleAsyncDict = new Dictionary<string, AssetBundleCreateRequest>();
 
         public virtual void Init()
         {
@@ -232,11 +233,16 @@ namespace GameCore
 
         public virtual async UniTask<AssetBundle> LoadAssetBundleAsync(string assetBundlePath)
         {
+            if (assetBundleAsyncDict.TryGetValue(assetBundlePath, out var assetBundleCreate))
+                goto J;
             var bytes = LoadAssetFile(assetBundlePath);
             if (bytes == null)
                 return null;
-            var assetBundle = await AssetBundle.LoadFromMemoryAsync(bytes);
-            return assetBundle;
+            assetBundleCreate = AssetBundle.LoadFromMemoryAsync(bytes);
+            assetBundleAsyncDict.Add(assetBundlePath, assetBundleCreate);
+        J: while (!assetBundleCreate.isDone)
+                await UniTask.Yield();
+            return assetBundleCreate.assetBundle;
         }
 
         public virtual byte[] LoadAssetFile(string assetPath)
@@ -413,8 +419,9 @@ namespace GameCore
                 assetBundle = LoadAssetBundle(fullPath);
                 if (assetBundle != null)
                 {
-                    assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
-                    DirectDependencies(assetInfo.assetBundleName);
+                    var result = assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
+                    if (result)
+                        DirectDependencies(assetInfo.assetBundleName);
                 }
             }
             return assetBundle;
@@ -430,8 +437,9 @@ namespace GameCore
                 assetBundle = await LoadAssetBundleAsync(fullPath);
                 if (assetBundle != null)
                 {
-                    assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
-                    await DirectDependenciesAsync(assetInfo.assetBundleName);
+                    var result = assetBundleManifest.AddAssetBundle(assetInfo.assetBundleName, assetBundle);
+                    if (result)
+                        await DirectDependenciesAsync(assetInfo.assetBundleName);
                 }
             }
             return assetBundle;
@@ -490,8 +498,9 @@ namespace GameCore
                     continue;
                 var fullPath = Global.I.AssetBundlePath + dependencie;
                 var assetBundle = LoadAssetBundle(fullPath);
-                assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
-                DirectDependencies(dependencie);
+                var result = assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
+                if (result)
+                    DirectDependencies(dependencie);
             }
         }
 
@@ -504,8 +513,9 @@ namespace GameCore
                     continue;
                 var fullPath = Global.I.AssetBundlePath + dependencie;
                 var assetBundle = await LoadAssetBundleAsync(fullPath);
-                assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
-                await DirectDependenciesAsync(dependencie);
+                var result = assetBundleManifest.AddAssetBundle(dependencie, assetBundle);
+                if (result)
+                    await DirectDependenciesAsync(dependencie);
             }
         }
 

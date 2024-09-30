@@ -6635,16 +6635,6 @@
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
         </member>
-        <member name="M:Net.Event.TimerEvent.AddEvent(System.String,System.Int64,System.Func{System.Boolean},System.Boolean)">
-            <summary>
-            添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
-            </summary>
-            <param name="name"></param>
-            <param name="time">毫秒为单位</param>
-            <param name="ptr"></param>
-            <param name="isAsync">如果是耗时任务, 需要设置true</param>
-            <returns>可用于结束事件的id</returns>
-        </member>
         <member name="M:Net.Event.TimerEvent.AddEvent(System.Single,System.Func{System.Object,System.Boolean},System.Object,System.Boolean)">
             <summary>
             添加计时事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
@@ -6652,6 +6642,16 @@
             <param name="time">以秒为单位</param>
             <param name="ptr"></param>
             <param name="obj"></param>
+            <param name="isAsync">如果是耗时任务, 需要设置true</param>
+            <returns>可用于结束事件的id</returns>
+        </member>
+        <member name="M:Net.Event.TimerEvent.AddEvent(System.String,System.Int64,System.Func{System.Boolean},System.Boolean)">
+            <summary>
+            添加计时器事件, 当time时间到调用ptr, 当ptr返回true则time时间后再次调用ptr, 直到ptr返回false为止
+            </summary>
+            <param name="name"></param>
+            <param name="time">毫秒为单位</param>
+            <param name="ptr"></param>
             <param name="isAsync">如果是耗时任务, 需要设置true</param>
             <returns>可用于结束事件的id</returns>
         </member>
