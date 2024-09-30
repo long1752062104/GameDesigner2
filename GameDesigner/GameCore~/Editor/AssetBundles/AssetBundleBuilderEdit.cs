@@ -57,17 +57,11 @@ namespace GameCore
             }
 #endif
             if (GUILayout.Button("BuildGameConfig"))
-            {
                 ExcelTools.GenerateExcelData();
-            }
             if (GUILayout.Button("BuildGameConfigScript"))
-            {
                 ExcelTools.GenerateExcelDataAll();
-            }
             if (GUILayout.Button("BuildAssetBundle"))
-            {
                 BuildAssetBundle();
-            }
             if (GUILayout.Button("打开资源包目录"))
             {
                 var outputPath = $"{assetBundleBuilder.outputPath}/{assetBundleBuilder.buildTarget}/";
@@ -155,7 +149,10 @@ namespace GameCore
                 var assetBundleName = assetInfo.assetBundleName;
                 if (abBuildList.TryGetValue(assetBundleName, out var assetBundleBuild))
                     assetBundleBuildList[assetBundleName] = assetBundleBuild;
+                assetManifestOld.TryAddAssetInfo(assetInfo.name, assetInfo);
             }
+            if (assetBundleBuilder.incrementalPackaging)
+                assetManifestNew = assetManifestOld;
             Debug.Log($"筛选后要构建的资源包数量:{assetBundleBuildList.Count}");
             if (assetBundleBuildList.Count == 0)
             {

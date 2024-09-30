@@ -68,6 +68,8 @@ namespace GameCore
         public bool clearFolders = true;
         public bool copyToStreamingAssets;
         public bool clearManifestFile = true;
+        [Tooltip("增量打包AB资源，当出现较大的资源文件夹时，只需要打包一次，其余只打被修改过的包即可")]
+        public bool incrementalPackaging;
         [Tooltip("Uncompressed: 不压缩 StandardCompression:正常压缩 ChunkBasedCompression: 使用基于语块的LZ4压缩")]
         public CompressOptions compression = CompressOptions.ChunkBasedCompression;
         [Tooltip("打包AssetBundle时不包含类型信息，这会使文件变小并稍微快一些加载时间。")]

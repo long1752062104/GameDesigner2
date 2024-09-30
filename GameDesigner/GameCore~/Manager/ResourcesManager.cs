@@ -107,6 +107,17 @@ namespace GameCore
             assetInfoDict.Add(assetName, assetInfo);
         }
 
+        public bool TryAddAssetInfo(string assetName, AssetInfo assetInfo)
+        {
+            if (!assetInfoDict.ContainsKey(assetName))
+            {
+                assetInfos.Add(assetInfo);
+                assetInfoDict.Add(assetName, assetInfo);
+                return true;
+            }
+            return false;
+        }
+
         public bool ContainsAssetInfo(string assetName)
         {
             return assetInfoDict.ContainsKey(assetName);
