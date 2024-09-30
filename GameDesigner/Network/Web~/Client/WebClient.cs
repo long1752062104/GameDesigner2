@@ -139,7 +139,7 @@ namespace Net.Client
                         receiveCount += data.Length;
                         receiveAmount++;
                         var buffer = BufferPool.Take(data.Length);
-                        Unsafe.CopyBlockUnaligned(ref buffer.Buffer[0], ref data[0], (uint)data.Length);
+                        Unsafe.CopyBlock(ref buffer.Buffer[0], ref data[0], (uint)data.Length);
                         buffer.Count = data.Length;
                         ResolveBuffer(ref buffer);
                         BufferPool.Push(buffer);
@@ -197,7 +197,7 @@ namespace Net.Client
                 byte[] jsonStrBytes = Encoding.UTF8.GetBytes(jsonStr);
                 byte[] bytes = new byte[jsonStrBytes.Length + 1];
                 bytes[0] = 32; //32=utf8的" "空字符
-                Unsafe.CopyBlockUnaligned(ref bytes[1], ref jsonStrBytes[0], (uint)jsonStrBytes.Length);
+                Unsafe.CopyBlock(ref bytes[1], ref jsonStrBytes[0], (uint)jsonStrBytes.Length);
                 return bytes;
             }
             return NetConvert.Serialize(model, new byte[] { 10 });//10=utf8的\n字符

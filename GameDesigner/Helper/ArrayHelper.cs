@@ -411,7 +411,7 @@ public static class ArrayHelper
     public static byte[] ToArray(this byte[] self, int index, int count)
     {
         var buffer = new byte[count];
-        Unsafe.CopyBlockUnaligned(ref buffer[0], ref self[index], (uint)count);
+        Unsafe.CopyBlock(ref buffer[0], ref self[index], (uint)count);
         return buffer;
     }
 

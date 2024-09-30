@@ -29,7 +29,7 @@ namespace Net.Serialize
                 Unsafe.WriteUnaligned(ptr + offset, (SIZE)len);
                 offset += LENGTH;
                 int count = len * Unsafe.SizeOf<T>();
-                Unsafe.CopyBlockUnaligned(ptr + offset, ptr1, (uint)count);
+                Unsafe.CopyBlock(ptr + offset, ptr1, (uint)count);
                 offset += count;
             }
             else
@@ -105,7 +105,7 @@ namespace Net.Serialize
                 var value = new T[arrayLen];
                 void* ptr1 = Unsafe.AsPointer(ref value[0]);
                 int count = arrayLen * Unsafe.SizeOf<T>();
-                Unsafe.CopyBlockUnaligned(ptr1, ptr + offset, (uint)count);
+                Unsafe.CopyBlock(ptr1, ptr + offset, (uint)count);
                 offset += count;
                 return value;
             }
@@ -123,7 +123,7 @@ namespace Net.Serialize
                 var newValue = new T1[arrayLen];
                 void* ptr1 = Unsafe.AsPointer(ref newValue[0]);
                 int count = arrayLen * Unsafe.SizeOf<T1>();
-                Unsafe.CopyBlockUnaligned(ptr1, ptr + offset, (uint)count);
+                Unsafe.CopyBlock(ptr1, ptr + offset, (uint)count);
                 offset += count;
                 for (int i = 0; i < arrayLen; i++)
                     value.Add(newValue[i]);

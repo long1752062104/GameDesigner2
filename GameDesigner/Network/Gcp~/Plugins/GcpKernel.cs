@@ -190,7 +190,7 @@ namespace Net.Plugins
                     {
                         dp.revderHashCount++;
                         dp.revderHash[serialNo] = 1;
-                        Unsafe.CopyBlockUnaligned(ref dp.revderBuffer.Buffer[serialNo * MTU], ref stream.Buffer[stream.Position], (uint)(stream.Count - stream.Position));
+                        Unsafe.CopyBlock(ref dp.revderBuffer.Buffer[serialNo * MTU], ref stream.Buffer[stream.Position], (uint)(stream.Count - stream.Position));
                         if (dp.revderHashCount >= dp.revderFrameEnd)
                             dp.finish = true;
                     }

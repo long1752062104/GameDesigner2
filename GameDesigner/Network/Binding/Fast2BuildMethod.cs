@@ -749,7 +749,7 @@ namespace Binding
             fixed (byte* ptr = &stream.Buffer[stream.Position]) 
             {
                 int offset = {OFFSET};
-                Unsafe.CopyBlockUnaligned(ptr, address, (uint)offset);
+                Unsafe.CopyBlock(ptr, address, (uint)offset);
                 bool judge = false;
 {Split} //1
                 {WRITE}
@@ -777,7 +777,7 @@ namespace Binding
 			fixed (byte* ptr = &stream.Buffer[stream.Position]) 
             {
                 int offset = {OFFSET};
-                Unsafe.CopyBlockUnaligned(address, ptr, (uint)offset);
+                Unsafe.CopyBlock(address, ptr, (uint)offset);
 {Split} //5
                 {READ}
 {Split} //6

@@ -23,7 +23,7 @@ namespace K4os.Hash.xxHash
 			Unsafe.InitBlockUnaligned(target, 0, (uint) length);
 
 		internal static void XXH_copy(void* target, void* source, int length) =>
-			Unsafe.CopyBlockUnaligned(target, source, (uint) length);
+			Unsafe.CopyBlock(target, source, (uint) length);
 		
 		internal static void Validate(byte[] bytes, int offset, int length)
 		{

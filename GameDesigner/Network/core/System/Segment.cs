@@ -148,7 +148,7 @@ namespace Net.System
         {
             Flush(resetPos);
             var array = new byte[Count];
-            Unsafe.CopyBlockUnaligned(ref array[0], ref buffer[Offset], (uint)Count);
+            Unsafe.CopyBlock(ref array[0], ref buffer[Offset], (uint)Count);
             if (recovery) BufferPool.Push(this);
             return array;
         }
@@ -158,7 +158,7 @@ namespace Net.System
         {
             fixed (void* ptr1 = &buffer[position])
             {
-                Unsafe.CopyBlockUnaligned(ptr1, ptr, (uint)count);
+                Unsafe.CopyBlock(ptr1, ptr, (uint)count);
                 position += count;
             }
         }
@@ -299,7 +299,7 @@ namespace Net.System
         public unsafe byte[] Read(int count)
         {
             var array = new byte[count];
-            Unsafe.CopyBlockUnaligned(ref array[0], ref buffer[position], (uint)count);
+            Unsafe.CopyBlock(ref array[0], ref buffer[position], (uint)count);
             position += count;
             return array;
         }
@@ -307,7 +307,7 @@ namespace Net.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Read(byte[] destination, int count)
         {
-            Unsafe.CopyBlockUnaligned(ref destination[0], ref buffer[position], (uint)count);
+            Unsafe.CopyBlock(ref destination[0], ref buffer[position], (uint)count);
             position += count;
         }
 
@@ -779,7 +779,7 @@ namespace Net.System
             var count = value.Length;
             if (recordLength)
                 Write(count);
-            Unsafe.CopyBlockUnaligned(ref buffer[position], ref value[0], (uint)count);
+            Unsafe.CopyBlock(ref buffer[position], ref value[0], (uint)count);
             position += count;
         }
 
@@ -788,7 +788,7 @@ namespace Net.System
         {
             if (index >= value.Length)
                 return;
-            Unsafe.CopyBlockUnaligned(ref buffer[position], ref value[index], (uint)count);
+            Unsafe.CopyBlock(ref buffer[position], ref value[index], (uint)count);
             position += count;
         }
 
@@ -805,7 +805,7 @@ namespace Net.System
                 Write(count);
             var dest_ptr = Unsafe.AsPointer(ref buffer[position]);
             var source_ptr = Unsafe.AsPointer(ref value[0]);
-            Unsafe.CopyBlockUnaligned(dest_ptr, source_ptr, (uint)count);
+            Unsafe.CopyBlock(dest_ptr, source_ptr, (uint)count);
             position += value.Length;
         }
 
@@ -1358,7 +1358,7 @@ namespace Net.System
             decimal value = default;
             void* ptr = &value;
             fixed (void* ptr1 = &buffer[position])
-                Unsafe.CopyBlockUnaligned(ptr, ptr1, 16U);
+                Unsafe.CopyBlock(ptr, ptr1, 16U);
             position += 16;
             return value;
         }

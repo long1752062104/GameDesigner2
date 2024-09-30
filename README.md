@@ -249,13 +249,13 @@ address = (void*)(Unsafe.ReadUnaligned<long>(address) + 8); //二级指针才得
 除了基础类(byte,int,long...)以外,都是二级指针, 如string,DateTime,decimal...数组等等
 数组的length记录是long类型, 后面跟着值
 
-上面的代码可以得到实例对象的数据地址, 然后我们就可以通过Unsafe.CopyBlockUnaligned进行内存复制
+上面的代码可以得到实例对象的数据地址, 然后我们就可以通过Unsafe.CopyBlock进行内存复制
 
 ```
 fixed (byte* ptr = &stream.Buffer[stream.Position]) 
 {
     int offset = 154; //这里会计算整个类的所有字段的大小
-    Unsafe.CopyBlockUnaligned(ptr, address, (uint)offset); //直接全部拷贝
+    Unsafe.CopyBlock(ptr, address, (uint)offset); //直接全部拷贝
 }
 ```
 以下是测试代码, 我们进行各种字段测试

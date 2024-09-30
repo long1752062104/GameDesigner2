@@ -49,7 +49,7 @@ namespace Net.Share
                 if (count == 0)
                     return Array.Empty<byte>(); //byte[]不能为空,否则出错
                 var array = new byte[count];
-                Unsafe.CopyBlockUnaligned(ref array[0], ref buffer[index], (uint)count);
+                Unsafe.CopyBlock(ref array[0], ref buffer[index], (uint)count);
                 return array;
             }
         }

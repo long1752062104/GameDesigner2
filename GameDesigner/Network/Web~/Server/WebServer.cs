@@ -176,7 +176,7 @@ namespace Net.Server
                 byte[] jsonStrBytes = Encoding.UTF8.GetBytes(jsonStr);
                 byte[] bytes = new byte[jsonStrBytes.Length + 1];
                 bytes[0] = 32; //32=utf8的" "空字符
-                Unsafe.CopyBlockUnaligned(ref bytes[1], ref jsonStrBytes[0], (uint)jsonStrBytes.Length);
+                Unsafe.CopyBlock(ref bytes[1], ref jsonStrBytes[0], (uint)jsonStrBytes.Length);
                 return bytes;
             }
             return NetConvert.Serialize(model, new byte[] { 10 });//10=utf8的\n字符
