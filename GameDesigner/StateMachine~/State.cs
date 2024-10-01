@@ -2,7 +2,7 @@
 using UnityEngine;
 #if LOCK_STEP
 using FLOAT = SoftFloat.sfloat;
-using Random = LockStep.LSRandom;
+using Random = NonLockStep.NRandom;
 #else
 using FLOAT = System.Single;
 using Random = UnityEngine.Random;

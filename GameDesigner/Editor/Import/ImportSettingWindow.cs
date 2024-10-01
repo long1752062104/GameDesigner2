@@ -11,7 +11,7 @@ public class ImportSettingWindow : EditorWindow
     private Vector2 scrollPosition;
     private Data data;
     private readonly string[] displayedOptions = new string[] { "使用者", "开发者" };
-    private readonly string version = "2.1";
+    private readonly string version = "2.2";
     private readonly bool[] copyAssemblys = new bool[]
     {
         false, //gcp
@@ -30,7 +30,7 @@ public class ImportSettingWindow : EditorWindow
         false, //parrelSync
         false, //example
         true, //codeObfuscation
-        true, //lockstep
+        true, //nonlockstep
         false, //ext4
         false, //ext5
         false, //ext6
@@ -121,7 +121,7 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "LockStep", 16 }
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "NonLockStep", 16 }
     };
 
     private void OnGUI()
@@ -205,8 +205,8 @@ public class ImportSettingWindow : EditorWindow
         DrawGUI(path, "CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", null, pathRoot);
 
         EditorGUILayout.HelpBox("帧同步模块，内置帧同步多平台一致性物理引擎和一致性软浮点数数学库", MessageType.Info);
-        path = pathRoot + "LockStep";
-        DrawGUI(path, "LockStep", "LockStep~", "LockStep", null, pathRoot);
+        path = pathRoot + "NonLockStep";
+        DrawGUI(path, "NonLockStep", "NonLockStep~", "NonLockStep", null, pathRoot);
 
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
@@ -231,7 +231,7 @@ public class ImportSettingWindow : EditorWindow
             Import("GameCore", "GameCore~", "GameCore", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
             Import("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
-            Import("LockStep", "LockStep~", "LockStep", pathRoot);
+            Import("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -248,7 +248,7 @@ public class ImportSettingWindow : EditorWindow
             Import("AOI", "AOI~", "AOI", pathRoot);
             Import("Recast", "Recast~", "Recast", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
-            Import("LockStep", "LockStep~", "LockStep", pathRoot);
+            Import("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
             Import("Example", "Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -268,7 +268,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("GameCore", "GameCore~", "GameCore", pathRoot);
             ReImport("Entities", "Entities~", "Entities", pathRoot);
             ReImport("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
-            ReImport("LockStep", "LockStep~", "LockStep", pathRoot);
+            ReImport("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -289,7 +289,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("GameCore~", "GameCore", pathRoot);
                 ReverseImport("Entities~", "Entities", pathRoot);
                 ReverseImport("CodeObfuscation~", "CodeObfuscation", pathRoot);
-                ReverseImport("LockStep~", "LockStep", pathRoot);
+                ReverseImport("NonLockStep~", "NonLockStep", pathRoot);
             }
         }
         GUILayout.EndScrollView();

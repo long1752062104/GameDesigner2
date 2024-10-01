@@ -2,9 +2,12 @@
 using Net.System;
 using SoftFloat;
 
-namespace LockStep
+namespace NonLockStep
 {
-    public class LSRandom
+    /// <summary>
+    /// 无锁步（Non-lockstep）随机数
+    /// </summary>
+    public class NRandom
     {
         private static RandomSafe random = new RandomSafe(1752062104);
 

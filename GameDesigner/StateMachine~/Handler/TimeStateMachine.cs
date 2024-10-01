@@ -1,5 +1,5 @@
 ﻿#if LOCK_STEP
-using Time = LockStep.LSTime;
+using Time = NonLockStep.NTime;
 #else
 using Time = UnityEngine.Time;
 #endif

@@ -1,7 +1,7 @@
 ﻿using System;
 #if LOCK_STEP
 using FLOAT = SoftFloat.sfloat;
-using Time = LockStep.LSTime;
+using Time = NonLockStep.NTime;
 #else
 using FLOAT = System.Single;
 using Time = UnityEngine.Time;

@@ -1,5 +1,5 @@
 {
-    "name": "LockStep",
+    "name": "NonLockStep",
     "rootNamespace": "",
     "references": [
         "GUID:f263169dea78d2249ba035c363b9cb8e"

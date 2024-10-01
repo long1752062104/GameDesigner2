@@ -3,9 +3,12 @@ using Net.Event;
 using SoftFloat;
 using System;
 
-namespace LockStep
+namespace NonLockStep
 {
-    public class LSEvent
+    /// <summary>
+    /// 无锁步（Non-lockstep）事件
+    /// </summary>
+    public class NEvent
     {
         public static TimerEvent Event;
 

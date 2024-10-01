@@ -31,13 +31,15 @@ public abstract class JCollider : MonoBehaviour
     public sfloat friction = 0.2f;
     public sfloat linear, angular;
     public Freeze freezeRot;
+    public LayerMask includeLayers;
+    public LayerMask excludeLayers;
     public Vector3 center;
     public RigidBody rigidBody;
     internal List<RigidBodyShape> shapes;
     private bool isInitialize;
     public InitMode initMode = InitMode.Start;
     public object Tag; //存特别引用
-
+    
     public Action<JCollider, Arbiter> onTriggerEnter;
     public Action<JCollider, Arbiter> onTriggerExit;
     public Action<JCollider, Arbiter> onCollisionEnter;
@@ -87,6 +89,8 @@ public abstract class JCollider : MonoBehaviour
         rigidBody.BeginCollide = BeginCollide;
         rigidBody.EndCollide = EndCollide;
         rigidBody.Tag = this;
+        rigidBody.IncludeLayers = includeLayers;
+        rigidBody.ExcludeLayers = excludeLayers;
         if (freezeRot != 0)
         {
             var freeze = JVector.Zero;
