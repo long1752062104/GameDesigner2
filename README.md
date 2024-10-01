@@ -244,7 +244,7 @@ var address = Unsafe.AsPointer(ref value); //结构类只需要一级指针
 
 ```
 var address = Unsafe.AsPointer(ref value); //类是引用地址, 一级指针得到引用地址
-address = (void*)(Unsafe.ReadUnaligned<long>(address) + 8); //二级指针才得到数据地址
+address = (void*)(Unsafe.Read<long>(address) + 8); //二级指针才得到数据地址
 ```
 除了基础类(byte,int,long...)以外,都是二级指针, 如string,DateTime,decimal...数组等等
 数组的length记录是long类型, 后面跟着值

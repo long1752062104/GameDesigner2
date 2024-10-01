@@ -809,7 +809,7 @@ namespace Binding
             if (type.IsValueType)
                 templateText = templateText.Replace("{ReadMemoryAddress}", "var address = Unsafe.AsPointer(ref value);");
             else
-                templateText = templateText.Replace("{ReadMemoryAddress}", "var address = Unsafe.AsPointer(ref value);\r\n\t\t\taddress = (void*)(Unsafe.ReadUnaligned<long>(address) + 8);");
+                templateText = templateText.Replace("{ReadMemoryAddress}", "var address = Unsafe.AsPointer(ref value);\r\n\t\t\taddress = (void*)(Unsafe.Read<long>(address) + 8);");
 
             var templateTexts = templateText.Split(new string[] { "{Split}" }, 0);
             sb.Append(templateTexts[0]);

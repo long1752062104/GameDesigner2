@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Net.Event;
 
@@ -46,6 +47,7 @@ namespace Net.System
         /// 引用次数
         /// </summary>
         public int ReferenceCount { get; set; }
+        protected GCHandle Handle;
 
         /// <summary>
         /// 获取或设置总内存位置索引
@@ -88,6 +90,7 @@ namespace Net.System
             IsDespose = !isRecovery;//如果不回收，则已经释放状态，不允许压入数组池
             IsRecovery = isRecovery;
             ReferenceCount = 0;
+            Handle = GCHandle.Alloc(buffer, GCHandleType.Pinned); //防止GC移动指针导致Unsafe.AsPointer出现越界程序闪退问题
         }
 
         public static implicit operator Segment(byte[] buffer)
@@ -105,6 +108,7 @@ namespace Net.System
             if (IsRecovery && BufferPool.Log)
                 NDebug.LogError("片段内存泄漏!请检查代码正确Push内存池!");
             //Dispose(); //已经析构了就不需要放入池中了
+            Handle.Free();
         }
 
         public virtual void Init()

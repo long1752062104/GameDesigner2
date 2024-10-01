@@ -44,8 +44,6 @@ namespace Net.System
 
         void SetPosition(int position);
 
-        void Dispose();
-
         void Close();
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace Net.System
 
         void SetPositionLength(int length);
 
-#region Write
+        #region Write
         void WriteByte(byte value);
         void WriteSByte(sbyte value);
         void Write(byte value);
@@ -123,7 +121,7 @@ namespace Net.System
         /// </summary>
         /// <param name="value"></param>
         /// <param name="recordLength">是否记录此次写入的字节长度?</param>
-        
+
         void Write(sbyte[] value, bool recordLength = true);
         unsafe void Write(bool[] value);
         unsafe void Write(short[] value);
@@ -165,9 +163,9 @@ namespace Net.System
 #endif
         unsafe void Write(ICollection<DateTimeOffset> value);
         unsafe void Write(ICollection<Enum> value);
-#endregion
+        #endregion
 
-#region Read
+        #region Read
         byte ReadByte();
         sbyte ReadSByte();
         bool ReadBoolean();
@@ -255,7 +253,7 @@ namespace Net.System
         T ReadDecimalGeneric<T>() where T : ICollection<decimal>, new();
         List<string> ReadStringList();
         T ReadStringGeneric<T>() where T : ICollection<string>, new();
-#endregion
+        #endregion
 
         void Flush(bool resetPos = true);
     }
