@@ -1,11 +1,18 @@
 #if UNITY_EDITOR
+using SoftFloat;
 using UnityEngine;
 using UnityEditor;
-using Jitter2.LinearMath;
 using Unity.Editor;
-using SoftFloat;
+#if JITTER2_PHYSICS
+using Jitter2.Collision.Shapes;
+using System.Collections.Generic;
+#else
+using BEPUphysics;
+using BEPUutilities;
+using BEPUphysics.Entities.Prefabs;
+#endif
 
-namespace Jitter2.Editor
+namespace NonLockStep.Editor
 {
     [CustomPropertyDrawer(typeof(sfloat))]
     public class SFloatDrawer : PropertyDrawerBase
@@ -22,31 +29,31 @@ namespace Jitter2.Editor
         }
     }
 
-    [CustomPropertyDrawer(typeof(JVector))]
-    public class Vector3dDrawer : PropertyDrawerBase
+    [CustomPropertyDrawer(typeof(NVector3))]
+    public class Vector3Drawer : PropertyDrawerBase
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var reference = GetFieldReference(property);
             EditorGUI.BeginChangeCheck();
-            var vector3 = (JVector)reference.GetValue();
-            var newVal = EditorGUI.Vector3Field(position, label, vector3.ToVector3());
-            reference.SetValue(newVal.ToJVector());
+            var vector3 = (NVector3)reference.GetValue();
+            var newVal = EditorGUI.Vector3Field(position, label, vector3);
+            reference.SetValue((NVector3)newVal);
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
         }
     }
 
-    [CustomPropertyDrawer(typeof(JQuaternion))]
+    [CustomPropertyDrawer(typeof(NQuaternion))]
     public class QuaternionDrawer : PropertyDrawerBase
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var reference = GetFieldReference(property);
             EditorGUI.BeginChangeCheck();
-            var quaternion = (JQuaternion)reference.GetValue();
-            var newVal = EditorGUI.Vector4Field(position, label, quaternion.ToVector4());
-            reference.SetValue(newVal.ToQuaternion());
+            var quaternion = (NQuaternion)reference.GetValue();
+            var newVal = EditorGUI.Vector4Field(position, label, quaternion);
+            reference.SetValue((NQuaternion)newVal);
             if (EditorGUI.EndChangeCheck())
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
         }
