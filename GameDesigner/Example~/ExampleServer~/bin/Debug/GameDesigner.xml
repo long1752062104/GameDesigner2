@@ -7140,99 +7140,6 @@
             极速序列化不序列化的特性
             </summary>
         </member>
-        <member name="T:Net.System.ArraySegment">
-            <summary>
-            内存数据片段
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Buffer">
-            <summary>
-            总内存
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Offset">
-            <summary>
-            片的开始位置
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Count">
-            <summary>
-            片的长度
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Position">
-            <summary>
-            读写位置
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Length">
-            <summary>
-            获取总长度
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.IsDespose">
-            <summary>
-            是否已经释放
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.IsRecovery">
-            <summary>
-            是否可回收
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.ReferenceCount">
-            <summary>
-            引用次数
-            </summary>
-        </member>
-        <member name="P:Net.System.ArraySegment.Item(System.Int32)">
-            <summary>
-            获取或设置总内存位置索引
-            </summary>
-            <param name="index">内存位置索引</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.ArraySegment.#ctor(System.Byte[])">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.ArraySegment.#ctor(System.Byte[],System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:Net.System.ArraySegment.#ctor(System.Byte[],System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            构造内存分片
-            </summary>
-            <param name="buffer"></param>
-            <param name="index"></param>
-            <param name="count"></param>
-        </member>
-        <member name="M:Net.System.ArraySegment.ToArray(System.Boolean,System.Boolean)">
-            <summary>
-            复制分片数据
-            </summary>
-            <param name="recovery">复制数据后立即回收此分片?</param>
-            <returns></returns>
-        </member>
-        <member name="M:Net.System.ArraySegment.Write(System.Byte[],System.Boolean)">
-            <summary>
-            写入字节数组
-            </summary>
-            <param name="value"></param>
-            <param name="recordLength">是否记录此次写入的字节长度?</param>
-        </member>
-        <member name="M:Net.System.ArraySegment.Write(System.SByte[],System.Boolean)">
-            <summary>
-            写入字节数组
-            </summary>
-            <param name="value"></param>
-            <param name="recordLength">是否记录此次写入的字节长度?</param>
-        </member>
         <!-- Badly formed XML comment ignored for member "T:Net.System.BitHelper" -->
         <member name="M:Net.System.BitHelper.#ctor(System.Int32*,System.Int32)">
             <summary>
@@ -7277,11 +7184,6 @@
         <member name="F:Net.System.SegmentType.Segment">
             <summary>
             使用内存片(类内存段)
-            </summary>
-        </member>
-        <member name="F:Net.System.SegmentType.ArraySegment">
-            <summary>
-            使用内存片(结构内存段)
             </summary>
         </member>
         <member name="F:Net.System.SegmentType.FixedSegment">

@@ -1,10 +1,16 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using Jitter2.LinearMath;
-using Net.Share;
 using System;
+using Net.Share;
 using UnityEngine;
+#if JITTER2_PHYSICS
+using Jitter2.Collision.Shapes;
+using System.Collections.Generic;
+using Jitter2.LinearMath;
+#else
+using BEPUutilities;
+#endif
 
-namespace LockStep.Client
+namespace NonLockStep.Client
 {
     [Serializable]
     public class Actor
@@ -12,13 +18,13 @@ namespace LockStep.Client
         public string name;
         public GameObject gameObject;
         public Animation animation;
-        public JCollider rigidBody;
+        public NRigidbody rigidBody;
         internal Operation operation;
         public int Health = 100;
         public int Damage = 20;
 
-        public JVector Position => rigidBody.Position;
-        public JQuaternion Rotation { get => rigidBody.Rotation; set => rigidBody.Rotation = value; }
+        public NVector3 Position => rigidBody.Position;
+        public NQuaternion Rotation { get => rigidBody.Rotation; set => rigidBody.Rotation = value; }
 
         public bool IsDeath => Health <= 0;
 

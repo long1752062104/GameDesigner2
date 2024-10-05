@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using UnityEngine.Profiling;
+using Jitter2.Dynamics;
+
 #if JITTER2_PHYSICS
 using Jitter2;
 using Jitter2.Collision;
@@ -24,7 +26,8 @@ namespace NonLockStep
 
         private World world;
         private float timeSinceLastStep;
-        private readonly List<NRigidbody> rigidbodies = new List<NRigidbody>();
+        private readonly List<NRigidbody> rigidbodies = new();
+        private readonly Queue<NRigidbody> removeRigidbodies = new();
 
         public float InterpolationTime => timeSinceLastStep / timeStep;
         public World World => world;
@@ -103,13 +106,24 @@ namespace NonLockStep
         {
 #if JITTER2_PHYSICS
             world.Step(timeStep, false);
-            foreach (var rigidbody in rigidbodies)
-                rigidbody.PostPhysicsUpdate();
 #else
             world.Update();
-            foreach (var rigidbody in rigidbodies)
-                rigidbody.PostPhysicsUpdate();
 #endif
+            NRigidbody rigidbody;
+            for (int i = 0; i < rigidbodies.Count; i++)
+            {
+                rigidbody = rigidbodies[i];
+                rigidbody.PostPhysicsUpdate();
+            }
+            while (removeRigidbodies.Count > 0)
+            {
+                rigidbody = removeRigidbodies.Dequeue();
+#if !JITTER2_PHYSICS
+                world.Remove(rigidbody.physicsObject);
+#else
+                world.Remove(rigidbody.Entity);
+#endif
+            }
         }
 
         public void Initialize()
@@ -146,11 +160,7 @@ namespace NonLockStep
         public void RemoveRigidbody(NRigidbody rigidbody)
         {
             rigidbodies.Remove(rigidbody);
-#if !JITTER2_PHYSICS
-            world.Remove(rigidbody.physicsObject);
-#else
-            world.Remove(rigidbody.Entity);
-#endif
+            removeRigidbodies.Enqueue(rigidbody); //要延迟移除，直接在当碰撞时移除刚体会导致内部报错，因为内部还有其他关联的数据要处理
         }
     }
 }

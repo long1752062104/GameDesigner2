@@ -1,14 +1,17 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using Jitter2.Dynamics;
+using BEPUutilities;
+using System;
 using UnityEngine;
 
-namespace LockStep.Client
+namespace NonLockStep.Client
 {
-    public class Bullet : Actor
+    [Serializable]
+    public class Bullet : Actor, ICollisionEnterListener
     {
         public Actor This;
         public float speed = 20f;
         public Vector3 direction;
+        public GameObject explosionPrefab;
 
         public override void Update()
         {
@@ -17,17 +20,23 @@ namespace LockStep.Client
 
         internal void Init()
         {
-            rigidBody.onCollisionEnter = OnCollisionEnter;
+            rigidBody.AddListener(this);
         }
 
-        private void OnCollisionEnter(JCollider collider, Arbiter arbiter)
+        public void OnNCollisionEnter(NRigidbody other, object collisionInfo)
         {
-            if (collider.rigidBody == This.rigidBody.rigidBody)
+            if (other == This.rigidBody)
                 return;
-            if (collider.Tag is Actor actor) 
-            {
+            if (other.Tag is Actor actor)
                 actor.OnDamage(This);
-            }
+
+            var collision = NCollision.GetCollision(collisionInfo);
+            var contact = collision.contacts[0];
+            var rot = Quaternion.FromToRotation(NVector3.Up, contact.Normal);
+            var pos = contact.Point;
+            var explosion = UnityEngine.Object.Instantiate(explosionPrefab, pos, rot);
+            UnityEngine.Object.Destroy(explosion, 1f);
+
             GameWorld.I.RemoveActor(this);
         }
     }

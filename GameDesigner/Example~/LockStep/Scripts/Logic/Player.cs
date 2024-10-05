@@ -1,10 +1,16 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using GameDesigner;
-using Jitter2.LinearMath;
-using SoftFloat;
 using System;
+using SoftFloat;
+using GameDesigner;
+using UnityEngine;
 
-namespace LockStep.Client
+#if JITTER2_PHYSICS
+using Jitter2.LinearMath;
+#else
+using BEPUutilities;
+#endif
+
+namespace NonLockStep.Client
 {
     [Serializable]
     public class Player : Actor
@@ -91,8 +97,8 @@ namespace LockStep.Client
 
         public override void OnUpdate()
         {
-            var dir = self.operation.direction;
-            if (dir == Net.Vector3.zero)
+            var direction = (Vector3)self.operation.direction;
+            if (direction == Vector3.zero)
             {
                 ChangeState(0);
             }
@@ -104,8 +110,8 @@ namespace LockStep.Client
             }
             else
             {
-                self.rigidBody.Rotation = JQuaternion.Lerp(self.rigidBody.Rotation, JQuaternion.LookRotation(new JVector(-dir.x, dir.y, dir.z), JVector.UnitY), 0.5f);
-                self.rigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
+                self.rigidBody.Rotation = NQuaternion.Lerp(self.rigidBody.Rotation, NQuaternion.LookRotation(direction, NVector3.UnitY), 0.5f);
+                self.rigidBody.Translate(0, 0, self.moveSpeed * NTime.deltaTime);
             }
         }
     }
@@ -126,8 +132,8 @@ namespace LockStep.Client
 
         public override void OnAnimationEvent(StateAction action)
         {
-            var direction = self.rigidBody.TransformDirection(JVector.UnitZ);
-            GameWorld.I.CreateBulletActor(self, self.rigidBody.TransformPoint(new JVector(0, 1.5f, 1)), direction);
+            var direction = self.rigidBody.TransformDirection(NVector3.UnitZ);
+            GameWorld.I.CreateBulletActor(self, self.rigidBody.TransformPoint(new NVector3(0, 0.5f, 0.5f)), direction);
         }
     }
 
@@ -142,7 +148,7 @@ namespace LockStep.Client
 
         public override void OnEnter()
         {
-            self.animation.Play(LSRandom.Range(0, 2) == 0 ? "soldierDieBack" : "soldierDieFront");
+            self.animation.Play(NRandom.Range(0, 2) == 0 ? "soldierDieBack" : "soldierDieFront");
         }
     }
 }

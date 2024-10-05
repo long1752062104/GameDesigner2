@@ -1,17 +1,28 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using GameDesigner;
-using Jitter2.LinearMath;
-using Net.MMORPG;
+using System;
 using SoftFloat;
+using Net.MMORPG;
+using GameDesigner;
+using UnityEngine;
+#if JITTER2_PHYSICS
+using Jitter2.Collision.Shapes;
+using System.Collections.Generic;
+using Jitter2.LinearMath;
+#else
+using BEPUphysics;
+using BEPUutilities;
+using BEPUphysics.Entities.Prefabs;
+#endif
 
-namespace LockStep.Client
+namespace NonLockStep.Client
 {
+    [Serializable]
     public class Enemy : Actor
     {
         public RoamingPath roamingPath; // 巡逻点数组
         public sfloat moveSpeed = 6f;          // 移动速度
         internal int currentPatrolIndex;   // 当前巡逻点索引
-        internal JVector targetPosition;    // 目标位置
+        internal NVector3 targetPosition;    // 目标位置
         public Actor target;
         public StateMachineCore fsm = new();
 
@@ -45,7 +56,7 @@ namespace LockStep.Client
             if (Health <= 0)
             {
                 fsm.ChangeState(4, 0, true);
-                LSEvent.AddEvent(5f, () => GameWorld.I.RemoveActor(this));
+                NEvent.AddEvent(5f, () => GameWorld.I.RemoveActor(this));
             }
             else
             {
@@ -82,7 +93,7 @@ namespace LockStep.Client
                     self.target = null;
                     return;
                 }
-                var dis = JVector.Distance(self.target.Position, self.Position);
+                var dis = NVector3.Distance(self.target.Position, self.Position);
                 if (dis < 3f)
                 {
                     ChangeState(3);
@@ -118,14 +129,14 @@ namespace LockStep.Client
         {
             if (self.target == null)
             {
-                if (JVector.Distance(self.Position, self.targetPosition) < 1.5f)
+                if (NVector3.Distance(self.Position, self.targetPosition) < 1.5f)
                 {
-                    self.currentPatrolIndex = LSRandom.Range(0, self.roamingPath.waypointsList.Count); // 随机选择下一个巡逻点
-                    self.targetPosition = self.roamingPath.waypointsList[self.currentPatrolIndex].ToJVector(); // 更新目标位置
+                    self.currentPatrolIndex = NRandom.Range(0, self.roamingPath.waypointsList.Count); // 随机选择下一个巡逻点
+                    self.targetPosition = (Vector3)self.roamingPath.waypointsList[self.currentPatrolIndex]; // 更新目标位置
                 }
                 var direction = (self.targetPosition - self.Position).Normalized; // 计算方向
-                self.Rotation = JQuaternion.Lerp(self.Rotation, JQuaternion.LookRotation(direction, JVector.UnitY), 0.5f);
-                self.rigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
+                self.Rotation = NQuaternion.Lerp(self.Rotation, NQuaternion.LookRotation(direction, NVector3.UnitY), 0.5f);
+                self.rigidBody.Translate(0, 0, self.moveSpeed * NTime.deltaTime);
             }
             else
             {
@@ -134,7 +145,7 @@ namespace LockStep.Client
                     self.target = null;
                     return;
                 }
-                var dis = JVector.Distance(self.target.Position, self.Position);
+                var dis = NVector3.Distance(self.target.Position, self.Position);
                 if (dis < 3f)
                 {
                     ChangeState(3);
@@ -179,7 +190,7 @@ namespace LockStep.Client
                     self.target = null;
                     return;
                 }
-                var dis = JVector.Distance(self.target.Position, self.Position);
+                var dis = NVector3.Distance(self.target.Position, self.Position);
                 if (dis > 15f)
                 {
                     self.target = null;
@@ -192,8 +203,8 @@ namespace LockStep.Client
                 else
                 {
                     var direction = (self.target.Position - self.Position).Normalized; // 计算方向
-                    self.Rotation = JQuaternion.Lerp(self.Rotation, JQuaternion.LookRotation(direction, JVector.UnitY), 0.5f);
-                    self.rigidBody.Translate(0, 0, self.moveSpeed * LSTime.deltaTime);
+                    self.Rotation = NQuaternion.Lerp(self.Rotation, NQuaternion.LookRotation(direction, NVector3.UnitY), 0.5f);
+                    self.rigidBody.Translate(0, 0, self.moveSpeed * NTime.deltaTime);
                 }
             }
         }
@@ -212,7 +223,7 @@ namespace LockStep.Client
         {
             self.animation.Play("charge_end");
             self.rigidBody.Translate(0, 0, 0);
-            self.rigidBody.LookAt(self.target.Position, JVector.UnitY);
+            self.rigidBody.LookAt(self.target.Position, NVector3.UnitY);
         }
 
         public override void OnAnimationEvent(StateAction action)
@@ -234,6 +245,7 @@ namespace LockStep.Client
         {
             self.animation.Play("die");
             self.rigidBody.Translate(0, 0, 0);
+            //self.rigidBody.rigidBody.Friction = 1f;
         }
     }
 }

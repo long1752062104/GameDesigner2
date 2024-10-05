@@ -41,7 +41,7 @@ public class UITest : SingleCase<UITest>
         });
         saveDataBtn.onClick.AddListener(() =>
         {
-            LockStep.Client.GameWorld.I.SaveData();
+            NonLockStep.Client.GameWorld.I.SaveData();
         });
         while (ClientBase.Instance == null)
             await Task.Yield();
@@ -52,7 +52,7 @@ public class UITest : SingleCase<UITest>
 
     private void Update()
     {
-        var i = LockStep.Client.GameWorld.I;
+        var i = NonLockStep.Client.GameWorld.I;
         text.text = $"网络帧:{i.frame}/秒 延迟:{i.delay}/秒";
     }
 

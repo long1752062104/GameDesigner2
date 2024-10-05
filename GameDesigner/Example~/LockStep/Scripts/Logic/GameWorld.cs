@@ -1,5 +1,4 @@
 ﻿#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
-using Jitter2.LinearMath;
 using Net.Client;
 using Net.Component;
 using Net.MMORPG;
@@ -11,8 +10,13 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+#if JITTER2_PHYSICS
+using Jitter2.LinearMath;
+#else
+using BEPUutilities;
+#endif
 
-namespace LockStep.Client
+namespace NonLockStep.Client
 {
     public class GameWorld : SingleCase<GameWorld>
     {
@@ -24,6 +28,7 @@ namespace LockStep.Client
         public GameObject enemyObj;
         public GameObject boxPrefab;
         public GameObject bullet;
+        public GameObject hitEffect;
         private Operation operation;
         public List<Actor> actors = new();
         public Dictionary<int, Actor> actorDic = new();
@@ -31,10 +36,10 @@ namespace LockStep.Client
         public int frameRate = 30;
         public int frameLoopMax = 1;
         private float time;
-        public JCollider[] colliders;
+        public NRigidbody[] colliders;
         public RoamingPath[] roamings;
         private readonly StringBuilder frameLog = new();
-        private JVector playerPos;
+        private NVector3 playerPos;
 
         // Use this for initialization
         async void Start()
@@ -47,7 +52,6 @@ namespace LockStep.Client
             ClientBase.Instance.AddRpcAuto(this, this);
             Physics.simulationMode = SimulationMode.Script;
             Physics.autoSyncTransforms = false;
-            //Application.targetFrameRate = 60;
             ThreadManager.Invoke(string.Empty, 1f, () =>
             {
                 ClientBase.Instance?.Ping();
@@ -149,13 +153,13 @@ namespace LockStep.Client
         {
             if (logicFrame == 1)
             {
-                LSTime.Init();
-                LSRandom.InitSeed(1752062104);
-                LSEvent.Init();
-                JPhysics.ReBuild();
+                NTime.Init();
+                NRandom.InitSeed(1752062104);
+                NEvent.Init();
+                NPhysics.Singleton.Initialize();
                 playerPos.Z = -20f;
                 for (int i = 0; i < colliders.Length; i++)
-                    colliders[i].InitRigidBody();
+                    colliders[i].Initialize();
                 for (int i = 0; i < roamings.Length; i++)
                 {
                     for (int n = 0; n < 5; n++)
@@ -163,7 +167,7 @@ namespace LockStep.Client
                         CreateEnemyActor(roamings[i]);
                     }
                 }
-                BuildJenga(new JVector(0, 1, 10f), 4);
+                //BuildJenga(new NVector3(0, 1, 10f), 5);
             }
             for (int i = 0; i < list.operations.Length; i++)
             {
@@ -173,7 +177,7 @@ namespace LockStep.Client
                     case Command.Input:
                         if (!actorDic.TryGetValue(opt.identity, out var actor))
                         {
-                            actor = CreateActor(opt);
+                            actor = CreatePlayerActor(opt);
                             actor.name = opt.identity.ToString();
                             actorDic.Add(opt.identity, actor);
                         }
@@ -191,9 +195,9 @@ namespace LockStep.Client
             }
             for (int i = 0; i < actors.Count; i++)
                 actors[i].Update();
-            JPhysics.Singleton.Simulate();
-            LSTime.Update();
-            LSEvent.Update();
+            NPhysics.Singleton.Simulate();
+            NTime.Update();
+            NEvent.Update();
             frameLog.AppendLine($"frame:{logicFrame}");
             for (int i = 0; i < actors.Count; i++)
             {
@@ -202,7 +206,7 @@ namespace LockStep.Client
             }
         }
 
-        private Player CreateActor(Operation opt)
+        private Player CreatePlayerActor(Operation opt)
         {
             var gameObject = Instantiate(player);
             var actor = new Player
@@ -210,7 +214,7 @@ namespace LockStep.Client
                 name = opt.identity.ToString(),
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<JCollider>(),
+                rigidBody = gameObject.GetComponent<NRigidbody>(),
                 Health = 1000,
             };
             gameObject.transform.position = playerPos;
@@ -229,12 +233,13 @@ namespace LockStep.Client
             var gameObject = Instantiate(enemyObj);
             var actor = new Enemy
             {
+                name = "enemy",
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<JCollider>(),
+                rigidBody = gameObject.GetComponent<NRigidbody>(),
                 roamingPath = roamingPath,
             };
-            gameObject.transform.position = roamingPath.waypointsList[LSRandom.Range(0, roamingPath.waypointsList.Count)];
+            gameObject.transform.position = roamingPath.waypointsList[NRandom.Range(0, roamingPath.waypointsList.Count)];
             actor.rigidBody.Tag = actor;
             actor.rigidBody.Initialize();
             actors.Add(actor);
@@ -247,19 +252,21 @@ namespace LockStep.Client
             var gameObject = Instantiate(bullet);
             var actor = new Bullet
             {
+                name = "bullet",
                 gameObject = gameObject,
                 animation = gameObject.GetComponent<Animation>(),
-                rigidBody = gameObject.GetComponent<JCollider>(),
+                rigidBody = gameObject.GetComponent<NRigidbody>(),
                 direction = direction,
-                This = self
+                This = self,
+                explosionPrefab = hitEffect,
             };
-            actor.Init();
             gameObject.transform.position = position;
             actor.rigidBody.Tag = actor;
             actor.rigidBody.Initialize();
+            actor.Init();
             actors.Add(actor);
             actor.Start();
-            LSEvent.AddEvent(5f, () => RemoveActor(actor));
+            NEvent.AddEvent(5f, () => RemoveActor(actor));
             return actor;
         }
 
@@ -285,9 +292,9 @@ namespace LockStep.Client
                 ClientBase.Instance.OnOperationSync -= OnOperationSync;
         }
 
-        public void BuildJenga(JVector position, int size = 20)
+        public void BuildJenga(NVector3 position, int size = 20)
         {
-            position += new JVector(0, 0.5f, 0);
+            position += new NVector3(0, 0.5f, 0);
             for (int i = 0; i < size; i++)
             {
                 for (int e = 0; e < 3; e++)
@@ -296,17 +303,17 @@ namespace LockStep.Client
                     if (i % 2 == 0)
                     {
                         gameObject.transform.localScale = new Vector3(3, 1, 1);
-                        gameObject.transform.position = position + new JVector(0, i, -1 + e);
+                        gameObject.transform.position = position + new NVector3(0, i, -1 + e);
                     }
                     else
                     {
                         gameObject.transform.localScale = new Vector3(1, 1, 3);
-                        gameObject.transform.position = position + new JVector(-1 + e, i, 0);
+                        gameObject.transform.position = position + new NVector3(-1 + e, i, 0);
                     }
                     var actor = new Box()
                     {
                         gameObject = gameObject,
-                        rigidBody = gameObject.GetComponent<JCollider>()
+                        rigidBody = gameObject.GetComponent<NRigidbody>()
                     };
                     if (actor.rigidBody != null)
                         actor.rigidBody.Initialize();

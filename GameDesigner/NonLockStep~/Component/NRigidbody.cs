@@ -2,6 +2,8 @@
 using UnityEngine;
 using SoftFloat;
 using System.Collections.Generic;
+using static Jitter2.Collision.PairHashSet;
+
 #if JITTER2_PHYSICS
 using Jitter2.Collision.Shapes;
 using Jitter2.LinearMath;
@@ -63,7 +65,12 @@ namespace NonLockStep
         private NQuaternion previousPhysicsRotation = NQuaternion.Identity;
         private NQuaternion currentPhysicsRotation = NQuaternion.Identity;
         private NVector3 massCenterOffset;
-        private readonly List<IEntityListener> listeners = new List<IEntityListener>();
+        private readonly List<ICollisionEnterListener> collisionEnterListeners = new();
+        private readonly List<ICollisionStayListener> collisionStayListeners = new();
+        private readonly List<ICollisionExitListener> collisionExitListeners = new();
+        private readonly List<ITriggerEnterListener> triggerEnterListeners = new();
+        private readonly List<ITriggerStayListener> triggerStayListeners = new();
+        private readonly List<ITriggerExitListener> triggerExitListeners = new();
         public object Tag; //存特别引用
 
         public sfloat Mass
@@ -230,7 +237,6 @@ namespace NonLockStep
                 shapeEntries.Add(new CompoundShapeEntry(collidable.Shape, collidable.WorldTransform));
             }
             physicsObject = physicsEntity = new Entity(new CompoundShape(shapeEntries, out massCenterOffset));
-            //physicsEntity.Mass = mass;
             physicsEntity.Tag = this;
             physicsEntity.CollisionInformation.Tag = this;
             physicsEntity.PositionUpdateMode = collisionDetection;
@@ -360,11 +366,12 @@ namespace NonLockStep
 
         public void Deinitialize()
         {
+            if (physicsEntity == null)
+                return;
             DeregisterEvents();
             var physics = NPhysics.Singleton;
             if (physics != null)
                 physics.RemoveRigidbody(this);
-            //physicsEntity = null;
         }
 
         private void Update()
@@ -412,8 +419,6 @@ namespace NonLockStep
 
         private void RegisterEvents()
         {
-            if (physicsEntity == null)
-                return;
 #if !JITTER2_PHYSICS
             physicsEntity.CollisionInformation.Events.InitialCollisionDetected += OnNCollisionEnter;
             physicsEntity.CollisionInformation.Events.PairTouched += OnNCollisionStay;
@@ -422,13 +427,33 @@ namespace NonLockStep
             physicsEntity.BeginCollide += OnNCollisionEnter;
             physicsEntity.EndCollide += OnNCollisionExit;
 #endif
-            listeners.AddRange(GetComponents<IEntityListener>());
+            var listeners = GetComponents<IEntityListener>();
+            collisionEnterListeners.Clear();
+            collisionStayListeners.Clear();
+            collisionExitListeners.Clear();
+            triggerEnterListeners.Clear();
+            triggerStayListeners.Clear();
+            triggerExitListeners.Clear();
+            for (int i = 0; i < listeners.Length; i++)
+            {
+                var listener = listeners[i];
+                if (listener is ICollisionEnterListener collisionEnter)
+                    collisionEnterListeners.Add(collisionEnter);
+                if (listener is ICollisionStayListener collisionStay)
+                    collisionStayListeners.Add(collisionStay);
+                if (listener is ICollisionExitListener collisionExit)
+                    collisionExitListeners.Add(collisionExit);
+                if (listener is ITriggerEnterListener triggerEnter)
+                    triggerEnterListeners.Add(triggerEnter);
+                if (listener is ITriggerStayListener triggerStay)
+                    triggerStayListeners.Add(triggerStay);
+                if (listener is ITriggerExitListener triggerExit)
+                    triggerExitListeners.Add(triggerExit);
+            }
         }
 
         private void DeregisterEvents()
         {
-            if (physicsEntity == null)
-                return;
 #if !JITTER2_PHYSICS
             physicsEntity.CollisionInformation.Events.InitialCollisionDetected -= OnNCollisionEnter;
             physicsEntity.CollisionInformation.Events.PairTouched -= OnNCollisionStay;
@@ -441,12 +466,34 @@ namespace NonLockStep
 
         public void AddListener(IEntityListener listener)
         {
-            listeners.Add(listener);
+            if (listener is ICollisionEnterListener collisionEnter)
+                collisionEnterListeners.Add(collisionEnter);
+            if (listener is ICollisionStayListener collisionStay)
+                collisionStayListeners.Add(collisionStay);
+            if (listener is ICollisionExitListener collisionExit)
+                collisionExitListeners.Add(collisionExit);
+            if (listener is ITriggerEnterListener triggerEnter)
+                triggerEnterListeners.Add(triggerEnter);
+            if (listener is ITriggerStayListener triggerStay)
+                triggerStayListeners.Add(triggerStay);
+            if (listener is ITriggerExitListener triggerExit)
+                triggerExitListeners.Add(triggerExit);
         }
 
         public void RemoveListener(IEntityListener listener)
         {
-            listeners.Remove(listener);
+            if (listener is ICollisionEnterListener collisionEnter)
+                collisionEnterListeners.Remove(collisionEnter);
+            if (listener is ICollisionStayListener collisionStay)
+                collisionStayListeners.Remove(collisionStay);
+            if (listener is ICollisionExitListener collisionExit)
+                collisionExitListeners.Remove(collisionExit);
+            if (listener is ITriggerEnterListener triggerEnter)
+                triggerEnterListeners.Remove(triggerEnter);
+            if (listener is ITriggerStayListener triggerStay)
+                triggerStayListeners.Remove(triggerStay);
+            if (listener is ITriggerExitListener triggerExit)
+                triggerExitListeners.Remove(triggerExit);
         }
 
 #if !JITTER2_PHYSICS
@@ -454,18 +501,15 @@ namespace NonLockStep
         {
             var rigidbody = other.Tag as NRigidbody;
             var isTrigger = self.IsTrigger | other.IsTrigger;
-            foreach (var listener in listeners)
+            if (isTrigger)
             {
-                if (isTrigger)
-                {
-                    if (listener is ITriggerListener triggerListener)
-                        triggerListener.OnNTriggerEnter(rigidbody);
-                }
-                else
-                {
-                    if (listener is ICollisionListener collisionListener)
-                        collisionListener.OnNCollisionEnter(rigidbody);
-                }
+                foreach (var listener in triggerEnterListeners)
+                    listener.OnNTriggerEnter(rigidbody, pair);
+            }
+            else
+            {
+                foreach (var listener in collisionEnterListeners)
+                    listener.OnNCollisionEnter(rigidbody, pair);
             }
         }
 
@@ -473,18 +517,15 @@ namespace NonLockStep
         {
             var rigidbody = other.Tag as NRigidbody;
             var isTrigger = self.IsTrigger | other.IsTrigger;
-            foreach (var listener in listeners)
+            if (isTrigger)
             {
-                if (isTrigger)
-                {
-                    if (listener is ITriggerListener triggerListener)
-                        triggerListener.OnNTriggerStay(rigidbody);
-                }
-                else
-                {
-                    if (listener is ICollisionListener collisionListener)
-                        collisionListener.OnNCollisionStay(rigidbody);
-                }
+                foreach (var listener in triggerStayListeners)
+                    listener.OnNTriggerStay(rigidbody, pair);
+            }
+            else
+            {
+                foreach (var listener in collisionStayListeners)
+                    listener.OnNCollisionStay(rigidbody, pair);
             }
         }
 
@@ -492,64 +533,59 @@ namespace NonLockStep
         {
             var rigidbody = other.Tag as NRigidbody;
             var isTrigger = self.IsTrigger | other.IsTrigger;
-            foreach (var listener in listeners)
+            if (isTrigger)
             {
-                if (isTrigger)
-                {
-                    if (listener is ITriggerListener triggerListener)
-                        triggerListener.OnNTriggerExit(rigidbody);
-                }
-                else
-                {
-                    if (listener is ICollisionListener collisionListener)
-                        collisionListener.OnNCollisionExit(rigidbody);
-                }
+                foreach (var listener in triggerExitListeners)
+                    listener.OnNTriggerExit(rigidbody, pair);
+            }
+            else
+            {
+                foreach (var listener in collisionExitListeners)
+                    listener.OnNCollisionExit(rigidbody, pair);
             }
         }
 #else
         private void OnNCollisionEnter(Arbiter arbiter)
         {
-            NRigidbody other;
-            if (arbiter.Body1 == physicsEntity)
-                other = arbiter.Body2.Tag as NRigidbody;
-            else
-                other = arbiter.Body1.Tag as NRigidbody;
-            var isTrigger = arbiter.Body1.IsTriggered | arbiter.Body2.IsTriggered;
-            foreach (var listener in listeners)
+            if (arbiter.Handle.IsZero)
             {
-                if (isTrigger)
-                {
-                    if (listener is ITriggerListener triggerListener)
-                        triggerListener.OnNTriggerEnter(other);
-                }
-                else
-                {
-                    if (listener is ICollisionListener collisionListener)
-                        collisionListener.OnNCollisionEnter(other);
-                }
+                Debug.Log("bug!!!");
+            }
+            NRigidbody rigidbody;
+            if (arbiter.Body1 == physicsEntity)
+                rigidbody = arbiter.Body2.Tag as NRigidbody;
+            else
+                rigidbody = arbiter.Body1.Tag as NRigidbody;
+            var isTrigger = arbiter.Body1.IsTriggered | arbiter.Body2.IsTriggered;
+            if (isTrigger)
+            {
+                foreach (var listener in triggerEnterListeners)
+                    listener.OnNTriggerEnter(rigidbody, arbiter); //传arbiter丢失Handle指针
+            }
+            else
+            {
+                foreach (var listener in collisionEnterListeners)
+                    listener.OnNCollisionEnter(rigidbody, arbiter);
             }
         }
 
         private void OnNCollisionExit(Arbiter arbiter)
         {
-            NRigidbody other;
+            NRigidbody rigidbody;
             if (arbiter.Body1 == physicsEntity)
-                other = arbiter.Body2.Tag as NRigidbody;
+                rigidbody = arbiter.Body2.Tag as NRigidbody;
             else
-                other = arbiter.Body1.Tag as NRigidbody;
+                rigidbody = arbiter.Body1.Tag as NRigidbody;
             var isTrigger = arbiter.Body1.IsTriggered | arbiter.Body2.IsTriggered;
-            foreach (var listener in listeners)
+            if (isTrigger)
             {
-                if (isTrigger)
-                {
-                    if (listener is ITriggerListener triggerListener)
-                        triggerListener.OnNTriggerExit(other);
-                }
-                else
-                {
-                    if (listener is ICollisionListener collisionListener)
-                        collisionListener.OnNCollisionExit(other);
-                }
+                foreach (var listener in triggerExitListeners)
+                    listener.OnNTriggerExit(rigidbody, arbiter);
+            }
+            else
+            {
+                foreach (var listener in collisionExitListeners)
+                    listener.OnNCollisionExit(rigidbody, arbiter);
             }
         }
 #endif

@@ -2083,7 +2083,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1179238159309380166}
   - component: {fileID: 3687828387979626185}
-  - component: {fileID: 4138953128042681394}
+  - component: {fileID: 1832596512410506718}
+  - component: {fileID: 6892805803302315063}
   m_Layer: 0
   m_Name: enemy
   m_TagString: Untagged
@@ -2147,7 +2148,30 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 1
---- !u!114 &4138953128042681394
+--- !u!136 &1832596512410506718
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9141563437095045229}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &6892805803302315063
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2156,21 +2180,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 9141563437095045229}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68f0c956251719844af5ca4850768944, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f4071aaee46cc542a373a07fe51c71a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isStatic: 0
-  isTriggered: 0
-  friction:
-    RawValue: 1056964608
-  linear:
-    RawValue: 0
-  angular:
-    RawValue: 1056964608
-  freezeRot: 2
-  center: {x: 0, y: 1, z: 0}
-  initMode: 0
-  radius:
-    RawValue: 1056964608
-  height:
-    RawValue: 1065353216
+  mass: 1
+  kinematic: 0
+  angularDamping: 0.15
+  linearDamping: 0.03
+  kineticFriction: 0.8
+  staticFriction: 1
+  bounciness: 0
+  fixedPosition:
+    X: 0
+    Y: 0
+    Z: 0
+  fixedRotation:
+    X: 1
+    Y: 1
+    Z: 1
+  initializeMode: 0
+  deinitializeMode: 2
+  syncTransform: 0

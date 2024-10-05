@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 3469490807166216474}
   - component: {fileID: 5843682571989381596}
   - component: {fileID: 858931048003312034}
-  - component: {fileID: 6104266403796820264}
+  - component: {fileID: 8616722749464933179}
+  - component: {fileID: 3100017433726340704}
   m_Layer: 0
   m_Name: bullet
   m_TagString: Untagged
@@ -84,7 +85,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6104266403796820264
+--- !u!135 &8616722749464933179
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6600103488882257663}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3100017433726340704
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,19 +115,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 6600103488882257663}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 067567d4c7e524e48b921d310e9ce6b8, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f4071aaee46cc542a373a07fe51c71a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isStatic: 0
-  isTriggered: 0
-  friction:
-    RawValue: 1045220557
-  linear:
-    RawValue: 0
-  angular:
-    RawValue: 1056964608
-  freezeRot: 0
-  center: {x: 0, y: 0, z: 0}
-  initMode: 0
-  radius:
-    RawValue: 1056964608
+  mass: 1
+  kinematic: 0
+  angularDamping: 0.15
+  linearDamping: 0.03
+  kineticFriction: 0.8
+  staticFriction: 1
+  bounciness: 0
+  fixedPosition:
+    X: 0
+    Y: 0
+    Z: 0
+  fixedRotation:
+    X: 0
+    Y: 0
+    Z: 0
+  initializeMode: 0
+  deinitializeMode: 2
+  syncTransform: 0

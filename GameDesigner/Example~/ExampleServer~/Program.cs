@@ -20,12 +20,15 @@ namespace ExampleServer
         //[STAThread]
         static void Main(string[] args)
         {
-            if (args.Length == 0)
-                return;
             App.Setup();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (args[0] == "Example1") 
+            if (args.Length == 0)
+            {
+                Application.Run(new Form3());
+                return;
+            }
+            if (args[0] == "Example1")
             {
                 Application.Run(new Form1());
             }
