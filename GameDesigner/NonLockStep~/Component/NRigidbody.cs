@@ -2,8 +2,6 @@
 using UnityEngine;
 using SoftFloat;
 using System.Collections.Generic;
-using static Jitter2.Collision.PairHashSet;
-
 #if JITTER2_PHYSICS
 using Jitter2.Collision.Shapes;
 using Jitter2.LinearMath;

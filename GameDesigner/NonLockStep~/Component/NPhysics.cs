@@ -129,6 +129,7 @@ namespace NonLockStep
         public void Initialize()
         {
             rigidbodies.Clear();
+            removeRigidbodies.Clear();
 #if JITTER2_PHYSICS
             world = new World(64_000, 64_000, 32_000);
             world.DynamicTree.Filter = World.DefaultDynamicTreeFilter;
