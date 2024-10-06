@@ -90,6 +90,11 @@ namespace GameDesigner
 
         public override void OnUpdate(StateAction action)
         {
+            AnimationEvent(action);
+        }
+
+        private void AnimationEvent(StateAction action)
+        {
             if (action.animTime >= animEventTime & !eventEnter)
             {
                 eventEnter = true;
@@ -104,7 +109,16 @@ namespace GameDesigner
 
         public override void OnExit(StateAction action)
         {
+            //防止动画进度100设置事件帧为100时不触发的问题
+            AnimationEvent(action);    
             eventEnter = false;
+        }
+
+        public override void OnStop(StateAction action)
+        {
+            //防止动画进度100设置事件帧为100时不触发的问题
+            AnimationEvent(action);
+            base.OnStop(action);
         }
     }
 

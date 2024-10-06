@@ -163,6 +163,8 @@ namespace GameDesigner
                 state.Init(this);
             if (Parent == null)
                 DefaultState.Enter(0);
+
+            stateId = nextId = defaulId;
         }
 
         public void Execute(StateMachineUpdateMode currMode)
