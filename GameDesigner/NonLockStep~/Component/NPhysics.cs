@@ -1,16 +1,16 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using System;
 using Net.Common;
 using UnityEngine;
 using System.Collections.Generic;
-using System;
 using UnityEngine.Profiling;
-using Jitter2.Dynamics;
-
 #if JITTER2_PHYSICS
 using Jitter2;
+using Jitter2.Dynamics;
 using Jitter2.Collision;
 #else
 using BEPUphysics;
+using BEPUphysics.CollisionRuleManagement;
 #endif
 
 namespace NonLockStep
@@ -28,9 +28,11 @@ namespace NonLockStep
         private float timeSinceLastStep;
         private readonly List<NRigidbody> rigidbodies = new();
         private readonly Queue<NRigidbody> removeRigidbodies = new();
+        private readonly List<CollisionGroup> collisionLayers = new();
 
         public float InterpolationTime => timeSinceLastStep / timeStep;
         public World World => world;
+        public List<CollisionGroup> CollisionLayers => collisionLayers;
 
         protected override void Awake()
         {
@@ -147,6 +149,29 @@ namespace NonLockStep
                 TimeStepDuration = timeStep
             };
             world.ForceUpdater.Gravity = gravity;
+            CollisionRules.CollisionGroupRules.Clear();
+            CollisionRules.CollisionGroupRules.Add(new CollisionGroupPair(CollisionRules.DefaultKinematicCollisionGroup, CollisionRules.DefaultKinematicCollisionGroup), CollisionRule.NoBroadPhase);
+            collisionLayers.Clear();
+            var layerCount = 32;
+            for (int i = 0; i < layerCount; i++)
+                collisionLayers.Add(new CollisionGroup(i));
+            for (int x = 0; x < layerCount; x++)
+            {
+                var layerName = LayerMask.LayerToName(x);
+                if (string.IsNullOrEmpty(layerName))
+                    continue;
+                var firstStackGroup = collisionLayers[x];
+                for (int y = x; y < layerCount; y++)
+                {
+                    var otherLayerName = LayerMask.LayerToName(y);
+                    if (string.IsNullOrEmpty(otherLayerName))
+                        continue;
+                    var isIgnoring = Physics.GetIgnoreLayerCollision(x, y);
+                    var secondStackGroup = collisionLayers[y];
+                    var groupPair = new CollisionGroupPair(firstStackGroup, secondStackGroup);
+                    CollisionRules.CollisionGroupRules.Add(groupPair, isIgnoring ? CollisionRule.NoBroadPhase : CollisionRule.Defer);
+                }
+            }
 #endif
         }
 
