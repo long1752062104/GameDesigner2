@@ -33,6 +33,7 @@ namespace NonLockStep
         [SerializeField] protected float slidingJumpSpeed = 3;
         [SerializeField] protected float maximumGlueForce = 5000;
 
+#if !JITTER2_PHYSICS
         public BCharacterController characterController;
 
         public NVector2 MovementDirection
@@ -55,7 +56,6 @@ namespace NonLockStep
 
         public override void Initialize()
         {
-#if !JITTER2_PHYSICS
             physicsObject = characterController = new BCharacterController(transform.position, height, crouchingHeight, proneHeight, radius, margin, mass, maximumTractionSlope, maximumSupportSlope, standingSpeed, crouchingSpeed, proneSpeed, tractionForce, slidingSpeed, slidingForce, airSpeed, airForce, jumpSpeed, slidingJumpSpeed, maximumGlueForce);
             physicsObject.Tag = this;
             physicsEntity = characterController.Body;
@@ -67,7 +67,6 @@ namespace NonLockStep
             NPhysics.Singleton.AddRigidbody(this);
             RegisterEvents();
             InitializeTransform();
-#endif
         }
 
         public void Jump()
@@ -83,6 +82,7 @@ namespace NonLockStep
                 translation = TransformDirection(translation) * 30f;
             MovementDirection = new NVector2(translation.X, translation.Z);
         }
+#endif
     }
 }
 #endif

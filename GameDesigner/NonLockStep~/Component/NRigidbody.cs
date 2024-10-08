@@ -340,8 +340,9 @@ namespace NonLockStep
             physicsEntity.Friction = friction;
             physicsEntity.Damping = (linearDamping, angularDamping);
             physicsEntity.Tag = this;
-            physicsEntity.IncludeLayers = includeLayers;
-            physicsEntity.ExcludeLayers = excludeLayers;
+            physicsEntity.Layer = NPhysics.Singleton.CollisionLayers[gameObject.layer];
+            physicsEntity.Data.Layer.IncludeLayers = includeLayers;
+            physicsEntity.Data.Layer.ExcludeLayers = excludeLayers;
             NPhysics.Singleton.AddRigidbody(this);
             IsKinematic = isKinematic;
             RegisterEvents();

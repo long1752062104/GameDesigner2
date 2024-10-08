@@ -28,11 +28,19 @@ namespace NonLockStep
         private float timeSinceLastStep;
         private readonly List<NRigidbody> rigidbodies = new();
         private readonly Queue<NRigidbody> removeRigidbodies = new();
+#if !JITTER2_PHYSICS
         private readonly List<CollisionGroup> collisionLayers = new();
+#else
+        private readonly List<CollisionLayer> collisionLayers = new();
+#endif
 
         public float InterpolationTime => timeSinceLastStep / timeStep;
         public World World => world;
+#if !JITTER2_PHYSICS
         public List<CollisionGroup> CollisionLayers => collisionLayers;
+#else
+        public List<CollisionLayer> CollisionLayers => collisionLayers;
+#endif
 
         protected override void Awake()
         {
@@ -140,6 +148,25 @@ namespace NonLockStep
             world.Gravity = gravity;
             world.NumberSubsteps = 1;
             world.SolverIterations = 12;
+            CollisionLayerRules.CollisionLayers.Clear();
+            collisionLayers.Clear();
+            var layerCount = 32;
+            for (int i = 0; i < layerCount; i++)
+                collisionLayers.Add(new CollisionLayer() { Layer = i });
+            for (int x = 0; x < layerCount; x++)
+            {
+                var layerName = LayerMask.LayerToName(x);
+                if (string.IsNullOrEmpty(layerName))
+                    continue;
+                for (int y = x; y < layerCount; y++)
+                {
+                    var otherLayerName = LayerMask.LayerToName(y);
+                    if (string.IsNullOrEmpty(otherLayerName))
+                        continue;
+                    var isIgnoring = Physics.GetIgnoreLayerCollision(x, y);
+                    CollisionLayerRules.CollisionLayers.Add(x + y * 100, isIgnoring);
+                }
+            }
 #else
             world = new World();
             world.Solver.IterationLimit = solverIterationLimit;
