@@ -17,7 +17,7 @@ namespace Net.Helper
     {
         private static readonly FilterText filter = new FilterText();
         private static readonly List<string> filterWords = new List<string>();
-        private static string skipWords = @"\s\p{P}=+";
+        private static string skipWords = @"[\s\p{P}=+]*";
         /// <summary>
         /// 跳字检测，默认跳字过滤标点符号和空格
         /// </summary>
@@ -156,7 +156,7 @@ namespace Net.Helper
                 patternBuilder.Append($"{Regex.Escape(word[0].ToString())}");
                 for (int i = 1; i < word.Length; i++)
                 {
-                    patternBuilder.Append($"[{skipWords}]*{Regex.Escape(word[i].ToString())}");
+                    patternBuilder.Append($"{skipWords}{Regex.Escape(word[i].ToString())}");
                 }
                 pattern = patternBuilder.ToString();
                 text = Regex.Replace(text, pattern, match =>
