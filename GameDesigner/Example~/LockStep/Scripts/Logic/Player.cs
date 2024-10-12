@@ -3,11 +3,12 @@ using System;
 using SoftFloat;
 using GameDesigner;
 using UnityEngine;
-
 #if JITTER2_PHYSICS
 using Jitter2.LinearMath;
 #else
 using BEPUutilities;
+using BEPUphysics;
+using Ray = BEPUutilities.Ray;
 #endif
 
 namespace NonLockStep.Client
@@ -32,6 +33,7 @@ namespace NonLockStep.Client
             fireState.actionSystem = true;
             fireState.animSpeed = 6f;
             fsm.AddState("die", new PlayerDie(this));
+            fsm.AddState("jump", new PlayerJump(this));
         }
 
         public override void Update()
@@ -78,6 +80,12 @@ namespace NonLockStep.Client
                 self.rigidBody.Translate(0, 0, 0);
                 ChangeState(2);
             }
+            else if (self.operation.cmd1 == 2)
+            {
+                self.operation.cmd1 = 0;
+                //self.rigidBody.Translate(0, 0, 0);
+                ChangeState(4);
+            }
         }
     }
 
@@ -107,6 +115,12 @@ namespace NonLockStep.Client
                 self.operation.cmd1 = 0;
                 self.rigidBody.Translate(0, 0, 0);
                 ChangeState(2);
+            }
+            else if (self.operation.cmd1 == 2)
+            {
+                self.operation.cmd1 = 0;
+                //self.rigidBody.Translate(0, 0, 0);
+                ChangeState(4);
             }
             else
             {
@@ -149,6 +163,42 @@ namespace NonLockStep.Client
         public override void OnEnter()
         {
             self.animation.Play(NRandom.Range(0, 2) == 0 ? "soldierDieBack" : "soldierDieFront");
+        }
+    }
+
+    public class PlayerJump : StateBehaviour
+    {
+        private readonly Player self;
+        private readonly NCharacterController characterController;
+        private sfloat jumpCheckTime;
+
+        public PlayerJump(Player player)
+        {
+            self = player;
+            characterController = (NCharacterController)player.rigidBody;
+        }
+
+        public override void OnEnter()
+        {
+            self.animation.Play("soldierFalling");
+            characterController.Jump();
+            jumpCheckTime = NTime.time + 0.2f;
+        }
+
+        public override void OnUpdate()
+        {
+            var direction = (Vector3)self.operation.direction;
+            var targetRotation = NQuaternion.LookRotation(direction, NVector3.UnitY);
+            var newRotation = new NQuaternion(0, targetRotation.Y, 0, targetRotation.W); //解决角色跳跃时，没有输入方向，就会翻转的问题
+            self.rigidBody.Rotation = NQuaternion.Lerp(self.rigidBody.Rotation, newRotation, 0.5f);
+            self.rigidBody.Translate(0, 0, self.moveSpeed * NTime.deltaTime);
+            if (NTime.time < jumpCheckTime)
+                return;
+            var ray = new Ray(characterController.Position, new Vector3(0, -1, 0)); // 向下的射线
+            if (NPhysics.RayCast(ray, 1f, (entity) => entity != characterController.Entity.CollisionInformation, out RayCastResult result))
+            {
+                ChangeState(0);
+            }
         }
     }
 }
