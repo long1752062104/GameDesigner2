@@ -4,13 +4,18 @@ using Net.Common;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Profiling;
+using SoftFloat;
 #if JITTER2_PHYSICS
 using Jitter2;
 using Jitter2.Dynamics;
 using Jitter2.Collision;
 #else
 using BEPUphysics;
+using BEPUutilities;
 using BEPUphysics.CollisionRuleManagement;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.CollisionShapes.ConvexShapes;
+using Ray = BEPUutilities.Ray;
 #endif
 
 namespace NonLockStep
@@ -215,6 +220,58 @@ namespace NonLockStep
             rigidbodies.Remove(rigidbody);
             removeRigidbodies.Enqueue(rigidbody); //要延迟移除，直接在当碰撞时移除刚体会导致内部报错，因为内部还有其他关联的数据要处理
         }
+
+#if !JITTER2_PHYSICS
+        public static bool RayCast(Ray ray, out RayCastResult result)
+        {
+            return Singleton.world.RayCast(ray, out result);
+        }
+
+        public static bool RayCast(Ray ray, Func<BroadPhaseEntry, bool> filter, out RayCastResult result)
+        {
+            return Singleton.world.RayCast(ray, filter, out result);
+        }
+
+        public static bool RayCast(Ray ray, sfloat maximumLength, out RayCastResult result)
+        {
+            return Singleton.world.RayCast(ray, maximumLength, out result);
+        }
+
+        public static bool RayCast(Ray ray, sfloat maximumLength, Func<BroadPhaseEntry, bool> filter, out RayCastResult result)
+        {
+            return Singleton.world.RayCast(ray, maximumLength, filter, out result);
+        }
+
+        public static bool RayCast(Ray ray, sfloat maximumLength, IList<RayCastResult> outputRayCastResults)
+        {
+            return Singleton.world.RayCast(ray, maximumLength, outputRayCastResults);
+        }
+
+        public static bool RayCast(Ray ray, sfloat maximumLength, Func<BroadPhaseEntry, bool> filter, IList<RayCastResult> outputRayCastResults)
+        {
+            return Singleton.world.RayCast(ray, maximumLength, filter, outputRayCastResults);
+        }
+
+        public static bool ConvexCast(ConvexShape castShape, ref RigidTransform startingTransform, ref NVector3 sweep, out RayCastResult castResult)
+        {
+            return Singleton.world.ConvexCast(castShape, ref startingTransform, ref sweep, out castResult);
+        }
+
+        public static bool ConvexCast(ConvexShape castShape, ref RigidTransform startingTransform, ref NVector3 sweep, Func<BroadPhaseEntry, bool> filter, out RayCastResult castResult)
+        {
+            return Singleton.world.ConvexCast(castShape, ref startingTransform, ref sweep, filter, out castResult);
+        }
+
+        public static bool ConvexCast(ConvexShape castShape, ref RigidTransform startingTransform, ref NVector3 sweep, IList<RayCastResult> outputCastResults)
+        {
+            return Singleton.world.ConvexCast(castShape, ref startingTransform, ref sweep, outputCastResults);
+        }
+
+        public static bool ConvexCast(ConvexShape castShape, ref RigidTransform startingTransform, ref NVector3 sweep, Func<BroadPhaseEntry, bool> filter, IList<RayCastResult> outputCastResults)
+        {
+            return Singleton.world.ConvexCast(castShape, ref startingTransform, ref sweep, filter, outputCastResults);
+        }
+#endif
     }
 }
 #endif

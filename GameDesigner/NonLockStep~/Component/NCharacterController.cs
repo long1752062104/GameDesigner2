@@ -54,8 +54,33 @@ namespace NonLockStep
             set => characterController.ViewDirection = value;
         }
 
+        public override NQuaternion Rotation
+        {
+            get => base.Rotation;
+            set
+            {
+                base.Rotation = value;
+                characterController.ViewDirection = physicsEntity.WorldTransform.Backward;
+            }
+        }
+
         public override void Initialize()
         {
+            var colliders = GetComponents<Collider>();
+            var scale = (NVector3)transform.localScale;
+            foreach (var collider in colliders)
+            {
+                if (collider is CapsuleCollider capsuleCollider)
+                {
+                    var center = capsuleCollider.center * scale;
+                    massCenterOffset = center;
+                }
+                else if (collider is UnityEngine.CharacterController characterController)
+                {
+                    var center = characterController.center * scale;
+                    massCenterOffset = center;
+                }
+            }
             physicsObject = characterController = new BCharacterController(transform.position, height, crouchingHeight, proneHeight, radius, margin, mass, maximumTractionSlope, maximumSupportSlope, standingSpeed, crouchingSpeed, proneSpeed, tractionForce, slidingSpeed, slidingForce, airSpeed, airForce, jumpSpeed, slidingJumpSpeed, maximumGlueForce);
             physicsObject.Tag = this;
             physicsEntity = characterController.Body;
@@ -76,10 +101,6 @@ namespace NonLockStep
 
         public override void Translate(NVector3 translation, Space relativeTo = Space.Self)
         {
-            if (relativeTo == Space.World)
-                translation *= 30f;
-            else
-                translation = TransformDirection(translation) * 30f;
             MovementDirection = new NVector2(translation.X, translation.Z);
         }
 #endif

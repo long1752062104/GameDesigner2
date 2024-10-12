@@ -395,11 +395,11 @@ namespace Net
             float cZ = (float)Math.Cos(eulerAngle.z / 2.0f);
             float sZ = (float)Math.Sin(eulerAngle.z / 2.0f);
 
-            Quaternion qX = new Quaternion(sX, 0, 0, cX);
-            Quaternion qY = new Quaternion(0, sY, 0, cY);
-            Quaternion qZ = new Quaternion(0, 0, sZ, cZ);
+            var qX = new Quaternion(sX, 0, 0, cX);
+            var qY = new Quaternion(0, sY, 0, cY);
+            var qZ = new Quaternion(0, 0, sZ, cZ);
 
-            Quaternion q = qY * qX * qZ;
+            var q = qY * qX * qZ;
 
             return q;
         }

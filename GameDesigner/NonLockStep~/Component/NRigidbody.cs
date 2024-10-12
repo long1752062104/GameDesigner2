@@ -594,7 +594,7 @@ namespace NonLockStep
         }
 #endif
 
-        public void PostPhysicsUpdate()
+        public virtual void PostPhysicsUpdate()
         {
             if (physicsEntity == null)
                 return;
