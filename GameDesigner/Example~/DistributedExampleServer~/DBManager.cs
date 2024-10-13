@@ -8,28 +8,13 @@ namespace DistributedExample
 {
     public class DBManager
     {
-        private readonly LoadBalance<TcpClient> loadBalance = new LoadBalance<TcpClient>();
         private ConsistentHashing<TcpClient> consistentHashing;
         private Dictionary<string, DistributedDB> mysqlNodes;
 
         public async void Init()
         {
-            //var config = new Net.Config.ClientConfig()
-            //{
-            //    SendBufferSize = 1024 * 1024 * 20,
-            //    ReceiveBufferSize = 1024 * 1024 * 20,
-            //    LimitQueueCount = 1024 * 1024 * 5,
-            //    ReconnectCount = int.MaxValue,
-            //};
-            //var lbConfig = await loadBalance.RemoteConfig<LoadBalanceConfig>("127.0.0.1", 10240, config, (int)ProtoType.LoadBalanceConfig, GlobalConfig.DBService);
-            //await UniTask.SwitchToThreadPool();
-            consistentHashing = new ConsistentHashing<TcpClient>(/*lbConfig.Count*/);
+            consistentHashing = new ConsistentHashing<TcpClient>();
             mysqlNodes = new Dictionary<string, DistributedDB>();
-            //for (int i = 0; i < lbConfig.Items.Count; i++)
-            //{
-            //    var item = lbConfig.Items[i];
-            //    CreateDB(item.Name, item.Args);
-            //}
             int affectedCount = 0;
             string nodeName = "";
             int state = 0;
@@ -93,7 +78,7 @@ namespace DistributedExample
                 }
                 else
                 {
-                    consistentHashing.RemoveNode(nodeName);
+                    affectedNodes = consistentHashing.RemoveNodeGet(nodeName);
                 }
                 // 输出受影响的节点
                 Console.WriteLine("受影响的节点：");

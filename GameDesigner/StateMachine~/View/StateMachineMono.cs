@@ -121,19 +121,14 @@ namespace GameDesigner
             if (director == null)
                 director = root.GetComponentInChildren<PlayableDirector>();
 #if SHADER_ANIMATED
-            if (stateMachine.meshAnimator == null)
-                stateMachine.meshAnimator = root.GetComponentInChildren<ShaderMeshAnimator>();
-            if (stateMachine.meshAnimator != null)
+            if (meshAnimator == null)
+                meshAnimator = root.GetComponentInChildren<ShaderMeshAnimator>();
+            if (meshAnimator != null)
             {
-                var clips = stateMachine.meshAnimator.animations;
-                if (stateMachine.clipNames.Count != clips.Length)
-                {
-                    stateMachine.ClipNames.Clear();
-                    foreach (var clip in clips)
-                    {
-                        stateMachine.ClipNames.Add(clip.AnimationName);
-                    }
-                }
+                var clips = meshAnimator.animations;
+                ClipNames.Clear();
+                foreach (var clip in clips)
+                    ClipNames.Add(clip.AnimationName);
             }
 #endif
         }

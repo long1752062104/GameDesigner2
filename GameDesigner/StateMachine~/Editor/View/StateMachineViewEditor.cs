@@ -92,7 +92,7 @@ namespace GameDesigner
             Repaint();
         }
 
-        private void OpenWindow()
+        protected virtual void OpenWindow()
         {
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
             {

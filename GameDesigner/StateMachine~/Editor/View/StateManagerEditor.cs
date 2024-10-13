@@ -100,6 +100,17 @@ namespace GameDesigner
             _meshAnimatorProperty = null;
         }
 
+        protected override void OpenWindow()
+        {
+            self.support = EditorGUILayout.ObjectField(BlueprintSetting.Instance.Language["State Machine Controller"], self.support, typeof(StateMachineMono), true) as StateMachineMono;
+            if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
+            {
+                if (Self != null)
+                    Self.OnScriptReload();
+                StateMachineWindow.ShowWindow(Self);
+            }
+        }
+
         protected override void OnDrawPreField()
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("support"), new GUIContent(BlueprintGUILayout.Instance.Language["State Machine Controller"]));

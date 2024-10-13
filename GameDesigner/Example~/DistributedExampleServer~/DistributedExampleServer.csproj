@@ -19,20 +19,8 @@
     <Compile Include="..\DistributedExample\Scripts\Data\EventCommand.cs">
       <Link>Data\EventCommand.cs</Link>
     </Compile>
-    <Compile Include="..\DistributedExample\Scripts\Data\Config\AudioDataConfig.cs">
-      <Link>Data\Config\AudioDataConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\DistributedExample\Scripts\Data\Config\EnemyDataConfig.cs">
-      <Link>Data\Config\EnemyDataConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\DistributedExample\Scripts\Data\Config\RoleDataConfig.cs">
-      <Link>Data\Config\RoleDataConfig.cs</Link>
-    </Compile>
     <Compile Include="..\DistributedExample\Scripts\Data\Config\SceneDataConfig.cs">
       <Link>Data\Config\SceneDataConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\DistributedExample\Scripts\Data\Config\SettingDataConfig.cs">
-      <Link>Data\Config\SettingDataConfig.cs</Link>
     </Compile>
     <Compile Include="..\DistributedExample\Scripts\Data\Config\UIDataConfig.cs">
       <Link>Data\Config\UIDataConfig.cs</Link>
