@@ -11,7 +11,7 @@ public class ImportSettingWindow : EditorWindow
     private Vector2 scrollPosition;
     private Data data;
     private readonly string[] displayedOptions = new string[] { "使用者", "开发者" };
-    private readonly string version = "2.2";
+    private readonly string version = "2.3";
     private readonly bool[] copyAssemblys = new bool[]
     {
         false, //gcp
@@ -31,7 +31,7 @@ public class ImportSettingWindow : EditorWindow
         false, //example
         true, //codeObfuscation
         true, //nonlockstep
-        false, //ext4
+        true, //actorSystem
         false, //ext5
         false, //ext6
     };
@@ -121,7 +121,8 @@ public class ImportSettingWindow : EditorWindow
         { "NetworkComponent", 5 },{ "Component", 5 },
         { "MVC", 6 }, { "ECS", 7 },{ "MMORPG", 8 },
         { "AOI", 9 },{ "Recast", 10 },{ "GameCore", 11 },
-        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 }, { "NonLockStep", 16 }
+        { "Entities", 12 },{ "ParrelSync", 13 }, { "Example", 14 }, { "CodeObfuscation", 15 },
+        { "NonLockStep", 16 }, { "ActorSystem", 17 }
     };
 
     private void OnGUI()
@@ -208,6 +209,10 @@ public class ImportSettingWindow : EditorWindow
         path = pathRoot + "NonLockStep";
         DrawGUI(path, "NonLockStep", "NonLockStep~", "NonLockStep", null, pathRoot);
 
+        EditorGUILayout.HelpBox("Actor系统模块，如果你有很多项目，每次都要写Actor，就可以使用这个Actor系统，避免多次写这个Actor", MessageType.Info);
+        path = pathRoot + "ActorSystem";
+        DrawGUI(path, "ActorSystem", "ActorSystem~", "ActorSystem", null, pathRoot);
+
         EditorGUILayout.HelpBox("基础模块导入", MessageType.Warning);
         if (GUILayout.Button("基础模块导入", GUILayout.Height(20)))
         {
@@ -232,6 +237,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Entities", "Entities~", "Entities", pathRoot);
             Import("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
             Import("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
+            Import("ActorSystem", "ActorSystem~", "ActorSystem", pathRoot);
         }
         EditorGUILayout.HelpBox("所有案例导入，用于学习和快速上手", MessageType.Warning);
         if (GUILayout.Button("案例导入", GUILayout.Height(20)))
@@ -249,6 +255,7 @@ public class ImportSettingWindow : EditorWindow
             Import("Recast", "Recast~", "Recast", pathRoot);
             Import("Entities", "Entities~", "Entities", pathRoot);
             Import("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
+            Import("ActorSystem", "ActorSystem~", "ActorSystem", pathRoot);
             Import("Example", "Example~", "Example", "Assets/Samples/GameDesigner/");
         }
         EditorGUILayout.HelpBox("重新导入已导入的模块", MessageType.Warning);
@@ -269,6 +276,7 @@ public class ImportSettingWindow : EditorWindow
             ReImport("Entities", "Entities~", "Entities", pathRoot);
             ReImport("CodeObfuscation", "CodeObfuscation~", "CodeObfuscation", pathRoot);
             ReImport("NonLockStep", "NonLockStep~", "NonLockStep", pathRoot);
+            ReImport("ActorSystem", "ActorSystem~", "ActorSystem", pathRoot);
         }
         if (data.develop == 1)
         {
@@ -290,6 +298,7 @@ public class ImportSettingWindow : EditorWindow
                 ReverseImport("Entities~", "Entities", pathRoot);
                 ReverseImport("CodeObfuscation~", "CodeObfuscation", pathRoot);
                 ReverseImport("NonLockStep~", "NonLockStep", pathRoot);
+                ReverseImport("ActorSystem~", "ActorSystem", pathRoot);
             }
         }
         GUILayout.EndScrollView();
@@ -303,7 +312,7 @@ public class ImportSettingWindow : EditorWindow
         {
             Application.OpenURL(@"https://jq.qq.com/?_wv=1027&k=nx1Psgjz");
         }
-        if (GUILayout.Button("版本:2024.9.20", GUILayout.Height(20)))
+        if (GUILayout.Button("版本:2024.10.14", GUILayout.Height(20)))
         {
         }
         GUILayout.EndHorizontal();

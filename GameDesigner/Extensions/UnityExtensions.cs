@@ -68,6 +68,14 @@ public static class InputEx
     /// 获取当前的方向向量，基于用户的输入。
     /// </summary>
     /// <remarks>
+    /// 方向向量的x分量来自“Horizontal”输入，y分量来自“Vertical”输入，z分量为0。
+    /// </remarks>
+    public static Vector3 Direction3D => new(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+
+    /// <summary>
+    /// 获取当前的方向向量，基于用户的输入。
+    /// </summary>
+    /// <remarks>
     /// 方向向量的x分量来自“Horizontal”输入，y分量来自“Vertical”输入。
     /// </remarks>
     public static Vector2 Direction2D => new(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));

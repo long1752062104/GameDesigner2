@@ -56,8 +56,16 @@ namespace Net.Event
                     Console.Clear();
                     cursorTop = 0;
                 }
-                if (!dic.TryGetValue(log + msg, out var entity))
-                    dic.TryAdd(log + msg, entity = new LogEntity() { time = time, log = log, msg = msg });
+                ref var entity = ref dic.GetValueRefOrAddDefault(log + msg, out var exists);
+                if (!exists)
+                {
+                    entity = new LogEntity
+                    {
+                        time = time,
+                        log = log,
+                        msg = msg
+                    };
+                }
                 entity.count++;
                 if (entity.row == -1)
                 {
@@ -253,6 +261,7 @@ namespace Net.Event
         private static readonly QueueSafe<object> logQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> errorQueue = new QueueSafe<object>();
         private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
+        private static readonly MyDictionary<uint, ValueTuple<int, int, int>> collapseDict = new MyDictionary<uint, ValueTuple<int, int, int>>();
         /// <summary>
         /// 绑定的输入输出对象
         /// </summary>
@@ -286,6 +295,10 @@ namespace Net.Event
 #endif
             }
         }
+        /// <summary>
+        /// 相同的日志是否重叠？
+        /// </summary>
+        public static bool IsCollapse { get; set; } = true;
 
 #if !UNITY_WEBGL
         private static int GetResetTime() //获取毫秒数
@@ -345,69 +358,80 @@ namespace Net.Event
         {
             try
             {
-                var sb = new StringBuilder();
-                var isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Log;
                 var currTime = DateTime.Now;
                 var logTime = currTime.ToString("yyyy-MM-dd HH:mm:ss");
-                var msg = string.Empty;
-                var log = string.Empty;
-                object message;
+                var isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Log;
                 var output = LogOutputMax;
-                while (logQueue.TryDequeue(out message))
-                {
-                    if (message == null)
-                        continue;
-                    msg = message.ToString();
-                    log = $"[{logTime}][Log] {msg}";
-                    LogHandle?.Invoke(log);
-                    Output?.Invoke(currTime, LogType.Log, msg);
-                    if (isWrite)
-                        sb.AppendLine(log);
-                    if (--output <= 0)
-                        break;
-                }
+                Log(logQueue, currTime, logTime, output, LogType.Log, LogHandle, isWrite);
                 isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Warn | writeFileMode == WriteLogMode.WarnAndError;
                 output = LogOutputMax;
-                while (warningQueue.TryDequeue(out message))
-                {
-                    if (message == null)
-                        continue;
-                    msg = message.ToString();
-                    log = $"[{logTime}][Warning] {msg}";
-                    LogWarningHandle?.Invoke(log);
-                    Output?.Invoke(currTime, LogType.Warning, msg);
-                    if (isWrite)
-                        sb.AppendLine(log);
-                    if (--output <= 0)
-                        break;
-                }
+                Log(warningQueue, currTime, logTime, output, LogType.Warning, LogWarningHandle, isWrite);
                 isWrite = writeFileMode == WriteLogMode.All | writeFileMode == WriteLogMode.Error | writeFileMode == WriteLogMode.WarnAndError;
                 output = LogOutputMax;
-                while (errorQueue.TryDequeue(out message))
-                {
-                    if (message == null)
-                        continue;
-                    msg = message.ToString();
-                    log = $"[{logTime}][Error] {msg}";
-                    LogErrorHandle?.Invoke(log);
-                    Output?.Invoke(currTime, LogType.Error, msg);
-                    if (isWrite)
-                        sb.AppendLine(log);
-                    if (--output <= 0)
-                        break;
-                }
-                if (sb.Length > 0) //肯定有写入长度才大于0
-                {
-                    var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-                    fileStream.Write(bytes, 0, bytes.Length);
-                    fileStream.Flush();
-                }
+                Log(errorQueue, currTime, logTime, output, LogType.Error, LogErrorHandle, isWrite);
+                fileStream?.Flush();
             }
             catch (Exception ex)
             {
                 errorQueue.Enqueue(ex.Message);
             }
             return true;
+        }
+
+        private static void Log(QueueSafe<object> logQueue, in DateTime currTime, in string logTime, int output, LogType logType, Action<string> logAction, bool isWrite)
+        {
+            string msg;
+            string log;
+            while (logQueue.TryDequeue(out object message))
+            {
+                if (message == null)
+                    continue;
+                msg = message.ToString();
+                if (logAction != null)
+                {
+                    log = $"[{logTime}][{logType}] {msg}";
+                    logAction(log);
+                }
+                Output?.Invoke(currTime, logType, msg);
+                if (isWrite)
+                {
+                    byte[] bytes;
+                    if (IsCollapse)
+                    {
+                        var hash = (logType.ToString() + msg).CRCU32();
+                        ref var item = ref collapseDict.GetValueRefOrAddDefault(hash, out var exists);
+                        item.Item2++;
+                        if (exists)
+                        {
+                            var position = fileStream.Position;
+                            fileStream.Seek(item.Item1, SeekOrigin.Begin);
+                            log = $"[{logTime}][Log] ({item.Item2}) {msg}";
+                            bytes = new byte[item.Item3];
+                            bytes[item.Item3 - 2] = 13;
+                            bytes[item.Item3 - 1] = 10;
+                            Encoding.UTF8.GetBytes(log, 0, log.Length, bytes, 0);
+                            fileStream.Write(bytes, 0, bytes.Length);
+                            fileStream.Position = position;
+                        }
+                        else
+                        {
+                            log = $"[{logTime}][{logType}] {msg}";
+                            bytes = Encoding.UTF8.GetBytes(log + "            " + Environment.NewLine); //留12个空位放重叠的数字
+                            item.Item1 = (int)fileStream.Position;
+                            item.Item3 = bytes.Length;
+                            fileStream.Write(bytes, 0, bytes.Length);
+                        }
+                    }
+                    else
+                    {
+                        log = $"[{logTime}][{logType}] {msg}";
+                        bytes = Encoding.UTF8.GetBytes(log + Environment.NewLine);
+                        fileStream.Write(bytes, 0, bytes.Length);
+                    }
+                }
+                if (--output <= 0)
+                    break;
+            }
         }
 #endif
 
