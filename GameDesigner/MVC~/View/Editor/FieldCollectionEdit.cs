@@ -43,6 +43,7 @@ namespace MVC.View
     }
 
     [CustomEditor(typeof(FieldCollection))]
+    [CanEditMultipleObjects]
     public class FieldCollectionEdit : Editor
     {
         private FieldCollection self;

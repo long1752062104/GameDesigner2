@@ -1,5 +1,7 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public static class UnityExtensions
 {
@@ -79,6 +81,88 @@ public static class InputEx
     /// 方向向量的x分量来自“Horizontal”输入，y分量来自“Vertical”输入。
     /// </remarks>
     public static Vector2 Direction2D => new(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+}
+
+public static class UIDragHandlerEx
+{
+    /// <summary>
+    /// 获取拖动偏移，这是在OnBeginDrag事件获取偏移并且保存起来
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="panelRt">面板的矩形</param>
+    /// <param name="eventData">事件数据</param>
+    /// <returns></returns>
+    public static Vector2 GetDragOffset(this Graphic self, RectTransform panelRt, PointerEventData eventData)
+    {
+        Vector2 dragOffset = default;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, eventData.position, eventData.pressEventCamera, out Vector2 localPoint))
+            dragOffset = self.rectTransform.anchoredPosition - localPoint;
+        return dragOffset;
+    }
+
+    /// <summary>
+    /// 获取拖动偏移，这是在OnBeginDrag事件获取偏移并且保存起来
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="panelRt">面板的矩形</param>
+    /// <param name="eventData">事件数据</param>
+    /// <returns></returns>
+    public static void GetDragOffset(this Graphic self, RectTransform panelRt, PointerEventData eventData, out Vector2 dragOffset)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
+        dragOffset = self.rectTransform.anchoredPosition - localPoint;
+    }
+
+    /// <summary>
+    /// 拖动UI，这里在OnDrag方法使用
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="panelRt">面板的矩形</param>
+    /// <param name="eventData">事件数据</param>
+    /// <param name="dragOffset">拖动偏移量</param>
+    public static void DragUI(this Graphic self, RectTransform panelRt, PointerEventData eventData, Vector2 dragOffset)
+    {
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, eventData.position, eventData.pressEventCamera, out Vector2 localPoint))
+            self.rectTransform.anchoredPosition = localPoint + dragOffset;
+    }
+
+    /// <summary>
+    /// 拖动UI在Update，可在Update进行调用
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="panelRt">面板的矩形</param>
+    /// <param name="uiCamera">UI相机</param>
+    /// <param name="dragOffset">拖动偏移量</param>
+    public static void UpdateDragUI(this Graphic self, RectTransform panelRt, Camera uiCamera, Vector2 dragOffset)
+    {
+        Vector2 mousePosition = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, mousePosition, uiCamera, out Vector2 localPoint);
+        self.rectTransform.anchoredPosition = localPoint + dragOffset;
+    }
+
+    /// <summary>
+    /// 设置拖动阈值, 提高拖动灵敏度
+    /// 由于Unity的事件系统有一个默认的拖动阈值（通常是 5 像素），只有当鼠标移动超过这个阈值时，OnDrag 才会被调用。为了解决这个问题，你可以通过自定义一个拖动处理来实现更灵敏的响应。
+    /// </summary>
+    /// <param name="self"></param>
+    public static void DragThreshold(int dragThreshold = 1)
+    {
+        EventSystem.current.pixelDragThreshold = dragThreshold;
+    }
+
+    /// <summary>
+    /// 获取屏幕位置偏移, 获取鼠标点击的位置和图像自身矩形的位置偏移
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="eventData">事件数据</param>
+    /// <returns></returns>
+    public static Vector2 GetScreenPositionOffset(this Graphic self, RectTransform panelRt, PointerEventData eventData)
+    {
+        var screenPosition = RectTransformUtility.WorldToScreenPoint(eventData.pressEventCamera, self.rectTransform.position);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, eventData.position, eventData.pressEventCamera, out Vector2 mouseLocalPoint);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRt, screenPosition, eventData.pressEventCamera, out Vector2 thisLocalPoint);
+        return thisLocalPoint - mouseLocalPoint;
+    }
 }
 
 #endif

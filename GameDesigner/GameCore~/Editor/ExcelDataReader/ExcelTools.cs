@@ -6,6 +6,8 @@ using System.Data;
 using System.Text;
 using GameCore;
 using System;
+using Net.Helper;
+using System.Collections.Generic;
 
 public class ExcelTools
 {
@@ -34,6 +36,7 @@ public class ExcelTools
                     foreach (DataTable table in dataSet.Tables)
                     {
                         var dataTable = new DataTable(table.TableName);
+                        var columnTypes = new List<Type>();
                         for (int i = 0; i < table.Columns.Count; i++)
                         {
                             var columnName = table.Rows[0][i].ToString();
@@ -41,7 +44,7 @@ public class ExcelTools
                             if (string.IsNullOrEmpty(columnName) | string.IsNullOrEmpty(columnType))
                                 continue;
                             Type dataType;
-                            switch (columnType)
+                            switch (columnType.ToLower())
                             {
                                 case "boolean": dataType = typeof(bool); break;
                                 case "bool": dataType = typeof(bool); break;
@@ -57,21 +60,31 @@ public class ExcelTools
                                 case "float": dataType = typeof(float); break;
                                 case "double": dataType = typeof(double); break;
                                 case "decimal": dataType = typeof(decimal); break;
-                                case "DateTime": dataType = typeof(DateTime); break;
                                 case "dateTime": dataType = typeof(DateTime); break;
                                 case "string": dataType = typeof(string); break;
-                                default: dataType = typeof(object); break;
+                                default:
+                                    dataType = AssemblyHelper.GetTypeNotOptimized(columnType);
+                                    dataType ??= typeof(object);
+                                    break;
                             }
-                            dataTable.Columns.Add(new DataColumn(columnName, dataType));
+                            if (dataType.IsEnum)
+                                dataTable.Columns.Add(new DataColumn(columnName, typeof(int))); //由于枚举类型可能存在于热更新程序集，而表读取早于热更新程序集，所以会导致读取不到类型的问题
+                            else
+                                dataTable.Columns.Add(new DataColumn(columnName, dataType));
+                            columnTypes.Add(dataType);
                         }
                         for (int x = 3; x < table.Rows.Count; x++)
                         {
                             var row = table.Rows[x];
+                            var columnName = row[0].ToString();
+                            var columnType = row[1].ToString();
+                            if (string.IsNullOrEmpty(columnName) | string.IsNullOrEmpty(columnType))
+                                continue;
                             var dataRow = dataTable.NewRow();
                             dataTable.Rows.Add(dataRow);
-                            for (int y = 0; y < dataTable.Columns.Count; y++)
+                            for (int y = 0; y < columnTypes.Count; y++)
                             {
-                                var dataType = dataTable.Columns[y].DataType;
+                                var dataType = columnTypes[y];
                                 if (dataType == typeof(bool))
                                     dataRow[y] = ObjectConverter.AsBool(row[y]);
                                 else if (dataType == typeof(byte))
@@ -102,6 +115,8 @@ public class ExcelTools
                                     dataRow[y] = ObjectConverter.AsDateTime(row[y]);
                                 else if (dataType == typeof(string))
                                     dataRow[y] = ObjectConverter.AsString(row[y]);
+                                else if (dataType.IsEnum)
+                                    dataRow[y] = (int)ObjectConverter.AsEnum(row[y], dataType);
                                 else
                                     dataRow[y] = row[y];
                             }
@@ -166,26 +181,51 @@ public class ExcelTools
                         for (int i = 1; i < table.Columns.Count; i++)
                         {
                             var name = table.Rows[0][i].ToString();
-                            var typeStr = table.Rows[1][i].ToString();
+                            var columnType = table.Rows[1][i].ToString();
                             var des = table.Rows[2][i].ToString();
-
-                            if (string.IsNullOrEmpty(name) | string.IsNullOrEmpty(typeStr))
+                            if (string.IsNullOrEmpty(name) | string.IsNullOrEmpty(columnType))
                                 continue;
-
+                            Type dataType;
+                            switch (columnType.ToLower())
+                            {
+                                case "boolean": dataType = typeof(bool); break;
+                                case "bool": dataType = typeof(bool); break;
+                                case "byte": dataType = typeof(byte); break;
+                                case "sbyte": dataType = typeof(sbyte); break;
+                                case "char": dataType = typeof(char); break;
+                                case "short": dataType = typeof(short); break;
+                                case "ushort": dataType = typeof(ushort); break;
+                                case "int": dataType = typeof(int); break;
+                                case "uint": dataType = typeof(uint); break;
+                                case "long": dataType = typeof(long); break;
+                                case "ulong": dataType = typeof(ulong); break;
+                                case "float": dataType = typeof(float); break;
+                                case "double": dataType = typeof(double); break;
+                                case "decimal": dataType = typeof(decimal); break;
+                                case "dateTime": dataType = typeof(DateTime); break;
+                                case "string": dataType = typeof(string); break;
+                                default:
+                                    dataType = AssemblyHelper.GetTypeNotOptimized(columnType);
+                                    dataType ??= typeof(object);
+                                    break;
+                            }
                             indexGetSB.AppendLine($"                case {i - 1}: return {name};");
-                            indexSetSB.AppendLine($"                case {i - 1}: {name} = ({typeStr})value; break;");
+                            indexSetSB.AppendLine($"                case {i - 1}: {name} = ({columnType})value; break;");
                             nameGetSB.AppendLine($"                case \"{name}\": return {name};");
-                            nameSetSB.AppendLine($"                case \"{name}\": {name} = ({typeStr})value; break;");
+                            nameSetSB.AppendLine($"                case \"{name}\": {name} = ({columnType})value; break;");
 
                             var text3 = texts[1].Replace("NAME", name);
-                            text3 = text3.Replace("TYPE", typeStr);
+                            text3 = text3.Replace("TYPE", columnType);
                             text3 = text3.Replace("NOTE", des);
                             text3 = text3.TrimStart('\r', '\n');
                             fieldSB.AppendLine(text3);
 
                             text3 = texts[3].Replace("NAME", name);
-                            typeStr = typeStr[0].ToString().ToUpper() + typeStr.Substring(1, typeStr.Length - 1);
-                            text3 = text3.Replace("TYPE", typeStr);
+                            columnType = columnType[0].ToString().ToUpper() + columnType.Substring(1, columnType.Length - 1);
+                            if (dataType.IsEnum)
+                                text3 = text3.Replace("ObjectConverter.AsTYPE", $"({columnType})ObjectConverter.AsInt");
+                            else
+                                text3 = text3.Replace("TYPE", columnType);
                             text3 = text3.TrimStart('\r', '\n');
                             text3 = text3.TrimEnd('\n', '\r');
                             initSB.AppendLine(text3);
