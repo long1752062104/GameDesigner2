@@ -208,11 +208,35 @@ namespace GameDesigner
                     break;
                 root = root.Parent;
             }
-            if ((lateUpdateMethod.DeclaringType == type) && (stateMachine.UpdateMode & StateMachineUpdateMode.LateUpdate) == 0)
-                root.UpdateMode |= StateMachineUpdateMode.LateUpdate;
-            if ((fixedUpdateMethod.DeclaringType == type) && (stateMachine.UpdateMode & StateMachineUpdateMode.FixedUpdate) == 0)
-                root.UpdateMode |= StateMachineUpdateMode.FixedUpdate;
+            Type lateDeclaringType = lateUpdateMethod.DeclaringType;
+            Type fixedDeclaringType = fixedUpdateMethod.DeclaringType;
+            Type classType = type;
+
+            InitUpdate_Behaviour_Method(root, stateMachine, StateMachineUpdateMode.LateUpdate, classType, lateDeclaringType);
+            InitUpdate_Behaviour_Method(root, stateMachine, StateMachineUpdateMode.FixedUpdate, classType, fixedDeclaringType);
             return runtimeBehaviour;
+        }
+
+        private bool CheckTypeOfBehaviour(Type type)
+        {
+            return type != typeof(StateBehaviour)
+            && type != typeof(ActionBehaviour)
+            && type != typeof(TransitionBehaviour)
+            && type != typeof(BehaviourBase);
+        }
+
+        private void InitUpdate_Behaviour_Method(IStateMachine root, IStateMachine stateMachine,StateMachineUpdateMode updateStatus, Type classType, Type DeclaringType)
+        {
+            do
+            {
+                if ((DeclaringType == classType) && (stateMachine.UpdateMode & updateStatus) == 0)
+                {
+                    root.UpdateMode|= updateStatus;
+                    break;
+                }
+                classType = classType.BaseType;
+            }
+            while (classType != null && CheckTypeOfBehaviour(classType));
         }
     }
 }
