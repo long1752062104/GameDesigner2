@@ -183,7 +183,7 @@ namespace GameDesigner
             }
         }
 
-        internal static void SetBlendTreeParameter(StateAction stateAction, UnityEngine.Animator animator)
+        public static void SetBlendTreeParameter(StateAction stateAction, UnityEngine.Animator animator)
         {
             if (!animator) return;
             if (!string.IsNullOrEmpty(stateAction.blendParameterName))

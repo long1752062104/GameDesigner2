@@ -92,7 +92,7 @@ namespace GameDesigner
             Repaint();
         }
 
-        private void OpenWindow()
+        protected virtual void OpenWindow()
         {
             if (GUILayout.Button(BlueprintSetting.Instance.Language["Open the state machine editor"], GUI.skin.GetStyle("LargeButtonMid"), GUILayout.ExpandWidth(true)))
             {
@@ -461,7 +461,7 @@ namespace GameDesigner
                                 {
                                     foreach (var type in findBehaviourTypes1)
                                     {
-                                        if (GUILayout.Button(type.Name))
+                                        if (GUILayout.Button(type.ToString()))
                                         {
                                             var stb = (ActionBehaviour)Activator.CreateInstance(type);
                                             stb.InitMetadatas();
@@ -614,7 +614,7 @@ namespace GameDesigner
                     EditorGUILayout.Space();
                     foreach (var type in findBehaviourTypes)
                     {
-                        if (GUILayout.Button(type.Name))
+                        if (GUILayout.Button(type.ToString()))
                         {
                             var stb = (StateBehaviour)Activator.CreateInstance(type);
                             stb.InitMetadatas();
@@ -777,7 +777,7 @@ namespace GameDesigner
                 EditorGUILayout.Space();
                 foreach (var type in findBehaviourTypes2)
                 {
-                    if (GUILayout.Button(type.Name))
+                    if (GUILayout.Button(type.ToString()))
                     {
                         var stb = (TransitionBehaviour)Activator.CreateInstance(type);
                         stb.InitMetadatas();

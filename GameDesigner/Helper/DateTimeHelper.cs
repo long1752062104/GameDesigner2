@@ -77,5 +77,47 @@ namespace Net.Helper
             return timeout;
 
         }
+
+        /// <summary>
+        /// 打印时分秒，当不满足时时只显示分和秒，当不满时和分时，只显示秒
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public static string FormatDateTime(DateTime dateTime)
+        {
+            if (dateTime.Hour > 0)
+            {
+                return dateTime.ToString("H时m分s秒");
+            }
+            else if (dateTime.Minute > 0)
+            {
+                return dateTime.ToString("m分s秒");
+            }
+            else
+            {
+                return dateTime.ToString("s秒");
+            }
+        }
+
+        /// <summary>
+        /// 打印时分秒，当不满足时时只显示分和秒，当不满时和分时，只显示秒
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public static string FormatTimeSpan(TimeSpan timeSpan)
+        {
+            if (timeSpan.Hours > 0)
+            {
+                return $"{timeSpan.Hours}时{timeSpan.Minutes}分{timeSpan.Seconds}秒";
+            }
+            else if (timeSpan.Minutes > 0)
+            {
+                return $"{timeSpan.Minutes}分{timeSpan.Seconds}秒";
+            }
+            else
+            {
+                return $"{timeSpan.Seconds}秒";
+            }
+        }
     }
 }

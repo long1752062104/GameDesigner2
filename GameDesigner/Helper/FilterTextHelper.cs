@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Text;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Net.Helper
 {
@@ -14,6 +16,12 @@ namespace Net.Helper
     public class FilterTextHelper
     {
         private static readonly FilterText filter = new FilterText();
+        private static readonly List<string> filterWords = new List<string>();
+        private static string skipWords = @"[\s\p{P}=+]*";
+        /// <summary>
+        /// 跳字检测，默认跳字过滤标点符号和空格
+        /// </summary>
+        public static string SkipWords { get => skipWords; set => skipWords = value; }
 
         /// <summary>
         /// 初始化要过滤的所有文本内容
@@ -21,9 +29,13 @@ namespace Net.Helper
         /// <param name="filterData"></param>
         public static void Init(string[] filterData)
         {
-            foreach (var text in filterData)
+            for (int i = 0; i < filterData.Length; i++)
             {
-                AddText(text);
+                var text = filterData[i].Trim();
+                if (string.IsNullOrEmpty(text))
+                    continue;
+                FilterFor(filter, text, 0);
+                filterWords.Add(text);
             }
         }
 
@@ -31,7 +43,7 @@ namespace Net.Helper
         /// 动态插入过滤文本
         /// </summary>
         /// <param name="text"></param>
-        public static void AddText(string text) 
+        public static void AddText(string text)
         {
             if (string.IsNullOrEmpty(text))
                 return;
@@ -40,8 +52,9 @@ namespace Net.Helper
 
         private static void FilterFor(FilterText filterN, string text, int index)
         {
-            if (!filterN.wordDic.TryGetValue(text[index], out var filter1))
-                filterN.wordDic[text[index]] = filter1 = new FilterText();
+            char c = text[index];
+            if (!filterN.wordDic.TryGetValue(c, out var filter1))
+                filterN.wordDic.Add(c, filter1 = new FilterText());
             if (index + 1 < text.Length)
                 FilterFor(filter1, text, index + 1);
             else
@@ -97,11 +110,12 @@ namespace Net.Helper
                 }
             }
             filterLen = containList.Count;
+            var textBuilder = new StringBuilder(text);
             foreach (var wordIndex in containList)
             {
-                text = text.Replace(text[wordIndex], '*');
+                textBuilder[wordIndex] = '*';
             }
-            return text;
+            return textBuilder.ToString();
         }
 
         /// <summary>
@@ -125,6 +139,35 @@ namespace Net.Helper
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// 修改屏蔽词文本
+        /// </summary>
+        /// <param name="text">检查的文本</param>
+        /// <returns></returns>
+        public static string ReplaceText(string text)
+        {
+            var patternBuilder = new StringBuilder();
+            string pattern;
+            foreach (var word in filterWords)
+            {
+                patternBuilder.Clear();
+                patternBuilder.Append($"{Regex.Escape(word[0].ToString())}");
+                for (int i = 1; i < word.Length; i++)
+                {
+                    patternBuilder.Append($"{skipWords}{Regex.Escape(word[i].ToString())}");
+                }
+                pattern = patternBuilder.ToString();
+                text = Regex.Replace(text, pattern, match =>
+                {
+                    if (match.Length >= word.Length)
+                        return new string('*', match.Length);
+                    else
+                        return match.Value;
+                }, RegexOptions.IgnoreCase);
+            }
+            return text;
         }
     }
 }

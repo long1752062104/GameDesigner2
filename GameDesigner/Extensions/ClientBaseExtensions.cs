@@ -60,6 +60,8 @@ public static class ClientBaseExtensions
         => Request<T, T1>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)
         => Request<T, T1>(self, NetCmd.CallRpc, (uint)protocol.GetHashCode(), timeoutMilliseconds, intercept, null, pars);
+    public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, Enum protocol, params object[] pars)
+        => Request<T, T1>(self, cmd, (uint)protocol.GetHashCode(), 5000U, true, null, pars);
     public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, params object[] pars)
         => Request<T, T1>(self, cmd, (uint)protocol.GetHashCode(), timeoutMilliseconds, true, null, pars);
     public static UniTask<ValueTuple<T, T1>> Request<T, T1>(this ClientBase self, byte cmd, Enum protocol, uint timeoutMilliseconds, bool intercept, params object[] pars)

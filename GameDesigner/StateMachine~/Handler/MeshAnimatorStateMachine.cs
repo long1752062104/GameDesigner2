@@ -5,18 +5,24 @@ namespace GameDesigner
 {
     public class MeshAnimatorStateMachine : IAnimationHandler
     {
-        private readonly ShaderMeshAnimator meshAnimator;
+        private ShaderMeshAnimator meshAnimator;
+        private bool isPlaying;
 
         public MeshAnimatorStateMachine(ShaderMeshAnimator meshAnimator)
         {
             this.meshAnimator = meshAnimator;
         }
 
+        public void SetParams(params object[] args)
+        {
+            meshAnimator = (ShaderMeshAnimator)args[0];
+        }
+
         public void OnInit()
         {
             meshAnimator.OnAnimationFinished += (name) =>
             {
-                currState.IsPlaying = false;
+                isPlaying = false;
             };
         }
 
@@ -28,12 +34,12 @@ namespace GameDesigner
                 meshAnimator.RestartAnim();
             else
                 meshAnimator.Play(stateAction.clipIndex);
+            isPlaying = true;
         }
 
-        public bool OnAnimationUpdate(State state, StateAction stateAction)
+        public bool OnAnimationUpdate(State state, StateAction stateAction, StateMachineUpdateMode currMode)
         {
             stateAction.animTime = meshAnimator.currentFrame / (float)meshAnimator.currentAnimation.TotalFrames * 100f;
-            bool isPlaying = state.IsPlaying;
             return isPlaying;
         }
     }

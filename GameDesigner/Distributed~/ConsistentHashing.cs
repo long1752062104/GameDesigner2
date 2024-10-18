@@ -41,6 +41,21 @@ namespace Net.Distributed
             PhysicalNodeName = physicalNodeName;
         }
 
+        /// <summary>
+        /// 克隆对象，防止字段被修改
+        /// </summary>
+        /// <returns></returns>
+        public VirtualNode<T> Clone()
+        {
+            var node = new VirtualNode<T>(VirtualNodeName, PhysicalNodeName)
+            {
+                StartHash = StartHash,
+                EndHash = EndHash,
+                Token = Token
+            };
+            return node;
+        }
+
         public override string ToString()
         {
             return $"虚拟节点:{VirtualNodeName} 物理节点:{PhysicalNodeName} 哈希范围:({StartHash}, {EndHash})";
@@ -123,6 +138,29 @@ namespace Net.Distributed
         }
 
         /// <summary>
+        /// 移除节点并且获取移除的虚拟节点列表
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public List<VirtualNode<T>> RemoveNodeGet(string node)
+        {
+            var virtualNodes = new List<VirtualNode<T>>();
+            if (nodes.Remove(node))
+            {
+                // 移除对应的虚拟节点
+                for (int i = 0; i < virtualNodeReplicas; i++)
+                {
+                    var virtualNode = $"{node}_V{i}";
+                    var hash = GetHash(virtualNode);
+                    virtualNodes.Add(hashRing[hash]);
+                    hashRing.Remove(hash);
+                }
+                RecalculateNode();
+            }
+            return virtualNodes;
+        }
+
+        /// <summary>
         /// 根据键获取对应的数据库节点
         /// </summary>
         /// <param name="key"></param>
@@ -194,6 +232,8 @@ namespace Net.Distributed
         /// </summary>
         public void RecalculateNode()
         {
+            if (hashRing.Count == 0)
+                return;
             foreach (var item in hashRing)
             {
                 foreach (var nodeHash in hashRing.Keys)

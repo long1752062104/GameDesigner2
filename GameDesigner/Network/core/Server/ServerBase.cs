@@ -2258,6 +2258,7 @@ namespace Net.Server
                 {
                     session.Client = client;
                     session.Connected = true;
+                    AcceptHander(session, args); //需要重新设置断线重连的新套接字对象
                     SetClientIdentity(session);
                     session.OnReconnecting();
                     OnReconnecting(session);

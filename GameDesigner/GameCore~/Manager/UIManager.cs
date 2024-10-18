@@ -206,5 +206,10 @@ namespace GameCore
                 form.HideUI();
             }
         }
+
+        public RectTransform GetUILayer(int uiLayer)
+        {
+            return (RectTransform)Levels[uiLayer];
+        }
     }
 }

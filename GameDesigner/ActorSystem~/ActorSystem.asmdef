@@ -1,0 +1,17 @@
+{
+    "name": "ActorSystem",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f263169dea78d2249ba035c363b9cb8e",
+        "GUID:1b6085afe3979a042b21266fcddea704"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

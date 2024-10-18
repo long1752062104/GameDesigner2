@@ -25,50 +25,50 @@ namespace NonLockStep
 {
     public class NRigidbody : MonoBehaviour
     {
-        [SerializeField] private float mass = 1.0f;
-        [SerializeField] private float angularDamping = .15f;
-        [SerializeField] private float linearDamping = .03f;
-        [SerializeField] private bool isKinematic;
+        [SerializeField] protected float mass = 1.0f;
+        [SerializeField] protected float angularDamping = .15f;
+        [SerializeField] protected float linearDamping = .03f;
+        [SerializeField] protected bool isKinematic;
 #if !JITTER2_PHYSICS
-        [SerializeField] private PositionUpdateMode collisionDetection = PositionUpdateMode.Discrete;
+        [SerializeField] protected PositionUpdateMode collisionDetection = PositionUpdateMode.Discrete;
         [Header("Material")]
-        [SerializeField] private float kineticFriction = (float)MaterialManager.DefaultKineticFriction;
-        [SerializeField] private float staticFriction = (float)MaterialManager.DefaultStaticFriction;
-        [SerializeField] private float bounciness = (float)MaterialManager.DefaultBounciness;
+        [SerializeField] protected float kineticFriction = (float)MaterialManager.DefaultKineticFriction;
+        [SerializeField] protected float staticFriction = (float)MaterialManager.DefaultStaticFriction;
+        [SerializeField] protected float bounciness = (float)MaterialManager.DefaultBounciness;
 #else
         [Header("Material")]
-        [SerializeField] private float friction = 0.2f;
+        [SerializeField] protected float friction = 0.2f;
 #endif
         [Header("Constraints")]
-        [SerializeField] private NPhysicsAxisConstraints fixedPosition;
-        [SerializeField] private NPhysicsAxisConstraints fixedRotation;
+        [SerializeField] protected NPhysicsAxisConstraints fixedPosition;
+        [SerializeField] protected NPhysicsAxisConstraints fixedRotation;
         [Header("layerOverrides")]
-        [SerializeField] private LayerMask includeLayers;
-        [SerializeField] private LayerMask excludeLayers;
+        [SerializeField] protected LayerMask includeLayers;
+        [SerializeField] protected LayerMask excludeLayers;
         [Header("initialize")]
-        [SerializeField] private InitializeMode initializeMode = InitializeMode.Start;
-        [SerializeField] private DeinitializeMode deinitializeMode = DeinitializeMode.OnDestroy;
-        [SerializeField] private bool syncTransform = true;
+        [SerializeField] protected InitializeMode initializeMode = InitializeMode.Start;
+        [SerializeField] protected DeinitializeMode deinitializeMode = DeinitializeMode.OnDestroy;
+        [SerializeField] protected bool syncTransform = true;
 #if !JITTER2_PHYSICS
         public IWorldObject physicsObject;
-        private Entity physicsEntity;
+        protected Entity physicsEntity;
 #else
-        private RigidBody physicsEntity;
-        private readonly List<RigidBodyShape> shapes = new List<RigidBodyShape>();
+        protected RigidBody physicsEntity;
+        protected readonly List<RigidBodyShape> shapes = new List<RigidBodyShape>();
 #endif
-        private Vector3 previousRenderPosition;
-        private Quaternion previousRenderRotation;
-        private NVector3 previousPhysicsPosition;
-        private NVector3 currentPhysicsPosition;
-        private NQuaternion previousPhysicsRotation = NQuaternion.Identity;
-        private NQuaternion currentPhysicsRotation = NQuaternion.Identity;
-        private NVector3 massCenterOffset;
-        private readonly List<ICollisionEnterListener> collisionEnterListeners = new();
-        private readonly List<ICollisionStayListener> collisionStayListeners = new();
-        private readonly List<ICollisionExitListener> collisionExitListeners = new();
-        private readonly List<ITriggerEnterListener> triggerEnterListeners = new();
-        private readonly List<ITriggerStayListener> triggerStayListeners = new();
-        private readonly List<ITriggerExitListener> triggerExitListeners = new();
+        protected Vector3 previousRenderPosition;
+        protected Quaternion previousRenderRotation;
+        protected NVector3 previousPhysicsPosition;
+        protected NVector3 currentPhysicsPosition;
+        protected NQuaternion previousPhysicsRotation = NQuaternion.Identity;
+        protected NQuaternion currentPhysicsRotation = NQuaternion.Identity;
+        protected NVector3 massCenterOffset;
+        protected readonly List<ICollisionEnterListener> collisionEnterListeners = new();
+        protected readonly List<ICollisionStayListener> collisionStayListeners = new();
+        protected readonly List<ICollisionExitListener> collisionExitListeners = new();
+        protected readonly List<ITriggerEnterListener> triggerEnterListeners = new();
+        protected readonly List<ITriggerStayListener> triggerStayListeners = new();
+        protected readonly List<ITriggerExitListener> triggerExitListeners = new();
         public object Tag; //存特别引用
 
         public sfloat Mass
@@ -116,7 +116,7 @@ namespace NonLockStep
                 physicsEntity.Position = value;
             }
         }
-        public NQuaternion Rotation
+        public virtual NQuaternion Rotation
         {
             get => physicsEntity.Orientation;
             set
@@ -161,7 +161,7 @@ namespace NonLockStep
                 Deinitialize();
         }
 
-        public void Initialize()
+        public virtual void Initialize()
         {
             var colliders = GetComponents<Collider>();
 #if !JITTER2_PHYSICS
@@ -219,8 +219,10 @@ namespace NonLockStep
                         staticTriangleVertices[i] = vertices[i] * scale;
                     if (isKinematic)
                     {
-                        physicsObject = new StaticMesh(staticTriangleVertices, staticTriangleIndices, new AffineTransform(transform.localScale, transform.rotation, transform.position));
-                        physicsObject.Tag = this;
+                        physicsObject = new StaticMesh(staticTriangleVertices, staticTriangleIndices, new AffineTransform(transform.localScale, transform.rotation, transform.position))
+                        {
+                            Tag = this
+                        };
                         NPhysics.Singleton.AddRigidbody(this);
                         return;
                     }
@@ -240,14 +242,17 @@ namespace NonLockStep
             physicsEntity.PositionUpdateMode = collisionDetection;
             physicsEntity.CollisionInformation.IsTrigger = isTrigger;
             physicsEntity.CollisionInformation.CollisionRules.Personal = isTrigger ? CollisionRule.NoSolver : CollisionRule.Defer;
+            physicsEntity.CollisionInformation.CollisionRules.Group = NPhysics.Singleton.CollisionLayers[gameObject.layer];
+            physicsEntity.CollisionInformation.CollisionRules.IncludeLayers = includeLayers;
+            physicsEntity.CollisionInformation.CollisionRules.ExcludeLayers = excludeLayers;
             physicsEntity.Material = new BEPUphysics.Materials.Material
             {
-                StaticFriction = (sfloat)staticFriction,
-                KineticFriction = (sfloat)kineticFriction,
-                Bounciness = (sfloat)bounciness
+                StaticFriction = staticFriction,
+                KineticFriction = kineticFriction,
+                Bounciness = bounciness
             };
-            physicsEntity.AngularDamping = (sfloat)angularDamping;
-            physicsEntity.LinearDamping = (sfloat)linearDamping;
+            physicsEntity.AngularDamping = angularDamping;
+            physicsEntity.LinearDamping = linearDamping;
             NPhysics.Singleton.AddRigidbody(this);
             Mass = mass;
             IsKinematic = isKinematic;
@@ -335,8 +340,9 @@ namespace NonLockStep
             physicsEntity.Friction = friction;
             physicsEntity.Damping = (linearDamping, angularDamping);
             physicsEntity.Tag = this;
-            physicsEntity.IncludeLayers = includeLayers;
-            physicsEntity.ExcludeLayers = excludeLayers;
+            physicsEntity.Layer = NPhysics.Singleton.CollisionLayers[gameObject.layer];
+            physicsEntity.Data.Layer.IncludeLayers = includeLayers;
+            physicsEntity.Data.Layer.ExcludeLayers = excludeLayers;
             NPhysics.Singleton.AddRigidbody(this);
             IsKinematic = isKinematic;
             RegisterEvents();
@@ -395,7 +401,7 @@ namespace NonLockStep
             previousRenderRotation = transform.rotation;
         }
 
-        private void InitializeTransform()
+        protected void InitializeTransform()
         {
 #if !JITTER2_PHYSICS
             physicsEntity.orientation = transform.rotation;
@@ -415,7 +421,7 @@ namespace NonLockStep
 #endif
         }
 
-        private void RegisterEvents()
+        protected void RegisterEvents()
         {
 #if !JITTER2_PHYSICS
             physicsEntity.CollisionInformation.Events.InitialCollisionDetected += OnNCollisionEnter;
@@ -588,7 +594,7 @@ namespace NonLockStep
         }
 #endif
 
-        public void PostPhysicsUpdate()
+        public virtual void PostPhysicsUpdate()
         {
             if (physicsEntity == null)
                 return;
@@ -698,7 +704,7 @@ namespace NonLockStep
             Translate(new NVector3(x, y, z), Space.Self);
         }
 
-        public void Translate(NVector3 translation, Space relativeTo = Space.Self)
+        public virtual void Translate(NVector3 translation, Space relativeTo = Space.Self)
         {
             if (relativeTo == Space.World)
                 translation *= 30f;
