@@ -731,41 +731,43 @@ namespace MVC.View
         [DidReloadScripts]
         static void OnScriptCompilation()
         {
-            var gameObject = Selection.activeGameObject;
-            if (gameObject == null)
-                return;
-            if (!gameObject.TryGetComponent<FieldCollection>(out var fieldCollection))
-                return;
-            if (fieldCollection.compiling)
+            foreach (var gameObject in Selection.gameObjects)
             {
-                fieldCollection.compiling = false;
-                var data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
-                string componentTypeName;
-                if (string.IsNullOrEmpty(data.nameSpace))
-                    componentTypeName = fieldCollection.fieldName;
-                else
-                    componentTypeName = data.nameSpace + "." + fieldCollection.fieldName;
-                var type = AssemblyHelper.GetType(componentTypeName);
-                if (type == null)
-                    return;
-                if (!type.IsSubclassOf(typeof(Component)))
-                    return;
-                if (!fieldCollection.TryGetComponent(type, out var component))
-                    component = fieldCollection.gameObject.AddComponent(type);
-                if (fieldCollection.isDynamic)
+                if (gameObject == null)
+                    continue;
+                if (!gameObject.TryGetComponent<FieldCollection>(out var fieldCollection))
+                    continue;
+                if (fieldCollection.compiling)
                 {
-                    var onValidateMethod = type.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    onValidateMethod.Invoke(component, null);
-                }
-                else
-                {
-                    foreach (var item in fieldCollection.fields)
+                    fieldCollection.compiling = false;
+                    var data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
+                    string componentTypeName;
+                    if (string.IsNullOrEmpty(data.nameSpace))
+                        componentTypeName = fieldCollection.fieldName;
+                    else
+                        componentTypeName = data.nameSpace + "." + fieldCollection.fieldName;
+                    var type = AssemblyHelper.GetType(componentTypeName);
+                    if (type == null)
+                        continue;
+                    if (!type.IsSubclassOf(typeof(Component)))
+                        continue;
+                    if (!fieldCollection.TryGetComponent(type, out var component))
+                        component = fieldCollection.gameObject.AddComponent(type);
+                    if (fieldCollection.isDynamic)
                     {
-                        var field = type.GetField(item.name, BindingFlags.Public | BindingFlags.Instance);
-                        if (field == null) continue;
-                        field.SetValue(component, item.target);
+                        var onValidateMethod = type.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        onValidateMethod.Invoke(component, null);
                     }
-                    EditorUtility.SetDirty(component);
+                    else
+                    {
+                        foreach (var item in fieldCollection.fields)
+                        {
+                            var field = type.GetField(item.name, BindingFlags.Public | BindingFlags.Instance);
+                            if (field == null) continue;
+                            field.SetValue(component, item.target);
+                        }
+                        EditorUtility.SetDirty(component);
+                    }
                 }
             }
         }

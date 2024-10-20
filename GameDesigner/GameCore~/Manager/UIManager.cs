@@ -31,7 +31,10 @@ namespace GameCore
             AddForm(_Message);
             AddForm(_Tips);
             foreach (var form in _Forms)
+            {
                 AddForm(form);
+                form.HideUI(false);
+            }
         }
 
         /// <summary>
@@ -40,8 +43,8 @@ namespace GameCore
         /// <param name="form"></param>
         public void AddForm(UIBase form)
         {
-            if (form == null) return;
-
+            if (form == null)
+                return;
             formDict[form.GetType().Name] = form;
         }
 
