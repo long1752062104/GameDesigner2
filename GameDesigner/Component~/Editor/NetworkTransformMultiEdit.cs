@@ -21,6 +21,7 @@ public class NetworkTransformMultiEdit : Editor
         base.OnInspectorGUI();
         GUI.enabled = false;
         EditorGUILayout.LabelField("mode", nt.currMode.ToString());
+        EditorGUILayout.LabelField("被控制时间", nt.currControlTime.ToString("f1"));
         GUI.enabled = true;
         if (GUILayout.Button("更新子物体"))
         {

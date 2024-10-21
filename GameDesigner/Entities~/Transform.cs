@@ -1,7 +1,7 @@
-﻿using Net.Common;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Net.Common;
 
 namespace Net.Entities
 {

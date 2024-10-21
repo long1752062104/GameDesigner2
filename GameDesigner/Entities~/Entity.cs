@@ -1,26 +1,20 @@
 ﻿using Net.Helper;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Net.Entities
 {
+    [Serializable]
     public sealed class Entity : Object
     {
-        public int layer { get; set; }
-
-        public bool active { get; set; }
-
-        public bool activeSelf { get; }
-
-        public bool activeInHierarchy { get; }
-
-        public bool isStatic { get; set; }
-
-        public string tag { get; set; }
-
-        public List<Component> Components { get; set; } = new List<Component>();
-        public List<Entity> Childs { get; set; } = new List<Entity>();
+        public int layer;
+        public bool active;
+        public bool activeSelf;
+        public bool activeInHierarchy;
+        public bool isStatic;
+        public string tag;
+        public List<Component> Components = new();
+        public List<Entity> Childs = new();
         public Queue<Action> EventQueue { get; private set; } = new Queue<Action>();
 
         public void SetActive(bool value)
@@ -211,7 +205,6 @@ namespace Net.Entities
         public Component AddComponent(Type componentType)
         {
             var component = Activator.CreateInstance(componentType) as Component;
-            component.m_Name = m_Name;
             component.Entity = this;
             Components.Add(component);
             if (component is IEntityAwake entityAwake)
@@ -251,8 +244,7 @@ namespace Net.Entities
 
         internal Entity(string name, params Type[] components)
         {
-            m_Name = new ObjectName();
-            this.name = name;
+            Name = name;
             if (components == null)
                 return;
             foreach (Type componentType in components)
@@ -263,7 +255,7 @@ namespace Net.Entities
 
         public Entity Find(string name)
         {
-            if (this.name == name)
+            if (Name == name)
                 return this;
             var layerIndex = name.IndexOf('/');
             var layerName = name;
@@ -272,7 +264,7 @@ namespace Net.Entities
             Entity entity = null;
             for (int i = 0; i < Childs.Count; i++)
             {
-                if (Childs[i].name == layerName)
+                if (Childs[i].Name == layerName)
                 {
                     entity = Childs[i];
                     break;
@@ -288,7 +280,7 @@ namespace Net.Entities
             return entity;
         }
 
-        public EntityWorld scene
+        public World scene
         {
             get => World;
         }
@@ -301,7 +293,7 @@ namespace Net.Entities
             }
         }
 
-        public EntityWorld World { get; internal set; }
+        public World World { get; internal set; }
 
         private Entity m_parent;
         public Entity Parent
@@ -313,7 +305,7 @@ namespace Net.Entities
                     m_parent.Childs.Remove(this);
                 m_parent = value;
                 if (m_parent == null)
-                    World.EntityRoots.Add(this);
+                    World.Roots.Add(this);
                 else
                     m_parent.Childs.Add(this);
             }
@@ -353,7 +345,7 @@ namespace Net.Entities
 
         public override string ToString()
         {
-            return $"{name}";
+            return $"{Name}";
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Net.UnityComponent
         // Update is called once per frame
         void Update()
         {
-            EntityWorldSingleton.Instance.DefaultWorld.Simulate(17);
+            WorldSingleton.Instance.DefaultWorld.Simulate(17);
         }
     }
 }

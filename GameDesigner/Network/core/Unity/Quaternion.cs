@@ -296,8 +296,7 @@ namespace Net
 
         public float LengthSquared()
         {
-            return (float)(x * (double)x + y * (double)y + z * (double)z +
-                w * (double)w);
+            return x * x + y * y + z * z + w * w;
         }
 
         public float Length()

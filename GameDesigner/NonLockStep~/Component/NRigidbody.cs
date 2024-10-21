@@ -2,6 +2,7 @@
 using UnityEngine;
 using SoftFloat;
 using System.Collections.Generic;
+using Net.Unity;
 #if JITTER2_PHYSICS
 using Jitter2.Collision.Shapes;
 using Jitter2.LinearMath;
@@ -40,8 +41,8 @@ namespace NonLockStep
         [SerializeField] protected float friction = 0.2f;
 #endif
         [Header("Constraints")]
-        [SerializeField] protected NPhysicsAxisConstraints fixedPosition;
-        [SerializeField] protected NPhysicsAxisConstraints fixedRotation;
+        [SerializeField] protected AxisConstraints fixedPosition;
+        [SerializeField] protected AxisConstraints fixedRotation;
         [Header("layerOverrides")]
         [SerializeField] protected LayerMask includeLayers;
         [SerializeField] protected LayerMask excludeLayers;

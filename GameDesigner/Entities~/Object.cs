@@ -2,19 +2,10 @@
 
 namespace Net.Entities
 {
-    public class ObjectName 
-    {
-        public string Name { get; set; }
-    }
-
+    [Serializable]
     public class Object
     {
-        internal ObjectName m_Name;
-        public string name
-        {
-            get => m_Name.Name;
-            set => m_Name.Name = value;
-        }
+        public string Name;
 
         public static Object Instantiate(Object original, Vector3 position, Quaternion rotation)
         {
@@ -33,7 +24,7 @@ namespace Net.Entities
 
         public static Object Instantiate(Object original, Transform parent)
         {
-            return Object.Instantiate(original, parent, false);
+            return Instantiate(original, parent, false);
         }
 
         public static Object Instantiate(Object original, Transform parent, bool instantiateInWorldSpace)
@@ -48,22 +39,22 @@ namespace Net.Entities
 
         public static T Instantiate<T>(T original, Vector3 position, Quaternion rotation) where T : Object
         {
-            return (T)((object)Object.Instantiate(original, position, rotation));
+            return (T)((object)Instantiate(original, position, rotation));
         }
 
         public static T Instantiate<T>(T original, Vector3 position, Quaternion rotation, Transform parent) where T : Object
         {
-            return (T)((object)Object.Instantiate(original, position, rotation, parent));
+            return (T)((object)Instantiate(original, position, rotation, parent));
         }
 
         public static T Instantiate<T>(T original, Transform parent) where T : Object
         {
-            return Object.Instantiate<T>(original, parent, false);
+            return Instantiate<T>(original, parent, false);
         }
 
         public static T Instantiate<T>(T original, Transform parent, bool worldPositionStays) where T : Object
         {
-            return (T)((object)Object.Instantiate(original, parent, worldPositionStays));
+            return (T)((object)Instantiate(original, parent, worldPositionStays));
         }
 
         public static void Destroy(Object obj, [DefaultValue("0.0F")] float t) 
@@ -74,7 +65,7 @@ namespace Net.Entities
         public static void Destroy(Object obj)
         {
             float t = 0f;
-            Object.Destroy(obj, t);
+            Destroy(obj, t);
         }
 
         public static void DestroyImmediate(Object obj, [DefaultValue("false")] bool allowDestroyingAssets) 
@@ -85,12 +76,12 @@ namespace Net.Entities
         public static void DestroyImmediate(Object obj)
         {
             bool allowDestroyingAssets = false;
-            Object.DestroyImmediate(obj, allowDestroyingAssets);
+            DestroyImmediate(obj, allowDestroyingAssets);
         }
 
         public static Object[] FindObjectsOfType(Type type)
         {
-            return Object.FindObjectsOfType(type, false);
+            return FindObjectsOfType(type, false);
         }
 
         public static Object[] FindObjectsOfType(Type type, bool includeInactive) 
@@ -100,7 +91,7 @@ namespace Net.Entities
 
         public static Object[] FindObjectsByType(Type type, FindObjectsSortMode sortMode)
         {
-            return Object.FindObjectsByType(type, FindObjectsInactive.Exclude, sortMode);
+            return FindObjectsByType(type, FindObjectsInactive.Exclude, sortMode);
         }
 
         public static Object[] FindObjectsByType(Type type, FindObjectsInactive findObjectsInactive, FindObjectsSortMode sortMode) 
@@ -115,18 +106,18 @@ namespace Net.Entities
 
         public static void DestroyObject(Object obj, [DefaultValue("0.0F")] float t)
         {
-            Object.Destroy(obj, t);
+            Destroy(obj, t);
         }
 
         public static void DestroyObject(Object obj)
         {
             float t = 0f;
-            Object.Destroy(obj, t);
+            Destroy(obj, t);
         }
 
         public static Object[] FindSceneObjectsOfType(Type type)
         {
-            return Object.FindObjectsOfType(type);
+            return FindObjectsOfType(type);
         }
 
         public static Object[] FindObjectsOfTypeIncludingAssets(Type type) 
@@ -136,52 +127,52 @@ namespace Net.Entities
 
         public static T[] FindObjectsOfType<T>() where T : Object
         {
-            return Resources.ConvertObjects<T>(Object.FindObjectsOfType(typeof(T), false));
+            return Resources.ConvertObjects<T>(FindObjectsOfType(typeof(T), false));
         }
 
         public static T[] FindObjectsByType<T>(FindObjectsSortMode sortMode) where T : Object
         {
-            return Resources.ConvertObjects<T>(Object.FindObjectsByType(typeof(T), FindObjectsInactive.Exclude, sortMode));
+            return Resources.ConvertObjects<T>(FindObjectsByType(typeof(T), FindObjectsInactive.Exclude, sortMode));
         }
 
         public static T[] FindObjectsOfType<T>(bool includeInactive) where T : Object
         {
-            return Resources.ConvertObjects<T>(Object.FindObjectsOfType(typeof(T), includeInactive));
+            return Resources.ConvertObjects<T>(FindObjectsOfType(typeof(T), includeInactive));
         }
 
         public static T[] FindObjectsByType<T>(FindObjectsInactive findObjectsInactive, FindObjectsSortMode sortMode) where T : Object
         {
-            return Resources.ConvertObjects<T>(Object.FindObjectsByType(typeof(T), findObjectsInactive, sortMode));
+            return Resources.ConvertObjects<T>(FindObjectsByType(typeof(T), findObjectsInactive, sortMode));
         }
 
         public static T FindObjectOfType<T>() where T : Object
         {
-            return (T)((object)Object.FindObjectOfType(typeof(T), false));
+            return (T)((object)FindObjectOfType(typeof(T), false));
         }
 
         public static T FindObjectOfType<T>(bool includeInactive) where T : Object
         {
-            return (T)((object)Object.FindObjectOfType(typeof(T), includeInactive));
+            return (T)((object)FindObjectOfType(typeof(T), includeInactive));
         }
 
         public static T FindFirstObjectByType<T>() where T : Object
         {
-            return (T)((object)Object.FindFirstObjectByType(typeof(T), FindObjectsInactive.Exclude));
+            return (T)((object)FindFirstObjectByType(typeof(T), FindObjectsInactive.Exclude));
         }
 
         public static T FindAnyObjectByType<T>() where T : Object
         {
-            return (T)((object)Object.FindAnyObjectByType(typeof(T), FindObjectsInactive.Exclude));
+            return (T)((object)FindAnyObjectByType(typeof(T), FindObjectsInactive.Exclude));
         }
 
         public static T FindFirstObjectByType<T>(FindObjectsInactive findObjectsInactive) where T : Object
         {
-            return (T)((object)Object.FindFirstObjectByType(typeof(T), findObjectsInactive));
+            return (T)((object)FindFirstObjectByType(typeof(T), findObjectsInactive));
         }
 
         public static T FindAnyObjectByType<T>(FindObjectsInactive findObjectsInactive) where T : Object
         {
-            return (T)((object)Object.FindAnyObjectByType(typeof(T), findObjectsInactive));
+            return (T)((object)FindAnyObjectByType(typeof(T), findObjectsInactive));
         }
 
         public static Object[] FindObjectsOfTypeAll(Type type)
@@ -191,7 +182,7 @@ namespace Net.Entities
 
         public static Object FindObjectOfType(Type type)
         {
-            Object[] array = Object.FindObjectsOfType(type, false);
+            Object[] array = FindObjectsOfType(type, false);
             bool flag = array.Length != 0;
             Object result;
             if (flag)
@@ -207,19 +198,19 @@ namespace Net.Entities
 
         public static Object FindFirstObjectByType(Type type)
         {
-            Object[] array = Object.FindObjectsByType(type, FindObjectsInactive.Exclude, FindObjectsSortMode.InstanceID);
+            Object[] array = FindObjectsByType(type, FindObjectsInactive.Exclude, FindObjectsSortMode.InstanceID);
             return (array.Length != 0) ? array[0] : null;
         }
 
         public static Object FindAnyObjectByType(Type type)
         {
-            Object[] array = Object.FindObjectsByType(type, FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            Object[] array = FindObjectsByType(type, FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             return (array.Length != 0) ? array[0] : null;
         }
 
         public static Object FindObjectOfType(Type type, bool includeInactive)
         {
-            Object[] array = Object.FindObjectsOfType(type, includeInactive);
+            Object[] array = FindObjectsOfType(type, includeInactive);
             bool flag = array.Length != 0;
             Object result;
             if (flag)
@@ -235,19 +226,19 @@ namespace Net.Entities
 
         public static Object FindFirstObjectByType(Type type, FindObjectsInactive findObjectsInactive)
         {
-            Object[] array = Object.FindObjectsByType(type, findObjectsInactive, FindObjectsSortMode.InstanceID);
+            Object[] array = FindObjectsByType(type, findObjectsInactive, FindObjectsSortMode.InstanceID);
             return (array.Length != 0) ? array[0] : null;
         }
 
         public static Object FindAnyObjectByType(Type type, FindObjectsInactive findObjectsInactive)
         {
-            Object[] array = Object.FindObjectsByType(type, findObjectsInactive, FindObjectsSortMode.None);
+            Object[] array = FindObjectsByType(type, findObjectsInactive, FindObjectsSortMode.None);
             return (array.Length != 0) ? array[0] : null;
         }
 
         public override string ToString()
         {
-            return $"{name} ({GetType()})";
+            return $"{Name} ({GetType()})";
         }
     }
 }

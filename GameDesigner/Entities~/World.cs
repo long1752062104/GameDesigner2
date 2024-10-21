@@ -7,29 +7,34 @@ using System.Reflection;
 
 namespace Net.Entities
 {
-    public class EntityWorld
+    [Serializable]
+    public class World
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public FastList<Entity> EntityRoots { get; set; }
-        private TimerTick TimerTick { get; set; }
-        private Stopwatch Stopwatch { get; set; }
+        public string Name;
+        public string Description;
+        public FastList<Entity> Roots;
+        private readonly TimerTick TimerTick;
+        private readonly Stopwatch Stopwatch;
 
-        public EntityWorld()
+        public World()
         {
-            EntityRoots = new FastList<Entity>();
+            Roots = new FastList<Entity>();
             TimerTick = new TimerTick();
             Stopwatch = Stopwatch.StartNew();
         }
-        public EntityWorld(string name) : this()
+
+        public World(string name) : this()
         {
-            this.Name = name;
+            Name = name;
         }
 
-        public void Init()
+        public void Init(params object[] args)
         {
             CollectAttributes();
+            OnInit(args);
         }
+
+        public virtual void OnInit(params object[] args) { }
 
         public void CollectAttributes()
         {
@@ -75,27 +80,32 @@ namespace Net.Entities
         private void Execute()
         {
             Stopwatch.Restart();
-            for (int i = 0; i < EntityRoots.Count; i++)
+            Time.Update();
+            OnUpdate();
+            for (int i = 0; i < Roots.Count; i++)
             {
-                EntityRoots[i].Execute();
+                Roots[i].Execute();
             }
+            OnLateUpdate();
             Stopwatch.Stop();
-            //NDebug.Log(Stopwatch.Elapsed);
         }
 
-        public Entity CreateEntity(string name, params Type[] components)
+        public virtual void OnUpdate() { }
+        public virtual void OnLateUpdate() { }
+
+        public Entity Create(string name, params Type[] components)
         {
-            var entity = new Entity(name, components);
-            entity.World = this;
-            entity.Parent = null;
-            return entity;
+            return Create(name, null, components);
         }
 
-        public Entity CreateEntity(string name, Entity parent, params Type[] components)
+        public Entity Create(string name, Entity parent, params Type[] components)
         {
-            var entity = new Entity(name, components);
-            entity.World = this;
-            entity.Parent = parent;
+            var entity = new Entity(name, components)
+            {
+                World = this,
+                Parent = parent
+            };
+            parent?.Childs.Add(entity);
             return entity;
         }
 

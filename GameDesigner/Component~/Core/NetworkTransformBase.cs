@@ -4,6 +4,7 @@ namespace Net.UnityComponent
     using Net.Client;
     using Net.Component;
     using Net.Share;
+    using Net.Unity;
     using UnityEngine;
 
     public enum SyncMode
@@ -42,31 +43,27 @@ namespace Net.UnityComponent
     [DefaultExecutionOrder(1000)]
     public abstract class NetworkTransformBase : NetworkBehaviour
     {
-        protected Net.Vector3 position;
-        protected Net.Quaternion rotation;
-        protected Net.Vector3 localScale;
         protected Net.Vector3 netPosition;
         protected Net.Quaternion netRotation;
         protected Net.Vector3 netLocalScale;
         public SyncMode syncMode = SyncMode.Local;
-        public bool syncPosition = true;
-        public bool syncRotation = true;
-        public bool syncScale = false;
+        public AxisConstraints syncPosition;
+        public Axis2Constraints syncRotation;
+        public AxisConstraints syncScale;
         [HideInInspector] public SyncMode currMode = SyncMode.None;
         public float controlTime = 0.5f;
         public float lerpSpeed = 0.3f;
-        public bool fixedSync = false;
-        public float fixedSendTime = 1f;//固定发送时间
-        internal float fixedTime;
         [HideInInspector] public float currControlTime;
+        [Tooltip("允许位置微小变动的范围, 如果当前位置移动超过difference距离,才会发生同步")]
+        public float difference = 9.9999994E-11f;
 
         public override void Start()
         {
             base.Start();
             netObj.CanDestroy = false;
-            netPosition = position = transform.position;
-            netRotation = rotation = transform.rotation;
-            netLocalScale = localScale = transform.localScale;
+            netPosition = transform.position;
+            netRotation = transform.rotation;
+            netLocalScale = transform.localScale;
         }
 
         public override void NetworkUpdate()
@@ -90,17 +87,47 @@ namespace Net.UnityComponent
 
         public virtual void NetworkSyncCheck()
         {
-            if (transform.position != position | transform.rotation != rotation | transform.localScale != localScale | (Time.time > fixedTime & fixedSync))
+            SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale); //禁言某个轴后值是0,导致一直同步
+            var canSyncPosition = (transform.position - netPosition).sqrMagnitude > difference;
+            var canSyncRotation = (transform.rotation - netRotation).LengthSquared() > difference;
+            var canSyncScale = (transform.localScale - netLocalScale).sqrMagnitude > difference;
+            if (canSyncPosition | canSyncRotation | canSyncScale)
                 SyncTransformState();
         }
 
         public virtual void SyncTransformState()
         {
-            position = transform.position; //必须在这里处理，在上面处理会有点问题
-            rotation = transform.rotation;
-            localScale = transform.localScale;
-            fixedTime = Time.time + fixedSendTime;
-            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, syncScale ? localScale : Net.Vector3.zero, syncPosition ? position : Net.Vector3.zero, syncRotation ? rotation : Net.Quaternion.zero)
+            netPosition = transform.position; //必须在这里处理，在上面处理会有点问题
+            netRotation = transform.rotation;
+            netLocalScale = transform.localScale;
+
+            Net.Vector3 position = default;
+            Net.Quaternion rotation = default;
+            Net.Vector3 localScale = default;
+            if (syncPosition.X)
+                position.x = netPosition.x;
+            if (syncPosition.Y)
+                position.y = netPosition.y;
+            if (syncPosition.Z)
+                position.z = netPosition.z;
+
+            if (syncRotation.X)
+                rotation.x = netRotation.x;
+            if (syncRotation.Y)
+                rotation.y = netRotation.y;
+            if (syncRotation.Z)
+                rotation.z = netRotation.z;
+            if (syncRotation.W)
+                rotation.w = netRotation.w;
+
+            if (syncScale.X)
+                localScale.x = netLocalScale.x;
+            if (syncScale.Y)
+                localScale.y = netLocalScale.y;
+            if (syncScale.Z)
+                localScale.z = netLocalScale.z;
+
+            NetworkSceneManager.Instance.AddOperation(new Operation(Command.Transform, netObj.Identity, position, rotation, localScale)
             {
                 cmd1 = (byte)currMode,
                 index = netObj.registerObjectIndex,
@@ -116,32 +143,59 @@ namespace Net.UnityComponent
 
         public virtual void SyncTransform()
         {
-            if (syncPosition)
+            SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale);
+            var canSyncPosition = (transform.position - netPosition).sqrMagnitude > difference;
+            var canSyncRotation = (transform.rotation - netRotation).LengthSquared() > difference;
+            var canSyncScale = (transform.localScale - netLocalScale).sqrMagnitude > difference;
+            if (canSyncPosition)
                 transform.position = Vector3.Lerp(transform.position, netPosition, lerpSpeed);
-            if (syncRotation)
-                if (netRotation != Net.Quaternion.identity)
-                    transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed);
-            if (syncScale)
+            if (canSyncRotation)
+                transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed);
+            if (canSyncScale)
                 transform.localScale = netLocalScale;
         }
 
         public virtual void SyncControlTransform()
         {
-            if (syncPosition)
-            {
-                position = netPosition;//位置要归位,要不然就会发送数据
-                transform.position = netPosition;
-            }
-            if (syncRotation)
-            {
-                rotation = netRotation;
-                transform.rotation = netRotation;
-            }
-            if (syncScale)
-            {
-                localScale = netLocalScale;
+            //SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale);
+            //transform.SetPositionAndRotation(netPosition, netRotation);
+            //transform.localScale = netLocalScale;
+            SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale);
+            var canSyncPosition = (transform.position - netPosition).sqrMagnitude > difference;
+            var canSyncRotation = (transform.rotation - netRotation).LengthSquared() > difference;
+            var canSyncScale = (transform.localScale - netLocalScale).sqrMagnitude > difference;
+            if (canSyncPosition)
+                transform.position = Vector3.Lerp(transform.position, netPosition, lerpSpeed);
+            if (canSyncRotation)
+                transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed);
+            if (canSyncScale)
                 transform.localScale = netLocalScale;
-            }
+        }
+
+        public virtual void SyncAxisConstraints(bool state, in Net.Vector3 position, in Net.Quaternion rotation, in Net.Vector3 localScale)
+        {
+            if (syncPosition.X == state)
+                netPosition.x = position.x;
+            if (syncPosition.Y == state)
+                netPosition.y = position.y;
+            if (syncPosition.Z == state)
+                netPosition.z = position.z;
+
+            if (syncRotation.X == state)
+                netRotation.x = rotation.x;
+            if (syncRotation.Y == state)
+                netRotation.y = rotation.y;
+            if (syncRotation.Z == state)
+                netRotation.z = rotation.z;
+            if (syncRotation.W == state)
+                netRotation.w = rotation.w;
+
+            if (syncScale.X == state)
+                netLocalScale.x = localScale.x;
+            if (syncScale.Y == state)
+                netLocalScale.y = localScale.y;
+            if (syncScale.Z == state)
+                netLocalScale.z = localScale.z;
         }
 
         public override void OnNetworkObjectInit(int identity)
@@ -157,9 +211,7 @@ namespace Net.UnityComponent
         {
             if (opt.cmd == Command.Transform)
                 SetNetworkSyncMode(opt);
-            netPosition = opt.position;
-            netRotation = opt.rotation;
-            netLocalScale = opt.direction;
+            SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
             SyncControlTransform();
         }
 
@@ -186,9 +238,7 @@ namespace Net.UnityComponent
         protected void SetNetworkSyncState(in Operation opt)
         {
             currControlTime = controlTime;
-            netPosition = opt.position;
-            netRotation = opt.rotation;
-            netLocalScale = opt.direction;
+            SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
         }
 
         protected void SetNetworkSyncMode(in Operation opt)
