@@ -51,6 +51,8 @@ namespace GameCore
                         {
                             if (table.Columns.Count == 0) //空表
                                 continue;
+                            if (table.Rows.Count < 3) //空行
+                                continue;
                             var dataTable = new DataTable(table.TableName);
                             var columnTypes = new List<Type>();
                             for (int i = 0; i < table.Columns.Count; i++)
@@ -69,9 +71,8 @@ namespace GameCore
                             for (int x = 3; x < table.Rows.Count; x++)
                             {
                                 var row = table.Rows[x];
-                                var columnName = row[0].ToString();
-                                var columnType = row[1].ToString();
-                                if (string.IsNullOrEmpty(columnName) | string.IsNullOrEmpty(columnType))
+                                var rowId = row[0].ToString();
+                                if (string.IsNullOrEmpty(rowId))
                                     continue;
                                 var dataRow = dataTable.NewRow();
                                 dataTable.Rows.Add(dataRow);
@@ -160,6 +161,8 @@ namespace GameCore
                         foreach (DataTable table in dataSet.Tables)
                         {
                             if (table.Columns.Count == 0) //空表
+                                continue;
+                            if (table.Rows.Count < 3) //   空行
                                 continue;
                             var text = textSource.Replace("SHEETNAME", table.TableName);
                             var texts = text.Split(new string[] { "SPLIT" }, 0);

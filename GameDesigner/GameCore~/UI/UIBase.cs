@@ -60,7 +60,7 @@ namespace GameCore
             OnShowUI(title, progress);
         }
 
-        public void HideUI(bool isBack = true, params object[] pars)
+        public virtual void HideUI(bool isBack = true, params object[] pars)
         {
             gameObject.SetActive(false);
             if (isBack & onBack != null)
