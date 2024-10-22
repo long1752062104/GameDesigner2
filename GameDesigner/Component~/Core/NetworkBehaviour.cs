@@ -45,6 +45,11 @@ namespace Net.UnityComponent
         private bool isInit;
         private bool isEnabled;
         internal bool isInitSync = true;
+        public int WriteCount { get; set; }
+        public int ReadCount { get; set; }
+        public int WriteBytes { get; set; }
+        public int ReadBytes { get; set; }
+
         public virtual void Start()
         {
             Init();

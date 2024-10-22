@@ -13,7 +13,6 @@ namespace Net.Share
         public bool authorize;
         internal MethodInfo onValueChanged;
         internal bool isDispose;
-        //internal uint tick;
         public int writeCount;
         public int readCount;
         public int writeBytes;

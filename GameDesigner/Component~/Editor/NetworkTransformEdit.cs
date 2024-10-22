@@ -18,10 +18,16 @@ public class NetworkTransformEdit : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        GUI.enabled = false;
-        EditorGUILayout.LabelField("mode", nt.currMode.ToString());
-        EditorGUILayout.LabelField("被控制时间", nt.currControlTime.ToString("f1"));
-        GUI.enabled = true;
+        if (EditorApplication.isPlaying)
+        {
+            GUI.enabled = false;
+            EditorGUILayout.LabelField("同步模式", nt.currMode.ToString());
+            EditorGUILayout.LabelField("被控制时间", nt.currControlTime.ToString("f1"));
+            var style = new GUIStyle() { richText = true };
+            EditorGUILayout.LabelField($"<color=green>发送同步次数:{nt.WriteCount}</color>", style);
+            EditorGUILayout.LabelField($"<color=green>接收同步次数:{nt.ReadCount}</color>", style);
+            GUI.enabled = true;
+        }
     }
 }
 #endif

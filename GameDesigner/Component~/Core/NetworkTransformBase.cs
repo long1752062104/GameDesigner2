@@ -134,6 +134,8 @@ namespace Net.UnityComponent
                 index1 = NetComponentID,
                 uid = ClientBase.Instance.UID
             });
+
+            WriteCount++;
         }
 
         public virtual void ForcedSynchronous()
@@ -157,17 +159,14 @@ namespace Net.UnityComponent
 
         public virtual void SyncControlTransform()
         {
-            //SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale);
-            //transform.SetPositionAndRotation(netPosition, netRotation);
-            //transform.localScale = netLocalScale;
             SyncAxisConstraints(false, transform.position, transform.rotation, transform.localScale);
             var canSyncPosition = (transform.position - netPosition).sqrMagnitude > difference;
             var canSyncRotation = (transform.rotation - netRotation).LengthSquared() > difference;
             var canSyncScale = (transform.localScale - netLocalScale).sqrMagnitude > difference;
             if (canSyncPosition)
-                transform.position = Vector3.Lerp(transform.position, netPosition, lerpSpeed);
+                transform.position = netPosition;
             if (canSyncRotation)
-                transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed);
+                transform.rotation = netRotation;
             if (canSyncScale)
                 transform.localScale = netLocalScale;
         }
@@ -209,19 +208,25 @@ namespace Net.UnityComponent
 
         public override void OnNetworkObjectCreate(in Operation opt)
         {
-            if (opt.cmd == Command.Transform)
+            if (opt.cmd == Command.Transform) //同步Transform命令时才能设置位置,否则会出现位置在0,0,0的问题, 然后看到瞬移
+            {
                 SetNetworkSyncMode(opt);
-            SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
-            SyncControlTransform();
+                SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
+                SyncControlTransform();
+            }
         }
 
         public override void OnInitialSynchronization(in Operation opt)
         {
             if (ClientBase.Instance.UID == opt.uid)
                 return;
-            SetNetworkSyncState(opt);
-            SetNetworkSyncMode(opt);
-            SyncControlTransform();
+            //当一个物体挂有多个网络组件时, 比如NetworAnimator先发生了同步数据, 这里就会导致位置变成0,0,0 所以我们判断当不是NetworkTransform的同步数据, 则不能修改位置和旋转,缩放
+            if (opt.cmd == Command.Transform)
+            {
+                SetNetworkSyncMode(opt);
+                SetNetworkSyncState(opt);
+                SyncControlTransform();
+            }
         }
 
         public override void OnNetworkOperationHandler(in Operation opt)
@@ -233,6 +238,7 @@ namespace Net.UnityComponent
                 SyncControlTransform();
             else if (currMode == SyncMode.None)
                 SetNetworkSyncMode(opt);
+            ReadCount++;
         }
 
         protected void SetNetworkSyncState(in Operation opt)
