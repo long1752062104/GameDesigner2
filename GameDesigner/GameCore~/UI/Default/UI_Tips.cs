@@ -1,11 +1,15 @@
-using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace GameCore
 {
     public class UI_Tips : UIBase<UI_Tips, TipsItem>
     {
         public float hideTime = 1.5f;
+        public float interval = 0.2f;
+        private float time;
+        private readonly Queue<TipsItem> tipsQueue = new Queue<TipsItem>();
 
         private void Awake()
         {
@@ -14,22 +18,36 @@ namespace GameCore
 
         public override void OnShowUI(string title, string info, Action<bool> action)
         {
-            _ = OnShowTips(info, 0f);
+            OnShowTips(info, 0f);
         }
 
         public override void OnShowUI(string title, float progress)
         {
-            _ = OnShowTips(title, progress);
+            OnShowTips(title, progress);
         }
 
-        private async UniTaskVoid OnShowTips(string info, float delay)
+        private void OnShowTips(string info, float delay)
         {
-            await UniTask.Delay((int)(delay * 1000f));
             var item1 = Global.Pool.GetObject<TipsItem>(item, itemRoot);
             item1.info.text = info;
-            item1.time = hideTime;
-            item1.gameObject.SetActive(true);
-            item1.transform.SetAsLastSibling();
+            item1.showTime = delay <= 0f ? interval : delay;
+            item1.hideTime = hideTime;
+            tipsQueue.Enqueue(item1);
+        }
+
+        private void Update()
+        {
+            if (tipsQueue.TryPeek(out var tipsItem))
+            {
+                time += Time.deltaTime;
+                if (time > tipsItem.showTime)
+                {
+                    time = 0f;
+                    tipsQueue.Dequeue();
+                    tipsItem.transform.SetAsLastSibling();
+                    tipsItem.gameObject.SetActive(true);
+                }
+            }
         }
     }
 }

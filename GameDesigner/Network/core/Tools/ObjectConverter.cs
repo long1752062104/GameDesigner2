@@ -12,7 +12,7 @@ public static class ObjectConverter
     public static bool AsBool(string self)
     {
         if (!bool.TryParse(self, out var value))
-            return self != "0";
+            return self != "0" && !string.IsNullOrEmpty(self);
         return value;
     }
 

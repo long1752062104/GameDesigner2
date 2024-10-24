@@ -21,9 +21,11 @@ namespace GameCore
         public override object Invoke() => getFunc();
     }
 
+    public delegate void EventDelegate(params object[] args);
+
     public class EventManager : MonoBehaviour
     {
-        private readonly Dictionary<object, List<Action<object[]>>> events = new Dictionary<object, List<Action<object[]>>>();
+        private readonly Dictionary<object, List<EventDelegate>> events = new Dictionary<object, List<EventDelegate>>();
         private readonly Dictionary<object, GetEventBase> getEvents = new Dictionary<object, GetEventBase>(); //这个事件是你不想在Global定义全局字段时用到，并且无耦合代码
 
         /// <summary>
@@ -31,10 +33,10 @@ namespace GameCore
         /// </summary>
         /// <param name="eventName"></param>
         /// <param name="eventDelegate"></param>
-        public void AddEvent(string eventName, Action<object[]> eventDelegate)
+        public void AddEvent(string eventName, EventDelegate eventDelegate)
         {
             if (!events.TryGetValue(eventName, out var delegates))
-                events.Add(eventName, delegates = new List<Action<object[]>>());
+                events.Add(eventName, delegates = new List<EventDelegate>());
             delegates.Add(eventDelegate);
         }
 
@@ -43,10 +45,10 @@ namespace GameCore
         /// </summary>
         /// <param name="eventType"></param>
         /// <param name="eventDelegate"></param>
-        public void AddEvent(Enum eventType, Action<object[]> eventDelegate)
+        public void AddEvent(Enum eventType, EventDelegate eventDelegate)
         {
             if (!events.TryGetValue(eventType, out var delegates))
-                events.Add(eventType, delegates = new List<Action<object[]>>());
+                events.Add(eventType, delegates = new List<EventDelegate>());
             delegates.Add(eventDelegate);
         }
 
@@ -67,7 +69,10 @@ namespace GameCore
         /// <param name="self"></param>
         /// <param name="eventType"></param>
         /// <param name="eventDelegate"></param>
-        public void AutoEvent(MonoBehaviour self, Enum eventType, Action<object[]> eventDelegate) => AutoEvent(self, UnEventMode.OnDestroy, eventType, eventDelegate);
+        /// <param name="isCall">注册事件完成后调用一次?</param>
+        /// <param name="args">调用一次时的参数</param>
+        public void AutoEvent(MonoBehaviour self, Enum eventType, EventDelegate eventDelegate, bool isCall = false, params object[] args)
+            => AutoEvent(self, UnEventMode.OnDestroy, eventType, eventDelegate, isCall, args);
 
         /// <summary>
         /// 注册的事件在self物体被销毁或关闭时自动移除
@@ -75,12 +80,16 @@ namespace GameCore
         /// <param name="self"></param>
         /// <param name="eventType"></param>
         /// <param name="eventDelegate"></param>
-        public void AutoEvent(MonoBehaviour self, UnEventMode eventMode, Enum eventType, Action<object[]> eventDelegate)
+        /// <param name="isCall">注册事件完成后调用一次?</param>
+        /// <param name="args">调用一次时的参数</param>
+        public void AutoEvent(MonoBehaviour self, UnEventMode eventMode, Enum eventType, EventDelegate eventDelegate, bool isCall, params object[] args)
         {
             AddEvent(eventType, eventDelegate);
             if (!self.TryGetComponent<UnEventTrigger>(out var trigger))
                 trigger = self.gameObject.AddComponent<UnEventTrigger>();
             trigger.RegisterUnEvents(eventMode, 1, eventType, eventDelegate);
+            if (isCall)
+                eventDelegate(args);
         }
 
         /// <summary>
@@ -151,7 +160,7 @@ namespace GameCore
         /// </summary>
         /// <param name="eventName"></param>
         /// <param name="eventDelegate"></param>
-        public void Remove(string eventName, Action<object[]> eventDelegate)
+        public void Remove(string eventName, EventDelegate eventDelegate)
         {
             if (events.TryGetValue(eventName, out var delegates))
             {
@@ -171,7 +180,7 @@ namespace GameCore
         /// </summary>
         /// <param name="eventType"></param>
         /// <param name="eventDelegate"></param>
-        public void Remove(Enum eventType, Action<object[]> eventDelegate)
+        public void Remove(Enum eventType, EventDelegate eventDelegate)
         {
             if (events.TryGetValue(eventType, out var delegates))
             {

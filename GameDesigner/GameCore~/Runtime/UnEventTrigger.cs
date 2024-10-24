@@ -59,7 +59,7 @@ namespace GameCore
                     continue;
                 if (data.type == 1)
                 {
-                    Global.Event.Remove(data.eventType, (Action<object[]>)data.value);
+                    Global.Event.Remove(data.eventType, (EventDelegate)data.value);
                     unEvents.RemoveAt(i);
                     continue;
                 }
