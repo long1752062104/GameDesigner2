@@ -193,12 +193,8 @@ namespace Net.UnityComponent
             var sm = NetworkSceneManager.Instance;
             if (sm == null)
                 return;
-            if (!isLocal | m_identity < 10000)//0-10000是场景可用标识
-            {
-                //sm.waitDestroyList.Add(new WaitDestroy(m_identity, false, Time.time + 1f));
+            if (!isLocal | m_identity < 10000) //0-10000是场景可用标识
                 return;
-            }
-            //sm.waitDestroyList.Add(new WaitDestroy(m_identity, true, Time.time + 1f));
             if (!CanDestroy)
                 return;
             if (ClientBase.Instance == null)
@@ -261,7 +257,7 @@ namespace Net.UnityComponent
             return 10000 + ((uid + 1 - 10000) * Capacity);
         }
 
-        public void NetworkUpdate()
+        public void NetworkUpdate(bool isNetworkTick)
         {
             for (int i = 0; i < networkBehaviours.Count; i++)
             {
@@ -270,12 +266,13 @@ namespace Net.UnityComponent
                     continue;
                 if (!networkBehaviour.CheckEnabled())
                     continue;
-                networkBehaviour.NetworkUpdate();
-                if (!IsLocal)
+                networkBehaviour.NetworkUpdate(isNetworkTick);
+                if (!IsLocal | isNetworkTick)
                     continue;
                 networkBehaviour.OnPropertyAutoCheck();
             }
-            CheckSyncVar();
+            if (isNetworkTick)
+                CheckSyncVar();
         }
     }
 }

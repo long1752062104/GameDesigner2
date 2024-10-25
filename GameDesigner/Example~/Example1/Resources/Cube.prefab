@@ -28,12 +28,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1680961511639270300}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1680961511639270303
 MeshFilter:
@@ -54,6 +55,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -96,10 +98,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9af66fec3bba494f8321e80ed131b0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identity: -1
   identity: 0
   registerObjectIndex: 0
   isLocal: 1
+  syncVarInfos:
+    count: 0
+  isInit: 0
 --- !u!114 &8041542005323887164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,16 +117,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   netObj: {fileID: 6986956888886486171}
+  netComponentID: 0
   syncMode: 0
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
+  syncPosition:
+    X: 1
+    Y: 1
+    Z: 1
+  syncRotation:
+    X: 1
+    Y: 1
+    Z: 1
+    W: 1
+  syncScale:
+    X: 0
+    Y: 0
+    Z: 0
   currMode: 5
-  interval: 0.5
-  rate: 30
+  controlTime: 0.5
   lerpSpeed: 0.3
-  fixedSync: 1
-  fixedSendTime: 1
+  currControlTime: 0
+  difference: 9.9999994e-11
 --- !u!114 &-1378744482142756692
 MonoBehaviour:
   m_ObjectHideFlags: 0

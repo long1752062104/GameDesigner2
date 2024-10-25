@@ -391,7 +391,6 @@ GameObject:
   - component: {fileID: 643538767}
   - component: {fileID: 643538768}
   - component: {fileID: 643538766}
-  - component: {fileID: 643538765}
   m_Layer: 0
   m_Name: network
   m_TagString: Untagged
@@ -399,19 +398,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &643538765
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 643538764}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93da6bc4b548d074da3163b2be344ae6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 3
 --- !u!114 &643538766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -431,6 +417,7 @@ MonoBehaviour:
   debugRpc: 1
   startConnect: 1
   updateMode: 0
+  performance: 0
   heartInterval: 1000
   heartLimit: 5
   reconnectInterval: 2000
@@ -686,6 +673,8 @@ MonoBehaviour:
   obj: {fileID: 0}
   obj1: {fileID: 0}
   obj3: {fileID: 0}
+  testint: 0
+  teststring: 
   test1:
     number: 0
     speed: 0
@@ -706,6 +695,8 @@ MonoBehaviour:
   identity: 123
   registerObjectIndex: 0
   isLocal: 1
+  syncVarInfos:
+    count: 0
   isInit: 0
 --- !u!114 &1826353265
 MonoBehaviour:
@@ -906,8 +897,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   registerObjects: []
+  identitys:
+    count: 0
   onExitDelectAll: 1
-  waitDestroyList: []
 --- !u!4 &1902338650
 Transform:
   m_ObjectHideFlags: 0
@@ -935,6 +927,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41891f3d35225c547941574b83b44634, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentFrame: 0
   frame: 0
   CanSentTime: 0.033333335
 --- !u!1 &1945691126

@@ -74,26 +74,24 @@ namespace Net.UnityComponent
 
         public virtual void Update()
         {
-            if (NetworkTime.CanSent)
+            var isNetworkTick = NetworkTime.CanSent;
+            for (int i = 0; i < identitys.count; i++)
             {
-                for (int i = 0; i < identitys.count; i++)
-                {
-                    if (identitys.entries[i].hashCode == -1)
-                        continue;
-                    var identity = identitys.entries[i].value;
-                    if (identity == null)
-                        continue;
-                    if (!identity.enabled)
-                        continue;
-                    if (identity.IsDispose)
-                        continue;
-                    identity.NetworkUpdate();
-                }
-                if (client != null)
-                {
-                    client.AddOperations(operations);
-                    operations._size = 0;
-                }
+                if (identitys.entries[i].hashCode == -1)
+                    continue;
+                var identity = identitys.entries[i].value;
+                if (identity == null)
+                    continue;
+                if (!identity.enabled)
+                    continue;
+                if (identity.IsDispose)
+                    continue;
+                identity.NetworkUpdate(isNetworkTick);
+            }
+            if (client != null && isNetworkTick)
+            {
+                client.AddOperations(operations);
+                operations._size = 0;
             }
         }
 

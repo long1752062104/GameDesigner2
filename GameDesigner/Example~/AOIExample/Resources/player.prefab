@@ -30,12 +30,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4766264212541958773}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6952512587690601700
 MeshFilter:
@@ -56,6 +57,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -94,9 +96,17 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4766264212541958773}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &3207521669977713213
@@ -106,10 +116,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4766264212541958773}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -128,7 +149,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLocal: 0
+  DrawWire: 1
   ShowText: 1
+  planeColor: {r: 0, g: 1, b: 0, a: 1}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  OnMainRoleEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMainRoleExit:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4539505085433279877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,15 +174,24 @@ MonoBehaviour:
   netObj: {fileID: 2055221911180507620}
   netComponentID: 0
   syncMode: 0
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
+  syncPosition:
+    X: 1
+    Y: 1
+    Z: 1
+  syncRotation:
+    X: 1
+    Y: 1
+    Z: 1
+    W: 1
+  syncScale:
+    X: 0
+    Y: 0
+    Z: 0
   currMode: 5
-  interval: 0.5
-  rate: 30
+  controlTime: 0.5
   lerpSpeed: 0.3
-  fixedSync: 1
-  fixedSendTime: 1
+  currControlTime: 0
+  difference: 9.9999994e-11
 --- !u!114 &2055221911180507620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,3 +207,6 @@ MonoBehaviour:
   identity: 0
   registerObjectIndex: 0
   isLocal: 1
+  syncVarInfos:
+    count: 0
+  isInit: 0

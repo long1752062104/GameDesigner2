@@ -22,16 +22,17 @@ namespace Net.UnityComponent
             InitChilds(); //实例化后再赋值位置时再次初始化位置用到
         }
 
-        public override void OnNetworkObjectCreate(in Operation opt)
+        public override void OnNetworkInitialize(in Operation opt)
         {
-            base.OnNetworkObjectCreate(opt);
-            InitChilds(); //实例化后就要初始化子物体信息, 否则会出现子物体的大小变成0,0,0的问题
+            if (!IsLocal)
+                InitChilds(); //实例化后就要初始化子物体信息, 否则会出现子物体的大小变成0,0,0的问题
+            base.OnNetworkInitialize(opt); //先初始化子物体id再初始化网络同步状态
         }
 
         private void InitChilds()
         {
             for (int i = 0; i < childs.Length; i++)
-                childs[i].Init(i + 1);
+                childs[i].Init(this, i + 1);
         }
 
         public override void ForcedSynchronous()
@@ -42,7 +43,7 @@ namespace Net.UnityComponent
                 childs[i].SyncTransformState(netObj.Identity, currMode, netObj.registerObjectIndex, NetComponentID);
         }
 
-        public override void NetworkUpdate()
+        public override void NetworkUpdate(bool isNetworkTick)
         {
             if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;
@@ -54,12 +55,12 @@ namespace Net.UnityComponent
             }
             else if (currControlTime > 0f & (currMode == SyncMode.Control | currMode == SyncMode.SynchronizedAll))
             {
-                currControlTime -= NetworkTime.I.CanSentTime;
+                currControlTime -= Time.deltaTime; //NetworkTime.I.CanSentTime;
                 SyncTransform();
                 for (int i = 0; i < childs.Length; i++)
                     childs[i].SyncTransform(lerpSpeed);
             }
-            else
+            else if (isNetworkTick)
             {
                 NetworkSyncCheck();
                 for (int i = 0; i < childs.Length; i++)
@@ -89,6 +90,7 @@ namespace Net.UnityComponent
                 if (currMode == SyncMode.SynchronizedAll | currMode == SyncMode.Control)
                     child.SyncControlTransform();
             }
+            ReadCount++;
         }
     }
 
@@ -105,9 +107,11 @@ namespace Net.UnityComponent
         public AxisConstraints syncScale;
         public float difference = 9.9999994E-11f;
         public int childId = -1;//自身id
+        private NetworkTransformMulti networkParent;
 
-        internal void Init(int childId)
+        internal void Init(NetworkTransformMulti networkParent, int childId)
         {
+            this.networkParent = networkParent;
             this.childId = childId;
             if (transform == null) //偶尔有需求动态更换子tranfsorm，所以可能有空
                 return;
@@ -135,9 +139,9 @@ namespace Net.UnityComponent
             netRotation = transform.localRotation;
             netLocalScale = transform.localScale;
 
-            Net.Vector3 position = default;
-            Net.Quaternion rotation = default;
-            Net.Vector3 localScale = default;
+            Vector3 position = default;
+            Quaternion rotation = default;
+            Vector3 localScale = default;
             if (syncPosition.X)
                 position.x = netPosition.x;
             if (syncPosition.Y)
@@ -169,6 +173,8 @@ namespace Net.UnityComponent
                 index1 = componentId,
                 index2 = childId
             });
+
+            networkParent.WriteCount++;
         }
 
         public void SyncTransform(float lerpSpeed)

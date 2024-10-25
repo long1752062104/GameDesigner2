@@ -96,17 +96,25 @@ namespace Net.UnityComponent
                 OnNetworkObjectInit(netObj.Identity);
             else
                 OnNetworkObjectCreate(opt);
+            OnNetworkInitialize(opt);
         }
         /// <summary>
         /// 当网络物体被初始化, 只有本机实例化的物体才会被调用
         /// </summary>
         /// <param name="identity"></param>
+        [Obsolete("此方法已过时, 请使用OnNetworkInitialize代替")]
         public virtual void OnNetworkObjectInit(int identity) { }
         /// <summary>
         /// 当网络物体被创建后调用, 只有其他客户端发送创建信息给本机后才会被调用
         /// </summary>
         /// <param name="opt"></param>
+        [Obsolete("此方法已过时, 请使用OnNetworkInitialize代替")]
         public virtual void OnNetworkObjectCreate(in Operation opt) { }
+        /// <summary>
+        /// 当网络初始化时调用, 如果<see cref="IsLocal"/>是true, 则表示是本机网络物体, false表示是其他客户端的网络物体
+        /// </summary>
+        /// <param name="opt"></param>
+        public virtual void OnNetworkInitialize(in Operation opt) { }
         /// <summary>
         /// 当初始同步，也就是第一次同步调用
         /// </summary>
@@ -142,9 +150,8 @@ namespace Net.UnityComponent
         /// <summary>
         /// 网络更新帧
         /// </summary>
-        public virtual void NetworkUpdate()
-        {
-        }
+        /// <param name="isNetworkTick">是否是网络更新? true: 是网络更新,网络更新一般是30帧每秒, false: 是游戏更新, 游戏更新是根据Update方法调用次数更新</param>
+        public virtual void NetworkUpdate(bool isNetworkTick) { }
 
         /// <summary>
         /// 添加场景同步操作, <see href="以下3个字段必须遵守规则进行设置"/>

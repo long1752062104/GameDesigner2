@@ -141,15 +141,24 @@ MonoBehaviour:
   netObj: {fileID: 8172448054269350695}
   netComponentID: 0
   syncMode: 0
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
+  syncPosition:
+    X: 1
+    Y: 1
+    Z: 1
+  syncRotation:
+    X: 1
+    Y: 1
+    Z: 1
+    W: 1
+  syncScale:
+    X: 0
+    Y: 0
+    Z: 0
   currMode: 5
   controlTime: 0.5
   lerpSpeed: 0.3
-  fixedSync: 1
-  fixedSendTime: 1
   currControlTime: 0
+  difference: 9.9999994e-11
 --- !u!114 &8172448054269350695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,6 +174,8 @@ MonoBehaviour:
   identity: 0
   registerObjectIndex: 0
   isLocal: 1
+  syncVarInfos:
+    count: 0
   isInit: 0
 --- !u!1 &7129681259272014773
 GameObject:

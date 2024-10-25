@@ -47,8 +47,8 @@ namespace Net.UnityComponent
         protected Net.Quaternion netRotation;
         protected Net.Vector3 netLocalScale;
         public SyncMode syncMode = SyncMode.Local;
-        public AxisConstraints syncPosition;
-        public Axis2Constraints syncRotation;
+        public AxisConstraints syncPosition = new(true, true, true);
+        public Axis2Constraints syncRotation = new(true, true, true, true);
         public AxisConstraints syncScale;
         [HideInInspector] public SyncMode currMode = SyncMode.None;
         public float controlTime = 0.5f;
@@ -66,7 +66,7 @@ namespace Net.UnityComponent
             netLocalScale = transform.localScale;
         }
 
-        public override void NetworkUpdate()
+        public override void NetworkUpdate(bool isNetworkTick)
         {
             if (netObj.Identity == -1 | currMode == SyncMode.None)
                 return;
@@ -76,10 +76,10 @@ namespace Net.UnityComponent
             }
             else if (currControlTime > 0f & (currMode == SyncMode.Control | currMode == SyncMode.SynchronizedAll))
             {
-                currControlTime -= NetworkTime.I.CanSentTime;
+                currControlTime -= Time.deltaTime; //NetworkTime.I.CanSentTime;
                 SyncTransform();
             }
-            else
+            else if (isNetworkTick) //网络更新状态才能检查同步状态
             {
                 NetworkSyncCheck();
             }
@@ -150,9 +150,9 @@ namespace Net.UnityComponent
             var canSyncRotation = (transform.rotation - netRotation).LengthSquared() > difference;
             var canSyncScale = (transform.localScale - netLocalScale).sqrMagnitude > difference;
             if (canSyncPosition)
-                transform.position = Vector3.Lerp(transform.position, netPosition, lerpSpeed);
+                transform.position = Vector3.Lerp(transform.position, netPosition, lerpSpeed * NetworkTime.NetworkFrame * Time.deltaTime);
             if (canSyncRotation)
-                transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, netRotation, lerpSpeed * NetworkTime.NetworkFrame * Time.deltaTime);
             if (canSyncScale)
                 transform.localScale = netLocalScale;
         }
@@ -197,22 +197,24 @@ namespace Net.UnityComponent
                 netLocalScale.z = localScale.z;
         }
 
-        public override void OnNetworkObjectInit(int identity)
+        public override void OnNetworkInitialize(in Operation opt)
         {
-            currMode = syncMode;
-            if (syncMode != SyncMode.Control && syncMode != SyncMode.SynchronizedAll) //如果是公共网络物体则不能初始化的时候通知，因为可能前面有玩家了，如果发起同步会导致前面的玩家被拉回原来位置
-                ForcedSynchronous(); //发起一次同步，让对方显示物体
-            else
-                currControlTime = controlTime; //如果是公共网络物体则开始时先处于被控制状态，这样就不会发送同步数据
-        }
-
-        public override void OnNetworkObjectCreate(in Operation opt)
-        {
-            if (opt.cmd == Command.Transform) //同步Transform命令时才能设置位置,否则会出现位置在0,0,0的问题, 然后看到瞬移
+            if (IsLocal)
             {
-                SetNetworkSyncMode(opt);
-                SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
-                SyncControlTransform();
+                currMode = syncMode;
+                if (syncMode != SyncMode.Control && syncMode != SyncMode.SynchronizedAll) //如果是公共网络物体则不能初始化的时候通知，因为可能前面有玩家了，如果发起同步会导致前面的玩家被拉回原来位置
+                    ForcedSynchronous(); //发起一次同步，让对方显示物体
+                else
+                    currControlTime = controlTime; //如果是公共网络物体则开始时先处于被控制状态，这样就不会发送同步数据
+            }
+            else
+            {
+                if (opt.cmd == Command.Transform) //同步Transform命令时才能设置位置,否则会出现位置在0,0,0的问题, 然后看到瞬移
+                {
+                    SetNetworkSyncMode(opt);
+                    SyncAxisConstraints(true, opt.position, opt.rotation, opt.direction);
+                    SyncControlTransform();
+                }
             }
         }
 

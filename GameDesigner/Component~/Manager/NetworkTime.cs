@@ -12,10 +12,13 @@ namespace Net.Component
         /// <summary>
         /// 当前是否可以发送数据? 这里可以控制发送次数, 一秒30帧数据左右
         /// </summary>
-        public static bool CanSent { get { return canSent; } }
-#if UNITY_EDITOR
+        public static bool CanSent => canSent;
+        /// <summary>
+        /// 网络帧率
+        /// </summary>
+        public static int NetworkFrame;
+        public int currentFrame;
         public int frame;
-#endif
         /// <summary>
         /// 设置可发送时间 默认30次/秒
         /// </summary>
@@ -30,21 +33,18 @@ namespace Net.Component
             {
                 fixedUpdateTimer -= CanSentTime;
                 canSent = true;
-#if UNITY_EDITOR
-                frame++;
-#endif
+                currentFrame++;
             }
             else
             {
                 canSent = false;
             }
-#if UNITY_EDITOR
             if (Time.fixedTime >= timePerSecond)
             {
                 timePerSecond = Time.fixedTime + 1f;
-                frame = 0;
+                NetworkFrame = frame = currentFrame;
+                currentFrame = 0;
             }
-#endif
         }
     }
 }
