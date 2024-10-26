@@ -87,8 +87,7 @@ namespace MVC.View
 #if UNITY_EDITOR
         public int nameIndex;
         public bool compiling;
-        public int savePathInx;
-        public int savePathExtInx;
+        public int pathIndex;
         public bool isInherit = true;
         public int inheritTypeInx;
         public bool isDynamic;

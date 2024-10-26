@@ -95,16 +95,37 @@ namespace MVC.View
         private static ReorderableList fieldList;
         internal static bool IsLocked;
 
+        public class FilePath
+        {
+            public string path;
+            public string pathEx;
+
+            public FilePath() { }
+
+            public FilePath(string path)
+            {
+                this.path = path;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is not FilePath pathEntry)
+                    return false;
+                if (pathEntry.path == path)
+                    return true;
+                return false;
+            }
+        }
+
         public class JsonSave
         {
             public string nameSpace;
-            public List<string> savePath = new List<string>();
-            public List<string> savePathExt = new List<string>();
+            public List<string> savePath = new List<string>(); //兼容旧版本
+            public List<string> savePathExt = new List<string>(); //兼容旧版本
+            public List<FilePath> filePaths = new List<FilePath>();
             public string searchAssemblies = "UnityEngine.CoreModule|Assembly-CSharp|Assembly-CSharp-firstpass";
             internal string nameSpace1;
-            public bool changeField;
-            public bool addField;
-            public bool seleAddField;
+            public int currMode;
             internal string addInheritType;
             public List<InheritData> inheritTypes = new List<InheritData>()
             {
@@ -112,8 +133,8 @@ namespace MVC.View
                 new InheritData(true, "Net.Component.SingleCase"),
                 new InheritData(true, "GameCore.UIBase"),
             };
-            internal string SavePath(int savePathIndex) => (savePath.Count > 0 ? savePath[savePathIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决
-            internal string SavePathExt(int savePathExtIndex) => (savePathExt.Count > 0 ? savePathExt[savePathExtIndex] : string.Empty).Replace("\\", "/"); //苹果mac错误解决
+            internal string SavePath(int savePathIndex) => (filePaths.Count > 0 ? filePaths[savePathIndex].path : string.Empty).Replace("\\", "/"); //苹果mac错误解决
+            internal string SavePathExt(int savePathExtIndex) => (filePaths.Count > 0 ? filePaths[savePathExtIndex].pathEx : string.Empty).Replace("\\", "/"); //苹果mac错误解决
             internal InheritData InheritType(int index) => inheritTypes[index];
             private string[] inheritTypesStr = new string[0];
             internal string[] InheritTypesStr
@@ -127,6 +148,24 @@ namespace MVC.View
                             inheritTypesStr[i] = inheritTypes[i].inheritType;
                     }
                     return inheritTypesStr;
+                }
+            }
+            private int savePathCount;
+            private string[] savePathDisplay = new string[0];
+            internal string[] SavePathDisplay
+            {
+                get
+                {
+                    if (savePathCount != filePaths.Count)
+                    {
+                        savePathCount = filePaths.Count;
+                        savePathDisplay = new string[filePaths.Count];
+                        for (int i = 0; i < filePaths.Count; i++)
+                        {
+                            savePathDisplay[i] = filePaths[i].path;
+                        }
+                    }
+                    return savePathDisplay;
                 }
             }
         }
@@ -249,9 +288,26 @@ namespace MVC.View
         {
             data = PersistHelper.Deserialize<JsonSave>("fcdata.json");
             for (int i = 0; i < data.savePath.Count; i++)
-                data.savePath[i] = data.savePath[i].Replace('/', '\\');
-            for (int i = 0; i < data.savePathExt.Count; i++)
-                data.savePathExt[i] = data.savePathExt[i].Replace('/', '\\');
+            {
+                var filePath = new FilePath()
+                {
+                    path = data.savePath[i],
+                    pathEx = i < data.savePathExt.Count ? data.savePathExt[i] : string.Empty
+                };
+                if (!data.filePaths.Contains(filePath))
+                    data.filePaths.Add(filePath);
+            }
+            for (int i = 0; i < data.filePaths.Count; i++)
+            {
+                data.filePaths[i].path = data.filePaths[i].path.Replace('/', '\\');
+                data.filePaths[i].pathEx = data.filePaths[i].pathEx.Replace('/', '\\');
+            }
+            if (data.savePath.Count > 0 | data.savePathExt.Count > 0)
+            {
+                data.savePath.Clear();
+                data.savePathExt.Clear();
+                SaveData();
+            }
         }
 
         static void SaveData()
@@ -282,16 +338,13 @@ namespace MVC.View
 
         public static void OnDragGuiWindow()
         {
-            GUILayout.Label("将组件拖到此窗口上! 如果是赋值模式, 拖入的对象将不会显示选择组件!");
-            data.changeField = GUILayout.Toggle(data.changeField, "赋值变量");
-            data.addField = GUILayout.Toggle(data.addField, "直接添加变量");
-            data.seleAddField = GUILayout.Toggle(data.seleAddField, "选择添加变量组件");
-            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & !data.changeField)
+            data.currMode = EditorGUILayout.Popup("添加字段模式", data.currMode, new string[] { "自动添加字段", "选择添加字段", "修改字段" });
+            if ((Event.current.type == EventType.DragUpdated | Event.current.type == EventType.DragPerform) & data.currMode != 2)
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;//拖动时显示辅助图标
                 if (Event.current.type == EventType.DragPerform)
                 {
-                    if (data.addField)
+                    if (data.currMode == 0)
                     {
                         var componentPriority = new List<Type>()
                         {
@@ -327,7 +380,7 @@ namespace MVC.View
                         }
                         return;
                     }
-                    else if (data.seleAddField)
+                    else if (data.currMode == 1)
                     {
                         var dict = new Dictionary<Type, List<Object[]>>();
                         foreach (var obj in DragAndDrop.objectReferences)
@@ -378,7 +431,6 @@ namespace MVC.View
         {
             if (collect == null)
                 return;
-            collect.fieldName = EditorGUILayout.TextField("收集器名称", collect.fieldName);
             data.searchAssemblies = EditorGUILayout.TextField("搜索的程序集", data.searchAssemblies);
             if (data.searchAssemblies != searchAssemblies)
             {
@@ -394,53 +446,12 @@ namespace MVC.View
                 data.nameSpace1 = data.nameSpace;
                 SaveData();
             }
-            var rect1 = EditorGUILayout.GetControlRect();
-            collect.savePathInx = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "生成路径:", collect.savePathInx, data.savePath.ToArray());
-            if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
-            {
-                if (data.savePath.Count > 0)
-                    data.savePath.RemoveAt(collect.savePathInx);
-                SaveData();
-            }
-            if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
-            {
-                var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                if (string.IsNullOrEmpty(path))
-                    return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
-                if (!data.savePath.Contains(path))
-                {
-                    data.savePath.Add(path);
-                    collect.savePathInx = data.savePath.Count - 1;
-                }
-                SaveData();
-            }
-            var rect4 = EditorGUILayout.GetControlRect();
-            collect.savePathExtInx = EditorGUI.Popup(new Rect(rect4.x, rect4.y, rect4.width - 90, rect4.height), "扩展路径:", collect.savePathExtInx, data.savePathExt.ToArray());
-            if (GUI.Button(new Rect(rect4.x + rect4.width - 90, rect4.y, 30, rect4.height), "x"))
-            {
-                if (data.savePathExt.Count > 0)
-                    data.savePathExt.RemoveAt(collect.savePathExtInx);
-                SaveData();
-            }
-            if (GUI.Button(new Rect(rect4.x + rect4.width - 60, rect4.y, 60, rect4.height), "选择"))
-            {
-                var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
-                if (string.IsNullOrEmpty(path))
-                    return;
-                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
-                if (!data.savePathExt.Contains(path))
-                {
-                    data.savePathExt.Add(path);
-                    collect.savePathExtInx = data.savePathExt.Count - 1;
-                }
-                SaveData();
-            }
-            collect.isInherit = EditorGUILayout.Toggle("是否继承类型", collect.isInherit);
+            collect.fieldName = EditorGUILayout.TextField("类型名称", collect.fieldName);
+            collect.isInherit = EditorGUILayout.Toggle("继承类型", collect.isInherit);
             if (collect.isInherit)
             {
                 EditorGUILayout.BeginHorizontal();
-                data.addInheritType = EditorGUILayout.TextField("自定义继承类型", data.addInheritType);
+                data.addInheritType = EditorGUILayout.TextField("添加继承", data.addInheritType);
                 if (GUILayout.Button("添加", GUILayout.Width(60f)))
                 {
                     if (!string.IsNullOrEmpty(data.addInheritType))
@@ -465,6 +476,47 @@ namespace MVC.View
                 }
                 EditorGUILayout.EndHorizontal();
             }
+            var rect1 = EditorGUILayout.GetControlRect();
+            collect.pathIndex = EditorGUI.Popup(new Rect(rect1.x, rect1.y, rect1.width - 90, rect1.height), "生成路径", collect.pathIndex, data.SavePathDisplay);
+            if (GUI.Button(new Rect(rect1.x + rect1.width - 90, rect1.y, 30, rect1.height), "x"))
+            {
+                if (data.filePaths.Count > 0)
+                    data.filePaths.RemoveAt(collect.pathIndex);
+                SaveData();
+            }
+            if (GUI.Button(new Rect(rect1.x + rect1.width - 60, rect1.y, 60, rect1.height), "选择"))
+            {
+                var path = EditorUtility.OpenFolderPanel("选择保存路径", "", "");
+                if (string.IsNullOrEmpty(path))
+                    return;
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
+                var pathEntry = new FilePath(path) { pathEx = string.Empty };
+                if (!data.filePaths.Contains(pathEntry))
+                {
+                    data.filePaths.Add(pathEntry);
+                    collect.pathIndex = data.filePaths.Count - 1;
+                }
+                SaveData();
+            }
+            var rect2 = EditorGUILayout.GetControlRect();
+            var pathEx = collect.pathIndex < data.filePaths.Count ? data.filePaths[collect.pathIndex].pathEx : string.Empty;
+            EditorGUI.LabelField(new Rect(rect2.x, rect2.y, rect2.width - 90, rect2.height), "扩展路径", pathEx);
+            if (GUI.Button(new Rect(rect1.x + rect2.width - 90, rect2.y, 30, rect2.height), "x"))
+            {
+                if (collect.pathIndex < data.filePaths.Count)
+                    data.filePaths[collect.pathIndex].pathEx = string.Empty;
+                SaveData();
+            }
+            if (GUI.Button(new Rect(rect2.x + rect2.width - 60, rect2.y, 60, rect2.height), "选择"))
+            {
+                var path = EditorUtility.OpenFolderPanel("选择扩展路径", "", "");
+                if (string.IsNullOrEmpty(path))
+                    return;
+                path = PathHelper.GetRelativePath(Application.dataPath, path, '/', '\\');
+                if (collect.pathIndex < data.filePaths.Count)
+                    data.filePaths[collect.pathIndex].pathEx = path;
+                SaveData();
+            }
             if (GUILayout.Button("编辑脚本"))
                 OpenScript(collect);
             if (GUILayout.Button("生成动态代码"))
@@ -484,7 +536,7 @@ namespace MVC.View
 
         internal static void OpenScript(FieldCollection collect)
         {
-            var path = data.SavePathExt(collect.savePathExtInx);
+            var path = data.SavePathExt(collect.pathIndex);
             if (string.IsNullOrEmpty(path))
                 return;
             path += $"/{collect.fieldName}Ext.cs";
@@ -580,7 +632,7 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var path = data.SavePathExt(collect.savePathExtInx);
+            var path = data.SavePathExt(collect.pathIndex);
             if (string.IsNullOrEmpty(path))
                 return;
             path += $"/{collect.fieldName}Ext.cs";
@@ -710,7 +762,7 @@ namespace MVC.View
             }
             while (scriptCode.EndsWith("\n") | scriptCode.EndsWith("\r"))
                 scriptCode = scriptCode.Remove(scriptCode.Length - 1, 1);
-            var path = data.SavePath(collect.savePathInx);
+            var path = data.SavePath(collect.pathIndex);
             if (string.IsNullOrEmpty(path))
                 return;
             path += $"/{collect.fieldName}.cs";
