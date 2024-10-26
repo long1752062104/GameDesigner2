@@ -12,20 +12,20 @@ namespace Cysharp.Threading.Tasks
     public class UniTaskNetExtensions
     {
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct EventAwaitable
+        public readonly struct EventAwaitable<T>
         {
             private readonly TimerEvent timerEvent;
             private readonly long time;
-            private readonly Func<object, bool> update;
-            private readonly object state;
+            private readonly Func<T, bool> update;
+            private readonly T state;
 
             [StructLayout(LayoutKind.Sequential)]
             public readonly struct Awaiter : ICriticalNotifyCompletion, INotifyCompletion
             {
-                private readonly EventAwaitable awaitable;
+                private readonly EventAwaitable<T> awaitable;
                 public bool IsCompleted => false;
 
-                public Awaiter(in EventAwaitable awaitable)
+                public Awaiter(in EventAwaitable<T> awaitable)
                 {
                     this.awaitable = awaitable;
                 }
@@ -44,17 +44,17 @@ namespace Cysharp.Threading.Tasks
                     awaitable.timerEvent.AddEvent(0f, Run, continuation);
                 }
 
-                private bool Run(object state)
+                private bool Run(Action state)
                 {
                     if (awaitable.timerEvent.CurrentTime < awaitable.time)
                         if (!awaitable.update(awaitable.state))
                             return true;
-                    ((Action)state)();
+                    state();
                     return false;
                 }
             }
 
-            public EventAwaitable(TimerEvent timerEvent, int time, Func<object, bool> update, object state)
+            public EventAwaitable(TimerEvent timerEvent, int time, Func<T, bool> update, T state)
             {
                 this.timerEvent = timerEvent;
                 this.time = timerEvent.CurrentTime + time;
@@ -168,11 +168,11 @@ namespace Cysharp.Threading.Tasks
             }
         }
 
-        public static EventAwaitable Wait(int time, Func<object, bool> update, object state) => Wait(ThreadManager.Event, time, update, state);
+        public static EventAwaitable<T> Wait<T>(int time, Func<T, bool> update, T state) => Wait(ThreadManager.Event, time, update, state);
 
-        public static EventAwaitable Wait(TimerEvent timerEvent, int time, Func<object, bool> update, object state)
+        public static EventAwaitable<T> Wait<T>(TimerEvent timerEvent, int time, Func<T, bool> update, T state)
         {
-            return new EventAwaitable(timerEvent, time, update, state);
+            return new EventAwaitable<T>(timerEvent, time, update, state);
         }
 
         public static CallbackAwaitable WaitCallback(TimerEvent timerEvent, int time, RPCModelTask modelTask)

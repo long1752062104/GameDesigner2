@@ -66,7 +66,7 @@
                 {
                     NetworkTick();
                     return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
-                }, null);
+                }, DBNull.Value);
                 if (UID == 0 && openClient)
                     throw new Exception("连接握手失败!");
                 if (UID == 0 && !openClient)

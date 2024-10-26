@@ -14,7 +14,6 @@ namespace Net.Event
     {
         public abstract class EventAction : IDisposable
         {
-            public Event Event;
             public bool IsAsync;
             public bool IsCompleted;
 
@@ -25,6 +24,7 @@ namespace Net.Event
 
         public class EventAction1 : EventAction
         {
+            public Event Event;
             public Action action;
 
             public override void Invoke()
@@ -62,9 +62,10 @@ namespace Net.Event
             }
         }
 
-        public class EventAction2 : EventAction
+        public class EventAction2<T> : EventAction
         {
-            public Action<object> action;
+            public Event<T> Event;
+            public Action<T> action;
 
             public override void Invoke()
             {
@@ -103,6 +104,7 @@ namespace Net.Event
 
         public class EventAction3 : EventAction
         {
+            public Event Event;
             public Func<bool> action;
 
             public override void Invoke()
@@ -148,9 +150,10 @@ namespace Net.Event
             }
         }
 
-        public class EventAction4 : EventAction
+        public class EventAction4<T> : EventAction
         {
-            public Func<object, bool> action;
+            public Event<T> Event;
+            public Func<T, bool> action;
 
             public override void Invoke()
             {
@@ -200,7 +203,6 @@ namespace Net.Event
             public string name;
             public long time;
             public EventAction action;
-            public object obj;
             public int invokeNum;
             public long timeMax;
             public int eventId;
@@ -213,6 +215,10 @@ namespace Net.Event
             {
                 return $"{name}";
             }
+        }
+        public class Event<T> : Event
+        {
+            public T obj;
         }
         public FastListSafe<Event> events = new FastListSafe<Event>();
         private int eId = 1000;
@@ -250,7 +256,7 @@ namespace Net.Event
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
-        public int AddEvent(float time, Action<object> ptr, object obj, bool isAsync = false)
+        public int AddEvent<T>(float time, Action<T> ptr, T obj, bool isAsync = false)
         {
             return AddEvent(string.Empty, (long)(time * 1000f), 0, ptr, obj, isAsync);
         }
@@ -264,7 +270,7 @@ namespace Net.Event
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
-        public int AddEvent(float time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
+        public int AddEvent<T>(float time, int invokeNum, Action<T> ptr, T obj, bool isAsync = false)
         {
             return AddEvent(string.Empty, (long)(time * 1000f), invokeNum, ptr, obj, isAsync);
         }
@@ -302,7 +308,7 @@ namespace Net.Event
         /// <param name="obj"></param>
         /// <param name="isAsync">如果是耗时任务, 需要设置true</param>
         /// <returns>可用于结束事件的id</returns>
-        public int AddEvent(float time, Func<object, bool> ptr, object obj, bool isAsync = false)
+        public int AddEvent<T>(float time, Func<T, bool> ptr, T obj, bool isAsync = false)
         {
             return AddEvent(string.Empty, (long)(time * 1000f), ptr, obj, isAsync);
         }
@@ -328,10 +334,10 @@ namespace Net.Event
             return eventID;
         }
 
-        public int AddEvent(string name, long time, int invokeNum, Action<object> ptr, object obj, bool isAsync = false)
+        public int AddEvent<T>(string name, long time, int invokeNum, Action<T> ptr, T obj, bool isAsync = false)
         {
             var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
+            var eventObj = new Event<T>()
             {
                 name = name,
                 time = this.time + time,
@@ -340,7 +346,7 @@ namespace Net.Event
                 obj = obj,
                 invokeNum = invokeNum,
             };
-            eventObj.action = new EventAction2()
+            eventObj.action = new EventAction2<T>()
             {
                 Event = eventObj,
                 IsAsync = isAsync,
@@ -351,10 +357,10 @@ namespace Net.Event
             return eventID;
         }
 
-        public int AddEvent(string name, long time, Func<object, bool> ptr, object obj, bool isAsync = false)
+        public int AddEvent<T>(string name, long time, Func<T, bool> ptr, T obj, bool isAsync = false)
         {
             var eventID = Interlocked.Increment(ref eId);
-            var eventObj = new Event()
+            var eventObj = new Event<T>()
             {
                 name = name,
                 time = this.time + time,
@@ -362,7 +368,7 @@ namespace Net.Event
                 timeMax = time,
                 obj = obj,
             };
-            eventObj.action = new EventAction4()
+            eventObj.action = new EventAction4<T>()
             {
                 Event = eventObj,
                 IsAsync = isAsync,

@@ -88,7 +88,7 @@
                     var user = GCHandle.ToIntPtr(handle);
                     UdxLib.USetUserData(ClientPtr, user.ToInt64());
                 }
-                await UniTaskNetExtensions.Wait(5000, (state) => Connected, null);
+                await UniTaskNetExtensions.Wait(5000, (state) => Connected, DBNull.Value);
                 if (Connected)
                     StartupThread();
                 else
@@ -104,7 +104,7 @@
                         RpcModels.Enqueue(new RPCModel(cmd: NetCmd.Identify, buffer: segment.ToArray(true)));
                     }
                     return UID != 0 | !openClient; //如果在爆满事件关闭客户端就需要判断一下
-                }, null);
+                }, DBNull.Value);
                 if (UID == 0 && openClient)
                     throw new Exception("连接握手失败!");
                 if (UID == 0 && !openClient)
