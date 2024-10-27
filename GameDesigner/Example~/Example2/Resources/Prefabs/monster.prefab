@@ -2234,7 +2234,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
@@ -2272,9 +2272,9 @@ MonoBehaviour:
   Self:
     Agent:
       speed: 5
-      agentHeight: 0
+      agentHeight: -10
       angularSpeed: 0.25
-      findPathMode: 0
+      findPathMode: 1
       m_straightPathOptions: 2
   anim: {fileID: 8117216886536976500}
 --- !u!1 &6614214838361262870
@@ -2348,9 +2348,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2368,9 +2370,15 @@ MonoBehaviour:
         clipName: idle
         clipIndex: 11
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2400,9 +2408,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2420,9 +2430,15 @@ MonoBehaviour:
         clipName: walk
         clipIndex: 22
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2452,9 +2468,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2472,9 +2490,15 @@ MonoBehaviour:
         clipName: run
         clipIndex: 14
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2509,16 +2533,20 @@ MonoBehaviour:
         currStateID: 3
         nextStateID: 0
         mode: 1
-        time: 0
-        exitTime: 1
+        time:
+          RawValue: 0
+        exitTime:
+          RawValue: 1065353216
         isEnterNextState: 0
       actionSystem: 1
       animLoop: 0
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 1
       DstStateID: 0
       actions:
@@ -2627,14 +2655,6 @@ MonoBehaviour:
             values: []
             arraySize: 0
             foldout: 0
-          - name: animEventTime
-            type: 13
-            typeName: System.Single
-            data: 50
-            Value: {fileID: 0}
-            values: []
-            arraySize: 0
-            foldout: 0
         foldout: 1
         rect:
           serializedVersion: 2
@@ -2645,9 +2665,15 @@ MonoBehaviour:
         clipName: frenzied_slash
         clipIndex: 6
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2677,9 +2703,11 @@ MonoBehaviour:
       animLoop: 0
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2697,9 +2725,15 @@ MonoBehaviour:
         clipName: die
         clipIndex: 5
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2736,9 +2770,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2756,9 +2792,15 @@ MonoBehaviour:
         clipName: idle
         clipIndex: 11
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2788,9 +2830,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2808,9 +2852,15 @@ MonoBehaviour:
         clipName: walk
         clipIndex: 22
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2840,9 +2890,11 @@ MonoBehaviour:
       animLoop: 1
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -2860,9 +2912,15 @@ MonoBehaviour:
         clipName: run
         clipIndex: 14
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -2897,16 +2955,20 @@ MonoBehaviour:
         currStateID: 3
         nextStateID: 0
         mode: 1
-        time: 0
-        exitTime: 1
+        time:
+          RawValue: 0
+        exitTime:
+          RawValue: 1065353216
         isEnterNextState: 0
       actionSystem: 1
       animLoop: 0
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 1
       DstStateID: 0
       actions:
@@ -3015,14 +3077,6 @@ MonoBehaviour:
             values: []
             arraySize: 0
             foldout: 0
-          - name: animEventTime
-            type: 13
-            typeName: System.Single
-            data: 50
-            Value: {fileID: 0}
-            values: []
-            arraySize: 0
-            foldout: 0
         foldout: 1
         rect:
           serializedVersion: 2
@@ -3033,9 +3087,15 @@ MonoBehaviour:
         clipName: frenzied_slash
         clipIndex: 6
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 
@@ -3065,9 +3125,11 @@ MonoBehaviour:
       animLoop: 0
       animPlayMode: 0
       actionIndex: 0
-      animSpeed: 1
+      animSpeed:
+        RawValue: 1065353216
       isCrossFade: 0
-      duration: 0.25
+      duration:
+        RawValue: 1048576000
       isExitState: 0
       DstStateID: 0
       actions:
@@ -3085,9 +3147,15 @@ MonoBehaviour:
         clipName: die
         clipIndex: 5
         clipAsset: {fileID: 0}
-        animTime: 0
-        animTimeMax: 100
+        animTime:
+          RawValue: 0
+        animTimeMax:
+          RawValue: 1120403456
         layer: 0
+        blendParameter: 0
+        blendParameterName: 
+        blendParameterYName: 
+        blendParameterY: 0
       Type: 0
       subStateMachine:
         _name: 

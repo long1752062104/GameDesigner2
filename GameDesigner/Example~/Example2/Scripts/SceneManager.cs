@@ -40,7 +40,7 @@ namespace Example2
                 var monsterObj = monsters[opt.index1];
                 monster = Instantiate(monsterObj, opt.position, opt.rotation);
                 monster.Self = new Monster();
-                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight };
+                monster.Self.Agent = new AgentEntity(NavmeshSystemUnity.I.System) { agentHeight = -0.5f, findPathMode = FindPathMode.FindPathFollow };
                 monster.Self.Agent.SetPositionAndRotation(opt.position, opt.rotation);
                 monsterDics.Add(opt.identity, monster);
             }

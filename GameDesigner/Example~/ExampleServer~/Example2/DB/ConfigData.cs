@@ -104,14 +104,14 @@ namespace Example2
             else objects = new object[] { name.Value };
 #if SERVER
             CheckUpdate(1);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NAME, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.CONFIG_NAME, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NAME, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.CONFIG_NAME, objects);
 #endif
         }
 
         [DataRowField("name", 1)]
-        [Rpc(hash = (ushort)Example2HashProto.CONFIG_NAME)]
+        [Rpc(hash = (uint)Example2HashProto.CONFIG_NAME)]
         private void NameRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
         {
             Name = value;
@@ -157,14 +157,14 @@ namespace Example2
             else objects = new object[] { number.Value };
 #if SERVER
             CheckUpdate(2);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NUMBER, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.CONFIG_NUMBER, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.CONFIG_NUMBER, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.CONFIG_NUMBER, objects);
 #endif
         }
 
         [DataRowField("number", 2)]
-        [Rpc(hash = (ushort)Example2HashProto.CONFIG_NUMBER)]
+        [Rpc(hash = (uint)Example2HashProto.CONFIG_NUMBER)]
         private void NumberRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(ConfigData));收集Rpc
         {
             Number = value;

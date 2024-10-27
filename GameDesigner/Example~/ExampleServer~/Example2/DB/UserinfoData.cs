@@ -104,14 +104,14 @@ namespace Example2
             else objects = new object[] { account.Value };
 #if SERVER
             CheckUpdate(1);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_ACCOUNT, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ACCOUNT, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_ACCOUNT, objects);
 #endif
         }
 
         [DataRowField("account", 1)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_ACCOUNT)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_ACCOUNT)]
         private void AccountRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Account = value;
@@ -157,14 +157,14 @@ namespace Example2
             else objects = new object[] { password.Value };
 #if SERVER
             CheckUpdate(2);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_PASSWORD, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_PASSWORD, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_PASSWORD, objects);
 #endif
         }
 
         [DataRowField("password", 2)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_PASSWORD)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_PASSWORD)]
         private void PasswordRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Password = value;
@@ -210,14 +210,14 @@ namespace Example2
             else objects = new object[] { moveSpeed.Value };
 #if SERVER
             CheckUpdate(3);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_MOVESPEED, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_MOVESPEED, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_MOVESPEED, objects);
 #endif
         }
 
         [DataRowField("moveSpeed", 3)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_MOVESPEED)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_MOVESPEED)]
         private void MoveSpeedRpc(Double value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             MoveSpeed = value;
@@ -263,14 +263,14 @@ namespace Example2
             else objects = new object[] { position.Value };
 #if SERVER
             CheckUpdate(4);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_POSITION, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_POSITION, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_POSITION, objects);
 #endif
         }
 
         [DataRowField("position", 4)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_POSITION)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_POSITION)]
         private void PositionRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Position = value;
@@ -316,14 +316,14 @@ namespace Example2
             else objects = new object[] { rotation.Value };
 #if SERVER
             CheckUpdate(5);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_ROTATION, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_ROTATION, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_ROTATION, objects);
 #endif
         }
 
         [DataRowField("rotation", 5)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_ROTATION)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_ROTATION)]
         private void RotationRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Rotation = value;
@@ -369,14 +369,14 @@ namespace Example2
             else objects = new object[] { health.Value };
 #if SERVER
             CheckUpdate(6);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_HEALTH, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTH, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_HEALTH, objects);
 #endif
         }
 
         [DataRowField("health", 6)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTH)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_HEALTH)]
         private void HealthRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Health = value;
@@ -422,14 +422,14 @@ namespace Example2
             else objects = new object[] { healthMax.Value };
 #if SERVER
             CheckUpdate(7);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_HEALTHMAX, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_HEALTHMAX, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_HEALTHMAX, objects);
 #endif
         }
 
         [DataRowField("healthMax", 7)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_HEALTHMAX)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_HEALTHMAX)]
         private void HealthMaxRpc(Int64 value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             HealthMax = value;
@@ -475,14 +475,14 @@ namespace Example2
             else objects = new object[] { buffer.Value };
 #if SERVER
             CheckUpdate(8);
-            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
+            Example2DBEvent.OnSyncProperty?.Invoke(client, NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_BUFFER, objects);
 #else
-            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (ushort)Example2HashProto.USERINFO_BUFFER, objects);
+            Example2DBEvent.Client.Call(NetCmd.SyncPropertyData, (uint)Example2HashProto.USERINFO_BUFFER, objects);
 #endif
         }
 
         [DataRowField("buffer", 8)]
-        [Rpc(hash = (ushort)Example2HashProto.USERINFO_BUFFER)]
+        [Rpc(hash = (uint)Example2HashProto.USERINFO_BUFFER)]
         private void BufferRpc(String value)//重写NetPlayer的OnStart方法来处理客户端自动同步到服务器数据库, 方法内部添加AddRpc(data(UserinfoData));收集Rpc
         {
             Buffer = value;

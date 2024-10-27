@@ -4,6 +4,7 @@ using System.IO;
 using System.Data;
 using System.Text;
 using System.Threading;
+using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -50,7 +51,24 @@ namespace Example2
 
         public static Example2DB I { get; private set; } = new Example2DB();
         private readonly MyDictionary<Type, DataEntityQueue> DataRowHandler = new MyDictionary<Type, DataEntityQueue>();
-        private readonly ConcurrentStack<SQLiteConnection> conns = new ConcurrentStack<SQLiteConnection>();
+        private SQLiteConnection connection;
+        private SQLiteConnection Connection
+        {
+            get
+            {
+                if (connection == null)
+                    return null;
+                
+                if (connection.State != ConnectionState.Open)
+                {
+                    connection.Close();
+                    connection = new SQLiteConnection(ConnectionText); //数据库连接
+                    connection.Open();
+                }
+                return connection;
+            }
+            set => connection = value;
+        }
         public string ConnectionText { get => ConnectionBuilder.ToString(); set => ConnectionBuilder = new SQLiteConnectionStringBuilder(value); }
         public SQLiteConnectionStringBuilder ConnectionBuilder = new SQLiteConnectionStringBuilder() 
         {
@@ -78,34 +96,28 @@ namespace Example2
         private readonly MyDictionary<Type, QueueSafe<IQueryTask>> queryTypes = new MyDictionary<Type, QueueSafe<IQueryTask>>();
         private readonly MyDictionary<string, StringBuilder> queryCell = new MyDictionary<string, StringBuilder>();
         private readonly Queue<IQueryTask> queryQueue = new Queue<IQueryTask>();
+        private readonly List<NonQueryTask> nonQueryList = new List<NonQueryTask>();
+        private readonly StringBuilder commandTextBuilder = new StringBuilder();
+        private readonly QueueSafe<NonQueryTask> nonQueryQueue = new QueueSafe<NonQueryTask>();
+        private FieldInfo nonQueryHandlerField;
         private int workerId;
 
-        private SQLiteConnection CheckConn(SQLiteConnection conn)
+        private SQLiteConnection CreateConnection()
         {
-            if (conn == null)
-            {
-                conn = new SQLiteConnection(ConnectionText); //数据库连接
-                conn.Open();
-            }
-            
-            if (conn.State != ConnectionState.Open)
-            {
-                conn.Close();
-                conn = new SQLiteConnection(ConnectionText); //数据库连接
-                conn.Open();
-            }
-            return conn;
+            connection?.Close();
+            connection = new SQLiteConnection(ConnectionText);
+            connection.Open();
+            return connection;
         }
 
         /// <summary>
         /// 初始化, 加载数据库数据到内存
         /// </summary>
         /// <param name="onInit">当加载数据库完成调用委托</param>
-        /// <param name="connLen">连接数据库管线数量</param>
-        public void Init(Action<List<object>> onInit, int connLen = 5)
+        public void Init(Action<List<object>> onInit)
         {
-            InitTablesId(connLen);
-            List<object> list = new List<object>();
+            InitTablesId();
+            var list = new List<object>();
      // -- 1
             var configTable = ExecuteReader($"SELECT * FROM `config`");
             foreach (DataRow row in configTable.Rows)
@@ -133,13 +145,12 @@ namespace Example2
         /// <summary>
         /// 初始化数据表id
         /// </summary>
-        /// <param name="connLen">连接数据库管线数量</param>
         /// <param name="useMachineId">使用分布式机器ID</param>
         /// <param name="machineId">分布式机器ID</param>
         /// <param name="machineIdBits">分布式机器占用64位中的多少位数</param>
-        public void InitTablesId(int connLen = 5, bool useMachineId = false, int machineId = 0, int machineIdBits = 10)
+        public void InitTablesId(bool useMachineId = false, int machineId = 0, int machineIdBits = 10)
         {
-            InitConnection(connLen);
+            InitConnection();
             var configUniqueId = ExecuteScalar<int>(@"SELECT MAX(id) FROM `config`;");
             uniqueIdMap[Example2UniqueIdType.Config] = new UniqueIdGenerator(useMachineId, machineId, machineIdBits, (long)configUniqueId);
             var userinfoUniqueId = ExecuteScalar<int>(@"SELECT MAX(id) FROM `userinfo`;");
@@ -152,61 +163,49 @@ namespace Example2
         /// </summary>
         /// <param name="type">传入Example2UniqueIdType类的常量字段</param>
         /// <returns></returns>
-        public int GetUniqueId(short type)
-        {
-            return (int)uniqueIdMap[type].NewUniqueId();
-        }
+        public int GetUniqueId(short type) => (int)uniqueIdMap[type].NewUniqueId();
 
-        public void InitConnection(int connLen = 1) //初学者避免发生死锁, 默认只创建一条连接
-        {
-            while (conns.TryPop(out var conn))
-                conn.Close();
-            for (int i = 0; i < connLen; i++)
-                conns.Push(CheckConn(null));
-        }
+        /// <summary>
+        /// 获取某表的当前自增ID最大值
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public int GetCurrentId(short type) => (int)uniqueIdMap[type].CurrentId();
 
-        public SQLiteConnection PopConnect()
-        {
-            SQLiteConnection conn1;
-            while (!conns.TryPop(out conn1))
-                Thread.Sleep(1);
-            return CheckConn(conn1);
-        }
+        public UniqueIdGenerator GetUniqueIdMap(short type) => uniqueIdMap[type];
 
-        public void CloseConnect()
+        public void InitConnection()
         {
-            while (conns.TryPop(out SQLiteConnection conn))
-                conn.Close();
+            
+            CreateConnection();
         }
 
         public DataTable ExecuteReader(string cmdText)
         {
-            var conn = PopConnect();
-            var dt = new DataTable();
-            try
+            lock (this)
             {
-                using (var cmd = new SQLiteCommand())
+                var dataTable = new DataTable();
+                try
                 {
-                    cmd.CommandText = cmdText;
-                    cmd.Connection = conn;
-                    cmd.CommandTimeout = CommandTimeout;
-                    cmd.Parameters.Clear();
-                    using (var sdr = cmd.ExecuteReader())
+                    using (var cmd = new SQLiteCommand())
                     {
-                        dt.Load(sdr);
-                        QueryCount++;
+                        cmd.CommandText = cmdText;
+                        cmd.Connection = Connection;
+                        cmd.CommandTimeout = CommandTimeout;
+                        cmd.Parameters.Clear();
+                        using (var sdr = cmd.ExecuteReader())
+                        {
+                            dataTable.Load(sdr);
+                            QueryCount++;
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    NDebug.LogError(cmdText + " 错误: " + ex);
+                }
+                return dataTable;
             }
-            catch (Exception ex)
-            {
-                NDebug.LogError(cmdText + " 错误: " + ex);
-            }
-            finally
-            {
-                conns.Push(conn);
-            }
-            return dt;
         }
 
         public async UniTask<DataTable> ExecuteReaderAsync(string cmdText)
@@ -229,6 +228,7 @@ namespace Example2
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用QueryAsync代替", false)]
         public T ExecuteQuery<T>(string cmdText) where T : IDataRow, new()
         {
             var array = ExecuteQueryList<T>(cmdText);
@@ -253,54 +253,53 @@ namespace Example2
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用QueryListAsync代替", false)]
         public T[] ExecuteQueryList<T>(string cmdText) where T : IDataRow, new()
         {
-            var conn = PopConnect();
-            try
+            lock (this)
             {
-                using (var cmd = new SQLiteCommand())
+                try
                 {
-                    cmd.CommandText = cmdText;
-                    cmd.Connection = conn;
-                    cmd.CommandTimeout = CommandTimeout;
-                    cmd.Parameters.Clear();
-                    using (var sdr = cmd.ExecuteReader())
+                    using (var cmd = new SQLiteCommand())
                     {
-                        var datas = new List<T>();
-                        while (sdr.Read())
+                        cmd.CommandText = cmdText;
+                        cmd.Connection = Connection;
+                        cmd.CommandTimeout = CommandTimeout;
+                        cmd.Parameters.Clear();
+                        using (var sdr = cmd.ExecuteReader())
                         {
-                            var data = new T();
-                            for (int i = 0; i < sdr.FieldCount; i++)
+                            var datas = new List<T>();
+                            while (sdr.Read())
                             {
-                                var name = sdr.GetName(i);
-                                var value = sdr.GetValue(i);
-                                if (value == DBNull.Value) //空值不能进行赋值,会报错
-                                    continue;
-                                if (value is byte[] bytes)
+                                var data = new T();
+                                for (int i = 0; i < sdr.FieldCount; i++)
                                 {
-                                    var hex = Encoding.ASCII.GetString(bytes);
-                                    data[name] = Convert.FromBase64String(hex);
+                                    var name = sdr.GetName(i);
+                                    var value = sdr.GetValue(i);
+                                    if (value == DBNull.Value) //空值不能进行赋值,会报错
+                                        continue;
+                                    if (value is byte[] bytes)
+                                    {
+                                        var hex = Encoding.ASCII.GetString(bytes);
+                                        data[name] = Convert.FromBase64String(hex);
+                                    }
+                                    else data[name] = value;
                                 }
-                                else data[name] = value;
+                                data.RowState = DataRowState.Unchanged;
+                                data.SetContext(this);
+                                datas.Add(data);
                             }
-                            data.RowState = DataRowState.Unchanged;
-                            data.SetContext(this);
-                            datas.Add(data);
+                            QueryCount++;
+                            return datas.ToArray();
                         }
-                        QueryCount++;
-                        return datas.ToArray();
                     }
                 }
+                catch (Exception ex)
+                {
+                    NDebug.LogError(cmdText + " 错误: " + ex);
+                }
+                return default;
             }
-            catch (Exception ex)
-            {
-                NDebug.LogError(cmdText + " 错误: " + ex);
-            }
-            finally
-            {
-                conns.Push(conn);
-            }
-            return default;
         }
 
         /// <summary>
@@ -317,6 +316,7 @@ namespace Example2
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用QueryAsync代替", false)]
         public async UniTask<T> ExecuteQueryAsync<T>(string cmdText) where T : IDataRow, new()
         {
             var array = await ExecuteQueryListAsync<T>(cmdText);
@@ -341,6 +341,7 @@ namespace Example2
         /// <typeparam name="T"></typeparam>
         /// <param name="cmdText"></param>
         /// <returns></returns>
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用QueryListAsync代替", false)]
         public async UniTask<T[]> ExecuteQueryListAsync<T>(string cmdText) where T : IDataRow, new()
         {
             await UniTask.SwitchToThreadPool();
@@ -348,96 +349,75 @@ namespace Example2
             return datas;
         }
 
-        public async UniTaskVoid ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters, Action<int, Stopwatch> onComplete)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var count = await ExecuteNonQuery(cmdText, parameters);
-            stopwatch.Stop();
-            onComplete(count, stopwatch);
-        }
-
-        public async UniTask<int> ExecuteNonQuery(string cmdText, List<IDbDataParameter> parameters)
+        [Obsolete("这个方法查询会卡线程池，如果大量调用，可能会导致线程池占满，尽量少用或使用NonQueryAsync代替", false)]
+        public async UniTask<int> ExecuteNonQueryAsync(string cmdText, params IDbDataParameter[] parameters)
         {
             await UniTask.SwitchToThreadPool();
-            var conn = PopConnect();
-            var pars = parameters != null ? parameters.ToArray() : new IDbDataParameter[0];
-            var count = ExecuteNonQuery(conn, cmdText, pars);
-            conns.Push(conn);
+            var count = ExecuteNonQuery(cmdText, parameters);
             return count;
         }
 
-        public int ExecuteNonQuery(string cmdText)
+        [Obsolete("这个方法查询会卡当前线程，尽量少用或使用NonQueryAsync代替", false)]
+        public int ExecuteNonQuery(string cmdText, params IDbDataParameter[] parameters)
         {
-            var conn = PopConnect();
-            var pars = new IDbDataParameter[0];
-            var count = ExecuteNonQuery(conn, cmdText, pars);
-            conns.Push(conn);
-            return count;
-        }
-
-        private int ExecuteNonQuery(SQLiteConnection conn, string cmdText, IDbDataParameter[] parameters)
-        {
-            try
+            lock (this)
             {
-                using (SQLiteCommand cmd = new SQLiteCommand())
+                try
                 {
-                    cmd.CommandText = cmdText;
-                    cmd.Connection = conn;
-                    cmd.CommandTimeout = CommandTimeout;//避免死锁一直无畏的等待, 在30秒内必须完成
-                    cmd.Parameters.AddRange(parameters);
-                    var count = cmd.ExecuteNonQuery();
-                    QueryCount += count;
-                    return count;
-                }
-            }
-            catch (Exception ex)
-            {
-                cmdText = GetCommandText(cmdText, parameters);
-                NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
-            }
-            return -1;
-        }
-
-        public T ExecuteScalar<T>(string cmdText)
-        {
-            var conn = PopConnect();
-            var pars = new IDbDataParameter[0];
-            var count = ExecuteScalar<T>(conn, cmdText, pars);
-            conns.Push(conn);
-            return count;
-        }
-
-        private T ExecuteScalar<T>(SQLiteConnection conn, string cmdText, IDbDataParameter[] parameters)
-        {
-            try
-            {
-                using (var cmd = new SQLiteCommand())
-                {
-                    cmd.CommandText = cmdText;
-                    cmd.Connection = conn;
-                    cmd.CommandTimeout = CommandTimeout;//避免死锁一直无畏的等待, 在30秒内必须完成
-                    cmd.Parameters.AddRange(parameters);
-                    var obj = cmd.ExecuteScalar();
-                    if (obj is DBNull)
-                        return default;
-                    if (obj is string)
+                    using (var cmd = new SQLiteCommand())
                     {
-                        if (typeof(T) == typeof(string))
-                            return (T)obj;
-                        else
-                            return default;
+                        cmd.CommandText = cmdText;
+                        cmd.Connection = Connection;
+                        cmd.CommandTimeout = CommandTimeout;//避免死锁一直无畏的等待, 在30秒内必须完成
+                        cmd.Parameters.AddRange(parameters);
+                        var count = cmd.ExecuteNonQuery();
+                        QueryCount += count;
+                        return count;
                     }
-                    var count = (T)Convert.ChangeType(obj, typeof(T));
-                    QueryCount++;
-                    return count;
                 }
+                catch (Exception ex)
+                {
+                    cmdText = GetCommandText(cmdText, parameters);
+                    NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
+                }
+                return -1;
             }
-            catch (Exception ex)
+        }
+
+        public T ExecuteScalar<T>(string cmdText, params IDbDataParameter[] parameters)
+        {
+            lock (this)
             {
-                cmdText = GetCommandText(cmdText, parameters);
-                NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
+                try
+                {
+                    using (var cmd = new SQLiteCommand())
+                    {
+                        cmd.CommandText = cmdText;
+                        cmd.Connection = Connection;
+                        cmd.CommandTimeout = CommandTimeout;//避免死锁一直无畏的等待, 在30秒内必须完成
+                        cmd.Parameters.AddRange(parameters);
+                        var obj = cmd.ExecuteScalar();
+                        if (obj is DBNull)
+                            return default;
+                        if (obj is string)
+                        {
+                            if (typeof(T) == typeof(string))
+                                return (T)obj;
+                            else
+                                return default;
+                        }
+                        var count = (T)Convert.ChangeType(obj, typeof(T));
+                        QueryCount++;
+                        return count;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    cmdText = GetCommandText(cmdText, parameters);
+                    NDebug.LogError(cmdText + " 发生错误,如果有必要,请将sql语句复制到Navicat的查询窗口执行: " + ex);
+                }
+                return default;
             }
-            return default;
         }
 
         private static string GetCommandText(string cmdText, IDbDataParameter[] parameters) 
@@ -476,6 +456,7 @@ namespace Example2
             {
                 BatchQueryWorkers();
                 BatchSubmitWorkers();
+                ExecuteNonQueryWorkers();
                 return true;
             }
         }
@@ -488,12 +469,14 @@ namespace Example2
             lock (this) //当BatchWorker执行的时候，这里就需要等待
             {
                 bool isComplete1, isComplete2;
+                int affectedRows;
                 do
                 {
                     isComplete1 = BatchQueryWorkers();
                     isComplete2 = BatchSubmitWorkers();
+                    affectedRows = ExecuteNonQueryWorkers();
                 }
-                while (!isComplete1 || !isComplete2);
+                while (!isComplete1 || !isComplete2 || affectedRows > 0);
             }
         }
 
@@ -614,6 +597,13 @@ namespace Example2
             }
         }
 
+        private class NonQueryTask
+        {
+            public string CommandText { get; set; }
+            public bool IsDone { get; set; }
+            public int AffectedRows { get; set; }
+        }
+
         /// <summary>
         /// 异步查询, 查询案例: `id`=1 或者 `name` = 'hello'
         /// <para></para>
@@ -628,7 +618,7 @@ namespace Example2
                 queryTypes[type] = queue = new QueueSafe<IQueryTask>();
             var queryTask = new QueryTask<T>() { CommandText = filterExpression };
             queue.Enqueue(queryTask);
-            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((IQueryTask)state).IsDone, queryTask);
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => state.IsDone, queryTask);
             return queryTask.Data;
         }
 
@@ -645,8 +635,24 @@ namespace Example2
                 queryTypes[type] = queue = new QueueSafe<IQueryTask>();
             var queryTask = new QueryTaskList<T>() { CommandText = filterExpression };
             queue.Enqueue(queryTask);
-            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => ((IQueryTask)state).IsDone, queryTask);
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => state.IsDone, queryTask);
             return queryTask.Datas;
+        }
+
+        /// <summary>
+        /// 非查询执行，异步
+        /// </summary>
+        /// <param name="cmdText"></param>
+        /// <returns>影响行数</returns>
+        public async UniTask<int> NonQueryAsync(string cmdText)
+        {
+            var query = new NonQueryTask()
+            {
+                CommandText = cmdText,
+            };
+            nonQueryQueue.Enqueue(query);
+            await UniTaskNetExtensions.Wait(CommandTimeout * 1000, (state) => state.IsDone, query);
+            return query.AffectedRows;
         }
 
         private bool BatchQueryWorkers()
@@ -668,41 +674,48 @@ namespace Example2
                     queryQueue.Clear();
                     var tableName = item.Key.Name;
                     tableName = tableName.Remove(tableName.Length - 4, 4);
+                    string commandText;
+                    string[] commandTexts;
+                    var commandBuilder = new StringBuilder($"SELECT * FROM `{tableName}` WHERE ");
                     for (int i = 0; i < count; i++)
                     {
                         if (item.Value.TryDequeue(out var queryTask))
                         {
-                            var commandTexts = queryTask.CommandText.Split('=');
-                            if (commandTexts.Length == 2)
+                            commandText = queryTask.CommandText;
+                            commandText = commandText.Replace("  ", " "); //如果有两个空格则合成一个空格
+                            commandTexts = commandText.Split(new char[]{ ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            for (int x = 0; x < commandTexts.Length; x += 4)
                             {
-                                var cellName = commandTexts[0].Trim();
+                                var cellName = commandTexts[x].Trim();
                                 if (!cellName.StartsWith("`")) //兼容.Net Framework写法
                                     cellName = $"`{cellName}`";
                                 if (!queryCell.TryGetValue(cellName, out var queryCommandText))
-                                    queryCell.Add(cellName, queryCommandText = new StringBuilder($"SELECT * FROM `{tableName}` WHERE {cellName} IN("));
-                                queryCommandText.Append($"{commandTexts[1]},");
+                                    queryCell.Add(cellName, queryCommandText = new StringBuilder($"{cellName} IN("));
+                                queryCommandText.Append($"{commandTexts[x + 2]},");
                             }
-                            else throw new NotImplementedException("还未实现多查询, 请联系作者增加功能!");
                             queryQueue.Enqueue(queryTask);
                         }
                     }
-                    foreach (var item1 in queryCell)
+                    foreach (var queryCommandText in queryCell.Values)
                     {
-                        var queryCommandText = item1.Value;
                         queryCommandText[queryCommandText.Length - 1] = ' ';
-                        queryCommandText.Append(");");
-                        var commandText = queryCommandText.ToString();
-                        var dataTable = ExecuteQueryAsDataTable(commandText);
-                        while (queryQueue.Count > 0)
+                        queryCommandText.Append(")");
+                        commandText = queryCommandText.ToString();
+                        commandBuilder.Append(commandText);
+                        commandBuilder.Append(" or ");
+                    }
+                    commandBuilder.Remove(commandBuilder.Length - 4, 4);
+                    commandText = commandBuilder.ToString();
+                    var dataTable = ExecuteQueryAsDataTable(commandText);
+                    while (queryQueue.Count > 0)
+                    {
+                        var queryTask = queryQueue.Dequeue();
+                        if (dataTable != null)
                         {
-                            var queryTask = queryQueue.Dequeue();
-                            if (dataTable != null)
-                            {
-                                var rows = dataTable.Select(queryTask.CommandText);
-                                queryTask.SetRows(this, rows);
-                            }
-                            queryTask.IsDone = true;
+                            var rows = dataTable.Select(queryTask.CommandText);
+                            queryTask.SetRows(this, rows);
                         }
+                        queryTask.IsDone = true;
                     }
                 }
             } 
@@ -715,33 +728,76 @@ namespace Example2
 
         public DataTable ExecuteQueryAsDataTable(string cmdText)
         {
-            var conn = PopConnect();
+            lock (this)
+            {
+                try
+                {
+                    using (var cmd = new SQLiteCommand())
+                    {
+                        cmd.CommandText = cmdText;
+                        cmd.Connection = Connection;
+                        cmd.CommandTimeout = CommandTimeout;
+                        cmd.Parameters.Clear();
+                        var dataTable = new DataTable();
+                        using (var adapter = new SQLiteDataAdapter(cmd))
+                        {
+                            adapter.Fill(dataTable);
+                        }
+                        return dataTable;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    NDebug.LogError(cmdText + " 错误: " + ex);
+                }
+                return default;
+            }
+        }
+
+        private int ExecuteNonQueryWorkers()
+        {
+            var count = nonQueryQueue.Count;
+            if (count <= 0)
+                return 0;
+            if (count > BatchSize)
+                count = BatchSize;
+            nonQueryList.Clear();
+            commandTextBuilder.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                if (nonQueryQueue.TryDequeue(out var nonQuery))
+                {
+                    nonQueryList.Add(nonQuery);
+                    commandTextBuilder.AppendLine(nonQuery.CommandText);
+                }
+            }
             try
             {
                 using (var cmd = new SQLiteCommand())
                 {
-                    cmd.CommandText = cmdText;
-                    cmd.Connection = conn;
+                    cmd.CommandText = commandTextBuilder.ToString();
+                    cmd.Connection = Connection;
                     cmd.CommandTimeout = CommandTimeout;
-                    cmd.Parameters.Clear();
-                    var dataTable = new DataTable();
-                    using (var adapter = new SQLiteDataAdapter(cmd))
-                    {
-                        adapter.Fill(dataTable);
-                    }
-                    conns.Push(conn);
-                    return dataTable;
+                    nonQueryHandlerField?.SetValue(cmd, new Action<int, int>(OnNonQueryHandler));
+                    return cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
             {
-                NDebug.LogError(cmdText + " 错误: " + ex);
+                NDebug.LogError("非查询错误: " + ex);
+                for (int i = 0; i < nonQueryList.Count; i++)
+                {
+                    nonQueryList[i].IsDone = true;
+                }
             }
-            finally
-            {
-                conns.Push(conn);
-            }
-            return default;
+            return 0;
+        }
+
+        private void OnNonQueryHandler(int index, int affectedRows)
+        {
+            var nonQuery = nonQueryList[index];
+            nonQuery.AffectedRows = affectedRows;
+            nonQuery.IsDone = true;
         }
 
         public string CheckStringValue(string value, uint length)
@@ -777,7 +833,7 @@ namespace Example2
                 if (count <= 0)
                     return;
             }
-            CloseConnect();
+            connection?.Clone();
             SetDatabaseName(dbName);
             InitConnection();
             //新增表时判断

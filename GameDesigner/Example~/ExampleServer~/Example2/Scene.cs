@@ -39,7 +39,7 @@ namespace Example2
                 {
                     var position = patrolPath.waypoints[0];
                     var monster = new AIMonster();
-                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = 0f, findPathMode = FindPathMode.FindPathStraight };
+                    monster.Agent = new AgentEntity(navmeshSystem) { agentHeight = -0.5f, findPathMode = FindPathMode.FindPathFollow };
                     monster.Agent.SetPositionAndRotation(position, Quaternion.identity);
                     monster.Position = position;
                     monster.pointCenter = position;

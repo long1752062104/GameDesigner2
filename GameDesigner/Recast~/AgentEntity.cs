@@ -6,7 +6,6 @@ using Net.AI.Native;
 using static Net.AI.Native.RecastDll;
 #else
 using Recast;
-using static Recast.RecastGlobal;
 #endif
 
 namespace Net.AI
@@ -33,11 +32,9 @@ namespace Net.AI
                 return 0f;
             }
         }
-
-        public Quaternion Rotation
-        {
-            get => transform.Rotation;
-        }
+        public Vector3 Position => transform.Position;
+        public Quaternion Rotation => transform.Rotation;
+        public Vector3 Destination => pathPoints.Count > 0 ? pathPoints[0] : Position;
 
         public AgentEntity() { }
 
@@ -58,7 +55,11 @@ namespace Net.AI
             {
                 int index = pathPoints.Count - 1;
                 var nextPos = pathPoints[index];
-                transform.Rotation = Quaternion.Lerp(transform.Rotation, Quaternion.LookRotation(new Vector3(nextPos.x, transform.Position.y, nextPos.z) - transform.Position, Vector3.up), angularSpeed);
+                var direction = nextPos - transform.Position;
+                var newRotation = Quaternion.LookRotation(direction, Vector3.up);
+                newRotation.x = 0f;
+                newRotation.z = 0f;
+                transform.Rotation = Quaternion.Lerp(transform.Rotation, newRotation, angularSpeed);
                 transform.Position = Vector3.MoveTowards(transform.Position, nextPos, speed * dt);
                 if (Vector3.Distance(transform.Position, nextPos) < 0.1f)
                     pathPoints.RemoveAt(index);

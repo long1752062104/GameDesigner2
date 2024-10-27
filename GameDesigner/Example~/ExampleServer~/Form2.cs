@@ -63,8 +63,8 @@ namespace ExampleServer
             server.Run((ushort)port);//启动
             run = true;
             button1.Text = "关闭";
-            Example2DB.I.ConnectionBuilder.DataSource = $"{AppDomain.CurrentDomain.BaseDirectory}/Data/example2.db";
-            Example2DB.I.Init(Example2DB.I.OnInit, 1);
+            Example2DB.I.ConnectionBuilder.DataSource = $"{AppDomain.CurrentDomain.BaseDirectory}Data\\example2.db";
+            Example2DB.I.Init(Example2DB.I.OnInit);
             Example2DB.I.Start();//每秒检查有没有数据需要往mysql数据库更新
         }
 

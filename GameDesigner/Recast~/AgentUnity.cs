@@ -1,4 +1,5 @@
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WSA || UNITY_WEBGL
+using Net.Unity;
 using UnityEngine;
 
 namespace Net.AI
@@ -6,7 +7,7 @@ namespace Net.AI
     public class AgentUnity : MonoBehaviour
     {
         public AgentEntity entity = new AgentEntity();
-        public bool lockX = true, lockY = true, lockZ = true;
+        public AxisConstraints axisConstraints = new AxisConstraints();
         public bool isPatrol;
         private float time;
         private Transform thisTransform;
@@ -33,9 +34,9 @@ namespace Net.AI
             entity.OnUpdate(Time.deltaTime);
             var entityPos = entity.transform.Position;
             var thisPos = thisTransform.position;
-            if (!lockX) entityPos.x = thisPos.x;
-            if (!lockY | Mathf.Abs(thisPos.y - entityPos.y) > 3f) entityPos.y = thisPos.y;
-            if (!lockZ) entityPos.z = thisPos.z;
+            if (axisConstraints.X) entityPos.x = thisPos.x;
+            if (axisConstraints.Y) entityPos.y = thisPos.y;
+            if (axisConstraints.Z) entityPos.z = thisPos.z;
             thisTransform.SetPositionAndRotation(entityPos, entity.transform.Rotation);
             if (Time.time > time & isPatrol)
             {

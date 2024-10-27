@@ -54,16 +54,19 @@ namespace Example2
                 {
                     idleTime = Time.time + RandomHelper.Range(0f, 10f);
                     destination = new Vector3(RandomHelper.Range(pointCenter.x - 50f, pointCenter.x + 50f), 0f, RandomHelper.Range(pointCenter.z - 50f, pointCenter.z + 50f));
-                    Agent.SetDestination(destination);
-                    if (roleInCount > 0)
+                    if (Agent.SetDestination(destination))
                     {
-                        currOpers.Add(new Operation(Command.EnterArea, Identity, Position, Agent.Rotation)
+                        destination = Agent.Destination; //获取目的地位置, 这里才包含y的值
+                        if (roleInCount > 0)
                         {
-                            index = 2,
-                            index1 = ActorID,
-                            index2 = health,
-                            direction = destination, //怪物下一个位置, 客户端收到后会自动寻路到目的地
-                        });
+                            currOpers.Add(new Operation(Command.EnterArea, Identity, Position, Agent.Rotation)
+                            {
+                                index = 2,
+                                index1 = ActorID,
+                                index2 = health,
+                                direction = destination, //怪物下一个位置, 客户端收到后会自动寻路到目的地
+                            });
+                        }
                     }
                 }
             }
