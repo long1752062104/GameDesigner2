@@ -193,8 +193,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c2b6df1bf51d774791a9f5c4fd20df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeStep: 0.016666668
-  maxUpdateRealTimeWindow: 0.1
+  timeStep: 0.01666667
+  syncTransformLerp: 1
   solverIterationLimit: 6
   gravity: {x: 0, y: -9.81, z: 0}
   initializeMode: 0

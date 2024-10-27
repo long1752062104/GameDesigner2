@@ -23,7 +23,7 @@ namespace NonLockStep
     public class NPhysics : SingletonMono<NPhysics>
     {
         [SerializeField] private float timeStep = 1f / 60f;
-        [SerializeField] private float maxUpdateRealTimeWindow = 0.1f;
+        [SerializeField] private float syncTransformLerp = 1f;
         [SerializeField] private int solverIterationLimit = 6;
         [SerializeField] private Vector3 gravity = Vector3.down * 9.81f;
         [SerializeField] private InitializeMode initializeMode = InitializeMode.Awake;
@@ -39,7 +39,7 @@ namespace NonLockStep
         private readonly List<CollisionLayer> collisionLayers = new();
 #endif
 
-        public float InterpolationTime => timeSinceLastStep / timeStep;
+        public float InterpolationTime => syncTransformLerp * Time.deltaTime;
         public World World => world;
 #if !JITTER2_PHYSICS
         public List<CollisionGroup> CollisionLayers => collisionLayers;
@@ -74,39 +74,21 @@ namespace NonLockStep
                 return;
 #if !JITTER2_PHYSICS
             timeSinceLastStep += Time.deltaTime;
-            var updateBeginTime = DateTime.Now;
-            while (timeSinceLastStep > timeStep)
+            if (timeSinceLastStep > timeStep)
             {
+                timeSinceLastStep = 0;
                 Profiler.BeginSample("BEPUphysics Simulation Step");
                 Simulate();
                 Profiler.EndSample();
-                timeSinceLastStep -= timeStep;
-                var duration = DateTime.Now - updateBeginTime;
-                if (duration.TotalSeconds > maxUpdateRealTimeWindow)
-                {
-                    timeSinceLastStep %= timeStep;
-                    break;
-                }
-                if (Time.timeScale == 0f)
-                    break;
             }
 #else
             timeSinceLastStep += Time.deltaTime;
-            var updateBeginTime = DateTime.Now;
             while (timeSinceLastStep > timeStep)
             {
-                Profiler.BeginSample("BEPUphysics Simulation Step");
+                timeSinceLastStep = 0;
+                Profiler.BeginSample("Jitter2 Simulation Step");
                 Simulate();
                 Profiler.EndSample();
-                timeSinceLastStep -= timeStep;
-                var duration = DateTime.Now - updateBeginTime;
-                if (duration.TotalSeconds > maxUpdateRealTimeWindow)
-                {
-                    timeSinceLastStep %= timeStep;
-                    break;
-                }
-                if (Time.timeScale == 0f)
-                    break;
             }
 #endif
         }

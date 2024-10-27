@@ -119,7 +119,6 @@ namespace NonLockStep.Client
             else if (self.operation.cmd1 == 2)
             {
                 self.operation.cmd1 = 0;
-                //self.rigidBody.Translate(0, 0, 0);
                 ChangeState(4);
             }
             else
@@ -175,7 +174,7 @@ namespace NonLockStep.Client
         public PlayerJump(Player player)
         {
             self = player;
-            characterController = (NCharacterController)player.rigidBody;
+            characterController = player.rigidBody as NCharacterController;
         }
 
         public override void OnEnter()

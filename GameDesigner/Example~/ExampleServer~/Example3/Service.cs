@@ -10,6 +10,7 @@ namespace LockStep.Server
         protected override void OnStartupCompleted()
         {
             RemoveScene(MainSceneName, false);
+            SyncSceneTime = 16;
         }
 
         protected override void OnOperationSync(Player client, OperationList list)

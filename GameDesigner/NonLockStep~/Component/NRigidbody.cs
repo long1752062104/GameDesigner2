@@ -391,9 +391,7 @@ namespace NonLockStep
             {
 #if !JITTER2_PHYSICS
                 var offset = NQuaternion.Transform(massCenterOffset, physicsEntity.orientation);
-                transform.position = Vector3.Lerp(previousPhysicsPosition, currentPhysicsPosition, NPhysics.Singleton.InterpolationTime);
-                transform.position -= (Vector3)offset;
-                transform.rotation = Quaternion.Lerp(previousPhysicsRotation, currentPhysicsRotation, NPhysics.Singleton.InterpolationTime);
+                transform.SetPositionAndRotation(Vector3.Lerp(previousPhysicsPosition - offset, currentPhysicsPosition - offset, NPhysics.Singleton.InterpolationTime), Quaternion.Lerp(previousPhysicsRotation, currentPhysicsRotation, NPhysics.Singleton.InterpolationTime));
 #else
                 transform.SetPositionAndRotation(Vector3.Lerp(previousPhysicsPosition, currentPhysicsPosition, NPhysics.Singleton.InterpolationTime), Quaternion.Lerp(previousPhysicsRotation, currentPhysicsRotation, NPhysics.Singleton.InterpolationTime));
 #endif
