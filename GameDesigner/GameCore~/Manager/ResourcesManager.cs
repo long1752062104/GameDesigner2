@@ -264,6 +264,7 @@ namespace GameCore
                 assetPath = "file://" + assetPath;
 #endif
             }
+            Global.Logger.Log("读取文件:" + assetPath);
             using (var request = UnityWebRequest.Get(assetPath))
             {
                 var oper = request.SendWebRequest();

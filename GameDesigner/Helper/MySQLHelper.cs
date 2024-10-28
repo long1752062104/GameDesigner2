@@ -163,6 +163,7 @@ namespace Net.Helper
                     nextResultBody.UpdateInstructionOffsets();
                     module.Write(dllPath);
                     module.Dispose();
+                    NDebug.Log("注入成功, 请再次重启服务器以生效!");
                     return true;
                 }
                 NDebug.LogError("此版本不在注入支持的范围内，请使用8.0.11.0 到 8.0.32.1之间的任意版本，或者联系作者提供新的其他版本注入指令!");
