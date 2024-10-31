@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Net.Event;
 using Net.Share;
 
-namespace Net.Config
+namespace Net.Table
 {
     /// <summary>
     /// 表配置类, 可双端使用

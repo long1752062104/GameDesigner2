@@ -64,8 +64,8 @@ namespace GameCore
             var path = "Tools/Excel/";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            var excelPath = $"{data.gameCorePath}/GameCore/Template/GameConfig.xls";
-            var excelPath1 = path + "GameConfig.xls";
+            var excelPath = $"{data.gameCorePath}/GameCore/Template/GameConfig.xlsx";
+            var excelPath1 = path + "GameConfig.xlsx";
             if (!File.Exists(excelPath1))//如果存在表则不能复制进去了, 避免使用者数据丢失
                 File.Copy(excelPath, excelPath1);
             Debug.Log($"复制配置表格文件完成:{excelPath1}");

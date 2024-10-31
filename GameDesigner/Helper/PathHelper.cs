@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace Net.Helper
 {
+    /// <summary>
+    /// 文件路径助手
+    /// </summary>
     public class PathHelper
     {
         /// <summary>
@@ -11,6 +14,7 @@ namespace Net.Helper
         /// </summary>
         /// <param name="root"></param>
         /// <param name="fullPath"></param>
+        /// <param name="isRevise"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public static string GetRelativePath(string root, string fullPath, bool isRevise = false)
@@ -29,6 +33,8 @@ namespace Net.Helper
         /// </summary>
         /// <param name="root"></param>
         /// <param name="fullPath"></param>
+        /// <param name="oldSeparator"></param>
+        /// <param name="replaceSeparator"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public static string GetRelativePath(string root, string fullPath, char oldSeparator, char replaceSeparator)
@@ -76,6 +82,35 @@ namespace Net.Helper
             while (path.Contains(separators))
                 path = path.Replace(separators, replaceSeparator.ToString());
             return path;
+        }
+
+        /// <summary>
+        /// 查找父文件夹里面的某个格式文件
+        /// </summary>
+        /// <param name="searchPattern"></param>
+        /// <returns></returns>
+        public static string FindParentFile(string searchPattern)
+        {
+            var files = FindParentFiles(searchPattern);
+            return files.Length > 0 ? files[0] : string.Empty;
+        }
+
+        /// <summary>
+        /// 查找父文件夹里面的某个格式文件
+        /// </summary>
+        /// <param name="searchPattern"></param>
+        /// <returns></returns>
+        public static string[] FindParentFiles(string searchPattern)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            while (!string.IsNullOrEmpty(currentDirectory))
+            {
+                var files = Directory.GetFiles(currentDirectory, searchPattern, SearchOption.TopDirectoryOnly);
+                if (files.Length > 0)
+                    return files;
+                currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+            }
+            return new string[0];
         }
     }
 }

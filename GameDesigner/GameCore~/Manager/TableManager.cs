@@ -1,7 +1,7 @@
 using System.Data;
 using UnityEngine;
-using Net.Config;
 using Net.Share;
+using Net.Table;
 
 namespace GameCore
 {

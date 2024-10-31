@@ -30,7 +30,7 @@ namespace GameCore
         [MenuItem("GameDesigner/GameCore/OpenGameConfig", priority = 5)]
         private static void OpenExcel()
         {
-            var path = "Tools/Excel/GameConfig.xls";
+            var path = "Tools/Excel/GameConfig.xlsx";
             InternalEditorUtility.OpenFileAtLineExternal(path, 0);
         }
 

@@ -1,14 +1,16 @@
-using System;
 using System.IO;
 using System.Data;
 using System.Text;
 using System.Collections.Generic;
-using Net.Helper;
 using ExcelDataReader;
 using UnityEngine;
 using UnityEditor;
 using UnityToolbarExtender;
 using UnityEditorInternal;
+using Net.Table;
+using Net.Helper;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 
 namespace GameCore
 {
@@ -53,20 +55,24 @@ namespace GameCore
                                 continue;
                             if (table.Rows.Count < 3) //空行
                                 continue;
+                            if (table.TableName == "Type") //类型定义
+                                continue;
                             var dataTable = new DataTable(table.TableName);
-                            var columnTypes = new List<Type>();
+                            var columnTypes = new List<ITypeSolver>();
                             for (int i = 0; i < table.Columns.Count; i++)
                             {
                                 var columnName = table.Rows[0][i].ToString();
                                 var columnType = table.Rows[1][i].ToString();
                                 if (string.IsNullOrEmpty(columnName) | string.IsNullOrEmpty(columnType))
                                     continue;
-                                var dataType = GetDataType(columnType);
+                                if (!TypeSolver.TryGetValue(columnType, out var typeSolver))
+                                    continue;
+                                var dataType = typeSolver.DataType;
                                 if (dataType.IsEnum)
                                     dataTable.Columns.Add(new DataColumn(columnName, typeof(int))); //由于枚举类型可能存在于热更新程序集，而表读取早于热更新程序集，所以会导致读取不到类型的问题
                                 else
                                     dataTable.Columns.Add(new DataColumn(columnName, dataType));
-                                columnTypes.Add(dataType);
+                                columnTypes.Add(typeSolver);
                             }
                             for (int x = 3; x < table.Rows.Count; x++)
                             {
@@ -77,43 +83,7 @@ namespace GameCore
                                 var dataRow = dataTable.NewRow();
                                 dataTable.Rows.Add(dataRow);
                                 for (int y = 0; y < columnTypes.Count; y++)
-                                {
-                                    var dataType = columnTypes[y];
-                                    if (dataType == typeof(bool))
-                                        dataRow[y] = ObjectConverter.AsBool(row[y]);
-                                    else if (dataType == typeof(byte))
-                                        dataRow[y] = ObjectConverter.AsByte(row[y]);
-                                    else if (dataType == typeof(sbyte))
-                                        dataRow[y] = ObjectConverter.AsSbyte(row[y]);
-                                    else if (dataType == typeof(char))
-                                        dataRow[y] = ObjectConverter.AsChar(row[y]);
-                                    else if (dataType == typeof(short))
-                                        dataRow[y] = ObjectConverter.AsShort(row[y]);
-                                    else if (dataType == typeof(ushort))
-                                        dataRow[y] = ObjectConverter.AsUshort(row[y]);
-                                    else if (dataType == typeof(int))
-                                        dataRow[y] = ObjectConverter.AsInt(row[y]);
-                                    else if (dataType == typeof(uint))
-                                        dataRow[y] = ObjectConverter.AsUint(row[y]);
-                                    else if (dataType == typeof(float))
-                                        dataRow[y] = ObjectConverter.AsFloat(row[y]);
-                                    else if (dataType == typeof(long))
-                                        dataRow[y] = ObjectConverter.AsLong(row[y]);
-                                    else if (dataType == typeof(ulong))
-                                        dataRow[y] = ObjectConverter.AsUlong(row[y]);
-                                    else if (dataType == typeof(double))
-                                        dataRow[y] = ObjectConverter.AsDouble(row[y]);
-                                    else if (dataType == typeof(decimal))
-                                        dataRow[y] = ObjectConverter.AsDecimal(row[y]);
-                                    else if (dataType == typeof(DateTime))
-                                        dataRow[y] = ObjectConverter.AsDateTime(row[y]);
-                                    else if (dataType == typeof(string))
-                                        dataRow[y] = ObjectConverter.AsString(row[y]);
-                                    else if (dataType.IsEnum)
-                                        dataRow[y] = (int)ObjectConverter.AsEnum(row[y], dataType);
-                                    else
-                                        dataRow[y] = row[y];
-                                }
+                                    dataRow[y] = columnTypes[y].As(row[y]);
                             }
                             dataTable.AcceptChanges();
                             dataSetNew.Tables.Add(dataTable);
@@ -164,6 +134,8 @@ namespace GameCore
                                 continue;
                             if (table.Rows.Count < 3) //   空行
                                 continue;
+                            if (table.TableName == "Type") //类型定义表
+                                continue;
                             var text = textSource.Replace("SHEETNAME", table.TableName);
                             var texts = text.Split(new string[] { "SPLIT" }, 0);
                             var fullSB = new StringBuilder();
@@ -180,24 +152,26 @@ namespace GameCore
                                 var des = table.Rows[2][i].ToString();
                                 if (string.IsNullOrEmpty(name) | string.IsNullOrEmpty(columnType))
                                     continue;
-                                var dataType = GetDataType(columnType);
+                                if (!TypeSolver.TryGetValue(columnType, out var typeSolver))
+                                    continue;
+                                var dataType = typeSolver.DataType;
+                                var fieldType = AssemblyHelper.GetCodeTypeName(dataType.ToString());
                                 indexGetSB.AppendLine($"                case {i - 1}: return {name};");
-                                indexSetSB.AppendLine($"                case {i - 1}: {name} = ({columnType})value; break;");
+                                indexSetSB.AppendLine($"                case {i - 1}: {name} = ({fieldType})value; break;");
                                 nameGetSB.AppendLine($"                case \"{name}\": return {name};");
-                                nameSetSB.AppendLine($"                case \"{name}\": {name} = ({columnType})value; break;");
+                                nameSetSB.AppendLine($"                case \"{name}\": {name} = ({fieldType})value; break;");
 
                                 var text3 = texts[1].Replace("NAME", name);
-                                text3 = text3.Replace("TYPE", columnType);
+                                text3 = text3.Replace("TYPE", fieldType);
                                 text3 = text3.Replace("NOTE", des);
                                 text3 = text3.TrimStart('\r', '\n');
                                 fieldSB.AppendLine(text3);
 
                                 text3 = texts[3].Replace("NAME", name);
-                                columnType = columnType[0].ToString().ToUpper() + columnType.Substring(1, columnType.Length - 1);
                                 if (dataType.IsEnum)
-                                    text3 = text3.Replace("ObjectConverter.AsTYPE", $"({columnType})ObjectConverter.AsInt");
+                                    text3 = text3.Replace("TypeSolver<TYPE>", $"({fieldType})TypeSolver<System.Int32>");
                                 else
-                                    text3 = text3.Replace("TYPE", columnType);
+                                    text3 = text3.Replace("TYPE", fieldType);
                                 text3 = text3.TrimStart('\r', '\n');
                                 text3 = text3.TrimEnd('\n', '\r');
                                 initSB.AppendLine(text3);
@@ -233,36 +207,6 @@ namespace GameCore
             }
         }
 
-        private static Type GetDataType(string columnType)
-        {
-            Type dataType;
-            switch (columnType.ToLower())
-            {
-                case "boolean": dataType = typeof(bool); break;
-                case "bool": dataType = typeof(bool); break;
-                case "byte": dataType = typeof(byte); break;
-                case "sbyte": dataType = typeof(sbyte); break;
-                case "char": dataType = typeof(char); break;
-                case "short": dataType = typeof(short); break;
-                case "ushort": dataType = typeof(ushort); break;
-                case "int": dataType = typeof(int); break;
-                case "uint": dataType = typeof(uint); break;
-                case "long": dataType = typeof(long); break;
-                case "ulong": dataType = typeof(ulong); break;
-                case "float": dataType = typeof(float); break;
-                case "double": dataType = typeof(double); break;
-                case "decimal": dataType = typeof(decimal); break;
-                case "dateTime": dataType = typeof(DateTime); break;
-                case "string": dataType = typeof(string); break;
-                case "json": dataType = typeof(string); break;
-                default:
-                    dataType = AssemblyHelper.GetTypeNotOptimized(columnType);
-                    dataType ??= typeof(object);
-                    break;
-            }
-            return dataType;
-        }
-
         [MenuItem("GameDesigner/GameCore/GenerateExcelDataAll", priority = 4)]
         public static void GenerateExcelDataAll()
         {
@@ -280,6 +224,8 @@ namespace GameCore
 
         static void UpdateCurrent()
         {
+            if (!Directory.Exists("Tools/Excel/"))
+                return;
             var files = Directory.GetFiles("Tools/Excel/", "*.*");
             var excelNames = new List<string>() { "None" };
             var excelFiles = new List<string>() { "None" };
@@ -293,6 +239,8 @@ namespace GameCore
                 excelNames.Add(Path.GetFileName(file));
                 excelFiles.Add(file);
             }
+            excelNames.Add("设置Excel表类型");
+            excelFiles.Add("SetExcelDataType");
             excelNames.Add("生成Excel表数据");
             excelFiles.Add("GenerateExcelDataAll");
             m_ExcelName = excelNames.ToArray();
@@ -312,8 +260,132 @@ namespace GameCore
                 var currSelect = m_ExcelPath[excelSelectedNew];
                 if (currSelect == "GenerateExcelDataAll")
                     GenerateExcelDataAll();
+                else if (currSelect == "SetExcelDataType")
+                    SetExcelDataType();
                 else if (currSelect != "None")
                     InternalEditorUtility.OpenFileAtLineExternal(m_ExcelPath[excelSelectedNew], 0);
+            }
+        }
+
+        private static void SetExcelDataType()
+        {
+            foreach (var file in Directory.GetFiles("Tools/Excel/", "*.*"))
+            {
+                if (!file.EndsWith(".xlsx"))
+                    continue;
+                var fileName = Path.GetFileName(file);
+                if (fileName.StartsWith("~$"))
+                    continue;
+                using (var package = new ExcelPackage(file))
+                {
+                    var worksheet = package.Workbook.Worksheets["Type"];
+                    if (worksheet == null)
+                    {
+                        worksheet = package.Workbook.Worksheets.Add("Type");
+                        var rowTexts = @"ID	Name	Des
+int	string	string
+编号	类型名称	描述
+1	bool	
+2	byte	
+3	sbyte	
+4	char	
+5	short	
+6	ushort	
+7	int	
+8	uint	
+9	float	
+10	long	
+11	ulong	
+12	double	
+13	decimal	
+14	dateTime	
+15	string	
+		
+100	boolArray	数组分隔为;
+101	byteArray	数组分隔为;
+102	sbyteArray	数组分隔为;
+103	charArray	数组分隔为;
+104	shortArray	数组分隔为;
+105	ushortArray	数组分隔为;
+106	intArray	数组分隔为;
+107	uintArray	数组分隔为;
+108	floatArray	数组分隔为;
+109	longArray	数组分隔为;
+110	ulongArray	数组分隔为;
+111	doubleArray	数组分隔为;
+112	decimalArray	数组分隔为;
+113	dateTimeArray	数组分隔为;
+114	stringArray	数组分隔为;
+		
+200	boolList	数组分隔为;
+201	byteList	数组分隔为;
+202	sbyteList	数组分隔为;
+203	charList	数组分隔为;
+204	shortList	数组分隔为;
+205	ushortList	数组分隔为;
+206	intList	数组分隔为;
+207	uintList	数组分隔为;
+208	floatList	数组分隔为;
+209	longList	数组分隔为;
+210	ulongList	数组分隔为;
+211	doubleList	数组分隔为;
+212	decimalList	数组分隔为;
+213	dateTimeList	数组分隔为;
+214	stringList	数组分隔为;
+".Split(new string[] { "\r\n" }, 0);
+                        for (int i = 0; i < rowTexts.Length; i++)
+                        {
+                            var rowText = rowTexts[i];
+                            var items = rowText.Split('\t');
+                            if (items.Length < 3)
+                            {
+                                worksheet.Cells[i + 1, 1].Value = null;
+                                worksheet.Cells[i + 1, 2].Value = null;
+                                worksheet.Cells[i + 1, 3].Value = null;
+                            }
+                            else
+                            {
+                                if (int.TryParse(items[0].Trim(), out var number))
+                                    worksheet.Cells[i + 1, 1].Value = number;
+                                else
+                                    worksheet.Cells[i + 1, 1].Value = items[0].Trim();
+                                worksheet.Cells[i + 1, 2].Value = items[1].Trim();
+                                worksheet.Cells[i + 1, 3].Value = items[2].Trim();
+                            }
+                        }
+                    }
+                    for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
+                    {
+                        worksheet = package.Workbook.Worksheets[i];
+                        if (worksheet.Name == "Type")
+                            continue;
+                        int rowCount = worksheet.Dimension.Rows; // 获取总行数
+                        int colCount = worksheet.Dimension.Columns; // 获取总列数
+                        if (rowCount < 2)
+                            continue;
+                        worksheet.Cells[2, 1, 2, colCount].Style.Font.Bold = true;
+                        var fillColor = System.Drawing.Color.FromArgb(50, 217, 217, 217); // 深色
+                        worksheet.Cells[2, 1, 2, colCount].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        worksheet.Cells[2, 1, 2, colCount].Style.Fill.BackgroundColor.SetColor(fillColor); // 设置深色
+                        worksheet.Cells[2, 1, 2, colCount].Style.Font.Color.SetColor(System.Drawing.Color.Green); // 字体颜色为绿色
+                        worksheet.DataValidations.Clear();
+                        for (int col = 1; col <= colCount; col++)
+                        {
+                            var validation = worksheet.DataValidations.AddListValidation(worksheet.Cells[2, col].Address);
+                            validation.Formula.ExcelFormula = "=Type!$B$4:$B$10000";
+                        }
+                    }
+                    try
+                    {
+                        package.SaveAs(file);
+                    }
+                    catch
+                    {
+                        Debug.LogError($"文件已被其他程序打开! {file}");
+                        continue;
+                    }
+                    Debug.Log($"设置成功:{file}");
+                }
             }
         }
     }

@@ -14,13 +14,13 @@ namespace Net.Helper
     public class MySQLHelper
     {
         /// <summary>
-        /// 注入MySql.dll 修改dll指令，新增NonQueryHandler事件在MySqlCommand类上，批量执行只需要返回首影响行数的SQL语句使用
+        /// 注入MySql.dll 修改dll指令，新增NonQueryHandler事件在MySqlCommand类上，批量执行只需要返回受影响行数的SQL语句使用
         /// </summary>
         /// <returns>是否注入成功</returns>
         public static bool Inject() => Inject(AppDomain.CurrentDomain.BaseDirectory + "/MySql.Data.dll");
 
         /// <summary>
-        /// 注入MySql.dll 修改dll指令，新增NonQueryHandler事件在MySqlCommand类上，批量执行只需要返回首影响行数的SQL语句使用
+        /// 注入MySql.dll 修改dll指令，新增NonQueryHandler事件在MySqlCommand类上，批量执行只需要返回受影响行数的SQL语句使用
         /// </summary>
         /// <param name="dllPath">mysql.dll文件路径</param>
         /// <returns></returns>
@@ -28,6 +28,8 @@ namespace Net.Helper
         {
             try
             {
+                if (!File.Exists(dllPath))
+                    return false;
                 var moduleContext = new ModuleContext();
                 var assemblyResolver = new AssemblyResolver(moduleContext);
                 var resolver = new Resolver(assemblyResolver);
@@ -37,14 +39,14 @@ namespace Net.Helper
                 var module = ModuleDefMD.Load(File.ReadAllBytes(dllPath), moduleContext);
                 if (module.Assembly.Version >= new Version(8, 0, 11, 0) && module.Assembly.Version <= new Version(8, 0, 32, 1)) //只有8.0.11.0 -> 8.0.32.1版本IL指令一样
                 {
-                    var dllPaths = AssemblyHelper.GetAssembliePaths();
-                    foreach (var item in dllPaths)
-                        assemblyResolver.PreSearchPaths.Add(item);
-
                     var mySqlCommandType = module.Find("MySql.Data.MySqlClient.MySqlCommand", false);
                     var nonQueryHandler = mySqlCommandType.FindField("NonQueryHandler");
                     if (nonQueryHandler != null)
                         return true;
+
+                    var dllPaths = AssemblyHelper.GetAssembliePaths();
+                    foreach (var item in dllPaths)
+                        assemblyResolver.PreSearchPaths.Add(item);
 
                     var actionType = module.Import(typeof(Action<int, int>)).ToTypeSig();
                     nonQueryHandler = new FieldDefUser("NonQueryHandler", new FieldSig(actionType), FieldAttributes.Public);

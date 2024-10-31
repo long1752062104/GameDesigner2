@@ -1,5 +1,6 @@
-using Net.Share;
 using System.Data;
+using Net.Share;
+using Net.Table;
 
 public partial class SHEETNAMEDataConfig : IEntityDataConfig
 {
@@ -52,7 +53,7 @@ COLUMN_SET
     {
         ID = ObjectConverter.AsInt(row["ID"]);
 SPLIT
-        NAME = ObjectConverter.AsTYPE(row["NAME"]);
+        NAME = TypeSolver<TYPE>.Solver.As(row["NAME"]);
 SPLIT
     }
 }
