@@ -28,13 +28,13 @@ namespace Net.Table
 
         static TypeSolver()
         {
-            if (SolverTypes.Count > 0)
-                return;
             InitTypeSolverCollectors();
         }
 
         public static void InitTypeSolverCollectors()
         {
+            if (SolverTypes.Count > 0)
+                return;
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var collectors = assemblies.SelectMany(assembly => assembly.GetTypes()).Where(type => typeof(ITypeSolverCollector).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract).ToList();
             foreach (var collector in collectors)

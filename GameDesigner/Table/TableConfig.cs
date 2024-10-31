@@ -32,6 +32,7 @@ namespace Net.Table
         public void LoadTable(string jsonStr)
         {
             dataSet = Newtonsoft_X.Json.JsonConvert.DeserializeObject<DataSet>(jsonStr);
+            TypeSolver.InitTypeSolverCollectors();
         }
 
         /// <summary>
