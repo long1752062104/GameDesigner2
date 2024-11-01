@@ -85,7 +85,7 @@
     <Compile Include="GameDesigner\Recast~\**\*.cs" />
     <Compile Include="GameDesigner\Serialize\**\*.cs" />
     <Compile Include="GameDesigner\LockStep~\**\*.cs" />
-	<Compile Include="GameDesigner\Table\**\*.cs" />
+    <Compile Include="GameDesigner\Table\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Directory.Build.props" />

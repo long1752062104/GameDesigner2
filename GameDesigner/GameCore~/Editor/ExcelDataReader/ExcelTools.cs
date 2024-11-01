@@ -332,6 +332,12 @@ int	string	string
 212	decimalList	数组分隔为;
 213	dateTimeList	数组分隔为;
 214	stringList	数组分隔为;
+		
+300	vector2	x,y,z 使用,区分
+301	vector3	x,y,z 使用,区分
+302	vector4	x,y,z 使用,区分
+303	quaternion	x,y,z,w 使用,区分
+304	rect	x,y,z,w 使用,区分
 ".Split(new string[] { "\r\n" }, 0);
                         for (int i = 0; i < rowTexts.Length; i++)
                         {

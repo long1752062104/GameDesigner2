@@ -5,6 +5,9 @@
     /// </summary>
     public interface ITypeSolverCollector
     {
+        /// <summary>
+        /// 初始化收集类型求解类型
+        /// </summary>
         void Initialize();
     }
 }
