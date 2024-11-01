@@ -365,6 +365,8 @@ int	string	string
                         worksheet = package.Workbook.Worksheets[i];
                         if (worksheet.Name == "Type")
                             continue;
+                        if (worksheet.Dimension == null)
+                            continue;
                         int rowCount = worksheet.Dimension.Rows; // 获取总行数
                         int colCount = worksheet.Dimension.Columns; // 获取总列数
                         if (rowCount < 2)

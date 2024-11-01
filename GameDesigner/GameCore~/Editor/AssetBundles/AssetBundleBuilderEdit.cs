@@ -48,7 +48,7 @@ namespace GameCore
             { FilterOptions.Texture, new string[]{ ".jpg", ".png", ".bmp", ".tiff", ".psd", ".svg", ".jpeg" } },
             { FilterOptions.VideoClip, new string[]{ ".mp4", ".avi", ".mkv", ".flv", ".wmv" } },
         };
-        private readonly ConcurrentQueue<ParallelLoopResult> parallelLoopResults = new();
+        private readonly ConcurrentQueue<Task> tasks = new();
         private readonly ConcurrentQueue<ValueTuple<string, float>> displayInfos = new();
         private int errorCount;
 
@@ -118,7 +118,7 @@ namespace GameCore
             var assetManifestNew = new AssetManifest();
             string[] files;
             errorCount = 0;
-            parallelLoopResults.Clear();
+            tasks.Clear();
             displayInfos.Clear();
             var abi = AssetBundleBuilder.Instance;
             for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
@@ -137,15 +137,24 @@ namespace GameCore
                 }
                 else AddSinglePackage(abBuildList, assetManifestNew, assetPath, package);
             }
-            while (parallelLoopResults.TryDequeue(out var parallelLoopResult))
+            void DisplayProgressBar(ref int number)
             {
-                while (!parallelLoopResult.IsCompleted)
-                    Thread.Sleep(1);
                 while (displayInfos.TryDequeue(out var displayInfo))
                 {
                     EditorUtility.DisplayProgressBar("AssetBundleCollect", displayInfo.Item1, displayInfo.Item2);
-                    Thread.Sleep(assetBundleBuilder.displayProgressTime);
+                    if (number++ >= assetBundleBuilder.displayCanSleepNumber)
+                    {
+                        Thread.Sleep(1);
+                        number = 0;
+                    }
                 }
+            }
+            while (tasks.TryDequeue(out var task))
+            {
+                int number = 0;
+                while (!task.IsCompleted)
+                    DisplayProgressBar(ref number);
+                DisplayProgressBar(ref number);
             }
             EditorUtility.ClearProgressBar();
             if (errorCount > 0)
@@ -360,8 +369,29 @@ namespace GameCore
             if (type < CollectType.AllDirectoriesSplit)
                 return;
             var directories = Directory.GetDirectories(assetPath);
-            var parallelLoopResult = Parallel.ForEach(directories, directorie => AssetBundleCollect(buildList, assetManifest, directorie, package, progress, filters));
-            parallelLoopResults.Enqueue(parallelLoopResult);
+            if (directories.Length > 0)
+            {
+                for (int i = 0; i < directories.Length; i++)
+                {
+                    var directorie = directories[i].Replace('\\', '/');
+                    bool isFilter = false;
+                    foreach (var filterPath in filters)
+                    {
+                        if (StringHelper.StartsWith(directorie, filterPath))
+                        {
+                            isFilter = true;
+                            break;
+                        }
+                    }
+                    if (isFilter)
+                        continue;
+                    var task = Task.Run(() =>
+                    {
+                        AssetBundleCollect(buildList, assetManifest, directorie, package, progress, filters);
+                    });
+                    tasks.Enqueue(task);
+                }
+            }
         }
 
         private string AddSinglePackage(ConcurrentDictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package)

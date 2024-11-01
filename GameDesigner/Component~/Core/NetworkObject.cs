@@ -139,7 +139,7 @@ namespace Net.UnityComponent
             });
         }
 
-        internal void CheckSyncVar()
+        public void CheckSyncVar()
         {
             if (syncVarInfos.Count == 0)
                 return;
