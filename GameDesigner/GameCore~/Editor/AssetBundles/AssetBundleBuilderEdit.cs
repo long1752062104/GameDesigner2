@@ -9,6 +9,14 @@ using UnityEngine;
 using System.Text;
 using Net.Helper;
 using Debug = UnityEngine.Debug;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Threading;
+using UnityEditor.TestTools.TestRunner.Api;
+
+
+
+
 #if HYBRIDCLR
 using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
@@ -20,7 +28,7 @@ namespace GameCore
     public class AssetBundleBuilderEditor : Editor
     {
         private AssetBundleBuilder assetBundleBuilder;
-        private readonly Dictionary<FilterOptions, string[]> filterOptionDict = new Dictionary<FilterOptions, string[]>()
+        private readonly Dictionary<FilterOptions, string[]> filterOptionDict = new()
         {
             { FilterOptions.AnimationClip, new string[]{ ".anim" } },
             { FilterOptions.AudioClip, new string[]{ ".ogg", ".wav", ".mp3" } },
@@ -40,6 +48,9 @@ namespace GameCore
             { FilterOptions.Texture, new string[]{ ".jpg", ".png", ".bmp", ".tiff", ".psd", ".svg", ".jpeg" } },
             { FilterOptions.VideoClip, new string[]{ ".mp4", ".avi", ".mkv", ".flv", ".wmv" } },
         };
+        private readonly ConcurrentQueue<ParallelLoopResult> parallelLoopResults = new();
+        private readonly ConcurrentQueue<ValueTuple<string, float>> displayInfos = new();
+        private int errorCount;
 
         private void OnEnable()
         {
@@ -103,10 +114,13 @@ namespace GameCore
                 opt |= BuildAssetBundleOptions.StrictMode;
             if (assetBundleBuilder.DryRunBuild)
                 opt |= BuildAssetBundleOptions.DryRunBuild;
-            var abBuildList = new Dictionary<string, AssetBundleBuild>();
+            var abBuildList = new ConcurrentDictionary<string, AssetBundleBuild>();
             var assetManifestNew = new AssetManifest();
             string[] files;
-            int errorCount = 0;
+            errorCount = 0;
+            parallelLoopResults.Clear();
+            displayInfos.Clear();
+            var abi = AssetBundleBuilder.Instance;
             for (int i = 0; i < assetBundleBuilder.Packages.Count; i++)
             {
                 var package = assetBundleBuilder.Packages[i];
@@ -115,9 +129,23 @@ namespace GameCore
                 var assetPath = AssetDatabase.GetAssetPath(package.path);
                 var isFolder = AssetDatabase.IsValidFolder(assetPath);
                 if (isFolder)
-                    AssetBundleCollect(abBuildList, assetManifestNew, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, ref errorCount);
-                else
-                    AddSinglePackage(abBuildList, assetManifestNew, assetPath, package, ref errorCount);
+                {
+                    var filters = new List<string>();
+                    foreach (var filterObject in package.filters)
+                        filters.Add(AssetDatabase.GetAssetPath(filterObject));
+                    AssetBundleCollect(abBuildList, assetManifestNew, assetPath, package, i / (float)assetBundleBuilder.Packages.Count, filters);
+                }
+                else AddSinglePackage(abBuildList, assetManifestNew, assetPath, package);
+            }
+            while (parallelLoopResults.TryDequeue(out var parallelLoopResult))
+            {
+                while (!parallelLoopResult.IsCompleted)
+                    Thread.Sleep(1);
+                while (displayInfos.TryDequeue(out var displayInfo))
+                {
+                    EditorUtility.DisplayProgressBar("AssetBundleCollect", displayInfo.Item1, displayInfo.Item2);
+                    Thread.Sleep(assetBundleBuilder.displayProgressTime);
+                }
             }
             EditorUtility.ClearProgressBar();
             if (errorCount > 0)
@@ -160,14 +188,16 @@ namespace GameCore
                 return;
             }
             var assetBundleManifest = BuildPipeline.BuildAssetBundles(outputPath, assetBundleBuildList.Values.ToArray(), opt, assetBundleBuilder.buildTarget);
-            if (assetBundleManifest != null)
+            if (assetBundleManifest == null) //取消打包
             {
-                var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
-                foreach (var allAssetBundle in allAssetBundles)
-                    assetManifestNew.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
+                Debug.Log("取消打包!");
+                return;
             }
+            var allAssetBundles = assetBundleManifest.GetAllAssetBundles();
+            foreach (var allAssetBundle in allAssetBundles)
+                assetManifestNew.dependencies[allAssetBundle] = assetBundleManifest.GetDirectDependencies(allAssetBundle);
             var json = Newtonsoft_X.Json.JsonConvert.SerializeObject(assetManifestNew, Newtonsoft_X.Json.Formatting.Indented);
-            byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+            var jsonBytes = Encoding.UTF8.GetBytes(json);
             if (assetBundleBuilder.compressionJson)
                 jsonBytes = UnZipHelper.Compress(jsonBytes);
             File.WriteAllBytes(outputPath + "assetBundleManifest.json", jsonBytes);
@@ -231,9 +261,9 @@ namespace GameCore
             return assetBundleName;
         }
 
-        private void AssetBundleCollect(Dictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, float progress, ref int errorCount)
+        private void AssetBundleCollect(ConcurrentDictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, float progress, List<string> filters)
         {
-            EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集路径:{assetPath}", progress);
+            displayInfos.Enqueue(($"收集路径:{assetPath}", progress));
             var type = package.type;
             SearchOption searchOption;
             if (type == CollectType.AllDirectories | type == CollectType.AllDirectoriesHashName) //只有这两种获取所有文件夹的文件，Split模式则不能使用
@@ -247,9 +277,8 @@ namespace GameCore
                 if (s.EndsWith(".cs"))
                     return false;
                 s = s.Replace('\\', '/');
-                foreach (var filterObject in package.filters)
+                foreach (var assetPath in filters)
                 {
-                    var assetPath = AssetDatabase.GetAssetPath(filterObject);
                     if (StringHelper.StartsWith(s, assetPath))
                         return false;
                 }
@@ -265,15 +294,14 @@ namespace GameCore
                 }
                 return true;
             }).ToList();
-            for (int i = 0; i < files.Count; i++)
+            for (int i = files.Count - 1; i >= 0; i--)
             {
                 files[i] = files[i].Replace('\\', '/');
                 if (files[i].EndsWith(".unity"))
                 {
-                    var sceneAssetBundleName = AddSinglePackage(buildList, assetManifest, files[i], package, ref errorCount);
+                    var sceneAssetBundleName = AddSinglePackage(buildList, assetManifest, files[i], package);
                     files.RemoveAt(i);
-                    if (i >= 0) i--;
-                    EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{sceneAssetBundleName}完成!", progress);
+                    displayInfos.Enqueue(($"收集资源包:{sceneAssetBundleName}完成!", progress));
                 }
             }
             int count = 1;
@@ -309,7 +337,7 @@ namespace GameCore
                     }
                     if (assetManifest.ContainsAssetInfo(assetName))
                     {
-                        errorCount++;
+                        Interlocked.Increment(ref errorCount);
                         Debug.LogError($"资源{assetName}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                         continue;
                     }
@@ -326,19 +354,17 @@ namespace GameCore
                     assetNames = assetNames.ToArray(),
                     addressableNames = addressableNames.ToArray()
                 };
-                buildList.Add(assetBundleName, assetBundleBuild);
-                EditorUtility.DisplayProgressBar("AssetBundleCollect", $"收集资源包:{assetBundleName}完成!", progress);
+                buildList.TryAdd(assetBundleName, assetBundleBuild);
+                displayInfos.Enqueue(($"收集资源包:{assetBundleName}完成!", progress));
             }
             if (type < CollectType.AllDirectoriesSplit)
                 return;
             var directories = Directory.GetDirectories(assetPath);
-            foreach (var directorie in directories)
-            {
-                AssetBundleCollect(buildList, assetManifest, directorie, package, progress, ref errorCount);
-            }
+            var parallelLoopResult = Parallel.ForEach(directories, directorie => AssetBundleCollect(buildList, assetManifest, directorie, package, progress, filters));
+            parallelLoopResults.Enqueue(parallelLoopResult);
         }
 
-        private string AddSinglePackage(Dictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package, ref int errorCount)
+        private string AddSinglePackage(ConcurrentDictionary<string, AssetBundleBuild> buildList, AssetManifest assetManifest, string assetPath, AssetBundlePackage package)
         {
             var lastModified = File.GetLastWriteTime(assetPath);
             var lastModified1 = File.GetLastWriteTime(assetPath + ".meta");
@@ -352,7 +378,7 @@ namespace GameCore
             }
             if (assetManifest.ContainsAssetInfo(assetPath))
             {
-                errorCount++;
+                Interlocked.Increment(ref errorCount);
                 Debug.LogError($"资源{assetPath}有同名, 可寻址模式资源不可同名!"); //资源名需要在所有ab中唯一（不能同名）
                 return string.Empty;
             }
@@ -369,7 +395,7 @@ namespace GameCore
                 assetNames = new string[] { assetPath },
                 addressableNames = addressableNames.ToArray()
             };
-            buildList.Add(sceneAssetBundleName, assetBundleBuild);
+            buildList.TryAdd(sceneAssetBundleName, assetBundleBuild);
             return sceneAssetBundleName;
         }
 

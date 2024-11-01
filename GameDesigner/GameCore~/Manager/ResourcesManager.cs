@@ -103,8 +103,11 @@ namespace GameCore
 
         public void AddAssetInfo(string assetName, AssetInfo assetInfo)
         {
-            assetInfos.Add(assetInfo);
-            assetInfoDict.Add(assetName, assetInfo);
+            lock (this)
+            {
+                assetInfos.Add(assetInfo);
+                assetInfoDict.Add(assetName, assetInfo);
+            }
         }
 
         public bool TryAddAssetInfo(string assetName, AssetInfo assetInfo)
@@ -120,7 +123,10 @@ namespace GameCore
 
         public bool ContainsAssetInfo(string assetName)
         {
-            return assetInfoDict.ContainsKey(assetName);
+            lock (this)
+            {
+                return assetInfoDict.ContainsKey(assetName);
+            }
         }
 
         public void Destroy()
