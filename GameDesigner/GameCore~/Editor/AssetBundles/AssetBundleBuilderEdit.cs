@@ -142,7 +142,7 @@ namespace GameCore
                 while (displayInfos.TryDequeue(out var displayInfo))
                 {
                     EditorUtility.DisplayProgressBar("AssetBundleCollect", displayInfo.Item1, displayInfo.Item2);
-                    if (number++ >= assetBundleBuilder.displayCanSleepNumber)
+                    if (number++ >= assetBundleBuilder.displaySleep)
                     {
                         Thread.Sleep(1);
                         number = 0;

@@ -125,5 +125,60 @@ namespace Net.Helper
         {
             return Encoding.UTF8.GetString(self);
         }
+
+        /// <summary>
+        /// 输出金币字符串格式
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="format">格式默认是英文e, 如果输出中文则是c</param>
+        /// <returns></returns>
+        public static string ToStringFormat(this int self, string format = "e")
+        {
+            return ToStringFormat((long)self, format);
+        }
+
+        /// <summary>
+        /// 输出金币字符串格式
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="format">格式默认是英文e, 如果输出中文则是c</param>
+        /// <returns></returns>
+        public static string ToStringFormat(this uint self, string format = "e")
+        {
+            return ToStringFormat((long)self, format);
+        }
+
+        /// <summary>
+        /// 输出金币字符串格式
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="format">格式默认是英文e, 如果输出中文则是c</param>
+        /// <returns></returns>
+        public static string ToStringFormat(this long self, string format = "e")
+        {
+            var mark = self < 0 ? "-" : string.Empty;
+            double value = Math.Abs(self);
+            if (format == "e")
+            {
+                var units = new string[] { "B", "K", "M", "G", "T", "P" };
+                double mod = 1000;
+                int i = 0;
+                while (value >= mod)
+                {
+                    value /= mod;
+                    i++;
+                }
+                return $"{mark}{Math.Round(value, 2)}{units[i]}";
+            }
+            else
+            {
+                var thresholds = new double[] { 1000, 10000, 100000000, 1000000000000, 10000000000000000, (double)100000000000000000000M };
+                var units = new string[] { "", "千", "万", "亿", "兆", "京", "稊" };
+                for (int i = 0; i < thresholds.Length; i++)
+                    if (value < thresholds[i])
+                        return $"{mark}{(i == 0 ? value.ToString("f0") : (value / thresholds[i - 1]).ToString("0.##"))}{units[i]}";
+                return $"{mark}{(value / thresholds[thresholds.Length - 1]).ToString("0.##")}{units[units.Length - 1]}";
+            }
+        }
     }
 }

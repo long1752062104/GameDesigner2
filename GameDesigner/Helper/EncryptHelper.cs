@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -42,6 +43,45 @@ namespace Net.Helper
         }
 
         /// <summary>
+        /// 随机数形式加密法--多密码
+        /// </summary>
+        /// <param name="passwords"></param>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        public static byte[] ToEncryptMulti(int[] passwords, byte[] buffer)
+        {
+            return ToEncryptMulti(passwords, buffer, 0, buffer.Length);
+        }
+
+        /// <summary>
+        /// 随机数形式加密法--多密码
+        /// </summary>
+        /// <param name="passwords"></param>
+        /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static byte[] ToEncryptMulti(int[] passwords, byte[] buffer, int index, int count)
+        {
+            var randoms = new Random[passwords.Length];
+            for (int i = 0; i < passwords.Length; i++)
+            {
+                if (passwords[i] < 10000000)
+                    throw new Exception("密码值不能小于10000000");
+                randoms[i] = new Random(passwords[i]);
+            }
+            for (int i = index; i < index + count; i++)
+            {
+                for (int j = 0; j < randoms.Length; j++)
+                {
+                    buffer[i] += (byte)randoms[j].Next(0, 255);
+                }
+            }
+            return buffer;
+        }
+
+        /// <summary>
         /// 随机数形式解密法
         /// </summary>
         /// <param name="password"></param>
@@ -68,6 +108,45 @@ namespace Net.Helper
             for (int i = index; i < index + count; i++)
             {
                 buffer[i] -= (byte)random.Next(0, 255);
+            }
+            return buffer;
+        }
+
+        /// <summary>
+        /// 随机解密法 -- 多密码
+        /// </summary>
+        /// <param name="passwords"></param>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        public static byte[] ToDecryptMulti(int[] passwords, byte[] buffer)
+        {
+            return ToDecryptMulti(passwords, buffer, 0, buffer.Length);
+        }
+
+        /// <summary>
+        /// 随机解密法 -- 多密码
+        /// </summary>
+        /// <param name="passwords"></param>
+        /// <param name="buffer"></param>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static byte[] ToDecryptMulti(int[] passwords, byte[] buffer, int index, int count)
+        {
+            var randoms = new Random[passwords.Length];
+            for (int i = 0; i < passwords.Length; i++)
+            {
+                if (passwords[i] < 10000000)
+                    throw new Exception("密码值不能小于10000000");
+                randoms[i] = new Random(passwords[i]);
+            }
+            for (int i = index; i < index + count; i++)
+            {
+                for (int j = 0; j < randoms.Length; j++)
+                {
+                    buffer[i] -= (byte)randoms[j].Next(0, 255);
+                }
             }
             return buffer;
         }

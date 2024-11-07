@@ -9,6 +9,7 @@ namespace Net.Event
 #endif
     using Net.System;
     using Net.Helper;
+    using Net.Share;
 
     public enum LogType
     {
@@ -349,7 +350,24 @@ namespace Net.Event
         {
             if (e.ExceptionObject is Exception exception)
             {
-                LogError($"异常信息:{exception.Message}\r\n错误名称:{exception.Source}\r\n调用堆栈:\r\n{exception.StackTrace}");
+                var message = new StringBuilder();
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    var memoryStatus = new MEMORYSTATUSEX();
+                    memoryStatus.Initialize();
+                    Win32KernelAPI.GlobalMemoryStatusEx(ref memoryStatus);
+                    message.AppendLine($"内存使用率: {ByteHelper.ToString(memoryStatus.dwMemoryLoad)}%");
+                    message.AppendLine($"总物理内存: {ByteHelper.ToString(memoryStatus.ullTotalPhys)}");
+                    message.AppendLine($"可用物理内存: {ByteHelper.ToString(memoryStatus.ullAvailPhys)}");
+                }
+                var currentProcess = global::System.Diagnostics.Process.GetCurrentProcess();
+                var memoryUsed = currentProcess.WorkingSet64;
+                message.AppendLine($"当前进程使用的内存: {ByteHelper.ToString(memoryUsed)}");
+                message.AppendLine($"异常信息:{exception.Message}");
+                message.AppendLine($"错误名称:{exception.Source}");
+                message.AppendLine("调用堆栈:");
+                message.AppendLine(exception.StackTrace);
+                LogError(message.ToString());
                 OutputLog();
             }
         }

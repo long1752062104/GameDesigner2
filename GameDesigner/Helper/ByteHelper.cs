@@ -11,7 +11,7 @@ namespace Net.Helper
         /// <returns></returns>
         public static string ToString(double size)
         {
-            string[] units = new string[] { "B", "K", "M", "G", "T", "P" };
+            var units = new string[] { "B", "K", "M", "G", "T", "P" };
             double mod = 1024.0;
             int i = 0;
             while (size >= mod)

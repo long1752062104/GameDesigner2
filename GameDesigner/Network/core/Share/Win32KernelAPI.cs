@@ -58,15 +58,17 @@
         /// <returns></returns>
         public static bool SetSysTime(DateTime newdatetime)
         {
-            SystemTime st = new SystemTime();
-            st.year = Convert.ToUInt16(newdatetime.Year);
-            st.month = Convert.ToUInt16(newdatetime.Month);
-            st.day = Convert.ToUInt16(newdatetime.Day);
-            st.dayofweek = Convert.ToUInt16(newdatetime.DayOfWeek);
-            st.hour = Convert.ToUInt16(newdatetime.Hour - TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(2001, 09, 01)).Hours);
-            st.minute = Convert.ToUInt16(newdatetime.Minute);
-            st.second = Convert.ToUInt16(newdatetime.Second);
-            st.milliseconds = Convert.ToUInt16(newdatetime.Millisecond);
+            var st = new SystemTime
+            {
+                year = Convert.ToUInt16(newdatetime.Year),
+                month = Convert.ToUInt16(newdatetime.Month),
+                day = Convert.ToUInt16(newdatetime.Day),
+                dayofweek = Convert.ToUInt16(newdatetime.DayOfWeek),
+                hour = Convert.ToUInt16(newdatetime.Hour - TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(2001, 09, 01)).Hours),
+                minute = Convert.ToUInt16(newdatetime.Minute),
+                second = Convert.ToUInt16(newdatetime.Second),
+                milliseconds = Convert.ToUInt16(newdatetime.Millisecond)
+            };
             return SetSystemTime(st);
         }
 
@@ -85,6 +87,23 @@
         /// <returns></returns>
         [DllImport("kernel32.dll")]
         public static extern long GetTickCount64();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lpBuffer"></param>
+        [DllImport("kernel32.dll")]
+        public static extern void GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool GetSystemTimes(out FILETIME idleTime, out FILETIME kernelTime, out FILETIME userTime);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FILETIME
+        {
+            public uint dwLowDateTime;
+            public uint dwHighDateTime;
+        }
     }
 
     public struct TimeValue
@@ -133,6 +152,25 @@
                 Overlapped.Free((NativeOverlapped*)(void*)intPtr);
             }
             return true;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MEMORYSTATUSEX
+    {
+        public uint dwLength;
+        public uint dwMemoryLoad;
+        public ulong ullTotalPhys;
+        public ulong ullAvailPhys;
+        public ulong ullTotalPageFile;
+        public ulong ullAvailPageFile;
+        public ulong ullTotalVirtual;
+        public ulong ullAvailVirtual;
+        public ulong ullAvailExtendedVirtual;
+
+        public void Initialize()
+        {
+            dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
         }
     }
 }

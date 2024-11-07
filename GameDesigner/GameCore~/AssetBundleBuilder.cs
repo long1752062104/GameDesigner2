@@ -95,7 +95,7 @@ namespace GameCore
         public bool useFirstPackage = true;
         [Tooltip("首包压缩文件复制到流路径，这样可以跟着apk一起打包，就不需要下载首包了")]
         public bool firstPackageCopyToStreamingAssets = false;
-        public List<AssetBundlePackage> Packages = new List<AssetBundlePackage>();
+        public List<AssetBundlePackage> Packages = new();
         public string tablePath = "Assets/Arts/Table";
         public string tableScriptPath = "Assets/Scripts/Data/Config";
         public string tableScriptPathEx = "Assets/Scripts/Data/ConfigEx";
@@ -103,9 +103,9 @@ namespace GameCore
         [Tooltip("可寻址资源，资源加载仅使用资源名，当你使用这个选项时，加载资源时不需要资源路径和后缀；不开启时，使用完整路径加载资源")]
         public bool addressables;
         [Tooltip("可显示进度休眠次数, 项目不大, 可设为1, 资源过多可设置1000或以上")]
-        public int displayCanSleepNumber = 1;
+        public int displaySleep = 10;
         [Header("补充元数据")]
-        public List<string> AOTMetaAssemblyNames = new List<string>()
+        public List<string> AOTMetaAssemblyNames = new()
         {
             "mscorlib.dll",
             "System.dll",
