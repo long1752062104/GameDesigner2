@@ -8,7 +8,7 @@ namespace GameCore
     public class TableManager : MonoBehaviour
     {
         public string tablePath = "Assets/Arts/Table/GameConfig.bytes";
-        protected TableConfig tableConfig = new TableConfig();
+        protected TableConfig tableConfig = new();
 
         public virtual void Init()
         {
@@ -18,8 +18,8 @@ namespace GameCore
                 Debug.LogError("获取游戏配置失败!");
                 return;
             }
-            var jsonStr = textAsset.text;
-            tableConfig.LoadTable(jsonStr);
+            var bytes = textAsset.bytes;
+            tableConfig.LoadTable(bytes);
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Data;
 using System.IO;
+using System.Data;
 using System.Collections.Generic;
 using Net.Event;
 using Net.Share;
@@ -13,7 +13,7 @@ namespace Net.Table
     public class TableConfig
     {
         private DataSet dataSet;
-        private readonly Dictionary<Type, Dictionary<string, object>> tableDict = new Dictionary<Type, Dictionary<string, object>>(); //表缓存字典
+        private readonly Dictionary<Type, Dictionary<string, object>> tableDict = new(); //表缓存字典
 
         /// <summary>
         /// 加载表文件
@@ -21,8 +21,8 @@ namespace Net.Table
         /// <param name="path"></param>
         public void LoadTableFile(string path)
         {
-            var jsonStr = File.ReadAllText(path);
-            LoadTable(jsonStr);
+            var bytes = File.ReadAllBytes(path);
+            LoadTable(bytes);
         }
 
         /// <summary>
@@ -32,6 +32,38 @@ namespace Net.Table
         public void LoadTable(string jsonStr)
         {
             dataSet = Newtonsoft_X.Json.JsonConvert.DeserializeObject<DataSet>(jsonStr);
+            TypeSolver.InitTypeSolverCollectors();
+        }
+
+        /// <summary>
+        /// 加载二进制表数据
+        /// </summary>
+        /// <param name="bytes"></param>
+        public void LoadTable(byte[] bytes)
+        {
+            dataSet = new DataSet();
+            var dataSetInfo = TableBinarySerialize.Deserialize(bytes);
+            for (int i = 0; i < dataSetInfo.Tables.Count; i++)
+            {
+                var tableInfo = dataSetInfo.Tables[i];
+                var dataTable = new DataTable(tableInfo.TableName);
+                for (int x = 0; x < tableInfo.Columns.Count; x++)
+                {
+                    var colInfo = tableInfo.Columns[x];
+                    dataTable.Columns.Add(new DataColumn(colInfo.ColumnName, colInfo.DataType));
+                }
+                for (int x = 0; x < tableInfo.Rows.Count; x++)
+                {
+                    var rowInfo = tableInfo.Rows[x];
+                    var dataRow = dataTable.NewRow();
+                    dataTable.Rows.Add(dataRow);
+                    for (int y = 0; y < tableInfo.Columns.Count; y++)
+                        dataRow[y] = rowInfo[y];
+                }
+                dataTable.AcceptChanges();
+                dataSet.Tables.Add(dataTable);
+            }
+            dataSet.AcceptChanges();
             TypeSolver.InitTypeSolverCollectors();
         }
 

@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return default;
+            if (excelValue is Vector4 value)
+                return value;
             var text = excelValue.ToString();
             if (string.IsNullOrEmpty(text))
                 return default;

@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return default;
+            if (excelValue is sbyte value)
+                return value;
             var text = excelValue.ToString();
             return ObjectConverter.AsSbyte(text);
         }

@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return default;
+            if (excelValue is byte value)
+                return value;
             var text = excelValue.ToString();
             return ObjectConverter.AsByte(text);
         }

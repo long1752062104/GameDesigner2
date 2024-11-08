@@ -11,6 +11,8 @@ namespace Net.Table
             TypeSolver.SolverTypes.Add("vector4", new Vector4TypeSolver());
             TypeSolver.SolverTypes.Add("quaternion", new QuaternionTypeSolver());
             TypeSolver.SolverTypes.Add("rect", new RectTypeSolver());
+            TypeSolver.SolverTypes.Add("color", new ColorTypeSolver());
+            TypeSolver.SolverTypes.Add("color32", new Color32TypeSolver());
         }
     }
 }

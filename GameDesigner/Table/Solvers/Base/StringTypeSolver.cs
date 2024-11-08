@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is string value)
+                return value;
             var text = excelValue.ToString();
             return ObjectConverter.AsString(text);
         }

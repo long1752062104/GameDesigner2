@@ -11,6 +11,8 @@ using Net.Table;
 using Net.Helper;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using Net.Serialize;
+using Net.System;
 
 namespace GameCore
 {
@@ -32,7 +34,7 @@ namespace GameCore
             var path = tablePath + "/GameConfig.bytes";
             if (!Directory.Exists(tablePath))
                 Directory.CreateDirectory(tablePath);
-            var dataSetNew = new DataSet();
+            var dataSetNew = new DataSetInfo();
             foreach (var file in Directory.GetFiles("Tools/Excel/", "*.*"))
             {
                 if (!file.EndsWith(".xls") && !file.EndsWith(".xlsx"))
@@ -57,7 +59,7 @@ namespace GameCore
                                 continue;
                             if (table.TableName == "Type") //类型定义
                                 continue;
-                            var dataTable = new DataTable(table.TableName);
+                            var dataTable = new DataTableInfo(table.TableName);
                             var columnTypes = new List<ITypeSolver>();
                             for (int i = 0; i < table.Columns.Count; i++)
                             {
@@ -69,9 +71,9 @@ namespace GameCore
                                     continue;
                                 var dataType = typeSolver.DataType;
                                 if (dataType.IsEnum)
-                                    dataTable.Columns.Add(new DataColumn(columnName, typeof(int))); //由于枚举类型可能存在于热更新程序集，而表读取早于热更新程序集，所以会导致读取不到类型的问题
+                                    dataTable.Columns.Add(new DataColumnInfo(columnName, typeof(int))); //由于枚举类型可能存在于热更新程序集，而表读取早于热更新程序集，所以会导致读取不到类型的问题
                                 else
-                                    dataTable.Columns.Add(new DataColumn(columnName, dataType));
+                                    dataTable.Columns.Add(new DataColumnInfo(columnName, dataType));
                                 columnTypes.Add(typeSolver);
                             }
                             for (int x = 3; x < table.Rows.Count; x++)
@@ -97,8 +99,8 @@ namespace GameCore
                 }
             }
             dataSetNew.AcceptChanges();
-            var jsonData = Newtonsoft_X.Json.JsonConvert.SerializeObject(dataSetNew);
-            File.WriteAllText(path, jsonData);
+            var bytes = TableBinarySerialize.Serialize(dataSetNew);
+            File.WriteAllBytes(path, bytes);
             Debug.Log("生成表格数据完成! " + path);
         }
 
@@ -338,6 +340,8 @@ int	string	string
 302	vector4	x,y,z 使用,区分
 303	quaternion	x,y,z,w 使用,区分
 304	rect	x,y,z,w 使用,区分
+305	color	r,g,b,a 使用,区分
+306	color32	r,g,b,a 使用,区分
 ".Split(new string[] { "\r\n" }, 0);
                         for (int i = 0; i < rowTexts.Length; i++)
                         {

@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return default;
+            if (excelValue is long value)
+                return value;
             var text = excelValue.ToString();
             return ObjectConverter.AsLong(text);
         }
