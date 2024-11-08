@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is ulong[] ulongs)
+                return ulongs;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsUlong(item));
         }

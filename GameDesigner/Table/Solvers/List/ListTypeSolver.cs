@@ -10,7 +10,11 @@ namespace Net.Table.Solvers
             var list = new List<T>();
             if (string.IsNullOrEmpty(text))
                 return list;
-            var items = text.Split(';');
+            string[] items;
+            if (text.Contains(";"))
+                items = text.Split(';');
+            else
+                items = text.Split('\n');
             foreach (var item in items)
             {
                 if (string.IsNullOrEmpty(item))

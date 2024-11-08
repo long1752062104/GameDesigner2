@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is decimal[] decimals)
+                return decimals;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsDecimal(item));
         }

@@ -8,6 +8,8 @@ namespace Net.Table.Solvers
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is List<double> list)
+                return list;
             var text = excelValue.ToString();
             return SolverList(text, item => ObjectConverter.AsDouble(item));
         }

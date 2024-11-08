@@ -301,37 +301,37 @@ int	string	string
 14	dateTime	
 15	string	
 		
-100	boolArray	数组分隔为;
-101	byteArray	数组分隔为;
-102	sbyteArray	数组分隔为;
-103	charArray	数组分隔为;
-104	shortArray	数组分隔为;
-105	ushortArray	数组分隔为;
-106	intArray	数组分隔为;
-107	uintArray	数组分隔为;
-108	floatArray	数组分隔为;
-109	longArray	数组分隔为;
-110	ulongArray	数组分隔为;
-111	doubleArray	数组分隔为;
-112	decimalArray	数组分隔为;
-113	dateTimeArray	数组分隔为;
-114	stringArray	数组分隔为;
+100	boolArray	数组分隔为;或ALT+回车
+101	byteArray	数组分隔为;或ALT+回车
+102	sbyteArray	数组分隔为;或ALT+回车
+103	charArray	数组分隔为;或ALT+回车
+104	shortArray	数组分隔为;或ALT+回车
+105	ushortArray	数组分隔为;或ALT+回车
+106	intArray	数组分隔为;或ALT+回车
+107	uintArray	数组分隔为;或ALT+回车
+108	floatArray	数组分隔为;或ALT+回车
+109	longArray	数组分隔为;或ALT+回车
+110	ulongArray	数组分隔为;或ALT+回车
+111	doubleArray	数组分隔为;或ALT+回车
+112	decimalArray	数组分隔为;或ALT+回车
+113	dateTimeArray	数组分隔为;或ALT+回车 写法: 2024-11-08 或 2024-11-08 14:30:00 或 2024/11/08 或 2024/11/08 14:30:00
+114	stringArray	数组分隔为;或ALT+回车
 		
-200	boolList	数组分隔为;
-201	byteList	数组分隔为;
-202	sbyteList	数组分隔为;
-203	charList	数组分隔为;
-204	shortList	数组分隔为;
-205	ushortList	数组分隔为;
-206	intList	数组分隔为;
-207	uintList	数组分隔为;
-208	floatList	数组分隔为;
-209	longList	数组分隔为;
-210	ulongList	数组分隔为;
-211	doubleList	数组分隔为;
-212	decimalList	数组分隔为;
-213	dateTimeList	数组分隔为;
-214	stringList	数组分隔为;
+200	boolList	数组分隔为;或ALT+回车
+201	byteList	数组分隔为;或ALT+回车
+202	sbyteList	数组分隔为;或ALT+回车
+203	charList	数组分隔为;或ALT+回车
+204	shortList	数组分隔为;或ALT+回车
+205	ushortList	数组分隔为;或ALT+回车
+206	intList	数组分隔为;或ALT+回车
+207	uintList	数组分隔为;或ALT+回车
+208	floatList	数组分隔为;或ALT+回车
+209	longList	数组分隔为;或ALT+回车
+210	ulongList	数组分隔为;或ALT+回车
+211	doubleList	数组分隔为;或ALT+回车
+212	decimalList	数组分隔为;或ALT+回车
+213	dateTimeList	数组分隔为;或ALT+回车 写法: 2024-11-08 或 2024-11-08 14:30:00 或 2024/11/08 或 2024/11/08 14:30:00
+214	stringList	数组分隔为;或ALT+回车
 		
 300	vector2	x,y,z 使用,区分
 301	vector3	x,y,z 使用,区分
@@ -358,7 +358,13 @@ int	string	string
                                 worksheet.Cells[i + 1, 2].Value = items[1].Trim();
                                 worksheet.Cells[i + 1, 3].Value = items[2].Trim();
                             }
+                            worksheet.Cells[i + 1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                            worksheet.Cells[i + 1, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                            worksheet.Cells[i + 1, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         }
+                        worksheet.Column(1).Width = 7;
+                        worksheet.Column(2).Width = 18;
+                        worksheet.Column(3).Width = 100;
                     }
                     for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                     {

@@ -8,6 +8,8 @@ namespace Net.Table.Solvers
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is List<ulong> list)
+                return list;
             var text = excelValue.ToString();
             return SolverList(text, item => ObjectConverter.AsUlong(item));
         }

@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is byte[] bytes)
+                return bytes;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsByte(item));
         }

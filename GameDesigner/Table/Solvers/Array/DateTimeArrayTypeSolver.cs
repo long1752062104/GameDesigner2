@@ -8,6 +8,8 @@ namespace Net.Table.Solvers
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is DateTime[] dateTimes)
+                return dateTimes;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsDateTime(item));
         }

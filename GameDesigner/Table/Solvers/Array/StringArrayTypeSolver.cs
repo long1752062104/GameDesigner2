@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is string[] strings)
+                return strings;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsString(item));
         }

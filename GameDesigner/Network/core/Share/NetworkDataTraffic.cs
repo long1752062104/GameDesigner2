@@ -1,5 +1,4 @@
 ﻿using Net.Helper;
-using System;
 
 namespace Net.Share
 {
@@ -68,7 +67,7 @@ namespace Net.Share
         /// 显示所有线程组的FPS
         /// </summary>
         /// <returns></returns>
-        public string FPSToString()
+        public readonly string FPSToString()
         {
             var text = string.Empty;
             if (FPSArray == null)
@@ -78,12 +77,18 @@ namespace Net.Share
             return text;
         }
 
-        public override string ToString()
+        /// <inheritdoc/>
+        public override readonly string ToString()
+        {
+            return ToString(string.Empty);
+        }
+
+        public readonly string ToString(string otherInformation)
         {
             return $"流出:{sendNumber}次/{ByteHelper.ToString(sendCount)} " +
                 $"流入:{receiveNumber}次/{ByteHelper.ToString(receiveCount)} " +
                 $"FPS:{FPS} 解析:{resolveNumber}次 " +
-                $"总流入:{ByteHelper.ToString(inflowTotal)} 总流出:{ByteHelper.ToString(outflowTotal)} {FPSToString()}";
+                $"总流入:{ByteHelper.ToString(inflowTotal)} 总流出:{ByteHelper.ToString(outflowTotal)} {otherInformation} {FPSToString()}";
         }
     }
 

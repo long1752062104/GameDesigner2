@@ -6,6 +6,8 @@
         {
             if (excelValue == null)
                 return null;
+            if (excelValue is uint[] uints)
+                return uints;
             var text = excelValue.ToString();
             return SolverArray(text, item => ObjectConverter.AsUint(item));
         }
