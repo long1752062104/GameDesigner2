@@ -1071,7 +1071,7 @@ namespace Net.Serialize
             else obj = Activator.CreateInstance(type);
             var members = GetMembers(type);
             var bitLen = ((members.Length - 1) / 8) + 1;
-            byte[] bits = segment.Read(bitLen);
+            var bits = segment.Read(bitLen);
             for (int i = 0; i < members.Length; i++)
             {
                 int bitInx1 = i % 8;

@@ -351,6 +351,7 @@ namespace Net.Event
             if (e.ExceptionObject is Exception exception)
             {
                 var message = new StringBuilder();
+                message.AppendLine("程序崩溃信息:");
                 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
                     var memoryStatus = new MEMORYSTATUSEX();
@@ -367,6 +368,7 @@ namespace Net.Event
                 message.AppendLine($"错误名称:{exception.Source}");
                 message.AppendLine("调用堆栈:");
                 message.AppendLine(exception.StackTrace);
+                message.AppendLine("如果希望崩溃重启, 可在Main主函数调用Net.Helper.ApplicationHelper.CrashRecovery()注册异常崩溃重启事件!");
                 LogError(message.ToString());
                 OutputLog();
             }
