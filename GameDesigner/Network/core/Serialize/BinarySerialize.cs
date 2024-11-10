@@ -32,22 +32,35 @@ namespace Net.Serialize
         }
     }
 
+    /// <summary>
+    /// 二进制序列化类型
+    /// </summary>
     public class BinarySerialize
     {
-        private readonly MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
-        private readonly MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
-        private readonly MyDictionary<Type, string[]> serializeOnly = new MyDictionary<Type, string[]>();
-        private readonly MyDictionary<Type, string[]> serializeIgnore = new MyDictionary<Type, string[]>();
+        private readonly MyDictionary<ushort, Type> HashToTypeDict = new();
+        private readonly MyDictionary<Type, ushort> TypeToHashDict = new();
+        private readonly MyDictionary<Type, string[]> serializeOnly = new();
+        private readonly MyDictionary<Type, string[]> serializeIgnore = new();
+        private readonly MyDictionary<Type, Member[]> map = new()
+        {
+            { typeof(byte), new Member[] { new() { Type = typeof(byte), IsPrimitive = true, TypeCode = TypeCode.Byte } } },
+            { typeof(sbyte), new Member[] { new() { Type = typeof(sbyte), IsPrimitive = true, TypeCode = TypeCode.SByte } } },
+            { typeof(bool), new Member[] { new() { Type = typeof(bool), IsPrimitive = true, TypeCode = TypeCode.Boolean } } },
+            { typeof(short), new Member[] { new() { Type = typeof(short), IsPrimitive = true, TypeCode = TypeCode.Int16 } } },
+            { typeof(ushort), new Member[] { new() { Type = typeof(ushort), IsPrimitive = true, TypeCode = TypeCode.UInt16 } } },
+            { typeof(char), new Member[] { new() { Type = typeof(char), IsPrimitive = true, TypeCode = TypeCode.Char } } },
+            { typeof(int), new Member[] { new() { Type = typeof(int), IsPrimitive = true, TypeCode = TypeCode.Int32 } } },
+            { typeof(uint), new Member[] { new() { Type = typeof(uint), IsPrimitive = true, TypeCode = TypeCode.UInt32 } } },
+            { typeof(long), new Member[] { new() { Type = typeof(long), IsPrimitive = true, TypeCode = TypeCode.Int64 } } },
+            { typeof(ulong), new Member[] { new() { Type = typeof(ulong), IsPrimitive = true, TypeCode = TypeCode.UInt64 } } },
+            { typeof(float), new Member[] { new() { Type = typeof(float), IsPrimitive = true, TypeCode = TypeCode.Single } } },
+            { typeof(double), new Member[] { new() { Type = typeof(double), IsPrimitive = true, TypeCode = TypeCode.Double } } },
+            { typeof(DateTime), new Member[] { new() { Type = typeof(DateTime), IsPrimitive = true, TypeCode = TypeCode.DateTime } } },
+            { typeof(decimal), new Member[] { new() { Type = typeof(decimal), IsPrimitive = true, TypeCode = TypeCode.Decimal } } },
+            { typeof(string), new Member[] { new() { Type = typeof(string), IsPrimitive = true, TypeCode = TypeCode.String } } },
+        };
         private Type nonSerialized = typeof(NonSerialized);
         private Type serialized = typeof(Serialized);
-        private MyDictionary<Type, Member[]> map;
-
-        public Func<Type, ushort> OnTypeToIndex { get; set; }
-
-        public BinarySerialize()
-        {
-            Init();
-        }
 
         /// <summary>
         /// 初始化网络转换类型
@@ -61,6 +74,11 @@ namespace Net.Serialize
             AddSerializeBaseType();
             MakeNonSerializedAttribute<NonSerialized>();
             return true;
+        }
+
+        public void MakeSerializedAttribute<T>() where T : Attribute
+        {
+            serialized = typeof(T);
         }
 
         public void MakeNonSerializedAttribute<T>() where T : Attribute
@@ -138,25 +156,6 @@ namespace Net.Serialize
             AddBaseType<List<sbyte[]>>();
             AddBaseType<List<DateTime[]>>();
             AddBaseType<List<decimal[]>>();
-            //基础结构类型初始化
-            map = new MyDictionary<Type, Member[]>()
-            {
-                { typeof(byte), new Member[] { new Member() { Type = typeof(byte), IsPrimitive = true, TypeCode = TypeCode.Byte } } },
-                { typeof(sbyte), new Member[] { new Member() { Type = typeof(sbyte), IsPrimitive = true, TypeCode = TypeCode.SByte } } },
-                { typeof(bool), new Member[] { new Member() { Type = typeof(bool), IsPrimitive = true, TypeCode = TypeCode.Boolean } } },
-                { typeof(short), new Member[] { new Member() { Type = typeof(short), IsPrimitive = true, TypeCode = TypeCode.Int16 } } },
-                { typeof(ushort), new Member[] { new Member() { Type = typeof(ushort), IsPrimitive = true, TypeCode = TypeCode.UInt16 } } },
-                { typeof(char), new Member[] { new Member() { Type = typeof(char), IsPrimitive = true, TypeCode = TypeCode.Char } } },
-                { typeof(int), new Member[] { new Member() { Type = typeof(int), IsPrimitive = true, TypeCode = TypeCode.Int32 } } },
-                { typeof(uint), new Member[] { new Member() { Type = typeof(uint), IsPrimitive = true, TypeCode = TypeCode.UInt32 } } },
-                { typeof(long), new Member[] { new Member() { Type = typeof(long), IsPrimitive = true, TypeCode = TypeCode.Int64 } } },
-                { typeof(ulong), new Member[] { new Member() { Type = typeof(ulong), IsPrimitive = true, TypeCode = TypeCode.UInt64 } } },
-                { typeof(float), new Member[] { new Member() { Type = typeof(float), IsPrimitive = true, TypeCode = TypeCode.Single } } },
-                { typeof(double), new Member[] { new Member() { Type = typeof(double), IsPrimitive = true, TypeCode = TypeCode.Double } } },
-                { typeof(DateTime), new Member[] { new Member() { Type = typeof(DateTime), IsPrimitive = true, TypeCode = TypeCode.DateTime } } },
-                { typeof(decimal), new Member[] { new Member() { Type = typeof(decimal), IsPrimitive = true, TypeCode = TypeCode.Decimal } } },
-                { typeof(string), new Member[] { new Member() { Type = typeof(string), IsPrimitive = true, TypeCode = TypeCode.String } } },
-            };
             //其他可能用到的
             AddSerializeType<Vector2>();
             AddSerializeType<Vector3>();
@@ -230,29 +229,30 @@ namespace Net.Serialize
         }
 
         /// <summary>
-        /// 索引取类型
+        /// 读取索引取类型
         /// </summary>
-        /// <param name="typeIndex"></param>
+        /// <param name="segment"></param>
         /// <returns></returns>
-        public Type IndexToType(ushort typeIndex)
+        public virtual Type ReadIndexToType(ISegment segment)
         {
+            var typeIndex = segment.ReadUInt16();
             if (HashToTypeDict.TryGetValue(typeIndex, out Type type))
                 return type;
             return null;
         }
 
         /// <summary>
-        /// 类型取索引
+        /// 写入类型取索引
         /// </summary>
+        /// <param name="segment"></param>
         /// <param name="type"></param>
-        /// <returns></returns>
-        public ushort TypeToIndex(Type type)
+        /// <exception cref="KeyNotFoundException"></exception>
+        public virtual void WriteTypeToIndex(ISegment segment, Type type)
         {
             if (TypeToHashDict.TryGetValue(type, out ushort typeHash))
-                return typeHash;
-            if (OnTypeToIndex == null)
+                segment.Write(typeHash);
+            else
                 throw new KeyNotFoundException($"没有注册[{type}]类为序列化对象, 请使用NetConvertBinary.AddSerializeType<{type}>()进行注册类型!");
-            return OnTypeToIndex(type);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace Net.Serialize
                 if (recordType)
                 {
                     itemType = arr1.GetType();
-                    stream.Write(TypeToIndex(itemType));
+                    WriteTypeToIndex(stream, itemType);
                 }
                 WriteObject(stream, itemType, arr1, recordType, ignore);
             }
@@ -315,7 +315,7 @@ namespace Net.Serialize
                 if (!GetBit(bits[bitPos], (byte)(++bitInx1)))
                     continue;
                 if (recordType)
-                    itemType = IndexToType(segment.ReadUInt16());
+                    itemType = ReadIndexToType(segment);
                 array[i] = ReadObject(segment, itemType, recordType, ignore);
             }
         }
@@ -331,11 +331,11 @@ namespace Net.Serialize
                     if (obj == null)
                     {
                         type = typeof(DBNull);
-                        segment.Write(TypeToIndex(type));
+                        WriteTypeToIndex(segment, type);
                         continue;
                     }
                     type = obj.GetType();
-                    segment.Write(TypeToIndex(type));
+                    WriteTypeToIndex(segment, type);
                     WriteObject(segment, type, obj, recordType, false);
                 }
                 return true;
@@ -363,7 +363,7 @@ namespace Net.Serialize
                 if (obj == null)
                     return default;
                 var type = obj.GetType();
-                stream.Write(TypeToIndex(type));
+                WriteTypeToIndex(stream, type);
                 WriteObject(stream, type, obj, recordType, ignore);
             }
             catch (Exception ex)
@@ -407,7 +407,8 @@ namespace Net.Serialize
                 if (obj == null)
                     return false;
                 var type = obj.GetType();
-                if (recordType) stream.Write(TypeToIndex(type));
+                if (recordType)
+                    WriteTypeToIndex(stream, type);
                 WriteObject(stream, type, obj, recordType, ignore);
                 return true;
             }
@@ -921,7 +922,7 @@ namespace Net.Serialize
                                 if (recordType)
                                 {
                                     memberType = enumerator.Value.GetType();
-                                    segment.Write(TypeToIndex(memberType));
+                                    WriteTypeToIndex(segment, memberType);
                                 }
                                 else memberType = member.ItemType1;
                                 WriteObject(segment, memberType, enumerator.Value, recordType, ignore);
@@ -936,7 +937,7 @@ namespace Net.Serialize
                     if (recordType)
                     {
                         memberType = value.GetType();
-                        segment.Write(TypeToIndex(memberType));
+                        WriteTypeToIndex(segment, memberType);
                     }
                     else memberType = member.Type;
                     WriteObject(segment, memberType, value, recordType, ignore);
@@ -957,7 +958,7 @@ namespace Net.Serialize
                 var list = new List<object>();
                 while (segment.Position < segment.Offset + segment.Count)
                 {
-                    var type = IndexToType(segment.ReadUInt16());
+                    var type = ReadIndexToType(segment);
                     if (type == null)
                         return false;
                     if (type == typeof(DBNull))
@@ -1035,7 +1036,7 @@ namespace Net.Serialize
         /// <returns></returns>
         public object DeserializeObject(ISegment segment, Type type, bool isPush = true, bool recordType = false, bool ignore = false)
         {
-            if (recordType) type = IndexToType(segment.ReadUInt16());
+            if (recordType) type = ReadIndexToType(segment);
             var obj = ReadObject(segment, type, recordType, ignore);
             if (isPush) BufferPool.Push(segment);
             return obj;
@@ -1046,7 +1047,7 @@ namespace Net.Serialize
             object obj = null;
             if (segment.Position < segment.Offset + segment.Count)
             {
-                var type = IndexToType(segment.ReadUInt16());
+                var type = ReadIndexToType(segment);
                 if (type == null)
                     return obj;
                 obj = ReadObject(segment, type, recordType, ignore);
@@ -1150,7 +1151,7 @@ namespace Net.Serialize
                             {
                                 Type memberType;
                                 if (recordType)
-                                    memberType = IndexToType(segment.ReadUInt16());
+                                    memberType = ReadIndexToType(segment);
                                 else
                                     memberType = member.ItemType1;
                                 value = ReadObject(segment, memberType, recordType, ignore);
@@ -1164,7 +1165,7 @@ namespace Net.Serialize
                 {
                     Type memberType;
                     if (recordType)
-                        memberType = IndexToType(segment.ReadUInt16());
+                        memberType = ReadIndexToType(segment);
                     else
                         memberType = member.Type;
                     member.SetValue(ref obj, ReadObject(segment, memberType, recordType, ignore));

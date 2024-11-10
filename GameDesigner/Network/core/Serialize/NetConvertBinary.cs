@@ -56,20 +56,6 @@ namespace Net.Serialize
         public static void AddSerializeType(Type type, ushort typeHash, string[] onlyFields = default, params string[] ignoreFields)
             => binarySerialize.AddSerializeType(type, typeHash, onlyFields, ignoreFields);
 
-        /// <summary>
-        /// 索引取类型
-        /// </summary>
-        /// <param name="typeIndex"></param>
-        /// <returns></returns>
-        public static Type IndexToType(ushort typeIndex) => binarySerialize.IndexToType(typeIndex);
-
-        /// <summary>
-        /// 类型取索引
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static ushort TypeToIndex(Type type) => binarySerialize.TypeToIndex(type);
-
         public static bool SerializeModel(ISegment segment, RPCModel model, bool recordType = false)
             => binarySerialize.SerializeModel(segment, model, recordType);
 

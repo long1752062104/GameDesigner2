@@ -282,9 +282,10 @@ namespace GameCore
                 {
                     var worksheet = package.Workbook.Worksheets["Type"];
                     if (worksheet == null)
-                    {
                         worksheet = package.Workbook.Worksheets.Add("Type");
-                        var rowTexts = @"ID	Name	Des
+                    else
+                        worksheet.Cells.Clear();
+                    var rowTexts = @"ID	Name	Des
 int	string	string
 编号	类型名称	描述
 1	bool	
@@ -343,33 +344,32 @@ int	string	string
 305	color	r,g,b,a 使用,区分
 306	color32	r,g,b,a 使用,区分
 ".Split(new string[] { "\r\n" }, 0);
-                        for (int i = 0; i < rowTexts.Length; i++)
+                    for (int i = 0; i < rowTexts.Length; i++)
+                    {
+                        var rowText = rowTexts[i];
+                        var items = rowText.Split('\t');
+                        if (items.Length < 3)
                         {
-                            var rowText = rowTexts[i];
-                            var items = rowText.Split('\t');
-                            if (items.Length < 3)
-                            {
-                                worksheet.Cells[i + 1, 1].Value = null;
-                                worksheet.Cells[i + 1, 2].Value = null;
-                                worksheet.Cells[i + 1, 3].Value = null;
-                            }
-                            else
-                            {
-                                if (int.TryParse(items[0].Trim(), out var number))
-                                    worksheet.Cells[i + 1, 1].Value = number;
-                                else
-                                    worksheet.Cells[i + 1, 1].Value = items[0].Trim();
-                                worksheet.Cells[i + 1, 2].Value = items[1].Trim();
-                                worksheet.Cells[i + 1, 3].Value = items[2].Trim();
-                            }
-                            worksheet.Cells[i + 1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            worksheet.Cells[i + 1, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            worksheet.Cells[i + 1, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                            worksheet.Cells[i + 1, 1].Value = null;
+                            worksheet.Cells[i + 1, 2].Value = null;
+                            worksheet.Cells[i + 1, 3].Value = null;
                         }
-                        worksheet.Column(1).Width = 7;
-                        worksheet.Column(2).Width = 18;
-                        worksheet.Column(3).Width = 100;
+                        else
+                        {
+                            if (int.TryParse(items[0].Trim(), out var number))
+                                worksheet.Cells[i + 1, 1].Value = number;
+                            else
+                                worksheet.Cells[i + 1, 1].Value = items[0].Trim();
+                            worksheet.Cells[i + 1, 2].Value = items[1].Trim();
+                            worksheet.Cells[i + 1, 3].Value = items[2].Trim();
+                        }
+                        worksheet.Cells[i + 1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        worksheet.Cells[i + 1, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        worksheet.Cells[i + 1, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     }
+                    worksheet.Column(1).Width = 7;
+                    worksheet.Column(2).Width = 18;
+                    worksheet.Column(3).Width = 100;
                     for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                     {
                         worksheet = package.Workbook.Worksheets[i];

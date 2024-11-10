@@ -1,14 +1,13 @@
+using System;
+using System.Reflection;
+using System.Collections.Generic;
+using Net.Event;
+using Net.Helper;
+using Net.Share;
+using Net.System;
+
 namespace Net.Serialize
 {
-    using global::System;
-    using global::System.Collections.Generic;
-    using global::System.Reflection;
-    using Net.System;
-    using Net.Share;
-    using Net.Event;
-    using Net.Helper;
-    using global::System.IO;
-
     /// <summary>
     /// 快速序列化2接口--动态匹配
     /// </summary>
@@ -96,10 +95,10 @@ namespace Net.Serialize
     /// </summary>
     public class NetConvertFast2 : NetConvertBase
     {
-        private static readonly MyDictionary<ushort, Type> HashToTypeDict = new MyDictionary<ushort, Type>();
-        private static readonly MyDictionary<Type, ushort> TypeToHashDict = new MyDictionary<Type, ushort>();
-        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new MyDictionary<Type, ISerialize>();
-        private static readonly MyDictionary<Type, Type> BindTypes = new MyDictionary<Type, Type>();
+        private static readonly MyDictionary<ushort, Type> HashToTypeDict = new();
+        private static readonly MyDictionary<Type, ushort> TypeToHashDict = new();
+        private static readonly MyDictionary<Type, ISerialize> TypeToSerializeDict = new();
+        private static readonly MyDictionary<Type, Type> BindTypes = new();
 
         static NetConvertFast2()
         {

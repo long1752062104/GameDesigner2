@@ -1,17 +1,29 @@
 ﻿using Net.System;
 using Net.Serialize;
 using Net.Event;
+using System;
+using Net.Helper;
 
 namespace Net.Table
 {
-    public class TableBinarySerialize
+    public class TableBinarySerialize : BinarySerialize
     {
-        private const int Version = 1;
+        private const int Version = 2;
+
+        public override void WriteTypeToIndex(ISegment segment, Type type)
+        {
+            segment.Write(type.ToString());
+        }
+
+        public override Type ReadIndexToType(ISegment segment)
+        {
+            var typeName = segment.ReadString();
+            return AssemblyHelper.GetType(typeName);
+        }
 
         public static byte[] Serialize(DataSetInfo dataSet)
         {
-            var binarySerialize = new BinarySerialize();
-            Initialize(binarySerialize);
+            var binarySerialize = new TableBinarySerialize();
             var segment = new Segment(new byte[1024 * 1024 * 50]);
             segment.Write(Version);
             binarySerialize.SerializeObject(segment, dataSet, true, true);
@@ -20,8 +32,7 @@ namespace Net.Table
 
         public static DataSetInfo Deserialize(byte[] buffer)
         {
-            var binarySerialize = new BinarySerialize();
-            Initialize(binarySerialize);
+            var binarySerialize = new TableBinarySerialize();
             var segment = new Segment(buffer);
             var version = segment.ReadInt32();
             if (version != Version)
@@ -30,15 +41,6 @@ namespace Net.Table
                 return null;
             }
             return binarySerialize.DeserializeObject<DataSetInfo>(segment, false, true, true);
-        }
-
-        private static void Initialize(BinarySerialize binarySerialize)
-        {
-            binarySerialize.Init();
-            binarySerialize.AddSerializeType<DataSetInfo>();
-            binarySerialize.AddSerializeType<DataTableInfo>();
-            binarySerialize.AddSerializeType<DataRowInfo>();
-            binarySerialize.AddSerializeType<DataColumnInfo>();
         }
     }
 }
