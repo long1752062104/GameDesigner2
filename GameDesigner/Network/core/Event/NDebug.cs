@@ -37,10 +37,10 @@ namespace Net.Event
     /// </summary>
     public class ConsoleDebug : IDebug
     {
-        private readonly MyDictionary<string, LogEntity> dic = new MyDictionary<string, LogEntity>();
+        private readonly MyDictionary<string, LogEntity> dic = new();
         public int count = 1000;
         private int cursorTop;
-        private bool collapse;
+        private readonly bool collapse;
 
         public ConsoleDebug(bool collapse)
         {
@@ -259,10 +259,10 @@ namespace Net.Event
         /// 每次执行可连续输出多少条日志, 默认输出300 * 3条
         /// </summary>
         public static int LogOutputMax { get; set; } = 300;
-        private static readonly QueueSafe<object> logQueue = new QueueSafe<object>();
-        private static readonly QueueSafe<object> errorQueue = new QueueSafe<object>();
-        private static readonly QueueSafe<object> warningQueue = new QueueSafe<object>();
-        private static readonly MyDictionary<uint, ValueTuple<int, int, int>> collapseDict = new MyDictionary<uint, ValueTuple<int, int, int>>();
+        private static readonly QueueSafe<object> logQueue = new();
+        private static readonly QueueSafe<object> errorQueue = new();
+        private static readonly QueueSafe<object> warningQueue = new();
+        private static readonly MyDictionary<uint, ValueTuple<int, int, int>> collapseDict = new();
         /// <summary>
         /// 绑定的输入输出对象
         /// </summary>
@@ -585,7 +585,7 @@ namespace Net.Event
         /// <summary>
         /// 绑定输出接口
         /// </summary>
-        /// <param name="log"></param>
+        /// <param name="debug"></param>
         public static void BindDebug(IDebug debug)
         {
             if (Debug != null)
